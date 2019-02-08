@@ -39,7 +39,7 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(PermissionsMixin, AbstractBaseUser):
+class User(AbstractBaseUser):
     full_name = models.CharField(max_length=245)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
@@ -53,3 +53,9 @@ class User(PermissionsMixin, AbstractBaseUser):
 
     def is_staff(self):
         return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return True
+
+    def has_perm(self, perm, obj=None):
+        return True
