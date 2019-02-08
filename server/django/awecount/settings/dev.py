@@ -1,13 +1,16 @@
-import os
-
-from .base import BASE_DIR
-
+from .base import INSTALLED_APPS, MIDDLEWARE
 
 DEBUG = True
 
 SECRET_KEY = '4oiwq=^7+@ub=shgbo#=gj17jveh+_*9tuqfx5fa-1orav(7xx'
 
+INSTALLED_APPS += ['debug_toolbar', ]
+
+MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+INTERNAL_IPS = ['127.0.0.1']
 
 DATABASES = {
     'default': {
