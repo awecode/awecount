@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
@@ -38,7 +39,7 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(AbstractBaseUser):
+class User(PermissionsMixin, AbstractBaseUser):
     full_name = models.CharField(max_length=245)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
@@ -49,3 +50,6 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['full_name', ]
 
     objects = UserManager()
+
+    def is_staff(self):
+        return self.is_superuser
