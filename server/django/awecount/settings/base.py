@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'apps.voucher',
     'apps.ledger',
     'apps.tax',
+    'apps.product',
 ]
 
 MIDDLEWARE = [
