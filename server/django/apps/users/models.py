@@ -9,12 +9,15 @@ ORGANIZATION_TYPES = (
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=254)
-    address = models.TextField()
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True)
     logo = models.ImageField(blank=True, null=True)
     contact_no = models.CharField(max_length=25, blank=True, null=True)
-    organization_type = models.CharField(max_length=254, choices=ORGANIZATION_TYPES, default='sole_proprietorship')
+    organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='sole_proprietorship')
     tax_registration_number = models.IntegerField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.name
 
 
 class UserManager(BaseUserManager):
@@ -40,16 +43,20 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    full_name = models.CharField(max_length=245)
+    full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', ]
 
     objects = UserManager()
+    
+    def __str__(self):
+        return self.full_name
 
     def is_staff(self):
         return self.is_superuser

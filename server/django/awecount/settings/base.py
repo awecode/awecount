@@ -11,6 +11,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'apps.users',
+    'apps.voucher',
+    'apps.ledger',
 ]
 
 MIDDLEWARE = [
