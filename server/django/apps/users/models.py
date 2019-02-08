@@ -21,6 +21,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', ]
