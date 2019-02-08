@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.voucher',
     'apps.ledger',
+    'apps.tax',
 ]
 
 MIDDLEWARE = [
