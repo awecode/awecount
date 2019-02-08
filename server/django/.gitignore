@@ -1,0 +1,4 @@
+.idea
+*.pyc
+*.log
+awecount/settings/env.py
