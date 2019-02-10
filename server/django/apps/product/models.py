@@ -9,7 +9,10 @@ class Item(models.Model):
     description = models.TextField(blank=True, null=True)
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
-    
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
 
     def __str__(self):

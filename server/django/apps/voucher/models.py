@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 
 from apps.ledger.models import Party
+from apps.product.models import Item
+from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
 
 STATUSES = (
@@ -18,6 +20,11 @@ MODES = (
     ('Khalti', 'Khalti'),
 )
 
+DISCOUNT_TYPES = (
+    ('Amount', 'Amount'),
+    ('Percent', 'Percent'),
+)
+
 
 class SalesVoucher(models.Model):
     voucher_no = models.PositiveSmallIntegerField()
@@ -31,8 +38,11 @@ class SalesVoucher(models.Model):
     remarks = models.TextField(blank=True, null=True)
     due_date = models.DateField(blank=True, null=True)
     discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     total_amount = models.FloatField(null=True, blank=True)
     mode = models.CharField(choices=STATUSES, default=MODES[0][0], max_length=15)
+
+    updated_at = models.DateTimeField(auto_now=True)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
 
@@ -40,5 +50,11 @@ class SalesVoucher(models.Model):
         return str(self.voucher_no)
 
 
-# class SalesVoucherRow(models.Model):
-#     pass
+class SalesVoucherRow(models.Model):
+    voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    rate = models.FloatField()
+    discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
