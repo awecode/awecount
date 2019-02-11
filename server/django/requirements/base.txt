@@ -1,4 +1,5 @@
 Django
 psycopg2-binary
 Pillow
-django-rest-frameworkdjangorestframework-jwt
+django-rest-framework
+djangorestframework-jwt
