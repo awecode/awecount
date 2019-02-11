@@ -1,4 +1,4 @@
-from .base import INSTALLED_APPS, MIDDLEWARE
+from .base import INSTALLED_APPS, MIDDLEWARE, REST_FRAMEWORK
 
 DEBUG = True
 
