@@ -1,3 +1,4 @@
+import datetime
 import os
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..')
@@ -27,6 +28,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.users.middleware.CompanyMiddleware',
 ]
 
 ROOT_URLCONF = 'awecount.urls'
@@ -73,3 +75,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.User'
+JWT = {
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+}
