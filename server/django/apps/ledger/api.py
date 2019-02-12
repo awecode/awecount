@@ -2,9 +2,10 @@ from rest_framework import viewsets
 
 from apps.ledger.models import Party
 from apps.ledger.serializers import PartySerializer
+from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 
 
-class PartyViewSet(viewsets.ModelViewSet):
+class PartyViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = PartySerializer
 
     def get_queryset(self):
