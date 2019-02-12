@@ -75,7 +75,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.User'
-JWT = {
+JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=172800),
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 }
