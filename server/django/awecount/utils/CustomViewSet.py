@@ -11,5 +11,9 @@ class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
 
     To use it, override the class and set the `.queryset` and
     `.serializer_class` attributes.
+
     """
-    pass
+
+    def get_queryset(self):
+        company = self.request.company
+        return self.serializer_class.Meta.model.objects.filter(company=company)

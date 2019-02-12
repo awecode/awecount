@@ -5,9 +5,12 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom
 from apps.ledger import api as ledger
+from apps.product import api as item
+
 router = DefaultRouter()
 
 router.register('parties', ledger.PartyViewSet, base_name='parties')
+router.register('item', item.ItemViewSet, base_name='item')
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
