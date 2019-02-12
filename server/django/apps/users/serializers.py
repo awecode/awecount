@@ -12,4 +12,4 @@ class CompanySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'full_name', 'email', 'is_superuser',)
+        exclude = ('company', 'date_joined', 'password',)

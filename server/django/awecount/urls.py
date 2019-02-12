@@ -3,7 +3,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
-from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom
+
+from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
 from apps.tax import api as tax
@@ -17,8 +18,9 @@ router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
     path('v1/', include(router.urls)),
-    path('auth/', include('rest_framework.urls')),
-    path('v1/auth/', obtain_jwt_token_custom),
+    path('v1/auth/', include('djoser.urls.base')),
+    path('v1/auth/', include('djoser.urls.jwt')),
+    path('v1/auth/login',TokenObtainPairView.as_view(), name='login')
 
 ]
 

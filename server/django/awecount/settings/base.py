@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'djoser',
 
     'apps.users',
     'apps.voucher',
@@ -57,7 +58,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
@@ -75,7 +76,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.User'
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=172800),
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=5),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
+
 }

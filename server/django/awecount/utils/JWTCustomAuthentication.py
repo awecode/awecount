@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler, jwt_encode_handler
 from rest_framework_jwt.settings import api_settings
 from rest_framework_jwt.views import ObtainJSONWebToken, jwt_response_payload_handler
+from rest_framework_simplejwt.serializers import TokenObtainSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenViewBase
+from six import text_type
 
 from apps.users.serializers import CompanySerializer, UserSerializer
 
@@ -35,3 +39,31 @@ class JWTCustomAuthentication(ObtainJSONWebToken):
 
 
 obtain_jwt_token_custom = JWTCustomAuthentication.as_view()
+
+
+class TokenObtainPairSerializer(TokenObtainSerializer):
+    @classmethod
+    def get_token(cls, user):
+        return RefreshToken.for_user(user)
+
+    def validate(self, attrs):
+        data = super(TokenObtainPairSerializer, self).validate(attrs)
+
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = text_type(refresh)
+        data['access'] = text_type(refresh.access_token)
+        data['company'] = CompanySerializer(self.user.company).data
+        data['user'] = UserSerializer(self.user).data
+        return data
+
+
+class TokenObtainPairView(TokenViewBase):
+    """
+    Takes a set of user credentials and returns an access and refresh JSON web
+    token pair to prove the authentication of those credentials.
+    """
+    serializer_class = TokenObtainPairSerializer
+
+
+token_obtain_pair = TokenObtainPairView.as_view()

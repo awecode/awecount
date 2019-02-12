@@ -1,4 +1,5 @@
 from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.users.models import User, Company
 
@@ -9,15 +10,12 @@ class CompanyMiddleware(object):
 
     def __call__(self, request):
         if request.META.get('HTTP_AUTHORIZATION'):
-            token_key = request.META.get('HTTP_AUTHORIZATION').split(' ')[-1]
-            token = {'token': token_key}
-
+            raw_token = request.META.get('HTTP_AUTHORIZATION').split(' ')[-1]
             try:
-                valid_data = VerifyJSONWebTokenSerializer().validate(token)
-                user = valid_data['user']
-                request.user = user
+                valid_data = AccessToken(raw_token)
+                user_id = valid_data['user_id']
                 try:
-                    request.user = User.objects.get(pk=user.id)
+                    request.user = User.objects.get(pk=user_id)
                 except User.DoesNotExist:
                     pass
             except:
@@ -27,11 +25,10 @@ class CompanyMiddleware(object):
         if request.user.is_authenticated:
             try:
                 company_obj = Company.objects.get(id=request.user.company.id)
+                request.__class__.company = company_obj.id
             except Company.DoesNotExist:
                 pass
 
-            request.__class__.company = company_obj.id
-        #
         response = self.get_response(request)
         return response
 
