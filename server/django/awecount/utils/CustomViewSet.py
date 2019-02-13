@@ -17,7 +17,7 @@ class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
 
     def get_queryset(self):
         if not hasattr(self.request, 'company'):
-            raise APIException({'error': 'User is not assigned with any company.'})
+            raise APIException({'errors': ['User is not assigned with any company.']})
         company = self.request.company
         return self.serializer_class.Meta.model.objects.filter(company=company)
 
