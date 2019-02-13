@@ -4,6 +4,8 @@ from apps.product.models import Item
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Item
         exclude = ('company',)
