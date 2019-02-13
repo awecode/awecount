@@ -4,3 +4,4 @@ Pillow
 django-rest-framework
 djangorestframework-simplejwt
 djoser
+    django-cors-headers

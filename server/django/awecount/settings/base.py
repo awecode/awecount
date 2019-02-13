@@ -13,6 +13,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'djoser',
+    'corsheaders',
 
     'apps.users',
     'apps.voucher',
@@ -29,6 +30,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'apps.users.middleware.CompanyMiddleware',
 ]
 
