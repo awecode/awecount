@@ -1,4 +1,3 @@
-from apps.ledger.models import Party
 from apps.ledger.serializers import PartySerializer
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 

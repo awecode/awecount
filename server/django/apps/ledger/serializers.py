@@ -4,6 +4,8 @@ from apps.ledger.models import Party
 
 
 class PartySerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Party
         exclude = ('company',)
