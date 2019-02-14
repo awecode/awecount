@@ -12,8 +12,8 @@ from apps.tax import api as tax
 router = DefaultRouter()
 
 router.register('parties', ledger.PartyViewSet, base_name='parties')
-router.register('items', item.ItemViewSet, base_name='item')
-router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
+router.register('items', item.ItemViewSet, base_name='items')
+router.register('taxes', tax.TaxSchemeViewSet, base_name='taxes')
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
