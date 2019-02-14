@@ -4,7 +4,7 @@ from apps.product.models import Item
 
 
 class ItemSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField(write_only=True)
+    company_id = serializers.IntegerField()
 
     class Meta:
         model = Item
