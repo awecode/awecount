@@ -8,12 +8,14 @@ from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, Toke
 from apps.ledger import api as ledger
 from apps.product import api as item
 from apps.tax import api as tax
+from apps.voucher import api as voucher
 
 router = DefaultRouter()
 
 router.register('parties', ledger.PartyViewSet, base_name='parties')
 router.register('items', item.ItemViewSet, base_name='item')
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
+router.register('sale-voucher', voucher.SalesVoucherViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
