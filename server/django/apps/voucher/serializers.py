@@ -6,12 +6,12 @@ from .models import SalesVoucherRow, SalesVoucher
 class SalesVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme = serializers.IntegerField(source='tax_scheme.id', required=True)
-    purchase_order = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
+    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
 
     class Meta:
         model = SalesVoucherRow
-        exclude = ('item', 'tax_scheme',)
+        exclude = ('item', 'tax_scheme', 'voucher')
 
 
 class SalesVoucherCreateSerializer(serializers.ModelSerializer):
@@ -20,11 +20,14 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        request = self.context['request']
+        user_id = request.user.id
+        validated_data['user_id'] = user_id
         voucher = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            tax_schema = row.pop('item')
-            row['tax_schema_id'] = tax_schema
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
             SalesVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
         return voucher
 
@@ -42,7 +45,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company',)
+        exclude = ('company', 'user',)
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
@@ -50,4 +53,4 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ('voucher_no', 'party', 'transaction_date',)
+        fields = ('id', 'voucher_no', 'party', 'transaction_date',)
