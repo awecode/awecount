@@ -46,7 +46,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
-
+    party = serializers.ReadOnlyField(source='party.name')
 
     class Meta:
         model = SalesVoucher
