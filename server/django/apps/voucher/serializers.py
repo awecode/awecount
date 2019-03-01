@@ -38,7 +38,8 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
             item = row.pop('item')
             row['voucher'] = instance
             row['item_id'] = item.get('id')
-            row['tax_scheme_id'] = item.get('tax_scheme')
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
             SalesVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         return instance
