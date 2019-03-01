@@ -34,13 +34,13 @@ class SalesVoucher(models.Model):
     issue_datetime = models.DateTimeField(default=timezone.now)
     transaction_date = models.DateField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
-    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15) #
-    remarks = models.TextField(blank=True, null=True) #
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
+    remarks = models.TextField(blank=True, null=True)
     due_date = models.DateField(blank=True, null=True)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     total_amount = models.FloatField(null=True, blank=True) #
-    mode = models.CharField(choices=STATUSES, default=MODES[0][0], max_length=15) #
+    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
 
     updated_at = models.DateTimeField(auto_now=True)
 

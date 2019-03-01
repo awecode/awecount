@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES
+from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer
 from awecount.utils import get_next_voucher_no
 
@@ -29,5 +29,7 @@ class SalesVoucherViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def options(self, request):
         return Response({
-            'discount_types': [dict(value=type[0], text=type[1]) for type in DISCOUNT_TYPES]
+            'discount_types': [dict(value=type[0], text=type[1]) for type in DISCOUNT_TYPES],
+            'statues': [dict(value=status[0], text=status[1]) for status in STATUSES],
+            'modes': [dict(value=mode[0], text=mode[1]) for mode in MODES]
         })
