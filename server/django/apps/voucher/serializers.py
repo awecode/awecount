@@ -54,4 +54,4 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party', 'transaction_date',)
+        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status',)
