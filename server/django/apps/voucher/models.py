@@ -49,6 +49,15 @@ class SalesVoucher(models.Model):
     def __str__(self):
         return str(self.voucher_no)
 
+    @property
+    def discount_amount(self):
+        discount = 0
+        if self.discount and self.discount_type == 'Amount':
+            discount = self.discount
+        elif self.discount and self.discount_type == 'Percent':
+            discount = self.total_amount * (self.discount / 100)
+        return discount
+
 
 class SalesVoucherRow(models.Model):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
@@ -61,6 +70,16 @@ class SalesVoucherRow(models.Model):
 
     def __str__(self):
         return str(self.voucher.voucher_no)
+
+    @property
+    def discount_amount(self):
+        discount = 0
+        if self.discount and self.discount_type == 'Amount':
+            discount = self.discount
+        elif self.discount and self.discount_type == 'Percent':
+            sub_total = self.quantity * self.rate
+            discount = sub_total * (self.discount / 100)
+        return discount
 
     @property
     def total(self):
