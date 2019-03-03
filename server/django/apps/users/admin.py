@@ -3,10 +3,19 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
     UserCreationForm as DjangoUserCreationForm
 
+from apps.ledger.models import handle_company_creation
 from .models import User, Company
 from django import forms
 
 admin.site.unregister(Group)
+
+
+def handle_account_creation(modeladmin, request, queryset):
+    for company in queryset:
+        handle_company_creation(modeladmin, company=company)
+
+
+handle_account_creation.short_description = "Create necessary accounts"
 
 
 class UserCreationForm(DjangoUserCreationForm):
@@ -82,6 +91,7 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
+    actions = [handle_account_creation]
 
 
 admin.site.register(Company, CompanyAdmin)

@@ -39,7 +39,7 @@ class SalesVoucher(models.Model):
     due_date = models.DateField(blank=True, null=True)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    total_amount = models.FloatField(null=True, blank=True) #
+    total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
 
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,3 +61,13 @@ class SalesVoucherRow(models.Model):
 
     def __str__(self):
         return str(self.voucher.voucher_no)
+
+    @property
+    def total(self):
+        sub_total = self.quantity * self.rate
+        if self.discount and self.discount_type:
+            if self.discount_type == 'Amount':
+                sub_total = sub_total - self.discount
+            elif self.discount_type == 'Percent':
+                sub_total = sub_total - (sub_total * (self.discount / 100))
+        return sub_total

@@ -1,7 +1,11 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
+
+from apps.users.signals import company_creation
 
 ORGANIZATION_TYPES = (
     ('sole_proprietorship', 'Sole Proprietorship'), ('partnership', 'Partnership'), ('corporation', 'Corporation'),
@@ -22,6 +26,12 @@ class Company(models.Model):
 
     class Meta:
         verbose_name_plural = 'Companies'
+
+    def save(self, *args, **kwargs):
+        created = not self.pk
+        super(Company, self).save(*args, **kwargs)
+        if created:
+            company_creation.send(sender=None, company=self)
 
 
 class UserManager(BaseUserManager):
