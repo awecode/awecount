@@ -27,3 +27,11 @@ def none_for_zero(obj):
 
 def model_exists_in_db(model):
     return model._meta.db_table in connection.introspection.table_names()
+
+
+def delete_rows(rows, model):
+    if rows:
+        for row in rows:
+            if row.get('id'):
+                instance = model.objects.get(id=row.get('id'))
+                instance.delete()

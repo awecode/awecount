@@ -6,9 +6,10 @@ from rest_framework.response import Response
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer
 from awecount.utils import get_next_voucher_no
+from awecount.utils.mixins import DeleteRows
 
 
-class SalesVoucherViewSet(viewsets.ModelViewSet):
+class SalesVoucherViewSet(DeleteRows, viewsets.ModelViewSet):
     queryset = SalesVoucher.objects.all()
     model = SalesVoucher
     row = SalesVoucherRow

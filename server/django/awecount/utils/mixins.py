@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from awecount.utils import delete_rows
 
 
 class InputChoiceMixin(object):
@@ -27,3 +28,10 @@ class InputChoiceMixin(object):
     @action(detail=False)
     def choices(self, request):
         return self.list(request)
+
+
+class DeleteRows(object):
+    def update(self, request, *args, **kwargs):
+        params = request.data
+        delete_rows(params.get('deleted_rows', None), self.row)
+        return super(DeleteRows, self).update(request, *args, **kwargs)

@@ -115,14 +115,14 @@ class Account(models.Model):
         queryset = Account.objects.all()
         original_name = self.name
         nxt = 2
-        if not self.pk:
-            while queryset.filter(**{'name': self.name, 'fy': self.fy}):
-                self.name = original_name
-                end = '%s%s' % ('-', nxt)
-                if len(self.name) + len(end) > 100:
-                    self.name = self.name[:100 - len(end)]
-                self.name = '%s%s' % (self.name, end)
-                nxt += 1
+        # if not self.pk:
+        #     while queryset.filter(**{'name': self.name, 'fy': self.fy}):
+        #         self.name = original_name
+        #         end = '%s%s' % ('-', nxt)
+        #         if len(self.name) + len(end) > 100:
+        #             self.name = self.name[:100 - len(end)]
+        #         self.name = '%s%s' % (self.name, end)
+        #         nxt += 1
         return super(Account, self).save(*args, **kwargs)
 
     def __str__(self):
