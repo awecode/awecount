@@ -12,23 +12,6 @@ from apps.users.models import Company
 from awecount.utils import zero_for_none, none_for_zero
 
 
-class Party(models.Model):
-    name = models.CharField(max_length=255)
-    address = models.TextField(blank=True)
-    logo = models.ImageField(blank=True, null=True)
-    contact_no = models.CharField(max_length=25, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    tax_registration_number = models.IntegerField(blank=True, null=True)
-
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='parties')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = 'Parties'
-
-
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=254, null=True, blank=True)
@@ -148,6 +131,31 @@ class Account(models.Model):
     class Meta:
         # unique_together = ('name', 'fy')
         ordering = ('order',)
+
+
+class Party(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True)
+    logo = models.ImageField(blank=True, null=True)
+    contact_no = models.CharField(max_length=25, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    tax_registration_number = models.IntegerField(blank=True, null=True)
+    account = models.OneToOneField(Account, related_name='party',blank=True, null=True, on_delete=models.SET_NULL)
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='parties')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Parties'
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            account = Account(name=self.name)
+            account.save()
+            self.account = account
+        super(Party, self).save(*args, **kwargs)
 
 
 class Node(object):
