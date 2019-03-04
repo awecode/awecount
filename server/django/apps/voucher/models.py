@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 from django.utils import timezone
 
@@ -5,6 +7,7 @@ from apps.ledger.models import Party, Account, set_transactions as set_ledger_tr
 from apps.product.models import Item
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
+from awecount.utils import get_next_voucher_no
 
 STATUSES = (
     ('Draft', 'Draft'),
@@ -128,3 +131,56 @@ class SalesVoucherRow(models.Model):
             elif self.discount_type == 'Percent':
                 sub_total = sub_total - (sub_total * (self.discount / 100))
         return sub_total
+
+
+class CreditVoucher(models.Model):
+    voucher_no = models.PositiveSmallIntegerField()
+    party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE)
+    date = models.DateField()
+    reference = models.CharField(max_length=50, null=True, blank=True)
+    amount = models.FloatField(null=True, blank=True)
+    description = models.TextField()
+    receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def __init__(self, *args, **kwargs):
+        super(CreditVoucher, self).__init__(*args, **kwargs)
+        if not self.pk and not self.voucher_no:
+            self.voucher_no = get_next_voucher_no(CreditVoucher, self.company_id)
+
+    @property
+    def total(self):
+        grand_total = 0
+        for obj in self.rows.all():
+            total = obj.receipt
+            grand_total += total
+        return grand_total
+
+    def get_voucher_no(self):
+        return self.voucher_no
+
+    def get_absolute_url(self):
+        return 'url'
+
+
+class CreditVoucherRow(models.Model):
+    invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
+    receipt = models.FloatField()
+    discount = models.FloatField(blank=True, null=True)
+    cash_receipt = models.ForeignKey(CreditVoucher, related_name='rows', on_delete=models.CASCADE)
+
+    def get_voucher_no(self):
+        return self.cash_receipt.voucher_no
+
+    def get_absolute_url(self):
+        return 'url'
+        # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
+
+    def overdue_days(self):
+        if self.invoice.due_date and self.invoice.due_date < date.today():
+            overdue_days = date.today() - self.invoice.due_date
+            return overdue_days.days
+        return ''
+
+    class Meta:
+        unique_together = ('invoice', 'cash_receipt')

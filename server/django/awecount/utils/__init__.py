@@ -1,12 +1,15 @@
 from django.db import connection
 
 
-def get_next_voucher_no(cls, attr):
+def get_next_voucher_no(cls, company_id, attr='voucher_no'):
     from django.db.models import Max
 
-    max_voucher_no = cls.objects.all().aggregate(Max(attr))[attr + '__max']
+    qs = cls.objects.all()
+    if company_id:
+        qs = qs.filter(company_id=company_id)
+    max_voucher_no = qs.aggregate(Max(attr))[attr + '__max']
     if max_voucher_no:
-        return max_voucher_no + 1
+        return int(max_voucher_no) + 1
     else:
         return 1
 

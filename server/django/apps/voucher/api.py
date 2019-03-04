@@ -24,7 +24,7 @@ class SalesVoucherViewSet(DeleteRows, viewsets.ModelViewSet):
 
     @action(detail=False)
     def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(SalesVoucher, 'voucher_no')
+        voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
         return Response({'voucher_no': voucher_no})
 
     @action(detail=False)
