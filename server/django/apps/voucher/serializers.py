@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import SalesVoucherRow, SalesVoucher
+from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher
 
 
 class SalesVoucherRowSerializer(serializers.ModelSerializer):
@@ -17,7 +17,6 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
 class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     company_id = serializers.IntegerField()
-
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -56,3 +55,48 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status',)
+
+
+class CreditVoucherRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    invoice_id = serializers.IntegerField(source='invoice.id', required=True)
+    cash_receipt_id = serializers.IntegerField(source='cash_receipt.id', required=False, read_only=True)
+
+    class Meta:
+        model = CreditVoucherRow
+        exclude = ('item', 'invoice', 'cash_receipt', )
+
+
+class CreditVoucherCreateSerializer(serializers.ModelSerializer):
+    rows = CreditVoucherRowSerializer(many=True)
+    company_id = serializers.IntegerField()
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop('rows')
+        cash_receipt = CreditVoucher.objects.create(**validated_data)
+        for index, row in enumerate(rows_data):
+            invoice = row.pop('invoice')
+            CreditVoucherRow.objects.create(cash_receipt=cash_receipt, invoice_id=invoice.get('id'), **row)
+        return cash_receipt
+
+    def update(self, instance, validated_data):
+        rows_data = validated_data.pop('rows')
+        CreditVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        for index, row in enumerate(rows_data):
+            invoice = row.pop('invoice')
+            row['invoice_id'] = invoice.get('id')
+            CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+        instance.refresh_from_db()
+        return instance
+
+    class Meta:
+        model = SalesVoucher
+        exclude = ('company', 'receipt',)
+
+
+class CreditVoucherListSerializer(serializers.ModelSerializer):
+    party = serializers.ReadOnlyField(source='party.name')
+
+    class Meta:
+        model = SalesVoucher
+        fields = ('id', 'voucher_no', 'party', 'date',)
