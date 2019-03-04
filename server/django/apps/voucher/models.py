@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from apps.ledger.models import Party
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions
 from apps.product.models import Item
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
@@ -57,6 +57,43 @@ class SalesVoucher(models.Model):
         elif self.discount and self.discount_type == 'Percent':
             discount = self.total_amount * (self.discount / 100)
         return discount
+
+    def apply_transactions(self, voucher):
+        entries = []
+        discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
+                                               category__name='Indirect Expenses')
+
+        # TODO Voucher discount needs to broken into row discounts
+        # if voucher.discount and voucher.discount_expense:
+        #     set_ledger_transactions(voucher, voucher.transaction_date, ['dr', discount_expense, voucher.discount_amount])
+
+        # TODO create party supplier and customer account
+        # dr_acc = voucher.party.customer_account
+        for row in voucher.rows.all():
+            tax_amt = 0
+            total = row.quantity * row.rate
+
+            # TODO If the voucher has discount, apply discount proportionally
+            # if discount_rate:
+            #     if obj.tax == 'inclusive' and tax_scheme:
+            #         discount_rate = discount_rate * 100 / (100 + tax_scheme.percent)
+            #     divident_discount = (pure_total - row_discount) * discount_rate
+
+            entries.append(['cr', row.item.ledger, total])
+
+            if row.tax_scheme:
+                tax_amt = (total) * row.tax_scheme.rate / 100
+                entries.append(['cr', row.tax_scheme.payable, tax_amt])
+
+            if row.discount and row.discount_expense:
+                entries.append(['dr', discount_expense, row.discount_amount])
+
+            # TODO receivalble account create in party
+            receivable = total - row.discount_amount + tax_amt
+            # entries.append(['dr', dr_acc, receivable])
+
+            set_ledger_transactions(row, voucher.transaction_date, *entries)
+        return
 
 
 class SalesVoucherRow(models.Model):
