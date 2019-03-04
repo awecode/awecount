@@ -1,10 +1,14 @@
 from django.contrib import admin
 
-from apps.voucher.models import SalesVoucher, SalesVoucherRow
+from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
     model = SalesVoucherRow
+
+
+class CreditVoucherRowTabular(admin.TabularInline):
+    model = CreditVoucherRow
 
 
 class SalesVoucherAdmin(admin.ModelAdmin):
@@ -16,5 +20,16 @@ class SalesVoucherAdmin(admin.ModelAdmin):
     inlines = (SaleVoucherRowTabular,)
 
 
+class CreditVoucherAdmin(admin.ModelAdmin):
+    search_fields = (
+        'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
+        'company__tax_registration_number',)
+    list_filter = ('company', 'party',)
+    list_display = ('company', 'voucher_no', 'party', 'amount',)
+    inlines = (CreditVoucherRowTabular,)
+
+
 admin.site.register(SalesVoucher, SalesVoucherAdmin)
 admin.site.register(SalesVoucherRow)
+admin.site.register(CreditVoucher)
+admin.site.register(CreditVoucherRow)

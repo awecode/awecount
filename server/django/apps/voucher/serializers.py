@@ -90,7 +90,7 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
         return instance
 
     class Meta:
-        model = SalesVoucher
+        model = CreditVoucher
         exclude = ('company', 'receipt',)
 
 
@@ -98,5 +98,5 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source='party.name')
 
     class Meta:
-        model = SalesVoucher
+        model = CreditVoucher
         fields = ('id', 'voucher_no', 'party', 'date',)

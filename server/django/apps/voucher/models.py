@@ -162,6 +162,9 @@ class CreditVoucher(models.Model):
     def get_absolute_url(self):
         return 'url'
 
+    def __str__(self):
+        return str(self.voucher_no) + '- ' + self.party.name
+
 
 class CreditVoucherRow(models.Model):
     invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
