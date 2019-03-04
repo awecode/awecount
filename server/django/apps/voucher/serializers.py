@@ -28,6 +28,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         # if voucher.discount and voucher.discount_expense:
         #     set_ledger_transactions(voucher, voucher.transaction_date, ['dr', discount_expense, voucher.discount_amount])
 
+        # TODO create party supplier and customer account
         # dr_acc = voucher.party.customer_account
         for row in voucher.rows.all():
             tax_amt = 0

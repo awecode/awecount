@@ -157,6 +157,8 @@ class Party(models.Model):
     email = models.EmailField(blank=True, null=True)
     tax_registration_number = models.IntegerField(blank=True, null=True)
     account = models.OneToOneField(Account, related_name='party', blank=True, null=True, on_delete=models.SET_NULL)
+    supplier_account = models.OneToOneField(Account, null=True, related_name='supplier_detail', on_delete=models.SET_NULL)
+    customer_account = models.OneToOneField(Account, null=True, related_name='customer_detail', on_delete=models.SET_NULL)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='parties')
 
