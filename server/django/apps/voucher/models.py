@@ -58,7 +58,8 @@ class SalesVoucher(models.Model):
             discount = self.total_amount * (self.discount / 100)
         return discount
 
-    def apply_transactions(self, voucher):
+    @staticmethod
+    def apply_transactions(voucher):
         entries = []
         discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
                                                category__name='Indirect Expenses')
