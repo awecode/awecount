@@ -1,6 +1,7 @@
 from django.db import models
 
 from apps.ledger.models import Account, Category
+from apps.tax.models import TaxScheme
 from apps.users.models import Company
 
 
@@ -11,6 +12,7 @@ class Item(models.Model):
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
     ledger = models.ForeignKey(Account, null=True, related_name='items', on_delete=models.SET_NULL)
+    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -21,9 +23,9 @@ class Item(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ledger:
-            ledger = Account(name=self.name)
+            ledger = Account(name=self.name, company=self.company)
             try:
-                ledger.category = Category.objects.get(name='Purchase', parent__name='Expenses')
+                ledger.category = Category.objects.get(name='Purchase', parent__name='Expenses', company=self.company)
             except Category.DoesNotExist:
                 pass
             ledger.code = 'P-' + str(self.id)

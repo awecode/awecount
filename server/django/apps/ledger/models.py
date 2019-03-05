@@ -170,7 +170,7 @@ class Party(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is None:
-            account = Account(name=self.name)
+            account = Account(name=self.name, company=self.company)
             account.save()
             self.account = account
         super(Party, self).save(*args, **kwargs)

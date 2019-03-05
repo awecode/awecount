@@ -14,4 +14,10 @@ admin.site.register(Party, PartyAdmin)
 admin.site.register(Account)
 admin.site.register(Transaction)
 admin.site.register(JournalEntry)
-admin.site.register(Category)
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'company',)
+
+
+admin.site.register(Category, CategoryAdmin)
