@@ -187,3 +187,29 @@ class CreditVoucherRow(models.Model):
 
     class Meta:
         unique_together = ('invoice', 'cash_receipt')
+
+
+class Bank(models.Model):
+    name = models.CharField(max_length=250)
+    short_name = models.CharField(max_length=50)
+
+
+class BankBranch(models.Model):
+    location = models.CharField(max_length=255)
+    bank = models.ForeignKey(Bank, related_name='branches', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Bank branches'
+
+
+class ChequeVoucher(models.Model):
+    cheque_no = models.CharField(max_length=100, null=True, blank=True)
+    bank_branch = models.ForeignKey(BankBranch, blank=True, null=True, on_delete=models.PROTECT)
+    date = models.DateField()
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    amount = models.IntegerField()
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name="cheques")
+
+    def __str__(self):
+        return self.date.strftime('%d-%m-%Y') + '- ' + self.user.full_name
