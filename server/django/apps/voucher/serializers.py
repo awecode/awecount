@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher
+from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch
 
 
 class SalesVoucherRowSerializer(serializers.ModelSerializer):
@@ -113,6 +113,12 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditVoucher
         fields = ('id', 'voucher_no', 'party', 'date',)
+
+
+class BankBranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankBranch
+        fields = '__all__'
 
 
 class ChequeVoucherSerializer(serializers.ModelSerializer):

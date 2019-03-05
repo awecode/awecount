@@ -192,11 +192,13 @@ class CreditVoucherRow(models.Model):
 class Bank(models.Model):
     name = models.CharField(max_length=250)
     short_name = models.CharField(max_length=50)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
 
 class BankBranch(models.Model):
     location = models.CharField(max_length=255)
     bank = models.ForeignKey(Bank, related_name='branches', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = 'Bank branches'
