@@ -17,6 +17,7 @@ router.register('items', item.ItemViewSet, base_name='item')
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
 router.register('sale-voucher', voucher.SalesVoucherViewSet)
 router.register('credit-voucher', voucher.CreditVoucherViewSet)
+router.register('cheque-voucher', voucher.ChequeVoucherViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),

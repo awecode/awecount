@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher
+from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher
 
 
 class SalesVoucherRowSerializer(serializers.ModelSerializer):
@@ -70,7 +70,7 @@ class CreditVoucherRowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreditVoucherRow
-        exclude = ('invoice', 'cash_receipt', )
+        exclude = ('invoice', 'cash_receipt',)
 
 
 class CreditVoucherCreateSerializer(serializers.ModelSerializer):
@@ -113,3 +113,14 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditVoucher
         fields = ('id', 'voucher_no', 'party', 'date',)
+
+
+class ChequeVoucherSerializer(serializers.ModelSerializer):
+    bank_branch_id = serializers.IntegerField(required=False)
+    party_id = serializers.IntegerField(required=False)
+    user_id = serializers.IntegerField(required=False)
+    company_id = serializers.IntegerField()
+
+    class Meta:
+        model = ChequeVoucher
+        exclude = ('bank_branch', 'party', 'user', 'company',)
