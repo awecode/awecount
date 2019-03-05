@@ -1,4 +1,6 @@
+from django.db import IntegrityError
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher
 
@@ -51,10 +53,14 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source='party.name')
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return '{}: {}'.format(obj.voucher_no, obj.user)
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status',)
+        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status', 'name',)
 
 
 class CreditVoucherRowSerializer(serializers.ModelSerializer):
@@ -64,7 +70,7 @@ class CreditVoucherRowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreditVoucherRow
-        exclude = ('item', 'invoice', 'cash_receipt', )
+        exclude = ('invoice', 'cash_receipt', )
 
 
 class CreditVoucherCreateSerializer(serializers.ModelSerializer):
@@ -76,7 +82,10 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
         cash_receipt = CreditVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             invoice = row.pop('invoice')
-            CreditVoucherRow.objects.create(cash_receipt=cash_receipt, invoice_id=invoice.get('id'), **row)
+            try:
+                CreditVoucherRow.objects.create(cash_receipt=cash_receipt, invoice_id=invoice.get('id'), **row)
+            except IntegrityError:
+                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
         return cash_receipt
 
     def update(self, instance, validated_data):
@@ -84,8 +93,12 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
         CreditVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             invoice = row.pop('invoice')
+            row['cash_receipt'] = instance
             row['invoice_id'] = invoice.get('id')
-            CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+            try:
+                CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+            except IntegrityError:
+                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
         instance.refresh_from_db()
         return instance
 

@@ -7,10 +7,10 @@ from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MOD
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.mixins import DeleteRows
+from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 
 
-class SalesVoucherViewSet(DeleteRows, viewsets.ModelViewSet):
+class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
     queryset = SalesVoucher.objects.all()
     model = SalesVoucher
     row = SalesVoucherRow
@@ -19,7 +19,7 @@ class SalesVoucherViewSet(DeleteRows, viewsets.ModelViewSet):
         return SalesVoucher.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == 'list' or self.action in ('choices',):
             return SalesVoucherListSerializer
         return SalesVoucherCreateSerializer
 

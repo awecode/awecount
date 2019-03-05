@@ -31,5 +31,5 @@ class CreditVoucherAdmin(admin.ModelAdmin):
 
 admin.site.register(SalesVoucher, SalesVoucherAdmin)
 admin.site.register(SalesVoucherRow)
-admin.site.register(CreditVoucher)
+admin.site.register(CreditVoucher, CreditVoucherAdmin)
 admin.site.register(CreditVoucherRow)

@@ -28,7 +28,7 @@ class JWTCustomAuthentication(ObtainJSONWebToken):
 
         # Block user without company
         if user and not user.company:
-            raise APIException({'non_field_errors': ['User not registered to any company    .']})
+            raise APIException({'non_field_errors': ['User not registered to any company.']})
 
         if user and 'token' in context:
             context['company'] = CompanySerializer(user.company).data

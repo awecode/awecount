@@ -5,5 +5,4 @@ from awecount.utils.mixins import InputChoiceMixin
 
 class TaxSchemeViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = TaxSchemeSerializer
-    choice_fields = ('id', 'label')
 

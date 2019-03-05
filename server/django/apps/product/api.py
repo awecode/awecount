@@ -5,4 +5,3 @@ from awecount.utils.mixins import InputChoiceMixin
 
 class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = ItemSerializer
-    choice_fields = ('id', 'label')
