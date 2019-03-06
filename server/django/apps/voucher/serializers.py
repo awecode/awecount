@@ -116,17 +116,41 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
 
 
 class BankBranchSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField()
+
     class Meta:
         model = BankBranch
         fields = '__all__'
 
 
 class ChequeVoucherSerializer(serializers.ModelSerializer):
-    bank_branch_id = serializers.IntegerField(required=False)
-    party_id = serializers.IntegerField(required=False)
-    user_id = serializers.IntegerField(required=False)
+    name = serializers.SerializerMethodField()
+    bank_branch_id = serializers.IntegerField(required=True)
+    # party_id = serializers.IntegerField(source='party.id', required=False)
     company_id = serializers.IntegerField()
+    payee = serializers.SerializerMethodField()
+
+    def create(self, validated_data):
+        request = self.context['request']
+        user = request.user
+        validated_data['user'] = user
+        return super(ChequeVoucherSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        request = self.context['request']
+        user = request.user
+        validated_data['user'] = user
+        return super(ChequeVoucherSerializer, self).update(instance, validated_data)
+
+    def get_name(self, obj):
+        if obj.bank_branch:
+            return obj.bank_branch.name
+
+    def get_payee(self, obj):
+        if obj.party:
+            return obj.party.name
+        return obj.customer_name
 
     class Meta:
         model = ChequeVoucher
-        exclude = ('bank_branch', 'party', 'user', 'company',)
+        exclude = ('user', 'company',)

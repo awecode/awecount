@@ -200,6 +200,12 @@ class BankBranch(models.Model):
     bank = models.ForeignKey(Bank, related_name='branches', on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
+    @property
+    def name(self):
+        bank_name = self.bank.short_name or self.bank.name
+        _name = '{} {}'.format(bank_name, self.location)
+        return _name
+
     class Meta:
         verbose_name_plural = 'Bank branches'
 
@@ -215,4 +221,4 @@ class ChequeVoucher(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.date.strftime('%d-%m-%Y') + ': ' + self.user.full_name
+        return self.date.strftime('%d-%m-%Y') + ': ' + str(self.user)
