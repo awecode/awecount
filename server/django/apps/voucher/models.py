@@ -235,3 +235,6 @@ class InvoiceDesign(models.Model):
     width = models.PositiveSmallIntegerField()
     height = models.PositiveSmallIntegerField()
     company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='invoice')
+
+    def __str__(self):
+        return self.company.name + ' ' + 'Invoice'

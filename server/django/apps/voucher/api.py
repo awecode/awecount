@@ -71,4 +71,25 @@ class InvoiceDesignViewSet(viewsets.ModelViewSet):
     queryset = InvoiceDesign.objects.all()
     serializer_class = InvoiceDesignSerializer
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.data._mutable = True
+        design = request.data.pop('design', None)
+        serializer = InvoiceDesignSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(**serializer.validated_data)
+        if 'design' in request.FILES:
+            instance.refresh_from_db()
+            instance.design = request.FILES.get('design')
+            instance.save()
+        return Response(serializer.validated_data)
 
+    @action(detail=True)
+    def company_invoice(self, request, pk):
+        data = {}
+        try:
+            invoice = InvoiceDesign.objects.get(company_id=pk)
+            data = self.serializer_class(invoice).data
+        except InvoiceDesign.DoesNotExist:
+            pass
+        return Response(data)
