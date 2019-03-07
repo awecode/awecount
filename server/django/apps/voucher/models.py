@@ -2,6 +2,7 @@ from datetime import date
 
 from django.db import models
 from django.utils import timezone
+from num2words import num2words
 
 from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions
 from apps.product.models import Item
@@ -222,3 +223,7 @@ class ChequeVoucher(models.Model):
 
     def __str__(self):
         return self.date.strftime('%d-%m-%Y') + ': ' + str(self.user)
+
+    @property
+    def amount_in_words(self):
+        return num2words(self.amount, lang='en_IN')

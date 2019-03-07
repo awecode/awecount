@@ -129,6 +129,11 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
     company_id = serializers.IntegerField()
     payee = serializers.SerializerMethodField()
+    party_name = serializers.ReadOnlyField(source='party.name')
+    amount_in_words = serializers.SerializerMethodField()
+
+    def get_amount_in_words(self, obj):
+        return obj.amount_in_words
 
     def create(self, validated_data):
         request = self.context['request']
