@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
+from django.conf.urls.static import static
 
 from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
 from apps.ledger import api as ledger
@@ -19,6 +20,7 @@ router.register('sale-voucher', voucher.SalesVoucherViewSet)
 router.register('credit-voucher', voucher.CreditVoucherViewSet)
 router.register('cheque-voucher', voucher.ChequeVoucherViewSet, base_name='chequevoucher')
 router.register('bank-branch', voucher.BankBranchViewSet, base_name='bankbranch')
+router.register('invoice-design', voucher.InvoiceDesignViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
@@ -27,7 +29,7 @@ urlpatterns = [
     path('v1/auth/', include('djoser.urls.jwt')),
     path('v1/auth/login/',TokenObtainPairView.as_view(), name='login')
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     import debug_toolbar

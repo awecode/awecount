@@ -5,9 +5,9 @@ from rest_framework.response import Response
 
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    ChequeVoucher, BankBranch
+    ChequeVoucher, BankBranch, InvoiceDesign
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
-    CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer
+    CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 
@@ -65,3 +65,10 @@ class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
 class BankBranchViewSet(InputChoiceMixin, viewsets.ModelViewSet):
     queryset = BankBranch.objects.all()
     serializer_class = BankBranchSerializer
+
+
+class InvoiceDesignViewSet(viewsets.ModelViewSet):
+    queryset = InvoiceDesign.objects.all()
+    serializer_class = InvoiceDesignSerializer
+
+

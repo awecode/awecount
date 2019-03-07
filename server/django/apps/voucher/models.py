@@ -227,3 +227,11 @@ class ChequeVoucher(models.Model):
     @property
     def amount_in_words(self):
         return num2words(self.amount, lang='en_IN')
+
+
+class InvoiceDesign(models.Model):
+    design = models.ImageField(upload_to='design/')
+    canvas = models.TextField()
+    width = models.PositiveSmallIntegerField()
+    height = models.PositiveSmallIntegerField()
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='invoice')
