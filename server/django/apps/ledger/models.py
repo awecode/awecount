@@ -461,7 +461,8 @@ def handle_company_creation(sender, **kwargs):
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-IE', parent=expenses, company=company,
                                                 default=True)
     Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
-    Account.objects.get(name='Discount Expenses', parent=indirect_expenses, company=company)
+    Category.objects.create(name='Discount Expenses', parent=indirect_expenses, company=company)
+    # Account.objects.get(name='Discount Expenses', parent=indirect_expenses, company=company)
 
     # Opening Balance Difference
 

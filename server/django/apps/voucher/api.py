@@ -1,4 +1,7 @@
 import json
+import cv2
+import re
+from matplotlib import pyplot as plt
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +13,40 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
+
+
+class GenerateInvoice:
+    def __init__(self, image_path, canvas):
+        self.image = cv2.imread(image_path)
+        self.canvas = json.loads(canvas)
+        self.attributes = {}
+        self.parse_attributes()
+
+    def to_snake_case(self, string):
+        text = re.sub(r'[\s-]', '_', str(string))
+        return text.lower()
+
+    def parse_attributes(self):
+        for data in self.objects():
+            key = self.to_snake_case(data.get('text'))
+            self.attributes[key] = dict(
+                x=data.get('left'),
+                y=data.get('top'),
+                width=data.get('width'),
+                height=data.get('height'),
+                scale=data.get('scale'),
+                font_size=data.get('fontSize'),
+            )
+
+    def objects(self):
+        return self.canvas.get('objects')
+
+    def __len__(self):
+        return len(self.objects())
+
+    def show(self):
+        plt.imshow(self.image, cmap='grey')
+        plt.show()
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
@@ -32,11 +69,28 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
 
     @action(detail=False)
     def options(self, request):
+        types = [dict(value=type[0], text=type[1]) for type in DISCOUNT_TYPES]
+        statues = [dict(value=status[0], text=status[1]) for status in STATUSES]
+        modes = [dict(value=mode[0], text=mode[1]) for mode in MODES]
+        types.insert(0, {"value": None, "text": '--------'})
+        statues.insert(0, {"value": None, "text": '--------'})
+        modes.insert(0, {"value": None, "text": '--------'})
         return Response({
-            'discount_types': [dict(value=type[0], text=type[1]) for type in DISCOUNT_TYPES],
-            'statues': [dict(value=status[0], text=status[1]) for status in STATUSES],
-            'modes': [dict(value=mode[0], text=mode[1]) for mode in MODES]
+            'discount_types': types,
+            'statues': statues,
+            'modes': modes
         })
+
+    @action(detail=False)
+    def pdf(self, request):
+        company = request.company
+        invoice_template = company.invoice
+        design = invoice_template.design
+        file = design.file
+        gi = GenerateInvoice(file.name, invoice_template.canvas)
+        import ipdb
+        ipdb.set_trace()
+        return Response({'pdf': 'data'})
 
 
 class CreditVoucherViewSet(DeleteRows, viewsets.ModelViewSet):

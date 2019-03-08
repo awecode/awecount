@@ -4,7 +4,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 from django.conf.urls.static import static
-
+    
 from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
