@@ -28,7 +28,7 @@ class Item(models.Model):
                 ledger.category = Category.objects.get(name='Purchase', parent__name='Expenses', company=self.company)
             except Category.DoesNotExist:
                 pass
-            ledger.code = 'P-' + str(self.id)
+            ledger.code = 'P-' + str(self.code)
             ledger.save()
             self.ledger = ledger
         super(Item, self).save(*args, **kwargs)

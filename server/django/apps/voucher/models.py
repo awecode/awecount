@@ -20,6 +20,8 @@ STATUSES = (
 MODES = (
     ('Party', 'Party'),
     ('Cash', 'Cash'),
+    ('Cheque', 'Cheque'),
+    ('Credit', 'Credit'),
     ('eSewa', 'eSewa'),
     ('Khalti', 'Khalti'),
 )

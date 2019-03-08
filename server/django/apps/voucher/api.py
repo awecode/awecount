@@ -69,12 +69,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
 
     @action(detail=False)
     def options(self, request):
-        types = [dict(value=type[0], text=type[1]) for type in DISCOUNT_TYPES]
+        discount_type = {
+            "Percent": "%",
+            "Amount": "/-",
+        }
+        types = [dict(value=type[0], text=discount_type.get(type[1])) for type in DISCOUNT_TYPES]
         statues = [dict(value=status[0], text=status[1]) for status in STATUSES]
         modes = [dict(value=mode[0], text=mode[1]) for mode in MODES]
-        types.insert(0, {"value": None, "text": '--------'})
-        statues.insert(0, {"value": None, "text": '--------'})
-        modes.insert(0, {"value": None, "text": '--------'})
+        types.insert(0, {"value": None, "text": '---'})
+        statues.insert(0, {"value": None, "text": '---'})
+        modes.insert(0, {"value": None, "text": '---'})
         return Response({
             'discount_types': types,
             'statues': statues,
