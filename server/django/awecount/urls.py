@@ -4,7 +4,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 from django.conf.urls.static import static
-    
+
 from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
@@ -14,6 +14,7 @@ from apps.voucher import api as voucher
 router = DefaultRouter()
 
 router.register('parties', ledger.PartyViewSet, base_name='parties')
+router.register('accounts', ledger.AccountViewSet)
 router.register('items', item.ItemViewSet, base_name='item')
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
 router.register('sale-voucher', voucher.SalesVoucherViewSet)
