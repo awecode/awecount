@@ -88,8 +88,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
         design = invoice_template.design
         file = design.file
         gi = GenerateInvoice(file.name, invoice_template.canvas)
-        import ipdb
-        ipdb.set_trace()
         return Response({'pdf': 'data'})
 
 
