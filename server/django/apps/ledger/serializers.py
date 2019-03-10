@@ -1,10 +1,42 @@
+from django.db import IntegrityError
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
-from .models import Party, Account, JournalEntry
+from .models import Party, Account, JournalEntry, PartyRepresentative
+
+
+class PartyRepresentativeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PartyRepresentative
+        exclude = ('party',)
 
 
 class PartySerializer(serializers.ModelSerializer):
     company_id = serializers.IntegerField()
+    representative = PartyRepresentativeSerializer(many=True)
+
+    def create(self, validated_data):
+        representatives = validated_data.pop('representative', None)
+        instance = super(PartySerializer, self).create(validated_data)
+        for representative in representatives:
+            representative['party_id'] = instance.id
+            PartyRepresentative.objects.create(**representative)
+        return instance
+
+    def update(self, instance, validated_data):
+        representatives = validated_data.pop('representative', None)
+        Party.objects.filter(pk=instance.id).update(**validated_data)
+        for index, representative in enumerate(representatives):
+            representative['party_id'] = instance.id
+            try:
+                PartyRepresentative.objects.update_or_create(
+                    pk=representative.get('id'),
+                    defaults=representative
+                )
+            except IntegrityError:
+                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
+        instance.refresh_from_db()
+        return instance
 
     class Meta:
         model = Party

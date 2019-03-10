@@ -157,8 +157,10 @@ class Party(models.Model):
     email = models.EmailField(blank=True, null=True)
     tax_registration_number = models.IntegerField(blank=True, null=True)
     account = models.OneToOneField(Account, related_name='party', blank=True, null=True, on_delete=models.SET_NULL)
-    supplier_account = models.OneToOneField(Account, null=True, related_name='supplier_detail', on_delete=models.SET_NULL)
-    customer_account = models.OneToOneField(Account, null=True, related_name='customer_detail', on_delete=models.SET_NULL)
+    supplier_account = models.OneToOneField(Account, null=True, related_name='supplier_detail',
+                                            on_delete=models.SET_NULL)
+    customer_account = models.OneToOneField(Account, null=True, related_name='customer_detail',
+                                            on_delete=models.SET_NULL)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='parties')
 
@@ -174,6 +176,13 @@ class Party(models.Model):
             account.save()
             self.account = account
         super(Party, self).save(*args, **kwargs)
+
+
+class PartyRepresentative(models.Model):
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    position = models.CharField(max_length=100, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='representative')
 
 
 class Node(object):
