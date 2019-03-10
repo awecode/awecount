@@ -179,6 +179,7 @@ class Party(models.Model):
 
 
 class PartyRepresentative(models.Model):
+    name = models.CharField(max_length=250, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     position = models.CharField(max_length=100, blank=True, null=True)

@@ -6,6 +6,8 @@ from .models import Party, Account, JournalEntry, PartyRepresentative
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
     class Meta:
         model = PartyRepresentative
         exclude = ('party',)
@@ -34,7 +36,7 @@ class PartySerializer(serializers.ModelSerializer):
                     defaults=representative
                 )
             except IntegrityError:
-                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
+                raise APIException({'errors': ['Party representative already created.']})
         instance.refresh_from_db()
         return instance
 
