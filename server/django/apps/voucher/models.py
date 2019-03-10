@@ -106,6 +106,7 @@ class SalesVoucher(models.Model):
 class SalesVoucherRow(models.Model):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     rate = models.FloatField()
     discount = models.FloatField(default=0)
