@@ -79,6 +79,10 @@ MODULES = (
     ('SaleVoucherCreate', 'SaleVoucherCreate'),
     ('SaleVoucherModify', 'SaleVoucherModify'),
     ('SaleVoucherDelete', 'SaleVoucherDelete'),
+    ('CreditVoucherView', 'CreditVoucherView'),
+    ('CreditVoucherCreate', 'CreditVoucherCreate'),
+    ('CreditVoucherModify', 'CreditVoucherModify'),
+    ('CreditVoucherDelete', 'CreditVoucherDelete'),
 )
 
 
