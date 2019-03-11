@@ -75,6 +75,10 @@ MODULES = (
     ('TaxSchemeCreate', 'TaxSchemeCreate'),
     ('TaxSchemeModify', 'TaxSchemeModify'),
     ('TaxSchemeDelete', 'TaxSchemeDelete'),
+    ('SaleVoucherView', 'SaleVoucherView'),
+    ('SaleVoucherCreate', 'SaleVoucherCreate'),
+    ('SaleVoucherModify', 'SaleVoucherModify'),
+    ('SaleVoucherDelete', 'SaleVoucherDelete'),
 )
 
 
