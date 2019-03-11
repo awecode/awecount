@@ -71,6 +71,10 @@ MODULES = (
     ('LedgerCreate', 'LedgerCreate'),
     ('LedgerModify', 'LedgerModify'),
     ('LedgerDelete', 'LedgerDelete'),
+    ('TaxSchemeView', 'TaxSchemeView'),
+    ('TaxSchemeCreate', 'TaxSchemeCreate'),
+    ('vModify', 'TaxSchemeModify'),
+    ('TaxSchemeDelete', 'TaxSchemeDelete'),
 )
 
 
