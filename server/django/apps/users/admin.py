@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserCha
     UserCreationForm as DjangoUserCreationForm
 
 from apps.ledger.models import handle_company_creation
-from .models import User, Company
+from .models import User, Company, Role
 from django import forms
 
 admin.site.unregister(Group)
@@ -70,6 +70,7 @@ class CustomUserAdmin(UserAdmin):
                               'date_joined',
                               'last_login',
                               'company',
+                              'role',
                               'is_superuser',)}),
                  )
     add_fieldsets = ((None,
@@ -85,6 +86,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Role)
 
 
 class CompanyAdmin(admin.ModelAdmin):

@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from apps.users.signals import company_creation
+from separatedvaluesfield.models import SeparatedValuesField
 
 ORGANIZATION_TYPES = (
     ('sole_proprietorship', 'Sole Proprietorship'), ('partnership', 'Partnership'), ('corporation', 'Corporation'),
@@ -56,12 +57,29 @@ class UserManager(BaseUserManager):
         )
 
 
+MODULES = (
+    ('Dashboard', 'Dashboard'),
+    ('ItemView', 'ItemView'),
+    ('ItemCreate', 'ItemCreate'),
+    ('ItemModify', 'ItemModify'),
+    ('ItemDelete', 'ItemDelete'),
+)
+
+
+class Role(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    modules = SeparatedValuesField(choices=MODULES, max_length=1000, blank=True, null=True, token=',')
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractBaseUser):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='users')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
 
     USERNAME_FIELD = 'email'
