@@ -63,6 +63,10 @@ MODULES = (
     ('ItemCreate', 'ItemCreate'),
     ('ItemModify', 'ItemModify'),
     ('ItemDelete', 'ItemDelete'),
+    ('PartyView', 'PartyView'),
+    ('PartyCreate', 'PartyCreate'),
+    ('PartyModify', 'PartyModify'),
+    ('PartyDelete', 'PartyDelete'),
 )
 
 
