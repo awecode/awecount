@@ -87,6 +87,7 @@ MODULES = (
     ('ChequeVoucherCreate', 'ChequeVoucherCreate'),
     ('ChequeVoucherModify', 'ChequeVoucherModify'),
     ('ChequeVoucherDelete', 'ChequeVoucherDelete'),
+    ('InvoiceDesign', 'InvoiceDesign'),
 )
 
 
