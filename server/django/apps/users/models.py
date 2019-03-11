@@ -67,6 +67,10 @@ MODULES = (
     ('PartyCreate', 'PartyCreate'),
     ('PartyModify', 'PartyModify'),
     ('PartyDelete', 'PartyDelete'),
+    ('LedgerView', 'LedgerView'),
+    ('LedgerCreate', 'LedgerCreate'),
+    ('LedgerModify', 'LedgerModify'),
+    ('LedgerDelete', 'LedgerDelete'),
 )
 
 
