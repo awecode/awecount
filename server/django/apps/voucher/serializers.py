@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from rest_framework import serializers
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
     InvoiceDesign
@@ -20,6 +20,13 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
 class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     company_id = serializers.IntegerField()
+
+    def validate(self, data):
+        if not data.get('party') and not data.get('customer_name'):
+            raise ValidationError(
+                {'party': ['Either party or customer name is required']},
+            )
+        return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
