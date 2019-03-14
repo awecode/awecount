@@ -78,7 +78,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
         modes = [dict(value=mode[0], text=mode[1]) for mode in MODES]
         types.insert(0, {"value": None, "text": '---'})
         statues.insert(0, {"value": None, "text": '---'})
-        modes.insert(0, {"value": None, "text": '---'})
+        # modes.insert(0, {"value": None, "text": '---'})
         return Response({
             'discount_types': types,
             'statues': statues,
