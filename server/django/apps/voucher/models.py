@@ -16,20 +16,25 @@ STATUSES = (
     ('Cancelled', 'Cancelled'),
     ('Paid', 'Paid'),
 )
-
 MODES = (
-    ('Party', 'Party'),
+    ('Credit', 'Credit'),
     ('Cash', 'Cash'),
     ('Cheque', 'Cheque'),
-    ('Credit', 'Credit'),
-    ('eSewa', 'eSewa'),
-    ('Khalti', 'Khalti'),
+    ('ePayment', 'ePayment'),
+    ('Bank Deposit', 'Bank Deposit'),
 )
 
 DISCOUNT_TYPES = (
     ('Amount', 'Amount'),
     ('Percent', 'Percent'),
 )
+
+
+class BankAccount(models.Model):
+    account_name = models.CharField(max_length=150, blank=True, null=True)
+    account_number = models.CharField(max_length=150)
+    bank_name = models.CharField(max_length=250, blank=True, null=True)
+    branch_name = models.CharField(max_length=250, blank=True, null=True)
 
 
 class SalesVoucher(models.Model):
@@ -47,7 +52,8 @@ class SalesVoucher(models.Model):
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-
+    epayment = models.CharField(max_length=50, blank=True, null=True)
+    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
