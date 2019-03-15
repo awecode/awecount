@@ -24,6 +24,7 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
 class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     company_id = serializers.IntegerField()
+    bank_account_id = serializers.IntegerField()
 
     def validate(self, data):
         if not data.get('party') and not data.get('customer_name'):
@@ -60,7 +61,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company', 'user',)
+        exclude = ('company', 'user', 'bank_account',)
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
@@ -183,7 +184,8 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 
 class BankAccountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='account_number')
+    company_id = serializers.IntegerField()
 
     class Meta:
         model = BankAccount
-        fields = '__all__'
+        exclude = ('company',)
