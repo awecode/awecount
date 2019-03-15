@@ -11,6 +11,10 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
     item_id = serializers.IntegerField(source='item.id', required=True)
     tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
     voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+    show_description = serializers.SerializerMethodField()
+
+    def get_show_description(self, obj):
+        return bool(obj.description)
 
     class Meta:
         model = SalesVoucherRow
