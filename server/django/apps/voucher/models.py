@@ -35,6 +35,11 @@ class BankAccount(models.Model):
     account_number = models.CharField(max_length=150)
     bank_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
+
+
+    def __str__(self):
+        return self.account_name + ': ' + self.company.name
 
 
 class SalesVoucher(models.Model):

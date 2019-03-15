@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
-    InvoiceDesign
+    InvoiceDesign, BankAccount
 
 
 class SalesVoucherRowSerializer(serializers.ModelSerializer):
@@ -179,3 +179,11 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceDesign
         exclude = ('company',)
+
+
+class BankAccountSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='account_number')
+
+    class Meta:
+        model = BankAccount
+        fields = '__all__'

@@ -22,6 +22,7 @@ router.register('credit-voucher', voucher.CreditVoucherViewSet)
 router.register('cheque-voucher', voucher.ChequeVoucherViewSet, base_name='chequevoucher')
 router.register('bank-branch', voucher.BankBranchViewSet, base_name='bankbranch')
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
+router.register('bank-accounts', voucher.BankAccountViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
