@@ -24,13 +24,17 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
 class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     company_id = serializers.IntegerField()
-    bank_account_id = serializers.IntegerField()
+    bank_account_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate(self, data):
         if not data.get('party') and not data.get('customer_name'):
             raise ValidationError(
                 {'party': ['Either party or customer name is required']},
             )
+        if not data.get('mode') == 'ePayment':
+            data['epayment'] = ''
+        if not data.get('mode') == 'Bank Deposit':
+            data['bank_account_id'] = None
         return data
 
     def create(self, validated_data):
