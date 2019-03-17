@@ -56,7 +56,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
     row = SalesVoucherRow
 
     def get_queryset(self):
-        return SalesVoucher.objects.all()
+        return SalesVoucher.objects.all().order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
