@@ -12,7 +12,7 @@ class PartyViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = PartySerializer
 
 
-class AccountViewSet(InputChoiceMixin, viewsets.ModelViewSet):
+class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
 

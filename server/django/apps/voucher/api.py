@@ -50,13 +50,15 @@ class GenerateInvoice:
         plt.show()
 
 
-class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
+class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
     queryset = SalesVoucher.objects.all()
+    serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     row = SalesVoucherRow
 
     def get_queryset(self):
-        return SalesVoucher.objects.all().order_by('-pk')
+        queryset = super(SalesVoucherViewSet, self).get_queryset()
+        return queryset.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
@@ -96,13 +98,15 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, viewsets.ModelViewSet):
         return Response({'pdf': 'data'})
 
 
-class CreditVoucherViewSet(DeleteRows, viewsets.ModelViewSet):
+class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     queryset = CreditVoucher.objects.all()
+    serializer_class = CreditVoucherCreateSerializer
     model = CreditVoucher
     row = CreditVoucherRow
 
     def get_queryset(self):
-        return CreditVoucher.objects.all()
+        queryset = super(CreditVoucherViewSet, self).get_queryset()
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -119,12 +123,12 @@ class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = ChequeVoucherSerializer
 
 
-class BankBranchViewSet(InputChoiceMixin, viewsets.ModelViewSet):
+class BankBranchViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = BankBranch.objects.all()
     serializer_class = BankBranchSerializer
 
 
-class InvoiceDesignViewSet(viewsets.ModelViewSet):
+class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
     queryset = InvoiceDesign.objects.all()
     serializer_class = InvoiceDesignSerializer
 
@@ -152,6 +156,6 @@ class InvoiceDesignViewSet(viewsets.ModelViewSet):
         return Response(data)
 
 
-class BankAccountViewSet(InputChoiceMixin, viewsets.ModelViewSet):
+class BankAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = BankAccount.objects.all()
     serializer_class = BankAccountSerializer

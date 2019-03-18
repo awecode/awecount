@@ -67,10 +67,10 @@ MODULES = (
     ('PartyCreate', 'PartyCreate'),
     ('PartyModify', 'PartyModify'),
     ('PartyDelete', 'PartyDelete'),
-    ('LedgerView', 'LedgerView'),
-    ('LedgerCreate', 'LedgerCreate'),
-    ('LedgerModify', 'LedgerModify'),
-    ('LedgerDelete', 'LedgerDelete'),
+    ('AccountView', 'AccountView'),
+    ('AccountCreate', 'AccountCreate'),
+    ('AccountModify', 'AccountModify'),
+    ('AccountDelete', 'AccountDelete'),
     ('TaxSchemeView', 'TaxSchemeView'),
     ('TaxSchemeCreate', 'TaxSchemeCreate'),
     ('TaxSchemeModify', 'TaxSchemeModify'),
@@ -91,7 +91,9 @@ MODULES = (
     ('BankAccountCreate', 'BankAccountCreate'),
     ('BankAccountModify', 'BankAccountModify'),
     ('BankAccountDelete', 'BankAccountDelete'),
-    ('InvoiceDesign', 'InvoiceDesign'),
+    ('InvoiceDesignView', 'InvoiceDesignView'),
+    ('InvoiceDesignCreate', 'InvoiceDesignCreate'),
+    ('InvoiceDesignModify', 'InvoiceDesignModify'),
 )
 
 
