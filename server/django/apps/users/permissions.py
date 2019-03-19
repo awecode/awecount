@@ -7,6 +7,8 @@ class ModuleAccessPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         _model_name = view.get_queryset().model.__name__
+        if not request.user.role:
+            raise APIException({'non_field_errors': ['Please set role for user.']})
         modules = request.user.role.modules
 
         list_permission = f'{_model_name}View'

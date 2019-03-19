@@ -1,7 +1,9 @@
 import json
 import cv2
 import re
+from django.http import HttpResponse
 from matplotlib import pyplot as plt
+from reportlab.pdfgen import canvas
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,6 +22,7 @@ class GenerateInvoice:
     def __init__(self, image_path, canvas):
         self.image = cv2.imread(image_path)
         self.canvas = json.loads(canvas)
+        self.padding = 0
         self.attributes = {}
         self.parse_attributes()
 
@@ -94,8 +97,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         invoice_template = company.invoice
         design = invoice_template.design
         file = design.file
-        gi = GenerateInvoice(file.name, invoice_template.canvas)
-        return Response({'pdf': 'data'})
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment;filename="somefilename.pdf"'
+        p = canvas.Canvas(response)
+        p.drawString(0, 0, "Hello world.")
+        p.showPage()
+        p.save()
+        return response
+
 
 
 class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
