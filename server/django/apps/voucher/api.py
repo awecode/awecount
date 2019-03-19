@@ -2,6 +2,7 @@ import json
 import cv2
 import re
 from django.http import HttpResponse
+from fpdf import FPDF
 from matplotlib import pyplot as plt
 from reportlab.pdfgen import canvas
 from rest_framework import viewsets
@@ -19,38 +20,26 @@ from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 
 
 class GenerateInvoice:
-    def __init__(self, image_path, canvas):
-        self.image = cv2.imread(image_path)
-        self.canvas = json.loads(canvas)
-        self.padding = 0
-        self.attributes = {}
-        self.parse_attributes()
+    def __init__(self, startY, default_font_size):
+        self.pdf = FPDF('P', 'mm', 'A4')
+        self.pdf.add_page()
+        self.currentY = startY
+        self.default_font_size = default_font_size
+        self.pdf.set_font('Arial', '', default_font_size)
 
-    def to_snake_case(self, string):
-        text = re.sub(r'[\s-]', '_', str(string))
-        return text.lower()
+    def move_with(self, value):
+        self.currentY += value
 
-    def parse_attributes(self):
-        for data in self.objects():
-            key = self.to_snake_case(data.get('text'))
-            self.attributes[key] = dict(
-                x=data.get('left'),
-                y=data.get('top'),
-                width=data.get('width'),
-                height=data.get('height'),
-                scale=data.get('scale'),
-                font_size=data.get('fontSize'),
-            )
+    def text(self, text, width=200, font_size=12, font_type='', align='L'):
+        self.pdf.set_font('Arial', font_type, font_size)
+        self.pdf.cell(width, self.currentY, text, 0, 0, align)
 
-    def objects(self):
-        return self.canvas.get('objects')
+    def draw_line(self):
+        self.pdf.line(18, 38, 193, 38)
 
-    def __len__(self):
-        return len(self.objects())
+    def output(self):
+        return self.pdf.output(dest='S').encode('latin-1')
 
-    def show(self):
-        plt.imshow(self.image, cmap='grey')
-        plt.show()
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -93,18 +82,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
 
     @action(detail=False)
     def pdf(self, request):
-        company = request.company
-        invoice_template = company.invoice
-        design = invoice_template.design
-        file = design.file
-        response = HttpResponse(content_type='application/pdf')
+        pdf = GenerateInvoice(startY=50, default_font_size=12)
+        pdf.text('TAX INVOICE', font_type='B', align='C')
+        pdf.draw_line()
+        output = pdf.output()
+        response = HttpResponse(output, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment;filename="somefilename.pdf"'
-        p = canvas.Canvas(response)
-        p.drawString(0, 0, "Hello world.")
-        p.showPage()
-        p.save()
         return response
-
 
 
 class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
