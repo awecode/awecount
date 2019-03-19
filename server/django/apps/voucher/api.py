@@ -24,22 +24,23 @@ class GenerateInvoice:
         self.pdf = FPDF('P', 'mm', 'A4')
         self.pdf.add_page()
         self.currentY = startY
+        self.pdf.set_y(startY)
         self.default_font_size = default_font_size
         self.pdf.set_font('Arial', '', default_font_size)
 
     def move_with(self, value):
         self.currentY += value
+        self.pdf.set_y(self.currentY)
 
-    def text(self, text, width=200, font_size=12, font_type='', align='L'):
+    def text(self, text, width=200, height=50, font_size=12, font_type='', align='L'):
         self.pdf.set_font('Arial', font_type, font_size)
-        self.pdf.cell(width, self.currentY, text, 0, 0, align)
+        self.pdf.cell(width, height, text, 0, 0, align)
 
     def draw_line(self):
-        self.pdf.line(18, 38, 193, 38)
+        self.pdf.line(10, 45, 200, 45)
 
     def output(self):
         return self.pdf.output(dest='S').encode('latin-1')
-
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -82,9 +83,22 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
 
     @action(detail=False)
     def pdf(self, request):
-        pdf = GenerateInvoice(startY=50, default_font_size=12)
-        pdf.text('TAX INVOICE', font_type='B', align='C')
+        pdf = GenerateInvoice(startY=40, default_font_size=12)
+        horizontal_width = 180
+        pdf.text('TAX INVOICE', horizontal_width, 5, font_type='B', align='C')
         pdf.draw_line()
+        pdf.move_with(10)
+        text_padding = 35
+        value_width = 30
+        pdf.text('Date', text_padding, 5, align='L')
+        pdf.text(': 2014-25-12', value_width, 5, align='L')
+        pdf.text('VAT: 303958661', horizontal_width - text_padding - value_width, 5, font_type='B', align='R')
+        pdf.move_with(6)
+        pdf.text('Miti', text_padding, 5, align='L')
+        pdf.text(': 2075-25-12', value_width, 5, align='L')
+        pdf.move_with(7)
+        pdf.text('Invoice No.', text_padding, 5, align='L')
+        pdf.text(': 1', value_width, 5, align='L')
         output = pdf.output()
         response = HttpResponse(output, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment;filename="somefilename.pdf"'
