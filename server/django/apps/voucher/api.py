@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.nepdate import ad2bs, string_from_tuple
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
     ChequeVoucher, BankBranch, InvoiceDesign, BankAccount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
@@ -23,6 +24,7 @@ class GenerateInvoice:
     def __init__(self, startY, default_font_size):
         self.pdf = FPDF('P', 'mm', 'A4')
         self.pdf.add_page()
+        self.pdf.set_margins(20, 10, 20)
         self.currentY = startY
         self.pdf.set_y(startY)
         self.default_font_size = default_font_size
@@ -32,12 +34,15 @@ class GenerateInvoice:
         self.currentY += value
         self.pdf.set_y(self.currentY)
 
+    def tab(self, padding):
+        self.pdf.cell(padding)
+
     def text(self, text, width=200, height=50, font_size=12, font_type='', align='L'):
         self.pdf.set_font('Arial', font_type, font_size)
         self.pdf.cell(width, height, text, 0, 0, align)
 
     def draw_line(self):
-        self.pdf.line(10, 45, 200, 45)
+        self.pdf.line(20, 45, 190, 45)
 
     def output(self):
         return self.pdf.output(dest='S').encode('latin-1')
@@ -81,24 +86,43 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             'modes': modes
         })
 
-    @action(detail=False)
-    def pdf(self, request):
+    @action(detail=True)
+    def pdf(self, request, pk):
+        sale_voucher = self.get_object()
+        company = request.company
         pdf = GenerateInvoice(startY=40, default_font_size=12)
-        horizontal_width = 180
-        pdf.text('TAX INVOICE', horizontal_width, 5, font_type='B', align='C')
+        horizontal_width = 170
+        pdf.text('TAX INVOICE', horizontal_width, 5, font_type='B', align='C', font_size=16)
         pdf.draw_line()
         pdf.move_with(10)
-        text_padding = 35
+        text_padding = 25
         value_width = 30
+        date = sale_voucher.transaction_date.strftime('%m-%b-%Y')
         pdf.text('Date', text_padding, 5, align='L')
-        pdf.text(': 2014-25-12', value_width, 5, align='L')
-        pdf.text('VAT: 303958661', horizontal_width - text_padding - value_width, 5, font_type='B', align='R')
-        pdf.move_with(6)
+        pdf.text(': %s' % date, value_width, 5, align='L')
+        pdf.text('VAT Reg No.: %s' % company.tax_registration_number, horizontal_width - text_padding - value_width, 5,
+                 font_type='B', align='R')
+        pdf.move_with(5)
+        bs_date = string_from_tuple(ad2bs(sale_voucher.transaction_date.strftime('%Y-%m-%d')))
         pdf.text('Miti', text_padding, 5, align='L')
-        pdf.text(': 2075-25-12', value_width, 5, align='L')
-        pdf.move_with(7)
+        pdf.text(': %s' % bs_date, value_width, 5, align='L')
+        pdf.move_with(6)
         pdf.text('Invoice No.', text_padding, 5, align='L')
-        pdf.text(': 1', value_width, 5, align='L')
+        pdf.text(': %s' % sale_voucher.voucher_no, value_width, 5, align='L')
+        pdf.move_with(7)
+        pdf.text('To,', text_padding, 5, align='L')
+        pdf.move_with(7)
+        pdf.tab(3)
+        pdf.text(sale_voucher.get_billed_to(), horizontal_width, 5, align='L')
+        pdf.move_with(6)
+        pdf.tab(3)
+        pdf.text(sale_voucher.address or '', horizontal_width, 5, align='L')
+        pdf.move_with(6)
+        pdf.tab(3)
+        if sale_voucher.party and sale_voucher.party.tax_registration_number:
+            pdf.text('VAT Reg No.: %s' % sale_voucher.party.tax_registration_number, horizontal_width - 70, 5, align='L')
+            pdf.text('Mode of Payment: : %s' % sale_voucher.mode, 70, 5, align='L')
+
         output = pdf.output()
         response = HttpResponse(output, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment;filename="somefilename.pdf"'

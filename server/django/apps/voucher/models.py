@@ -66,6 +66,9 @@ class SalesVoucher(models.Model):
     def __str__(self):
         return str(self.voucher_no)
 
+    def get_billed_to(self):
+        return self.party.name if self.party else self.customer_name
+
     @property
     def discount_amount(self):
         discount = 0
