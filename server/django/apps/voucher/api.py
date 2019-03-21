@@ -2,7 +2,8 @@ import json
 import cv2
 import re
 from django.http import HttpResponse
-from fpdf import FPDF
+from django.template.loader import render_to_string
+from fpdf import FPDF, HTMLMixin
 from matplotlib import pyplot as plt
 from reportlab.pdfgen import canvas
 from rest_framework import viewsets
@@ -120,8 +121,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         pdf.move_with(6)
         pdf.tab(3)
         if sale_voucher.party and sale_voucher.party.tax_registration_number:
-            pdf.text('VAT Reg No.: %s' % sale_voucher.party.tax_registration_number, horizontal_width - 70, 5, align='L')
-            pdf.text('Mode of Payment: : %s' % sale_voucher.mode, 70, 5, align='L')
+            pdf.text('VAT Reg No.: %s' % sale_voucher.party.tax_registration_number, horizontal_width - 70, 5,
+                     align='L')
+        pdf.text('Mode of Payment: : %s' % sale_voucher.mode, 70, 5, align='L')
 
         output = pdf.output()
         response = HttpResponse(output, content_type='application/pdf')
