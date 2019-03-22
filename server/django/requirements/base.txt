@@ -9,3 +9,4 @@ django-mptt
 num2words
 django-separatedvaluesfield
 django-xhtml2pdf
+djangorestframework-jwt
