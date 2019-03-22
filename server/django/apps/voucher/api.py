@@ -1,25 +1,18 @@
-import json
-import cv2
-import re
 from django.http import HttpResponse
-from django.template.loader import render_to_string, get_template
-from fpdf import FPDF, HTMLMixin
-from matplotlib import pyplot as plt
-from reportlab.pdfgen import canvas
-from rest_framework import viewsets
+from django.template.loader import get_template
+from fpdf import FPDF
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
+from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
-from awecount.utils.nepdate import ad2bs, string_from_tuple
+from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    ChequeVoucher, BankBranch, InvoiceDesign, BankAccount
+    BankBranch, InvoiceDesign, BankAccount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
     BankAccountSerializer
-from awecount.utils import get_next_voucher_no, link_callback
-from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 
 
 class GenerateInvoice:
