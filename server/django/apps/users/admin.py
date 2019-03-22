@@ -9,6 +9,10 @@ from django import forms
 
 admin.site.unregister(Group)
 
+admin.site.site_header = "Awecount"
+admin.site.site_title = "Awecount Admin Portal"
+admin.site.index_title = "Welcome to Awecount"
+
 
 def handle_account_creation(modeladmin, request, queryset):
     for company in queryset:
