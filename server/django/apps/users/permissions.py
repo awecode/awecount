@@ -11,9 +11,9 @@ class ModuleAccessPermission(permissions.BasePermission):
             raise APIException({'non_field_errors': ['Please set role for user.']})
         modules = request.user.role.modules
 
-        list_permission = f'{_model_name}View'
-        create_permission = f'{_model_name}Create'
-        modify_permission = f'{_model_name}Modify'
+        list_permission = '{}View'.format(_model_name)
+        create_permission = '{}Create'.format(_model_name)
+        modify_permission = '{}Modify'.format(_model_name)
 
         if request.method == 'GET' and list_permission not in modules:
             raise APIException({'non_field_errors': [self.message]})
