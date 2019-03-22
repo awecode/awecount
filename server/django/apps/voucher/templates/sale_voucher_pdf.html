@@ -1,0 +1,189 @@
+{% load commafies from filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sale Voucher</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <style>
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        @page {
+            margin: 30mm 20mm 20mm 20mm;
+        }
+
+        h1 {
+            margin-bottom: 0;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 0;
+            /*border-bottom: 1px solid #000000;*/
+        }
+
+        .f-bold {
+            font-weight: bold;
+        }
+
+        hr {
+            margin-top: -14px;
+        }
+
+
+        #info, #company {
+            width: 100%;
+        }
+
+        #company {
+            margin: 0 0 10px 18px;
+        }
+
+        .alignleft,
+        .alignright {
+            display: inline-block;
+        }
+
+        .report {
+            border: 1px solid #000000;
+            vertical-align: top;
+            font-size: 14px;
+        }
+
+        .report th {
+            padding: 4px;
+        }
+
+        .report td {
+            padding: 3px;
+            margin-bottom: 0;
+        }
+
+        .report td {
+            width: 150px !important;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="text-center">TAX INVOICE</h1>
+<hr class="hr">
+
+<table id="info">
+    <tr>
+        <td style="width: 120px">
+            <p class="alignleft">Date</p>
+        </td>
+        <td>: {{ object.date }}</td>
+        <td align="right">
+            <p class="alignright f-bold">VAT Reg No.: {{ request.company.tax_registration_number }}</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p class="alignleft">Miti</p>
+        </td>
+        <td>: {{ object.bs_date }}</td>
+    </tr>
+    <tr>
+        <td>
+            <p class="alignleft">Invoice No.</p>
+        </td>
+        <td>: {{ object.voucher_no }}</td>
+    </tr>
+</table>
+
+<p style="margin: 5px 0 0 0">To,</p>
+
+<table id="company">
+    <tr>
+        <td colspan="2">
+            <p class="alignleft">{{ object.get_billed_to }}</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="alignleft">{{ object.address }}</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            {% if object.party and object.party.tax_registration_number %}
+                <p class="alignleft">VAT Reg No.: {{ object.party.tax_registration_number }}</p>
+            {% endif %}
+        </td>
+        <td align="right">
+            <p class="alignright">Mode of Payment: {{ object.mode }}</p>
+        </td>
+    </tr>
+</table>
+
+<table class="report">
+    <thead>
+    <tr>
+        <th>SN</th>
+        <th style="width: 55%">Particulars</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in object.rows.all %}
+        <tr>
+            <td style="text-align: right; vertical-align: top; width: 70px"> {{ forloop.counter }}</td>
+            <td style="width: 140%; vertical-align: top  ">
+                {{ row.item.name }}
+                {% if row.description %}
+                    <br>
+                    <span style="font-size: 12px; font-style: italic">
+                {{ row.description }}
+            </span>
+                {% endif %}
+            </td>
+            <td style="text-align: right; vertical-align: top">{{ row.quantity }}</td>
+            <td style="text-align: right; vertical-align: top">{{ row.rate | commafies }}</td>
+            <td style="text-align: right; vertical-align: top">{{ row.total | commafies }}</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan=4 class="text-right">Sub Total</td>
+        <td class="text-right">{{ object.get_sub_total| commafies }}</td>
+    </tr>
+    <tr>
+        {% with name=object.get_vat.0 vat=object.get_vat.1 %}
+            <td colspan=4 class="text-right">{{ name }}</td>
+            <td class="text-right">{{ vat | commafies }}</td>
+        {% endwith %}
+    </tr>
+    {% if object.discount_amount %}
+        <tr>
+            <td colspan=4 class="text-right">Discount</td>
+            <td class="text-right">{{ object.discount_amount | commafies }}</td>
+        </tr>
+    {% endif %}
+    <tr>
+        <td colspan=4 class="text-right">Total</td>
+        <td class="text-right">{{ object.total_amount | commafies }}</td>
+    </tr>
+    <tr>
+        <td colspan="5">
+            <span class="f-bold">In words</span> {{ object.amount_in_words | capfirst }}
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+{% if object.remarks %}
+    <p class="f-bold">Remarks: {{ object.remarks }}</p>
+{% endif %}
+</body>
+</html>

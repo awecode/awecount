@@ -26,6 +26,7 @@ router.register('bank-account', voucher.BankAccountViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),
+    path('', include('apps.voucher.urls')),
     path('v1/', include(router.urls)),
     path('v1/auth/', include('djoser.urls.base')),
     path('v1/auth/', include('djoser.urls.jwt')),

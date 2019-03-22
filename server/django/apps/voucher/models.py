@@ -8,7 +8,8 @@ from apps.ledger.models import Party, Account, set_transactions as set_ledger_tr
 from apps.product.models import Item
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
-from awecount.utils import get_next_voucher_no
+from awecount.utils import get_next_voucher_no, wGenerator
+from awecount.utils.nepdate import ad2bs, string_from_tuple
 
 STATUSES = (
     ('Draft', 'Draft'),
@@ -36,7 +37,6 @@ class BankAccount(models.Model):
     bank_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
-
 
     def __str__(self):
         return self.account_name + ': ' + self.company.name
@@ -68,6 +68,37 @@ class SalesVoucher(models.Model):
 
     def get_billed_to(self):
         return self.party.name if self.party else self.customer_name
+
+    @property
+    def date(self):
+        return self.transaction_date.strftime('%m-%b-%Y')
+
+    @property
+    def amount_in_words(self):
+        return wGenerator.convertNumberToWords(self.total_amount)
+
+    @property
+    def bs_date(self):
+        return string_from_tuple(ad2bs(self.transaction_date.strftime('%Y-%m-%d')))
+
+    def get_vat(self):
+        tax_scheme = []
+        vat = 0
+        for row in self.rows.all():
+            if row.tax_scheme:
+                tax_object = row.tax_scheme
+                tax_scheme.append(tax_object.name)
+                vat = vat + (tax_object.rate / 100) * row.total
+        tax_text = 'TAX'
+        if tax_scheme and len(set(tax_scheme)) == 1:
+            tax_text = tax_scheme[0]
+        return tax_text, vat
+
+    def get_sub_total(self):
+        total = 0
+        for row in self.rows.all():
+            total += row.total
+        return total
 
     @property
     def discount_amount(self):
@@ -243,7 +274,7 @@ class ChequeVoucher(models.Model):
 
     @property
     def amount_in_words(self):
-        return num2words(self.amount, lang='en_IN')
+        return wGenerator.convertNumberToWords(self.amount)
 
 
 class InvoiceDesign(models.Model):

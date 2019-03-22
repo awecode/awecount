@@ -2,13 +2,14 @@ import json
 import cv2
 import re
 from django.http import HttpResponse
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string, get_template
 from fpdf import FPDF, HTMLMixin
 from matplotlib import pyplot as plt
 from reportlab.pdfgen import canvas
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from xhtml2pdf import pisa
 
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.nepdate import ad2bs, string_from_tuple
@@ -17,7 +18,7 @@ from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MOD
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
     BankAccountSerializer
-from awecount.utils import get_next_voucher_no
+from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 
 
@@ -37,6 +38,15 @@ class GenerateInvoice:
 
     def tab(self, padding):
         self.pdf.cell(padding)
+
+    def textWidth(self, text, height=50, font_size=12, font_type='', align='L'):
+        width = self.pdf.get_string_width(text)
+        width += 5
+        self.btext(text, width, height, font_size, font_type, align)
+
+    def btext(self, text, width=200, height=50, font_size=12, font_type='', align='L'):
+        self.pdf.set_font('Arial', font_type, font_size)
+        self.pdf.cell(width, height, text, 1, 0, align)
 
     def text(self, text, width=200, height=50, font_size=12, font_type='', align='L'):
         self.pdf.set_font('Arial', font_type, font_size)
@@ -90,44 +100,18 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     @action(detail=True)
     def pdf(self, request, pk):
         sale_voucher = self.get_object()
-        company = request.company
-        pdf = GenerateInvoice(startY=40, default_font_size=12)
-        horizontal_width = 170
-        pdf.text('TAX INVOICE', horizontal_width, 5, font_type='B', align='C', font_size=16)
-        pdf.draw_line()
-        pdf.move_with(10)
-        text_padding = 25
-        value_width = 30
-        date = sale_voucher.transaction_date.strftime('%m-%b-%Y')
-        pdf.text('Date', text_padding, 5, align='L')
-        pdf.text(': %s' % date, value_width, 5, align='L')
-        pdf.text('VAT Reg No.: %s' % company.tax_registration_number, horizontal_width - text_padding - value_width, 5,
-                 font_type='B', align='R')
-        pdf.move_with(5)
-        bs_date = string_from_tuple(ad2bs(sale_voucher.transaction_date.strftime('%Y-%m-%d')))
-        pdf.text('Miti', text_padding, 5, align='L')
-        pdf.text(': %s' % bs_date, value_width, 5, align='L')
-        pdf.move_with(6)
-        pdf.text('Invoice No.', text_padding, 5, align='L')
-        pdf.text(': %s' % sale_voucher.voucher_no, value_width, 5, align='L')
-        pdf.move_with(7)
-        pdf.text('To,', text_padding, 5, align='L')
-        pdf.move_with(7)
-        pdf.tab(3)
-        pdf.text(sale_voucher.get_billed_to(), horizontal_width, 5, align='L')
-        pdf.move_with(6)
-        pdf.tab(3)
-        pdf.text(sale_voucher.address or '', horizontal_width, 5, align='L')
-        pdf.move_with(6)
-        pdf.tab(3)
-        if sale_voucher.party and sale_voucher.party.tax_registration_number:
-            pdf.text('VAT Reg No.: %s' % sale_voucher.party.tax_registration_number, horizontal_width - 70, 5,
-                     align='L')
-        pdf.text('Mode of Payment: : %s' % sale_voucher.mode, 70, 5, align='L')
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
 
-        output = pdf.output()
-        response = HttpResponse(output, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment;filename="somefilename.pdf"'
+        template = get_template('sale_voucher_pdf.html')
+        html = template.render({'object': sale_voucher})
+
+        # create a pdf
+        pisaStatus = pisa.CreatePDF(
+            html, dest=response, link_callback=link_callback)
+        # if error then show some funy view
+        if pisaStatus.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
         return response
 
 
