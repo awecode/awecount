@@ -54,7 +54,8 @@
 
         .report {
             border: 1px solid #000000;
-            vertical-align: top;
+            line-height: 0;
+            -pdf-keep-in-frame-mode: shrink;
             font-size: 14px;
         }
 
@@ -64,6 +65,7 @@
 
         .report td {
             padding: 3px;
+            -pdf-keep-in-frame-mode: shrink;
             margin-bottom: 0;
         }
 
@@ -139,8 +141,8 @@
     <tbody>
     {% for row in object.rows.all %}
         <tr>
-            <td style="text-align: right; vertical-align: top; width: 70px"> {{ forloop.counter }}</td>
-            <td style="width: 140%; vertical-align: top  ">
+            <td style="text-align: right; vertical-align: top; width:10%"> {{ forloop.counter }}</td>
+            <td style="width: 70%; vertical-align: top; line-height: 5px;">
                 {{ row.item.name }}
                 {% if row.description %}
                     <br>
@@ -149,7 +151,7 @@
             </span>
                 {% endif %}
             </td>
-            <td style="text-align: right; vertical-align: top">{{ row.quantity }}</td>
+            <td style="text-align: right; vertical-align: top; width: 15%">{{ row.quantity }}000000</td>
             <td style="text-align: right; vertical-align: top">{{ row.rate | commafies }}</td>
             <td style="text-align: right; vertical-align: top">{{ row.total | commafies }}</td>
         </tr>
