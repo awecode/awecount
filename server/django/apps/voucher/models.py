@@ -118,6 +118,7 @@ class SalesVoucher(models.Model):
             discount_expense = None
 
         if voucher.mode == 'Credit':
+            # dr_acc = voucher.party.customer_account
             dr_acc = voucher.party.account
         else:
             cash_account = get_account(voucher.company, 'Cash')
@@ -125,15 +126,16 @@ class SalesVoucher(models.Model):
 
         for row in voucher.rows.all():
             pure_total = row.quantity * row.rate
+            # entries = [['cr', row.item.sale_ledger, pure_total]]
             entries = [['cr', row.item.ledger, pure_total]]
 
             if row.tax_scheme:
                 entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
 
-            if row.discount > 0 and discount_expense:
-                entries.append(['dr', discount_expense, row.discount_amount])
-            elif discount_expense:
-                entries.append(['dr', discount_expense, 0])
+            if row.discount > 0:
+                entries.append(['dr', row.item.discount_ledger, row.discount_amount])
+            # elif discount_expense:
+            #     entries.append(['dr', discount_expense, 0])
 
             entries.append(['dr', dr_acc, row.total])
 

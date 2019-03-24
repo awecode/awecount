@@ -67,6 +67,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
             row['tax_scheme_id'] = tax_scheme.get('id')
             SalesVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
+        SalesVoucher.apply_transactions(instance)
         return instance
 
     class Meta:
