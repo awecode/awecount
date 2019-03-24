@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
+from apps.ledger.models import set_transactions as set_ledger_transaction
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
     InvoiceDesign, BankAccount
@@ -52,6 +53,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
             SalesVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
+        SalesVoucher.apply_transactions(voucher)
         return voucher
 
     def update(self, instance, validated_data):

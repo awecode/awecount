@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from num2words import num2words
 
-from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account
 from apps.product.models import Item
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
@@ -88,7 +88,7 @@ class SalesVoucher(models.Model):
             if row.tax_scheme:
                 tax_object = row.tax_scheme
                 tax_scheme.append(tax_object.name)
-                vat = vat + (tax_object.rate / 100) * row.total
+                vat = vat + row.tax_amount
         tax_text = 'TAX'
         if tax_scheme and len(set(tax_scheme)) == 1:
             tax_text = tax_scheme[0]
@@ -111,38 +111,31 @@ class SalesVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
-        entries = []
-        discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
-                                               category__name='Indirect Expenses')
+        try:
+            discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
+                                                   category__name='Indirect Expenses')
+        except Account.DoesNotExist:
+            discount_expense = None
 
-        # TODO Voucher discount needs to broken into row discounts
-        # if voucher.discount and voucher.discount_expense:
-        #     set_ledger_transactions(voucher, voucher.transaction_date, ['dr', discount_expense, voucher.discount_amount])
+        if voucher.mode == 'Credit':
+            dr_acc = voucher.party.account
+        else:
+            cash_account = get_account(voucher.company, 'Cash')
+            dr_acc = cash_account
 
-        # TODO create party supplier and customer account
-        # dr_acc = voucher.party.customer_account
         for row in voucher.rows.all():
-            tax_amt = 0
-            total = row.quantity * row.rate
-
-            # TODO If the voucher has discount, apply discount proportionally
-            # if discount_rate:
-            #     if obj.tax == 'inclusive' and tax_scheme:
-            #         discount_rate = discount_rate * 100 / (100 + tax_scheme.percent)
-            #     divident_discount = (pure_total - row_discount) * discount_rate
-
-            entries.append(['cr', row.item.ledger, total])
+            pure_total = row.quantity * row.rate
+            entries = [['cr', row.item.ledger, pure_total]]
 
             if row.tax_scheme:
-                tax_amt = (total) * row.tax_scheme.rate / 100
-                entries.append(['cr', row.tax_scheme.payable, tax_amt])
+                entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
 
-            if row.discount and row.discount_expense:
+            if row.discount > 0 and discount_expense:
                 entries.append(['dr', discount_expense, row.discount_amount])
+            elif discount_expense:
+                entries.append(['dr', discount_expense, 0])
 
-            # TODO receivalble account create in party
-            receivable = total - row.discount_amount + tax_amt
-            # entries.append(['dr', dr_acc, receivable])
+            entries.append(['dr', dr_acc, row.total])
 
             set_ledger_transactions(row, voucher.transaction_date, *entries)
         return
@@ -170,6 +163,14 @@ class SalesVoucherRow(models.Model):
             sub_total = self.quantity * self.rate
             discount = sub_total * (self.discount / 100)
         return discount
+
+    @property
+    def tax_amount(self):
+        amount = 0
+        if self.tax_scheme:
+            tax_object = self.tax_scheme
+            amount = (tax_object.rate / 100) * self.total
+        return amount
 
     @property
     def total(self):

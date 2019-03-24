@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -272,7 +272,7 @@ def alter(account, date, dr_difference, cr_difference):
 
 def set_transactions(submodel, date, *args):
     if isinstance(date, str):
-        date = datetime.datetime.strptime(date, '%Y-%m-%d')
+        date = datetime.strptime(date, '%Y-%m-%d')
     journal_entry, created = JournalEntry.objects.get_or_create(
         content_type=ContentType.objects.get_for_model(submodel), object_id=submodel.id,
         defaults={
@@ -297,10 +297,10 @@ def set_transactions(submodel, date, *args):
                     zero_for_none(transaction.account.current_cr) + transaction.cr_amount)
                 alter(arg[1], date, 0, float(arg[2]))
             transaction.current_dr = none_for_zero(
-                zero_for_none(transaction.account.get_dr_amount(date + datetime.timedelta(days=1)))
+                zero_for_none(transaction.account.get_dr_amount(date + timedelta(days=1)))
                 + zero_for_none(transaction.dr_amount))
             transaction.current_cr = none_for_zero(
-                zero_for_none(transaction.account.get_cr_amount(date + datetime.timedelta(days=1)))
+                zero_for_none(transaction.account.get_cr_amount(date + timedelta(days=1)))
                 + zero_for_none(transaction.cr_amount))
         else:
             transaction = matches[0]
@@ -478,3 +478,14 @@ def handle_company_creation(sender, **kwargs):
 
     # opening_balance_difference = Category.objects.create(name='Opening Balance Difference', code='O', company=company, default=True)
     # Account.objects.create(name='Opening Balance Difference', code='O-OBD', category=opening_balance_difference, company=company, default=True)
+
+
+def get_account(request_or_company, name):
+    if not request_or_company.__class__.__name__ == 'Company':
+        company = request_or_company.company
+    else:
+        company = request_or_company
+    if name in ['Purchase', 'Purchases']:
+        return Account.objects.get(name='Purchase', category__name='Purchase', company=company)
+    if name in ['Cash', 'Cash Account']:
+        return Account.objects.get(name='Cash', category__name='Cash Accounts', company=company)
