@@ -89,6 +89,7 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
 
 class CreditVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
+    receipt = serializers.FloatField(required=False)
     invoice_id = serializers.IntegerField(source='invoice.id', required=True)
     cash_receipt_id = serializers.IntegerField(source='cash_receipt.id', required=False, read_only=True)
 
