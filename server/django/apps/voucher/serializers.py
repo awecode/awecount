@@ -87,6 +87,15 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status', 'name',)
 
 
+class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
+    value = serializers.ReadOnlyField(source='pk')
+    text = serializers.ReadOnlyField(source='voucher_no')
+
+    class Meta:
+        model = SalesVoucher
+        fields = ('value', 'text',)
+
+
 class CreditVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     receipt = serializers.FloatField(required=False)
