@@ -112,6 +112,12 @@ class CreditVoucherRowSerializer(serializers.ModelSerializer):
 class CreditVoucherCreateSerializer(serializers.ModelSerializer):
     rows = CreditVoucherRowSerializer(many=True)
     company_id = serializers.IntegerField()
+    sale_vouchers_options = serializers.SerializerMethodField(read_only=True)
+
+    def get_sale_vouchers_options(self, obj):
+        sale_vouchers = obj.sale_vouchers.all()
+        data = SaleVoucherOptionsSerializer(sale_vouchers, many=True).data
+        return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
