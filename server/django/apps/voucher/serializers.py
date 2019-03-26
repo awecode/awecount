@@ -90,12 +90,14 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
 class CreditVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     receipt = serializers.FloatField(required=False)
-    invoice_id = serializers.IntegerField(source='invoice.id', required=True)
+    # invoice_id = serializers.IntegerField(source='invoice.id', required=True)
+    item_id = serializers.IntegerField(source='item.id', required=True)
+    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
     cash_receipt_id = serializers.IntegerField(source='cash_receipt.id', required=False, read_only=True)
 
     class Meta:
         model = CreditVoucherRow
-        exclude = ('invoice', 'cash_receipt',)
+        exclude = ('item', 'tax_scheme', 'cash_receipt',)
 
 
 class CreditVoucherCreateSerializer(serializers.ModelSerializer):
