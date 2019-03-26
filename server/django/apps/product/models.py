@@ -27,6 +27,14 @@ class Item(models.Model):
             ledger = Account(name=self.name, company=self.company)
             discount_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_ledger.code = 'D-' + str(self.code)
+            try:
+                discount_ledger.category = Category.objects.get(
+                    name='Discount Expenses',
+                    parent__name='Indirect Expenses',
+                    company=self.company
+                )
+            except Category.DoesNotExist:
+                pass
             discount_ledger.save()
             self.discount_ledger = discount_ledger
             try:
