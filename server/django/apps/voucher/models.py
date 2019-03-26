@@ -194,6 +194,7 @@ class CreditVoucher(models.Model):
     description = models.TextField()
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
 
     def __init__(self, *args, **kwargs):
         super(CreditVoucher, self).__init__(*args, **kwargs)
@@ -219,9 +220,12 @@ class CreditVoucher(models.Model):
 
 
 class CreditVoucherRow(models.Model):
-    invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
+    # invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     receipt = models.FloatField()
     discount = models.FloatField(blank=True, null=True)
+    credit_amount = models.FloatField(blank=True, null=True)
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_rows')
     cash_receipt = models.ForeignKey(CreditVoucher, related_name='rows', on_delete=models.CASCADE)
 
     def get_voucher_no(self):
@@ -231,14 +235,14 @@ class CreditVoucherRow(models.Model):
         return 'url'
         # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
 
-    def overdue_days(self):
-        if self.invoice.due_date and self.invoice.due_date < date.today():
-            overdue_days = date.today() - self.invoice.due_date
-            return overdue_days.days
-        return ''
+    # def overdue_days(self):
+    #     if self.invoice.due_date and self.invoice.due_date < date.today():
+    #         overdue_days = date.today() - self.invoice.due_date
+    #         return overdue_days.days
+    #     return ''
 
-    class Meta:
-        unique_together = ('invoice', 'cash_receipt')
+    # class Meta:
+    #     unique_together = ('invoice', 'cash_receipt')
 
 
 class Bank(models.Model):
