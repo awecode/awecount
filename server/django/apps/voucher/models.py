@@ -124,6 +124,11 @@ class SalesVoucher(models.Model):
             cash_account = get_account(voucher.company, 'Cash')
             dr_acc = cash_account
 
+        dividend_discount = 0
+
+        if voucher.discount > 0 and voucher.discount_type:
+            dividend_discount = voucher.discount_amount
+
         for row in voucher.rows.all():
             pure_total = row.quantity * row.rate
             # entries = [['cr', row.item.sale_ledger, pure_total]]
@@ -132,8 +137,16 @@ class SalesVoucher(models.Model):
             if row.tax_scheme:
                 entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
 
+            row_discount = 0
+
+            if dividend_discount > 0:
+                row_discount = (row.total / voucher.total_amount) * dividend_discount
+
             if row.discount > 0:
-                entries.append(['dr', row.item.discount_ledger, row.discount_amount])
+                row_discount += row.discount_amount
+
+            if row_discount > 0:
+                entries.append(['dr', row.item.discount_ledger, row_discount])
             # elif discount_expense:
             #     entries.append(['dr', discount_expense, 0])
 
