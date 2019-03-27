@@ -106,7 +106,7 @@ class SalesVoucher(models.Model):
         if self.discount and self.discount_type == 'Amount':
             discount = self.discount
         elif self.discount and self.discount_type == 'Percent':
-            discount = self.total_amount * (self.discount / 100)
+            discount = self.get_sub_total() * (self.discount / 100)
         return discount
 
     @staticmethod
@@ -140,7 +140,7 @@ class SalesVoucher(models.Model):
             row_discount = 0
 
             if dividend_discount > 0:
-                row_discount = (row.total / voucher.total_amount) * dividend_discount
+                row_discount = (row.total / voucher.get_sub_total()) * dividend_discount
 
             if row.discount > 0:
                 row_discount += row.discount_amount
