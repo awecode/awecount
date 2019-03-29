@@ -11,7 +11,7 @@ from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MOD
     BankBranch, InvoiceDesign, BankAccount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
-    BankAccountSerializer
+    BankAccountSerializer, SaleVoucherRowCreditNoteOptionsSerializer
 
 
 # class GenerateInvoice:
@@ -105,6 +105,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         if pisaStatus.err:
             return HttpResponse('We had some errors <pre>' + html + '</pre>')
         return response
+
+    @action(detail=True)
+    def rows(self, request, pk):
+        sale_voucher = self.get_object()
+        sale_voucher_rows = sale_voucher.rows.all()
+        data = SaleVoucherRowCreditNoteOptionsSerializer(sale_voucher_rows, many=True).data
+        return Response(data)
 
 
 class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
