@@ -136,32 +136,39 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        sale_vouchers = validated_data.pop('sale_vouchers')
         cash_receipt = CreditVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            invoice = row.pop('invoice')
-            try:
-                CreditVoucherRow.objects.create(cash_receipt=cash_receipt, invoice_id=invoice.get('id'), **row)
-            except IntegrityError:
-                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
+            item = row.pop('item')
+            row['item_id'] = item.get('id')
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
+            CreditVoucherRow.objects.create(cash_receipt=cash_receipt, **row)
+        cash_receipt.sale_vouchers.add(*sale_vouchers)
         return cash_receipt
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        sale_vouchers = validated_data.pop('sale_vouchers')
         CreditVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            invoice = row.pop('invoice')
+            item = row.pop('item')
+            row['item_id'] = item.get('id')
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
             row['cash_receipt'] = instance
-            row['invoice_id'] = invoice.get('id')
             try:
                 CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
                 raise APIException({'errors': ['Voucher repeated in cash receipt.']})
+        instance.sale_vouchers.clear()
+        instance.sale_vouchers.add(*sale_vouchers)
         instance.refresh_from_db()
         return instance
 
     class Meta:
         model = CreditVoucher
-        exclude = ('company', 'receipt',)
+        exclude = ('company',)
 
 
 class CreditVoucherListSerializer(serializers.ModelSerializer):

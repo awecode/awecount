@@ -235,7 +235,7 @@ class CreditVoucher(models.Model):
 class CreditVoucherRow(models.Model):
     # invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    receipt = models.FloatField()
+    # receipt = models.FloatField(blank=True, null=True)
     discount = models.FloatField(blank=True, null=True)
     credit_amount = models.FloatField(blank=True, null=True)
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_rows')
