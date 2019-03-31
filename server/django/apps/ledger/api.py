@@ -1,5 +1,8 @@
+from django_filters import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from apps.voucher.models import SalesVoucher
@@ -24,6 +27,8 @@ class PartyViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
 class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('code', 'name',)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

@@ -10,3 +10,4 @@ num2words
 django-separatedvaluesfield
 django-xhtml2pdf
 djangorestframework-jwt
+django-filter
