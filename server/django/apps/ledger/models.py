@@ -176,7 +176,7 @@ class Party(models.Model):
             account.save()
             self.account = account
             if not self.customer_account:
-                customer_account = Account(name=self.name)
+                customer_account = Account(name=self.name, company=self.company)
                 customer_account.name += ' (Receivable)'
                 try:
                     customer_account.category = Category.objects.get(name='Customers', company=self.company)
