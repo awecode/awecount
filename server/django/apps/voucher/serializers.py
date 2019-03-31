@@ -142,15 +142,16 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         sale_vouchers = validated_data.pop('sale_vouchers')
-        cash_receipt = CreditVoucher.objects.create(**validated_data)
+        credit_voucher = CreditVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
             row['item_id'] = item.get('id')
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
-            CreditVoucherRow.objects.create(cash_receipt=cash_receipt, **row)
-        cash_receipt.sale_vouchers.add(*sale_vouchers)
-        return cash_receipt
+            CreditVoucherRow.objects.create(cash_receipt=credit_voucher, **row)
+        credit_voucher.sale_vouchers.add(*sale_vouchers)
+        CreditVoucher.apply_transactions(credit_voucher)
+        return credit_voucher
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
@@ -169,6 +170,7 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
         instance.sale_vouchers.clear()
         instance.sale_vouchers.add(*sale_vouchers)
         instance.refresh_from_db()
+        CreditVoucher.apply_transactions(instance)
         return instance
 
     class Meta:

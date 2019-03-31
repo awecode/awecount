@@ -214,6 +214,15 @@ class CreditVoucher(models.Model):
         if not self.pk and not self.voucher_no:
             self.voucher_no = get_next_voucher_no(CreditVoucher, self.company_id)
 
+    @staticmethod
+    def apply_transactions(voucher):
+        cash_account = get_account(voucher.company, 'Cash')
+        set_ledger_transactions(voucher, voucher.date,
+                                ['dr', cash_account, voucher.amount],
+                                ['cr', voucher.party.customer_account, voucher.amount]
+                                )
+        return
+
     @property
     def total(self):
         grand_total = 0
