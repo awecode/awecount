@@ -94,6 +94,9 @@ MODULES = (
     ('InvoiceDesignView', 'InvoiceDesignView'),
     ('InvoiceDesignCreate', 'InvoiceDesignCreate'),
     ('InvoiceDesignModify', 'InvoiceDesignModify'),
+    ('CategoryView', 'CategoryView'),
+    ('CategoryCreate', 'CategoryCreate'),
+    ('CategoryModify', 'CategoryModify'),
 )
 
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from .models import Account
-from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer
+from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin
 
@@ -16,12 +16,15 @@ from awecount.utils.mixins import InputChoiceMixin
 class PartyViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = PartySerializer
 
-
     @action(detail=True)
     def sale_vouchers(self, request, pk=None):
         sale_vouchers = SalesVoucher.objects.filter(party_id=pk)
         data = SaleVoucherOptionsSerializer(sale_vouchers, many=True).data
         return Response(data)
+
+
+class CategoryViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+    serializer_class = CategorySerializer
 
 
 class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):

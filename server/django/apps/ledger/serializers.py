@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from .models import Party, Account, JournalEntry, PartyRepresentative
+from .models import Party, Account, JournalEntry, PartyRepresentative, Category
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
@@ -45,10 +45,18 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        exclude = ('company',)
+
+
 class AccountSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+
     class Meta:
         model = Account
-        fields = '__all__'
+        exclude = ('company',)
 
 
 class JournalEntrySerializer(serializers.ModelSerializer):
