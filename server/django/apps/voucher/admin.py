@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow, Bank, BankBranch, \
-    ChequeVoucher, InvoiceDesign, BankAccount
+    ChequeVoucher, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -10,6 +10,10 @@ class SaleVoucherRowTabular(admin.TabularInline):
 
 class CreditVoucherRowTabular(admin.TabularInline):
     model = CreditVoucherRow
+
+
+class JournalVoucherRowTabular(admin.TabularInline):
+    model = JournalVoucherRow
 
 
 class SalesVoucherAdmin(admin.ModelAdmin):
@@ -39,3 +43,13 @@ admin.site.register(BankBranch)
 admin.site.register(ChequeVoucher)
 admin.site.register(InvoiceDesign)
 admin.site.register(BankAccount)
+
+
+class JournalVoucherAdmin(admin.ModelAdmin):
+    search_fields = ('voucher_no', 'date',)
+    list_filter = ('company', 'status',)
+    list_display = ('company', 'voucher_no', 'status', 'date',)
+    inlines = (JournalVoucherRowTabular,)
+
+
+admin.site.register(JournalVoucher, JournalVoucherAdmin)
