@@ -97,6 +97,9 @@ MODULES = (
     ('CategoryView', 'CategoryView'),
     ('CategoryCreate', 'CategoryCreate'),
     ('CategoryModify', 'CategoryModify'),
+    ('JournalVoucherView', 'JournalVoucherView'),
+    ('JournalVoucherCreate', 'JournalVoucherCreate'),
+    ('JournalVoucherModify', 'JournalVoucherModify'),
 )
 
 
