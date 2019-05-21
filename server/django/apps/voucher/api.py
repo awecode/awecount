@@ -152,6 +152,14 @@ class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         return JournalVoucherCreateSerializer
 
     @action(detail=False)
+    def options(self, request):
+        statues = [dict(value=status[0], text=status[1]) for status in JournalVoucher.statuses]
+        statues.insert(0, {"value": None, "text": '---'})
+        return Response({
+            'statues': statues,
+        })
+
+    @action(detail=False)
     def get_next_no(self, request):
         voucher_no = get_next_voucher_no(JournalVoucher, request.company.id)
         return Response({'voucher_no': voucher_no})

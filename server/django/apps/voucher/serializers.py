@@ -305,4 +305,4 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
 class JournalVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalVoucher
-        fields = ('id', 'voucher_no', 'date',)
+        fields = ('id', 'voucher_no', 'date', 'status',)
