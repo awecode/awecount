@@ -21,6 +21,7 @@ class Company(models.Model):
     email = models.EmailField()
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='sole_proprietorship')
     tax_registration_number = models.IntegerField(blank=True, null=True)
+    force_preview_before_save = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
