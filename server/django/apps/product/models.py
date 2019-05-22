@@ -44,7 +44,7 @@ class Item(models.Model):
                 )
             except Category.DoesNotExist:
                 pass
-                discount_allowed_ledger.save()
+            discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
         if not self.discount_payable_ledger:
             discount_payable_ledger = Account(name='Discount Payable ' + self.name, company=self.company)
