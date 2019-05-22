@@ -274,7 +274,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
             account = row.pop('account')
             row['account_id'] = account.get('id')
             JournalVoucherRow.objects.create(journal_voucher=journal_voucher, **row)
-        # JournalVoucher.apply_transactions(credit_voucher)
+        JournalVoucher.apply_transactions(journal_voucher)
         return journal_voucher
 
     def update(self, instance, validated_data):
@@ -289,7 +289,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
             except IntegrityError:
                 raise APIException({'errors': ['Voucher repeated in journal voucher.']})
         instance.refresh_from_db()
-        # JournalVoucher.apply_transactions(instance)
+        JournalVoucher.apply_transactions(instance)
         return instance
 
     class Meta:

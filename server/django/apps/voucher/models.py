@@ -345,6 +345,13 @@ class JournalVoucher(models.Model):
     def get_voucher_no(self):
         return self.voucher_no
 
+    @staticmethod
+    def apply_transactions(voucher):
+        for row in voucher.rows.all():
+            amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
+            set_ledger_transactions(row, voucher.date, [row.type.lower(), row.account, amount])
+        return
+
 
 class JournalVoucherRow(models.Model):
     types = [('Dr', 'Dr'), ('Cr', 'Cr')]
