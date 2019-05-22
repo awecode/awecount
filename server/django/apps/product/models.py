@@ -12,7 +12,8 @@ class Item(models.Model):
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
     ledger = models.ForeignKey(Account, null=True, related_name='items', on_delete=models.SET_NULL)
-    discount_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL)
+    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='allowed_items')
+    discount_payable_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='payable_items')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -36,7 +37,7 @@ class Item(models.Model):
             except Category.DoesNotExist:
                 pass
             discount_ledger.save()
-            self.discount_ledger = discount_ledger
+            self.discount_allowed_ledger = discount_ledger
             try:
                 ledger.category = Category.objects.get(name='Purchase', parent__name='Expenses', company=self.company)
             except Category.DoesNotExist:
