@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.ledger.models import set_transactions as set_ledger_transaction
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
-    InvoiceDesign, BankAccount, JournalVoucher
+    InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow
 
 
 class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
@@ -253,9 +253,13 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     account_id = serializers.IntegerField(source='account.id', required=True)
     journal_voucher_id = serializers.IntegerField(source='journal_voucher.id', required=False, read_only=True)
+    show_description = serializers.SerializerMethodField()
+
+    def get_show_description(self, obj):
+        return bool(obj.description)
 
     class Meta:
-        model = CreditVoucherRow
+        model = JournalVoucherRow
         exclude = ('account', 'journal_voucher',)
 
 
@@ -265,36 +269,27 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
-        sale_vouchers = validated_data.pop('sale_vouchers')
-        credit_voucher = CreditVoucher.objects.create(**validated_data)
+        journal_voucher = JournalVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            row['item_id'] = item.get('id')
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            CreditVoucherRow.objects.create(cash_receipt=credit_voucher, **row)
-        credit_voucher.sale_vouchers.add(*sale_vouchers)
-        CreditVoucher.apply_transactions(credit_voucher)
-        return credit_voucher
+            account = row.pop('account')
+            row['account_id'] = account.get('id')
+            JournalVoucherRow.objects.create(journal_voucher=journal_voucher, **row)
+        # JournalVoucher.apply_transactions(credit_voucher)
+        return journal_voucher
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
-        sale_vouchers = validated_data.pop('sale_vouchers')
-        CreditVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            row['item_id'] = item.get('id')
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            row['cash_receipt'] = instance
+            account = row.pop('account')
+            row['account_id'] = account.get('id')
+            row['journal_voucher'] = instance
             try:
-                CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+                JournalVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
-                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
-        instance.sale_vouchers.clear()
-        instance.sale_vouchers.add(*sale_vouchers)
+                raise APIException({'errors': ['Voucher repeated in journal voucher.']})
         instance.refresh_from_db()
-        CreditVoucher.apply_transactions(instance)
+        # JournalVoucher.apply_transactions(instance)
         return instance
 
     class Meta:
