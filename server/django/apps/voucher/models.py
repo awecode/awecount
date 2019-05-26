@@ -111,6 +111,8 @@ class SalesVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
+        if not voucher.status == 'Issued':
+            return
         try:
             discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
                                                    category__name='Indirect Expenses')
@@ -146,7 +148,7 @@ class SalesVoucher(models.Model):
                 row_discount += row.discount_amount
 
             if row_discount > 0:
-                entries.append(['dr', row.item.discount_ledger, row_discount])
+                entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
             # elif discount_expense:
             #     entries.append(['dr', discount_expense, 0])
 
@@ -353,6 +355,8 @@ class JournalVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
+        if not voucher.status == 'Approved':
+            return
         for row in voucher.rows.all():
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
             set_ledger_transactions(row, voucher.date, [row.type.lower(), row.account, amount])
