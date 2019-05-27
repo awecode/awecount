@@ -113,11 +113,11 @@ class SalesVoucher(models.Model):
     def apply_transactions(voucher):
         if not voucher.status == 'Issued':
             return
-        try:
-            discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
-                                                   category__name='Indirect Expenses')
-        except Account.DoesNotExist:
-            discount_expense = None
+        # try:
+        #     discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
+        #                                            category__name='Indirect Expenses')
+        # except Account.DoesNotExist:
+        #     discount_expense = None
 
         if voucher.mode == 'Credit':
             # dr_acc = voucher.party.customer_account
