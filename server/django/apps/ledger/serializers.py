@@ -113,6 +113,60 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
+    dr_amount = serializers.SerializerMethodField()
+    cr_amount = serializers.SerializerMethodField()
+    balance = serializers.SerializerMethodField()
+    voucher_type = serializers.SerializerMethodField()
+    voucher_no = serializers.ReadOnlyField(source='source.get_voucher_no')
+    source_id = serializers.ReadOnlyField(source='source.get_source_id')
+
+    def get_voucher_type(self, obj):
+        v_type = obj.content_type.name
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return v_type.title()
+
+    def transaction(self, obj):
+        account_ids = self.context.get('account_ids', None)
+        try:
+            transactions = [transaction for transaction in obj.transactions.all() if
+                            transaction.account.id in account_ids]
+            if transactions:
+                return transactions[0]
+        except Exception as e:
+            return
+
+    def get_dr_amount(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.dr_amount
+        return amount
+
+    def get_cr_amount(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.cr_amount
+        return amount
+
+    def get_balance(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.get_balance()
+        return amount
+
+    class Meta:
+        model = JournalEntry
+        fields = '__all__'
+
+
 class AccountDetailSerializer(serializers.ModelSerializer):
     journal_entries = serializers.SerializerMethodField()
     closing_balance = serializers.ReadOnlyField(source='get_balance')
