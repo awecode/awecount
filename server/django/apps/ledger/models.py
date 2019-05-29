@@ -185,6 +185,7 @@ class Party(models.Model):
                 customer_account.suggest_code()
                 customer_account.save()
                 self.customer_account = customer_account
+            # TODO
             # if not self.supplier_account:
             #     try:
             #         account2 = Account(name=self.name + ' (Payable)')

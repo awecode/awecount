@@ -12,11 +12,12 @@ from .models import Account, JournalEntry
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
-from awecount.utils.mixins import InputChoiceMixin
+from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
 
 
-class PartyViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = PartySerializer
+    account_keys = ['supplier_account', 'customer_account']
 
     @action(detail=True)
     def sale_vouchers(self, request, pk=None):
