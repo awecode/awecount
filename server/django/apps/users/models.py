@@ -101,6 +101,10 @@ MODULES = (
     ('JournalVoucherView', 'JournalVoucherView'),
     ('JournalVoucherCreate', 'JournalVoucherCreate'),
     ('JournalVoucherModify', 'JournalVoucherModify'),
+    ('BankBranchView', 'BankBranchView'),
+    ('BankBranchCreate', 'BankBranchCreate'),
+    ('BankBranchModify', 'BankBranchModify'),
+    ('BankBranchDelete', 'BankBranchDelete'),
 )
 
 
