@@ -8,11 +8,11 @@ from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    BankBranch, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow
+    BankBranch, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDeposit, ChequeDepositRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
     BankAccountSerializer, SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
-    JournalVoucherCreateSerializer
+    JournalVoucherCreateSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer
 
 
 # class GenerateInvoice:
@@ -169,6 +169,27 @@ class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = ChequeVoucherSerializer
 
 
+class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
+    queryset = ChequeDeposit.objects.all()
+    serializer_class = ChequeDepositCreateSerializer
+    model = ChequeDeposit
+    row = ChequeDepositRow
+
+    def get_queryset(self):
+        queryset = super(ChequeDepositViewSet, self).get_queryset()
+        return queryset.order_by('-pk')
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action in ('choices',):
+            return ChequeDepositListSerializer
+        return ChequeDepositCreateSerializer
+
+    @action(detail=False)
+    def get_next_no(self, request):
+        voucher_no = get_next_voucher_no(ChequeDeposit, request.company.id)
+        return Response({'voucher_no': voucher_no})
+
+    
 class BankBranchViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = BankBranch.objects.all()
     serializer_class = BankBranchSerializer
