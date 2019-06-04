@@ -306,28 +306,18 @@ class JournalVoucherListSerializer(serializers.ModelSerializer):
 
 class ChequeDepositRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
-    show_description = serializers.SerializerMethodField()
-    show_discount = serializers.SerializerMethodField()
-
-    def get_show_discount(self, obj):
-        return bool(obj.discount > 0)
-
-    def get_show_description(self, obj):
-        return bool(obj.description)
 
     class Meta:
         model = ChequeDepositRow
-        exclude = ('item', 'tax_scheme', 'voucher')
+        exclude = ('cheque_deposit',)
 
 
 class ChequeDepositCreateSerializer(serializers.ModelSerializer):
-    rows = SalesVoucherRowSerializer(many=True)
+    rows = ChequeDepositRowSerializer(many=True)
     company_id = serializers.IntegerField()
-    bank_account_id = serializers.IntegerField(required=False, allow_null=True)
-    benefactor_id = serializers.IntegerField(required=False, allow_null=True)
+
+    # bank_account_id = serializers.IntegerField(required=False, allow_null=True)
+    # benefactor_id = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -349,7 +339,8 @@ class ChequeDepositCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        exclude = ('company', 'benefactor', 'bank_account',)
+        # exclude = ('company', 'benefactor', 'bank_account',)
+        exclude = ('company',)
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
