@@ -188,6 +188,7 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
 
 class BankBranchSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
+    cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
 
     class Meta:
         model = BankBranch

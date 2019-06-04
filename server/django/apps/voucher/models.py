@@ -293,12 +293,12 @@ class BankBranch(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def increase_cheque_no(self):
-        cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
-        self.current_cheque_no = cheque_no + 1
+        self.current_cheque_no = self.get_cheque_no()
         self.save()
 
     def get_cheque_no(self):
-        return self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
+        cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
+        return cheque_no + 1
 
     @property
     def name(self):
