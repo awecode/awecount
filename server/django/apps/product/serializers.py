@@ -13,6 +13,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 class UnitSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+
     class Meta:
         model = Unit
         exclude = ('company',)
