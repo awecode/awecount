@@ -5,6 +5,15 @@ from apps.tax.models import TaxScheme
 from apps.users.models import Company
 
 
+class Unit(models.Model):
+    name = models.CharField(max_length=50)
+    short_name = models.CharField(max_length=10, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
 class Item(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
@@ -12,8 +21,10 @@ class Item(models.Model):
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
     ledger = models.ForeignKey(Account, null=True, related_name='items', on_delete=models.SET_NULL)
-    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='allowed_items')
-    discount_payable_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='payable_items')
+    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                                related_name='allowed_items')
+    discount_payable_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                                related_name='payable_items')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
