@@ -310,12 +310,12 @@ class ChequeDeposit(models.Model):
     # class Meta:
     #     unique_together = ('voucher_no', 'company')
 
-
+#TODO drawee bank foreign key to Bank
 class ChequeDepositRow(models.Model):
-    cheque_number = models.CharField(max_length=50, blank=True, null=True)
-    cheque_date = models.DateField(default=timezone.now, null=True, blank=True)
-    drawee_bank = models.CharField(max_length=254, blank=True, null=True)
-    drawee_bank_address = models.CharField(max_length=254, blank=True, null=True)
+    cheque_number = models.CharField(max_length=50)
+    cheque_date = models.DateField(default=timezone.now)
+    drawee_bank = models.CharField(max_length=254)
+    drawee_bank_address = models.CharField(max_length=254)
     amount = models.FloatField()
     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
 

@@ -22,7 +22,7 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(source='item.id', required=True)
     tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    unit_id = serializers.IntegerField(source='unit.id', required=True)
+    unit_id = serializers.IntegerField(source='unit.id', required=False)
     voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
     show_description = serializers.SerializerMethodField()
     show_discount = serializers.SerializerMethodField()
