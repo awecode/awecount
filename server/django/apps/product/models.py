@@ -28,7 +28,7 @@ class Item(models.Model):
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
 
     def __str__(self):
