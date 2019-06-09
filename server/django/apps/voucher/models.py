@@ -5,7 +5,7 @@ from django.utils import timezone
 from num2words import num2words
 
 from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account
-from apps.product.models import Item
+from apps.product.models import Item, Unit
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
 from awecount.utils import get_next_voucher_no, wGenerator
@@ -163,6 +163,7 @@ class SalesVoucherRow(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, blank=True, null=True)
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
