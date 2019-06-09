@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.product.models import Item
+from apps.product.models import Item, Unit
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -10,3 +10,9 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         exclude = ('company', 'tax_scheme',)
+
+
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        exclude = ('company',)
