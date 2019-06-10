@@ -1,11 +1,16 @@
 from django.contrib import admin
 
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow, Bank, BankBranch, \
-    ChequeVoucher, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit
+    ChequeVoucher, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, \
+    PurchaseVoucher, PurchaseVoucherRow
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
     model = SalesVoucherRow
+
+
+class PurchaseVoucherRowTabular(admin.TabularInline):
+    model = PurchaseVoucherRow
 
 
 class CreditVoucherRowTabular(admin.TabularInline):
@@ -64,3 +69,15 @@ class ChequeDepositAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ChequeDeposit, ChequeDepositAdmin)
+
+
+class PurchaseVoucherAdmin(admin.ModelAdmin):
+    search_fields = (
+        'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
+        'company__tax_registration_number', 'total_amount')
+    list_filter = ('company',)
+    list_display = ('company', 'voucher_no', 'party',)
+    inlines = (PurchaseVoucherRowTabular,)
+
+
+admin.site.register(PurchaseVoucher, PurchaseVoucherAdmin)

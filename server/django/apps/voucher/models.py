@@ -163,7 +163,7 @@ class SalesVoucherRow(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, blank=True, null=True)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
@@ -205,6 +205,67 @@ class SalesVoucherRow(models.Model):
             elif self.discount_type == 'Percent':
                 sub_total = sub_total - (sub_total * (self.discount / 100))
         return sub_total
+
+
+class PurchaseVoucher(models.Model):
+    tax_choices = [('no', 'No Tax'), ('inclusive', 'Tax Inclusive'), ('exclusive', 'Tax Exclusive'), ]
+    voucher_no = models.PositiveIntegerField(blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    credit = models.BooleanField(default=False)
+    date = models.DateField(default=timezone.now)
+    tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
+    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
+    due_date = models.DateField(blank=True, null=True)
+    pending_amount = models.FloatField(null=True, blank=True)
+    total_amount = models.FloatField(null=True, blank=True)
+    discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def type(self):
+        return 'Credit' if self.credit else 'Cash'
+
+    def __init__(self, *args, **kwargs):
+        super(PurchaseVoucher, self).__init__(*args, **kwargs)
+
+        if not self.pk and not self.voucher_no:
+            self.voucher_no = get_next_voucher_no(PurchaseVoucher, self.company_id)
+
+    @property
+    def voucher_type(self):
+        return 'PurchaseVoucher'
+
+    @property
+    def row_discount_total(self):
+        grand_total = 0
+        # for obj in self.rows.all():
+        #     total = obj.quantity * obj.rate
+        #     discount = get_discount_with_percent(total, obj.discount)
+        #     grand_total += discount
+        return grand_total
+
+
+class PurchaseVoucherRow(models.Model):
+    sn = models.PositiveIntegerField()
+    item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
+    quantity = models.FloatField()
+    rate = models.FloatField()
+    discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
+    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
+    voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        self.item.cost_price = self.rate
+        self.item.save()
+        super(PurchaseVoucherRow, self).save(*args, **kwargs)
+
+    def get_source_id(self):
+        return self.voucher.id
+
+    def get_voucher_no(self):
+        return self.voucher.voucher_no
 
 
 class CreditVoucher(models.Model):
