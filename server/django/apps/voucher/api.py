@@ -8,11 +8,13 @@ from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    BankBranch, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDeposit, ChequeDepositRow
+    BankBranch, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDeposit, ChequeDepositRow, \
+    PurchaseVoucher, PurchaseVoucherRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
     BankAccountSerializer, SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
-    JournalVoucherCreateSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer
+    JournalVoucherCreateSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
+    PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer
 
 
 # class GenerateInvoice:
@@ -115,6 +117,34 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return Response(data)
 
 
+class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
+    queryset = PurchaseVoucher.objects.all()
+    serializer_class = PurchaseVoucherCreateSerializer
+    model = PurchaseVoucher
+    row = PurchaseVoucherRow
+
+    def get_queryset(self):
+        queryset = super(PurchaseVoucherViewSet, self).get_queryset()
+        return queryset.order_by('-pk')
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action in ('choices',):
+            return PurchaseVoucherListSerializer
+        return PurchaseVoucherCreateSerializer
+
+    @action(detail=False)
+    def get_next_no(self, request):
+        voucher_no = get_next_voucher_no(PurchaseVoucher, request.company.id)
+        return Response({'voucher_no': voucher_no})
+
+    @action(detail=True)
+    def rows(self, request, pk):
+        sale_voucher = self.get_object()
+        sale_voucher_rows = sale_voucher.rows.all()
+        data = SaleVoucherRowCreditNoteOptionsSerializer(sale_voucher_rows, many=True).data
+        return Response(data)
+
+
 class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     queryset = CreditVoucher.objects.all()
     serializer_class = CreditVoucherCreateSerializer
@@ -189,7 +219,7 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdat
         voucher_no = get_next_voucher_no(ChequeDeposit, request.company.id)
         return Response({'voucher_no': voucher_no})
 
-    
+
 class BankBranchViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     queryset = BankBranch.objects.all()
     serializer_class = BankBranchSerializer

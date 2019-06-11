@@ -246,7 +246,6 @@ class PurchaseVoucher(models.Model):
 
 
 class PurchaseVoucherRow(models.Model):
-    sn = models.PositiveIntegerField()
     item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
     quantity = models.FloatField()
     rate = models.FloatField()

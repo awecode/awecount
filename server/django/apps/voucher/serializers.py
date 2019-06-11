@@ -4,7 +4,8 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.ledger.models import set_transactions as set_ledger_transaction
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
-    InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit
+    InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, PurchaseVoucher, \
+    PurchaseVoucherRow
 
 
 class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
@@ -357,3 +358,79 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChequeDeposit
         fields = ('id', 'voucher_no', 'bank_account', 'date', 'deposited_by', 'name')
+
+
+class PurchaseVoucherRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(source='item.id', required=True)
+    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
+    unit_id = serializers.IntegerField(source='unit.id', required=False)
+    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+
+    class Meta:
+        model = PurchaseVoucherRow
+        exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
+
+
+class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
+    rows = PurchaseVoucherRowSerializer(many=True)
+    voucher_discount = serializers.SerializerMethodField()
+    company_id = serializers.IntegerField()
+
+    def get_voucher_discount(self, obj):
+        return obj.discount and obj.discount_type
+
+    def validate(self, data):
+        if not data.get('party'):
+            raise ValidationError(
+                {'party': ['Party is required']},
+            )
+        return data
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop('rows')
+        request = self.context['request']
+        user_id = request.user.id
+        validated_data['user_id'] = user_id
+        voucher = PurchaseVoucher.objects.create(**validated_data)
+        for index, row in enumerate(rows_data):
+            item = row.pop('item')
+            unit = row.pop('unit')
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
+            row['unit_id'] = unit.get('id')
+            PurchaseVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
+        # SalesVoucher.apply_transactions(voucher)
+        return voucher
+
+    def update(self, instance, validated_data):
+        rows_data = validated_data.pop('rows')
+        PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        for index, row in enumerate(rows_data):
+            item = row.pop('item')
+            unit = row.pop('unit')
+            row['voucher'] = instance
+            row['item_id'] = item.get('id')
+            row['unit_id'] = unit.get('id')
+            tax_scheme = row.pop('tax_scheme')
+            row['tax_scheme_id'] = tax_scheme.get('id')
+            PurchaseVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+        instance.refresh_from_db()
+        # SalesVoucher.apply_transactions(instance)
+        return instance
+
+    class Meta:
+        model = PurchaseVoucher
+        exclude = ('company',)
+
+
+class PurchaseVoucherListSerializer(serializers.ModelSerializer):
+    party = serializers.ReadOnlyField(source='party.name')
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return '{}'.format(obj.voucher_no)
+
+    class Meta:
+        model = PurchaseVoucher
+        fields = ('id', 'voucher_no', 'party', 'date', 'pending_amount', 'name',)
