@@ -366,6 +366,14 @@ class PurchaseVoucherRowSerializer(serializers.ModelSerializer):
     tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
     unit_id = serializers.IntegerField(source='unit.id', required=False)
     voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+    show_description = serializers.SerializerMethodField()
+    show_discount = serializers.SerializerMethodField()
+
+    def get_show_discount(self, obj):
+        return bool(obj.discount > 0)
+
+    def get_show_description(self, obj):
+        return bool(obj.description)
 
     class Meta:
         model = PurchaseVoucherRow
@@ -390,8 +398,6 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
-        user_id = request.user.id
-        validated_data['user_id'] = user_id
         voucher = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')

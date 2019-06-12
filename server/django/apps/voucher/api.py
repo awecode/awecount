@@ -133,6 +133,23 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         return PurchaseVoucherCreateSerializer
 
     @action(detail=False)
+    def options(self, request):
+        discount_type = {
+            "Percent": "%",
+            "Amount": "/-",
+        }
+        types = [dict(value=type[0], text=discount_type.get(type[1])) for type in DISCOUNT_TYPES]
+        tax_choices = [dict(value=tax_choice[0], text=tax_choice[1]) for tax_choice in PurchaseVoucher.tax_choices]
+        types.insert(0, {"value": None, "text": '---'})
+
+        tax_choices.insert(0, {"value": None, "text": '---'})
+        return Response({
+            'discount_types': types,
+            'tax_choices': tax_choices,
+        })
+
+
+    @action(detail=False)
     def get_next_no(self, request):
         voucher_no = get_next_voucher_no(PurchaseVoucher, request.company.id)
         return Response({'voucher_no': voucher_no})

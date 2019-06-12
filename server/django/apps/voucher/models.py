@@ -208,7 +208,7 @@ class SalesVoucherRow(models.Model):
 
 
 class PurchaseVoucher(models.Model):
-    tax_choices = [('no', 'No Tax'), ('inclusive', 'Tax Inclusive'), ('exclusive', 'Tax Exclusive'), ]
+    tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     credit = models.BooleanField(default=False)
@@ -246,14 +246,15 @@ class PurchaseVoucher(models.Model):
 
 
 class PurchaseVoucherRow(models.Model):
+    voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
     quantity = models.FloatField()
+    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
-    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
-    voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         self.item.cost_price = self.rate
