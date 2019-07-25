@@ -11,3 +11,4 @@ django-separatedvaluesfield
 django-xhtml2pdf
 djangorestframework-jwt
 django-filter
+django-ses

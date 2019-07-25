@@ -90,3 +90,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
 
 }
+
+EMAIL_SUBJECT_PREFIX = '[AWECOUNTING] '
