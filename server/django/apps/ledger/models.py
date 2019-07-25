@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
@@ -114,19 +114,19 @@ class Account(models.Model):
             return transactions[0].current_dr
         return 0
 
-    def save(self, *args, **kwargs):
-        queryset = Account.objects.all()
-        original_name = self.name
-        nxt = 2
-        # if not self.pk:
-        #     while queryset.filter(**{'name': self.name, 'fy': self.fy}):
-        #         self.name = original_name
-        #         end = '%s%s' % ('-', nxt)
-        #         if len(self.name) + len(end) > 100:
-        #             self.name = self.name[:100 - len(end)]
-        #         self.name = '%s%s' % (self.name, end)
-        #         nxt += 1
-        return super(Account, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     queryset = Account.objects.all()
+    #     original_name = self.name
+    #     nxt = 2
+    #     if not self.pk:
+    #         while queryset.filter(**{'name': self.name, 'fy': self.fy}):
+    #             self.name = original_name
+    #             end = '%s%s' % ('-', nxt)
+    #             if len(self.name) + len(end) > 100:
+    #                 self.name = self.name[:100 - len(end)]
+    #             self.name = '%s%s' % (self.name, end)
+    #             nxt += 1
+    #     return super(Account, self).save(*args, **kwargs)
 
     def suggest_code(self):
         if self.category:
@@ -156,7 +156,6 @@ class Party(models.Model):
     contact_no = models.CharField(max_length=25, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     tax_registration_number = models.IntegerField(blank=True, null=True)
-    account = models.OneToOneField(Account, related_name='party', blank=True, null=True, on_delete=models.SET_NULL)
     supplier_account = models.OneToOneField(Account, null=True, related_name='supplier_detail',
                                             on_delete=models.SET_NULL)
     customer_account = models.OneToOneField(Account, null=True, related_name='customer_detail',
@@ -179,23 +178,25 @@ class Party(models.Model):
                 customer_account = Account(name=self.name, company=self.company)
                 customer_account.name += ' (Receivable)'
                 try:
-                    customer_account.category = Category.objects.get(name='Customers', company=self.company)
+                    customer_account.category = Category.objects.get(name='Customers',
+                                                                     parent__name='Account Receivables',
+                                                                     company=self.company)
                 except Category.DoesNotExist:
                     pass
                 customer_account.suggest_code()
                 customer_account.save()
                 self.customer_account = customer_account
-            # TODO
-            # if not self.supplier_account:
-            #     try:
-            #         account2 = Account(name=self.name + ' (Payable)')
-            #         account2.company = self.company
-            #         account2.category = Category.objects.get(name='Suppliers', company=self.company)
-            #         account2.suggest_code()
-            #         account2.save()
-            #         self.supplier_account = account2
-            #     except Category.DoesNotExist:
-            #         pass
+            if not self.supplier_account:
+                try:
+                    account2 = Account(name=self.name + ' (Payable)')
+                    account2.company = self.company
+                    account2.category = Category.objects.get(name='Suppliers', parent__name='Account Payables',
+                                                             company=self.company)
+                    account2.suggest_code()
+                    account2.save()
+                    self.supplier_account = account2
+                except Category.DoesNotExist:
+                    pass
         super(Party, self).save(*args, **kwargs)
 
 
@@ -425,7 +426,7 @@ def handle_company_creation(sender, **kwargs):
     Account.objects.create(name='Cheque Account', category=cash_equivalent_account, code='A-CE-CQ', company=company,
                            default=True)
 
-    bank_account = Category.objects.create(name='Bank Account', code='A-B', parent=assets, company=company,
+    bank_account = Category.objects.create(name='Bank Accounts', code='A-B', parent=assets, company=company,
                                            default=True)
     # Account(name='ATM Account', category=bank_account, code='A-B-A', company=company, default=True).save()
     # Account(name='Bank Account', category=bank_account, code='A-B-B', company=company, default=True).save()
@@ -480,10 +481,11 @@ def handle_company_creation(sender, **kwargs):
                                             default=True)
     Category.objects.create(name='Transfer and Remittance', code='I-D-T&R', parent=direct_income, company=company,
                             default=True)
-    indirect_income = Category.objects.create(name='Indirect Income', code='I-II', parent=income, company=company, default=True)
+    indirect_income = Category.objects.create(name='Indirect Income', code='I-II', parent=income, company=company,
+                                              default=True)
 
     discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
-                                                        company=company)
+                                                       company=company)
     Account.objects.get(name='Discount Income', parent=discount_income_category, company=company)
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
@@ -497,9 +499,9 @@ def handle_company_creation(sender, **kwargs):
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-IE', parent=expenses, company=company,
                                                 default=True)
     Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
-    discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses, company=company)
+    discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
+                                                        company=company)
     Account.objects.get(name='Discount Expenses', parent=discount_expense_category, company=company)
-
 
     # Opening Balance Difference
 

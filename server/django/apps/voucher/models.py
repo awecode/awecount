@@ -14,6 +14,8 @@ STATUSES = (
     ('Issued', 'Issued'),
     ('Cancelled', 'Cancelled'),
     ('Paid', 'Paid'),
+    # TODO create partial payment system
+    ('Partially Paid', 'Partially Paid'),
 )
 MODES = (
     ('Credit', 'Credit'),
@@ -35,6 +37,7 @@ class BankAccount(models.Model):
     bank_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
+    ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
     def __str__(self):
         return '{} : {}'.format(self.account_name, self.company.name)
@@ -121,11 +124,15 @@ class SalesVoucher(models.Model):
             return
 
         if voucher.mode == 'Credit':
-            # dr_acc = voucher.party.customer_account
-            dr_acc = voucher.party.account
-        else:
-            cash_account = get_account(voucher.company, 'Cash')
-            dr_acc = cash_account
+            dr_acc = voucher.party.customer_account
+        elif voucher.mode == 'Cash':
+            dr_acc = get_account(voucher.company, 'Cash')
+        elif voucher.mode == 'Cheque':
+            pass
+        elif voucher.mode == 'ePayment':
+            pass
+        elif voucher.mode == 'Bank Deposit':
+            pass
 
         dividend_discount = 0
 
