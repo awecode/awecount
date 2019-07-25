@@ -1,10 +1,8 @@
-from datetime import date
-
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
-from num2words import num2words
 
-from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry
 from apps.product.models import Item, Unit
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
@@ -39,7 +37,7 @@ class BankAccount(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
 
     def __str__(self):
-        return self.account_name + ': ' + self.company.name
+        return '{} : {}'.format(self.account_name, self.company.name)
 
 
 class SalesVoucher(models.Model):
@@ -109,15 +107,18 @@ class SalesVoucher(models.Model):
             discount = self.get_sub_total() * (self.discount / 100)
         return discount
 
+    def apply_cancel_transaction(self):
+        content_type = ContentType.objects.get(model='salesvoucherrow')
+        row_ids = [row.id for row in self.rows.all()]
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+
+
     @staticmethod
     def apply_transactions(voucher):
+        if voucher.status == 'Cancelled':
+            voucher.apply_cancel_transaction()
         if not voucher.status == 'Issued':
             return
-        # try:
-        #     discount_expense = Account.objects.get(name='Discount Expenses', company=voucher.company,
-        #                                            category__name='Indirect Expenses')
-        # except Account.DoesNotExist:
-        #     discount_expense = None
 
         if voucher.mode == 'Credit':
             # dr_acc = voucher.party.customer_account
@@ -149,8 +150,6 @@ class SalesVoucher(models.Model):
 
             if row_discount > 0:
                 entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
-            # elif discount_expense:
-            #     entries.append(['dr', discount_expense, 0])
 
             entries.append(['dr', dr_acc, row.total])
 
@@ -371,7 +370,8 @@ class ChequeDeposit(models.Model):
     # class Meta:
     #     unique_together = ('voucher_no', 'company')
 
-#TODO drawee bank foreign key to Bank
+
+# TODO drawee bank foreign key to Bank
 class ChequeDepositRow(models.Model):
     cheque_number = models.CharField(max_length=50)
     cheque_date = models.DateField(default=timezone.now)

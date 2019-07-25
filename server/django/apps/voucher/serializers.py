@@ -67,10 +67,11 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         voucher = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            unit = row.pop('unit')
+            unit = row.pop('unit', None)
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
-            row['unit_id'] = unit.get('id')
+            if unit:
+                row['unit_id'] = unit.get('id')
             SalesVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
         SalesVoucher.apply_transactions(voucher)
         return voucher
@@ -80,10 +81,11 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            unit = row.pop('unit')
+            unit = row.pop('unit', None)
             row['voucher'] = instance
             row['item_id'] = item.get('id')
-            row['unit_id'] = unit.get('id')
+            if unit:
+                row['unit_id'] = unit.get('id')
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
             SalesVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
@@ -401,10 +403,11 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
         voucher = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            unit = row.pop('unit')
+            unit = row.pop('unit', None)
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
-            row['unit_id'] = unit.get('id')
+            if unit:
+                row['unit_id'] = unit.get('id')
             PurchaseVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
         # SalesVoucher.apply_transactions(voucher)
         return voucher
@@ -414,10 +417,11 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            unit = row.pop('unit')
+            unit = row.pop('unit', None)
             row['voucher'] = instance
             row['item_id'] = item.get('id')
-            row['unit_id'] = unit.get('id')
+            if unit:
+                row['unit_id'] = unit.get('id')
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
             PurchaseVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
