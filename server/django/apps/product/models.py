@@ -58,19 +58,18 @@ class Item(models.Model):
             discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
         if not self.discount_payable_ledger:
-            discount_payable_ledger = Account(name='Discount Payable ' + self.name, company=self.company)
-            discount_payable_ledger.code = 'D-' + str(self.code)
-            # TODO confirm category
-            # try:
-            #     discount_ledger.category = Category.objects.get(
-            #         name='Discount Expenses',
-            #         parent__name='Indirect Expenses',
-            #         company=self.company
-            #     )
-            # except Category.DoesNotExist:
-            #     pass
-            discount_payable_ledger.save()
-            self.discount_payable_ledger = discount_payable_ledger
+            discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
+            discount_received_ledger.code = 'D-' + str(self.code)
+            try:
+                discount_received_ledger.category = Category.objects.get(
+                    name='Discount Income',
+                    parent__name='Indirect Income',
+                    company=self.company
+                )
+            except Category.DoesNotExist:
+                pass
+            discount_received_ledger.save()
+            self.discount_payable_ledger = discount_received_ledger
         super(Item, self).save(*args, **kwargs)
 
     class Meta:

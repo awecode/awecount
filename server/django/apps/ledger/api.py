@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db.models import Q
 from django_filters import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
@@ -35,6 +36,11 @@ class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = AccountSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('code', 'name',)
+
+    def get_queryset(self):
+        # TODO View transaction with or without cr or dr amount
+        queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0))
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

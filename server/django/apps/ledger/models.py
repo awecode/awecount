@@ -395,6 +395,7 @@ def delete_rows(rows, model):
 @receiver(company_creation)
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get('company')
+    # TODO make default Categories uneditable
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
 
@@ -479,7 +480,11 @@ def handle_company_creation(sender, **kwargs):
                                             default=True)
     Category.objects.create(name='Transfer and Remittance', code='I-D-T&R', parent=direct_income, company=company,
                             default=True)
-    Category.objects.create(name='Indirect Income', code='I-II', parent=income, company=company, default=True)
+    indirect_income = Category.objects.create(name='Indirect Income', code='I-II', parent=income, company=company, default=True)
+
+    discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
+                                                        company=company)
+    Account.objects.get(name='Discount Income', parent=discount_income_category, company=company)
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
@@ -492,8 +497,9 @@ def handle_company_creation(sender, **kwargs):
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-IE', parent=expenses, company=company,
                                                 default=True)
     Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Discount Expenses', parent=indirect_expenses, company=company)
-    # Account.objects.get(name='Discount Expenses', parent=indirect_expenses, company=company)
+    discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses, company=company)
+    Account.objects.get(name='Discount Expenses', parent=discount_expense_category, company=company)
+
 
     # Opening Balance Difference
 
