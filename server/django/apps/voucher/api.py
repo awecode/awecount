@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.template.loader import get_template
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
@@ -68,6 +69,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         if self.action == 'list' or self.action in ('choices',):
             return SalesVoucherListSerializer
         return SalesVoucherCreateSerializer
+
+    def update(self, request, *args, **kwargs):
+        sale_voucher = self.get_object()
+        if sale_voucher.status == 'Issued':
+            _model_name = self.get_queryset().model.__name__
+            permission = '{}IssuedModify'.format(_model_name)
+            modules = request.user.role.modules
+            if permission not in modules:
+                raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
+        return super(SalesVoucherViewSet, self).update(request, *args, **kwargs)
 
     @action(detail=False)
     def get_next_no(self, request):
