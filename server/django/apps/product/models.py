@@ -72,3 +72,6 @@ class Item(models.Model):
             discount_payable_ledger.save()
             self.discount_payable_ledger = discount_payable_ledger
         super(Item, self).save(*args, **kwargs)
+
+    class Meta:
+        unique_together = ('code', 'company',)
