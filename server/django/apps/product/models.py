@@ -23,8 +23,8 @@ class Item(models.Model):
     ledger = models.ForeignKey(Account, null=True, related_name='items', on_delete=models.SET_NULL)
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='allowed_items')
-    discount_payable_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                related_name='payable_items')
+    discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                                 related_name='payable_items')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -57,7 +57,7 @@ class Item(models.Model):
                 pass
             discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
-        if not self.discount_payable_ledger:
+        if not self.discount_received_ledger:
             discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
             discount_received_ledger.code = 'D-' + str(self.code)
             try:
@@ -69,7 +69,7 @@ class Item(models.Model):
             except Category.DoesNotExist:
                 pass
             discount_received_ledger.save()
-            self.discount_payable_ledger = discount_received_ledger
+            self.discount_received_ledger = discount_received_ledger
         super(Item, self).save(*args, **kwargs)
 
     class Meta:
