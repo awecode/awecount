@@ -42,6 +42,22 @@ class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
         queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0))
         return queryset
 
+    def get_discount_account(self, category_name):
+        queryset = self.get_queryset()
+        queryset = queryset.filter(category__name=category_name)
+        serializer = self.get_serializer(queryset, many=True)
+        return serializer.data
+
+    @action(detail=False)
+    def discount_allowed(self, request):
+        data = self.get_discount_account('Discount Expenses')
+        return Response(data)
+
+    @action(detail=False)
+    def discount_received(self, request):
+        data = self.get_discount_account('Discount Income')
+        return Response(data)
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return AccountDetailSerializer
