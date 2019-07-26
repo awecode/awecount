@@ -120,6 +120,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             return HttpResponse('We had some errors <pre>' + html + '</pre>')
         return response
 
+    @action(detail=True, methods=['POST'])
+    def mark_as_paid(self, request, pk):
+        sale_voucher = self.get_object()
+        sale_voucher.status = 'Paid'
+        sale_voucher.apply_mark_as_paid()
+        sale_voucher.save()
+        return Response({})
+
     @action(detail=True)
     def rows(self, request, pk):
         sale_voucher = self.get_object()

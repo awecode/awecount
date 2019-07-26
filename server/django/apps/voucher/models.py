@@ -129,6 +129,15 @@ class SalesVoucher(models.Model):
         row_ids = [row.id for row in self.rows.all()]
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
+    def apply_mark_as_paid(self):
+        today = timezone.now().today()
+        entries = []
+        total = self.total_amount
+        cash_account = get_account(self.company, 'Cash')
+        entries.append(['cr', self.party.customer_account, total])
+        entries.append(['dr', cash_account, total])
+        set_ledger_transactions(self, today, *entries)
+
     @staticmethod
     def apply_transactions(voucher):
         if voucher.status == 'Cancelled':
