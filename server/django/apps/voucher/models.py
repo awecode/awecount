@@ -170,28 +170,31 @@ class SalesVoucher(models.Model):
             dividend_discount = voucher.discount_amount
 
         for row in voucher.rows.all():
+
             pure_total = row.quantity * row.rate
+            # if tax inclusive, reduce tax from pure_total to get the real pure_total
+            row_total = pure_total
+
             entries.append(['cr', row.item.sales_ledger, pure_total])
 
             if row.tax_scheme:
-                entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
+                row_tax_amount = row.tax_amount
+                entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
+                row_total += row_tax_amount
 
             row_discount = 0
-
             if dividend_discount > 0:
-                row_discount = (row.total / voucher.get_sub_total()) * dividend_discount
-
+                row_discount = (pure_total / voucher.get_sub_total()) * dividend_discount
             if row.discount > 0:
                 row_discount += row.discount_amount
-
             if row_discount > 0:
                 entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
+                row_total += row_discount
 
-            entries.append(['dr', dr_acc, row.total])
-            
+            entries.append(['dr', dr_acc, row_total])
+
             print(entries)
-            set_ledger_transactions(row, voucher.transaction_date, *entries)
-        return
+            # set_ledger_transactions(row, voucher.transaction_date, *entries)
 
 
 class SalesVoucherRow(models.Model):
@@ -363,14 +366,14 @@ class CreditVoucherRow(models.Model):
         return 'url'
         # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
 
-    # def overdue_days(self):
-    #     if self.invoice.due_date and self.invoice.due_date < date.today():
-    #         overdue_days = date.today() - self.invoice.due_date
-    #         return overdue_days.days
-    #     return ''
+        # def overdue_days(self):
+        #     if self.invoice.due_date and self.invoice.due_date < date.today():
+        #         overdue_days = date.today() - self.invoice.due_date
+        #         return overdue_days.days
+        #     return ''
 
-    # class Meta:
-    #     unique_together = ('invoice', 'cash_receipt')
+        # class Meta:
+        #     unique_together = ('invoice', 'cash_receipt')
 
 
 class ChequeDeposit(models.Model):
@@ -404,8 +407,8 @@ class ChequeDeposit(models.Model):
             grand_total += total
         return grand_total
 
-    # class Meta:
-    #     unique_together = ('voucher_no', 'company')
+        # class Meta:
+        #     unique_together = ('voucher_no', 'company')
 
 
 # TODO drawee bank foreign key to Bank

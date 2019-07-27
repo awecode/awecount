@@ -42,7 +42,7 @@ class Item(models.Model):
                 pass
             ledger.code = 'P-' + str(self.code)
             ledger.save()
-            self.ledger = ledger
+            self.purchase_ledger = ledger
         if not self.sales_ledger:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             try:
@@ -51,7 +51,7 @@ class Item(models.Model):
                 pass
             ledger.code = 'S-' + str(self.code)
             ledger.save()
-            self.ledger = ledger
+            self.sales_ledger = ledger
         if not self.discount_allowed_ledger:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_ledger.code = 'DA-' + str(self.code)
