@@ -294,7 +294,12 @@ def alter(account, date, dr_difference, cr_difference):
 
 
 def set_transactions(submodel, date, *args, check=True, clear=False):
-    print(args)
+    """
+
+    :type clear: object
+    Clears all transactions not accounted here
+    """
+    # print(args)
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
     journal_entry, created = JournalEntry.objects.get_or_create(
@@ -304,7 +309,8 @@ def set_transactions(submodel, date, *args, check=True, clear=False):
         })
     dr_total = 0
     cr_total = 0
-    all_accounts  = []
+    all_accounts = []
+    all_transaction_ids = []
     for arg in args:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
         matches = journal_entry.transactions.filter(account=arg[1])
@@ -350,6 +356,7 @@ def set_transactions(submodel, date, *args, check=True, clear=False):
             #     transaction.account.current_cr -= transaction.cr_amount
 
             # save new dr_amount and add it to current_dr/cr
+
             if arg[0] == 'dr':
                 dr_difference = val - zero_for_none(transaction.dr_amount)
                 cr_difference = zero_for_none(transaction.cr_amount) * -1
@@ -374,13 +381,16 @@ def set_transactions(submodel, date, *args, check=True, clear=False):
 
         # the following code lies outside if,else block, inside for loop
         transaction.account.save()
+        # new transactions if any are saved into db by following code
         try:
             journal_entry.transactions.add(transaction, bulk=False)
         except TypeError:  # for Django <1.9
             journal_entry.transactions.add(transaction)
+        all_transaction_ids.append(transaction.id)
+
     if clear:
-        import ipdb
-        ipdb.set_trace()
+        obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
+        obsolete_transactions.delete()
     if check and dr_total != cr_total:
         mail_admins('Dr/Cr mismatch!',
                     'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total))

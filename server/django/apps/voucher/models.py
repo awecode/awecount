@@ -140,7 +140,7 @@ class SalesVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
-        entries = []
+        # entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
         if not voucher.status == 'Issued':
@@ -157,7 +157,7 @@ class SalesVoucher(models.Model):
             dr_acc = voucher.party.customer_account
             voucher.status = 'Paid'
         elif voucher.mode == 'Bank Deposit':
-            dr_acc = voucher.bank_account.account
+            dr_acc = voucher.bank_account.ledger
             voucher.status = 'Paid'
         # elif voucher.mode == 'ePayment':
         #     pass
@@ -170,6 +170,7 @@ class SalesVoucher(models.Model):
             dividend_discount = voucher.discount_amount
 
         for row in voucher.rows.all():
+            entries = []
 
             pure_total = row.quantity * row.rate
             # if tax inclusive, reduce tax from pure_total to get the real pure_total
@@ -193,7 +194,9 @@ class SalesVoucher(models.Model):
 
             entries.append(['dr', dr_acc, row_total])
 
-        set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
+            set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
+        # Following set_ledger transactions stays outside for loop
+        # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
 
 
 class SalesVoucherRow(models.Model):
