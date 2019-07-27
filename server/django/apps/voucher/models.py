@@ -530,9 +530,11 @@ class JournalVoucher(models.Model):
     def apply_transactions(voucher):
         if not voucher.status == 'Approved':
             return
+        entries = []
         for row in voucher.rows.all():
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
-            set_ledger_transactions(row, voucher.date, [row.type.lower(), row.account, amount])
+            entries.append([row.type.lower(), row.account, amount])
+        set_ledger_transactions(voucher, voucher.date, *entries)
         return
 
 
