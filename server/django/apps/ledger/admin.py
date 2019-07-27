@@ -12,7 +12,14 @@ class PartyAdmin(admin.ModelAdmin):
 admin.site.register(Party, PartyAdmin)
 admin.site.register(PartyRepresentative)
 
-admin.site.register(Account)
+
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'current_dr', 'current_cr', 'category', 'parent', 'default')
+    search_fields = ('company__name', 'code', 'name')
+    list_filter = ('company', 'default')
+
+
+admin.site.register(Account, AccountAdmin)
 admin.site.register(Transaction)
 admin.site.register(JournalEntry)
 

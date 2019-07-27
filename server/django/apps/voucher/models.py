@@ -193,8 +193,7 @@ class SalesVoucher(models.Model):
 
             entries.append(['dr', dr_acc, row_total])
 
-            print(entries)
-            # set_ledger_transactions(row, voucher.transaction_date, *entries)
+        set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
 
 
 class SalesVoucherRow(models.Model):

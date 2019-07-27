@@ -293,7 +293,8 @@ def alter(account, date, dr_difference, cr_difference):
         current_cr=none_for_zero(zero_for_none(F('current_cr')) + zero_for_none(cr_difference)))
 
 
-def set_transactions(submodel, date, *args, check=True):
+def set_transactions(submodel, date, *args, check=True, clear=False):
+    print(args)
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
     journal_entry, created = JournalEntry.objects.get_or_create(
@@ -303,10 +304,12 @@ def set_transactions(submodel, date, *args, check=True):
         })
     dr_total = 0
     cr_total = 0
+    all_accounts  = []
     for arg in args:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
         matches = journal_entry.transactions.filter(account=arg[1])
         val = round(float(zero_for_none(arg[2])), 2)
+        all_accounts.append(arg[1])
         if not matches:
             transaction = Transaction()
             transaction.account = arg[1]
@@ -375,7 +378,9 @@ def set_transactions(submodel, date, *args, check=True):
             journal_entry.transactions.add(transaction, bulk=False)
         except TypeError:  # for Django <1.9
             journal_entry.transactions.add(transaction)
-
+    if clear:
+        import ipdb
+        ipdb.set_trace()
     if check and dr_total != cr_total:
         mail_admins('Dr/Cr mismatch!',
                     'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total))
