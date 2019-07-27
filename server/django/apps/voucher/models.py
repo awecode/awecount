@@ -140,6 +140,7 @@ class SalesVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
+        entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
         if not voucher.status == 'Issued':
@@ -170,8 +171,7 @@ class SalesVoucher(models.Model):
 
         for row in voucher.rows.all():
             pure_total = row.quantity * row.rate
-            # entries = [['cr', row.item.sale_ledger, pure_total]]
-            entries = [['cr', row.item.ledger, pure_total]]
+            entries.append(['cr', row.item.sales_ledger, pure_total])
 
             if row.tax_scheme:
                 entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
@@ -188,7 +188,8 @@ class SalesVoucher(models.Model):
                 entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
 
             entries.append(['dr', dr_acc, row.total])
-
+            
+            print(entries)
             set_ledger_transactions(row, voucher.transaction_date, *entries)
         return
 

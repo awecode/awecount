@@ -20,11 +20,10 @@ class Item(models.Model):
     description = models.TextField(blank=True, null=True)
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
-    ledger = models.ForeignKey(Account, null=True, related_name='items', on_delete=models.SET_NULL)
-    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                related_name='allowed_items')
-    discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='payable_items')
+    sales_ledger = models.OneToOneField(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
+    purchase_ledger = models.OneToOneField(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
+    discount_allowed_ledger = models.OneToOneField(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='allowed_item')
+    discount_received_ledger = models.OneToOneField(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name='received_item')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -35,8 +34,8 @@ class Item(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.ledger:
-            ledger = Account(name=self.name, company=self.company)
+        if not self.purchase_ledger:
+            ledger = Account(name=self.name + ' (Purchase)', company=self.company)
             try:
                 ledger.category = Category.objects.get(name='Purchase', parent__name='Expenses', company=self.company)
             except Category.DoesNotExist:
@@ -44,9 +43,18 @@ class Item(models.Model):
             ledger.code = 'P-' + str(self.code)
             ledger.save()
             self.ledger = ledger
+        if not self.sales_ledger:
+            ledger = Account(name=self.name + ' (Sales)', company=self.company)
+            try:
+                ledger.category = Category.objects.get(name='Sales', parent__name='Income', company=self.company)
+            except Category.DoesNotExist:
+                pass
+            ledger.code = 'S-' + str(self.code)
+            ledger.save()
+            self.ledger = ledger
         if not self.discount_allowed_ledger:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
-            discount_allowed_ledger.code = 'D-' + str(self.code)
+            discount_allowed_ledger.code = 'DA-' + str(self.code)
             try:
                 discount_allowed_ledger.category = Category.objects.get(
                     name='Discount Expenses',
@@ -59,7 +67,7 @@ class Item(models.Model):
             self.discount_allowed_ledger = discount_allowed_ledger
         if not self.discount_received_ledger:
             discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
-            discount_received_ledger.code = 'D-' + str(self.code)
+            discount_received_ledger.code = 'DR-' + str(self.code)
             try:
                 discount_received_ledger.category = Category.objects.get(
                     name='Discount Income',
