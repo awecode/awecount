@@ -36,7 +36,7 @@ class PartySerializer(serializers.ModelSerializer):
                     defaults=representative
                 )
             except IntegrityError:
-                raise APIException({'errors': ['Party representative already created.']})
+                raise APIException({'non_field_errors': ['Party representative already created.']})
         instance.refresh_from_db()
         return instance
 

@@ -174,7 +174,7 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
             try:
                 CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
-                raise APIException({'errors': ['Voucher repeated in cash receipt.']})
+                raise APIException({'non_field_errors': ['Voucher repeated in cash receipt.']})
         instance.sale_vouchers.clear()
         instance.sale_vouchers.add(*sale_vouchers)
         instance.refresh_from_db()
@@ -296,7 +296,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
             try:
                 JournalVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
-                raise APIException({'errors': ['Voucher repeated in journal voucher.']})
+                raise APIException({'non_field_errors': ['Voucher repeated in journal voucher.']})
         instance.refresh_from_db()
         JournalVoucher.apply_transactions(instance)
         return instance

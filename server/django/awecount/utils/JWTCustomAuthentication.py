@@ -51,7 +51,7 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
 
         refresh = self.get_token(self.user)
         if self.user and not self.user.company:
-            raise APIException({'errors': ['User not registered to any company.']})
+            raise APIException({'non_field_errors': ['User not registered to any company.']})
         data['refresh'] = text_type(refresh)
         data['access'] = text_type(refresh.access_token)
         data['company'] = CompanySerializer(self.user.company).data
