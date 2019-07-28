@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.mail import mail_admins
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete
@@ -292,7 +293,13 @@ def alter(account, date, dr_difference, cr_difference):
         current_cr=none_for_zero(zero_for_none(F('current_cr')) + zero_for_none(cr_difference)))
 
 
-def set_transactions(submodel, date, *args):
+def set_transactions(submodel, date, *entries, check=True, clear=False):
+    """
+
+    :type clear: object
+    Clears all transactions not accounted here
+    """
+    # print(args)
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
     journal_entry, created = JournalEntry.objects.get_or_create(
@@ -300,30 +307,41 @@ def set_transactions(submodel, date, *args):
         defaults={
             'date': date
         })
-    for arg in args:
+    dr_total = 0
+    cr_total = 0
+    all_accounts = []
+    all_transaction_ids = []
+    for arg in entries:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
         matches = journal_entry.transactions.filter(account=arg[1])
+        val = round(float(zero_for_none(arg[2])), 2)
+        all_accounts.append(arg[1])
         if not matches:
             transaction = Transaction()
             transaction.account = arg[1]
             if arg[0] == 'dr':
-                transaction.dr_amount = float(zero_for_none(arg[2]))
+                transaction.dr_amount = val
                 transaction.cr_amount = None
                 transaction.account.current_dr = none_for_zero(
                     zero_for_none(transaction.account.current_dr) + transaction.dr_amount)
-                alter(arg[1], date, float(arg[2]), 0)
+                alter(arg[1], date, val, 0)
+                dr_total += val
             if arg[0] == 'cr':
-                transaction.cr_amount = float(zero_for_none(arg[2]))
+                transaction.cr_amount = val
                 transaction.dr_amount = None
                 transaction.account.current_cr = none_for_zero(
                     zero_for_none(transaction.account.current_cr) + transaction.cr_amount)
-                alter(arg[1], date, 0, float(arg[2]))
+                alter(arg[1], date, 0, val)
+                cr_total += val
+
             transaction.current_dr = none_for_zero(
-                zero_for_none(transaction.account.get_dr_amount(date + timedelta(days=1)))
-                + zero_for_none(transaction.dr_amount))
+                round(zero_for_none(transaction.account.get_dr_amount(date + timedelta(days=1)))
+                      + zero_for_none(transaction.dr_amount), 2)
+            )
             transaction.current_cr = none_for_zero(
-                zero_for_none(transaction.account.get_cr_amount(date + timedelta(days=1)))
-                + zero_for_none(transaction.cr_amount))
+                round(zero_for_none(transaction.account.get_cr_amount(date + timedelta(days=1)))
+                      + zero_for_none(transaction.cr_amount), 2)
+            )
         else:
             transaction = matches[0]
             transaction.account = arg[1]
@@ -338,18 +356,21 @@ def set_transactions(submodel, date, *args):
             #     transaction.account.current_cr -= transaction.cr_amount
 
             # save new dr_amount and add it to current_dr/cr
+
             if arg[0] == 'dr':
-                dr_difference = float(arg[2]) - zero_for_none(transaction.dr_amount)
+                dr_difference = val - zero_for_none(transaction.dr_amount)
                 cr_difference = zero_for_none(transaction.cr_amount) * -1
                 alter(arg[1], transaction.journal_entry.date, dr_difference, cr_difference)
-                transaction.dr_amount = float(arg[2])
+                transaction.dr_amount = val
                 transaction.cr_amount = None
+                dr_total += transaction.dr_amount
             else:
-                cr_difference = float(arg[2]) - zero_for_none(transaction.cr_amount)
+                cr_difference = val - zero_for_none(transaction.cr_amount)
                 dr_difference = zero_for_none(transaction.dr_amount) * -1
                 alter(arg[1], transaction.journal_entry.date, dr_difference, cr_difference)
-                transaction.cr_amount = float(arg[2])
+                transaction.cr_amount = val
                 transaction.dr_amount = None
+                cr_total += transaction.cr_amount
 
             transaction.current_dr = none_for_zero(zero_for_none(transaction.current_dr) + dr_difference)
             transaction.current_cr = none_for_zero(zero_for_none(transaction.current_cr) + cr_difference)
@@ -360,10 +381,20 @@ def set_transactions(submodel, date, *args):
 
         # the following code lies outside if,else block, inside for loop
         transaction.account.save()
+        # new transactions if any are saved into db by following code
         try:
             journal_entry.transactions.add(transaction, bulk=False)
         except TypeError:  # for Django <1.9
             journal_entry.transactions.add(transaction)
+        all_transaction_ids.append(transaction.id)
+
+    if clear:
+        obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
+        obsolete_transactions.delete()
+    if check and dr_total != cr_total:
+        mail_admins('Dr/Cr mismatch!',
+                    'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total))
+        raise RuntimeError('Dr/Cr mismatch!')
 
 
 @receiver(pre_delete, sender=Transaction)

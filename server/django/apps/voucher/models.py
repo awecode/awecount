@@ -140,6 +140,7 @@ class SalesVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
+        # entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
         if not voucher.status == 'Issued':
@@ -156,7 +157,7 @@ class SalesVoucher(models.Model):
             dr_acc = voucher.party.customer_account
             voucher.status = 'Paid'
         elif voucher.mode == 'Bank Deposit':
-            dr_acc = voucher.bank_account.account
+            dr_acc = voucher.bank_account.ledger
             voucher.status = 'Paid'
         # elif voucher.mode == 'ePayment':
         #     pass
@@ -169,28 +170,33 @@ class SalesVoucher(models.Model):
             dividend_discount = voucher.discount_amount
 
         for row in voucher.rows.all():
+            entries = []
+
             pure_total = row.quantity * row.rate
-            # entries = [['cr', row.item.sale_ledger, pure_total]]
-            entries = [['cr', row.item.ledger, pure_total]]
+            # if tax inclusive, reduce tax from pure_total to get the real pure_total
+            row_total = pure_total
+
+            entries.append(['cr', row.item.sales_ledger, pure_total])
 
             if row.tax_scheme:
-                entries.append(['cr', row.tax_scheme.payable, row.tax_amount])
+                row_tax_amount = row.tax_amount
+                entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
+                row_total += row_tax_amount
 
             row_discount = 0
-
             if dividend_discount > 0:
-                row_discount = (row.total / voucher.get_sub_total()) * dividend_discount
-
+                row_discount = (pure_total / voucher.get_sub_total()) * dividend_discount
             if row.discount > 0:
                 row_discount += row.discount_amount
-
             if row_discount > 0:
                 entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
+                row_total += row_discount
 
-            entries.append(['dr', dr_acc, row.total])
+            entries.append(['dr', dr_acc, row_total])
 
-            set_ledger_transactions(row, voucher.transaction_date, *entries)
-        return
+            set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
+        # Following set_ledger transactions stays outside for loop
+        # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
 
 
 class SalesVoucherRow(models.Model):
@@ -362,14 +368,14 @@ class CreditVoucherRow(models.Model):
         return 'url'
         # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
 
-    # def overdue_days(self):
-    #     if self.invoice.due_date and self.invoice.due_date < date.today():
-    #         overdue_days = date.today() - self.invoice.due_date
-    #         return overdue_days.days
-    #     return ''
+        # def overdue_days(self):
+        #     if self.invoice.due_date and self.invoice.due_date < date.today():
+        #         overdue_days = date.today() - self.invoice.due_date
+        #         return overdue_days.days
+        #     return ''
 
-    # class Meta:
-    #     unique_together = ('invoice', 'cash_receipt')
+        # class Meta:
+        #     unique_together = ('invoice', 'cash_receipt')
 
 
 class ChequeDeposit(models.Model):
@@ -403,8 +409,8 @@ class ChequeDeposit(models.Model):
             grand_total += total
         return grand_total
 
-    # class Meta:
-    #     unique_together = ('voucher_no', 'company')
+        # class Meta:
+        #     unique_together = ('voucher_no', 'company')
 
 
 # TODO drawee bank foreign key to Bank
@@ -524,9 +530,11 @@ class JournalVoucher(models.Model):
     def apply_transactions(voucher):
         if not voucher.status == 'Approved':
             return
+        entries = []
         for row in voucher.rows.all():
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
-            set_ledger_transactions(row, voucher.date, [row.type.lower(), row.account, amount])
+            entries.append([row.type.lower(), row.account, amount])
+        set_ledger_transactions(voucher, voucher.date, *entries)
         return
 
 
