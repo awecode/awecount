@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from apps.ledger.models import JournalEntry
 from apps.ledger.serializers import JournalEntryMultiAccountSerializer
 from awecount.utils import delete_rows
+from awecount.utils.serializers import ShortNameChoiceSerializer
 
 
 class InputChoiceMixin(object):
@@ -33,6 +34,14 @@ class InputChoiceMixin(object):
     @action(detail=False)
     def choices(self, request):
         return self.list(request)
+
+
+class ShortNameChoiceMixin(object):
+
+    def get_serializer_class(self):
+        if self.action in ('choices',):
+            return ShortNameChoiceSerializer
+        return super().get_serializer_class()
 
 
 class DeleteRows(object):
