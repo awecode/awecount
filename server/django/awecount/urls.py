@@ -10,6 +10,7 @@ from apps.ledger import api as ledger
 from apps.product import api as item
 from apps.tax import api as tax
 from apps.voucher import api as voucher
+from apps.bank import api as bank
 
 router = DefaultRouter()
 
@@ -27,7 +28,7 @@ router.register('cheque-voucher', voucher.ChequeVoucherViewSet, base_name='chequ
 router.register('cheque-deposits', voucher.ChequeDepositViewSet, base_name='chequedeposit')
 router.register('bank-branch', voucher.BankBranchViewSet, base_name='bankbranch')
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
-router.register('bank-account', voucher.BankAccountViewSet)
+router.register('bank-account', bank.BankAccountViewSet)
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),

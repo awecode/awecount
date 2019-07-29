@@ -9,11 +9,11 @@ from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    BankBranch, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDeposit, ChequeDepositRow, \
+    BankBranch, InvoiceDesign, JournalVoucher, JournalVoucherRow, ChequeDeposit, ChequeDepositRow, \
     PurchaseVoucher, PurchaseVoucherRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
-    BankAccountSerializer, SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
+    SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer
 
@@ -130,7 +130,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             return Response({})
         raise APIException({'non_field_errors': ['Sale voucher not valid to be paid.']})
 
-
     @action(detail=True)
     def rows(self, request, pk):
         sale_voucher = self.get_object()
@@ -169,7 +168,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             'discount_types': types,
             'tax_choices': tax_choices,
         })
-
 
     @action(detail=False)
     def get_next_no(self, request):
@@ -290,8 +288,3 @@ class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
         except InvoiceDesign.DoesNotExist:
             pass
         return Response(data)
-
-
-class BankAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
-    queryset = BankAccount.objects.all()
-    serializer_class = BankAccountSerializer

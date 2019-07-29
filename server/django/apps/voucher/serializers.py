@@ -1,10 +1,9 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
-from apps.ledger.models import set_transactions as set_ledger_transaction
 
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
-    InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, PurchaseVoucher, \
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, PurchaseVoucher, \
     PurchaseVoucherRow
 
 
@@ -246,15 +245,6 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InvoiceDesign
-        exclude = ('company',)
-
-
-class BankAccountSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='account_number')
-    company_id = serializers.IntegerField()
-
-    class Meta:
-        model = BankAccount
         exclude = ('company',)
 
 

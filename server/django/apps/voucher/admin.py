@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow, Bank, BankBranch, \
-    ChequeVoucher, InvoiceDesign, BankAccount, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, \
+    ChequeVoucher, InvoiceDesign, JournalVoucher, JournalVoucherRow, ChequeDepositRow, ChequeDeposit, \
     PurchaseVoucher, PurchaseVoucherRow
 
 
@@ -51,7 +51,6 @@ admin.site.register(Bank)
 admin.site.register(BankBranch)
 admin.site.register(ChequeVoucher)
 admin.site.register(InvoiceDesign)
-admin.site.register(BankAccount)
 
 
 class JournalVoucherAdmin(admin.ModelAdmin):
