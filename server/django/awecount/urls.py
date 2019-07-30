@@ -24,11 +24,11 @@ router.register('sale-voucher', voucher.SalesVoucherViewSet)
 router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet)
 router.register('credit-voucher', voucher.CreditVoucherViewSet)
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
-router.register('cheque-voucher', voucher.ChequeVoucherViewSet, base_name='chequevoucher')
-router.register('bank-branch', voucher.BankBranchViewSet, base_name='bankbranch')
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='chequedeposit')
 router.register('bank-account', bank.BankAccountViewSet)
+router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='chequevoucher')
+router.register('bank-branch', bank.BankBranchViewSet, base_name='bankbranch')
 
 urlpatterns = [
     path('aweadmin/', admin.site.urls),

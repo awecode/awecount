@@ -2,8 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
-from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, ChequeVoucher, BankBranch, \
-    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, \
+from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, \
     PurchaseVoucherRow
 
 
@@ -191,53 +190,6 @@ class CreditVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditVoucher
         fields = ('id', 'voucher_no', 'party', 'date',)
-
-
-class BankBranchSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField()
-    cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
-
-    class Meta:
-        model = BankBranch
-        fields = '__all__'
-
-
-class ChequeVoucherSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-    bank_branch_id = serializers.IntegerField(required=True)
-    # party_id = serializers.IntegerField(source='party.id', required=False)
-    company_id = serializers.IntegerField()
-    payee = serializers.SerializerMethodField()
-    party_name = serializers.ReadOnlyField(source='party.name')
-    amount_in_words = serializers.SerializerMethodField()
-
-    def get_amount_in_words(self, obj):
-        return obj.amount_in_words
-
-    def create(self, validated_data):
-        request = self.context['request']
-        user = request.user
-        validated_data['user'] = user
-        return super(ChequeVoucherSerializer, self).create(validated_data)
-
-    def update(self, instance, validated_data):
-        request = self.context['request']
-        user = request.user
-        validated_data['user'] = user
-        return super(ChequeVoucherSerializer, self).update(instance, validated_data)
-
-    def get_name(self, obj):
-        if obj.bank_branch:
-            return obj.bank_branch.name
-
-    def get_payee(self, obj):
-        if obj.party:
-            return obj.party.name
-        return obj.customer_name
-
-    class Meta:
-        model = ChequeVoucher
-        exclude = ('user', 'company',)
 
 
 class InvoiceDesignSerializer(serializers.ModelSerializer):

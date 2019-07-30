@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BankAccount, ChequeDepositRow, ChequeDeposit
+from .models import BankAccount, ChequeDepositRow, ChequeDeposit, Bank, BankBranch, ChequeVoucher
 
 admin.site.register(BankAccount)
 
@@ -14,3 +14,7 @@ class ChequeDepositAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ChequeDeposit, ChequeDepositAdmin)
+admin.site.register(Bank)
+admin.site.register(BankBranch)
+admin.site.register(ChequeVoucher)
+

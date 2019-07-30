@@ -9,9 +9,9 @@ from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
-    BankBranch, InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
-    CreditVoucherListSerializer, ChequeVoucherSerializer, BankBranchSerializer, InvoiceDesignSerializer, \
+    CreditVoucherListSerializer, InvoiceDesignSerializer, \
     SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer
 
@@ -191,15 +191,6 @@ class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     def get_next_no(self, request):
         voucher_no = get_next_voucher_no(JournalVoucher, request.company.id)
         return Response({'voucher_no': voucher_no})
-
-
-class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
-    serializer_class = ChequeVoucherSerializer
-
-
-class BankBranchViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
-    queryset = BankBranch.objects.all()
-    serializer_class = BankBranchSerializer
 
 
 class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
