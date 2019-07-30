@@ -25,9 +25,9 @@ router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet)
 router.register('credit-voucher', voucher.CreditVoucherViewSet)
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('cheque-voucher', voucher.ChequeVoucherViewSet, base_name='chequevoucher')
-router.register('cheque-deposits', voucher.ChequeDepositViewSet, base_name='chequedeposit')
 router.register('bank-branch', voucher.BankBranchViewSet, base_name='bankbranch')
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
+router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='chequedeposit')
 router.register('bank-account', bank.BankAccountViewSet)
 
 urlpatterns = [
