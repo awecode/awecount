@@ -15,9 +15,15 @@ class Unit(models.Model):
 
 
 LEDGER_TYPES = (
-    ('Use Global Ledger', 'Use Global Ledger'),
-    ('Use Category\'s Ledger', 'Use Category\'s Ledger'),
-    ('Use Dedicated Ledger', 'Use Dedicated Ledger'),
+    ('dedicated', 'Use Dedicated Ledger'),
+    ('category', 'Use Category\'s Ledger'),
+    ('global', 'Use Global Ledger'),
+)
+
+ITEM_TYPES = (
+    ('Sellable', 'Sellable'),
+    ('Expense', 'Expense'),
+    ('Asset', 'Asset'),
 )
 
 
@@ -36,10 +42,12 @@ class Category(models.Model):
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_category')
 
-    items_sales_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES)
-    items_purchase_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES)
-    items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES)
-    items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES)
+    items_sales_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_purchase_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+
+    type = models.CharField(max_length=20, choices=ITEM_TYPES)
 
     key = 'InventoryCategory'
 
@@ -112,6 +120,8 @@ class Item(models.Model):
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_item')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
+    type = models.CharField(max_length=20, choices=ITEM_TYPES)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

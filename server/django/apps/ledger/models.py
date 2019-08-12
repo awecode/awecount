@@ -171,12 +171,13 @@ class Party(models.Model):
         verbose_name_plural = 'Parties'
 
     def save(self, *args, **kwargs):
+        post_save = False
         if self.pk is None:
-            account = Account(name=self.name, company=self.company)
-            account.save()
-            self.account = account
+            post_save = True
+        super().save(*args, **kwargs)
+        if post_save:
             if not self.customer_account:
-                customer_account = Account(name=self.name, company=self.company)
+                customer_account = Account(name=self.name, company=self.company, code='PR-' + str(self.id))
                 customer_account.name += ' (Receivable)'
                 try:
                     customer_account.category = Category.objects.get(name='Customers',
@@ -184,21 +185,18 @@ class Party(models.Model):
                                                                      company=self.company)
                 except Category.DoesNotExist:
                     pass
-                customer_account.suggest_code()
                 customer_account.save()
                 self.customer_account = customer_account
             if not self.supplier_account:
                 try:
-                    account2 = Account(name=self.name + ' (Payable)')
+                    account2 = Account(name=self.name + ' (Payable)', code='PR-' + str(self.id))
                     account2.company = self.company
                     account2.category = Category.objects.get(name='Suppliers', parent__name='Account Payables',
                                                              company=self.company)
-                    account2.suggest_code()
                     account2.save()
                     self.supplier_account = account2
                 except Category.DoesNotExist:
                     pass
-        super(Party, self).save(*args, **kwargs)
 
 
 class PartyRepresentative(models.Model):
