@@ -1,4 +1,5 @@
 from rest_framework import mixins, viewsets
+from rest_framework.exceptions import APIException
 
 
 class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
@@ -15,5 +16,8 @@ class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
     """
 
     def get_queryset(self):
+        if not hasattr(self.request, 'company'):
+            raise APIException({'non_field_errors': ['User is not assigned with any company.']})
         company = self.request.company
         return self.serializer_class.Meta.model.objects.filter(company=company)
+

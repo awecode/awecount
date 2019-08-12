@@ -12,13 +12,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'django_filters',
     'djoser',
+    'corsheaders',
 
     'apps.users',
     'apps.voucher',
     'apps.ledger',
     'apps.tax',
     'apps.product',
+    'apps.bank',
 ]
 
 MIDDLEWARE = [
@@ -29,6 +32,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'apps.users.middleware.CompanyMiddleware',
 ]
 
@@ -56,6 +60,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
+        'apps.users.permissions.ModuleAccessPermission',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -75,6 +80,9 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media')
+MEDIA_URL = '/media/'
+
 AUTH_USER_MODEL = 'users.User'
 
 SIMPLE_JWT = {
@@ -83,3 +91,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
 
 }
+
+EMAIL_SUBJECT_PREFIX = '[AWECOUNTING] '

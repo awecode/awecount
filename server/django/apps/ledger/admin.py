@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.ledger.models import Party
+from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative
 
 
 class PartyAdmin(admin.ModelAdmin):
@@ -10,3 +10,22 @@ class PartyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Party, PartyAdmin)
+admin.site.register(PartyRepresentative)
+
+
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'current_dr', 'current_cr', 'category', 'parent', 'default')
+    search_fields = ('company__name', 'code', 'name')
+    list_filter = ('company', 'default')
+
+
+admin.site.register(Account, AccountAdmin)
+admin.site.register(Transaction)
+admin.site.register(JournalEntry)
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'company',)
+
+
+admin.site.register(Category, CategoryAdmin)

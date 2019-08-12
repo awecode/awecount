@@ -3,10 +3,23 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
     UserCreationForm as DjangoUserCreationForm
 
-from .models import User, Company
+from apps.ledger.models import handle_company_creation
+from .models import User, Company, Role
 from django import forms
 
 admin.site.unregister(Group)
+
+admin.site.site_header = "Awecount"
+admin.site.site_title = "Awecount Admin Portal"
+admin.site.index_title = "Welcome to Awecount"
+
+
+def handle_account_creation(modeladmin, request, queryset):
+    for company in queryset:
+        handle_company_creation(modeladmin, company=company)
+
+
+handle_account_creation.short_description = "Create necessary accounts"
 
 
 class UserCreationForm(DjangoUserCreationForm):
@@ -61,6 +74,7 @@ class CustomUserAdmin(UserAdmin):
                               'date_joined',
                               'last_login',
                               'company',
+                              'role',
                               'is_superuser',)}),
                  )
     add_fieldsets = ((None,
@@ -76,12 +90,14 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Role)
 
 
 class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
+    actions = [handle_account_creation]
 
 
 admin.site.register(Company, CompanyAdmin)

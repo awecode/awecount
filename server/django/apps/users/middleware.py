@@ -24,8 +24,8 @@ class CompanyMiddleware(object):
         company_obj = None
         if request.user.is_authenticated:
             try:
-                company_obj = Company.objects.get(id=request.user.company.id)
-                request.__class__.company = company_obj.id
+                if request.user.company:
+                    request.__class__.company = request.user.company
             except Company.DoesNotExist:
                 pass
 
