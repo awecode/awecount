@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Item, Unit
+from .models import Item, Unit, Category as InventoryCategory
 from .validators import CustomUniqueTogetherValidator
 
 
@@ -26,4 +26,10 @@ class UnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Unit
+        exclude = ('company',)
+
+class InventoryCategorySerializer(serializers.ModelSerializer):
+    # company_id = serializers.IntegerField()
+    class Meta:
+        model = InventoryCategory
         exclude = ('company',)
