@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from apps.ledger.models import Account, Category as AccountCategory
@@ -49,6 +50,9 @@ class Category(models.Model):
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
     type = models.CharField(max_length=20, choices=ITEM_TYPES)
+
+    extra_fields = JSONField(default=list, null=True, blank=True)
+    # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
 
     # Required for module-wise permission check 
     key = 'InventoryCategory'
@@ -128,6 +132,8 @@ class Item(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
+    extra_data = JSONField(null=True, blank=True)
+    search_data = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
