@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.product.models import Item, Unit
+from apps.product.models import Item, Unit, Category
 
 
 class ItemAdmin(admin.ModelAdmin):
@@ -11,6 +11,13 @@ class ItemAdmin(admin.ModelAdmin):
 class UnitAdmin(admin.ModelAdmin):
     search_fields = ('name', 'short_name',)
 
+
+class CategoryAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'company__name')
+    list_filter = ('company', 'default_unit', 'default_tax_scheme')
+
+
+admin.site.register(Category, CategoryAdmin)
 
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Unit)

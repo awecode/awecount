@@ -28,8 +28,12 @@ class UnitSerializer(serializers.ModelSerializer):
         model = Unit
         exclude = ('company',)
 
+
 class InventoryCategorySerializer(serializers.ModelSerializer):
     # company_id = serializers.IntegerField()
+    default_unit_id = serializers.IntegerField(required=False)
+    default_tax_scheme_id = serializers.IntegerField(required=False)
+
     class Meta:
         model = InventoryCategory
-        exclude = ('company',)
+        exclude = ('company', 'default_unit', 'default_tax_scheme')
