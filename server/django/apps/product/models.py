@@ -21,7 +21,8 @@ LEDGER_TYPES = (
 )
 
 ITEM_TYPES = (
-    ('Sellable', 'Sellable'),
+    ('Tangible Sellable', 'Tangible Sellable'),
+    ('Intangible Sellable', 'Intangible Sellable'),
     ('Expense', 'Expense'),
     ('Asset', 'Asset'),
 )
@@ -49,6 +50,7 @@ class Category(models.Model):
 
     type = models.CharField(max_length=20, choices=ITEM_TYPES)
 
+    # Required for module-wise permission check 
     key = 'InventoryCategory'
 
     def save(self, *args, **kwargs):
