@@ -52,11 +52,11 @@ class Item(models.Model):
     description = models.TextField(blank=True, null=True)
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
-    sales_ledger = models.OneToOneField(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
-    purchase_ledger = models.OneToOneField(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
-    discount_allowed_ledger = models.OneToOneField(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    sales_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
+    purchase_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
+    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                    related_name='discount_allowed_item')
-    discount_received_ledger = models.OneToOneField(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                     related_name='discount_received_item')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
