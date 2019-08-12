@@ -39,10 +39,11 @@ class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
 
     def get_queryset(self):
         # TODO View transaction with or without cr or dr amount
-        queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0), company=self.request.company)
+        # queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0), company=self.request.company)
+        queryset = Account.objects.filter(company=self.request.company)
         return queryset
 
-    def get_discount_account(self, category_name):
+    def get_accounts_by_category_name(self, category_name):
         queryset = self.get_queryset()
         queryset = queryset.filter(category__name=category_name, company=self.request.company)
         serializer = self.get_serializer(queryset, many=True)
@@ -50,12 +51,12 @@ class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
 
     @action(detail=False)
     def discount_allowed(self, request):
-        data = self.get_discount_account('Discount Expenses')
+        data = self.get_accounts_by_category_name('Discount Expenses')
         return Response(data)
 
     @action(detail=False)
     def discount_received(self, request):
-        data = self.get_discount_account('Discount Income')
+        data = self.get_accounts_by_category_name('Discount Income')
         return Response(data)
 
     def get_serializer_class(self):
