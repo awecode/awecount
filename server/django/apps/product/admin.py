@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.product.models import Item, Unit, Category
+from apps.product.models import Item, Unit, Category, JournalEntry, Transaction, InventoryAccount
 
 
 class ItemAdmin(admin.ModelAdmin):
@@ -20,4 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(Category, CategoryAdmin)
 
 admin.site.register(Item, ItemAdmin)
+admin.site.register(InventoryAccount)
+admin.site.register(JournalEntry)
+admin.site.register(Transaction)
 admin.site.register(Unit)
