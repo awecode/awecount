@@ -58,6 +58,7 @@ class UserManager(BaseUserManager):
         )
 
 
+# TODO Simplify
 MODULES = (
     ('Dashboard', 'Dashboard'),
     ('ItemView', 'ItemView'),
@@ -118,12 +119,16 @@ MODULES = (
     ('BankBranchCreate', 'BankBranchCreate'),
     ('BankBranchModify', 'BankBranchModify'),
     ('BankBranchDelete', 'BankBranchDelete'),
+    ('InventoryCategoryView', 'InventoryCategoryView'),
+    ('InventoryCategoryCreate', 'InventoryCategoryCreate'),
+    ('InventoryCategoryModify', 'InventoryCategoryModify'),
+    ('InventoryCategoryDelete', 'InventoryCategoryDelete'),
 )
 
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = SeparatedValuesField(choices=MODULES, max_length=1000, blank=True, null=True, token=',')
+    modules = SeparatedValuesField(choices=MODULES, max_length=2000, blank=True, null=True, token=',')
 
     def __str__(self):
         return self.name

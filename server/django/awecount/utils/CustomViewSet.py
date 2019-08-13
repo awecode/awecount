@@ -1,5 +1,6 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
 from rest_framework.exceptions import APIException
+from rest_framework.response import Response
 
 
 class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
@@ -14,6 +15,14 @@ class CreateListRetrieveUpdateViewSet(mixins.CreateModelMixin,
     `.serializer_class` attributes.
 
     """
+    def create(self, request, *args, **kwargs):
+        request.data['company_id'] = request.company.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
     def get_queryset(self):
         if not hasattr(self.request, 'company'):
