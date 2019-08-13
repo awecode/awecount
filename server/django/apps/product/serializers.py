@@ -30,7 +30,7 @@ class UnitSerializer(serializers.ModelSerializer):
 
 
 class InventoryCategorySerializer(serializers.ModelSerializer):
-    # company_id = serializers.IntegerField()
+    company_id = serializers.IntegerField()
     default_unit_id = serializers.IntegerField(required=False)
     default_tax_scheme_id = serializers.IntegerField(required=False)
 
