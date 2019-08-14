@@ -38,6 +38,12 @@ class InputChoiceMixin(object):
 
 class ShortNameChoiceMixin(object):
 
+    def get_serializer_context(self):
+        extra_fields = self.extra_fields if hasattr(self, 'extra_fields') else None
+        return {
+            'extra_fields': extra_fields
+        }
+
     def get_serializer_class(self):
         if self.action in ('choices',):
             return ShortNameChoiceSerializer
