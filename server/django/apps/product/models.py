@@ -55,7 +55,10 @@ class Category(models.Model):
     items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
-    type = models.CharField(max_length=20, choices=ITEM_TYPES)
+    # type = models.CharField(max_length=20, choices=ITEM_TYPES)
+    track_inventory = models.BooleanField(default=True)
+    can_be_sold = models.BooleanField(default=True)
+    can_be_purchased = models.BooleanField(default=True)
 
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
@@ -260,14 +263,20 @@ class Item(models.Model):
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_item')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
-    type = models.CharField(max_length=20, choices=ITEM_TYPES)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    track_inventory = models.BooleanField(default=True)
+    can_be_sold = models.BooleanField(default=True)
+    can_be_purchased = models.BooleanField(default=True)
+    fixed_asset = models.BooleanField(default=False)
+    
 
-    company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
     extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.name
@@ -319,6 +328,7 @@ class Item(models.Model):
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
 
+        # if self.type in ['Tangible Sellable', 'Asset']:
         # TODO define how to pass Inventory account values
         # item.save(account_no=account_no, opening_balance=opening_balance, opening_rate=opening_rate, opening_rate_vattable=opening_rate_vattable)
         account_no = kwargs.pop('account_no') if 'account_no' in kwargs.keys() else None
