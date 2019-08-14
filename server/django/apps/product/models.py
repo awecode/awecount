@@ -254,7 +254,12 @@ class Item(models.Model):
     description = models.TextField(blank=True, null=True)
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
+
+    front_image = models.ImageField(blank=True, null=True, upload_to='item_front_images/')
+    back_image = models.ImageField(blank=True, null=True, upload_to='item_back_images/')
+
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
+
     sales_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
     purchase_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
@@ -267,15 +272,13 @@ class Item(models.Model):
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
-    
 
     extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
-
 
     def __str__(self):
         return self.name
@@ -327,7 +330,7 @@ class Item(models.Model):
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
         super().save(*args, **kwargs)
-        
+
         if not self.account_id and (self.track_inventory or self.fixed_asset):
             account = InventoryAccount(code=self.code, name=self.name)
             account.save()
