@@ -59,6 +59,7 @@ class Category(models.Model):
     track_inventory = models.BooleanField(default=True)
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
+    fixed_asset = models.BooleanField(default=False)
 
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
@@ -124,7 +125,7 @@ class Category(models.Model):
 class InventoryAccount(models.Model):
     code = models.CharField(max_length=10, blank=True, null=True)
     name = models.CharField(max_length=100)
-    account_no = models.PositiveIntegerField()
+    account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
     opening_rate = models.FloatField(default=0)
@@ -327,28 +328,11 @@ class Item(models.Model):
                 pass
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
-
-        # if self.type in ['Tangible Sellable', 'Asset']:
-        # TODO define how to pass Inventory account values
-        # item.save(account_no=account_no, opening_balance=opening_balance, opening_rate=opening_rate, opening_rate_vattable=opening_rate_vattable)
-        account_no = kwargs.pop('account_no') if 'account_no' in kwargs.keys() else None
-        if self.id:
-            self.account.name = self.name
-            self.account.save()
-        if account_no:
-            opening_balance = kwargs.pop('opening_balance')
-            opening_rate = kwargs.pop('opening_rate')
-            opening_rate_vattable = kwargs.pop('opening_rate_vattable')
-            if self.account:
-                account = self.account
-                account.account_no = account_no
-            else:
-                account = InventoryAccount(code=self.code, name=self.name, account_no=account_no,
-                                           opening_balance=opening_balance, current_balance=opening_balance,
-                                           opening_rate=opening_rate, opening_rate_vattable=opening_rate_vattable)
-            account.save()
-            self.account = account
         super().save(*args, **kwargs)
+        
+        if not self.account_id and (self.track_inventory or self.fixed_asset):
+            account = InventoryAccount(code=self.code, name=self.name)
+            account.save()
 
     class Meta:
         unique_together = ('code', 'company',)
