@@ -128,11 +128,9 @@ class InventoryAccount(models.Model):
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
-    opening_rate = models.FloatField(default=0)
-    opening_rate_vattable = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.account_no) + ' [' + self.name + ']'
+        return self.name
 
     @staticmethod
     def get_next_account_no():
