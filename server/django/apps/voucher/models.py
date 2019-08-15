@@ -3,7 +3,8 @@ from django.db import models
 from django.utils import timezone
 
 from apps.bank.models import BankAccount
-from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry, \
+    set_transactions as set_inventory_transactions
 from apps.product.models import Item, Unit
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
@@ -173,6 +174,16 @@ class SalesVoucher(models.Model):
         # Following set_ledger transactions stays outside for loop
         # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
 
+    @staticmethod
+    def apply_inventory_transaction(voucher):
+        # TO DO check for item type consumable and non consumable
+        for row in voucher.rows.all():
+            set_inventory_transactions(
+                row,
+                voucher.transaction_date,
+                ['cr', row.item.account, int(row.quantity)],
+            )
+
 
 class SalesVoucherRow(models.Model):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
@@ -246,6 +257,15 @@ class PurchaseVoucher(models.Model):
 
         if not self.pk and not self.voucher_no:
             self.voucher_no = get_next_voucher_no(PurchaseVoucher, self.company_id)
+
+    @staticmethod
+    def apply_inventory_transaction(voucher):
+        for row in voucher.rows.all():
+            set_inventory_transactions(
+                row,
+                voucher.date,
+                ['dr', row.item.account, int(row.quantity)],
+            )
 
     @property
     def voucher_type(self):
