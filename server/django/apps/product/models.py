@@ -55,7 +55,11 @@ class Category(models.Model):
     items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
-    type = models.CharField(max_length=20, choices=ITEM_TYPES)
+    # type = models.CharField(max_length=20, choices=ITEM_TYPES)
+    track_inventory = models.BooleanField(default=True)
+    can_be_sold = models.BooleanField(default=True)
+    can_be_purchased = models.BooleanField(default=True)
+    fixed_asset = models.BooleanField(default=False)
 
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
@@ -121,14 +125,12 @@ class Category(models.Model):
 class InventoryAccount(models.Model):
     code = models.CharField(max_length=10, blank=True, null=True)
     name = models.CharField(max_length=100)
-    account_no = models.PositiveIntegerField()
+    account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
-    opening_rate = models.FloatField(default=0)
-    opening_rate_vattable = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.account_no) + ' [' + self.name + ']'
+        return self.name
 
     @staticmethod
     def get_next_account_no():
@@ -252,7 +254,12 @@ class Item(models.Model):
     description = models.TextField(blank=True, null=True)
     selling_price = models.FloatField(blank=True, null=True)
     cost_price = models.FloatField(blank=True, null=True)
+
+    front_image = models.ImageField(blank=True, null=True, upload_to='item_front_images/')
+    back_image = models.ImageField(blank=True, null=True, upload_to='item_back_images/')
+
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
+
     sales_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
     purchase_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
@@ -260,14 +267,18 @@ class Item(models.Model):
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_item')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
-    type = models.CharField(max_length=20, choices=ITEM_TYPES)
+
+    track_inventory = models.BooleanField(default=True)
+    can_be_sold = models.BooleanField(default=True)
+    can_be_purchased = models.BooleanField(default=True)
+    fixed_asset = models.BooleanField(default=False)
+
+    extra_data = JSONField(null=True, blank=True)
+    search_data = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     company = models.ForeignKey(Company, related_name='items', on_delete=models.CASCADE)
-    extra_data = JSONField(null=True, blank=True)
-    search_data = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -318,27 +329,11 @@ class Item(models.Model):
                 pass
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
-
-        # TODO define how to pass Inventory account values
-        # item.save(account_no=account_no, opening_balance=opening_balance, opening_rate=opening_rate, opening_rate_vattable=opening_rate_vattable)
-        account_no = kwargs.pop('account_no') if 'account_no' in kwargs.keys() else None
-        if self.id:
-            self.account.name = self.name
-            self.account.save()
-        if account_no:
-            opening_balance = kwargs.pop('opening_balance')
-            opening_rate = kwargs.pop('opening_rate')
-            opening_rate_vattable = kwargs.pop('opening_rate_vattable')
-            if self.account:
-                account = self.account
-                account.account_no = account_no
-            else:
-                account = InventoryAccount(code=self.code, name=self.name, account_no=account_no,
-                                           opening_balance=opening_balance, current_balance=opening_balance,
-                                           opening_rate=opening_rate, opening_rate_vattable=opening_rate_vattable)
-            account.save()
-            self.account = account
         super().save(*args, **kwargs)
+
+        if not self.account_id and (self.track_inventory or self.fixed_asset):
+            account = InventoryAccount(code=self.code, name=self.name)
+            account.save()
 
     class Meta:
         unique_together = ('code', 'company',)

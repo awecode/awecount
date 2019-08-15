@@ -514,8 +514,8 @@ def handle_company_creation(sender, **kwargs):
                                               default=True)
 
     discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
-                                                       company=company)
-    Account.objects.create(name='Discount Income', category=discount_income_category, company=company)
+                                                       company=company, default=True)
+    Account.objects.create(name='Discount Income', category=discount_income_category, company=company, default=True)
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
@@ -530,7 +530,7 @@ def handle_company_creation(sender, **kwargs):
     Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
     discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
                                                         company=company)
-    Account.objects.create(name='Discount Expenses', category=discount_expense_category, company=company)
+    Account.objects.create(name='Discount Expenses', category=discount_expense_category, company=company, default=True)
 
     # Opening Balance Difference
 
