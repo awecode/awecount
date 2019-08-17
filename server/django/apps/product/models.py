@@ -33,6 +33,14 @@ ITEM_TYPES = (
 )
 
 
+class Brand(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Category(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=50)
@@ -257,6 +265,8 @@ class Item(models.Model):
 
     front_image = models.ImageField(blank=True, null=True, upload_to='item_front_images/')
     back_image = models.ImageField(blank=True, null=True, upload_to='item_back_images/')
+
+    brand = models.ForeignKey(Brand, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
 
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
