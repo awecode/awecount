@@ -33,6 +33,27 @@ DISCOUNT_TYPES = (
 )
 
 
+class Discount(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    type = models.CharField(max_length=25, choices=DISCOUNT_TYPES)
+    value = models.FloatField()
+    trade_discount = models.BooleanField(default=True)
+    
+    def __str__(self):
+        if self.name:
+            return self.name
+        return '{} - {}'.format(self.type, self.value)
+    
+    class Meta:
+        abstract = True
+        
+class SalesDiscount(Discount):
+    pass
+
+class PurchaseDiscount(Discount):
+    pass
+    
+
 class SalesVoucher(models.Model):
     voucher_no = models.PositiveSmallIntegerField()
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
