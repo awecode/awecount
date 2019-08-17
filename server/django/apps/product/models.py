@@ -36,7 +36,8 @@ ITEM_TYPES = (
 class Brand(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='brands')
+    
     def __str__(self):
         return self.name
 
