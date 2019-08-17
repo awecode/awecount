@@ -48,10 +48,10 @@ class Discount(models.Model):
         abstract = True
         
 class SalesDiscount(Discount):
-    pass
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_discounts')
 
 class PurchaseDiscount(Discount):
-    pass
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='purchase_discounts')
     
 
 class SalesVoucher(models.Model):
