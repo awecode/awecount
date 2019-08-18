@@ -13,7 +13,8 @@ from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MOD
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
     CreditVoucherListSerializer, InvoiceDesignSerializer, \
     SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
-    JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer
+    JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
+    SalesDiscountSerializer, PurchaseDiscountSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -219,3 +220,11 @@ class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
         except InvoiceDesign.DoesNotExist:
             pass
         return Response(data)
+
+
+class SalesDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+    serializer_class = SalesDiscountSerializer
+
+
+class PurchaseDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+    serializer_class = PurchaseDiscountSerializer

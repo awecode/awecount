@@ -127,6 +127,14 @@ MODULES = (
     ('BrandCreate', 'BrandCreate'),
     ('BrandModify', 'BrandModify'),
     ('BrandDelete', 'BrandDelete'),
+    ('SalesDiscountView', 'SalesDiscountView'),
+    ('SalesDiscountCreate', 'SalesDiscountCreate'),
+    ('SalesDiscountModify', 'SalesDiscountModify'),
+    ('SalesDiscountDelete', 'SalesDiscountDelete'),
+    ('PurchaseDiscountView', 'PurchaseDiscountView'),
+    ('PurchaseDiscountCreate', 'PurchaseDiscountCreate'),
+    ('PurchaseDiscountModify', 'PurchaseDiscountModify'),
+    ('PurchaseDiscountDelete', 'PurchaseDiscountDelete'),
 )
 
 

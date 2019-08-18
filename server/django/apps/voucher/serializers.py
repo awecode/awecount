@@ -2,8 +2,9 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
-from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, \
-    PurchaseVoucherRow
+from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, \
+    JournalVoucherRow, PurchaseVoucher, \
+    PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
 
 
 class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
@@ -336,3 +337,19 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         fields = ('id', 'voucher_no', 'party', 'date', 'pending_amount', 'name',)
+
+
+class SalesDiscountSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+
+    class Meta:
+        model = SalesDiscount
+        exclude = ('company',)
+
+
+class PurchaseDiscountSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+
+    class Meta:
+        model = PurchaseDiscount
+        exclude = ('company',)
