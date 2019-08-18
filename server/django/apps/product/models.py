@@ -350,11 +350,12 @@ class Item(models.Model):
             search_text = ', '.join(search_data)
             self.search_data = search_text
 
-        super().save(*args, **kwargs)
-
         if not self.account_id and (self.track_inventory or self.fixed_asset):
             account = InventoryAccount(code=self.code, name=self.name)
             account.save()
+            self.account = account
+
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ('code', 'company',)

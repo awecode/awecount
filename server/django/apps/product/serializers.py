@@ -1,8 +1,10 @@
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
+from apps.ledger.serializers import AccountSerializer
+from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory, Brand
+from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount
 from .validators import CustomUniqueTogetherValidator
 
 
@@ -66,3 +68,29 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         exclude = ('company',)
+
+
+class InventoryAccountSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = InventoryAccount
+        fields = '__all__'
+
+
+class ItemDetailSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+    brand = BrandSerializer()
+    category = InventoryCategorySerializer()
+    unit = UnitSerializer()
+    account = InventoryAccountSerializer()
+
+    discount_allowed_ledger = AccountSerializer()
+    discount_received_ledger = AccountSerializer()
+
+    sales_ledger = AccountSerializer()
+    purchase_ledger = AccountSerializer()
+    tax_scheme = TaxSchemeSerializer()
+
+    class Meta:
+        model = Item
+        fields = '__all__'
