@@ -1,10 +1,22 @@
-from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+
+from apps.product.models import Item
+from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+    ItemDetailSerializer
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 
 class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = ItemSerializer
+
+    @action(detail=True)
+    def details(self, request, pk=None):
+        item = get_object_or_404(Item, pk=pk)
+        serializer = ItemDetailSerializer(item, context={request: request}).data
+        return Response(serializer)
 
 
 class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CreateListRetrieveUpdateViewSet):
