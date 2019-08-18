@@ -37,7 +37,7 @@ class Brand(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='brands')
-    
+
     def __str__(self):
         return self.name
 
@@ -340,6 +340,16 @@ class Item(models.Model):
                 pass
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
+
+        if self.category and self.category.extra_fields:
+            search_data = []
+            for field in self.category.extra_fields:
+                if field.get('enable_search'):
+                    search_data.append(str(self.extra_data.get(field.get('name'))))
+
+            search_text = ', '.join(search_data)
+            self.search_data = search_text
+
         super().save(*args, **kwargs)
 
         if not self.account_id and (self.track_inventory or self.fixed_asset):

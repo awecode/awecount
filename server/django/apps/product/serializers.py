@@ -10,6 +10,7 @@ class ItemSerializer(serializers.ModelSerializer):
     company_id = serializers.IntegerField()
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False)
+    extra_fields = serializers.ReadOnlyField(source='category.extra_fields')
     front_image = Base64FileField(required=False, allow_null=True)
     back_image = Base64FileField(required=False, allow_null=True)
 
