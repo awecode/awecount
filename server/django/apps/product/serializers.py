@@ -2,7 +2,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory
+from .models import Item, Unit, Category as InventoryCategory, Brand
 from .validators import CustomUniqueTogetherValidator
 
 
@@ -17,7 +17,7 @@ class ItemSerializer(serializers.ModelSerializer):
     def base64_check(validated_data, attributes):
         for attr in attributes:
             if validated_data.get(attr) and not isinstance(validated_data.get(attr),
-                                                                            ContentFile):
+                                                           ContentFile):
                 validated_data.pop(attr)
         return validated_data
 
@@ -28,7 +28,6 @@ class ItemSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data = self.base64_check(validated_data, ['front_image', 'back_image'])
         return super().update(instance, validated_data)
-
 
     class Meta:
         model = Item
@@ -58,3 +57,11 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryCategory
         exclude = ('company', 'default_unit', 'default_tax_scheme')
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    company_id = serializers.IntegerField()
+
+    class Meta:
+        model = Brand
+        exclude = ('company',)
