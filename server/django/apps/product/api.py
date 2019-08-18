@@ -1,4 +1,4 @@
-from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer
+from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
@@ -13,3 +13,7 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CreateListRetrieveUpda
 
 class InventoryCategoryViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = InventoryCategorySerializer
+
+
+class BrandViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+    serializer_class = BrandSerializer

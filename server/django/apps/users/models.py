@@ -123,6 +123,10 @@ MODULES = (
     ('InventoryCategoryCreate', 'InventoryCategoryCreate'),
     ('InventoryCategoryModify', 'InventoryCategoryModify'),
     ('InventoryCategoryDelete', 'InventoryCategoryDelete'),
+    ('BrandView', 'BrandView'),
+    ('BrandCreate', 'BrandCreate'),
+    ('BrandModify', 'BrandModify'),
+    ('BrandDelete', 'BrandDelete'),
 )
 
 
