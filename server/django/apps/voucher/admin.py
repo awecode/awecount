@@ -1,7 +1,8 @@
 from django.contrib import admin
 
+from apps.product.models import Brand
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow, InvoiceDesign, \
-    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
+    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -65,3 +66,16 @@ class PurchaseVoucherAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseVoucher, PurchaseVoucherAdmin)
+
+class DiscountAdmin(admin.ModelAdmin):
+    search_fields = ('name','value')
+    list_filter = ('company', 'type', 'trade_discount')
+    
+admin.site.register(SalesDiscount, DiscountAdmin)
+admin.site.register(PurchaseDiscount, DiscountAdmin)
+
+class BrandAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'description')
+    list_filter = ('company',)
+    
+admin.site.register(Brand, BrandAdmin)
