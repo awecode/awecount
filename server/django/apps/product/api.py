@@ -16,11 +16,12 @@ class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = ItemSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'code', 'description', 'search_data']
+    detail_serializer_class = ItemDetailSerializer
 
     @action(detail=True)
     def details(self, request, pk=None):
         item = get_object_or_404(Item, pk=pk)
-        serializer = ItemDetailSerializer(item, context={request: request}).data
+        serializer = self.detail_serializer_class(item, context={'request': request}).data
         return Response(serializer)
 
 
