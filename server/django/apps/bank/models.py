@@ -12,6 +12,7 @@ class BankAccount(models.Model):
     account_name = models.CharField(max_length=150, blank=True, null=True)
     account_number = models.CharField(max_length=150)
     bank_name = models.CharField(max_length=250, blank=True, null=True)
+    short_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
@@ -28,7 +29,13 @@ class BankAccount(models.Model):
             ledger.save()
             self.ledger = ledger
         super().save(*args, **kwargs)
-
+        
+    @property
+    def short_ac_name_number(self):
+        if self.short_name:
+            return self.short_name + ' - ' + self.account_number
+        return self.account_number
+            
     def __str__(self):
         return '{} : {}'.format(self.account_name, self.company.name)
 
