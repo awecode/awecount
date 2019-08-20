@@ -74,6 +74,7 @@ class SalesVoucher(models.Model):
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
+    sale_discount = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
 
