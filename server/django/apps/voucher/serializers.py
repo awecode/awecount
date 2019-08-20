@@ -43,6 +43,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_discount = serializers.SerializerMethodField()
     company_id = serializers.IntegerField()
     bank_account_id = serializers.IntegerField(required=False, allow_null=True)
+    discount_type = serializers.CharField()
 
     def get_voucher_discount(self, obj):
         return obj.discount and obj.discount_type
@@ -58,10 +59,22 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
             data['bank_account_id'] = None
         return data
 
+    def assign_sale_discount(self, validated_data):
+        try:
+            sales_discount_id = validated_data.get('discount_type')
+            sales_discount_id = int(sales_discount_id)
+            validated_data['sales_discount_id'] = sales_discount_id
+            validated_data['discount'] = None
+            validated_data['discount_type'] = None
+        except ValueError:
+            pass
+        return validated_data
+
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
         user_id = request.user.id
+        self.assign_sale_discount(validated_data)
         validated_data['user_id'] = user_id
         voucher = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
@@ -71,6 +84,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
             row['tax_scheme_id'] = tax_scheme.get('id')
             if unit:
                 row['unit_id'] = unit.get('id')
+            self.assign_sale_discount(row)
             SalesVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
         SalesVoucher.apply_transactions(voucher)
         return voucher
