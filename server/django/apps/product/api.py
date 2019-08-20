@@ -1,4 +1,5 @@
-from rest_framework import filters
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
 
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -12,10 +13,17 @@ from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 
+class ItemFilterSet(filters.FilterSet):
+    class Meta:
+        model = Item
+        fields = ('can_be_sold', 'can_be_purchased')
+
+
 class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = ItemSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data']
+    filterset_class = ItemFilterSet
     detail_serializer_class = ItemDetailSerializer
 
     @action(detail=True)
