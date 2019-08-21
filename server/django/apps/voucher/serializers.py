@@ -49,10 +49,11 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         return obj.discount and obj.discount_type
 
     def validate(self, data):
-        if not data.get('party') and not data.get('customer_name'):
-            raise ValidationError(
-                {'party': ['Either party or customer name is required']},
-            )
+        # Validate party required if customer if is not provided
+        # if not data.get('party') and not data.get('customer_name'):
+        #     raise ValidationError(
+        #         {'party': ['Either party or customer name is required']},
+        #     )
         if not data.get('mode') == 'ePayment':
             data['epayment'] = ''
         if not data.get('mode') == 'Bank Deposit':
