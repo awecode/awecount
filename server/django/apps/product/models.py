@@ -139,7 +139,6 @@ class InventoryAccount(models.Model):
     opening_balance = models.FloatField(default=0)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='inventory')
 
-
     def __str__(self):
         return self.name
 
@@ -163,6 +162,11 @@ class InventoryAccount(models.Model):
         except:
             return None
         return category
+
+    def save(self, *args, **kwargs):
+        if not self.account_no:
+            self.account_no = self.get_next_account_no()
+        super().save(*args, **kwargs)
 
 
 class JournalEntry(models.Model):
