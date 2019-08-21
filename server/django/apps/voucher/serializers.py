@@ -43,7 +43,7 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_discount = serializers.SerializerMethodField()
     company_id = serializers.IntegerField()
     bank_account_id = serializers.IntegerField(required=False, allow_null=True)
-    discount_type = serializers.CharField()
+    discount_type = serializers.CharField(required=False, allow_null=True)
 
     def get_voucher_discount(self, obj):
         return obj.discount and obj.discount_type
