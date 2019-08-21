@@ -137,6 +137,8 @@ class InventoryAccount(models.Model):
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='inventory')
+
 
     def __str__(self):
         return self.name
@@ -207,6 +209,9 @@ class Transaction(models.Model):
         for transaction in dr_transctions:
             total += transaction.dr_amount
         return total
+
+    def get_balance(self):
+        return zero_for_none(self.dr_amount) - zero_for_none(self.cr_amount)
 
 
 def alter(account, date, diff):

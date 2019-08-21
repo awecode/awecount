@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount
+from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry
 from .validators import CustomUniqueTogetherValidator
 
 
@@ -93,4 +93,58 @@ class ItemDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
+        fields = '__all__'
+
+
+class JournalEntrySerializer(serializers.ModelSerializer):
+    dr_amount = serializers.SerializerMethodField()
+    cr_amount = serializers.SerializerMethodField()
+    balance = serializers.SerializerMethodField()
+    voucher_type = serializers.SerializerMethodField()
+    voucher_no = serializers.ReadOnlyField(source='source.get_voucher_no')
+    source_id = serializers.ReadOnlyField(source='source.get_source_id')
+
+    def get_voucher_type(self, obj):
+        v_type = obj.content_type.name
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return v_type.title()
+
+    def transaction(self, obj):
+        account = self.context.get('account', None)
+        try:
+            transactions = [transaction for transaction in obj.transactions.all() if
+                            transaction.account.id == account.id]
+            if transactions:
+                return transactions[0]
+        except Exception as e:
+            return
+
+    def get_dr_amount(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.dr_amount
+        return amount
+
+    def get_cr_amount(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.cr_amount
+        return amount
+
+    def get_balance(self, obj):
+        amount = '-'
+        transaction = self.transaction(obj)
+        if transaction:
+            amount = transaction.get_balance()
+        return amount
+
+    class Meta:
+        model = JournalEntry
         fields = '__all__'

@@ -135,6 +135,10 @@ MODULES = (
     ('PurchaseDiscountCreate', 'PurchaseDiscountCreate'),
     ('PurchaseDiscountModify', 'PurchaseDiscountModify'),
     ('PurchaseDiscountDelete', 'PurchaseDiscountDelete'),
+    ('InventoryAccountView', 'InventoryAccountView'),
+    ('InventoryAccountCreate', 'InventoryAccountCreate'),
+    ('InventoryAccountModify', 'InventoryAccountModify'),
+    ('InventoryAccountDelete', 'InventoryAccountDelete'),
 )
 
 
