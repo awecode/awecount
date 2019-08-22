@@ -8,6 +8,7 @@ def book_by_isbn(request, isbn):
     django_response = HttpResponse(
         content=requests_response.content,
         status=requests_response.status_code,
+        charset='utf-8',
         content_type=requests_response.headers['Content-Type']
     )
     return django_response

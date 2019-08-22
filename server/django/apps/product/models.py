@@ -132,7 +132,7 @@ class Category(models.Model):
 
 
 class InventoryAccount(models.Model):
-    code = models.CharField(max_length=10, blank=True, null=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=100)
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
