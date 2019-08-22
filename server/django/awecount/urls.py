@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 from django.conf.urls.static import static
 
+from apps.product.views import book_by_isbn
 from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
@@ -36,14 +37,15 @@ router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='chequevo
 router.register('bank-branch', bank.BankBranchViewSet, base_name='bankbranch')
 
 urlpatterns = [
-    path('aweadmin/', admin.site.urls),
-    path('', include('apps.voucher.urls')),
-    path('v1/', include(router.urls)),
-    path('v1/auth/', include('djoser.urls.base')),
-    path('v1/auth/', include('djoser.urls.jwt')),
-    path('v1/auth/login/',TokenObtainPairView.as_view(), name='login')
+                  path('aweadmin/', admin.site.urls),
+                  path('', include('apps.voucher.urls')),
+                  re_path(r'^v1/book/isbn-api/(?P<isbn>[0-9]+?)/$', book_by_isbn, name='book-isbn-api'),
+                  path('v1/', include(router.urls)),
+                  path('v1/auth/', include('djoser.urls.base')),
+                  path('v1/auth/', include('djoser.urls.jwt')),
+                  path('v1/auth/login/', TokenObtainPairView.as_view(), name='login')
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     import debug_toolbar
