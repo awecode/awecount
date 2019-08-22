@@ -8,9 +8,9 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from apps.product.models import Item, JournalEntry
+from apps.product.models import Item, JournalEntry, Category
 from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
-    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer
+    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer
 
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
@@ -34,6 +34,20 @@ class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
         item = get_object_or_404(Item, pk=pk)
         serializer = self.detail_serializer_class(item, context={'request': request}).data
         return Response(serializer)
+
+
+class BookViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+
+    def get_queryset(self):
+        queryset = Item.objects.filter(category__name="Book", company=self.request.company)
+        return queryset
+
+    serializer_class = BookSerializer
+
+    @action(detail=False)
+    def category(self, request):
+        cat = Category.objects.get(company=self.request.company, name="Book")
+        return Response(InventoryCategorySerializer(cat).data)
 
 
 class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CreateListRetrieveUpdateViewSet):
@@ -71,4 +85,3 @@ class InventoryAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet)
             entries = entries.filter(date__range=[start_date, end_date])
         serializer = JournalEntrySerializer(entries, context={'account': obj}, many=True)
         return Response(serializer.data)
-

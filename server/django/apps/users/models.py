@@ -139,6 +139,9 @@ MODULES = (
     ('InventoryAccountCreate', 'InventoryAccountCreate'),
     ('InventoryAccountModify', 'InventoryAccountModify'),
     ('InventoryAccountDelete', 'InventoryAccountDelete'),
+    ('BookView', 'BookView'),
+    ('BookCreate', 'BookCreate'),
+    ('BookModify', 'BookModify'),
 )
 
 
