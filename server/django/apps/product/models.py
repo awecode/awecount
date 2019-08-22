@@ -360,7 +360,7 @@ class Item(models.Model):
             self.search_data = search_text
 
         if not self.account_id and (self.track_inventory or self.fixed_asset):
-            account = InventoryAccount(code=self.code, name=self.name)
+            account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
             account.save()
             self.account = account
 
