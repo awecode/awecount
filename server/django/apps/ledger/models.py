@@ -505,7 +505,8 @@ def handle_company_creation(sender, **kwargs):
     # CREATE DEFAULT CATEGORIES FOR INCOME
 
     income = Category.objects.create(name='Income', code='I', company=company, default=True)
-    Category.objects.create(name='Sales', code='I-S', parent=income, company=company, default=True)
+    sales_category = Category.objects.create(name='Sales', code='I-S', parent=income, company=company, default=True)
+    Account.objects.create(name='Sales Account', category=sales_category, company=company, default=True)
     direct_income = Category.objects.create(name='Direct Income', code='I-D', parent=income, company=company,
                                             default=True)
     Category.objects.create(name='Transfer and Remittance', code='I-D-T&R', parent=direct_income, company=company,
@@ -516,11 +517,14 @@ def handle_company_creation(sender, **kwargs):
     discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
                                                        company=company, default=True)
     Account.objects.create(name='Discount Income', category=discount_income_category, company=company, default=True)
+    
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
-    Category.objects.create(name='Purchase', code='E-P', parent=expenses, company=company, default=True)
-
+    
+    purchase_category = Category.objects.create(name='Purchase', code='E-P', parent=expenses, company=company, default=True)
+    Account.objects.create(name='Purchase Account', category=purchase_category, company=company, default=True)
+    
     direct_expenses = Category.objects.create(name='Direct Expenses', code='E-DE', parent=expenses, company=company,
                                               default=True)
     Category.objects.create(name='Purchase Expenses', code='E-DE-PE', parent=direct_expenses, company=company,
