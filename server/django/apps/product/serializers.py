@@ -1,10 +1,11 @@
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
+from apps.ledger.models import Account
 from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry
+from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category
 from .validators import CustomUniqueTogetherValidator
 
 
@@ -24,10 +25,6 @@ class ItemSerializer(serializers.ModelSerializer):
                 validated_data.pop(attr)
         return validated_data
 
-    def create(self, validated_data):
-        # validated_data = self.base64_check(validated_data, ['front_image', 'back_image'])
-        return super().create(validated_data)
-
     def update(self, instance, validated_data):
         validated_data = self.base64_check(validated_data, ['front_image', 'back_image'])
         return super().update(instance, validated_data)
@@ -42,6 +39,29 @@ class ItemSerializer(serializers.ModelSerializer):
                 message="Item with code exists."
             )
         ]
+
+
+class BookSerializer(ItemSerializer):
+
+    def create(self, validated_data):
+        request = self.context['request']
+        category = Category.objects.filter(name="Book", company=request.user.company)[0]
+        validated_data['category'] = category
+
+        if category.items_purchase_ledger_type == 'global':
+            validated_data['purchase_ledger'] = Account.objects.get(name="Purchase Account",default=True)
+
+        if category.items_sales_ledger_type == 'global':
+            validated_data['sales_ledger'] = Account.objects.get(name="Sales Account", default=True)
+
+        if category.items_discount_allowed_ledger_type == 'global':
+            validated_data['discount_allowed_ledger'] = Account.objects.get(name="Discount Expenses", default=True)
+
+        if category.items_discount_received_ledger_type == 'global':
+            validated_data['discount_received_ledger'] = Account.objects.get(name="Discount Income", default=True)
+
+        instance = super(BookSerializer, self).create(validated_data)
+        return instance
 
 
 class UnitSerializer(serializers.ModelSerializer):
@@ -71,7 +91,6 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class InventoryAccountSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = InventoryAccount
         fields = '__all__'
