@@ -314,7 +314,6 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
-        request = self.context['request']
         voucher = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
@@ -324,7 +323,7 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
             if unit:
                 row['unit_id'] = unit.get('id')
             PurchaseVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
-        # SalesVoucher.apply_transactions(voucher)
+        PurchaseVoucher.apply_transactions(voucher)
         return voucher
 
     def update(self, instance, validated_data):
@@ -341,7 +340,7 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
             row['tax_scheme_id'] = tax_scheme.get('id')
             PurchaseVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        # SalesVoucher.apply_transactions(instance)
+        PurchaseVoucher.apply_transactions(instance)
         return instance
 
     class Meta:

@@ -3,9 +3,8 @@ from django.db import models
 from django.utils import timezone
 
 from apps.bank.models import BankAccount
-from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry, \
-    set_transactions as set_inventory_transactions
-from apps.product.models import Item, Unit
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry
+from apps.product.models import Item, Unit, JournalEntry as InventoryJournalEntry, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
 from awecount.utils import get_next_voucher_no, wGenerator
@@ -197,6 +196,7 @@ class SalesVoucher(models.Model):
             set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
         # Following set_ledger transactions stays outside for loop
         # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
+        SalesVoucher.apply_inventory_transaction(voucher)
 
     @staticmethod
     def apply_inventory_transaction(voucher):
@@ -294,6 +294,10 @@ class PurchaseVoucher(models.Model):
     @property
     def voucher_type(self):
         return 'PurchaseVoucher'
+
+    @staticmethod
+    def apply_transactions(voucher):
+        PurchaseVoucher.apply_inventory_transaction(voucher)
 
     @property
     def row_discount_total(self):
