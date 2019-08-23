@@ -304,8 +304,8 @@ class PurchaseVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
-        if voucher.status == 'Cancelled':
-            voucher.apply_cancel_transaction()
+        # if voucher.status == 'Cancelled':
+        #     voucher.apply_cancel_transaction()
         PurchaseVoucher.apply_inventory_transaction(voucher)
 
     @property

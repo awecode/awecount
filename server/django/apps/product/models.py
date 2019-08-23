@@ -3,6 +3,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import F
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from apps.ledger.models import Account, Category as AccountCategory
 from apps.tax.models import TaxScheme
@@ -221,6 +223,21 @@ class Transaction(models.Model):
 def alter(account, date, diff):
     Transaction.objects.filter(journal_entry__date__gt=date, account=account).update(
         current_balance=none_for_zero(zero_for_none(F('current_balance')) + zero_for_none(diff)))
+
+
+@receiver(pre_delete, sender=Transaction)
+def _transaction_delete(sender, instance, **kwargs):
+    transaction = instance
+    if transaction.dr_amount:
+        transaction.account.current_balance -= transaction.dr_amount
+
+    if transaction.cr_amount:
+        transaction.account.current_balance += transaction.cr_amount
+
+    diff = float(zero_for_none(transaction.dr_amount)) - float(zero_for_none(transaction.cr_amount))
+    alter(transaction.account, transaction.journal_entry.date, diff)
+
+    transaction.account.save()
 
 
 def set_inventory_transactions(model, date, *args):
