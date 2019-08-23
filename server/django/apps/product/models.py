@@ -172,18 +172,18 @@ class InventoryAccount(models.Model):
 class JournalEntry(models.Model):
     date = models.DateField()
     content_type = models.ForeignKey(ContentType, related_name='inventory_journal_entries', on_delete=models.CASCADE)
-    model_id = models.PositiveIntegerField()
-    creator = GenericForeignKey('content_type', 'model_id')
+    object_id = models.PositiveIntegerField()
+    source = GenericForeignKey('content_type', 'object_id')
 
     @staticmethod
     def get_for(source):
         try:
-            return JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(source), model_id=source.id)
+            return JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(source), object_id=source.id)
         except JournalEntry.DoesNotExist:
             return None
 
     def __str__(self):
-        return str(self.content_type) + ': ' + str(self.model_id) + ' [' + str(self.date) + ']'
+        return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
 
     class Meta:
         verbose_name_plural = u'Inventory Journal Entries'
@@ -201,7 +201,7 @@ class Transaction(models.Model):
 
     def total_dr_amount(self):
         dr_transctions = Transaction.objects.filter(account__name=self.account.name, cr_amount=None,
-                                                    journal_entry__journal__rate=self.journal_entry.creator.rate)
+                                                    journal_entry__journal__rate=self.journal_entry.source.rate)
         total = 0
         for transaction in dr_transctions:
             total += transaction.dr_amount
@@ -226,7 +226,7 @@ def alter(account, date, diff):
 def set_inventory_transactions(model, date, *args):
     args = [arg for arg in args if arg is not None]
     journal_entry, created = JournalEntry.objects.get_or_create(
-        content_type=ContentType.objects.get_for_model(model), model_id=model.id,
+        content_type=ContentType.objects.get_for_model(model), object_id=model.id,
         defaults={
             'date': date
         })

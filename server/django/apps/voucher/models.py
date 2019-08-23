@@ -127,6 +127,7 @@ class SalesVoucher(models.Model):
         content_type = ContentType.objects.get(model='salesvoucherrow')
         row_ids = [row.id for row in self.rows.all()]
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
     def apply_mark_as_paid(self):
         today = timezone.now().today()
@@ -281,6 +282,12 @@ class PurchaseVoucher(models.Model):
 
         if not self.pk and not self.voucher_no:
             self.voucher_no = get_next_voucher_no(PurchaseVoucher, self.company_id)
+            
+    def apply_cancel_transaction(self):
+        content_type = ContentType.objects.get(model='purchasesvoucherrow')
+        row_ids = [row.id for row in self.rows.all()]
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
     @staticmethod
     def apply_inventory_transaction(voucher):

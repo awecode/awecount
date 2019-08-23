@@ -252,7 +252,7 @@ class Node(object):
 
 class JournalEntry(models.Model):
     date = models.DateField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='journal_entries')
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
 
@@ -416,7 +416,7 @@ def delete_rows(rows, model):
             instance = model.objects.get(id=row.get('id'))
             try:
                 JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(model),
-                                         model_id=instance.id).delete()
+                                         object_id=instance.id).delete()
             except:
                 pass
             instance.delete()
