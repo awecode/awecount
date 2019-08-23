@@ -54,6 +54,10 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         #     raise ValidationError(
         #         {'party': ['Either party or customer name is required']},
         #     )
+        if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
+            raise ValidationError(
+                {'party': ['Party is required for a credit issue.']},
+            )
         if not data.get('mode') == 'ePayment':
             data['epayment'] = ''
         if not data.get('mode') == 'Bank Deposit':
