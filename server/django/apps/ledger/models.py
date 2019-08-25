@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import mail_admins
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
@@ -395,9 +395,10 @@ def set_transactions(submodel, date, *entries, check=True, clear=False):
         obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
         obsolete_transactions.delete()
     if check and dr_total != cr_total:
-        mail_admins('Dr/Cr mismatch!',
-                    'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total))
-        raise RuntimeError('Dr/Cr mismatch!')
+        error_msg = 'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total)
+        # mail_admins('Dr/Cr mismatch!', error_msg)
+        print(entries)
+        raise RuntimeError(error_msg)
 
 
 @receiver(pre_delete, sender=Transaction)
@@ -556,3 +557,46 @@ def get_account(request_or_company, name):
         return Account.objects.get(name='Purchase', category__name='Purchase', company=company)
     if name in ['Cash', 'Cash Account']:
         return Account.objects.get(name='Cash', category__name='Cash Accounts', company=company)
+
+
+class TransactionModel(models.Model):
+    def get_voucher_no(self):
+        if hasattr(self, 'voucher_no'):
+            return self.voucher_no
+        if hasattr(self, 'voucher'):
+            if hasattr(self.voucher, 'voucher_no'):
+                return self.voucher.voucher_no
+            else:
+                return self.voucher_id
+        return self.id
+
+    def get_source_id(self):
+        if hasattr(self, 'voucher_id'):
+            return self.voucher_id
+
+    def journal_entries(self):
+        app_label = self._meta.app_label
+        model = self.__class__.__name__.lower()
+        qs = JournalEntry.objects.filter(content_type__app_label=app_label)
+        if hasattr(self, 'rows'):
+            row_ids = self.rows.values_list('id', flat=True)
+            qs = qs.filter(
+                Q(content_type__model=model + 'row', object_id__in=row_ids) | Q(content_type__model=model, object_id=self.id))
+        else:
+            qs = qs.filter(content_type__model=model, object_id=self.id)
+        return qs
+
+    def transactions(self):
+        app_label = self._meta.app_label
+        model = self.__class__.__name__.lower()
+        qs = Transaction.objects.filter(journal_entry__content_type__app_label=app_label)
+        if hasattr(self, 'rows'):
+            row_ids = self.rows.values_list('id', flat=True)
+            qs = qs.filter(Q(journal_entry__content_type__model=model + 'row', journal_entry__object_id__in=row_ids) | Q(
+                journal_entry__content_type__model=model, journal_entry__object_id=self.id))
+        else:
+            qs = qs.filter(journal_entry__content_type__model=model, journal_entry__object_id=self.id)
+        return qs
+
+    class Meta:
+        abstract = True

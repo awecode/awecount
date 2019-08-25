@@ -3,7 +3,8 @@ from django.db import models
 from django.utils import timezone
 
 from apps.bank.models import BankAccount
-from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry
+from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry, \
+    TransactionModel
 from apps.product.models import Item, Unit, JournalEntry as InventoryJournalEntry, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User
@@ -55,7 +56,7 @@ class PurchaseDiscount(Discount):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='purchase_discounts')
 
 
-class SalesVoucher(models.Model):
+class SalesVoucher(TransactionModel):
     voucher_no = models.PositiveSmallIntegerField()
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
@@ -213,7 +214,7 @@ class SalesVoucher(models.Model):
             )
 
 
-class SalesVoucherRow(models.Model):
+class SalesVoucherRow(TransactionModel):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
@@ -231,7 +232,7 @@ class SalesVoucherRow(models.Model):
         return self.voucher.voucher_no
 
     def get_source_id(self):
-        return self.voucher.id
+        return self.voucher_id
 
     @property
     def discount_amount(self):
@@ -276,7 +277,7 @@ class PurchaseVoucher(models.Model):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    
+
     class Meta:
         unique_together = ('company', 'voucher_no')
 
@@ -357,7 +358,7 @@ class CreditVoucher(models.Model):
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
-    
+
     class Meta:
         unique_together = ('company', 'voucher_no')
 
@@ -437,7 +438,7 @@ class JournalVoucher(models.Model):
     statuses = [('Cancelled', 'Cancelled'), ('Approved', 'Approved'), ('Unapproved', 'Unapproved')]
     status = models.CharField(max_length=10, choices=statuses, default='Unapproved')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    
+
     class Meta:
         unique_together = ('company', 'voucher_no')
 
