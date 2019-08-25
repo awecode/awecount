@@ -72,16 +72,19 @@ class InventoryAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet)
 
         param = request.GET
         start_date = param.get('start_date')
-        start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = param.get('end_date')
-        end_date = datetime.strptime(end_date, '%Y-%m-%d')
         obj = self.get_object()
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
                                                                                         'date') \
             .prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
-        if start_date == end_date:
-            entries = entries.filter(date=start_date)
-        else:
-            entries = entries.filter(date__range=[start_date, end_date])
+
+        if start_date or end_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+            if start_date == end_date:
+                entries = entries.filter(date=start_date)
+            else:
+                entries = entries.filter(date__range=[start_date, end_date])
         serializer = JournalEntrySerializer(entries, context={'account': obj}, many=True)
         return Response(serializer.data)
