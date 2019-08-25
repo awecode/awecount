@@ -21,9 +21,11 @@ class CompanyMiddleware(object):
             except:
                 pass
 
-        company_obj = None
         if request.user.is_authenticated:
             try:
+                #TODO Use request.company_id instead of request.company 
+                if request.user.company_id:
+                    request.__class__.company_id = request.user.company_id
                 if request.user.company:
                     request.__class__.company = request.user.company
             except Company.DoesNotExist:

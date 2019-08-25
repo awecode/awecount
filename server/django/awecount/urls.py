@@ -13,6 +13,8 @@ from apps.tax import api as tax
 from apps.voucher import api as voucher
 from apps.bank import api as bank
 
+from apps.aggregator import views as aggregator_views
+
 router = DefaultRouter()
 
 router.register('parties', ledger.PartyViewSet, base_name='parties')
@@ -44,7 +46,8 @@ urlpatterns = [
                   path('v1/', include(router.urls)),
                   path('v1/auth/', include('djoser.urls.base')),
                   path('v1/auth/', include('djoser.urls.jwt')),
-                  path('v1/auth/login/', TokenObtainPairView.as_view(), name='login')
+                  path('v1/auth/login/', TokenObtainPairView.as_view(), name='login'),
+                  path('export/', aggregator_views.export_data, name='export_data')
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

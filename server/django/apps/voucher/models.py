@@ -77,6 +77,9 @@ class SalesVoucher(models.Model):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
 
+    class Meta:
+        unique_together = ('company', 'voucher_no')
+
     def __str__(self):
         return str(self.voucher_no)
 
@@ -273,6 +276,9 @@ class PurchaseVoucher(models.Model):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('company', 'voucher_no')
 
     def type(self):
         return 'Credit' if self.credit else 'Cash'
@@ -282,7 +288,7 @@ class PurchaseVoucher(models.Model):
 
         if not self.pk and not self.voucher_no:
             self.voucher_no = get_next_voucher_no(PurchaseVoucher, self.company_id)
-            
+
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='purchasesvoucherrow')
         row_ids = [row.id for row in self.rows.all()]
@@ -351,6 +357,9 @@ class CreditVoucher(models.Model):
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
+    
+    class Meta:
+        unique_together = ('company', 'voucher_no')
 
     def __init__(self, *args, **kwargs):
         super(CreditVoucher, self).__init__(*args, **kwargs)
@@ -428,6 +437,9 @@ class JournalVoucher(models.Model):
     statuses = [('Cancelled', 'Cancelled'), ('Approved', 'Approved'), ('Unapproved', 'Unapproved')]
     status = models.CharField(max_length=10, choices=statuses, default='Unapproved')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('company', 'voucher_no')
 
     def __init__(self, *args, **kwargs):
         super(JournalVoucher, self).__init__(*args, **kwargs)

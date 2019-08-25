@@ -206,6 +206,8 @@ class PartyRepresentative(models.Model):
     position = models.CharField(max_length=100, blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='representative')
 
+    company_id_accessor = 'party__company_id'
+
 
 class Node(object):
     def __init__(self, model, parent=None, depth=0):
@@ -255,6 +257,9 @@ class JournalEntry(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='journal_entries')
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
+
+    # TODO
+    # company
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
@@ -517,14 +522,14 @@ def handle_company_creation(sender, **kwargs):
     discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
                                                        company=company, default=True)
     Account.objects.create(name='Discount Income', category=discount_income_category, company=company, default=True)
-    
+
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
-    
+
     purchase_category = Category.objects.create(name='Purchase', code='E-P', parent=expenses, company=company, default=True)
     Account.objects.create(name='Purchase Account', category=purchase_category, company=company, default=True)
-    
+
     direct_expenses = Category.objects.create(name='Direct Expenses', code='E-DE', parent=expenses, company=company,
                                               default=True)
     Category.objects.create(name='Purchase Expenses', code='E-DE-PE', parent=direct_expenses, company=company,

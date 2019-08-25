@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 from django.utils import timezone
 
 from apps.ledger.models import Account, Category, Party
@@ -82,9 +81,12 @@ class ChequeDepositRow(models.Model):
     drawee_bank_address = models.CharField(max_length=254)
     amount = models.FloatField()
     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
+    
+    company_id_accessor = 'cheque_deposit__company_id'
 
     def get_voucher_no(self):
-        return self.cheque_deposit.id
+        return self.cheque_deposit_id
+    
 
 
 class Bank(models.Model):
