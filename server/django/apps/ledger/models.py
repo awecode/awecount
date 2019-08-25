@@ -299,6 +299,9 @@ def alter(account, date, dr_difference, cr_difference):
 def set_transactions(submodel, date, *entries, check=True, clear=False):
     """
 
+    :param date: datetime object
+    :param submodel: source model
+    :param check: boolean - checks for debit/credit mismatch
     :type clear: object
     Clears all transactions not accounted here
     """
@@ -394,11 +397,12 @@ def set_transactions(submodel, date, *entries, check=True, clear=False):
     if clear:
         obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
         obsolete_transactions.delete()
-    if check and dr_total != cr_total:
+    if check and round(dr_total, 2) != round(cr_total, 2):
         error_msg = 'Dr/Cr mismatch from {0}, ID: {1}, Dr: {2}, Cr: {3}'.format(str(submodel), submodel.id, dr_total, cr_total)
         # mail_admins('Dr/Cr mismatch!', error_msg)
         print(entries)
         raise RuntimeError(error_msg)
+    print(entries)
 
 
 @receiver(pre_delete, sender=Transaction)
