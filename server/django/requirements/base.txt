@@ -13,3 +13,4 @@ djangorestframework-jwt
 django-filter
 django-ses
 requests
+django-import-export

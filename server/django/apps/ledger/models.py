@@ -197,6 +197,7 @@ class Party(models.Model):
                     self.supplier_account = account2
                 except Category.DoesNotExist:
                     pass
+            self.save()
 
 
 class PartyRepresentative(models.Model):
