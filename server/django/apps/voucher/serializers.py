@@ -18,12 +18,7 @@ class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
         fields = ('item_id', 'tax_scheme_id', 'discount', 'credit_amount',)
 
 
-class SalesVoucherRowSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    unit_id = serializers.IntegerField(source='unit.id', required=False)
-    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+class DiscountObjectTypeSerializer(serializers.ModelSerializer):
     discount_type = serializers.CharField(required=False, allow_null=True)
 
     def to_representation(self, obj):
@@ -32,23 +27,23 @@ class SalesVoucherRowSerializer(serializers.ModelSerializer):
         else:
             self.fields['discount_type'] = serializers.CharField()
         return super().to_representation(obj)
+
+
+class SalesVoucherRowSerializer(DiscountObjectTypeSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(source='item.id', required=True)
+    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
+    unit_id = serializers.IntegerField(source='unit.id', required=False)
+    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
 
     class Meta:
         model = SalesVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
 
 
-class SalesVoucherCreateSerializer(serializers.ModelSerializer):
+class SalesVoucherCreateSerializer(DiscountObjectTypeSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     bank_account_id = serializers.IntegerField(required=False, allow_null=True)
-    discount_type = serializers.CharField(required=False, allow_null=True)
-
-    def to_representation(self, obj):
-        if obj.discount_obj_id:
-            self.fields['discount_type'] = serializers.IntegerField(source='discount_obj_id')
-        else:
-            self.fields['discount_type'] = serializers.CharField()
-        return super().to_representation(obj)
 
     def validate(self, data):
         # Validate party required if customer if is not provided
