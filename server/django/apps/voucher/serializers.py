@@ -69,10 +69,15 @@ class SalesVoucherCreateSerializer(serializers.ModelSerializer):
         if validated_data.get('discount_type'):
             # try:
             sales_discount_id = validated_data.get('discount_type')
-            sales_discount_id = int(sales_discount_id)
-            validated_data['sale_discount_id'] = sales_discount_id
-            validated_data['discount'] = 0
-            validated_data['discount_type'] = None
+            if sales_discount_id.isdigit():
+                sales_discount_id = int(sales_discount_id)
+                validated_data['sale_discount_id'] = sales_discount_id
+                validated_data['discount'] = 0
+                validated_data['discount_type'] = None
+                try:
+                    del validated_data['sale_discount']
+                except KeyError:
+                    pass
             # except ValueError:
             #     pass
         return validated_data
