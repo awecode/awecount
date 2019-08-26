@@ -69,12 +69,12 @@ class SalesVoucher(TransactionModel):
     due_date = models.DateField(blank=True, null=True)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales')
     total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
-    sale_discount = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
 
@@ -233,8 +233,8 @@ class SalesVoucherRow(TransactionModel):
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
-    sale_discount = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales_rows')
 
     def __str__(self):
         return str(self.voucher.voucher_no)
