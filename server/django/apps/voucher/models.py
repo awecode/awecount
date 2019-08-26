@@ -234,7 +234,7 @@ class SalesVoucherRow(TransactionModel):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
-    # sale_discount = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL)
+    sale_discount = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales_rows')
 
     def __str__(self):
         return str(self.voucher.voucher_no)
