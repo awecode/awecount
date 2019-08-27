@@ -124,14 +124,24 @@ class SalesVoucher(TransactionModel):
             total += row.total_after_row_discount
         return total
 
-    @property
-    def discount_amount(self):
-        discount = 0
-        if self.discount and self.discount_type == 'Amount':
-            discount = self.discount
+    def get_discount(self, sub_total_after_row_discounts=None):
+        """
+        :type sub_total_after_row_discounts: float
+        returns:
+        discount_amount:float, is_trade_discount:boolean
+        """
+        sub_total_after_row_discounts = sub_total_after_row_discounts or self.get_total_after_row_discounts()
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            if discount_obj.type == 'Amount':
+                return discount_obj.value, discount_obj.trade_discount
+            elif discount_obj.type == 'Percent':
+                return sub_total_after_row_discounts * (discount_obj.value / 100), discount_obj.trade_discount
+        elif self.discount and self.discount_type == 'Amount':
+            return self.discount, False
         elif self.discount and self.discount_type == 'Percent':
-            discount = self.get_total_after_row_discounts() * (self.discount / 100)
-        return discount
+            return sub_total_after_row_discounts * (self.discount / 100), False
+        return 0, False
 
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='salesvoucherrow')
@@ -177,38 +187,45 @@ class SalesVoucher(TransactionModel):
         # sub_total = voucher.get_sub_total()
         sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
 
-        dividend_discount = 0
-
-        if voucher.discount > 0 and voucher.discount_type:
-            dividend_discount = voucher.discount_amount
+        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
 
         for row in voucher.rows.all():
             entries = []
 
             row_total = row.quantity * row.rate
-
-            entries.append(['cr', row.item.sales_ledger, row_total])
+            sales_value = row_total + 0
 
             row_discount = 0
-            if row.discount > 0:
-                row_discount += row.discount_amount
-                row_total -= row.discount_amount
+            if row.has_discount():
+                row_discount_amount, trade_discount = row.get_discount()
+                row_total -= row_discount_amount
+                if trade_discount:
+                    sales_value -= row_discount_amount
+                else:
+                    row_discount += row_discount_amount
+
             if dividend_discount > 0:
                 row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
-                row_discount += row_dividend_discount
                 row_total -= row_dividend_discount
+                if dividend_trade_discount:
+                    sales_value -= row_dividend_discount
+                else:
+                    row_discount += row_dividend_discount
 
             if row_discount > 0:
                 entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
-                entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
-                row_total += row_tax_amount
+                if row_tax_amount:
+                    entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
+                    row_total += row_tax_amount
 
+            entries.append(['cr', row.item.sales_ledger, sales_value])
             entries.append(['dr', dr_acc, row_total])
 
             set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
+
         # Following set_ledger transactions stays outside for loop
         # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
         SalesVoucher.apply_inventory_transaction(voucher)
@@ -245,15 +262,26 @@ class SalesVoucherRow(TransactionModel):
     def get_source_id(self):
         return self.voucher_id
 
-    @property
-    def discount_amount(self):
-        discount = 0
-        if self.discount and self.discount_type == 'Amount':
-            discount = self.discount
+    def has_discount(self):
+        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
+
+    def get_discount(self):
+        """
+        returns:
+        discount_amount:float, is_trade_discount:boolean
+        """
+        sub_total = self.quantity * self.rate
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            if discount_obj.type == 'Amount':
+                return discount_obj.value, discount_obj.trade_discount
+            elif discount_obj.type == 'Percent':
+                return sub_total * (discount_obj.value / 100), discount_obj.trade_discount
+        elif self.discount and self.discount_type == 'Amount':
+            return self.discount, False
         elif self.discount and self.discount_type == 'Percent':
-            sub_total = self.quantity * self.rate
-            discount = sub_total * (self.discount / 100)
-        return discount
+            return sub_total * (self.discount / 100), False
+        return 0, False
 
     # @property
     # def tax_amount(self):
@@ -265,13 +293,13 @@ class SalesVoucherRow(TransactionModel):
     @property
     def total(self):
         row_total = self.quantity * self.rate
-        # sub_total = sub_total - self.discount_amount
+        # sub_total = sub_total - self.get_discount()[0]
         return row_total
 
     @property
     def total_after_row_discount(self):
         row_total = self.quantity * self.rate
-        row_total = row_total - self.discount_amount
+        row_total = row_total - self.get_discount()[0]
         return row_total
 
 
