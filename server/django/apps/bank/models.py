@@ -28,13 +28,13 @@ class BankAccount(models.Model):
             ledger.save()
             self.ledger = ledger
         super().save(*args, **kwargs)
-        
+
     @property
     def short_ac_name_number(self):
         if self.short_name:
             return self.short_name + ' - ' + self.account_number
         return self.account_number
-            
+
     def __str__(self):
         return '{} : {}'.format(self.account_name, self.company.name)
 
@@ -73,6 +73,7 @@ class ChequeDeposit(models.Model):
         # class Meta:
         #     unique_together = ('voucher_no', 'company')
 
+
 # TODO drawee bank foreign key to Bank
 class ChequeDepositRow(models.Model):
     cheque_number = models.CharField(max_length=50)
@@ -81,12 +82,11 @@ class ChequeDepositRow(models.Model):
     drawee_bank_address = models.CharField(max_length=254)
     amount = models.FloatField()
     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
-    
+
     company_id_accessor = 'cheque_deposit__company_id'
 
     def get_voucher_no(self):
         return self.cheque_deposit_id
-    
 
 
 class Bank(models.Model):
