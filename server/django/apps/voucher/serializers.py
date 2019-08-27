@@ -44,6 +44,12 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializer):
 class SalesVoucherCreateSerializer(DiscountObjectTypeSerializer):
     rows = SalesVoucherRowSerializer(many=True)
     bank_account_id = serializers.IntegerField(required=False, allow_null=True)
+    mode = serializers.CharField(required=True)
+
+    def to_representation(self, obj):
+        if obj.mode == 'Bank Deposit' and obj.bank_account_id:
+            self.fields['mode'] = serializers.IntegerField(source='bank_account_id')
+        return super().to_representation(obj)
 
     def validate(self, data):
         # Validate party required if customer if is not provided
@@ -71,10 +77,21 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializer):
             validated_data['discount_obj_id'] = None
         return validated_data
 
+    def assign_mode(self, validated_data):
+        mode = validated_data.get('mode')
+        if mode and str(mode).isdigit():
+            validated_data['bank_account_id'] = mode
+            validated_data['mode'] = 'Bank Deposit'
+        else:
+            validated_data['bank_account_id'] = None
+        print(validated_data)
+        return validated_data
+
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
         validated_data = self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         voucher = SalesVoucher.objects.create(**validated_data)
@@ -93,6 +110,7 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializer):
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         validated_data = self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
