@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from .models import Party, Account, JournalEntry, PartyRepresentative, Category
+from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
@@ -59,6 +59,12 @@ class AccountSerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class AccountMinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ('id', 'name', 'code',)
+
+
 class JournalEntrySerializer(serializers.ModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
@@ -111,6 +117,22 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
         fields = '__all__'
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+    account = AccountMinSerializer()
+
+    class Meta:
+        model = Transaction
+        fields = "__all__"
+
+
+class SalesJournalEntrySerializer(JournalEntrySerializer):
+    transactions = serializers.SerializerMethodField()
+
+    def get_transactions(self, obj):
+        transactions = obj.transactions.all()
+        return TransactionSerializer(transactions, many=True).data
 
 
 class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):

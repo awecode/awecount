@@ -2,9 +2,11 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
+from apps.ledger.serializers import JournalEntrySerializer, SalesJournalEntrySerializer
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -41,6 +43,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             if permission not in modules:
                 raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
         return super(SalesVoucherViewSet, self).update(request, *args, **kwargs)
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self,request, pk):
+        sale_voucher = get_object_or_404(SalesVoucher, pk=pk)
+        journals = sale_voucher.journal_entries()
+        return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
     @action(detail=False)
     def get_next_no(self, request):
