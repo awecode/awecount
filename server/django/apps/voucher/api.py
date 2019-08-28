@@ -45,7 +45,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return super(SalesVoucherViewSet, self).update(request, *args, **kwargs)
 
     @action(detail=True, url_path='journal-entries')
-    def journal_entries(self,request, pk):
+    def journal_entries(self, request, pk):
         sale_voucher = get_object_or_404(SalesVoucher, pk=pk)
         journals = sale_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
@@ -150,6 +150,12 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         sale_voucher_rows = sale_voucher.rows.all()
         data = SaleVoucherRowCreditNoteOptionsSerializer(sale_voucher_rows, many=True).data
         return Response(data)
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        purchase_voucher = get_object_or_404(PurchaseVoucher, pk=pk)
+        journals = purchase_voucher.journal_entries()
+        return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
 
 class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):

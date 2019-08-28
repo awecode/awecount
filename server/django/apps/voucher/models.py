@@ -303,7 +303,7 @@ class SalesVoucherRow(TransactionModel):
         return row_total
 
 
-class PurchaseVoucher(models.Model):
+class PurchaseVoucher(TransactionModel):
     tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
@@ -489,7 +489,7 @@ class PurchaseVoucher(models.Model):
         return grand_total
 
 
-class PurchaseVoucherRow(models.Model):
+class PurchaseVoucherRow(TransactionModel):
     voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
