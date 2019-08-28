@@ -366,6 +366,8 @@ class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializer):
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')

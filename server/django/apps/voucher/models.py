@@ -314,6 +314,7 @@ class PurchaseVoucher(models.Model):
     due_date = models.DateField(blank=True, null=True)
     pending_amount = models.FloatField(null=True, blank=True)
     total_amount = models.FloatField(null=True, blank=True)
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     discount = models.FloatField(default=0)
@@ -357,6 +358,69 @@ class PurchaseVoucher(models.Model):
     def apply_transactions(voucher):
         # if voucher.status == 'Cancelled':
         #     voucher.apply_cancel_transaction()
+        # entries = []
+        if voucher.status == 'Cancelled':
+            voucher.apply_cancel_transaction()
+        if not voucher.status == 'Issued':
+            return
+
+        # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+        if voucher.mode == 'Credit':
+            cr_acc = voucher.party.customer_account
+        elif voucher.mode == 'Cash':
+            cr_acc = get_account(voucher.company, 'Cash')
+            voucher.status = 'Paid'
+        # TODO Allow creating cheque deposit
+        elif voucher.mode == 'Cheque':
+            cr_acc = voucher.party.customer_account
+            voucher.status = 'Paid'
+        elif voucher.mode == 'Bank Deposit':
+            cr_acc = voucher.bank_account.ledger
+            voucher.status = 'Paid'
+        # elif voucher.mode == 'ePayment':
+        #     pass
+
+        voucher.save()
+
+        # sub_total = voucher.get_sub_total()
+        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+
+        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+
+        for row in voucher.rows.all():
+            entries = []
+
+            row_total = row.quantity * row.rate
+            purchase_value = row_total + 0
+
+            row_discount = 0
+            if row.has_discount():
+                row_discount_amount, trade_discount = row.get_discount()
+                row_total -= row_discount_amount
+                if trade_discount:
+                    purchase_value -= row_discount_amount
+                else:
+                    row_discount += row_discount_amount
+
+            if dividend_discount > 0:
+                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_total -= row_dividend_discount
+                if dividend_trade_discount:
+                    purchase_value -= row_dividend_discount
+                else:
+                    row_discount += row_dividend_discount
+
+            if row_discount > 0:
+                entries.append(['cr', row.item.discount_allowed_ledger, row_discount])
+
+            if row.tax_scheme:
+                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                if row_tax_amount:
+                    entries.append(['dr', row.tax_scheme.receivable, row_tax_amount])
+                    row_total += row_tax_amount
+
+            entries.append(['dr', row.item.purchase_ledger, purchase_value])
+            entries.append(['cr', cr_acc, row_total])
         PurchaseVoucher.apply_inventory_transaction(voucher)
 
     @property
