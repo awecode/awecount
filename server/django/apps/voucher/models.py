@@ -354,6 +354,60 @@ class PurchaseVoucher(models.Model):
     def voucher_type(self):
         return 'PurchaseVoucher'
 
+    def get_vat(self):
+        tax_scheme = []
+        vat = 0
+        for row in self.rows.all():
+            if row.tax_scheme:
+                tax_object = row.tax_scheme
+                tax_scheme.append(tax_object.name)
+                vat = vat + row.tax_amount
+        tax_text = 'TAX'
+        if tax_scheme and len(set(tax_scheme)) == 1:
+            tax_text = tax_scheme[0]
+        return tax_text, vat
+
+    def get_sub_total(self):
+        total = 0
+        for row in self.rows.all():
+            total += row.total
+        return total
+
+    def get_total_after_row_discounts(self):
+        total = 0
+        for row in self.rows.all():
+            total += row.total_after_row_discount
+        return total
+
+    def get_discount(self, sub_total_after_row_discounts=None):
+        """
+        :type sub_total_after_row_discounts: float
+        returns:
+        discount_amount:float, is_trade_discount:boolean
+        """
+        sub_total_after_row_discounts = sub_total_after_row_discounts or self.get_total_after_row_discounts()
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            if discount_obj.type == 'Amount':
+                return discount_obj.value, discount_obj.trade_discount
+            elif discount_obj.type == 'Percent':
+                return sub_total_after_row_discounts * (discount_obj.value / 100), discount_obj.trade_discount
+        elif self.discount and self.discount_type == 'Amount':
+            return self.discount, False
+        elif self.discount and self.discount_type == 'Percent':
+            return sub_total_after_row_discounts * (self.discount / 100), False
+        return 0, False
+
+    def apply_mark_as_paid(self):
+        today = timezone.now().today()
+        entries = []
+        total = self.total_amount
+        cash_account = get_account(self.company, 'Cash')
+        entries.append(['dr', self.party.customer_account, total])
+        entries.append(['cr', cash_account, total])
+        set_ledger_transactions(self, today, *entries)
+
+
     @staticmethod
     def apply_transactions(voucher):
         # if voucher.status == 'Cancelled':
@@ -421,6 +475,8 @@ class PurchaseVoucher(models.Model):
 
             entries.append(['dr', row.item.purchase_ledger, purchase_value])
             entries.append(['cr', cr_acc, row_total])
+            set_ledger_transactions(row, voucher.date, *entries, clear=True)
+
         PurchaseVoucher.apply_inventory_transaction(voucher)
 
     @property
@@ -450,11 +506,51 @@ class PurchaseVoucherRow(models.Model):
         self.item.save()
         super(PurchaseVoucherRow, self).save(*args, **kwargs)
 
-    def get_source_id(self):
-        return self.voucher.id
-
     def get_voucher_no(self):
         return self.voucher.voucher_no
+
+    def get_source_id(self):
+        return self.voucher_id
+
+    def has_discount(self):
+        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
+
+    def get_discount(self):
+        """
+        returns:
+        discount_amount:float, is_trade_discount:boolean
+        """
+        sub_total = self.quantity * self.rate
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            if discount_obj.type == 'Amount':
+                return discount_obj.value, discount_obj.trade_discount
+            elif discount_obj.type == 'Percent':
+                return sub_total * (discount_obj.value / 100), discount_obj.trade_discount
+        elif self.discount and self.discount_type == 'Amount':
+            return self.discount, False
+        elif self.discount and self.discount_type == 'Percent':
+            return sub_total * (self.discount / 100), False
+        return 0, False
+
+    # @property
+    # def tax_amount(self):
+    #     amount = 0
+    #     if self.tax_scheme:
+    #         amount = (self.tax_scheme.rate / 100) * self.total
+    #     return amount
+
+    @property
+    def total(self):
+        row_total = self.quantity * self.rate
+        # sub_total = sub_total - self.get_discount()[0]
+        return row_total
+
+    @property
+    def total_after_row_discount(self):
+        row_total = self.quantity * self.rate
+        row_total = row_total - self.get_discount()[0]
+        return row_total
 
 
 class CreditVoucher(models.Model):
