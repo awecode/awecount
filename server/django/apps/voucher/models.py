@@ -314,9 +314,13 @@ class PurchaseVoucher(models.Model):
     due_date = models.DateField(blank=True, null=True)
     pending_amount = models.FloatField(null=True, blank=True)
     total_amount = models.FloatField(null=True, blank=True)
+    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchase')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
     class Meta:
         unique_together = ('company', 'voucher_no')
@@ -374,6 +378,7 @@ class PurchaseVoucherRow(models.Model):
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchase_rows')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):

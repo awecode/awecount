@@ -290,43 +290,68 @@ class JournalVoucherListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'date', 'status',)
 
 
-class PurchaseVoucherRowSerializer(serializers.ModelSerializer):
+class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(source='item.id', required=True)
     tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
     unit_id = serializers.IntegerField(source='unit.id', required=False)
     voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
-    show_description = serializers.SerializerMethodField()
-    show_discount = serializers.SerializerMethodField()
-
-    def get_show_discount(self, obj):
-        return bool(obj.discount > 0)
-
-    def get_show_description(self, obj):
-        return bool(obj.description)
 
     class Meta:
         model = PurchaseVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
 
 
-class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
+class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializer):
     rows = PurchaseVoucherRowSerializer(many=True)
     voucher_discount = serializers.SerializerMethodField()
     company_id = serializers.IntegerField()
+    mode = serializers.CharField(required=True)
+
+    def to_representation(self, obj):
+        if obj.mode == 'Bank Deposit' and obj.bank_account_id:
+            self.fields['mode'] = serializers.IntegerField(source='bank_account_id')
+        return super().to_representation(obj)
 
     def get_voucher_discount(self, obj):
         return obj.discount and obj.discount_type
 
+    def assign_discount_obj(self, validated_data):
+        discount_key = validated_data.get('discount_type')
+        if discount_key and str(discount_key).isdigit():
+            validated_data['discount_obj_id'] = discount_key
+            validated_data['discount'] = 0
+            validated_data['discount_type'] = None
+        else:
+            validated_data['discount_obj_id'] = None
+        return validated_data
+
+    def assign_mode(self, validated_data):
+        mode = validated_data.get('mode')
+        if mode and str(mode).isdigit():
+            validated_data['bank_account_id'] = mode
+            validated_data['mode'] = 'Bank Deposit'
+        else:
+            validated_data['bank_account_id'] = None
+        print(validated_data)
+        return validated_data
+
     def validate(self, data):
-        if not data.get('party'):
+        if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
-                {'party': ['Party is required']},
+                {'party': ['Party is required for a credit issue.']},
             )
+        if not data.get('mode') == 'Bank Deposit':
+            data['bank_account_id'] = None
         return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        request = self.context['request']
+        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
+        validated_data['company_id'] = request.company_id
+        validated_data['user_id'] = request.user.id
         voucher = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
@@ -358,7 +383,7 @@ class PurchaseVoucherCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseVoucher
-        exclude = ('company',)
+        exclude = ('company', 'user', 'bank_account', 'discount_obj',)
 
 
 class PurchaseVoucherListSerializer(serializers.ModelSerializer):
