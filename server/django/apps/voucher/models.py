@@ -75,12 +75,15 @@ class SalesVoucher(TransactionModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
-    updated_at = models.DateTimeField(auto_now=True)
+    print_count = models.PositiveSmallIntegerField(default=0)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
 
     class Meta:
         unique_together = ('company', 'voucher_no')
+
+    def is_issued(self):
+        return self.status != 'Draft'
 
     def __str__(self):
         return str(self.voucher_no)

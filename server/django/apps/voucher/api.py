@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import get_template
 from rest_framework.decorators import action
@@ -36,7 +37,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
 
     def update(self, request, *args, **kwargs):
         sale_voucher = self.get_object()
-        if sale_voucher.status == 'Issued':
+        if sale_voucher.is_issued():
+            if settings.DISABLE_SALES_UPDATE:
+                raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
             _model_name = self.get_queryset().model.__name__
             permission = '{}IssuedModify'.format(_model_name)
             modules = request.user.role.modules

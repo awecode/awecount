@@ -25,3 +25,5 @@ DATABASES = {
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:8080',
 )
+
+DISABLE_SALES_UPDATE = False
