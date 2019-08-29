@@ -70,7 +70,7 @@ class SalesVoucher(TransactionModel):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales')
-    total_amount = models.FloatField(null=True, blank=True)  #
+    # total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
@@ -96,21 +96,25 @@ class SalesVoucher(TransactionModel):
         return wGenerator.convertNumberToWords(self.total_amount)
 
     @property
+    def total_amount(self):
+        return self.get_sub_total() - self.get_discount()[0] + self.get_tax_amount()[1]
+
+    @property
     def bs_date(self):
         return string_from_tuple(ad2bs(self.transaction_date.strftime('%Y-%m-%d')))
 
-    def get_vat(self):
+    def get_tax_amount(self):
         tax_scheme = []
-        vat = 0
+        tax_amount = 0
         for row in self.rows.all():
             if row.tax_scheme:
                 tax_object = row.tax_scheme
                 tax_scheme.append(tax_object.name)
-                vat = vat + row.tax_amount
+                tax_amount = tax_amount + row.tax_amount
         tax_text = 'TAX'
         if tax_scheme and len(set(tax_scheme)) == 1:
             tax_text = tax_scheme[0]
-        return tax_text, vat
+        return tax_text, tax_amount
 
     def get_sub_total(self):
         total = 0
@@ -149,14 +153,14 @@ class SalesVoucher(TransactionModel):
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
-    def apply_mark_as_paid(self):
-        today = timezone.now().today()
-        entries = []
-        total = self.total_amount
-        cash_account = get_account(self.company, 'Cash')
-        entries.append(['cr', self.party.customer_account, total])
-        entries.append(['dr', cash_account, total])
-        set_ledger_transactions(self, today, *entries)
+    # def apply_mark_as_paid(self):
+    #     today = timezone.now().today()
+    #     entries = []
+    #     total = self.total_amount
+    #     cash_account = get_account(self.company, 'Cash')
+    #     entries.append(['cr', self.party.customer_account, total])
+    #     entries.append(['dr', cash_account, total])
+    #     set_ledger_transactions(self, today, *entries)
 
     @staticmethod
     def apply_transactions(voucher):
@@ -304,24 +308,22 @@ class SalesVoucherRow(TransactionModel):
 
 
 class PurchaseVoucher(TransactionModel):
-    tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
-    credit = models.BooleanField(default=False)
     date = models.DateField(default=timezone.now)
-    tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
-    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
     due_date = models.DateField(blank=True, null=True)
-    pending_amount = models.FloatField(null=True, blank=True)
-    total_amount = models.FloatField(null=True, blank=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchase')
+    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchases')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
+
+    # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
+    # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
+    # tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('company', 'voucher_no')
@@ -354,7 +356,11 @@ class PurchaseVoucher(TransactionModel):
     def voucher_type(self):
         return 'PurchaseVoucher'
 
-    def get_vat(self):
+    @property
+    def total_amount(self):
+        return self.get_sub_total() - self.get_discount()[0] + self.get_tax_amount()[1]
+
+    def get_tax_amount(self):
         tax_scheme = []
         vat = 0
         for row in self.rows.all():
@@ -397,16 +403,6 @@ class PurchaseVoucher(TransactionModel):
         elif self.discount and self.discount_type == 'Percent':
             return sub_total_after_row_discounts * (self.discount / 100), False
         return 0, False
-
-    def apply_mark_as_paid(self):
-        today = timezone.now().today()
-        entries = []
-        total = self.total_amount
-        cash_account = get_account(self.company, 'Cash')
-        entries.append(['dr', self.party.customer_account, total])
-        entries.append(['cr', cash_account, total])
-        set_ledger_transactions(self, today, *entries)
-
 
     @staticmethod
     def apply_transactions(voucher):
@@ -498,7 +494,8 @@ class PurchaseVoucherRow(TransactionModel):
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchase_rows')
+    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='purchase_rows')
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):
@@ -513,7 +510,7 @@ class PurchaseVoucherRow(TransactionModel):
         return self.voucher_id
 
     def has_discount(self):
-        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
+        return True if self.discount_obj_id or (self.discount_type in ['Amount', 'Percent'] and self.discount) else False
 
     def get_discount(self):
         """
