@@ -59,12 +59,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return Response({'voucher_no': voucher_no})
 
     @action(detail=False)
-    def initial(self, request):
+    def initial_data(self, request):
         voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
         data = {
             'fields': {
                 'voucher_no': voucher_no,
-                'can_update_issued': settings.DISABLE_SALES_UPDATE
+                'can_update_issued': not settings.DISABLE_SALES_UPDATE
             }
         }
         return Response(data)
