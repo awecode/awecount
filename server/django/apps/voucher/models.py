@@ -690,3 +690,6 @@ class JournalVoucherRow(models.Model):
 
 
 auditlog.register(SalesVoucher)
+auditlog.register(SalesVoucherRow)
+auditlog.register(PurchaseVoucher)
+auditlog.register(PurchaseVoucherRow)
