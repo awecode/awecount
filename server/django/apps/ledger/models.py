@@ -528,7 +528,7 @@ def handle_company_creation(sender, **kwargs):
                                                        company=company, default=True)
     Account.objects.create(name='Discount Income', category=discount_income_category, company=company, default=True)
 
-    # CREATE DEFAULT CATEGORIES FOR EXPENS
+    # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
 
