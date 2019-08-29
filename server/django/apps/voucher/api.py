@@ -59,20 +59,31 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return Response({'voucher_no': voucher_no})
 
     @action(detail=False)
+    def initial(self, request):
+        voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
+        data = {
+            'fields': {
+                'voucher_no': voucher_no,
+                'can_update_issued': settings.DISABLE_SALES_UPDATE
+            }
+        }
+        return Response(data)
+
+    @action(detail=False)
     def options(self, request):
         discount_type = {
             "Percent": "%",
             "Amount": "/-",
         }
         types = [dict(value=type[0], text=discount_type.get(type[1])) for type in DISCOUNT_TYPES]
-        statues = [dict(value=status[0], text=status[1]) for status in STATUSES]
+        statuses = [dict(value=status[0], text=status[1]) for status in STATUSES]
         modes = [dict(value=mode[0], text=mode[1]) for mode in MODES]
         types.insert(0, {"value": None, "text": '---'})
-        statues.insert(0, {"value": None, "text": '---'})
+        statuses.insert(0, {"value": None, "text": '---'})
         # modes.insert(0, {"value": None, "text": '---'})
         return Response({
             'discount_types': types,
-            'statues': statues,
+            'statues': statuses,
             'modes': modes
         })
 

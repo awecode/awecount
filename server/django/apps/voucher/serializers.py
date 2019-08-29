@@ -51,7 +51,6 @@ class ModeCumBankSerializerMixin(serializers.Serializer):
             validated_data['mode'] = 'Bank Deposit'
         else:
             validated_data['bank_account_id'] = None
-        print(validated_data)
         return validated_data
 
     def to_representation(self, obj):
@@ -359,7 +358,7 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseVoucher
-        fields = ('id', 'voucher_no', 'party', 'date', 'pending_amount', 'name',)
+        fields = ('id', 'voucher_no', 'party', 'date', 'name',)
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):

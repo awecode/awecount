@@ -7,7 +7,7 @@ class CompanyViewSetMixin(object):
     def get_queryset(self, company_id=None):
         if not company_id:
             if not hasattr(self.request, 'company_id'):
-                raise APIException({'non_field_errors': ['User is not assigned with any company.']})
+                raise APIException({'non_field_errors': ['User is not assigned to any company.']})
             company_id = self.request.company_id
         return super().get_queryset().filter(company_id=company_id)
 
