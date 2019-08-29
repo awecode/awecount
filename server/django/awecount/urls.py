@@ -12,11 +12,13 @@ from apps.product import api as item
 from apps.tax import api as tax
 from apps.voucher import api as voucher
 from apps.bank import api as bank
+from apps.aggregator import api as aggregator
 
 from apps.aggregator import views as aggregator_views
 
 router = DefaultRouter()
 
+#TODO fix singular/plural
 router.register('parties', ledger.PartyViewSet, base_name='parties')
 router.register('categories', ledger.CategoryViewSet, base_name='categories')
 router.register('accounts', ledger.AccountViewSet, base_name='accounts')
@@ -34,10 +36,11 @@ router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name=
 router.register('credit-voucher', voucher.CreditVoucherViewSet)
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
-router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='chequedeposit')
+router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
-router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='chequevoucher')
-router.register('bank-branch', bank.BankBranchViewSet, base_name='bankbranch')
+router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='cheque-voucher')
+router.register('bank-branch', bank.BankBranchViewSet, base_name='bank-branch')
+router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 
 urlpatterns = [
                   path('aweadmin/', admin.site.urls),
