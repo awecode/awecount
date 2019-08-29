@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+    'auditlog',
 
     'apps.users',
     'apps.voucher',
@@ -34,6 +35,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'apps.users.middleware.CompanyMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
 ]
 
 ROOT_URLCONF = 'awecount.urls'

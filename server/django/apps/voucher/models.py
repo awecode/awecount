@@ -1,3 +1,4 @@
+from auditlog.registry import auditlog
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
@@ -95,26 +96,26 @@ class SalesVoucher(TransactionModel):
     def amount_in_words(self):
         return wGenerator.convertNumberToWords(self.total_amount)
 
-    @property
-    def total_amount(self):
-        return self.get_sub_total() - self.get_discount()[0] + self.get_tax_amount()[1]
+    # @property
+    # def total_amount(self):
+    #     return self.get_sub_total() - self.get_discount()[0] + self.get_tax_amount()[1]
 
     @property
     def bs_date(self):
         return string_from_tuple(ad2bs(self.transaction_date.strftime('%Y-%m-%d')))
 
-    def get_tax_amount(self):
-        tax_scheme = []
-        tax_amount = 0
-        for row in self.rows.all():
-            if row.tax_scheme:
-                tax_object = row.tax_scheme
-                tax_scheme.append(tax_object.name)
-                tax_amount = tax_amount + row.tax_amount
-        tax_text = 'TAX'
-        if tax_scheme and len(set(tax_scheme)) == 1:
-            tax_text = tax_scheme[0]
-        return tax_text, tax_amount
+    # def get_tax_amount(self):
+    #     tax_scheme = []
+    #     tax_amount = 0
+    #     for row in self.rows.all():
+    #         if row.tax_scheme:
+    #             tax_object = row.tax_scheme
+    #             tax_scheme.append(tax_object.name)
+    #             tax_amount = tax_amount + row.tax_amount
+    #     tax_text = 'TAX'
+    #     if tax_scheme and len(set(tax_scheme)) == 1:
+    #         tax_text = tax_scheme[0]
+    #     return tax_text, tax_amount
 
     def get_sub_total(self):
         total = 0
@@ -287,8 +288,7 @@ class SalesVoucherRow(TransactionModel):
             return sub_total * (self.discount / 100), False
         return 0, False
 
-    # @property
-    # def tax_amount(self):
+    # def get_tax_amount(self):
     #     amount = 0
     #     if self.tax_scheme:
     #         amount = (self.tax_scheme.rate / 100) * self.total
@@ -687,3 +687,6 @@ class JournalVoucherRow(models.Model):
 
     def get_voucher_no(self):
         return self.journal_voucher.voucher_no
+
+
+auditlog.register(SalesVoucher)
