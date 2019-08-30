@@ -1,3 +1,5 @@
+import json
+
 from auditlog.models import LogEntry
 from rest_framework import serializers
 
@@ -7,6 +9,16 @@ class LogEntrySerializer(serializers.ModelSerializer):
     actor = serializers.SerializerMethodField()
     actor_id = serializers.ReadOnlyField()
     action = serializers.SerializerMethodField()
+    datetime = serializers.SerializerMethodField()
+    changes_obj = serializers.SerializerMethodField()
+
+    def get_changes_obj(self, obj):
+        if obj.changes:
+            return json.loads(obj.changes)
+        return
+
+    def get_datetime(self, obj):
+        return "{:%x, %H:%M %p}".format(obj.timestamp)
 
     def get_action(self, obj):
         return obj.get_action_display().title()
@@ -19,4 +31,4 @@ class LogEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LogEntry
-        exclude = ()
+        exclude = ('timestamp', 'changes')
