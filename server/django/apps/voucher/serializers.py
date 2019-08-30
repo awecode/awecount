@@ -193,14 +193,10 @@ class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCum
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source='party.name')
-    name = serializers.SerializerMethodField()
-
-    def get_name(self, obj):
-        return '{}: {}'.format(obj.voucher_no, obj.user)
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status', 'name',)
+        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status', 'customer_name')
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):

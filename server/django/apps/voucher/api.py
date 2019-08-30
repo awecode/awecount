@@ -27,8 +27,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     row = SalesVoucherRow
 
     def get_queryset(self):
-        queryset = super(SalesVoucherViewSet, self).get_queryset()
-        return queryset.order_by('-pk')
+        qs = super(SalesVoucherViewSet, self).get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
