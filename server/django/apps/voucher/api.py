@@ -17,7 +17,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     CreditVoucherListSerializer, InvoiceDesignSerializer, \
     SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
-    SalesDiscountSerializer, PurchaseDiscountSerializer
+    SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -33,8 +33,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return qs.order_by('-pk')
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action in ('choices',):
+        if self.action in ('choices', 'list'):
             return SalesVoucherListSerializer
+        if self.action in ('retrieve'):
+            return SalesVoucherDetailSerializer
         return SalesVoucherCreateSerializer
 
     def update(self, request, *args, **kwargs):

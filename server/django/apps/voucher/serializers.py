@@ -126,6 +126,15 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
         exclude = ('company', 'user', 'bank_account', 'discount_obj')
 
 
+class SalesVoucherDetailSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party__name')
+    rows = SalesVoucherRowSerializer(many=True)
+
+    class Meta:
+        model = SalesVoucher
+        exclude = ('company', 'user', 'bank_account', 'discount_obj')
+
+
 class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(source='item.id', required=True)
