@@ -142,6 +142,7 @@ MODULES = (
     ('BookView', 'BookView'),
     ('BookCreate', 'BookCreate'),
     ('BookModify', 'BookModify'),
+    ('LogEntryView', 'LogEntryView'),
 )
 
 
