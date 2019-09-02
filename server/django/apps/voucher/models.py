@@ -162,6 +162,20 @@ class SalesVoucher(TransactionModel):
         row_ids = [row.id for row in self.rows.all()]
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        
+    def mark_as_paid(self):
+        if self.mode == 'Credit' and self.status == 'Issued':
+            self.status = 'Paid'
+            # sale_voucher.apply_mark_as_paid()
+            self.save()
+        else:
+            raise ValueError('This sales cannot be mark as paid!')
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.apply_cancel_transaction()
+            
 
     # def apply_mark_as_paid(self):
     #     today = timezone.now().today()

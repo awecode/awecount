@@ -115,12 +115,20 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
         sale_voucher = self.get_object()
-        if sale_voucher.mode == 'Credit' and sale_voucher.status == 'Issued':
-            sale_voucher.status = 'Paid'
-            # sale_voucher.apply_mark_as_paid()
-            sale_voucher.save()
+        try:
+            sale_voucher.mark_as_paid()
             return Response({})
-        raise APIException('Sale voucher not valid to be paid.')
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        sale_voucher = self.get_object()
+        try:
+            sale_voucher.cancel()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
 
     @action(detail=True)
     def rows(self, request, pk):
