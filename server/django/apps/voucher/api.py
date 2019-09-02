@@ -41,7 +41,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def update(self, request, *args, **kwargs):
         sale_voucher = self.get_object()
         if sale_voucher.is_issued():
-            if settings.DISABLE_SALES_UPDATE:
+            if not request.company.enable_sales_voucher_update:
                 raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
             _model_name = self.get_queryset().model.__name__
             permission = '{}IssuedModify'.format(_model_name)
@@ -63,7 +63,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def get_defaults(self, request=None):
         data = {
             'fields': {
-                'can_update_issued': not settings.DISABLE_SALES_UPDATE
+                'can_update_issued': request.company.enable_sales_voucher_update
             }
         }
         return data
