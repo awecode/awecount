@@ -130,6 +130,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         except Exception as e:
             raise APIException(str(e))
 
+    @action(detail=True, methods=['POST'], url_path="print-count")
+    def print_count(self, request, pk):
+        sale_voucher = self.get_object()
+        sale_voucher.print_count += 1
+        sale_voucher.save()
+        return Response({})
+
     @action(detail=True)
     def rows(self, request, pk):
         sale_voucher = self.get_object()

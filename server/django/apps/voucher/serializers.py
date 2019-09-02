@@ -160,6 +160,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     row_discounts = serializers.ReadOnlyField(source='get_row_discounts')
 
     rows = SalesVoucherRowDetailSerializer(many=True)
+    tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
 
     class Meta:
         model = SalesVoucher
