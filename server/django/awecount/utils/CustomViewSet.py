@@ -1,6 +1,9 @@
 from rest_framework import mixins, viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from rest_framework.decorators import action
+
+from awecount.utils.helpers import merge_dicts
 
 
 class CompanyViewSetMixin(object):
@@ -25,6 +28,23 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
     `.serializer_class` attributes.
 
     """
+
+    def get_defaults(self, request=None):
+        return {}
+
+    def get_create_defaults(self, request=None):
+        return self.get_defaults(request=request)
+
+    def get_update_defaults(self, request=None):
+        return self.get_defaults(request=request)
+
+    @action(detail=False, url_path='create-defaults')
+    def create_defaults(self, request): 
+        return Response(merge_dicts(self.get_defaults(request), self.get_create_defaults(request)))
+
+    @action(detail=True, url_path='update-defaults')
+    def update_defaults(self, request, pk):
+        return Response(merge_dicts(self.get_defaults(request), self.get_update_defaults(request)))
 
     def create(self, request, *args, **kwargs):
         request.data['company_id'] = request.company.id

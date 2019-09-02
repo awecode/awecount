@@ -10,6 +10,7 @@ from xhtml2pdf import pisa
 from apps.ledger.serializers import JournalEntrySerializer, SalesJournalEntrySerializer
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.helpers import merge_dicts
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
@@ -35,8 +36,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def get_serializer_class(self):
         if self.action in ('choices', 'list'):
             return SalesVoucherListSerializer
-        if self.action in ('retrieve'):
-            return SalesVoucherDetailSerializer
         return SalesVoucherCreateSerializer
 
     def update(self, request, *args, **kwargs):
@@ -57,21 +56,26 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         journals = sale_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
-    @action(detail=False)
-    def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
-        return Response({'voucher_no': voucher_no})
+    @action(detail=True)
+    def details(self, request, pk):
+        return Response(SalesVoucherDetailSerializer(self.get_object()).data)
 
-    @action(detail=False)
-    def initial_data(self, request):
+    def get_defaults(self, request=None):
+        data = {
+            'fields': {
+                'can_update_issued': not settings.DISABLE_SALES_UPDATE
+            }
+        }
+        return data
+
+    def get_create_defaults(self, request=None):
         voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
         data = {
             'fields': {
                 'voucher_no': voucher_no,
-                'can_update_issued': not settings.DISABLE_SALES_UPDATE
             }
         }
-        return Response(data)
+        return data
 
     @action(detail=False)
     def options(self, request):

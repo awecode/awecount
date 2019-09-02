@@ -126,8 +126,8 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
         exclude = ('company', 'user', 'bank_account', 'discount_obj')
 
 
-class SalesVoucherDetailSerializer(serializers.ModelSerializer):
-    party_name = serializers.ReadOnlyField(source='party__name')
+class SalesVoucherDetailSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
     rows = SalesVoucherRowSerializer(many=True)
 
     class Meta:
