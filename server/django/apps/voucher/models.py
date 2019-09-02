@@ -126,6 +126,12 @@ class SalesVoucher(TransactionModel):
             total += row.total
         return total
 
+    def get_row_discounts(self):
+        total = 0
+        for row in self.rows.all():
+            total += row.get_discount()[0]
+        return total
+
     def get_total_after_row_discounts(self):
         total = 0
         for row in self.rows.all():
@@ -291,11 +297,11 @@ class SalesVoucherRow(TransactionModel):
             return sub_total * (self.discount / 100), False
         return 0, False
 
-    # def get_tax_amount(self):
-    #     amount = 0
-    #     if self.tax_scheme:
-    #         amount = (self.tax_scheme.rate / 100) * self.total
-    #     return amount
+    def get_tax_amount(self):
+        amount = 0
+        if self.tax_scheme:
+            amount = (self.tax_scheme.rate / 100) * self.total
+        return amount
 
     @property
     def total(self):

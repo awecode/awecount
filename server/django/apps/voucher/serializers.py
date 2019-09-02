@@ -154,6 +154,10 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
     bank_account_name = serializers.ReadOnlyField(source='bank_account.short_ac_name_number')
     discount_obj = SalesDiscountSerializer()
+    sub_total = serializers.ReadOnlyField(source='get_sub_total')
+    voucher_discount = serializers.ReadOnlyField(source='get_discount')
+    # total_after_row_discounts = serializers.ReadOnlyField(source='get_total_after_row_discounts')
+    row_discounts = serializers.ReadOnlyField(source='get_row_discounts')
 
     rows = SalesVoucherRowDetailSerializer(many=True)
 

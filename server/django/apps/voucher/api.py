@@ -120,7 +120,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             # sale_voucher.apply_mark_as_paid()
             sale_voucher.save()
             return Response({})
-        raise APIException({'non_field_errors': ['Sale voucher not valid to be paid.']})
+        raise APIException('Sale voucher not valid to be paid.')
 
     @action(detail=True)
     def rows(self, request, pk):
