@@ -2,9 +2,22 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
+from apps.tax.serializers import TaxSchemeSerializer
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, \
     JournalVoucherRow, PurchaseVoucher, \
     PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
+
+
+class SalesDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesDiscount
+        exclude = ('company',)
+
+
+class PurchaseDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseDiscount
+        exclude = ('company',)
 
 
 class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
@@ -126,13 +139,27 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
         exclude = ('company', 'user', 'bank_account', 'discount_obj')
 
 
-class SalesVoucherDetailSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
+    item_name = serializers.ReadOnlyField(source='item.name')
+    unit_name = serializers.ReadOnlyField(source='unit.name')
+    discount_obj = SalesDiscountSerializer()
+    tax_scheme = TaxSchemeSerializer()
+
+    class Meta:
+        model = SalesVoucherRow
+        exclude = ('id', 'voucher', 'item', 'unit')
+
+
+class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
-    rows = SalesVoucherRowSerializer(many=True)
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.short_ac_name_number')
+    discount_obj = SalesDiscountSerializer()
+
+    rows = SalesVoucherRowDetailSerializer(many=True)
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company', 'user', 'bank_account', 'discount_obj')
+        exclude = ('company', 'user', 'bank_account',)
 
 
 class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
@@ -364,19 +391,3 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         fields = ('id', 'voucher_no', 'party', 'date', 'name',)
-
-
-class SalesDiscountSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
-    class Meta:
-        model = SalesDiscount
-        exclude = ('company',)
-
-
-class PurchaseDiscountSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
-    class Meta:
-        model = PurchaseDiscount
-        exclude = ('company',)
