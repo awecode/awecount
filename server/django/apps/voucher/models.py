@@ -353,9 +353,6 @@ class PurchaseVoucher(TransactionModel):
     # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
     # tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = ('company', 'voucher_no')
-
     def type(self):
         return 'Credit' if self.credit else 'Cash'
 
