@@ -8,7 +8,7 @@ from apps.ledger.models import Party, Account, set_transactions as set_ledger_tr
     TransactionModel
 from apps.product.models import Item, Unit, JournalEntry as InventoryJournalEntry, set_inventory_transactions
 from apps.tax.models import TaxScheme
-from apps.users.models import Company, User
+from apps.users.models import Company, User, FiscalYear
 from awecount.utils import get_next_voucher_no, wGenerator
 from awecount.utils.nepdate import ad2bs, string_from_tuple
 
@@ -58,7 +58,7 @@ class PurchaseDiscount(Discount):
 
 
 class SalesVoucher(TransactionModel):
-    voucher_no = models.PositiveSmallIntegerField()
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -78,9 +78,10 @@ class SalesVoucher(TransactionModel):
     print_count = models.PositiveSmallIntegerField(default=0)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
 
     class Meta:
-        unique_together = ('company', 'voucher_no')
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
 
     def is_issued(self):
         return self.status != 'Draft'
@@ -162,7 +163,7 @@ class SalesVoucher(TransactionModel):
         row_ids = [row.id for row in self.rows.all()]
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        
+
     def mark_as_paid(self):
         if self.mode == 'Credit' and self.status == 'Issued':
             self.status = 'Paid'
@@ -175,7 +176,6 @@ class SalesVoucher(TransactionModel):
         self.status = 'Cancelled'
         self.save()
         self.apply_cancel_transaction()
-            
 
     # def apply_mark_as_paid(self):
     #     today = timezone.now().today()
@@ -267,6 +267,11 @@ class SalesVoucher(TransactionModel):
                 voucher.transaction_date,
                 ['cr', row.item.account, int(row.quantity)],
             )
+
+    def save(self, *args, **kwargs):
+        if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
+            raise ValueError('Issued invoices need a voucher number!')
+        super().save(*args, **kwargs)
 
 
 class SalesVoucherRow(TransactionModel):

@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
@@ -88,6 +89,15 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
     rows = SalesVoucherRowSerializer(many=True)
 
     def validate(self, data):
+
+        fiscal_year = self.context['request'].company.current_fiscal_year
+
+        if fiscal_year.includes(data.get('transaction_date')):
+            data['fiscal_year_id'] = fiscal_year.id
+        else:
+            raise ValidationError(
+                {'transaction_date': ['Date not in current fiscal year.']},
+            )
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
@@ -136,7 +146,7 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company', 'user', 'bank_account', 'discount_obj')
+        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year',)
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):

@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserCha
     UserCreationForm as DjangoUserCreationForm
 
 from apps.ledger.models import handle_company_creation
-from .models import User, Company, Role
+from .models import User, Company, Role, FiscalYear
 from django import forms
 
 admin.site.unregister(Group)
@@ -101,3 +101,16 @@ class CompanyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Company, CompanyAdmin)
+
+
+class FiscalYearAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_date', 'end_date')
+
+    def start_date(self, obj):
+        return obj.start.strftime('%d-%m-%Y')
+
+    def end_date(self, obj):
+        return obj.end.strftime('%d-%m-%Y')
+
+
+admin.site.register(FiscalYear, FiscalYearAdmin)

@@ -1,8 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils import timezone
 
 from apps.users.signals import company_creation
@@ -11,6 +8,18 @@ from separatedvaluesfield.models import SeparatedValuesField
 ORGANIZATION_TYPES = (
     ('sole_proprietorship', 'Sole Proprietorship'), ('partnership', 'Partnership'), ('corporation', 'Corporation'),
     ('non_profit', 'Non-profit'))
+
+
+class FiscalYear(models.Model):
+    name = models.CharField(max_length=255)
+    start = models.DateField()
+    end = models.DateField()
+
+    def __str__(self):
+        return self.name
+
+    def includes(self, date):
+        return self.start <= date <= self.end
 
 
 class Company(models.Model):
@@ -23,6 +32,7 @@ class Company(models.Model):
     tax_registration_number = models.IntegerField(blank=True, null=True)
     force_preview_before_save = models.BooleanField(default=False)
     enable_sales_voucher_update = models.BooleanField(default=False)
+    current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
