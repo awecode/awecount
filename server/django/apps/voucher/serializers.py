@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
+from awecount.utils import get_next_voucher_no
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, \
     JournalVoucherRow, PurchaseVoucher, \
     PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
@@ -88,26 +89,45 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
 class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
 
-    def validate(self, data):
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get('status') in ['Draft', 'Cancelled']:
+            return
+        next_voucher_no = get_next_voucher_no(SalesVoucher, self.context['request'].company_id)
+        validated_data['voucher_no'] = next_voucher_no
 
+    def assign_fiscal_year(self, validated_data, instance=None):
+        if instance and instance.fiscal_year:
+            return
         fiscal_year = self.context['request'].company.current_fiscal_year
-
-        if fiscal_year.includes(data.get('transaction_date')):
-            data['fiscal_year_id'] = fiscal_year.id
+        if fiscal_year.includes(validated_data.get('transaction_date')):
+            validated_data['fiscal_year_id'] = fiscal_year.id
         else:
             raise ValidationError(
                 {'transaction_date': ['Date not in current fiscal year.']},
             )
+
+    def validate(self, data):
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
         return data
 
+    def validate_voucher_status(self, validated_data, instance):
+        unissued_types = ['Draft', 'Cancelled']
+        if instance.status not in unissued_types and validated_data.get('status') in unissued_types:
+            raise ValidationError(
+                {'status': ['Issued invoice cannot be unissued.']},
+            )
+
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
-        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
@@ -126,7 +146,10 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
-        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_fiscal_year(validated_data, instance=instance)
+        self.validate_voucher_status(validated_data, instance)
+        self.assign_voucher_number(validated_data, instance)
+        self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
@@ -146,7 +169,7 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year',)
+        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year', 'voucher_no')
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):

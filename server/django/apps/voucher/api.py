@@ -69,7 +69,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return data
 
     def get_create_defaults(self, request=None):
-        voucher_no = get_next_voucher_no(SalesVoucher, request.company.id)
+        voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
         data = {
             'fields': {
                 'voucher_no': voucher_no,

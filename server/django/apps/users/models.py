@@ -32,7 +32,7 @@ class Company(models.Model):
     tax_registration_number = models.IntegerField(blank=True, null=True)
     force_preview_before_save = models.BooleanField(default=False)
     enable_sales_voucher_update = models.BooleanField(default=False)
-    current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE)
+    current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
 
     def __str__(self):
         return self.name

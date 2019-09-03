@@ -25,7 +25,7 @@ class SalesVoucherAdmin(admin.ModelAdmin):
     search_fields = (
         'voucher_no', 'party__name', 'party__tax_registration_number', 'customer_name', 'address', 'user__full_name',
         'user__email', 'company__name', 'company__tax_registration_number', 'remarks',)
-    list_filter = ('company', 'status', 'mode')
+    list_filter = ('company', 'status', 'mode', 'fiscal_year')
     list_display = ('company', 'voucher_no', 'party', 'customer_name', 'status',)
     inlines = (SaleVoucherRowTabular,)
 
@@ -67,15 +67,19 @@ class PurchaseVoucherAdmin(admin.ModelAdmin):
 
 admin.site.register(PurchaseVoucher, PurchaseVoucherAdmin)
 
+
 class DiscountAdmin(admin.ModelAdmin):
-    search_fields = ('name','value')
+    search_fields = ('name', 'value')
     list_filter = ('company', 'type', 'trade_discount')
-    
+
+
 admin.site.register(SalesDiscount, DiscountAdmin)
 admin.site.register(PurchaseDiscount, DiscountAdmin)
+
 
 class BrandAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     list_filter = ('company',)
-    
+
+
 admin.site.register(Brand, BrandAdmin)

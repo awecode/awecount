@@ -11,6 +11,13 @@ def get_next_voucher_no(cls, company_id, attr='voucher_no'):
     qs = cls.objects.all()
     if company_id:
         qs = qs.filter(company_id=company_id)
+
+    # Check if the voucher number needs to be unique by fiscal year
+    for unique_tuple in cls._meta.unique_together:
+        if attr in unique_tuple and 'fiscal_year' in unique_tuple:
+            qs = qs.filter(fiscal_year__companies=company_id)
+            break
+
     max_voucher_no = qs.aggregate(Max(attr))[attr + '__max']
     if max_voucher_no:
         return int(max_voucher_no) + 1
@@ -72,7 +79,6 @@ def link_callback(uri, rel):
 
 
 class Number2Words(object):
-
     def __init__(self):
         '''Initialise the class with useful data'''
 
