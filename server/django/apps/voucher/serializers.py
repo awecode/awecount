@@ -98,7 +98,7 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
         validated_data['voucher_no'] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
-        if instance and instance.fiscal_year:
+        if instance and instance.fiscal_year_id:
             return
         fiscal_year = self.context['request'].company.current_fiscal_year
         if fiscal_year.includes(validated_data.get('transaction_date')):
