@@ -549,7 +549,7 @@ class PurchaseVoucherRow(TransactionModel):
 
     def has_discount(self):
         return True if self.discount_obj_id or (
-                    self.discount_type in ['Amount', 'Percent'] and self.discount) else False
+            self.discount_type in ['Amount', 'Percent'] and self.discount) else False
 
     def get_discount(self):
         """
@@ -705,14 +705,24 @@ class JournalVoucher(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
+        if voucher.status == 'Cancelled':
+            voucher.apply_cancel_transaction()
+            return
         if not voucher.status == 'Approved':
             return
+
         entries = []
         for row in voucher.rows.all():
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
             entries.append([row.type.lower(), row.account, amount])
         set_ledger_transactions(voucher, voucher.date, *entries)
         return
+
+    @staticmethod
+    def apply_cancel_transaction(self):
+        content_type = ContentType.objects.get(model='journalvoucher')
+        row_ids = [row.id for row in self.rows.all()]
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
 
 class JournalVoucherRow(models.Model):

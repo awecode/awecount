@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.template.loader import get_template
 from rest_framework.decorators import action
@@ -218,7 +219,8 @@ class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
 
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
-    queryset = JournalVoucher.objects.all()
+    queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
+                                                                queryset=JournalVoucherRow.objects.order_by('-type', 'id')))
     serializer_class = JournalVoucherCreateSerializer
     model = JournalVoucher
     row = JournalVoucherRow

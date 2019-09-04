@@ -383,10 +383,10 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
 
 class JournalVoucherCreateSerializer(serializers.ModelSerializer):
     rows = JournalVoucherRowSerializer(many=True)
-    company_id = serializers.IntegerField()
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        validated_data['company_id'] = self.context['request'].company_id
         journal_voucher = JournalVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             account = row.pop('account')
@@ -397,6 +397,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        validated_data['company_id'] = self.context['request'].company_id
         JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             account = row.pop('account')
