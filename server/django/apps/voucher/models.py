@@ -79,6 +79,8 @@ class SalesVoucher(TransactionModel):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
+    
+    is_export = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
@@ -348,6 +350,8 @@ class PurchaseVoucher(TransactionModel):
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchases')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
+
+    is_import = models.BooleanField(default=False)
 
     # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
