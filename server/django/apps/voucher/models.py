@@ -70,7 +70,8 @@ class SalesVoucher(TransactionModel):
     due_date = models.DateField(blank=True, null=True)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales')
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='sales')
     # total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
@@ -79,11 +80,17 @@ class SalesVoucher(TransactionModel):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
-    
+
     is_export = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
+
+    @property
+    def buyer_name(self):
+        if self.party:
+            return self.party.name
+        return self.customer_name
 
     def is_issued(self):
         return self.status != 'Draft'
@@ -285,7 +292,8 @@ class SalesVoucherRow(TransactionModel):
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='sales_rows')
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
 
     def __str__(self):
@@ -347,7 +355,8 @@ class PurchaseVoucher(TransactionModel):
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchases')
+    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='purchases')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
@@ -539,7 +548,8 @@ class PurchaseVoucherRow(TransactionModel):
         return self.voucher_id
 
     def has_discount(self):
-        return True if self.discount_obj_id or (self.discount_type in ['Amount', 'Percent'] and self.discount) else False
+        return True if self.discount_obj_id or (
+                    self.discount_type in ['Amount', 'Percent'] and self.discount) else False
 
     def get_discount(self):
         """

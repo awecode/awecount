@@ -86,7 +86,8 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
         exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
 
 
-class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
+                                   serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):
@@ -212,7 +213,8 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
 
 
-class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
+                                      serializers.ModelSerializer):
     rows = PurchaseVoucherRowSerializer(many=True)
 
     def validate(self, data):
@@ -429,3 +431,12 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         fields = ('id', 'voucher_no', 'party', 'date', 'name',)
+
+
+class SalesBookSerializer(serializers.ModelSerializer):
+    buyers_name = serializers.ReadOnlyField(source='buyer_name')
+    buyers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
+
+    class Meta:
+        model = SalesVoucher
+        exclude = ('customer_name',)

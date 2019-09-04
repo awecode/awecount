@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from xhtml2pdf import pisa
 
 from apps.ledger.serializers import JournalEntrySerializer, SalesJournalEntrySerializer
@@ -18,7 +19,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     CreditVoucherListSerializer, InvoiceDesignSerializer, \
     SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
-    SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer
+    SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -279,3 +280,7 @@ class SalesDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
 
 class PurchaseDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
     serializer_class = PurchaseDiscountSerializer
+
+
+class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
+    serializer_class = SalesBookSerializer
