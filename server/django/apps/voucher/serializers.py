@@ -5,6 +5,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils import get_next_voucher_no
+from awecount.utils.CustomViewSet import StatusReversionMixin
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, \
     JournalVoucherRow, PurchaseVoucher, \
     PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
@@ -86,7 +87,7 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
         exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
 
 
-class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
+class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
                                    serializers.ModelSerializer):
     rows = SalesVoucherRowSerializer(many=True)
 
@@ -115,13 +116,6 @@ class SalesVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBan
                 {'party': ['Party is required for a credit issue.']},
             )
         return data
-
-    def validate_voucher_status(self, validated_data, instance):
-        unissued_types = ['Draft', 'Cancelled']
-        if instance.status not in unissued_types and validated_data.get('status') in unissued_types:
-            raise ValidationError(
-                {'status': ['Issued invoice cannot be unissued.']},
-            )
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -376,7 +370,7 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
         exclude = ('account', 'journal_voucher',)
 
 
-class JournalVoucherCreateSerializer(serializers.ModelSerializer):
+class JournalVoucherCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     rows = JournalVoucherRowSerializer(many=True)
 
     def create(self, validated_data):
@@ -393,6 +387,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         validated_data['company_id'] = self.context['request'].company_id
+        self.validate_voucher_status(validated_data, instance)
         JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             account = row.pop('account')

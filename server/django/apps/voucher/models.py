@@ -674,11 +674,12 @@ class InvoiceDesign(models.Model):
 
 
 class JournalVoucher(models.Model):
+    STATUSES = [('Cancelled', 'Cancelled'), ('Approved', 'Approved'), ('Unapproved', 'Unapproved')]
+
     voucher_no = models.IntegerField()
     date = models.DateField()
     narration = models.TextField()
-    statuses = [('Cancelled', 'Cancelled'), ('Approved', 'Approved'), ('Unapproved', 'Unapproved')]
-    status = models.CharField(max_length=10, choices=statuses, default='Unapproved')
+    status = models.CharField(max_length=10, choices=STATUSES, default='Unapproved')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     class Meta:
