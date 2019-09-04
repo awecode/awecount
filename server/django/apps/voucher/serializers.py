@@ -370,11 +370,6 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 class JournalVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     account_id = serializers.IntegerField(source='account.id', required=True)
-    journal_voucher_id = serializers.IntegerField(source='journal_voucher.id', required=False, read_only=True)
-    show_description = serializers.SerializerMethodField()
-
-    def get_show_description(self, obj):
-        return bool(obj.description)
 
     class Meta:
         model = JournalVoucherRow

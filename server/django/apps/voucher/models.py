@@ -226,7 +226,8 @@ class SalesVoucher(TransactionModel):
 
         dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
 
-        for row in voucher.rows.all():
+        # filter bypasses rows cached by prefetching
+        for row in voucher.rows.filter():
             entries = []
 
             row_total = row.quantity * row.rate
@@ -712,10 +713,11 @@ class JournalVoucher(models.Model):
             return
 
         entries = []
-        for row in voucher.rows.all():
+        # filter bypasses rows cached by prefetching
+        for row in voucher.rows.filter():
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
             entries.append([row.type.lower(), row.account, amount])
-        set_ledger_transactions(voucher, voucher.date, *entries)
+        set_ledger_transactions(voucher, voucher.date, *entries, clear=True)
         return
 
     @staticmethod

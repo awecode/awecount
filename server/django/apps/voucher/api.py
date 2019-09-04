@@ -234,6 +234,15 @@ class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             return JournalVoucherListSerializer
         return JournalVoucherCreateSerializer
 
+    def get_create_defaults(self, request=None):
+        voucher_no = get_next_voucher_no(JournalVoucher, request.company_id)
+        data = {
+            'fields': {
+                'voucher_no': voucher_no,
+            }
+        }
+        return data
+
     @action(detail=False)
     def options(self, request):
         statues = [dict(value=status[0], text=status[1]) for status in JournalVoucher.statuses]
