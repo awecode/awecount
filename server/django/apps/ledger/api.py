@@ -84,10 +84,10 @@ class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
-        if start_date == end_date:
-            entries = entries.filter(date=start_date)
-        else:
-            entries = entries.filter(date__range=[start_date, end_date])
+            if start_date == end_date:
+                entries = entries.filter(date=start_date)
+            else:
+                entries = entries.filter(date__range=[start_date, end_date])
 
         data = JournalEntrySerializer(entries, context={'account': obj}, many=True).data
         return Response(data)
