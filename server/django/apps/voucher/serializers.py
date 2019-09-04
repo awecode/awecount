@@ -5,7 +5,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.CustomViewSet import StatusReversionMixin
+from awecount.utils.serializers import StatusReversionMixin
 from .models import SalesVoucherRow, SalesVoucher, CreditVoucherRow, CreditVoucher, InvoiceDesign, JournalVoucher, \
     JournalVoucherRow, PurchaseVoucher, \
     PurchaseVoucherRow, SalesDiscount, PurchaseDiscount

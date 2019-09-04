@@ -1,5 +1,5 @@
 from rest_framework import mixins, viewsets, status
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -61,11 +61,3 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
             return self.serializer_class.Meta.model.objects.all()
 
 
-class StatusReversionMixin(object):
-    UNISSUED_TYPES = ['Unapproved', 'Cancelled', 'Draft']
-
-    def validate_voucher_status(self, validated_data, instance):
-        if instance.status not in self.UNISSUED_TYPES and validated_data.get('status') in self.UNISSUED_TYPES:
-            raise ValidationError(
-                {'detail': 'Issued voucher cannot be unissued.'},
-            )
