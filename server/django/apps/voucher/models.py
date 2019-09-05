@@ -170,6 +170,54 @@ class SalesVoucher(TransactionModel):
             return sub_total_after_row_discounts * (self.discount / 100), False
         return 0, False
 
+    def get_voucher_discount_data(self):
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            return {'type': discount_obj.type, 'value': discount_obj.value}
+        else:
+            return {'type': self.discount_type, 'value': self.discount}
+
+    def get_voucher_meta(self):
+        dct = {
+            'sub_total': 0,
+            'discount': 0,
+            'tax': 0
+        }
+        rows_data = []
+        # gross_total_sum is subtotal after row discounts, before voucher discount and tax
+        gross_total_sum = 0
+        for row in self.rows.all():
+            row_data = {'quantity': row.quantity, 'rate': row.rate, 'total': row.rate * row.quantity}
+            row_data['row_discount'] = row.get_discount()[0] if row.has_discount() else 0
+            row_data['gross_total'] = row_data['total'] - row_data['row_discount']
+            row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
+            gross_total_sum += row_data['gross_total']
+            dct['sub_total'] += row_data['total']
+            rows_data.append(row_data)
+
+        voucher_discount_data = self.get_voucher_discount_data()
+
+        for row_data in rows_data:
+            if voucher_discount_data['type'] == 'Percent':
+                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / 100
+            elif voucher_discount_data['type'] == 'Amount':
+                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / gross_total_sum
+            else:
+                dividend_discount = 0
+            row_data['dividend_discount'] = dividend_discount
+            row_data['pure_total'] = row_data['gross_total'] - dividend_discount
+            row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
+
+            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
+            dct['tax'] += row_data['tax_amount']
+
+        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
+        
+        for key, val in dct.items():
+            dct[key] = round(val, 2)
+
+        return dct
+
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='salesvoucherrow')
         row_ids = [row.id for row in self.rows.all()]
