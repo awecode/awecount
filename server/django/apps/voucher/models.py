@@ -181,6 +181,8 @@ class SalesVoucher(TransactionModel):
         dct = {
             'sub_total': 0,
             'discount': 0,
+            'non_taxable': 0,
+            'taxable': 0,
             'tax': 0
         }
         rows_data = []
@@ -211,8 +213,13 @@ class SalesVoucher(TransactionModel):
             dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
             dct['tax'] += row_data['tax_amount']
 
+            if row_data['tax_amount']:
+                dct['taxable'] += row_data['pure_total']
+            else:
+                dct['non_taxable'] += row_data['pure_total']
+
         dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
-        
+
         for key, val in dct.items():
             dct[key] = round(val, 2)
 

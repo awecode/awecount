@@ -296,5 +296,8 @@ class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = SalesBookSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     SalesVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'party')
         return qs.order_by('-pk')
