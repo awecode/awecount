@@ -62,12 +62,13 @@ class SalesVoucher(TransactionModel):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    
     issue_datetime = models.DateTimeField(default=timezone.now)
     transaction_date = models.DateField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
-    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
-    remarks = models.TextField(blank=True, null=True)
     due_date = models.DateField(blank=True, null=True)
+    
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
+    
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
@@ -76,12 +77,15 @@ class SalesVoucher(TransactionModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    
+    remarks = models.TextField(blank=True, null=True)
+    is_export = models.BooleanField(default=False)
+    
     print_count = models.PositiveSmallIntegerField(default=0)
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
-
-    is_export = models.BooleanField(default=False)
+    
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
@@ -358,10 +362,14 @@ class PurchaseVoucher(TransactionModel):
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='purchases')
+
+    remarks = models.TextField(blank=True, null=True)
+    is_import = models.BooleanField(default=False)
+    
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
-    is_import = models.BooleanField(default=False)
+    
 
     # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
