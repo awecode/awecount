@@ -351,7 +351,7 @@ class SalesVoucherRow(TransactionModel):
 
 
 class PurchaseVoucher(TransactionModel):
-    voucher_no = models.PositiveIntegerField(blank=True, null=True)
+    voucher_no = models.PositiveIntegerField()
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
@@ -369,20 +369,12 @@ class PurchaseVoucher(TransactionModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
-    
-
     # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
     # tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
 
     def type(self):
         return 'Credit' if self.credit else 'Cash'
-
-    def __init__(self, *args, **kwargs):
-        super(PurchaseVoucher, self).__init__(*args, **kwargs)
-
-        if not self.pk and not self.voucher_no:
-            self.voucher_no = get_next_voucher_no(PurchaseVoucher, self.company_id)
 
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='purchasesvoucherrow')

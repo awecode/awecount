@@ -178,11 +178,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             'tax_choices': tax_choices,
         })
 
-    @action(detail=False)
-    def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(PurchaseVoucher, request.company.id)
-        return Response({'voucher_no': voucher_no})
-
     @action(detail=True)
     def rows(self, request, pk):
         sale_voucher = self.get_object()
