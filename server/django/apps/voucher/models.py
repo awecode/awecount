@@ -62,13 +62,13 @@ class SalesVoucher(TransactionModel):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    
+
     issue_datetime = models.DateTimeField(default=timezone.now)
     transaction_date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
-    
+
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
-    
+
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
@@ -77,15 +77,14 @@ class SalesVoucher(TransactionModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
-    
+
     remarks = models.TextField(blank=True, null=True)
     is_export = models.BooleanField(default=False)
-    
+
     print_count = models.PositiveSmallIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
-    
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
@@ -204,8 +203,6 @@ class SalesVoucher(TransactionModel):
         # entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
-        if not voucher.status == 'Issued':
-            return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
         if voucher.mode == 'Credit':
@@ -365,7 +362,7 @@ class PurchaseVoucher(TransactionModel):
 
     remarks = models.TextField(blank=True, null=True)
     is_import = models.BooleanField(default=False)
-    
+
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
 

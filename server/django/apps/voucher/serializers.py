@@ -37,6 +37,12 @@ class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
 class DiscountObjectTypeSerializerMixin(serializers.Serializer):
     discount_type = serializers.CharField(required=False, allow_null=True)
 
+    def to_representation(self, obj):
+        fields = super().to_representation(obj)
+        if obj.discount_obj_id:
+            fields['discount_type'] = obj.discount_obj_id
+        return fields
+
     def assign_discount_obj(self, validated_data):
         discount_key = validated_data.get('discount_type')
         if discount_key and str(discount_key).isdigit():
@@ -46,13 +52,6 @@ class DiscountObjectTypeSerializerMixin(serializers.Serializer):
         else:
             validated_data['discount_obj_id'] = None
         return validated_data
-
-    def to_representation(self, obj):
-        if obj.discount_obj_id:
-            self.fields['discount_type'] = serializers.IntegerField(source='discount_obj_id')
-        else:
-            self.fields['discount_type'] = serializers.CharField()
-        return super().to_representation(obj)
 
 
 class ModeCumBankSerializerMixin(serializers.Serializer):
@@ -83,7 +82,7 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
 
     class Meta:
         model = SalesVoucherRow
-        exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
+        exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
 
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -203,7 +202,7 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
 
     class Meta:
         model = PurchaseVoucherRow
-        exclude = ('item', 'tax_scheme', 'voucher', 'unit',)
+        exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
 
 class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,

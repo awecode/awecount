@@ -290,3 +290,7 @@ class PurchaseDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet)
 
 class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = SalesBookSerializer
+
+    def get_queryset(self):
+        qs = super(SalesBookViewSet, self).get_queryset()
+        return qs.order_by('-pk')
