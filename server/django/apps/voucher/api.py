@@ -1,18 +1,17 @@
-from django.conf import settings
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
 from xhtml2pdf import pisa
 
-from apps.ledger.serializers import JournalEntrySerializer, SalesJournalEntrySerializer
+from apps.ledger.serializers import SalesJournalEntrySerializer
+from apps.voucher.filters import SalesVoucherDateFilterSet
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
-from awecount.utils.helpers import merge_dicts
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
@@ -294,6 +293,8 @@ class PurchaseDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet)
 
 class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = SalesBookSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = SalesVoucherDateFilterSet
 
     def get_queryset(self):
         qs = super().get_queryset().prefetch_related(

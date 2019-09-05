@@ -8,18 +8,15 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from apps.product.models import Item, JournalEntry, Category
-from apps.product.serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .filters import ItemFilterSet
+from .models import Item, JournalEntry, Category
+from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer
 
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 
-class ItemFilterSet(filters.FilterSet):
-    class Meta:
-        model = Item
-        fields = ('can_be_sold', 'can_be_purchased')
 
 
 class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
