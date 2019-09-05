@@ -60,11 +60,11 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = SalesVoucher.objects.prefetch_related(
+        qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(SalesVoucherDetailSerializer(qs.get(pk=pk)).data)
+        return Response(SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
 
     def get_defaults(self, request=None):
         data = {
@@ -296,5 +296,5 @@ class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = SalesBookSerializer
 
     def get_queryset(self):
-        qs = super(SalesBookViewSet, self).get_queryset()
+        qs = super().get_queryset()
         return qs.order_by('-pk')

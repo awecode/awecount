@@ -422,7 +422,8 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
 class SalesBookSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source='buyer_name')
     buyers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
 
     class Meta:
         model = SalesVoucher
-        exclude = ('customer_name',)
+        fields = ('id', 'issue_datetime', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta')

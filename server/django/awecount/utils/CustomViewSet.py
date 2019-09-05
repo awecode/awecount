@@ -8,11 +8,15 @@ from awecount.utils.helpers import merge_dicts
 
 class CompanyViewSetMixin(object):
     def get_queryset(self, company_id=None):
+        if self.queryset:
+            qs = self.queryset
+        else:
+            qs = self.serializer_class.Meta.model.objects.all()
         if not company_id:
             if not hasattr(self.request, 'company_id'):
                 raise APIException({'non_field_errors': ['User is not assigned to any company.']})
             company_id = self.request.company_id
-        return super().get_queryset().filter(company_id=company_id)
+        return qs.filter(company_id=company_id)
 
 
 class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
@@ -53,11 +57,3 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def get_queryset(self):
-        if self.queryset:
-            return self.queryset
-        else:
-            return self.serializer_class.Meta.model.objects.all()
-
-
