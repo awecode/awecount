@@ -643,15 +643,27 @@ class PurchaseVoucherRow(TransactionModel):
 
 
 class CreditNote(models.Model):
+    party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE, blank=True, null=True)
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    
     voucher_no = models.PositiveSmallIntegerField()
-    party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE)
     date = models.DateField()
-    reference = models.CharField(max_length=50, null=True, blank=True)
     amount = models.FloatField(null=True, blank=True)
     description = models.TextField()
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
+
+    discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='credit_note')
+    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    
+    remarks = models.TextField()
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_note')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='credit_note')
 
     class Meta:
         unique_together = ('company', 'voucher_no')
@@ -689,16 +701,20 @@ class CreditNote(models.Model):
 
 
 class CreditNoteRow(models.Model):
-    # invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
+    voucher = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    # receipt = models.FloatField(blank=True, null=True)
-    discount = models.FloatField(blank=True, null=True)
-    credit_amount = models.FloatField(blank=True, null=True)
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_row')
-    cash_receipt = models.ForeignKey(CreditNote, related_name='rows', on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    rate = models.FloatField()
+    discount = models.FloatField(default=0)
+    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name='credit_rows')
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_rows')
 
     def get_voucher_no(self):
-        return self.cash_receipt.voucher_no
+        return self.voucher.voucher_no
 
     def get_absolute_url(self):
         return 'url'
