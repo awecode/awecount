@@ -507,13 +507,13 @@ class PurchaseVoucher(TransactionModel):
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
         if voucher.mode == 'Credit':
-            cr_acc = voucher.party.customer_account
+            cr_acc = voucher.party.supplier_account
         elif voucher.mode == 'Cash':
             cr_acc = get_account(voucher.company, 'Cash')
             voucher.status = 'Paid'
         # TODO Allow creating cheque deposit
         elif voucher.mode == 'Cheque':
-            cr_acc = voucher.party.customer_account
+            cr_acc = voucher.party.supplier_account
             voucher.status = 'Paid'
         elif voucher.mode == 'Bank Deposit':
             cr_acc = voucher.bank_account.ledger
@@ -552,7 +552,7 @@ class PurchaseVoucher(TransactionModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(['cr', row.item.discount_allowed_ledger, row_discount])
+                entries.append(['cr', row.item.discount_received_ledger, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
