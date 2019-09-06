@@ -1,6 +1,7 @@
 import os
 import re
 
+from decimal import Decimal
 from django.db import connection
 from django.conf import settings
 
@@ -30,6 +31,13 @@ def zero_for_none(obj):
         return 0
     else:
         return obj
+
+
+def decimalize(obj):
+    if obj is None or obj is '':
+        return Decimal(0)
+    else:
+        return Decimal(obj)
 
 
 def none_for_zero(obj):
