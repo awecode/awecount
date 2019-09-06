@@ -2,6 +2,8 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
+from awecount.utils import get_next_voucher_no
+from awecount.utils.serializers import StatusReversionMixin
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from ..models import CreditNoteRow, CreditNote
 
@@ -17,9 +19,18 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
 
-class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
+                                 serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
+
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get('status') in ['Draft', 'Cancelled']:
+            return
+        next_voucher_no = get_next_voucher_no(CreditNote, self.context['request'].company_id)
+        validated_data['voucher_no'] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -44,6 +55,7 @@ class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankS
         invoices = validated_data.pop('invoices')
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
@@ -59,18 +71,19 @@ class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankS
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
-        CreditNote.objects.filter(pk=instance.id).update(**validated_data)
+        self.validate_voucher_status(validated_data, instance)
+        self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
+        CreditNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            CreditNoteRow.objects.update_or_create(voucher=instance,pk=row.get('id'), defaults=row)
+            CreditNoteRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
         CreditNote.apply_transactions(instance)
         return instance
-
 
     class Meta:
         model = CreditNote

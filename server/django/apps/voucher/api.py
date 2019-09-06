@@ -41,8 +41,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         return SalesVoucherCreateSerializer
 
     def update(self, request, *args, **kwargs):
-        sale_voucher = self.get_object()
-        if sale_voucher.is_issued():
+        obj = self.get_object()
+        if obj.is_issued():
             if not request.company.enable_sales_voucher_update:
                 raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
             _model_name = self.get_queryset().model.__name__
@@ -50,7 +50,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             modules = request.user.role.modules
             if permission not in modules:
                 raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
-        return super(SalesVoucherViewSet, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
 
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):
@@ -211,6 +211,18 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     def get_queryset(self):
         return super().get_queryset().order_by('-id')
 
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.is_issued():
+            if not request.company.enable_credit_note_update:
+                raise APIException({'non_field_errors': ['Issued credit notes can\'t be updated']})
+            _model_name = self.get_queryset().model.__name__
+            permission = '{}IssuedModify'.format(_model_name)
+            modules = request.user.role.modules
+            if permission not in modules:
+                raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
+        return super().update(request, *args, **kwargs)
+
     def get_serializer_class(self):
         if self.action == 'list':
             return CreditNoteListSerializer
@@ -220,6 +232,9 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         data = {
             'options': {
                 'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            },
+            'fields': {
+                'can_update_issued': request.company.enable_credit_note_update
             }
         }
         return data
@@ -243,6 +258,12 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
                 'sales_invoice_objs': invoice_objs,
             }
         }
+        if not obj.voucher_no:
+            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
+            data['fields'] = {
+                'voucher_no': voucher_no,
+            }
+
         return data
 
 

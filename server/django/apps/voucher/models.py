@@ -658,8 +658,10 @@ class CreditNote(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
-    voucher_no = models.PositiveSmallIntegerField()
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     date = models.DateField()
+    status = models.CharField(max_length=25, choices=CREDIT_NOTE_STATUSES, default=CREDIT_NOTE_STATUSES[0][0])
+
     invoices = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
 
     discount = models.FloatField(default=0)
@@ -677,18 +679,11 @@ class CreditNote(models.Model):
     class Meta:
         unique_together = ('company', 'voucher_no')
 
-    def __init__(self, *args, **kwargs):
-        super(CreditNote, self).__init__(*args, **kwargs)
-        if not self.pk and not self.voucher_no:
-            self.voucher_no = get_next_voucher_no(CreditNote, self.company_id)
+    def is_issued(self):
+        return self.status != 'Draft'
 
     @staticmethod
     def apply_transactions(voucher):
-        cash_account = get_account(voucher.company, 'Cash')
-        set_ledger_transactions(voucher, voucher.date,
-                                ['dr', cash_account, voucher.amount],
-                                ['cr', voucher.party.customer_account, voucher.amount]
-                                )
         return
 
     @property
@@ -701,9 +696,6 @@ class CreditNote(models.Model):
 
     def get_voucher_no(self):
         return self.voucher_no
-
-    def get_absolute_url(self):
-        return 'url'
 
     def __str__(self):
         return str(self.voucher_no) + '- ' + self.party.name
