@@ -12,7 +12,7 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
-    unit_id = serializers.IntegerField(required=False)
+    unit_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = CreditNoteRow

@@ -5,7 +5,7 @@ from apps.tax.serializers import TaxSchemeSerializer
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
-from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount
+from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, CreditNote
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):
@@ -95,6 +95,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     item_id = serializers.IntegerField()
+    unit_id = serializers.IntegerField()
     tax_scheme_id = serializers.IntegerField()
     item_name = serializers.ReadOnlyField(source='item.name')
     unit_name = serializers.ReadOnlyField(source='unit.name')
@@ -117,6 +118,21 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
+        exclude = ('company', 'user', 'bank_account',)
+
+
+class CreditNoteDetailSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.short_ac_name_number')
+    discount_obj = SalesDiscountSerializer()
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    address = serializers.ReadOnlyField(source='party.address')
+
+    rows = SalesVoucherRowDetailSerializer(many=True)
+    tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
+
+    class Meta:
+        model = CreditNote
         exclude = ('company', 'user', 'bank_account',)
 
 

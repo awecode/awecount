@@ -20,7 +20,8 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     CreditNoteListSerializer, InvoiceDesignSerializer, \
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
-    SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer
+    SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
+    CreditNoteDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -215,12 +216,12 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         obj = self.get_object()
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
-                raise APIException({'non_field_errors': ['Issued credit notes can\'t be updated']})
+                raise APIException({'detail': 'Issued credit notes can\'t be updated'})
             _model_name = self.get_queryset().model.__name__
             permission = '{}IssuedModify'.format(_model_name)
             modules = request.user.role.modules
             if permission not in modules:
-                raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
+                raise APIException({'detail': 'User do not have permission to issue voucher'})
         return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
@@ -265,6 +266,39 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             }
 
         return data
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'bank_account')
+        return Response(CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_resolved(self, request, pk):
+        obj = self.get_object()
+        try:
+            obj.mark_as_resolved()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        try:
+            obj.cancel()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'], url_path='log-print')
+    def log_print(self, request, pk):
+        obj = self.get_object()
+        obj.print_count += 1
+        obj.save()
+        return Response({'print_count': obj.print_count})
 
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):

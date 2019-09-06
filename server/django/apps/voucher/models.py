@@ -340,6 +340,7 @@ class SalesVoucher(TransactionModel):
     def save(self, *args, **kwargs):
         if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
             raise ValueError('Issued invoices need a voucher number!')
+        
         super().save(*args, **kwargs)
 
 
@@ -675,6 +676,7 @@ class CreditNote(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_notes')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='credit_notes')
+    print_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         unique_together = ('company', 'voucher_no')
@@ -696,6 +698,78 @@ class CreditNote(models.Model):
 
     def get_voucher_no(self):
         return self.voucher_no
+    
+    def mark_as_resolved(self):
+        if self.mode == 'Credit' and self.status == 'Issued':
+            self.status = 'Resolved'
+            # sale_voucher.apply_mark_as_paid()
+            self.save()
+        else:
+            raise ValueError('This sales cannot be mark as resolved!')
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.apply_cancel_transaction()
+   
+    def get_voucher_discount_data(self):
+        if self.discount_obj_id:
+            discount_obj = self.discount_obj
+            return {'type': discount_obj.type, 'value': discount_obj.value}
+        else:
+            return {'type': self.discount_type, 'value': self.discount}
+        
+    def get_voucher_meta(self):
+        dct = {
+            'sub_total': 0,
+            'discount': 0,
+            'non_taxable': 0,
+            'taxable': 0,
+            'tax': 0
+        }
+        rows_data = []
+        # gross_total_sum is subtotal after row discounts, before voucher discount and tax
+        gross_total_sum = 0
+        for row in self.rows.all():
+            row_data = {'quantity': row.quantity, 'rate': row.rate, 'total': row.rate * row.quantity}
+            row_data['row_discount'] = row.get_discount()[0] if row.has_discount() else 0
+            row_data['gross_total'] = row_data['total'] - row_data['row_discount']
+            row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
+            gross_total_sum += row_data['gross_total']
+            dct['sub_total'] += row_data['total']
+            rows_data.append(row_data)
+
+        voucher_discount_data = self.get_voucher_discount_data()
+
+        for row_data in rows_data:
+            if voucher_discount_data['type'] == 'Percent':
+                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / 100
+            elif voucher_discount_data['type'] == 'Amount':
+                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / gross_total_sum
+            else:
+                dividend_discount = 0
+            row_data['dividend_discount'] = dividend_discount
+            row_data['pure_total'] = row_data['gross_total'] - dividend_discount
+            row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
+
+            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
+            dct['tax'] += row_data['tax_amount']
+
+            if row_data['tax_amount']:
+                dct['taxable'] += row_data['pure_total']
+            else:
+                dct['non_taxable'] += row_data['pure_total']
+
+        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
+
+        for key, val in dct.items():
+            dct[key] = round(val, 2)
+
+        return dct
+        
+    def apply_cancel_transaction(self):
+        pass
+
 
     def __str__(self):
         return str(self.voucher_no) + '- ' + self.party.name
@@ -729,6 +803,9 @@ class CreditNoteRow(models.Model):
 
         # class Meta:
         #     unique_together = ('invoice', 'cash_receipt')
+    
+    def has_discount(self):
+        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
 
 
 class InvoiceDesign(models.Model):
