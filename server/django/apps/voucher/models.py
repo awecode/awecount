@@ -258,6 +258,9 @@ class SalesVoucher(TransactionModel):
         # entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
+            return
+        if voucher.status == 'Draft':
+            return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
         if voucher.mode == 'Credit':
@@ -502,7 +505,8 @@ class PurchaseVoucher(TransactionModel):
         # entries = []
         if voucher.status == 'Cancelled':
             voucher.apply_cancel_transaction()
-        if not voucher.status == 'Issued':
+            return
+        if voucher.status == 'Draft':
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
