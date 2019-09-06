@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from apps.product.models import Brand
-from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditVoucher, CreditVoucherRow, InvoiceDesign, \
+from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
 
 
@@ -13,8 +13,8 @@ class PurchaseVoucherRowTabular(admin.TabularInline):
     model = PurchaseVoucherRow
 
 
-class CreditVoucherRowTabular(admin.TabularInline):
-    model = CreditVoucherRow
+class CreditNoteRowTabular(admin.TabularInline):
+    model = CreditNoteRow
 
 
 class JournalVoucherRowTabular(admin.TabularInline):
@@ -30,19 +30,19 @@ class SalesVoucherAdmin(admin.ModelAdmin):
     inlines = (SaleVoucherRowTabular,)
 
 
-class CreditVoucherAdmin(admin.ModelAdmin):
+class CreditNoteAdmin(admin.ModelAdmin):
     search_fields = (
         'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
         'company__tax_registration_number',)
     list_filter = ('company', 'party',)
     list_display = ('company', 'voucher_no', 'party', 'amount',)
-    inlines = (CreditVoucherRowTabular,)
+    inlines = (CreditNoteRowTabular,)
 
 
 admin.site.register(SalesVoucher, SalesVoucherAdmin)
 admin.site.register(SalesVoucherRow)
-admin.site.register(CreditVoucher, CreditVoucherAdmin)
-admin.site.register(CreditVoucherRow)
+admin.site.register(CreditNote, CreditNoteAdmin)
+admin.site.register(CreditNoteRow)
 admin.site.register(InvoiceDesign)
 
 

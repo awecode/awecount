@@ -2,11 +2,11 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from ..models import CreditVoucherRow, CreditVoucher
+from ..models import CreditNoteRow, CreditNote
 from .sales import SaleVoucherOptionsSerializer
 
 
-class CreditVoucherRowSerializer(serializers.ModelSerializer):
+class CreditNoteRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     receipt = serializers.FloatField(required=False)
     # invoice_id = serializers.IntegerField(source='invoice.id', required=True)
@@ -15,12 +15,12 @@ class CreditVoucherRowSerializer(serializers.ModelSerializer):
     cash_receipt_id = serializers.IntegerField(source='cash_receipt.id', required=False, read_only=True)
 
     class Meta:
-        model = CreditVoucherRow
+        model = CreditNoteRow
         exclude = ('item', 'tax_scheme', 'cash_receipt',)
 
 
-class CreditVoucherCreateSerializer(serializers.ModelSerializer):
-    rows = CreditVoucherRowSerializer(many=True)
+class CreditNoteCreateSerializer(serializers.ModelSerializer):
+    rows = CreditNoteRowSerializer(many=True)
     company_id = serializers.IntegerField()
     sale_vouchers_options = serializers.SerializerMethodField(read_only=True)
     fetched_sale_vouchers = serializers.SerializerMethodField(read_only=True)
@@ -37,21 +37,21 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         sale_vouchers = validated_data.pop('sale_vouchers')
-        credit_voucher = CreditVoucher.objects.create(**validated_data)
+        credit_voucher = CreditNote.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
             row['item_id'] = item.get('id')
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
-            CreditVoucherRow.objects.create(cash_receipt=credit_voucher, **row)
+            CreditNoteRow.objects.create(cash_receipt=credit_voucher, **row)
         credit_voucher.sale_vouchers.add(*sale_vouchers)
-        CreditVoucher.apply_transactions(credit_voucher)
+        CreditNote.apply_transactions(credit_voucher)
         return credit_voucher
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         sale_vouchers = validated_data.pop('sale_vouchers')
-        CreditVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        CreditNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
             row['item_id'] = item.get('id')
@@ -59,23 +59,23 @@ class CreditVoucherCreateSerializer(serializers.ModelSerializer):
             row['tax_scheme_id'] = tax_scheme.get('id')
             row['cash_receipt'] = instance
             try:
-                CreditVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+                CreditNoteRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
                 raise APIException({'non_field_errors': ['Voucher repeated in cash receipt.']})
         instance.sale_vouchers.clear()
         instance.sale_vouchers.add(*sale_vouchers)
         instance.refresh_from_db()
-        CreditVoucher.apply_transactions(instance)
+        CreditNote.apply_transactions(instance)
         return instance
 
     class Meta:
-        model = CreditVoucher
+        model = CreditNote
         exclude = ('company',)
 
 
-class CreditVoucherListSerializer(serializers.ModelSerializer):
+class CreditNoteListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source='party.name')
 
     class Meta:
-        model = CreditVoucher
+        model = CreditNote
         fields = ('id', 'voucher_no', 'party', 'date',)

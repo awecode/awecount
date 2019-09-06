@@ -13,10 +13,10 @@ from apps.voucher.filters import SalesVoucherDateFilterSet
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
-from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditVoucher, CreditVoucherRow, \
+from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
-from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditVoucherCreateSerializer, \
-    CreditVoucherListSerializer, InvoiceDesignSerializer, \
+from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
+    CreditNoteListSerializer, InvoiceDesignSerializer, \
     SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer
@@ -195,24 +195,24 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
 
-class CreditVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
-    queryset = CreditVoucher.objects.all()
-    serializer_class = CreditVoucherCreateSerializer
-    model = CreditVoucher
-    row = CreditVoucherRow
+class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
+    queryset = CreditNote.objects.all()
+    serializer_class = CreditNoteCreateSerializer
+    model = CreditNote
+    row = CreditNoteRow
 
     def get_queryset(self):
-        queryset = super(CreditVoucherViewSet, self).get_queryset()
+        queryset = super(CreditNoteViewSet, self).get_queryset()
         return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return CreditVoucherListSerializer
-        return CreditVoucherCreateSerializer
+            return CreditNoteListSerializer
+        return CreditNoteCreateSerializer
 
     @action(detail=False)
     def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(CreditVoucher, request.company.id)
+        voucher_no = get_next_voucher_no(CreditNote, request.company.id)
         return Response({'voucher_no': voucher_no})
 
 

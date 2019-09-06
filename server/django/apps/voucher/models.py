@@ -642,7 +642,7 @@ class PurchaseVoucherRow(TransactionModel):
         return row_total
 
 
-class CreditVoucher(models.Model):
+class CreditNote(models.Model):
     voucher_no = models.PositiveSmallIntegerField()
     party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE)
     date = models.DateField()
@@ -657,9 +657,9 @@ class CreditVoucher(models.Model):
         unique_together = ('company', 'voucher_no')
 
     def __init__(self, *args, **kwargs):
-        super(CreditVoucher, self).__init__(*args, **kwargs)
+        super(CreditNote, self).__init__(*args, **kwargs)
         if not self.pk and not self.voucher_no:
-            self.voucher_no = get_next_voucher_no(CreditVoucher, self.company_id)
+            self.voucher_no = get_next_voucher_no(CreditNote, self.company_id)
 
     @staticmethod
     def apply_transactions(voucher):
@@ -688,14 +688,14 @@ class CreditVoucher(models.Model):
         return str(self.voucher_no) + '- ' + self.party.name
 
 
-class CreditVoucherRow(models.Model):
+class CreditNoteRow(models.Model):
     # invoice = models.ForeignKey(SalesVoucher, related_name='receipts', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     # receipt = models.FloatField(blank=True, null=True)
     discount = models.FloatField(blank=True, null=True)
     credit_amount = models.FloatField(blank=True, null=True)
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_rows')
-    cash_receipt = models.ForeignKey(CreditVoucher, related_name='rows', on_delete=models.CASCADE)
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_row')
+    cash_receipt = models.ForeignKey(CreditNote, related_name='rows', on_delete=models.CASCADE)
 
     def get_voucher_no(self):
         return self.cash_receipt.voucher_no
