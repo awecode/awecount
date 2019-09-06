@@ -646,27 +646,33 @@ class PurchaseVoucherRow(TransactionModel):
         return row_total
 
 
+CREDIT_NOTE_STATUSES = (
+    ('Draft', 'Draft'),
+    ('Issued', 'Issued'),
+    ('Cancelled', 'Cancelled'),
+    ('Resolved', 'Resolved'),
+)
+
+
 class CreditNote(models.Model):
-    party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
     voucher_no = models.PositiveSmallIntegerField()
     date = models.DateField()
-    amount = models.FloatField(null=True, blank=True)
-    receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
     invoices = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
 
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
-                                     related_name='credit_note')
+                                     related_name='credit_notes')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_note')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='credit_note')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_notes')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='credit_notes')
 
     class Meta:
         unique_together = ('company', 'voucher_no')

@@ -35,7 +35,7 @@ class CreditNoteAdmin(admin.ModelAdmin):
         'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
         'company__tax_registration_number',)
     list_filter = ('company', 'party',)
-    list_display = ('company', 'voucher_no', 'party', 'amount',)
+    list_display = ('company', 'voucher_no', 'party')
     inlines = (CreditNoteRowTabular,)
 
 

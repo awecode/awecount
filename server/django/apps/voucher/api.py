@@ -83,6 +83,17 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         }
         return data
 
+    def get_update_defaults(self, request=None):
+        obj = self.get_object()
+        if not obj.voucher_no:
+            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
+            return {
+                'fields': {
+                    'voucher_no': voucher_no,
+                }
+            }
+        return {}
+
     @action(detail=False)
     def options(self, request):
         discount_type = {
@@ -196,7 +207,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
-    
+
     def get_queryset(self):
         return super().get_queryset().order_by('-id')
 
@@ -221,7 +232,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             }
         }
         return data
-    
+
     def get_update_defaults(self, request=None):
         obj = self.get_object()
         invoice_objs = []
@@ -233,7 +244,6 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             }
         }
         return data
-
 
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):

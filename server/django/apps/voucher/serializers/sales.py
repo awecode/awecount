@@ -28,6 +28,7 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
                                    serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
+    print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):
@@ -82,7 +83,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            SalesVoucherRow.objects.update_or_create(voucher=instance,pk=row.get('id'), defaults=row)
+            SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         SalesVoucher.apply_transactions(instance)
         return instance
