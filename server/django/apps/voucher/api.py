@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from xhtml2pdf import pisa
 
 from apps.ledger.serializers import SalesJournalEntrySerializer
+from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
@@ -135,19 +136,22 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         except Exception as e:
             raise APIException(str(e))
 
-    @action(detail=True, methods=['POST'], url_path="log-print")
+    @action(detail=True, methods=['POST'], url_path='log-print')
     def log_print(self, request, pk):
         sale_voucher = self.get_object()
         sale_voucher.print_count += 1
         sale_voucher.save()
         return Response({'print_count': sale_voucher.print_count})
 
-    @action(detail=True)
-    def rows(self, request, pk):
-        sale_voucher = self.get_object()
-        sale_voucher_rows = sale_voucher.rows.all()
-        data = SaleVoucherRowCreditNoteOptionsSerializer(sale_voucher_rows, many=True).data
-        return Response(data)
+    @action(detail=False, url_path='by-voucher-no')
+    def by_voucher_no(self, request):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'bank_account')
+        return Response(SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                                       queryset=qs)).data)
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -205,10 +209,22 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             return CreditNoteListSerializer
         return CreditNoteCreateSerializer
 
-    @action(detail=False)
-    def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(CreditNote, request.company.id)
-        return Response({'voucher_no': voucher_no})
+    def get_defaults(self, request=None):
+        data = {
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            }
+        }
+        return data
+
+    def get_create_defaults(self, request=None):
+        voucher_no = get_next_voucher_no(CreditNote, request.company_id)
+        data = {
+            'fields': {
+                'voucher_no': voucher_no,
+            }
+        }
+        return data
 
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):

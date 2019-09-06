@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.users.models import Company, User, Role
+from apps.users.models import Company, User, Role, FiscalYear
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -23,3 +23,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('company', 'date_joined', 'password',)
+
+
+class FiscalYearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalYear
+        exclude = ()

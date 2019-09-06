@@ -40,6 +40,11 @@ class Company(models.Model):
     class Meta:
         verbose_name_plural = 'Companies'
 
+    def get_fiscal_years(self):
+        # TODO Assign fiscal years to companies (m2m), return related fiscal years here 
+        return sorted(FiscalYear.objects.all(), key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
+                      reverse=True)
+
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Company, self).save(*args, **kwargs)

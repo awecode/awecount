@@ -118,6 +118,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
+    item_id = serializers.IntegerField(source='item.id')
     item_name = serializers.ReadOnlyField(source='item.name')
     unit_name = serializers.ReadOnlyField(source='unit.name')
     discount_obj = SalesDiscountSerializer()
@@ -125,7 +126,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucherRow
-        exclude = ('id', 'voucher', 'item', 'unit')
+        exclude = ('voucher', 'item', 'unit')
 
 
 class SalesVoucherDetailSerializer(serializers.ModelSerializer):
