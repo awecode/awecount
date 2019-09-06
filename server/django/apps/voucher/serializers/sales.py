@@ -14,17 +14,6 @@ class SalesDiscountSerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
-class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    discount = serializers.ReadOnlyField(source='discount_amount')
-    credit_amount = serializers.ReadOnlyField(source='total')
-
-    class Meta:
-        model = SalesVoucherRow
-        fields = ('item_id', 'tax_scheme_id', 'discount', 'credit_amount',)
-
-
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)

@@ -18,7 +18,7 @@ from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MOD
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
-    SaleVoucherRowCreditNoteOptionsSerializer, JournalVoucherListSerializer, \
+    JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer
 
@@ -184,13 +184,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             'discount_types': types,
             'tax_choices': tax_choices,
         })
-
-    @action(detail=True)
-    def rows(self, request, pk):
-        sale_voucher = self.get_object()
-        sale_voucher_rows = sale_voucher.rows.all()
-        data = SaleVoucherRowCreditNoteOptionsSerializer(sale_voucher_rows, many=True).data
-        return Response(data)
 
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):

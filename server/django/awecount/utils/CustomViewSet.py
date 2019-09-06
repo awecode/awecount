@@ -50,10 +50,6 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
     def update_defaults(self, request, pk):
         return Response(dict(merge_dicts(self.get_defaults(request), self.get_update_defaults(request))))
 
-    def create(self, request, *args, **kwargs):
-        request.data['company_id'] = request.company.id
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
+        serializer.validated_data['company_id'] = self.request.company_id
+        serializer.save()
