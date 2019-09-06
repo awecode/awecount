@@ -1,52 +1,61 @@
 from django.db import IntegrityError
 from rest_framework import serializers
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
+from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from ..models import CreditNoteRow, CreditNote
-from .sales import SaleVoucherOptionsSerializer
 
 
-class CreditNoteRowSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
-    receipt = serializers.FloatField(required=False)
-    # invoice_id = serializers.IntegerField(source='invoice.id', required=True)
+class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     item_id = serializers.IntegerField(source='item.id', required=True)
     tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    cash_receipt_id = serializers.IntegerField(source='cash_receipt.id', required=False, read_only=True)
+    discount = serializers.ReadOnlyField(source='discount_amount')
 
     class Meta:
         model = CreditNoteRow
-        exclude = ('item', 'tax_scheme', 'cash_receipt',)
+        fields = ('item_id', 'tax_scheme_id', 'discount',)
 
 
-class CreditNoteCreateSerializer(serializers.ModelSerializer):
+class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
     rows = CreditNoteRowSerializer(many=True)
-    company_id = serializers.IntegerField()
-    sale_vouchers_options = serializers.SerializerMethodField(read_only=True)
-    fetched_sale_vouchers = serializers.SerializerMethodField(read_only=True)
 
-    def get_sale_vouchers_options(self, obj):
-        sale_vouchers = obj.sale_vouchers.all()
-        data = SaleVoucherOptionsSerializer(sale_vouchers, many=True).data
-        return data
+    def assign_fiscal_year(self, validated_data, instance=None):
+        if instance and instance.fiscal_year_id:
+            return
+        fiscal_year = self.context['request'].company.current_fiscal_year
+        if fiscal_year.includes(validated_data.get('date')):
+            validated_data['fiscal_year_id'] = fiscal_year.id
+        else:
+            raise ValidationError(
+                {'date': ['Date not in current fiscal year.']},
+            )
 
-    def get_fetched_sale_vouchers(self, obj):
-        data = [voucher.id for voucher in obj.sale_vouchers.all()]
+    def validate(self, data):
+        if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
+            raise ValidationError(
+                {'party': ['Party is required for a credit issue.']},
+            )
         return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
-        sale_vouchers = validated_data.pop('sale_vouchers')
-        credit_voucher = CreditNote.objects.create(**validated_data)
+        request = self.context['request']
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
+        validated_data['company_id'] = request.company_id
+        validated_data['user_id'] = request.user.id
+        credit_note = CreditNote.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
-            row['item_id'] = item.get('id')
+            unit = row.pop('unit', None)
             tax_scheme = row.pop('tax_scheme')
             row['tax_scheme_id'] = tax_scheme.get('id')
-            CreditNoteRow.objects.create(cash_receipt=credit_voucher, **row)
-        credit_voucher.sale_vouchers.add(*sale_vouchers)
-        CreditNote.apply_transactions(credit_voucher)
-        return credit_voucher
+            if unit:
+                row['unit_id'] = unit.get('id')
+            row = self.assign_discount_obj(row)
+            CreditNoteRow.objects.create(voucher=credit_note, item_id=item.get('id'), **row)
+        return credit_note
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')

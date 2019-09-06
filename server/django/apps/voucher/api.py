@@ -196,14 +196,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
 
 
 class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
-    queryset = CreditNote.objects.all()
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
-
-    def get_queryset(self):
-        queryset = super(CreditNoteViewSet, self).get_queryset()
-        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':

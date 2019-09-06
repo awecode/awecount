@@ -18,7 +18,7 @@ from apps.aggregator import views as aggregator_views
 
 router = DefaultRouter()
 
-#TODO fix singular/plural
+# TODO fix singular/plural
 router.register('parties', ledger.PartyViewSet, base_name='parties')
 router.register('categories', ledger.CategoryViewSet, base_name='categories')
 router.register('accounts', ledger.AccountViewSet, base_name='accounts')
@@ -33,14 +33,14 @@ router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
 router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet)
 router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name='purchase-discount')
-router.register('credit-note', voucher.CreditNoteViewSet)
+router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='cheque-voucher')
 router.register('bank-branch', bank.BankBranchViewSet, base_name='bank-branch')
-router.register('log-entries', aggregator   .LogEntryViewSet, base_name='log-entry')
+router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
 
 urlpatterns = [

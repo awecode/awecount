@@ -645,11 +645,10 @@ class PurchaseVoucherRow(TransactionModel):
 class CreditNote(models.Model):
     party = models.ForeignKey(Party, verbose_name='Receipt From', on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
-    
+
     voucher_no = models.PositiveSmallIntegerField()
     date = models.DateField()
     amount = models.FloatField(null=True, blank=True)
-    description = models.TextField()
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
     sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
 
@@ -659,7 +658,7 @@ class CreditNote(models.Model):
                                      related_name='credit_note')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
-    
+
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_note')
