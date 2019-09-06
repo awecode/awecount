@@ -27,10 +27,9 @@ class SaleVoucherRowCreditNoteOptionsSerializer(serializers.ModelSerializer):
 
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    unit_id = serializers.IntegerField(source='unit.id', required=False)
-    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+    item_id = serializers.IntegerField(required=True)
+    tax_scheme_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=False)
 
     class Meta:
         model = SalesVoucherRow
@@ -39,6 +38,7 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
 
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
                                    serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):
@@ -78,14 +78,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['user_id'] = request.user.id
         voucher = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            unit = row.pop('unit', None)
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            if unit:
-                row['unit_id'] = unit.get('id')
             row = self.assign_discount_obj(row)
-            SalesVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
+            SalesVoucherRow.objects.create(voucher=voucher, **row)
         SalesVoucher.apply_transactions(voucher)
         return voucher
 
@@ -98,23 +92,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         self.assign_mode(validated_data)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            unit = row.pop('unit', None)
-            row['voucher'] = instance
-            row['item_id'] = item.get('id')
-            if unit:
-                row['unit_id'] = unit.get('id')
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
             row = self.assign_discount_obj(row)
-            SalesVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+            SalesVoucherRow.objects.update_or_create(voucher=instance,pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         SalesVoucher.apply_transactions(instance)
         return instance
 
     class Meta:
         model = SalesVoucher
-        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year', 'voucher_no')
+        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year',)
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):

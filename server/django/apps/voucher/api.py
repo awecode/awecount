@@ -203,6 +203,9 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
+    
+    def get_queryset(self):
+        return super().get_queryset().order_by('-id')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -225,6 +228,19 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             }
         }
         return data
+    
+    def get_update_defaults(self, request=None):
+        obj = self.get_object()
+        invoice_objs = []
+        for inv in obj.invoices.all():
+            invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
+        data = {
+            'options': {
+                'sales_invoice_objs': invoice_objs,
+            }
+        }
+        return data
+
 
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):

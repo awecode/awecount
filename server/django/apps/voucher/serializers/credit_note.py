@@ -7,16 +7,18 @@ from ..models import CreditNoteRow, CreditNote
 
 
 class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    discount = serializers.ReadOnlyField(source='discount_amount')
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=True)
+    tax_scheme_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=False)
 
     class Meta:
         model = CreditNoteRow
-        fields = ('item_id', 'tax_scheme_id', 'discount',)
+        exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
 
 class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -39,47 +41,40 @@ class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankS
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        invoices = validated_data.pop('invoices')
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
-        credit_note = CreditNote.objects.create(**validated_data)
+        instance = CreditNote.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            unit = row.pop('unit', None)
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            if unit:
-                row['unit_id'] = unit.get('id')
             row = self.assign_discount_obj(row)
-            CreditNoteRow.objects.create(voucher=credit_note, item_id=item.get('id'), **row)
-        return credit_note
+            CreditNoteRow.objects.create(voucher=instance, **row)
+        instance.invoices.clear()
+        instance.invoices.add(*invoices)
+        return instance
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         CreditNote.objects.filter(pk=instance.id).update(**validated_data)
+        self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            row['item_id'] = item.get('id')
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            row['cash_receipt'] = instance
-            try:
-                CreditNoteRow.objects.update_or_create(pk=row.get('id'), defaults=row)
-            except IntegrityError:
-                raise APIException({'non_field_errors': ['Voucher repeated in cash receipt.']})
+            row = self.assign_discount_obj(row)
+            CreditNoteRow.objects.update_or_create(voucher=instance,pk=row.get('id'), defaults=row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
         CreditNote.apply_transactions(instance)
         return instance
 
+
     class Meta:
         model = CreditNote
-        exclude = ('company',)
+        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year',)
 
 
 class CreditNoteListSerializer(serializers.ModelSerializer):
