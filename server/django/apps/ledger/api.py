@@ -17,9 +17,9 @@ class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CreateListRetrieveUpda
     account_keys = ['supplier_account', 'customer_account']
 
     @action(detail=True)
-    def sale_vouchers(self, request, pk=None):
-        sale_vouchers = SalesVoucher.objects.filter(party_id=pk)
-        data = SaleVoucherOptionsSerializer(sale_vouchers, many=True).data
+    def sales_vouchers(self, request, pk=None):
+        sales_vouchers = SalesVoucher.objects.filter(party_id=pk)
+        data = SaleVoucherOptionsSerializer(sales_vouchers, many=True).data
         return Response(data)
 
 

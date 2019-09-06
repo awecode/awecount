@@ -84,7 +84,7 @@ class SalesVoucher(TransactionModel):
     print_count = models.PositiveSmallIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sale_vouchers')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_vouchers')
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
@@ -650,7 +650,7 @@ class CreditNote(models.Model):
     date = models.DateField()
     amount = models.FloatField(null=True, blank=True)
     receipt = models.ForeignKey(Account, blank=True, null=True, related_name="cash_receipt", on_delete=models.CASCADE)
-    sale_vouchers = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
+    invoices = models.ManyToManyField(SalesVoucher, related_name='credit_notes')
 
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)

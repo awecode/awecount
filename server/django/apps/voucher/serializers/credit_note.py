@@ -59,7 +59,7 @@ class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankS
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
-        sale_vouchers = validated_data.pop('sale_vouchers')
+        invoices = validated_data.pop('invoices')
         CreditNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             item = row.pop('item')
@@ -71,8 +71,8 @@ class CreditNoteCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankS
                 CreditNoteRow.objects.update_or_create(pk=row.get('id'), defaults=row)
             except IntegrityError:
                 raise APIException({'non_field_errors': ['Voucher repeated in cash receipt.']})
-        instance.sale_vouchers.clear()
-        instance.sale_vouchers.add(*sale_vouchers)
+        instance.invoices.clear()
+        instance.invoices.add(*invoices)
         instance.refresh_from_db()
         CreditNote.apply_transactions(instance)
         return instance
