@@ -18,7 +18,7 @@ class Unit(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.short_name or self.name
 
 
 LEDGER_TYPES = (

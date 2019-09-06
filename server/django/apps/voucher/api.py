@@ -8,7 +8,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
-from apps.ledger.serializers import SalesJournalEntrySerializer
+from apps.ledger.models import Party
+from apps.ledger.serializers import SalesJournalEntrySerializer, PartySerializer
+from apps.product.models import Unit
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
 from awecount.utils import get_next_voucher_no, link_callback
@@ -29,6 +31,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     row = SalesVoucherRow
+    collections = (
+        ('parties', Party, PartySerializer),
+        ('units', Unit),)
 
     def get_queryset(self):
         qs = super(SalesVoucherViewSet, self).get_queryset()
@@ -71,7 +76,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         data = {
             'fields': {
                 'can_update_issued': request.company.enable_sales_voucher_update
-            }
+            },
         }
         return data
 
