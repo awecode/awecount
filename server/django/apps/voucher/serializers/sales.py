@@ -14,6 +14,12 @@ class SalesDiscountSerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class SalesDiscountMinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesDiscount
+        fields = ('id', 'name', 'type', 'value')
+
+
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
@@ -109,7 +115,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
 
 class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
-    bank_account_name = serializers.ReadOnlyField(source='bank_account.short_ac_name_number')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.__str__')
     discount_obj = SalesDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
 
@@ -123,7 +129,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
 class CreditNoteDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
-    bank_account_name = serializers.ReadOnlyField(source='bank_account.short_ac_name_number')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.__str__')
     discount_obj = SalesDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
     address = serializers.ReadOnlyField(source='party.address')

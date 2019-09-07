@@ -29,14 +29,8 @@ class BankAccount(models.Model):
             self.ledger = ledger
         super().save(*args, **kwargs)
 
-    @property
-    def short_ac_name_number(self):
-        if self.short_name:
-            return self.short_name + ' - ' + self.account_number
-        return self.account_number
-
     def __str__(self):
-        return '{} : {}'.format(self.account_name, self.company.name)
+        return self.short_name or self.account_number
 
 
 class ChequeDeposit(models.Model):

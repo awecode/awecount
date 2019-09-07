@@ -4,8 +4,7 @@ from .models import BankAccount, ChequeDepositRow, ChequeDeposit, BankBranch, Ch
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='short_ac_name_number')
-    company_id = serializers.IntegerField()
+    name = serializers.ReadOnlyField(source='__str__')
 
     class Meta:
         model = BankAccount
@@ -22,7 +21,6 @@ class ChequeDepositRowSerializer(serializers.ModelSerializer):
 
 class ChequeDepositCreateSerializer(serializers.ModelSerializer):
     rows = ChequeDepositRowSerializer(many=True)
-    company_id = serializers.IntegerField()
 
     # bank_account_id = serializers.IntegerField(required=False, allow_null=True)
     # benefactor_id = serializers.IntegerField(required=False, allow_null=True)

@@ -1,3 +1,5 @@
+from inspect import isclass
+
 from rest_framework import mixins, viewsets, status, serializers
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -53,10 +55,19 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
             for collection in self.collections:
                 if len(collection) > 1:
                     key = collection[0]
-                    model = collection[1]
-                    qs = model.objects.all()
+
+                    # second argument can be a model or a queryset
+                    arg_2 = collection[1]
+                    if isclass(arg_2):
+                        model = arg_2
+                        qs = model.objects.all()
+                    else:
+                        qs = arg_2
+                        model = qs.model
+
                     if hasattr(model, 'company_id'):
                         qs = qs.filter(company_id=request.company_id)
+
                     if len(collection) > 2:
                         serializer = collection[2]
                         data = serializer(qs, many=True).data
