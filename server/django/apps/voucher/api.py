@@ -1,32 +1,31 @@
 from django.db.models import Prefetch
-from django.http import HttpResponse
-from django.template.loader import get_template
+
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from xhtml2pdf import pisa
 
 from apps.bank.models import BankAccount
 from apps.ledger.models import Party
-from apps.ledger.serializers import SalesJournalEntrySerializer, PartySerializer
+from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer
 from apps.product.models import Unit, Item
-from apps.product.serializers import ItemSerializer
+from apps.product.serializers import ItemSalesSerializer
 from apps.tax.models import TaxScheme
+from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
-from awecount.utils import get_next_voucher_no, link_callback
+from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
-from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditNote, CreditNoteRow, \
+from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
-    CreditNoteDetailSerializer, TaxSchemeSerializer
+    CreditNoteDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -35,12 +34,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     model = SalesVoucher
     row = SalesVoucherRow
     collections = (
-        ('parties', Party, PartySerializer),
+        ('parties', Party, PartyMinSerializer),
         ('units', Unit),
         ('discounts', SalesDiscount, SalesDiscountSerializer),
         ('bank_accounts', BankAccount),
-        ('tax_schemes', TaxScheme, TaxSchemeSerializer),
-        ('items', Item, ItemSerializer),
+        ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
+        ('items', Item, ItemSalesSerializer),
     )
 
     def get_queryset(self):
@@ -158,22 +157,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         if self.action == 'list' or self.action in ('choices',):
             return PurchaseVoucherListSerializer
         return PurchaseVoucherCreateSerializer
-
-    @action(detail=False)
-    def options(self, request):
-        discount_type = {
-            "Percent": "%",
-            "Amount": "/-",
-        }
-        types = [dict(value=type[0], text=discount_type.get(type[1])) for type in DISCOUNT_TYPES]
-        tax_choices = [dict(value=tax_choice[0], text=tax_choice[1]) for tax_choice in PurchaseVoucher.tax_choices]
-        types.insert(0, {"value": None, "text": '---'})
-
-        tax_choices.insert(0, {"value": None, "text": '---'})
-        return Response({
-            'discount_types': types,
-            'tax_choices': tax_choices,
-        })
 
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):

@@ -13,8 +13,13 @@ class PartyRepresentativeSerializer(serializers.ModelSerializer):
         exclude = ('party',)
 
 
+class PartyMinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Party
+        fields = ('id', 'name', 'address', 'logo', 'tax_registration_number')
+
+
 class PartySerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
     representative = PartyRepresentativeSerializer(many=True)
 
     def create(self, validated_data):

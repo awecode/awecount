@@ -10,3 +10,11 @@ class TaxSchemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxScheme
         exclude = ('company',)
+
+
+class TaxSchemeMinSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='__str__')
+
+    class Meta:
+        model = TaxScheme
+        fields = ('id', 'name', 'rate')

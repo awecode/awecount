@@ -41,15 +41,30 @@ class ItemSerializer(serializers.ModelSerializer):
         ]
 
 
-class BookSerializer(ItemSerializer):
+class ItemSalesSerializer(serializers.ModelSerializer):
+    rate = serializers.ReadOnlyField(source='selling_price')
 
+    class Meta:
+        model = Item
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code', 'description')
+
+
+class ItemPurchaseSerializer(serializers.ModelSerializer):
+    rate = serializers.ReadOnlyField(source='cost_price')
+
+    class Meta:
+        model = Item
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'description')
+
+
+class BookSerializer(ItemSerializer):
     def create(self, validated_data):
         request = self.context['request']
         category = Category.objects.filter(name="Book", company=request.user.company)[0]
         validated_data['category'] = category
 
         if category.items_purchase_ledger_type == 'global':
-            validated_data['purchase_ledger'] = Account.objects.get(name="Purchase Account",default=True)
+            validated_data['purchase_ledger'] = Account.objects.get(name="Purchase Account", default=True)
 
         if category.items_sales_ledger_type == 'global':
             validated_data['sales_ledger'] = Account.objects.get(name="Sales Account", default=True)
