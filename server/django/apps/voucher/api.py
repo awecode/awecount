@@ -8,22 +8,25 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
+from apps.bank.models import BankAccount
 from apps.ledger.models import Party
 from apps.ledger.serializers import SalesJournalEntrySerializer, PartySerializer
-from apps.product.models import Unit
+from apps.product.models import Unit, Item
+from apps.product.serializers import ItemSerializer
+from apps.tax.models import TaxScheme
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
 from awecount.utils import get_next_voucher_no, link_callback
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, DISCOUNT_TYPES, STATUSES, MODES, CreditNote, CreditNoteRow, \
-    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
-    CreditNoteDetailSerializer
+    CreditNoteDetailSerializer, TaxSchemeSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -33,7 +36,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     row = SalesVoucherRow
     collections = (
         ('parties', Party, PartySerializer),
-        ('units', Unit),)
+        ('units', Unit),
+        ('discounts', SalesDiscount, SalesDiscountSerializer),
+        ('bank_accounts', BankAccount),
+        ('tax_schemes', TaxScheme, TaxSchemeSerializer),
+        ('items', Item, ItemSerializer),
+    )
 
     def get_queryset(self):
         qs = super(SalesVoucherViewSet, self).get_queryset()
@@ -99,41 +107,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
                 }
             }
         return {}
-
-    @action(detail=False)
-    def options(self, request):
-        discount_type = {
-            "Percent": "%",
-            "Amount": "/-",
-        }
-        types = [dict(value=type[0], text=discount_type.get(type[1])) for type in DISCOUNT_TYPES]
-        statuses = [dict(value=status[0], text=status[1]) for status in STATUSES]
-        modes = [dict(value=mode[0], text=mode[1]) for mode in MODES]
-        types.insert(0, {"value": None, "text": '---'})
-        statuses.insert(0, {"value": None, "text": '---'})
-        # modes.insert(0, {"value": None, "text": '---'})
-        return Response({
-            'discount_types': types,
-            'statues': statuses,
-            'modes': modes
-        })
-
-    @action(detail=True)
-    def pdf(self, request, pk):
-        sale_voucher = self.get_object()
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
-
-        template = get_template('sale_voucher_pdf.html')
-        html = template.render({'object': sale_voucher})
-
-        # create a pdf
-        pisaStatus = pisa.CreatePDF(
-            html, dest=response, link_callback=link_callback)
-        # if error then show some funy view
-        if pisaStatus.err:
-            return HttpResponse('We had some errors <pre>' + html + '</pre>')
-        return response
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
