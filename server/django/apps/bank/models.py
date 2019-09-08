@@ -13,6 +13,8 @@ class BankAccount(models.Model):
     bank_name = models.CharField(max_length=250, blank=True, null=True)
     short_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
+    start_cheque_no = models.IntegerField(blank=True, null=True)
+    current_cheque_no = models.IntegerField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
