@@ -61,8 +61,6 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
 
 
 class ChequeVoucherSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-    bank_branch_id = serializers.IntegerField(required=True)
     # party_id = serializers.IntegerField(source='party.id', required=False)
     company_id = serializers.IntegerField()
     payee = serializers.SerializerMethodField()
@@ -83,10 +81,6 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
         user = request.user
         validated_data['user'] = user
         return super(ChequeVoucherSerializer, self).update(instance, validated_data)
-
-    def get_name(self, obj):
-        if obj.bank_branch:
-            return obj.bank_branch.name
 
     def get_payee(self, obj):
         if obj.party:
