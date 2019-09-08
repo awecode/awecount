@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import BankAccount, ChequeDepositRow, ChequeDeposit, BankBranch, ChequeVoucher
+from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeVoucher
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -60,15 +60,6 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'bank_account', 'date', 'deposited_by', 'name')
 
 
-class BankBranchSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField()
-    cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
-
-    class Meta:
-        model = BankBranch
-        fields = '__all__'
-
-
 class ChequeVoucherSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     bank_branch_id = serializers.IntegerField(required=True)
@@ -105,3 +96,12 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChequeVoucher
         exclude = ('user', 'company',)
+
+
+class BankAccountChequeVoucherSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='__str__')
+    cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
+
+    class Meta:
+        model = BankAccount
+        fields = ('id', 'name', 'account_number', 'cheque_no',)
