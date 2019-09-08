@@ -2,7 +2,8 @@ from django.contrib import admin
 
 from apps.product.models import Brand
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
-    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
+    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
+    DebitNote
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -15,6 +16,10 @@ class PurchaseVoucherRowTabular(admin.TabularInline):
 
 class CreditNoteRowTabular(admin.TabularInline):
     model = CreditNoteRow
+
+
+class DebitNoteRowTabular(admin.TabularInline):
+    model = DebitNoteRow
 
 
 class JournalVoucherRowTabular(admin.TabularInline):
@@ -44,6 +49,19 @@ admin.site.register(SalesVoucherRow)
 admin.site.register(CreditNote, CreditNoteAdmin)
 admin.site.register(CreditNoteRow)
 admin.site.register(InvoiceDesign)
+
+
+class DebitNoteAdmin(admin.ModelAdmin):
+    search_fields = (
+        'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
+        'company__tax_registration_number',)
+    list_filter = ('company', 'party',)
+    list_display = ('company', 'voucher_no', 'party')
+    inlines = (DebitNoteRowTabular,)
+
+
+admin.site.register(DebitNote, DebitNoteAdmin)
+admin.site.register(DebitNoteRow)
 
 
 class JournalVoucherAdmin(admin.ModelAdmin):

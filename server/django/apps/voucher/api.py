@@ -16,11 +16,13 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
+from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
-    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
+    DebitNote, DebitNoteRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
     JournalVoucherListSerializer, \
@@ -186,7 +188,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item, ItemSalesSerializer),
+        ('items', Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
     )
 
     def get_queryset(self):
@@ -280,6 +282,111 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         obj.save()
         return Response({'print_count': obj.print_count})
 
+
+
+class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
+    serializer_class = DebitNoteCreateSerializer
+    model = DebitNote
+    row = DebitNoteRow
+    collections = (
+        ('discounts', PurchaseDiscount, PurchaseDiscountSerializer),
+        ('units', Unit),
+        ('bank_accounts', BankAccount),
+        ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
+        ('bank_accounts', BankAccount, BankAccountSerializer),
+        ('items', Item.objects.filter(can_be_purchased=True), ItemSalesSerializer),
+    )
+
+    def get_queryset(self):
+        return super().get_queryset().order_by('-id')
+
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.is_issued():
+            if not request.company.enable_credit_note_update:
+                raise APIException({'detail': 'Issued credit notes can\'t be updated'})
+            _model_name = self.get_queryset().model.__name__
+            permission = '{}IssuedModify'.format(_model_name)
+            modules = request.user.role.modules
+            if permission not in modules:
+                raise APIException({'detail': 'User do not have permission to issue voucher'})
+        return super().update(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return CreditNoteListSerializer
+        return CreditNoteCreateSerializer
+
+    def get_defaults(self, request=None):
+        data = {
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            },
+            'fields': {
+                'can_update_issued': request.company.enable_credit_note_update
+            }
+        }
+        return data
+
+    def get_create_defaults(self, request=None):
+        voucher_no = get_next_voucher_no(DebitNote, request.company_id)
+        data = {
+            'fields': {
+                'voucher_no': voucher_no,
+            }
+        }
+        return data
+
+    def get_update_defaults(self, request=None):
+        obj = self.get_object()
+        invoice_objs = []
+        for inv in obj.invoices.all():
+            invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
+        data = {
+            'options': {
+                'sales_invoice_objs': invoice_objs,
+            }
+        }
+        if not obj.voucher_no:
+            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
+            data['fields'] = {
+                'voucher_no': voucher_no,
+            }
+
+        return data
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'bank_account')
+        return Response(CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_resolved(self, request, pk):
+        obj = self.get_object()
+        try:
+            obj.mark_as_resolved()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        try:
+            obj.cancel()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'], url_path='log-print')
+    def log_print(self, request, pk):
+        obj = self.get_object()
+        obj.print_count += 1
+        obj.save()
+        return Response({'print_count': obj.print_count})
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
