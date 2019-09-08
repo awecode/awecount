@@ -31,6 +31,14 @@ class BankAccount(models.Model):
             self.ledger = ledger
         super().save(*args, **kwargs)
 
+    def increase_cheque_no(self):
+        self.current_cheque_no = self.get_cheque_no()
+        self.save()
+
+    def get_cheque_no(self):
+        cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
+        return cheque_no + 1
+
     def __str__(self):
         return self.short_name or self.account_number
 
@@ -126,6 +134,7 @@ class BankBranch(models.Model):
 class ChequeVoucher(models.Model):
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
     bank_branch = models.ForeignKey(BankBranch, blank=True, null=True, on_delete=models.PROTECT)
+    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
@@ -135,7 +144,7 @@ class ChequeVoucher(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.bank_branch.increase_cheque_no()
+            self.bank_account.increase_cheque_no()
         super(ChequeVoucher, self).save(*args, **kwargs)
 
     def __str__(self):
