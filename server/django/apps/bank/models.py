@@ -36,6 +36,8 @@ class BankAccount(models.Model):
         self.save()
 
     def get_cheque_no(self):
+        if not self.start_cheque_no:
+            return
         cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
         return cheque_no + 1
 

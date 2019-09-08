@@ -105,3 +105,15 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChequeVoucher
         exclude = ('user', 'company',)
+
+
+class BankAccountChequeVoucherSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='__str__')
+    cheque_no = serializers.SerializerMethodField()
+
+    def get_cheque_no(self, obj):
+        return obj.get_cheque_no()
+
+    class Meta:
+        model = BankAccount
+        fields = ('id', 'name', 'account_number', 'cheque_no',)
