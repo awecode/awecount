@@ -133,7 +133,6 @@ class BankBranch(models.Model):
 
 class ChequeVoucher(models.Model):
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
-    bank_branch = models.ForeignKey(BankBranch, blank=True, null=True, on_delete=models.PROTECT)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
