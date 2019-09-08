@@ -7,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from apps.bank.models import BankAccount
+from apps.bank.serializers import BankAccountSerializer
 from apps.ledger.models import Party
 from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer
 from apps.product.models import Unit, Item
@@ -19,7 +20,7 @@ from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
-    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
     JournalVoucherListSerializer, \
@@ -39,7 +40,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
         ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
-        ('items', Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description'),
+        ('items', Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
          ItemSalesSerializer),
     )
 
@@ -149,6 +150,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
     serializer_class = PurchaseVoucherCreateSerializer
     model = PurchaseVoucher
     row = PurchaseVoucherRow
+    collections = (
+        ('parties', Party, PartyMinSerializer),
+        ('discounts', PurchaseDiscount, PurchaseDiscountSerializer),
+        ('units', Unit),
+        ('bank_accounts', BankAccount),
+        ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
+        ('bank_accounts', BankAccount, BankAccountSerializer),
+        ('items', Item, ItemSalesSerializer),
+    )
 
     def get_queryset(self):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
@@ -170,6 +180,14 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
+    collections = (
+        ('discounts', SalesDiscount, SalesDiscountSerializer),
+        ('units', Unit),
+        ('bank_accounts', BankAccount),
+        ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
+        ('bank_accounts', BankAccount, BankAccountSerializer),
+        ('items', Item, ItemSalesSerializer),
+    )
 
     def get_queryset(self):
         return super().get_queryset().order_by('-id')
