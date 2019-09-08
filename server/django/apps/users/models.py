@@ -76,6 +76,8 @@ class UserManager(BaseUserManager):
 
 
 # TODO Simplify
+
+
 MODULES = (
     ('Dashboard', 'Dashboard'),
     ('ItemView', 'ItemView'),
@@ -111,6 +113,10 @@ MODULES = (
     ('CreditNoteCreate', 'CreditNoteCreate'),
     ('CreditNoteModify', 'CreditNoteModify'),
     ('CreditNoteDelete', 'CreditNoteDelete'),
+    ('DebitNoteView', 'DebitNoteView'),
+    ('DebitNoteCreate', 'DebitNoteCreate'),
+    ('DebitNoteModify', 'DebitNoteModify'),
+    ('CreditNoteDelete', 'DebitNoteDelete'),
     ('CreditNoteIssuedModify', 'CreditNoteIssuedModify'),
     ('ChequeVoucherView', 'ChequeVoucherView'),
     ('ChequeVoucherCreate', 'ChequeVoucherCreate'),

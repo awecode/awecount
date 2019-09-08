@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from awecount.utils import get_next_voucher_no
 from ..models import PurchaseDiscount, PurchaseVoucherRow, PurchaseVoucher
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
@@ -13,10 +14,9 @@ class PurchaseDiscountSerializer(serializers.ModelSerializer):
 
 class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    item_id = serializers.IntegerField(source='item.id', required=True)
-    tax_scheme_id = serializers.IntegerField(source='tax_scheme.id', required=True)
-    unit_id = serializers.IntegerField(source='unit.id', required=False)
-    voucher_id = serializers.IntegerField(source='voucher.id', required=False, read_only=True)
+    item_id = serializers.IntegerField(required=True)
+    tax_scheme_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=False)
 
     class Meta:
         model = PurchaseVoucherRow
@@ -25,7 +25,27 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
 
 class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
                                       serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
     rows = PurchaseVoucherRowSerializer(many=True)
+
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get('status') in ['Draft', 'Cancelled']:
+            return
+        next_voucher_no = get_next_voucher_no(PurchaseVoucher, self.context['request'].company_id)
+        validated_data['voucher_no'] = next_voucher_no
+
+    def assign_fiscal_year(self, validated_data, instance=None):
+        if instance and instance.fiscal_year_id:
+            return
+        fiscal_year = self.context['request'].company.current_fiscal_year
+        if fiscal_year.includes(validated_data.get('date')):
+            validated_data['fiscal_year_id'] = fiscal_year.id
+        else:
+            raise ValidationError(
+                {'date': ['Date not in current fiscal year.']},
+            )
 
     def validate(self, data):
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
@@ -37,36 +57,28 @@ class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCum
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
-        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         voucher = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            unit = row.pop('unit', None)
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
-            if unit:
-                row['unit_id'] = unit.get('id')
-            PurchaseVoucherRow.objects.create(voucher=voucher, item_id=item.get('id'), **row)
+            row = self.assign_discount_obj(row)
+            PurchaseVoucherRow.objects.create(voucher=voucher, **row)
         PurchaseVoucher.apply_transactions(voucher)
         return voucher
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
-        validated_data = self.assign_discount_obj(validated_data)
+        self.assign_fiscal_year(validated_data, instance=instance)
+        self.assign.voucher_number(validated_data, instance)
+        self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            item = row.pop('item')
-            unit = row.pop('unit', None)
-            row['voucher'] = instance
-            row['item_id'] = item.get('id')
-            if unit:
-                row['unit_id'] = unit.get('id')
-            tax_scheme = row.pop('tax_scheme')
-            row['tax_scheme_id'] = tax_scheme.get('id')
+            row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         PurchaseVoucher.apply_transactions(instance)
@@ -74,7 +86,7 @@ class PurchaseVoucherCreateSerializer(DiscountObjectTypeSerializerMixin, ModeCum
 
     class Meta:
         model = PurchaseVoucher
-        exclude = ('company', 'user', 'bank_account', 'discount_obj',)
+        exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year')
 
 
 class PurchaseVoucherListSerializer(serializers.ModelSerializer):
