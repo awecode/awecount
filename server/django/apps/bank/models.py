@@ -80,7 +80,6 @@ class ChequeDeposit(models.Model):
         #     unique_together = ('voucher_no', 'company')
 
 
-# TODO drawee bank foreign key to Bank
 class ChequeDepositRow(models.Model):
     cheque_number = models.CharField(max_length=50)
     cheque_date = models.DateField(default=timezone.now)

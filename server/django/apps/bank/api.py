@@ -40,6 +40,6 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdat
 class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
     serializer_class = ChequeVoucherSerializer
     collections = (
-        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number'), BankAccountChequeVoucherSerializer),
-        ('parties', Party.objects.only('name', 'address', 'logo', 'tax_registration_number'), PartyMinSerializer),
+        ('bank_accounts', BankAccount, BankAccountChequeVoucherSerializer),
+        ('parties', Party, PartyMinSerializer),
     )

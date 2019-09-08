@@ -110,7 +110,7 @@ class SalesVoucher(TransactionModel):
 
     @property
     def amount_in_words(self):
-        return wGenerator.convertNumberToWords(self.total_amount)
+        return wGenerator.convertNumberToWords(self.get_voucher_meta()['grand_total'])
 
     # @property
     # def total_amount(self):
@@ -424,17 +424,16 @@ class PurchaseVoucher(TransactionModel):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='_vouchers')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
     # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
     # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
     # tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
 
-    def type(self):
-        return 'Credit' if self.credit else 'Cash'
 
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='purchasesvoucherrow')
+        #TODO Use self.rows.values_list('id', flat=True)
         row_ids = [row.id for row in self.rows.all()]
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
