@@ -95,44 +95,6 @@ class ChequeDepositRow(models.Model):
         return self.cheque_deposit_id
 
 
-class Bank(models.Model):
-    name = models.CharField(max_length=250)
-    short_name = models.CharField(max_length=50)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-
-class BankBranch(models.Model):
-    location = models.CharField(max_length=255)
-    bank = models.ForeignKey(Bank, related_name='branches', on_delete=models.CASCADE)
-    start_cheque_no = models.IntegerField(default=0)
-    current_cheque_no = models.IntegerField(blank=True, null=True)
-    cheque_prefix = models.CharField(max_length=10, blank=True, null=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-
-    def increase_cheque_no(self):
-        self.current_cheque_no = self.get_cheque_no()
-        self.save()
-
-    def get_cheque_no(self):
-        cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
-        return cheque_no + 1
-
-    @property
-    def name(self):
-        bank_name = self.bank.short_name or self.bank.name
-        _name = '{} {}'.format(bank_name, self.location)
-        return _name
-
-    def __str__(self):
-        return "{}: {}".format(self.bank.name, self.location)
-
-    class Meta:
-        verbose_name_plural = 'Bank branches'
-
-
 class ChequeVoucher(models.Model):
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)

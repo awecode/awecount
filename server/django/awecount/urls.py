@@ -39,7 +39,6 @@ router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-voucher', bank.ChequeVoucherViewSet, base_name='cheque-voucher')
-router.register('bank-branch', bank.BankBranchViewSet, base_name='bank-branch')
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
 
