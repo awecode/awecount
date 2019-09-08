@@ -31,7 +31,7 @@ router.register('inventory-categories', item.InventoryCategoryViewSet, base_name
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
 router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
-router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet)
+router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, base_name='purchase-vouchers')
 router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name='purchase-discount')
 router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note')
 router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')

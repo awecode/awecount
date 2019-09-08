@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import ValidationError
 
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin

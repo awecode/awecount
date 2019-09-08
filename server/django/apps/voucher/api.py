@@ -16,7 +16,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
-from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer
+from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -28,7 +28,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
-    CreditNoteDetailSerializer, SalesDiscountMinSerializer
+    CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
@@ -42,7 +42,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
         ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
-        ('items', Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
+        ('items',
+         Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
          ItemSalesSerializer),
     )
 
@@ -148,7 +149,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
-    queryset = PurchaseVoucher.objects.all()
     serializer_class = PurchaseVoucherCreateSerializer
     model = PurchaseVoucher
     row = PurchaseVoucherRow
@@ -170,7 +170,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             }
         }
         return data
-    
+
     def get_update_defaults(self, request=None):
         obj = self.get_object()
         if not obj.voucher_no:
@@ -201,11 +201,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
     def by_voucher_no(self, request):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     PurchaseVoucher.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                                     'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(PurchaseVoucherListSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
-                                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                                       queryset=qs)).data)
+        return Response(PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                                          fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                                          queryset=qs)).data)
+
 
 class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = CreditNoteCreateSerializer
@@ -312,7 +314,6 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         return Response({'print_count': obj.print_count})
 
 
-
 class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = DebitNoteCreateSerializer
     model = DebitNote
@@ -343,8 +344,8 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return CreditNoteListSerializer
-        return CreditNoteCreateSerializer
+            return DebitNoteListSerializer
+        return DebitNoteCreateSerializer
 
     def get_defaults(self, request=None):
         data = {
@@ -377,7 +378,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             }
         }
         if not obj.voucher_no:
-            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
+            voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
             data['fields'] = {
                 'voucher_no': voucher_no,
             }
@@ -416,6 +417,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         obj.print_count += 1
         obj.save()
         return Response({'print_count': obj.print_count})
+
 
 class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
