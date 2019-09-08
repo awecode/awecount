@@ -162,6 +162,26 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         ('items', Item, ItemSalesSerializer),
     )
 
+    def get_create_defaults(self, request=None):
+        voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
+        data = {
+            'fields': {
+                'voucher_no': voucher_no,
+            }
+        }
+        return data
+    
+    def get_update_defaults(self, request=None):
+        obj = self.get_object()
+        if not obj.voucher_no:
+            voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
+            return {
+                'fields': {
+                    'voucher_no': voucher_no,
+                }
+            }
+        return {}
+
     def get_queryset(self):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
         return queryset.order_by('-pk')
@@ -177,6 +197,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         journals = purchase_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
+    @action(detail=False, url_path='by-voucher-no')
+    def by_voucher_no(self, request):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     PurchaseVoucher.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'bank_account')
+        return Response(PurchaseVoucherListSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                                       queryset=qs)).data)
 
 class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     serializer_class = CreditNoteCreateSerializer
