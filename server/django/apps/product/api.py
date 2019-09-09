@@ -13,13 +13,13 @@ from .models import Item, JournalEntry, Category
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer
 
-from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 
 
 
-class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data']
@@ -33,7 +33,7 @@ class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
         return Response(serializer)
 
 
-class BookViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class BookViewSet(InputChoiceMixin, CRULViewSet):
 
     def get_queryset(self):
         queryset = Item.objects.filter(category__name="Book", company=self.request.company)
@@ -47,19 +47,19 @@ class BookViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
         return Response(InventoryCategorySerializer(cat).data)
 
 
-class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CreateListRetrieveUpdateViewSet):
+class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = UnitSerializer
 
 
-class InventoryCategoryViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class InventoryCategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
 
 
-class BrandViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class BrandViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BrandSerializer
 
 
-class InventoryAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
     filter_backends = (SearchFilter,)
     search_fields = ('code', 'name',)
     serializer_class = InventoryAccountSerializer

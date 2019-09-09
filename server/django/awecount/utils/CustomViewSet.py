@@ -28,7 +28,7 @@ class GenericSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
 
 
-class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
+class CRULViewSet(CompanyViewSetMixin,
                                       mixins.CreateModelMixin,
                                       mixins.ListModelMixin,
                                       mixins.UpdateModelMixin,

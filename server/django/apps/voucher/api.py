@@ -19,7 +19,7 @@ from apps.voucher.filters import SalesVoucherDateFilterSet
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
@@ -32,7 +32,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer
 
 
-class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
+class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
@@ -148,7 +148,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
                                                                        queryset=qs)).data)
 
 
-class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
+class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = PurchaseVoucherCreateSerializer
     model = PurchaseVoucher
     row = PurchaseVoucherRow
@@ -236,7 +236,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             raise APIException(str(e))
 
 
-class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
+class CreditNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
@@ -340,7 +340,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         return Response({'print_count': obj.print_count})
 
 
-class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
+class DebitNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = DebitNoteCreateSerializer
     model = DebitNote
     row = DebitNoteRow
@@ -444,7 +444,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         return Response({'print_count': obj.print_count})
 
 
-class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
+class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
                                                                 queryset=JournalVoucherRow.objects.order_by('-type', 'id')))
     serializer_class = JournalVoucherCreateSerializer
@@ -475,7 +475,7 @@ class JournalVoucherViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         return Response({'voucher_no': voucher_no})
 
 
-class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
+class InvoiceDesignViewSet(CRULViewSet):
     queryset = InvoiceDesign.objects.all()
     serializer_class = InvoiceDesignSerializer
 
@@ -503,15 +503,15 @@ class InvoiceDesignViewSet(CreateListRetrieveUpdateViewSet):
         return Response(data)
 
 
-class SalesDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = SalesDiscountSerializer
 
 
-class PurchaseDiscountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = PurchaseDiscountSerializer
 
 
-class SalesBookViewSet(CreateListRetrieveUpdateViewSet):
+class SalesBookViewSet(CRULViewSet):
     serializer_class = SalesBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = SalesVoucherDateFilterSet

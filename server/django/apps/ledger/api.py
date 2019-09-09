@@ -8,11 +8,11 @@ from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from .models import Account, JournalEntry
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer
-from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
 
 
-class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CreateListRetrieveUpdateViewSet):
+class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
 
@@ -23,11 +23,11 @@ class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CreateListRetrieveUpda
         return Response(data)
 
 
-class CategoryViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
 
 
-class AccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class AccountViewSet(InputChoiceMixin, CRULViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
     filter_backends = (SearchFilter,)

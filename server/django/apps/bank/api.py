@@ -7,16 +7,16 @@ from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSeri
 from apps.ledger.models import Party
 from apps.ledger.serializers import PartyMinSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
+from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, DeleteRows
 
 
-class BankAccountViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
+class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
     queryset = BankAccount.objects.all()
     serializer_class = BankAccountSerializer
 
 
-class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdateViewSet):
+class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     queryset = ChequeDeposit.objects.all()
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
@@ -37,7 +37,7 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdat
         return Response({'voucher_no': voucher_no})
 
 
-class ChequeVoucherViewSet(CreateListRetrieveUpdateViewSet):
+class ChequeVoucherViewSet(CRULViewSet):
     serializer_class = ChequeVoucherSerializer
     collections = (
         ('bank_accounts', BankAccount, BankAccountChequeVoucherSerializer),
