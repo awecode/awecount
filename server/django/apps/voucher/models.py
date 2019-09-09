@@ -102,7 +102,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         if self.status == 'Cancelled':
-            self.apply_cancel_transaction()
+            self.cancel_transactions()
             return
         if self.status == 'Draft':
             return
@@ -215,7 +215,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         if self.status == 'Cancelled':
-            self.apply_cancel_transaction()
+            self.cancel_transactions()
             return
         if self.status == 'Draft':
             return
@@ -344,7 +344,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         if self.status == 'Cancelled':
-            self.apply_cancel_transaction()
+            self.cancel_transactions()
             return
         if self.status == 'Draft':
             return
@@ -464,7 +464,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         if self.status == 'Cancelled':
-            self.apply_cancel_transaction()
+            self.cancel_transactions()
             return
         if self.status == 'Draft':
             return
@@ -588,7 +588,7 @@ class JournalVoucher(models.Model):
 
     def apply_transactions(self):
         if self.status == 'Cancelled':
-            self.apply_cancel_transaction()
+            self.cancel_transactions()
             return
         if not self.status == 'Approved':
             return
@@ -602,7 +602,7 @@ class JournalVoucher(models.Model):
         set_ledger_transactions(self, self.date, *entries, clear=True)
         return
 
-    def apply_cancel_transaction(self):
+    def cancel_transactions(self):
         content_type = ContentType.objects.get(model='journalvoucher')
         row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()

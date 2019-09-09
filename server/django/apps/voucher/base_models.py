@@ -106,9 +106,9 @@ class InvoiceModel(models.Model):
     def cancel(self):
         self.status = 'Cancelled'
         self.save()
-        self.apply_cancel_transaction()
+        self.cancel_transactions()
 
-    def apply_cancel_transaction(self):
+    def cancel_transactions(self):
         content_type = ContentType.objects.get(model=self.__class__.__name__.lower() + 'row')
         row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
