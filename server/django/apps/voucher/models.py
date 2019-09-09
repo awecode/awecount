@@ -7,10 +7,10 @@ from django.utils import timezone
 from apps.bank.models import BankAccount
 from apps.ledger.models import Party, Account, set_transactions as set_ledger_transactions, get_account, JournalEntry, \
     TransactionModel
-from apps.product.models import Item, Unit, JournalEntry as InventoryJournalEntry, set_inventory_transactions
+from apps.product.models import Item, Unit, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
-from apps.voucher.base_models import InvoiceModel
+from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.utils import get_next_voucher_no
 
 STATUSES = (
@@ -24,8 +24,6 @@ STATUSES = (
 MODES = (
     ('Credit', 'Credit'),
     ('Cash', 'Cash'),
-    ('Cheque', 'Cheque'),
-    ('ePayment', 'ePayment'),
     ('Bank Deposit', 'Bank Deposit'),
 )
 
@@ -74,9 +72,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales')
-    # total_amount = models.FloatField(null=True, blank=True)  #
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-    epayment = models.CharField(max_length=50, blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
     remarks = models.TextField(blank=True, null=True)
@@ -96,25 +92,16 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return self.party.name
         return self.customer_name
 
-    @property
-    def date(self):
-        return self.transaction_date.strftime('%m-%b-%Y')
+    # @property
+    # def date(self):
+    #     return self.transaction_date.strftime('%m-%b-%Y')
 
-    def is_issued(self):
-        return self.status != 'Draft'
-
-    def mark_as_paid(self):
-        if self.mode == 'Credit' and self.status == 'Issued':
-            self.status = 'Paid'
-            self.save()
-        else:
-            raise ValueError('This sales cannot be mark as paid!')
 
     def apply_inventory_transactions(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
-                self.date,
+                self.transaction_date,
                 ['cr', row.item.account, int(row.quantity)],
             )
 
@@ -144,7 +131,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter():
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_allowed_ledger',
+                                                     'item__sales_ledger'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -188,7 +176,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         super().save(*args, **kwargs)
 
 
-class SalesVoucherRow(TransactionModel):
+class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
@@ -201,56 +189,8 @@ class SalesVoucherRow(TransactionModel):
                                      related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
 
-    def __str__(self):
-        return str(self.voucher.voucher_no)
 
-    def get_voucher_no(self):
-        return self.voucher.voucher_no
-
-    def get_source_id(self):
-        return self.voucher_id
-
-    def has_discount(self):
-        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
-
-    def get_discount(self):
-        """
-        returns:
-        discount_amount:float, is_trade_discount:boolean
-        """
-        sub_total = self.quantity * self.rate
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            if discount_obj.type == 'Amount':
-                return discount_obj.value, discount_obj.trade_discount
-            elif discount_obj.type == 'Percent':
-                return sub_total * (discount_obj.value / 100), discount_obj.trade_discount
-        elif self.discount and self.discount_type == 'Amount':
-            return self.discount, False
-        elif self.discount and self.discount_type == 'Percent':
-            return sub_total * (self.discount / 100), False
-        return 0, False
-
-    def get_tax_amount(self):
-        amount = 0
-        if self.tax_scheme:
-            amount = (self.tax_scheme.rate / 100) * self.total
-        return amount
-
-    @property
-    def total(self):
-        row_total = self.quantity * self.rate
-        # sub_total = sub_total - self.get_discount()[0]
-        return row_total
-
-    @property
-    def total_after_row_discount(self):
-        row_total = self.quantity * self.rate
-        row_total = row_total - self.get_discount()[0]
-        return row_total
-
-
-class PurchaseVoucher(TransactionModel):
+class PurchaseVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField()
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
@@ -270,152 +210,42 @@ class PurchaseVoucher(TransactionModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
-    # tax_choices = [('No Tax', 'No Tax'), ('Tax Inclusive', 'Tax Inclusive'), ('Tax Exclusive', 'Tax Exclusive'), ]
-    # tax = models.CharField(max_length=10, choices=tax_choices, default='inclusive', null=True, blank=True)
-    # tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.CASCADE)
-
-
-    def apply_cancel_transaction(self):
-        content_type = ContentType.objects.get(model='purchasesvoucherrow')
-        row_ids = self.rows.values_list('id', flat=True)
-        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-
-    @staticmethod
-    def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+    def apply_inventory_transaction(self):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
-                voucher.transaction_date,
+                self.date,
                 ['dr', row.item.account, int(row.quantity)],
             )
 
-    @property
-    def voucher_type(self):
-        return 'PurchaseVoucher'
-
-    def mark_as_paid(self):
-        if self.mode == 'Credit' and self.status == 'Issued':
-            self.status = 'Paid'
-            # sale_voucher.apply_mark_as_paid()
-            self.save()
-        else:
-            raise ValueError('This purchase cannot be mark as paid!')
-
-    def cancel(self):
-        self.status = 'Cancelled'
-        self.save()
-        self.apply_cancel_transaction()
-
-    def get_voucher_discount_data(self):
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            return {'type': discount_obj.type, 'value': discount_obj.value}
-        else:
-            return {'type': self.discount_type, 'value': self.discount}
-
-    def get_voucher_meta(self):
-        dct = {
-            'sub_total': 0,
-            'discount': 0,
-            'non_taxable': 0,
-            'taxable': 0,
-            'tax': 0
-        }
-        rows_data = []
-        # gross_total_sum is subtotal after row discounts, before voucher discount and tax
-        gross_total_sum = 0
-        for row in self.rows.all():
-            row_data = {'quantity': row.quantity, 'rate': row.rate, 'total': row.rate * row.quantity}
-            row_data['row_discount'] = row.get_discount()[0] if row.has_discount() else 0
-            row_data['gross_total'] = row_data['total'] - row_data['row_discount']
-            row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
-            gross_total_sum += row_data['gross_total']
-            dct['sub_total'] += row_data['total']
-            rows_data.append(row_data)
-
-        voucher_discount_data = self.get_voucher_discount_data()
-
-        for row_data in rows_data:
-            if voucher_discount_data['type'] == 'Percent':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / 100
-            elif voucher_discount_data['type'] == 'Amount':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / gross_total_sum
-            else:
-                dividend_discount = 0
-            row_data['dividend_discount'] = dividend_discount
-            row_data['pure_total'] = row_data['gross_total'] - dividend_discount
-            row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
-
-            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
-            dct['tax'] += row_data['tax_amount']
-
-            if row_data['tax_amount']:
-                dct['taxable'] += row_data['pure_total']
-            else:
-                dct['non_taxable'] += row_data['pure_total']
-
-        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
-
-        for key, val in dct.items():
-            dct[key] = round(val, 2)
-
-        return dct
-
-    def get_discount(self, sub_total_after_row_discounts=None):
-        """
-        :type sub_total_after_row_discounts: float
-        returns:
-        discount_amount:float, is_trade_discount:boolean
-        """
-        sub_total_after_row_discounts = sub_total_after_row_discounts or self.get_total_after_row_discounts()
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            if discount_obj.type == 'Amount':
-                return discount_obj.value, discount_obj.trade_discount
-            elif discount_obj.type == 'Percent':
-                return sub_total_after_row_discounts * (discount_obj.value / 100), discount_obj.trade_discount
-        elif self.discount and self.discount_type == 'Amount':
-            return self.discount, False
-        elif self.discount and self.discount_type == 'Percent':
-            return sub_total_after_row_discounts * (self.discount / 100), False
-        return 0, False
-
-    @staticmethod
-    def apply_transactions(voucher):
-        # if voucher.status == 'Cancelled':
-        #     voucher.apply_cancel_transaction()
-        # entries = []
-        if voucher.status == 'Cancelled':
-            voucher.apply_cancel_transaction()
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.apply_cancel_transaction()
             return
-        if voucher.status == 'Draft':
+        if self.status == 'Draft':
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if voucher.mode == 'Credit':
-            cr_acc = voucher.party.supplier_account
-        elif voucher.mode == 'Cash':
-            cr_acc = get_account(voucher.company, 'Cash')
-            voucher.status = 'Paid'
-        # TODO Allow creating cheque deposit
-        elif voucher.mode == 'Cheque':
-            cr_acc = voucher.party.supplier_account
-            voucher.status = 'Paid'
-        elif voucher.mode == 'Bank Deposit':
-            cr_acc = voucher.bank_account.ledger
-            voucher.status = 'Paid'
-        # elif voucher.mode == 'ePayment':
-        #     pass
+        if self.mode == 'Credit':
+            cr_acc = self.party.supplier_account
+        elif self.mode == 'Cash':
+            cr_acc = get_account(self.company, 'Cash')
+            self.status = 'Paid'
+        elif self.mode == 'Bank Deposit':
+            cr_acc = self.bank_account.ledger
+            self.status = 'Paid'
+        else:
+            raise ValueError('No such mode!')
 
-        voucher.save()
+        self.save()
 
-        # sub_total = voucher.get_sub_total()
-        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+        sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
-        for row in voucher.rows.all():
+        # filter bypasses rows cached by prefetching
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
+                                                     'item__purchase_ledger'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -449,21 +279,12 @@ class PurchaseVoucher(TransactionModel):
 
             entries.append(['dr', row.item.purchase_ledger, purchase_value])
             entries.append(['cr', cr_acc, row_total])
-            set_ledger_transactions(row, voucher.date, *entries, clear=True)
+            set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        PurchaseVoucher.apply_inventory_transaction(voucher)
-
-    @property
-    def row_discount_total(self):
-        grand_total = 0
-        # for obj in self.rows.all():
-        #     total = obj.quantity * obj.rate
-        #     discount = get_discount_with_percent(total, obj.discount)
-        #     grand_total += discount
-        return grand_total
+        self.apply_inventory_transaction()
 
 
-class PurchaseVoucherRow(TransactionModel):
+class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
     item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
@@ -477,56 +298,10 @@ class PurchaseVoucherRow(TransactionModel):
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):
-        self.item.cost_price = self.rate
-        self.item.save()
-        super(PurchaseVoucherRow, self).save(*args, **kwargs)
-
-    def get_voucher_no(self):
-        return self.voucher.voucher_no
-
-    def get_source_id(self):
-        return self.voucher_id
-
-    def has_discount(self):
-        return True if self.discount_obj_id or (
-            self.discount_type in ['Amount', 'Percent'] and self.discount) else False
-
-    def get_discount(self):
-        """
-        returns:
-        discount_amount:float, is_trade_discount:boolean
-        """
-        sub_total = self.quantity * self.rate
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            if discount_obj.type == 'Amount':
-                return discount_obj.value, discount_obj.trade_discount
-            elif discount_obj.type == 'Percent':
-                return sub_total * (discount_obj.value / 100), discount_obj.trade_discount
-        elif self.discount and self.discount_type == 'Amount':
-            return self.discount, False
-        elif self.discount and self.discount_type == 'Percent':
-            return sub_total * (self.discount / 100), False
-        return 0, False
-
-    # @property
-    # def tax_amount(self):
-    #     amount = 0
-    #     if self.tax_scheme:
-    #         amount = (self.tax_scheme.rate / 100) * self.total
-    #     return amount
-
-    @property
-    def total(self):
-        row_total = self.quantity * self.rate
-        # sub_total = sub_total - self.get_discount()[0]
-        return row_total
-
-    @property
-    def total_after_row_discount(self):
-        row_total = self.quantity * self.rate
-        row_total = row_total - self.get_discount()[0]
-        return row_total
+        if not self.item.cost_price:
+            self.item.cost_price = self.rate
+            self.item.save()
+        super().save(*args, **kwargs)
 
 
 CREDIT_NOTE_STATUSES = (
@@ -537,7 +312,7 @@ CREDIT_NOTE_STATUSES = (
 )
 
 
-class CreditNote(models.Model):
+class CreditNote(TransactionModel, InvoiceModel):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -561,40 +336,45 @@ class CreditNote(models.Model):
     print_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        unique_together = ('company', 'voucher_no')
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
 
-    def is_issued(self):
-        return self.status != 'Draft'
+    def apply_inventory_transaction(voucher):
+        for row in voucher.rows.filter(is_returned=True).filter(
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                voucher.date,
+                ['dr', row.item.account, int(row.quantity)],
+            )
 
-    @staticmethod
-    def apply_transactions(voucher):
-        # entries = []
-        if voucher.status == 'Cancelled':
-            voucher.apply_cancel_transaction()
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.apply_cancel_transaction()
             return
-        if voucher.status == 'Draft':
+        if self.status == 'Draft':
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if voucher.mode == 'Credit':
-            cr_acc = voucher.party.customer_account
-        elif voucher.mode == 'Cash':
-            cr_acc = get_account(voucher.company, 'Cash')
-            voucher.status = 'Resolved'
-        elif voucher.mode == 'Bank Deposit':
-            cr_acc = voucher.bank_account.ledger
-            voucher.status = 'Resolved'
+        if self.mode == 'Credit':
+            cr_acc = self.party.customer_account
+        elif self.mode == 'Cash':
+            cr_acc = get_account(self.company, 'Cash')
+            self.status = 'Resolved'
+        elif self.mode == 'Bank Deposit':
+            cr_acc = self.bank_account.ledger
+            self.status = 'Resolved'
         else:
             raise ValueError('No such mode!')
 
-        voucher.save()
+        self.save()
 
-        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+        sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
         # filter bypasses rows cached by prefetching
-        for row in voucher.rows.filter():
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_allowed_ledger',
+                                                     'item__sales_ledger'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -629,112 +409,15 @@ class CreditNote(models.Model):
             entries.append(['dr', row.item.sales_ledger, sales_value])
             entries.append(['cr', cr_acc, row_total])
 
-            set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
+            set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        # Following set_ledger transactions stays outside for loop
-        # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
-        CreditNote.apply_inventory_transaction(voucher)
-
-    @staticmethod
-    def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
-            set_inventory_transactions(
-                row,
-                voucher.date,
-                ['dr', row.item.account, int(row.quantity)],
-            )
-
-    @property
-    def total(self):
-        grand_total = 0
-        for obj in self.rows.all():
-            total = obj.receipt
-            grand_total += total
-        return grand_total
-
-    def get_voucher_no(self):
-        return self.voucher_no
-
-    def mark_as_resolved(self):
-        if self.mode == 'Credit' and self.status == 'Issued':
-            self.status = 'Resolved'
-            # sale_voucher.apply_mark_as_paid()
-            self.save()
-        else:
-            raise ValueError('This sales cannot be mark as resolved!')
-
-    def cancel(self):
-        self.status = 'Cancelled'
-        self.save()
-        self.apply_cancel_transaction()
-
-    def get_voucher_discount_data(self):
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            return {'type': discount_obj.type, 'value': discount_obj.value}
-        else:
-            return {'type': self.discount_type, 'value': self.discount}
-
-    def get_voucher_meta(self):
-        dct = {
-            'sub_total': 0,
-            'discount': 0,
-            'non_taxable': 0,
-            'taxable': 0,
-            'tax': 0
-        }
-        rows_data = []
-        # gross_total_sum is subtotal after row discounts, before voucher discount and tax
-        gross_total_sum = 0
-        for row in self.rows.all():
-            row_data = {'quantity': row.quantity, 'rate': row.rate, 'total': row.rate * row.quantity}
-            row_data['row_discount'] = row.get_discount()[0] if row.has_discount() else 0
-            row_data['gross_total'] = row_data['total'] - row_data['row_discount']
-            row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
-            gross_total_sum += row_data['gross_total']
-            dct['sub_total'] += row_data['total']
-            rows_data.append(row_data)
-
-        voucher_discount_data = self.get_voucher_discount_data()
-
-        for row_data in rows_data:
-            if voucher_discount_data['type'] == 'Percent':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / 100
-            elif voucher_discount_data['type'] == 'Amount':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / gross_total_sum
-            else:
-                dividend_discount = 0
-            row_data['dividend_discount'] = dividend_discount
-            row_data['pure_total'] = row_data['gross_total'] - dividend_discount
-            row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
-
-            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
-            dct['tax'] += row_data['tax_amount']
-
-            if row_data['tax_amount']:
-                dct['taxable'] += row_data['pure_total']
-            else:
-                dct['non_taxable'] += row_data['pure_total']
-
-        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
-
-        for key, val in dct.items():
-            dct[key] = round(val, 2)
-
-        return dct
-
-    def apply_cancel_transaction(self):
-        content_type = ContentType.objects.get(model='creditnoterow')
-        row_ids = self.rows.values_list('id', flat=True)
-        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        self.apply_inventory_transaction()
 
     def __str__(self):
         return str(self.voucher_no) + '- ' + self.party.name
 
 
-class CreditNoteRow(models.Model):
+class CreditNoteRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     is_returned = models.BooleanField(default=True)
@@ -745,30 +428,11 @@ class CreditNoteRow(models.Model):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
-                                     related_name='credit_rows')
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_rows')
-
-    def get_voucher_no(self):
-        return self.voucher.voucher_no
-
-    def get_absolute_url(self):
-        return 'url'
-        # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
-
-        # def overdue_days(self):
-        #     if self.invoice.due_date and self.invoice.due_date < date.today():
-        #         overdue_days = date.today() - self.invoice.due_date
-        #         return overdue_days.days
-        #     return ''
-
-        # class Meta:
-        #     unique_together = ('invoice', 'cash_receipt')
-
-    def has_discount(self):
-        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
+                                     related_name='credit_note_rows')
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_note_rows')
 
 
-class DebitNote(models.Model):
+class DebitNote(TransactionModel, InvoiceModel):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -792,38 +456,45 @@ class DebitNote(models.Model):
     print_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        unique_together = ('company', 'voucher_no')
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
 
-    def is_issued(self):
-        return self.status != 'Draft'
+    def apply_inventory_transaction(self):
+        for row in self.rows.filter(is_returned=True).filter(
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                self.date,
+                ['cr', row.item.account, int(row.quantity)],
+            )
 
-    @staticmethod
-    def apply_transactions(voucher):
-        if voucher.status == 'Cancelled':
-            voucher.apply_cancel_transaction()
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.apply_cancel_transaction()
             return
-        if voucher.status == 'Draft':
+        if self.status == 'Draft':
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if voucher.mode == 'Credit':
-            dr_acc = voucher.party.supplier_account
-        elif voucher.mode == 'Cash':
-            dr_acc = get_account(voucher.company, 'Cash')
-            voucher.status = 'Resolved'
-        elif voucher.mode == 'Bank Deposit':
-            dr_acc = voucher.bank_account.ledger
-            voucher.status = 'Resolved'
+        if self.mode == 'Credit':
+            dr_acc = self.party.supplier_account
+        elif self.mode == 'Cash':
+            dr_acc = get_account(self.company, 'Cash')
+            self.status = 'Resolved'
+        elif self.mode == 'Bank Deposit':
+            dr_acc = self.bank_account.ledger
+            self.status = 'Resolved'
         else:
             raise ValueError('No such mode!')
 
-        voucher.save()
+        self.save()
 
-        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+        sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
-        for row in voucher.rows.all():
+        # filter bypasses rows cached by prefetching
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
+                                                     'item__purchase_ledger'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -857,110 +528,12 @@ class DebitNote(models.Model):
 
             entries.append(['cr', row.item.purchase_ledger, purchase_value])
             entries.append(['dr', dr_acc, row_total])
-            set_ledger_transactions(row, voucher.date, *entries, clear=True)
+            set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        DebitNote.apply_inventory_transaction(voucher)
-
-    @staticmethod
-    def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
-            set_inventory_transactions(
-                row,
-                voucher.transaction_date,
-                ['cr', row.item.account, int(row.quantity)],
-            )
-
-    @property
-    def total(self):
-        grand_total = 0
-        for obj in self.rows.all():
-            total = obj.receipt
-            grand_total += total
-        return grand_total
-
-    def get_voucher_no(self):
-        return self.voucher_no
-
-    def mark_as_resolved(self):
-        if self.mode == 'Credit' and self.status == 'Issued':
-            self.status = 'Resolved'
-            # sale_voucher.apply_mark_as_paid()
-            self.save()
-        else:
-            raise ValueError('This sales cannot be mark as resolved!')
-
-    def cancel(self):
-        self.status = 'Cancelled'
-        self.save()
-        self.apply_cancel_transaction()
-
-    def get_voucher_discount_data(self):
-        if self.discount_obj_id:
-            discount_obj = self.discount_obj
-            return {'type': discount_obj.type, 'value': discount_obj.value}
-        else:
-            return {'type': self.discount_type, 'value': self.discount}
-
-    def get_voucher_meta(self):
-        dct = {
-            'sub_total': 0,
-            'discount': 0,
-            'non_taxable': 0,
-            'taxable': 0,
-            'tax': 0
-        }
-        rows_data = []
-        # gross_total_sum is subtotal after row discounts, before voucher discount and tax
-        gross_total_sum = 0
-        for row in self.rows.all():
-            row_data = {'quantity': row.quantity, 'rate': row.rate, 'total': row.rate * row.quantity}
-            row_data['row_discount'] = row.get_discount()[0] if row.has_discount() else 0
-            row_data['gross_total'] = row_data['total'] - row_data['row_discount']
-            row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
-            gross_total_sum += row_data['gross_total']
-            dct['sub_total'] += row_data['total']
-            rows_data.append(row_data)
-
-        voucher_discount_data = self.get_voucher_discount_data()
-
-        for row_data in rows_data:
-            if voucher_discount_data['type'] == 'Percent':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / 100
-            elif voucher_discount_data['type'] == 'Amount':
-                dividend_discount = row_data['gross_total'] * voucher_discount_data['value'] / gross_total_sum
-            else:
-                dividend_discount = 0
-            row_data['dividend_discount'] = dividend_discount
-            row_data['pure_total'] = row_data['gross_total'] - dividend_discount
-            row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
-
-            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
-            dct['tax'] += row_data['tax_amount']
-
-            if row_data['tax_amount']:
-                dct['taxable'] += row_data['pure_total']
-            else:
-                dct['non_taxable'] += row_data['pure_total']
-
-        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
-
-        for key, val in dct.items():
-            dct[key] = round(val, 2)
-
-        return dct
-
-    def apply_cancel_transaction(self):
-        content_type = ContentType.objects.get(model='debitnoterow')
-        row_ids = self.rows.values_list('id', flat=True)
-        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-
-    def __str__(self):
-        return str(self.voucher_no) + '- ' + self.party.name
+        self.apply_inventory_transaction()
 
 
-class DebitNoteRow(models.Model):
+class DebitNoteRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(DebitNote, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     is_returned = models.BooleanField(default=True)
@@ -971,28 +544,9 @@ class DebitNoteRow(models.Model):
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
-                                     related_name='debit_rows')
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_rows')
-
-    def get_voucher_no(self):
-        return self.voucher.voucher_no
-
-    def get_absolute_url(self):
-        return 'url'
-        # return reverse_lazy('credit_voucher_edit', kwargs={'pk': self.cash_receipt_id})
-
-        # def overdue_days(self):
-        #     if self.invoice.due_date and self.invoice.due_date < date.today():
-        #         overdue_days = date.today() - self.invoice.due_date
-        #         return overdue_days.days
-        #     return ''
-
-        # class Meta:
-        #     unique_together = ('invoice', 'cash_receipt')
-
-    def has_discount(self):
-        return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
-
+                                     related_name='debit_note_rows')
+    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_note_rows')
+    
 
 class InvoiceDesign(models.Model):
     design = models.ImageField(upload_to='design/')
