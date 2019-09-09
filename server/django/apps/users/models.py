@@ -5,6 +5,8 @@ from django.utils import timezone
 from apps.users.signals import company_creation
 from separatedvaluesfield.models import SeparatedValuesField
 
+from .permission_modules import module_pairs
+
 ORGANIZATION_TYPES = (
     ('sole_proprietorship', 'Sole Proprietorship'), ('partnership', 'Partnership'), ('corporation', 'Corporation'),
     ('non_profit', 'Non-profit'))
@@ -75,104 +77,10 @@ class UserManager(BaseUserManager):
         )
 
 
-# TODO Simplify
-
-
-MODULES = (
-    ('Dashboard', 'Dashboard'),
-    ('ItemView', 'ItemView'),
-    ('ItemCreate', 'ItemCreate'),
-    ('ItemModify', 'ItemModify'),
-    ('ItemDelete', 'ItemDelete'),
-    ('UnitView', 'UnitView'),
-    ('UnitCreate', 'UnitCreate'),
-    ('UnitModify', 'UnitModify'),
-    ('UnitDelete', 'UnitDelete'),
-    ('PartyView', 'PartyView'),
-    ('PartyCreate', 'PartyCreate'),
-    ('PartyModify', 'PartyModify'),
-    ('PartyDelete', 'PartyDelete'),
-    ('AccountView', 'AccountView'),
-    ('AccountCreate', 'AccountCreate'),
-    ('AccountModify', 'AccountModify'),
-    ('AccountDelete', 'AccountDelete'),
-    ('TaxSchemeView', 'TaxSchemeView'),
-    ('TaxSchemeCreate', 'TaxSchemeCreate'),
-    ('TaxSchemeModify', 'TaxSchemeModify'),
-    ('TaxSchemeDelete', 'TaxSchemeDelete'),
-    ('SalesVoucherView', 'SalesVoucherView'),
-    ('SalesVoucherCreate', 'SalesVoucherCreate'),
-    ('SalesVoucherModify', 'SalesVoucherModify'),
-    ('SalesVoucherIssuedModify', 'SalesVoucherIssuedModify'),
-    ('SalesVoucherDelete', 'SalesVoucherDelete'),
-    ('PurchaseVoucherView', 'PurchaseVoucherView'),
-    ('PurchaseVoucherCreate', 'PurchaseVoucherCreate'),
-    ('PurchaseVoucherModify', 'PurchaseVoucherModify'),
-    ('PurchaseVoucherDelete', 'PurchaseVoucherDelete'),
-    ('CreditNoteView', 'CreditNoteView'),
-    ('CreditNoteCreate', 'CreditNoteCreate'),
-    ('CreditNoteModify', 'CreditNoteModify'),
-    ('CreditNoteDelete', 'CreditNoteDelete'),
-    ('DebitNoteView', 'DebitNoteView'),
-    ('DebitNoteCreate', 'DebitNoteCreate'),
-    ('DebitNoteModify', 'DebitNoteModify'),
-    ('CreditNoteDelete', 'DebitNoteDelete'),
-    ('CreditNoteIssuedModify', 'CreditNoteIssuedModify'),
-    ('ChequeVoucherView', 'ChequeVoucherView'),
-    ('ChequeVoucherCreate', 'ChequeVoucherCreate'),
-    ('ChequeVoucherModify', 'ChequeVoucherModify'),
-    ('ChequeVoucherDelete', 'ChequeVoucherDelete'),
-    ('ChequeDepositView', 'ChequeDepositView'),
-    ('ChequeDepositCreate', 'ChequeDepositCreate'),
-    ('ChequeDepositModify', 'ChequeDepositModify'),
-    ('ChequeDepositDelete', 'ChequeDepositDelete'),
-    ('BankAccountView', 'BankAccountView'),
-    ('BankAccountCreate', 'BankAccountCreate'),
-    ('BankAccountModify', 'BankAccountModify'),
-    ('BankAccountDelete', 'BankAccountDelete'),
-    ('InvoiceDesignView', 'InvoiceDesignView'),
-    ('InvoiceDesignCreate', 'InvoiceDesignCreate'),
-    ('InvoiceDesignModify', 'InvoiceDesignModify'),
-    ('CategoryView', 'CategoryView'),
-    ('CategoryCreate', 'CategoryCreate'),
-    ('CategoryModify', 'CategoryModify'),
-    ('JournalVoucherView', 'JournalVoucherView'),
-    ('JournalVoucherCreate', 'JournalVoucherCreate'),
-    ('JournalVoucherModify', 'JournalVoucherModify'),
-    ('BankBranchView', 'BankBranchView'),
-    ('BankBranchCreate', 'BankBranchCreate'),
-    ('BankBranchModify', 'BankBranchModify'),
-    ('BankBranchDelete', 'BankBranchDelete'),
-    ('InventoryCategoryView', 'InventoryCategoryView'),
-    ('InventoryCategoryCreate', 'InventoryCategoryCreate'),
-    ('InventoryCategoryModify', 'InventoryCategoryModify'),
-    ('InventoryCategoryDelete', 'InventoryCategoryDelete'),
-    ('BrandView', 'BrandView'),
-    ('BrandCreate', 'BrandCreate'),
-    ('BrandModify', 'BrandModify'),
-    ('BrandDelete', 'BrandDelete'),
-    ('SalesDiscountView', 'SalesDiscountView'),
-    ('SalesDiscountCreate', 'SalesDiscountCreate'),
-    ('SalesDiscountModify', 'SalesDiscountModify'),
-    ('SalesDiscountDelete', 'SalesDiscountDelete'),
-    ('PurchaseDiscountView', 'PurchaseDiscountView'),
-    ('PurchaseDiscountCreate', 'PurchaseDiscountCreate'),
-    ('PurchaseDiscountModify', 'PurchaseDiscountModify'),
-    ('PurchaseDiscountDelete', 'PurchaseDiscountDelete'),
-    ('InventoryAccountView', 'InventoryAccountView'),
-    ('InventoryAccountCreate', 'InventoryAccountCreate'),
-    ('InventoryAccountModify', 'InventoryAccountModify'),
-    ('InventoryAccountDelete', 'InventoryAccountDelete'),
-    ('BookView', 'BookView'),
-    ('BookCreate', 'BookCreate'),
-    ('BookModify', 'BookModify'),
-    ('LogEntryView', 'LogEntryView'),
-)
-
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = SeparatedValuesField(choices=MODULES, max_length=2000, blank=True, null=True, token=',')
+    modules = SeparatedValuesField(choices=module_pairs, max_length=2000, blank=True, null=True, token=',')
 
     def __str__(self):
         return self.name
