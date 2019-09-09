@@ -11,7 +11,7 @@ from apps.bank.serializers import BankAccountSerializer
 from apps.ledger.models import Party
 from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer
 from apps.product.models import Unit, Item
-from apps.product.serializers import ItemSalesSerializer
+from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
@@ -159,7 +159,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item, ItemSalesSerializer),
+        ('items', Item, ItemPurchaseSerializer),
     )
 
     def get_create_defaults(self, request=None):
@@ -350,7 +350,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item.objects.filter(can_be_purchased=True), ItemSalesSerializer),
+        ('items', Item.objects.filter(can_be_purchased=True), ItemPurchaseSerializer),
     )
 
     def get_queryset(self):

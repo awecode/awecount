@@ -43,18 +43,20 @@ class ItemSerializer(serializers.ModelSerializer):
 
 class ItemSalesSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source='selling_price')
+    is_trackable = serializers.ReadOnlyField()
 
     class Meta:
         model = Item
-        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code', 'description')
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code', 'description', 'is_trackable')
 
 
 class ItemPurchaseSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source='cost_price')
+    is_trackable = serializers.ReadOnlyField()
 
     class Meta:
         model = Item
-        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'description')
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'description', 'is_trackable')
 
 
 class BookSerializer(ItemSerializer):

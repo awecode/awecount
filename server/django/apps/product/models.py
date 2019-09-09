@@ -320,6 +320,10 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def is_trackable(self):
+        return self.track_inventory or self.fixed_asset
+
     def save(self, *args, **kwargs):
         if not self.purchase_ledger:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)

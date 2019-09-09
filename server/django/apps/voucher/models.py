@@ -329,13 +329,14 @@ class SalesVoucher(TransactionModel):
 
     @staticmethod
     def apply_inventory_transaction(voucher):
-        # TO DO check for item type consumable and non consumable
         for row in voucher.rows.all():
-            set_inventory_transactions(
-                row,
-                voucher.transaction_date,
-                ['cr', row.item.account, int(row.quantity)],
-            )
+            item = row.item
+            if item.track_inventory or item.fixed_asset:
+                set_inventory_transactions(
+                    row,
+                    voucher.transaction_date,
+                    ['cr', item.account, int(row.quantity)],
+                )
 
     def save(self, *args, **kwargs):
         if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
@@ -441,11 +442,13 @@ class PurchaseVoucher(TransactionModel):
     @staticmethod
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.all():
-            set_inventory_transactions(
-                row,
-                voucher.date,
-                ['dr', row.item.account, int(row.quantity)],
-            )
+            item = row.item
+            if item.track_inventory or item.fixed_asset:
+                set_inventory_transactions(
+                    row,
+                    voucher.date,
+                    ['dr', item.account, int(row.quantity)],
+                )
 
     @property
     def voucher_type(self):
@@ -754,7 +757,83 @@ class CreditNote(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
-        return
+        # entries = []
+        if voucher.status == 'Cancelled':
+            voucher.apply_cancel_transaction()
+            return
+        if voucher.status == 'Draft':
+            return
+
+        # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+        if voucher.mode == 'Credit':
+            cr_acc = voucher.party.customer_account
+        elif voucher.mode == 'Cash':
+            cr_acc = get_account(voucher.company, 'Cash')
+            voucher.status = 'Resolved'
+        elif voucher.mode == 'Bank Deposit':
+            cr_acc = voucher.bank_account.ledger
+            voucher.status = 'Resolved'
+        else:
+            raise ValueError('No such mode!')
+
+        voucher.save()
+
+        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+
+        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+
+        # filter bypasses rows cached by prefetching
+        for row in voucher.rows.filter():
+            entries = []
+
+            row_total = row.quantity * row.rate
+            sales_value = row_total + 0
+
+            row_discount = 0
+            if row.has_discount():
+                row_discount_amount, trade_discount = row.get_discount()
+                row_total -= row_discount_amount
+                if trade_discount:
+                    sales_value -= row_discount_amount
+                else:
+                    row_discount += row_discount_amount
+
+            if dividend_discount > 0:
+                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_total -= row_dividend_discount
+                if dividend_trade_discount:
+                    sales_value -= row_dividend_discount
+                else:
+                    row_discount += row_dividend_discount
+
+            if row_discount > 0:
+                entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
+
+            if row.tax_scheme:
+                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                if row_tax_amount:
+                    entries.append(['dr', row.tax_scheme.payable, row_tax_amount])
+                    row_total += row_tax_amount
+
+            entries.append(['dr', row.item.sales_ledger, sales_value])
+            entries.append(['cr', cr_acc, row_total])
+
+            set_ledger_transactions(row, voucher.transaction_date, *entries, clear=True)
+
+        # Following set_ledger transactions stays outside for loop
+        # set_ledger_transactions(voucher, voucher.transaction_date, *entries, clear=True)
+        CreditNote.apply_inventory_transaction(voucher)
+
+    @staticmethod
+    def apply_inventory_transaction(voucher):
+        for row in voucher.rows.all():
+            item = row.item
+            if item.track_inventory or item.fixed_asset:
+                set_inventory_transactions(
+                    row,
+                    voucher.date,
+                    ['dr', item.account, int(row.quantity)],
+                )
 
     @property
     def total(self):
@@ -906,7 +985,78 @@ class DebitNote(models.Model):
 
     @staticmethod
     def apply_transactions(voucher):
-        return
+        if voucher.status == 'Cancelled':
+            voucher.apply_cancel_transaction()
+            return
+        if voucher.status == 'Draft':
+            return
+
+        # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+        if voucher.mode == 'Credit':
+            dr_acc = voucher.party.supplier_account
+        elif voucher.mode == 'Cash':
+            dr_acc = get_account(voucher.company, 'Cash')
+            voucher.status = 'Resolved'
+        elif voucher.mode == 'Bank Deposit':
+            dr_acc = voucher.bank_account.ledger
+            voucher.status = 'Resolved'
+        else:
+            raise ValueError('No such mode!')
+
+        voucher.save()
+
+        sub_total_after_row_discounts = voucher.get_total_after_row_discounts()
+
+        dividend_discount, dividend_trade_discount = voucher.get_discount(sub_total_after_row_discounts)
+
+        for row in voucher.rows.all():
+            entries = []
+
+            row_total = row.quantity * row.rate
+            purchase_value = row_total + 0
+
+            row_discount = 0
+            if row.has_discount():
+                row_discount_amount, trade_discount = row.get_discount()
+                row_total -= row_discount_amount
+                if trade_discount:
+                    purchase_value -= row_discount_amount
+                else:
+                    row_discount += row_discount_amount
+
+            if dividend_discount > 0:
+                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_total -= row_dividend_discount
+                if dividend_trade_discount:
+                    purchase_value -= row_dividend_discount
+                else:
+                    row_discount += row_dividend_discount
+
+            if row_discount > 0:
+                entries.append(['cr', row.item.discount_received_ledger, row_discount])
+
+            if row.tax_scheme:
+                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                if row_tax_amount:
+                    entries.append(['cr', row.tax_scheme.receivable, row_tax_amount])
+                    row_total += row_tax_amount
+
+            entries.append(['cr', row.item.purchase_ledger, purchase_value])
+            entries.append(['dr', dr_acc, row_total])
+            set_ledger_transactions(row, voucher.date, *entries, clear=True)
+
+        DebitNote.apply_inventory_transaction(voucher)
+
+    @staticmethod
+    def apply_inventory_transaction(voucher):
+        for row in voucher.rows.all():
+            item = row.item
+            if item.track_inventory or item.fixed_asset:
+                set_inventory_transactions(
+                    row,
+                    voucher.transaction_date,
+                    ['cr', item.account, int(row.quantity)],
+                )
 
     @property
     def total(self):
