@@ -116,7 +116,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def mark_as_paid(self, request, pk):
         sale_voucher = self.get_object()
         try:
-            sale_voucher.mark_as_paid()
+            sale_voucher.mark_as_resolved(status='Paid')
             return Response({})
         except Exception as e:
             raise APIException(str(e))
@@ -221,7 +221,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
     def mark_as_paid(self, request, pk):
         purchase_voucher = self.get_object()
         try:
-            purchase_voucher.mark_as_paid()
+            purchase_voucher.mark_as_resolved(status='Paid')
             return Response({})
         except Exception as e:
             raise APIException(str(e))

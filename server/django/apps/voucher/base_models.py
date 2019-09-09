@@ -115,12 +115,11 @@ class InvoiceModel(models.Model):
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         
     def mark_as_resolved(self, status='Resolved'):
-        def mark_as_paid(self):
-            if self.mode == 'Credit' and self.status == 'Issued':
-                self.status = status
-                self.save()
-            else:
-                raise ValueError('This voucher cannot be mark as resolved!')
+        if self.mode == 'Credit' and self.status == 'Issued':
+            self.status = status
+            self.save()
+        else:
+            raise ValueError('This voucher cannot be mark as resolved!')
 
     
 
