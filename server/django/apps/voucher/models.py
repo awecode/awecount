@@ -924,6 +924,7 @@ class CreditNote(models.Model):
 class CreditNoteRow(models.Model):
     voucher = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    is_returned = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
@@ -1147,6 +1148,7 @@ class DebitNote(models.Model):
 class DebitNoteRow(models.Model):
     voucher = models.ForeignKey(DebitNote, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    is_returned = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
