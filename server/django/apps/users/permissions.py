@@ -20,16 +20,17 @@ class ModuleAccessPermission(permissions.BasePermission):
         modify_permission = '{}Modify'.format(_model_name)
         cancel_permission = '{}Cancel'.format(_model_name)
 
-        if request.method == 'POST' and cancel_permission in MODULES and cancel_permission not in modules:
-            raise PermissionDenied({'detail': 'User does not have permission to cancel %s.' % _model_name})
-        
-        if request.method == 'GET' and list_permission not in modules:
-            raise PermissionDenied({'detail': self.message})
+        if view.action == 'cancel' and request.method == 'POST' and cancel_permission in MODULES:
+            if cancel_permission not in modules:
+                raise PermissionDenied({'detail': 'User does not have permission to cancel %s.' % _model_name})
+        else:
+            if request.method == 'GET' and list_permission not in modules:
+                raise PermissionDenied({'detail': self.message})
 
-        if request.method == 'POST' and create_permission not in modules:
-            raise PermissionDenied({'detail': 'User does not have permission to create %s.' % _model_name})
+            if request.method == 'POST' and create_permission not in modules:
+                raise PermissionDenied({'detail': 'User does not have permission to create %s.' % _model_name})
 
-        if request.method == 'PUT' and modify_permission not in modules:
-            raise PermissionDenied({'detail': 'User does not have permission to update %s.' % _model_name})
+            if request.method == 'PUT' and modify_permission not in modules:
+                raise PermissionDenied({'detail': 'User does not have permission to update %s.' % _model_name})
 
         return True

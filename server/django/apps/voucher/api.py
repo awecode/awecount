@@ -188,6 +188,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
             return PurchaseVoucherListSerializer
         return PurchaseVoucherCreateSerializer
 
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                                     'tax_scheme'))).select_related(
+            'discount_obj', 'bank_account')
+        return Response(PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):
         purchase_voucher = get_object_or_404(PurchaseVoucher, pk=pk)
@@ -204,6 +213,24 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         return Response(PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                                           fiscal_year_id=request.query_params.get('fiscal_year'),
                                                                           queryset=qs)).data)
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_paid(self, request, pk):
+        purchase_voucher = self.get_object()
+        try:
+            purchase_voucher.mark_as_paid()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        purchase_voucher = self.get_object()
+        try:
+            purchase_voucher.cancel()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
 
 
 class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
