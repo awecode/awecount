@@ -62,7 +62,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.is_issued():
-            if not request.company.enable_sales_voucher_update:
+            if not request.company.enable_sales_invoice_update:
                 raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
             permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
             self.request.user.check_perm(permission)
@@ -80,12 +80,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+        data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_sales_invoice_update
+        return Response(data)
 
     def get_defaults(self, request=None):
         data = {
             'fields': {
-                'can_update_issued': request.company.enable_sales_voucher_update
+                'can_update_issued': request.company.enable_sales_invoice_update
             },
         }
         return data
@@ -308,7 +310,9 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             Prefetch('rows',
                      CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+        data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_credit_note_update
+        return Response(data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_resolved(self, request, pk):
@@ -410,7 +414,9 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             Prefetch('rows',
                      DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+        data = DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_debit_note_update
+        return Response(data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_resolved(self, request, pk):

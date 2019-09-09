@@ -34,7 +34,7 @@ class Company(models.Model):
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='sole_proprietorship')
     tax_registration_number = models.IntegerField(blank=True, null=True)
     force_preview_before_save = models.BooleanField(default=False)
-    enable_sales_voucher_update = models.BooleanField(default=False)
+    enable_sales_invoice_update = models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
     enable_debit_note_update = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
