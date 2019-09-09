@@ -63,7 +63,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         obj = self.get_object()
         if obj.is_issued():
             if not request.company.enable_sales_invoice_update:
-                raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
+                raise APIException({'detail': 'Issued sales invoices can\'t be updated'})
             permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
             self.request.user.check_perm(permission)
         return super().update(request, *args, **kwargs)
@@ -360,7 +360,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         obj = self.get_object()
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
-                raise APIException({'detail': 'Issued credit notes can\'t be updated'})
+                raise APIException({'detail': 'Issued debit notes can\'t be updated'})
             permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
             self.request.user.check_perm(permission)
         return super().update(request, *args, **kwargs)
