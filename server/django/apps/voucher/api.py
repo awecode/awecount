@@ -95,7 +95,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
     def get_create_defaults(self, request=None):
         voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
         data = {
-            'fields': {
+            'options': {
                 'voucher_no': voucher_no,
             }
         }
@@ -106,7 +106,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         if not obj.voucher_no:
             voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
             return {
-                'fields': {
+                'options': {
                     'voucher_no': voucher_no,
                 }
             }
@@ -165,7 +165,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
     def get_create_defaults(self, request=None):
         voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
         data = {
-            'fields': {
+            'options': {
                 'voucher_no': voucher_no,
             }
         }
@@ -176,7 +176,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpd
         if not obj.voucher_no:
             voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
             return {
-                'fields': {
+                'options': {
                     'voucher_no': voucher_no,
                 }
             }
@@ -256,7 +256,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     def get_create_defaults(self, request=None):
         voucher_no = get_next_voucher_no(CreditNote, request.company_id)
         data = {
-            'fields': {
+            'options': {
                 'voucher_no': voucher_no,
             }
         }
@@ -274,7 +274,7 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         }
         if not obj.voucher_no:
             voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
-            data['fields'] = {
+            data['options'] = {
                 'voucher_no': voucher_no,
             }
 
@@ -361,7 +361,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     def get_create_defaults(self, request=None):
         voucher_no = get_next_voucher_no(DebitNote, request.company_id)
         data = {
-            'fields': {
+            'options': {
                 'voucher_no': voucher_no,
             }
         }
@@ -379,7 +379,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         }
         if not obj.voucher_no:
             voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
-            data['fields'] = {
+            data['options'] = {
                 'voucher_no': voucher_no,
             }
 
