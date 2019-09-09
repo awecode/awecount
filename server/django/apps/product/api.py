@@ -28,7 +28,7 @@ class ItemViewSet(InputChoiceMixin, CreateListRetrieveUpdateViewSet):
 
     @action(detail=True)
     def details(self, request, pk=None):
-        item = get_object_or_404(Item, pk=pk)
+        item = get_object_or_404(queryset=super().get_queryset(), pk=pk)
         serializer = self.detail_serializer_class(item, context={'request': request}).data
         return Response(serializer)
 

@@ -1,5 +1,7 @@
 from inspect import isclass
 
+from django.core.exceptions import ValidationError
+
 from rest_framework import mixins, viewsets, status, serializers
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -96,4 +98,7 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
 
     def perform_create(self, serializer):
         serializer.validated_data['company_id'] = self.request.company_id
-        serializer.save()
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})

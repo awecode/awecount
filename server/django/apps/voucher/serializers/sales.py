@@ -145,8 +145,6 @@ class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
 
 
 class InvoiceDesignSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
     class Meta:
         model = InvoiceDesign
         exclude = ('company',)

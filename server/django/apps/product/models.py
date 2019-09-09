@@ -384,7 +384,7 @@ class Item(models.Model):
             account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
             account.save()
             self.account = account
-
+        self.validate_unique()
         super().save(*args, **kwargs)
 
     class Meta:

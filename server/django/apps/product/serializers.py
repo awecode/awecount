@@ -6,11 +6,9 @@ from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
 from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category
-from .validators import CustomUniqueTogetherValidator
 
 
 class ItemSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
     unit_id = serializers.IntegerField(required=False)
     extra_fields = serializers.ReadOnlyField(source='category.extra_fields')
@@ -32,13 +30,6 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         exclude = ('company', 'tax_scheme', 'unit',)
-        validators = [
-            CustomUniqueTogetherValidator(
-                queryset=Item.objects.all(),
-                fields=('code', 'company_id',),
-                message="Item with code exists."
-            )
-        ]
 
 
 class ItemSalesSerializer(serializers.ModelSerializer):
@@ -82,15 +73,12 @@ class BookSerializer(ItemSerializer):
 
 
 class UnitSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
     class Meta:
         model = Unit
         exclude = ('company',)
 
 
 class InventoryCategorySerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
     default_unit_id = serializers.IntegerField(required=False)
     default_tax_scheme_id = serializers.IntegerField(required=False)
 
@@ -100,8 +88,6 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
 
 class BrandSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
     class Meta:
         model = Brand
         exclude = ('company',)
@@ -114,7 +100,6 @@ class InventoryAccountSerializer(serializers.ModelSerializer):
 
 
 class ItemDetailSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
     brand = BrandSerializer()
     category = InventoryCategorySerializer()
     unit = UnitSerializer()

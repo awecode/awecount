@@ -57,8 +57,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    company_id = serializers.IntegerField()
-
     class Meta:
         model = Account
         exclude = ('company',)

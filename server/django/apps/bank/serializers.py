@@ -62,7 +62,6 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
 
 class ChequeVoucherSerializer(serializers.ModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
-    company_id = serializers.IntegerField()
     payee = serializers.SerializerMethodField()
     party_name = serializers.ReadOnlyField(source='party.name')
     amount_in_words = serializers.SerializerMethodField()
