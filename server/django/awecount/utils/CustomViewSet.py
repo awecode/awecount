@@ -1,6 +1,6 @@
 from inspect import isclass
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, SuspiciousOperation
 
 from rest_framework import mixins, viewsets, status, serializers
 from rest_framework.exceptions import APIException
@@ -98,6 +98,15 @@ class CreateListRetrieveUpdateViewSet(CompanyViewSetMixin,
 
     def perform_create(self, serializer):
         serializer.validated_data['company_id'] = self.request.company_id
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})
+
+    def perform_update(self, serializer):
+        if hasattr(serializer.instance.__class__, 'company_id'):
+            if serializer.instance.company_id != self.request.company_id:
+                raise SuspiciousOperation('Modifying object owned by other company!')
         try:
             serializer.save()
         except ValidationError as e:
