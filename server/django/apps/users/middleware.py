@@ -15,15 +15,15 @@ class CompanyMiddleware(object):
                 valid_data = AccessToken(raw_token)
                 user_id = valid_data['user_id']
                 try:
-                    request.user = User.objects.get(pk=user_id)
+                    request.user = User.objects.prefetch_related('roles').get(pk=user_id)
                 except User.DoesNotExist:
                     pass
             except:
                 pass
 
         if request.user.is_authenticated:
+            request.__class__.role_modules = request.user.role_modules
             try:
-                #TODO Use request.company_id instead of request.company 
                 if request.user.company_id:
                     request.__class__.company_id = request.user.company_id
                 if request.user.company:
