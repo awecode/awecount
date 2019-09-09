@@ -1,6 +1,7 @@
 from auditlog.registry import auditlog
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.bank.models import BankAccount
@@ -329,14 +330,12 @@ class SalesVoucher(TransactionModel):
 
     @staticmethod
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.all():
-            item = row.item
-            if item.track_inventory or item.fixed_asset:
-                set_inventory_transactions(
-                    row,
-                    voucher.transaction_date,
-                    ['cr', item.account, int(row.quantity)],
-                )
+        for row in voucher.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                voucher.transaction_date,
+                ['cr', row.item.account, int(row.quantity)],
+            )
 
     def save(self, *args, **kwargs):
         if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
@@ -441,14 +440,12 @@ class PurchaseVoucher(TransactionModel):
 
     @staticmethod
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.all():
-            item = row.item
-            if item.track_inventory or item.fixed_asset:
-                set_inventory_transactions(
-                    row,
-                    voucher.date,
-                    ['dr', item.account, int(row.quantity)],
-                )
+        for row in voucher.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                voucher.transaction_date,
+                ['dr', row.item.account, int(row.quantity)],
+            )
 
     @property
     def voucher_type(self):
@@ -826,14 +823,13 @@ class CreditNote(models.Model):
 
     @staticmethod
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.all():
-            item = row.item
-            if item.track_inventory or item.fixed_asset:
-                set_inventory_transactions(
-                    row,
-                    voucher.date,
-                    ['dr', item.account, int(row.quantity)],
-                )
+        for row in voucher.rows.filter(is_returned=True).filter(
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                voucher.date,
+                ['dr', row.item.account, int(row.quantity)],
+            )
 
     @property
     def total(self):
@@ -1050,14 +1046,13 @@ class DebitNote(models.Model):
 
     @staticmethod
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.all():
-            item = row.item
-            if item.track_inventory or item.fixed_asset:
-                set_inventory_transactions(
-                    row,
-                    voucher.transaction_date,
-                    ['cr', item.account, int(row.quantity)],
-                )
+        for row in voucher.rows.filter(is_returned=True).filter(
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+            set_inventory_transactions(
+                row,
+                voucher.transaction_date,
+                ['cr', row.item.account, int(row.quantity)],
+            )
 
     @property
     def total(self):
