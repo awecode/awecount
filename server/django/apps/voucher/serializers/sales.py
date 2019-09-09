@@ -127,21 +127,6 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         exclude = ('company', 'user', 'bank_account',)
 
 
-class CreditNoteDetailSerializer(serializers.ModelSerializer):
-    party_name = serializers.ReadOnlyField(source='party.name')
-    bank_account_name = serializers.ReadOnlyField(source='bank_account.__str__()')
-    discount_obj = SalesDiscountSerializer()
-    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
-    address = serializers.ReadOnlyField(source='party.address')
-
-    rows = SalesVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
-
-    class Meta:
-        model = CreditNote
-        exclude = ('company', 'user', 'bank_account',)
-
-
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source='party.name')
 

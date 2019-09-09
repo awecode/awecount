@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.voucher.serializers import PurchaseDiscountSerializer, PurchaseVoucherRowDetailSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -95,3 +96,18 @@ class DebitNoteListSerializer(serializers.ModelSerializer):
     class Meta:
         model = DebitNote
         fields = ('id', 'voucher_no', 'party', 'date',)
+
+
+class DebitNoteDetailSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.__str__()')
+    discount_obj = PurchaseDiscountSerializer()
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    address = serializers.ReadOnlyField(source='party.address')
+
+    rows = PurchaseVoucherRowDetailSerializer(many=True)
+    tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
+
+    class Meta:
+        model = DebitNote
+        exclude = ('company', 'user', 'bank_account',)
