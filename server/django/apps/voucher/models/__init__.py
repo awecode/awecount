@@ -366,7 +366,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(['dr', row.item.discount_allowed_ledger, row_discount])
+                entries.append(['cr', row.item.discount_allowed_ledger, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
@@ -486,7 +486,7 @@ class DebitNote(TransactionModel, InvoiceModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(['cr', row.item.discount_received_ledger, row_discount])
+                entries.append(['dr', row.item.discount_received_ledger, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
