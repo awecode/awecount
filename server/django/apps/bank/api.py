@@ -33,7 +33,7 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdat
 
     @action(detail=False)
     def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(ChequeDeposit, request.company.id)
+        voucher_no = get_next_voucher_no(ChequeDeposit, request.company_id)
         return Response({'voucher_no': voucher_no})
 
 
