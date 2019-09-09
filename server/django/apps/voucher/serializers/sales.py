@@ -49,11 +49,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if instance and instance.fiscal_year_id:
             return
         fiscal_year = self.context['request'].company.current_fiscal_year
-        if fiscal_year.includes(validated_data.get('transaction_date')):
+        if fiscal_year.includes(validated_data.get('date')):
             validated_data['fiscal_year_id'] = fiscal_year.id
         else:
             raise ValidationError(
-                {'transaction_date': ['Date not in current fiscal year.']},
+                {'date': ['Date not in current fiscal year.']},
             )
 
     def validate(self, data):
@@ -132,7 +132,7 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party', 'transaction_date', 'status', 'customer_name')
+        fields = ('id', 'voucher_no', 'party', 'date', 'status', 'customer_name')
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
@@ -159,4 +159,4 @@ class SalesBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'transaction_date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export')
+        fields = ('id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export')

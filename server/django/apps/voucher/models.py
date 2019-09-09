@@ -63,7 +63,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     address = models.TextField(blank=True, null=True)
 
     issue_datetime = models.DateTimeField(default=timezone.now)
-    transaction_date = models.DateField()
+    date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
 
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
@@ -88,20 +88,16 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
     @property
     def buyer_name(self):
-        if self.party:
+        if self.party_id:
             return self.party.name
         return self.customer_name
-
-    # @property
-    # def date(self):
-    #     return self.transaction_date.strftime('%m-%b-%Y')
 
 
     def apply_inventory_transactions(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
-                self.transaction_date,
+                self.date,
                 ['cr', row.item.account, int(row.quantity)],
             )
 
@@ -167,7 +163,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             entries.append(['cr', row.item.sales_ledger, sales_value])
             entries.append(['dr', dr_acc, row_total])
 
-            set_ledger_transactions(row, self.transaction_date, *entries, clear=True)
+            set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
     def save(self, *args, **kwargs):
