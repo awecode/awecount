@@ -92,7 +92,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return self.party.name
         return self.customer_name
 
-
     def apply_inventory_transactions(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
@@ -542,7 +541,7 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel):
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='debit_note_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_note_rows')
-    
+
 
 class InvoiceDesign(models.Model):
     design = models.ImageField(upload_to='design/')
@@ -587,23 +586,22 @@ class JournalVoucher(models.Model):
     def get_voucher_no(self):
         return self.voucher_no
 
-    @staticmethod
-    def apply_transactions(voucher):
-        if voucher.status == 'Cancelled':
-            voucher.apply_cancel_transaction()
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.apply_cancel_transaction()
             return
-        if not voucher.status == 'Approved':
+        if not self.status == 'Approved':
             return
 
         entries = []
         # filter bypasses rows cached by prefetching
-        for row in voucher.rows.filter():
+        for row in self.rows.filter().select_related('account'):
             amount = row.dr_amount if row.type == 'Dr' else row.cr_amount
             entries.append([row.type.lower(), row.account, amount])
-        set_ledger_transactions(voucher, voucher.date, *entries, clear=True)
+        # set_ledger_transactions needs to be outside the for loop for a balanced entry (Dr/Cr match)
+        set_ledger_transactions(self, self.date, *entries, clear=True)
         return
 
-    @staticmethod
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='journalvoucher')
         row_ids = self.rows.values_list('id', flat=True)
@@ -611,8 +609,8 @@ class JournalVoucher(models.Model):
 
 
 class JournalVoucherRow(models.Model):
-    types = [('Dr', 'Dr'), ('Cr', 'Cr')]
-    type = models.CharField(choices=types, default='Dr', max_length=2)
+    TYPES = [('Dr', 'Dr'), ('Cr', 'Cr')]
+    type = models.CharField(choices=TYPES, default='Dr', max_length=2)
     account = models.ForeignKey(Account, related_name='account_rows', on_delete=models.CASCADE)
     description = models.TextField(null=True, blank=True)
     dr_amount = models.FloatField(null=True, blank=True)
