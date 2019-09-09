@@ -18,7 +18,7 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = RoleSerializer(read_only=True)
+    roles = serializers.ReadOnlyField(source='role_modules')
 
     class Meta:
         model = User
