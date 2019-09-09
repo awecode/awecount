@@ -433,8 +433,7 @@ class PurchaseVoucher(TransactionModel):
 
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='purchasesvoucherrow')
-        # TODO Use self.rows.values_list('id', flat=True)
-        row_ids = [row.id for row in self.rows.all()]
+        row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
@@ -911,7 +910,10 @@ class CreditNote(models.Model):
         return dct
 
     def apply_cancel_transaction(self):
-        pass
+        content_type = ContentType.objects.get(model='creditnoterow')
+        row_ids = self.rows.values_list('id', flat=True)
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
     def __str__(self):
         return str(self.voucher_no) + '- ' + self.party.name
@@ -1134,7 +1136,10 @@ class DebitNote(models.Model):
         return dct
 
     def apply_cancel_transaction(self):
-        pass
+        content_type = ContentType.objects.get(model='debitnoterow')
+        row_ids = self.rows.values_list('id', flat=True)
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
     def __str__(self):
         return str(self.voucher_no) + '- ' + self.party.name
@@ -1236,7 +1241,7 @@ class JournalVoucher(models.Model):
     @staticmethod
     def apply_cancel_transaction(self):
         content_type = ContentType.objects.get(model='journalvoucher')
-        row_ids = [row.id for row in self.rows.all()]
+        row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
 
