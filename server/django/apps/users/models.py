@@ -36,6 +36,7 @@ class Company(models.Model):
     force_preview_before_save = models.BooleanField(default=False)
     enable_sales_voucher_update = models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
+    enable_debit_note_update = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
 
     def __str__(self):
@@ -45,7 +46,7 @@ class Company(models.Model):
         verbose_name_plural = 'Companies'
 
     def get_fiscal_years(self):
-        # TODO Assign fiscal years to companies (m2m), return related fiscal years here 
+        # TODO Assign fiscal years to companies (m2m), return related fiscal years here
         return sorted(FiscalYear.objects.all(), key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
                       reverse=True)
 

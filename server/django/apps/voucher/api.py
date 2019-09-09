@@ -16,7 +16,8 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet
-from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer
+from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
+    DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CreateListRetrieveUpdateViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -371,7 +372,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
                 'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
             },
             'fields': {
-                'can_update_issued': request.company.enable_credit_note_update
+                'can_update_issued': request.company.enable_debit_note_update
             }
         }
         return data
@@ -392,7 +393,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
         data = {
             'options': {
-                'sales_invoice_objs': invoice_objs,
+                'purchase_invoice_objs': invoice_objs,
             }
         }
         if not obj.voucher_no:
@@ -407,9 +408,9 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
     def details(self, request, pk):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+        return Response(DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_resolved(self, request, pk):
