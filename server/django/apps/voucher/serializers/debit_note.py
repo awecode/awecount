@@ -20,7 +20,7 @@ class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mode
 
 
 class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
-                                 serializers.ModelSerializer):
+                                serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = DebitNoteRowSerializer(many=True)
 

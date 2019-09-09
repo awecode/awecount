@@ -354,7 +354,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
                 'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
             },
             'fields': {
-                'can_update_issued': request.company.enable_credit_note_update
+                'can_update_issued': request.company.enable_debit_note_update
             }
         }
         return data
@@ -375,7 +375,7 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
             invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
         data = {
             'options': {
-                'sales_invoice_objs': invoice_objs,
+                'purchase_invoice_objs': invoice_objs,
             }
         }
         if not obj.voucher_no:
