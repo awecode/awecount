@@ -11,21 +11,19 @@ class ModuleAccessPermission(permissions.BasePermission):
             _model_name = model.key
         else:
             _model_name = model.__name__
-        if not request.user.role:
-            raise PermissionDenied({'non_field_errors': ['Please set role for user.']})
-        modules = request.user.role.modules
+        modules = request.user.role_modules
 
         list_permission = '{}View'.format(_model_name)
         create_permission = '{}Create'.format(_model_name)
         modify_permission = '{}Modify'.format(_model_name)
 
         if request.method == 'GET' and list_permission not in modules:
-            raise PermissionDenied({'non_field_errors': [self.message]})
+            raise PermissionDenied({'detail': self.message})
 
         if request.method == 'POST' and create_permission not in modules:
-            raise PermissionDenied({'non_field_errors': ['User does not have permission to create %s' % _model_name]})
+            raise PermissionDenied({'detail': 'User does not have permission to create %s' % _model_name})
 
         if request.method == 'PUT' and modify_permission not in modules:
-            raise PermissionDenied({'non_field_errors': ['User does not have permission to update %s' % _model_name]})
+            raise PermissionDenied({'detail': 'User does not have permission to update %s' % _model_name})
 
         return True

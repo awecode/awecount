@@ -74,7 +74,7 @@ class CustomUserAdmin(UserAdmin):
                               'date_joined',
                               'last_login',
                               'company',
-                              'role',
+                              'roles',
                               'is_superuser',)}),
                  )
     add_fieldsets = ((None,

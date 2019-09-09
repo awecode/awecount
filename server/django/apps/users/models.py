@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import APIException
 
 from apps.users.signals import company_creation
 from separatedvaluesfield.models import SeparatedValuesField
@@ -77,7 +78,6 @@ class UserManager(BaseUserManager):
         )
 
 
-
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
     modules = SeparatedValuesField(choices=module_pairs, max_length=2000, blank=True, null=True, token=',')
@@ -91,13 +91,20 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='users')
+    roles = models.ManyToManyField(Role, blank=True, related_name='users')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', ]
 
     objects = UserManager()
+
+    @property
+    def role_modules(self):
+        modules = []
+        for role in self.roles.all():
+            modules.extend(role.modules)
+        return modules
 
     def __str__(self):
         return self.full_name
@@ -110,3 +117,7 @@ class User(AbstractBaseUser):
 
     def has_perm(self, perm, obj=None):
         return True
+
+    def check_perm(self, perm):
+        if perm not in self.role_modules:
+            raise APIException({'detail': 'User does not have enough permissions to perform the action.'})

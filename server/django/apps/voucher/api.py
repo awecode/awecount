@@ -63,11 +63,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CreateListRetrieveUpdate
         if obj.is_issued():
             if not request.company.enable_sales_voucher_update:
                 raise APIException({'non_field_errors': ['Issued sales invoices can\'t be updated']})
-            _model_name = self.get_queryset().model.__name__
-            permission = '{}IssuedModify'.format(_model_name)
-            modules = request.user.role.modules
-            if permission not in modules:
-                raise APIException({'non_field_errors': ['User do not have permission to issue voucher']})
+            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
+            self.request.user.check_perm(permission)
         return super().update(request, *args, **kwargs)
 
     @action(detail=True, url_path='journal-entries')
@@ -230,11 +227,8 @@ class CreditNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
                 raise APIException({'detail': 'Issued credit notes can\'t be updated'})
-            _model_name = self.get_queryset().model.__name__
-            permission = '{}IssuedModify'.format(_model_name)
-            modules = request.user.role.modules
-            if permission not in modules:
-                raise APIException({'detail': 'User do not have permission to issue voucher'})
+            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
+            self.request.user.check_perm(permission)
         return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
@@ -335,11 +329,8 @@ class DebitNoteViewSet(DeleteRows, CreateListRetrieveUpdateViewSet):
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
                 raise APIException({'detail': 'Issued credit notes can\'t be updated'})
-            _model_name = self.get_queryset().model.__name__
-            permission = '{}IssuedModify'.format(_model_name)
-            modules = request.user.role.modules
-            if permission not in modules:
-                raise APIException({'detail': 'User do not have permission to issue voucher'})
+            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
+            self.request.user.check_perm(permission)
         return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
