@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from apps.bank.models import BankAccount
 from apps.bank.serializers import BankAccountSerializer
 from apps.ledger.models import Party
-from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer
+from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer, JournalEntriesSerializer
 from apps.product.models import Unit, Item
 from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
@@ -339,6 +339,12 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         obj.save()
         return Response({'print_count': obj.print_count})
 
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        credit_note = get_object_or_404(CreditNote, pk=pk)
+        journals = credit_note.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)
+
 
 class DebitNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = DebitNoteCreateSerializer
@@ -442,6 +448,12 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         obj.print_count += 1
         obj.save()
         return Response({'print_count': obj.print_count})
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        debit_note = get_object_or_404(DebitNote, pk=pk)
+        journals = debit_note.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)
 
 
 class JournalVoucherViewSet(DeleteRows, CRULViewSet):

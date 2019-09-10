@@ -138,6 +138,14 @@ class SalesJournalEntrySerializer(JournalEntrySerializer):
         return TransactionSerializer(transactions, many=True).data
 
 
+class JournalEntriesSerializer(JournalEntrySerializer):
+    transactions = serializers.SerializerMethodField()
+
+    def get_transactions(self, obj):
+        transactions = obj.transactions.all()
+        return TransactionSerializer(transactions, many=True).data
+
+
 class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
