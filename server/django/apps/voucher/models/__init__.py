@@ -66,7 +66,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         return self.customer_name
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
+                'item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -178,8 +179,14 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
+    @property
+    def buyer_name(self):
+        if self.party_id:
+            return self.party.name
+
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
+                'item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -308,7 +315,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -428,7 +435,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,

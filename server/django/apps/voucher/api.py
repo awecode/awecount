@@ -15,7 +15,7 @@ from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.filters import SalesVoucherDateFilterSet
+from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
@@ -29,7 +29,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
-    CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer
+    CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -532,5 +532,18 @@ class SalesBookViewSet(CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'party')
+        return qs.order_by('-pk')
+
+
+class PurchaseBookViewSet(CRULViewSet):
+    serializer_class = PurchaseBookSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = PurchaseVoucherDateFilterSet
+
+    def get_queryset(self):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')

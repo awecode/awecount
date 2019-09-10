@@ -5,7 +5,7 @@ from apps.tax.serializers import TaxSchemeSerializer
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
-from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, CreditNote
+from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, CreditNote, PurchaseVoucher
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):
@@ -158,3 +158,13 @@ class SalesBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ('id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export')
+
+
+class PurchaseBookSerializer(serializers.ModelSerializer):
+    sellers_name = serializers.ReadOnlyField(source='party.name')
+    sellers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+
+    class Meta:
+        model = PurchaseVoucher
+        fields = ('id', 'date', 'sellers_name', 'sellers_pan', 'voucher_no', 'voucher_meta',)
