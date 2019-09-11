@@ -8,15 +8,17 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from apps.ledger.models import Account
+from apps.ledger.serializers import AccountSerializer
+from apps.tax.models import TaxScheme
+from apps.tax.serializers import TaxSchemeSerializer
 from .filters import ItemFilterSet
-from .models import Item, JournalEntry, Category
+from .models import Item, JournalEntry, Category, Brand, Unit
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer
-
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
-
-
+from .models import Category as InventoryCategory
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
@@ -25,6 +27,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     search_fields = ['name', 'code', 'description', 'search_data']
     filterset_class = ItemFilterSet
     detail_serializer_class = ItemDetailSerializer
+    collections = (
+        ('brands', Brand, BrandSerializer),
+        ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
+        ('units', Unit, UnitSerializer),
+        ('accounts', Account, AccountSerializer),
+        ('tax_scheme', TaxScheme, TaxSchemeSerializer),
+        ('discount_allowed_accounts',Account.objects.filter(category__name='Discount Expenses') , AccountSerializer),
+        ('discount_received_accounts',Account.objects.filter(category__name='Discount Income') , AccountSerializer)
+    )
 
     @action(detail=True)
     def details(self, request, pk=None):

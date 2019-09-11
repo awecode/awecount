@@ -28,7 +28,6 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
 
 
 class AccountViewSet(InputChoiceMixin, CRULViewSet):
-    queryset = Account.objects.all()
     serializer_class = AccountSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('code', 'name',)
@@ -44,16 +43,6 @@ class AccountViewSet(InputChoiceMixin, CRULViewSet):
         queryset = queryset.filter(category__name=category_name, company=self.request.company)
         serializer = self.get_serializer(queryset, many=True)
         return serializer.data
-
-    @action(detail=False)
-    def discount_allowed(self, request):
-        data = self.get_accounts_by_category_name('Discount Expenses')
-        return Response(data)
-
-    @action(detail=False)
-    def discount_received(self, request):
-        data = self.get_accounts_by_category_name('Discount Income')
-        return Response(data)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
