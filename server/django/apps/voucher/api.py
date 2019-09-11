@@ -8,8 +8,9 @@ from rest_framework.response import Response
 
 from apps.bank.models import BankAccount
 from apps.bank.serializers import BankAccountSerializer
-from apps.ledger.models import Party
-from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer, JournalEntriesSerializer
+from apps.ledger.models import Party, Account
+from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer, JournalEntriesSerializer, \
+    AccountSerializer
 from apps.product.models import Unit, Item
 from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
@@ -462,8 +463,12 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     serializer_class = JournalVoucherCreateSerializer
     model = JournalVoucher
     row = JournalVoucherRow
+    collections = (
+        ('accounts', Account, AccountSerializer),
 
-    def get_queryset(self):
+    )
+
+    def get_queryset(self, **kwargs):
         queryset = super(JournalVoucherViewSet, self).get_queryset()
         return queryset
 
