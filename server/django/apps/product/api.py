@@ -64,6 +64,13 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
 
 class InventoryCategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
+    collections = (
+        ('units', Unit, UnitSerializer),
+        ('accounts', Account, AccountSerializer),
+        ('tax_scheme', TaxScheme, TaxSchemeSerializer),
+        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountSerializer),
+        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountSerializer)
+    )
 
 
 class BrandViewSet(InputChoiceMixin, CRULViewSet):
