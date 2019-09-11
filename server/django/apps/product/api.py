@@ -33,8 +33,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('units', Unit, UnitSerializer),
         ('accounts', Account, AccountSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeSerializer),
-        ('discount_allowed_accounts',Account.objects.filter(category__name='Discount Expenses') , AccountSerializer),
-        ('discount_received_accounts',Account.objects.filter(category__name='Discount Income') , AccountSerializer)
+        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountSerializer),
+        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountSerializer)
     )
 
     @action(detail=True)
@@ -45,8 +45,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
+    collections = (
+        ('brands', Brand, BrandSerializer),
+    )
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         queryset = Item.objects.filter(category__name="Book", company=self.request.company)
         return queryset
 
