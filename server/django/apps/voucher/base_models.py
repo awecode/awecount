@@ -113,7 +113,7 @@ class InvoiceModel(models.Model):
         row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
         InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        
+
     def mark_as_resolved(self, status='Resolved'):
         if self.mode == 'Credit' and self.status == 'Issued':
             self.status = status
@@ -121,13 +121,13 @@ class InvoiceModel(models.Model):
         else:
             raise ValueError('This voucher cannot be mark as resolved!')
 
-    
-
     class Meta:
         abstract = True
 
 
 class InvoiceRowModel(models.Model):
+    company_id_accessor = 'voucher__company_id'
+
     def __str__(self):
         return str(self.voucher.voucher_no)
 

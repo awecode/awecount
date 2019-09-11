@@ -69,5 +69,7 @@ class JournalVoucherRow(models.Model):
     cr_amount = models.FloatField(null=True, blank=True)
     journal_voucher = models.ForeignKey(JournalVoucher, related_name='rows', on_delete=models.CASCADE)
 
+    company_id_accessor = 'journal_voucher__company_id'
+
     def get_voucher_no(self):
         return self.journal_voucher.voucher_no
