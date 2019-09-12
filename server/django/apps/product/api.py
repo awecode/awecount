@@ -9,9 +9,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from apps.ledger.models import Account
-from apps.ledger.serializers import AccountSerializer
+from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
-from apps.tax.serializers import TaxSchemeSerializer
+from apps.tax.serializers import  TaxSchemeMinSerializer
 from .filters import ItemFilterSet
 from .models import Item, JournalEntry, Category, Brand, Unit
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
@@ -31,10 +31,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('brands', Brand, BrandSerializer),
         ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
         ('units', Unit, UnitSerializer),
-        ('accounts', Account, AccountSerializer),
-        ('tax_scheme', TaxScheme, TaxSchemeSerializer),
-        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountSerializer),
-        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountSerializer)
+        ('accounts', Account, AccountMinSerializer),
+        ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
+        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
+        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
     )
 
     @action(detail=True)
@@ -69,10 +69,10 @@ class InventoryCategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
     collections = (
         ('units', Unit, UnitSerializer),
-        ('accounts', Account, AccountSerializer),
-        ('tax_scheme', TaxScheme, TaxSchemeSerializer),
-        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountSerializer),
-        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountSerializer)
+        ('accounts', Account, AccountMinSerializer),
+        ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
+        ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
+        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
     )
 
 
