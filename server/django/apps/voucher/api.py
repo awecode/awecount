@@ -6,6 +6,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from apps.aggregator.views import qs_to_xls
 from apps.bank.models import BankAccount
 from apps.bank.serializers import BankAccountSerializer
 from apps.ledger.models import Party, Account
@@ -17,6 +18,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
+from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
@@ -147,6 +149,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response(SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                                        fiscal_year_id=request.query_params.get('fiscal_year'),
                                                                        queryset=qs)).data)
+
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Invoices', self.get_queryset(), SalesVoucherResource),
+            ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id), SalesVoucherRowResource),
+        ]
+        return (qs_to_xls(params))
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
