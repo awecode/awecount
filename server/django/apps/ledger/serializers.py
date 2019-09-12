@@ -65,7 +65,7 @@ class AccountSerializer(serializers.ModelSerializer):
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('id', 'name', 'code',)
+        fields = ('id', 'name', 'code', 'default',)
 
 
 class JournalEntrySerializer(serializers.ModelSerializer):
