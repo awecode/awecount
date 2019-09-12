@@ -52,7 +52,8 @@ urlpatterns = [
                   path('v1/auth/', include('djoser.urls.base')),
                   path('v1/auth/', include('djoser.urls.jwt')),
                   path('v1/auth/login/', TokenObtainPairView.as_view(), name='login'),
-                  path('export/', aggregator_views.export_data, name='export_data')
+                  path('export/', aggregator_views.export_data, name='export_data'),
+                  path('import/', aggregator_views.import_data, name='import_data')
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

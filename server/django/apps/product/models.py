@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
@@ -310,7 +312,7 @@ class Item(models.Model):
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
 
-    extra_data = JSONField(null=True, blank=True)
+    # extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -374,8 +376,10 @@ class Item(models.Model):
         if self.category and self.category.extra_fields:
             search_data = []
             for field in self.category.extra_fields:
-                if field.get('enable_search'):
-                    search_data.append(str(self.extra_data.get(field.get('name'))))
+                if type(field) in [dict, OrderedDict]:
+                    if field.get('enable_search'):
+                        if type(self.extra_data) in [dict, OrderedDict]:
+                            search_data.append(str(self.extra_data.get(field.get('name'))))
 
             search_text = ', '.join(search_data)
             self.search_data = search_text

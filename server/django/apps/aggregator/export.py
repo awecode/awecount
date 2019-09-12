@@ -1,7 +1,11 @@
 import io
 import zipfile
+import json
 
-from import_export import resources
+import tablib
+from django.apps import apps
+from django.core.exceptions import SuspiciousOperation
+from import_export import resources, widgets
 
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeVoucher, ChequeDepositRow
 from apps.ledger.models import Category, Account, Party, PartyRepresentative
@@ -36,7 +40,33 @@ COMPANY_ID_ACCESSOR_FILTERS = [
 ]
 
 
-class FilteredResource(resources.ModelResource):
+class JSONWidget(widgets.Widget):
+    """ Convert data into JSON for serialization.
+    """
+
+    def clean(self, value, row=None, *args, **kwargs):
+        return json.loads(value)
+
+    def render(self, value, obj=None):
+        if value is None:
+            return ""
+        return json.dumps(value)
+
+
+class JSONResourceMixin(object):
+    """ Override ModelResource to provide JSON field support.
+    """
+
+    @classmethod
+    def widget_from_django_field(cls, f, default=widgets.Widget):
+
+        if f.get_internal_type() in ('JSONField',):
+            return JSONWidget
+        else:
+            return super().widget_from_django_field(f)
+
+
+class FilteredResource(JSONResourceMixin, resources.ModelResource):
     def get_queryset(self):
         qs = self._meta.model.objects.all()
         if hasattr(self, 'filter_kwargs') and self.filter_kwargs:
@@ -44,6 +74,9 @@ class FilteredResource(resources.ModelResource):
         if hasattr(self, 'exclude_kwargs') and self.exclude_kwargs:
             qs = qs.exclude(**self.exclude_kwargs)
         return qs
+
+    class Meta:
+        exclude = ('extra_data')
 
 
 def get_csvs(company_id):
@@ -78,3 +111,35 @@ def get_zipped_csvs(company_id):
     csvs = get_csvs(company_id)
     zip = zip_csvs(csvs)
     return zip
+
+
+def import_zipped_csvs(company_id, zipped_file):
+    if not zipped_file:
+        raise SuspiciousOperation('Invalid Zip File.')
+    # TODO Check company id
+    with zipfile.ZipFile(zipped_file, 'r') as zip:
+        dct = {}
+        for file_name in zip.namelist():
+            file_contents = zip.read(file_name).decode('utf-8')
+            dataset = tablib.Dataset()
+            dataset.load(file_contents, format='csv')
+            filename_sans_ext = file_name.strip('.csv')
+            splits = filename_sans_ext.split('__')
+            if len(splits) < 2:
+                raise SuspiciousOperation('Invalid Zip File.')
+            model_name = splits[0]
+            app_name = splits[1]
+            try:
+                model = apps.get_model(app_label=app_name, model_name=model_name)
+            except LookupError:
+                raise SuspiciousOperation('Invalid Zip File.')
+            if not (model in COMPANY_FILTERS or model in COMPANY_ID_ACCESSOR_FILTERS):
+                raise SuspiciousOperation('Invalid Zip File.')
+            resource = resources.modelresource_factory(model=model, resource_class=FilteredResource)()
+            result = resource.import_data(dataset, dry_run=True)
+            if result.has_errors():
+                raise SuspiciousOperation('Importing failed.')
+            else:
+                ret = resource.import_data(dataset, dry_run=False, use_transactions=True)
+                dct[filename_sans_ext] = ret.totals
+        return dct

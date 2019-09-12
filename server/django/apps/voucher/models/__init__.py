@@ -388,9 +388,6 @@ class CreditNote(TransactionModel, InvoiceModel):
 
         self.apply_inventory_transaction()
 
-    def __str__(self):
-        return str(self.voucher_no) + '- ' + self.party.name
-
 
 class CreditNoteRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name='rows')
