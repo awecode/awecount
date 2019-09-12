@@ -156,7 +156,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             ('Invoices', self.get_queryset(), SalesVoucherResource),
             ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id), SalesVoucherRowResource),
         ]
-        return (qs_to_xls(params))
+        return qs_to_xls(params)
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
