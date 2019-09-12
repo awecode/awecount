@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeDepositRow
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
-    ChequeVoucherSerializer, BankAccountChequeVoucherSerializer
+    ChequeIssueSerializer, BankAccountChequeVoucherSerializer
 from apps.ledger.models import Party
 from apps.ledger.serializers import PartyMinSerializer
 from awecount.utils import get_next_voucher_no
@@ -37,8 +37,8 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response({'voucher_no': voucher_no})
 
 
-class ChequeVoucherViewSet(CRULViewSet):
-    serializer_class = ChequeVoucherSerializer
+class ChequeIssueViewSet(CRULViewSet):
+    serializer_class = ChequeIssueSerializer
     collections = (
         ('bank_accounts', BankAccount, BankAccountChequeVoucherSerializer),
         ('parties', Party, PartyMinSerializer),

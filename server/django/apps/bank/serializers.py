@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeVoucher
+from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeIssue
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -60,7 +60,7 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'bank_account', 'date', 'deposited_by', 'name')
 
 
-class ChequeVoucherSerializer(serializers.ModelSerializer):
+class ChequeIssueSerializer(serializers.ModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
     payee = serializers.SerializerMethodField()
     party_name = serializers.ReadOnlyField(source='party.name')
@@ -73,13 +73,13 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
         request = self.context['request']
         user = request.user
         validated_data['user'] = user
-        return super(ChequeVoucherSerializer, self).create(validated_data)
+        return super(ChequeIssueSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
         request = self.context['request']
         user = request.user
         validated_data['user'] = user
-        return super(ChequeVoucherSerializer, self).update(instance, validated_data)
+        return super(ChequeIssueSerializer, self).update(instance, validated_data)
 
     def get_payee(self, obj):
         if obj.party:
@@ -87,7 +87,7 @@ class ChequeVoucherSerializer(serializers.ModelSerializer):
         return obj.customer_name
 
     class Meta:
-        model = ChequeVoucher
+        model = ChequeIssue
         exclude = ('user', 'company',)
 
 
