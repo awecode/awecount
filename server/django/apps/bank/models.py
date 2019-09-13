@@ -51,7 +51,7 @@ class ChequeDeposit(models.Model):
         ('Issued', 'Issued'),
         ('Cleared', 'Cleared'),
     )
-    voucher_no = models.IntegerField(blank=True, null=True)
+    voucher_no = models.IntegerField(blank=True, null=True, default=None)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     bank_account = models.ForeignKey(Account, related_name='cheque_deposits', on_delete=models.CASCADE)
     date = models.DateField()

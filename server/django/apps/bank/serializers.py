@@ -21,9 +21,7 @@ class ChequeDepositRowSerializer(serializers.ModelSerializer):
 
 class ChequeDepositCreateSerializer(serializers.ModelSerializer):
     rows = ChequeDepositRowSerializer(many=True)
-
-    # bank_account_id = serializers.IntegerField(required=False, allow_null=True)
-    # benefactor_id = serializers.IntegerField(required=False, allow_null=True)
+    voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -45,7 +43,7 @@ class ChequeDepositCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        exclude = ('company', 'clearing_date', 'deposited_by')
+        exclude = ('company', 'clearing_date', 'deposited_by',)
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
