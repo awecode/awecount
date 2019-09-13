@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from awecount.utils.serializers import StatusReversionMixin
 from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeIssue
 
 
@@ -19,7 +20,7 @@ class ChequeDepositRowSerializer(serializers.ModelSerializer):
         exclude = ('cheque_deposit',)
 
 
-class ChequeDepositCreateSerializer(serializers.ModelSerializer):
+class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     rows = ChequeDepositRowSerializer(many=True)
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
