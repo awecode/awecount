@@ -63,16 +63,8 @@ class ChequeDeposit(models.Model):
 
     # files = models.ManyToManyField(File, blank=True)
 
-    def __init__(self, *args, **kwargs):
-        super(ChequeDeposit, self).__init__(*args, **kwargs)
-        if not self.pk and not self.voucher_no:
-            self.voucher_no = get_next_voucher_no(ChequeDeposit, self.company_id)
-
     def __str__(self):
-        return str(self.voucher_no) + ' : ' + str(self.deposited_by)
-
-    def get_voucher_no(self):
-        return self.id
+        return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)
 
     @property
     def total(self):
