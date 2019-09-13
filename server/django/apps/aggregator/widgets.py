@@ -77,10 +77,10 @@ class BaseWidget(object):
             for datum in data:
                 if not datum[self.label_field] in dct.keys():
                     dct[datum[self.label_field]] = [0] * self.days
-                dct[datum[self.label_field]][self.date_indices[datum[self.date_attribute]]] = datum['cnt']
+                dct[datum[self.label_field]][self.date_indices[datum[self.date_attribute]]] = datum[self.data_field]
 
             for key, val in dct.items():
-                self.datasets.append({'name': key, 'values': val})
+                self.datasets.append({'name': key or 'None', 'values': val})
         else:
             for datum in data:
                 self.labels.append(datum.get(self.label_field) or 'None')
@@ -124,28 +124,25 @@ class SalesAmountWidget(BaseWidget):
     data_field = 'sum'
 
     def get_nonseries_queryset(self):
-        import ipdb
-        ipdb.set_trace()
-        return SalesVoucher.objects.values(self.label_field).order_by(self.label_field).annotate(
-            sum=Sum(self.label_field))
+        return SalesVoucher.objects.values(self.label_field).annotate(sum=Sum('total_amount'))
 
     def get_series_queryset(self):
         return SalesVoucher.objects.values(self.label_field, self.date_attribute).order_by(self.label_field,
                                                                                            self.date_attribute).annotate(
-            sum=Count(self.label_field))
+            sum=Sum('total_amount'))
 
 
 class SalesAmountByAgent(SalesAmountWidget):
-    name = 'Sales Count by Agent'
+    name = 'Sales Amount by Agent'
     label_field = 'sales_agent__name'
 
 
 class SalesAmountByParty(SalesAmountWidget):
-    name = 'Sales Count by Party'
+    name = 'Sales Amount by Party'
     label_field = 'party__name'
 
 
-WIDGETS = [SalesAmountByParty]
+WIDGETS = [SalesAmountByParty, SalesAmountByAgent, SalesCountByAgent, SalesCountByParty]
 
 WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
 WIDGET_DICT = {widget.name: widget for widget in WIDGETS}
