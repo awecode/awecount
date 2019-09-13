@@ -315,7 +315,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -432,7 +432,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -524,3 +524,7 @@ auditlog.register(SalesVoucher)
 auditlog.register(SalesVoucherRow)
 auditlog.register(PurchaseVoucher)
 auditlog.register(PurchaseVoucherRow)
+auditlog.register(CreditNote)
+auditlog.register(CreditNoteRow)
+auditlog.register(DebitNote)
+auditlog.register(DebitNoteRow)
