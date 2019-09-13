@@ -39,3 +39,16 @@ class TaxScheme(models.Model):
             self.receivable.suggest_code()
         self.receivable.save()
         super(TaxScheme, self).save(*args, **kwargs)
+
+
+class TaxPayment(models.Model):
+    voucher_no = models.CharField(max_length=50, blank=True, null=True)
+    date = models.DateField()
+    tax_scheme = models.ForeignKey(TaxScheme, related_name='payments', on_delete=models.CASCADE)
+    amount = models.FloatField()
+    remarks = models.TextField(blank=True, null=True)
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_payments')
+    
+    def __str__(self):
+        return self.voucher_no or self.date
