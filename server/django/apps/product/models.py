@@ -312,7 +312,7 @@ class Item(models.Model):
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
 
-    # extra_data = JSONField(null=True, blank=True)
+    extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
