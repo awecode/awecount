@@ -47,8 +47,9 @@ class TaxPayment(models.Model):
     tax_scheme = models.ForeignKey(TaxScheme, related_name='payments', on_delete=models.CASCADE)
     amount = models.FloatField()
     remarks = models.TextField(blank=True, null=True)
+    cr_account = models.ForeignKey(Account, related_name='tax_payments', on_delete=models.CASCADE)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_payments')
-    
+
     def __str__(self):
         return self.voucher_no or self.date
