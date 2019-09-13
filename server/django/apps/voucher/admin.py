@@ -31,7 +31,7 @@ class SalesVoucherAdmin(admin.ModelAdmin):
         'voucher_no', 'party__name', 'party__tax_registration_number', 'customer_name', 'address', 'user__full_name',
         'user__email', 'company__name', 'company__tax_registration_number', 'remarks',)
     list_filter = ('company', 'status', 'mode', 'fiscal_year')
-    list_display = ('company', 'voucher_no', 'party', 'customer_name', 'status',)
+    list_display = ('company', 'voucher_no', 'party', 'customer_name', 'status', 'total_amount')
     inlines = (SaleVoucherRowTabular,)
 
 
@@ -40,7 +40,7 @@ class CreditNoteAdmin(admin.ModelAdmin):
         'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
         'company__tax_registration_number',)
     list_filter = ('company', 'party',)
-    list_display = ('company', 'voucher_no', 'party')
+    list_display = ('company', 'voucher_no', 'party', 'total_amount')
     inlines = (CreditNoteRowTabular,)
 
 
@@ -56,7 +56,7 @@ class DebitNoteAdmin(admin.ModelAdmin):
         'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
         'company__tax_registration_number',)
     list_filter = ('company', 'party',)
-    list_display = ('company', 'voucher_no', 'party')
+    list_display = ('company', 'voucher_no', 'party', 'total_amount')
     inlines = (DebitNoteRowTabular,)
 
 
@@ -79,7 +79,7 @@ class PurchaseVoucherAdmin(admin.ModelAdmin):
         'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
         'company__tax_registration_number')
     list_filter = ('company',)
-    list_display = ('company', 'voucher_no', 'party',)
+    list_display = ('company', 'voucher_no', 'party', 'total_amount')
     inlines = (PurchaseVoucherRowTabular,)
 
 
@@ -106,5 +106,6 @@ admin.site.register(Brand, BrandAdmin)
 class SalesAgentAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('company',)
+
 
 admin.site.register(SalesAgent, SalesAgentAdmin)
