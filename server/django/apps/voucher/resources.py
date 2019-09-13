@@ -1,7 +1,8 @@
 from import_export import resources
 
 from awecount.utils.resources import PrettyNameModelResource
-from .models import SalesVoucher, SalesVoucherRow, PurchaseVoucher, PurchaseVoucherRow
+from .models import SalesVoucher, SalesVoucherRow, PurchaseVoucher, PurchaseVoucherRow, CreditNote, CreditNoteRow, \
+    DebitNoteRow, DebitNote
 
 INVOICE_EXCLUDES = ('party', 'discount_obj', 'bank_account', 'company', 'fiscal_year')
 INVOICEROW_EXCLUDES = ('item', 'unit', 'tax_scheme')
@@ -48,3 +49,23 @@ class PurchaseVoucherResource(PrettyNameModelResource):
 class PurchaseVoucherRowResource(PrettyNameModelResource):
     class Meta:
         model = PurchaseVoucherRow
+
+
+class CreditNoteResource(PrettyNameModelResource):
+    class Meta:
+        model = CreditNote
+
+
+class CreditNoteRowResource(PrettyNameModelResource):
+    class Meta:
+        model = CreditNoteRow
+
+
+class DebitNoteResource(PrettyNameModelResource):
+    class Meta:
+        model = DebitNote
+
+
+class DebitNoteRowResource(PrettyNameModelResource):
+    class Meta:
+        model = DebitNoteRow
