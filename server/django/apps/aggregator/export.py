@@ -74,6 +74,10 @@ class FilteredResource(JSONResourceMixin, resources.ModelResource):
         if hasattr(self, 'exclude_kwargs') and self.exclude_kwargs:
             qs = qs.exclude(**self.exclude_kwargs)
         return qs
+    
+    def export_book(self):
+        import ipdb
+        ipdb.set_trace()
 
     class Meta:
         exclude = ('extra_data')
@@ -143,3 +147,4 @@ def import_zipped_csvs(company_id, zipped_file):
                 ret = resource.import_data(dataset, dry_run=False, use_transactions=True)
                 dct[filename_sans_ext] = ret.totals
         return dct
+

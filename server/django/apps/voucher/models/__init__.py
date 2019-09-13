@@ -13,6 +13,7 @@ from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 from .invoice_design import InvoiceDesign
 from .journal_vouchers import JournalVoucher, JournalVoucherRow
+from .agent import SalesAgent
 
 STATUSES = (
     ('Draft', 'Draft'),
@@ -52,9 +53,10 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     is_export = models.BooleanField(default=False)
 
     print_count = models.PositiveSmallIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_vouchers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_invoices')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_invoices')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_invoices')
+    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='sales_invoices', on_delete=models.SET_NULL)
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
@@ -315,7 +317,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -432,7 +434,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -524,3 +526,7 @@ auditlog.register(SalesVoucher)
 auditlog.register(SalesVoucherRow)
 auditlog.register(PurchaseVoucher)
 auditlog.register(PurchaseVoucherRow)
+auditlog.register(CreditNote)
+auditlog.register(CreditNoteRow)
+auditlog.register(DebitNote)
+auditlog.register(DebitNoteRow)

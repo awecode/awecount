@@ -42,6 +42,7 @@ router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
+router.register('sales-agent', voucher.SalesAgentViewSet, base_name='sales-agent')
 router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchase-book')
 
 urlpatterns = [
@@ -52,8 +53,9 @@ urlpatterns = [
                   path('v1/auth/', include('djoser.urls.base')),
                   path('v1/auth/', include('djoser.urls.jwt')),
                   path('v1/auth/login/', TokenObtainPairView.as_view(), name='login'),
+                  path('export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
                   path('export/', aggregator_views.export_data, name='export_data'),
-                  path('import/', aggregator_views.import_data, name='import_data')
+                  # path('import/', aggregator_views.import_data, name='import_data')
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

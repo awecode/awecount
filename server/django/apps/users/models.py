@@ -37,6 +37,7 @@ class Company(models.Model):
     enable_sales_invoice_update = models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
     enable_debit_note_update = models.BooleanField(default=False)
+    enable_sales_agents = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
 
     def __str__(self):

@@ -1,4 +1,3 @@
-from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.users.models import User, Company

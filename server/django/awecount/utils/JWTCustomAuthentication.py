@@ -1,10 +1,8 @@
-from datetime import datetime
 from django.contrib.auth import authenticate, login
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework_jwt.serializers import jwt_payload_handler, jwt_encode_handler
-from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.views import ObtainJSONWebToken, jwt_response_payload_handler
+from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
