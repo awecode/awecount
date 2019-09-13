@@ -25,6 +25,7 @@ class SalesByAgent(BaseWidget):
     # graph_types = ['pie', 'donut', 'gauge', 'bar']
 
 
-WIDGETS = [
-    ('Sales By Agent', SalesByAgent)
-]
+WIDGETS = [SalesByAgent]
+
+WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
+WIDGET_DICT = {widget.name: widget for widget in WIDGETS}

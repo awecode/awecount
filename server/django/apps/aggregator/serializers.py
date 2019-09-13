@@ -37,5 +37,8 @@ class LogEntrySerializer(serializers.ModelSerializer):
 
 
 class WidgetSerializer(serializers.ModelSerializer):
+    data = serializers.ReadOnlyField(source='get_data')
+
     class Meta:
         model = Widget
+        exclude = ('user',)
