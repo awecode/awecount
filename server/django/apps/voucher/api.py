@@ -18,6 +18,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
+from apps.voucher.models import SalesAgent
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
@@ -40,7 +41,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     row = SalesVoucherRow
-    collections = (
+    collections = [
         ('parties', Party.objects.only('name', 'address', 'logo', 'tax_registration_number'), PartyMinSerializer),
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
@@ -49,7 +50,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('items',
          Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
          ItemSalesSerializer),
-    )
+    ]
+
+    def get_collections(self, request=None):
+        if request.company.enable_sales_agents:
+            self.collections.append(('sales_agents', SalesAgent))
+        return super().get_collections(request)
 
     def get_queryset(self):
         qs = super(SalesVoucherViewSet, self).get_queryset()
@@ -90,7 +96,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_defaults(self, request=None):
         data = {
             'fields': {
-                'can_update_issued': request.company.enable_sales_invoice_update
+                'can_update_issued': request.company.enable_sales_invoice_update,
+                'enable_sales_agents': request.company.enable_sales_agents
             },
         }
         return data
