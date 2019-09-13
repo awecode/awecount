@@ -3,6 +3,8 @@ import json
 from auditlog.models import LogEntry
 from rest_framework import serializers
 
+from .models import Widget
+
 
 class LogEntrySerializer(serializers.ModelSerializer):
     content_type_name = serializers.SerializerMethodField()
@@ -32,3 +34,8 @@ class LogEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = LogEntry
         exclude = ('timestamp', 'changes')
+
+
+class WidgetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Widget
