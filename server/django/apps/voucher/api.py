@@ -18,8 +18,9 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
-from apps.voucher.models import SalesAgent
-from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
+
+from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
+    PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
@@ -200,7 +201,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             }
         return {}
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
         return queryset.order_by('-pk')
 
@@ -252,6 +253,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         except Exception as e:
             raise APIException(str(e))
+
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Invoices', self.get_queryset(), PurchaseVoucherResource),
+            ('Purchase Rows', PurchaseVoucherRow.objects.filter(voucher__company_id=request.company_id),
+             PurchaseVoucherRowResource),
+        ]
+        return qs_to_xls(params)
 
 
 class CreditNoteViewSet(DeleteRows, CRULViewSet):
@@ -363,6 +373,15 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         journals = credit_note.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
 
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Invoices', self.get_queryset(), CreditNoteResource),
+            ('Credit Note Rows', CreditNoteRow.objects.filter(voucher__company_id=request.company_id),
+             CreditNoteRowResource),
+        ]
+        return qs_to_xls(params)
+
 
 class DebitNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = DebitNoteCreateSerializer
@@ -472,6 +491,15 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         debit_note = get_object_or_404(DebitNote, pk=pk)
         journals = debit_note.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
+
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Invoices', self.get_queryset(), DebitNoteResource),
+            ('Debit Note Rows', DebitNoteRow.objects.filter(voucher__company_id=request.company_id),
+             DebitNoteRowResource),
+        ]
+        return qs_to_xls(params)
 
 
 class JournalVoucherViewSet(DeleteRows, CRULViewSet):
