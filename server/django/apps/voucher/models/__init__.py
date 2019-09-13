@@ -53,10 +53,10 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     is_export = models.BooleanField(default=False)
 
     print_count = models.PositiveSmallIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_vouchers')
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_invoices')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_invoices')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_invoices')
+    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='sales_invoices', on_delete=models.SET_NULL)
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
