@@ -18,7 +18,8 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
-from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
+from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
+    PurchaseVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from awecount.utils import get_next_voucher_no
@@ -193,7 +194,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             }
         return {}
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
         return queryset.order_by('-pk')
 
@@ -245,6 +246,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         except Exception as e:
             raise APIException(str(e))
+
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Invoices', self.get_queryset(), PurchaseVoucherResource),
+            ('Purchase Rows', PurchaseVoucherRow.objects.filter(voucher__company_id=request.company_id),
+             PurchaseVoucherRowResource),
+        ]
+        return qs_to_xls(params)
 
 
 class CreditNoteViewSet(DeleteRows, CRULViewSet):
