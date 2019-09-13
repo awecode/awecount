@@ -37,7 +37,7 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def details(self, request, pk):
         qs = self.get_queryset()
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
-        data['can_update_issued'] = request.company.enable_sales_invoice_update
+        data['can_update_issued'] = request.company.enable_cheque_deposit_update
         return Response(data)
 
     @action(detail=False)
