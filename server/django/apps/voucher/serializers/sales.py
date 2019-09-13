@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
+from apps.voucher.models import SalesAgent
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
@@ -168,3 +169,9 @@ class PurchaseBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         fields = ('id', 'date', 'sellers_name', 'sellers_pan', 'voucher_no', 'voucher_meta', 'is_import',)
+
+
+class SalesAgentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesAgent
+        exclude = ('company',)

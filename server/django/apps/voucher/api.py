@@ -35,7 +35,8 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherListSerializer, \
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
-    CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer
+    CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
+    SalesAgentSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -59,7 +60,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             self.collections.append(('sales_agents', SalesAgent))
         return super().get_collections(request)
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         qs = super(SalesVoucherViewSet, self).get_queryset()
         if self.action == 'list':
             qs = qs.select_related('party')
@@ -579,7 +580,7 @@ class SalesBookViewSet(CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = SalesVoucherDateFilterSet
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
@@ -592,9 +593,13 @@ class PurchaseBookViewSet(CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PurchaseVoucherDateFilterSet
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')
+
+
+class SalesAgentViewSet(CRULViewSet):
+    serializer_class = SalesAgentSerializer
