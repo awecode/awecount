@@ -46,7 +46,13 @@ class BankAccount(models.Model):
 
 
 class ChequeDeposit(models.Model):
-    voucher_no = models.IntegerField()
+    STATUSES = (
+        ('Draft', 'Draft'),
+        ('Issued', 'Issued'),
+        ('Cleared', 'Cleared'),
+    )
+    voucher_no = models.IntegerField(blank=True, null=True)
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     date = models.DateField()
     bank_account = models.ForeignKey(Account, related_name='cheque_deposits', on_delete=models.CASCADE)
     clearing_date = models.DateField(default=timezone.now)
@@ -75,9 +81,6 @@ class ChequeDeposit(models.Model):
             total = obj.amount
             grand_total += total
         return grand_total
-
-        # class Meta:
-        #     unique_together = ('voucher_no', 'company')
 
 
 class ChequeDepositRow(models.Model):
