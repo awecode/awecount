@@ -35,6 +35,7 @@ class Company(models.Model):
     tax_registration_number = models.IntegerField(blank=True, null=True)
     force_preview_before_save = models.BooleanField(default=False)
     enable_sales_invoice_update = models.BooleanField(default=False)
+    enable_cheque_deposit_update= models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
     enable_debit_note_update = models.BooleanField(default=False)
     enable_sales_agents = models.BooleanField(default=False)

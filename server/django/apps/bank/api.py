@@ -1,3 +1,5 @@
+from rest_framework.generics import get_object_or_404
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -30,6 +32,13 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == 'list' or self.action in ('choices',):
             return ChequeDepositListSerializer
         return ChequeDepositCreateSerializer
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = self.get_queryset()
+        data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_sales_invoice_update
+        return Response(data)
 
     @action(detail=False)
     def get_next_no(self, request):
