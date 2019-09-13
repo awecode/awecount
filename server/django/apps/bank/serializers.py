@@ -45,8 +45,7 @@ class ChequeDepositCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        # exclude = ('company', 'benefactor', 'bank_account',)
-        exclude = ('company',)
+        exclude = ('company', 'clearing_date', 'deposited_by')
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
