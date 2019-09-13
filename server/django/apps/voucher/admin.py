@@ -3,7 +3,7 @@ from django.contrib import admin
 from apps.product.models import Brand
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
-    DebitNote
+    DebitNote, SalesAgent
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -101,3 +101,10 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Brand, BrandAdmin)
+
+
+class SalesAgentAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    list_filter = ('company',)
+
+admin.site.register(SalesAgent, SalesAgentAdmin)
