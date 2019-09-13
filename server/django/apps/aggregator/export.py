@@ -7,7 +7,7 @@ from django.apps import apps
 from django.core.exceptions import SuspiciousOperation
 from import_export import resources, widgets
 
-from apps.bank.models import BankAccount, ChequeDeposit, ChequeVoucher, ChequeDepositRow
+from apps.bank.models import BankAccount, ChequeDeposit, ChequeIssue, ChequeDepositRow
 from apps.ledger.models import Category, Account, Party, PartyRepresentative
 from apps.product.models import Unit, Brand, Category as InventoryCategory, InventoryAccount, Item
 from apps.tax.models import TaxScheme
@@ -16,7 +16,7 @@ from apps.voucher.models import SalesVoucher, SalesDiscount, PurchaseDiscount, I
 
 COMPANY_FILTERS = [
     # Bank
-    BankAccount, ChequeDeposit, ChequeVoucher,
+    BankAccount, ChequeDeposit, ChequeIssue,
     # Ledger
     Category, Account, Party,
     # Product

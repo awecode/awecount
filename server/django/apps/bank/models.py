@@ -94,7 +94,7 @@ class ChequeDepositRow(models.Model):
         return self.cheque_deposit_id
 
 
-class ChequeVoucher(models.Model):
+class ChequeIssue(models.Model):
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
     date = models.DateField()
@@ -107,7 +107,7 @@ class ChequeVoucher(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.bank_account.increase_cheque_no()
-        super(ChequeVoucher, self).save(*args, **kwargs)
+        super(ChequeIssue, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.date.strftime('%d-%m-%Y') + ': ' + str(self.user)

@@ -33,7 +33,7 @@ MODULES = [
     # Bank
     *gdp('BankAccount'),
     *gdp('BankBranch'),
-    *gdp('ChequeVoucher'),
+    *gdp('ChequeIssue'),
     *gdp('ChequeDeposit'),
     *gdp('SalesAgent'),
 ]
