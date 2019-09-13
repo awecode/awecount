@@ -15,5 +15,10 @@ class LogEntryViewSet(ReadOnlyModelViewSet):
 class WidgetViewSet(ReadOnlyModelViewSet):
     serializer_class = WidgetSerializer
 
+    @property
+    def paginator(self):
+        if self.action == 'list':
+            return None
+
     def get_queryset(self):
-        return Widget.objects.filter(user=self.request.user)
+        return Widget.objects.filter(user=self.request.user).order_by('order')
