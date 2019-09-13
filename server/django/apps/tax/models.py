@@ -41,6 +41,13 @@ class TaxScheme(models.Model):
         super(TaxScheme, self).save(*args, **kwargs)
 
 
+STATUSES = (
+    ('Draft', 'Draft'),
+    ('Paid', 'Paid'),
+    ('Cancelled', 'Cancelled'),
+)
+
+
 class TaxPayment(models.Model):
     voucher_no = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField()
@@ -48,8 +55,11 @@ class TaxPayment(models.Model):
     amount = models.FloatField()
     remarks = models.TextField(blank=True, null=True)
     cr_account = models.ForeignKey(Account, related_name='tax_payments', on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUSES, max_length=10, default='Draft')
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_payments')
 
     def __str__(self):
         return self.voucher_no or self.date
+
+        # def apply_transactions(self):
