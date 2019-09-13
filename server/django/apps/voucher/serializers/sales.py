@@ -73,12 +73,12 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
-        voucher = SalesVoucher.objects.create(**validated_data)
+        instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            SalesVoucherRow.objects.create(voucher=voucher, **row)
-        SalesVoucher.apply_transactions(voucher)
-        return voucher
+            SalesVoucherRow.objects.create(voucher=instance, **row)
+        instance.apply_transactions()
+        return instance
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
@@ -92,7 +92,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        SalesVoucher.apply_transactions(instance)
+        instance.apply_transactions()
         return instance
 
     class Meta:

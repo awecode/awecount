@@ -1,5 +1,5 @@
 import datetime
-from django.db.models import Count
+from django.db.models import Count, Sum
 
 from apps.voucher.models import SalesVoucher
 
@@ -120,7 +120,32 @@ class SalesCountByParty(SalesCountWidget):
     label_field = 'party__name'
 
 
-WIDGETS = [SalesCountByAgent, SalesCountByParty, ]
+class SalesAmountWidget(BaseWidget):
+    data_field = 'sum'
+
+    def get_nonseries_queryset(self):
+        import ipdb
+        ipdb.set_trace()
+        return SalesVoucher.objects.values(self.label_field).order_by(self.label_field).annotate(
+            sum=Sum(self.label_field))
+
+    def get_series_queryset(self):
+        return SalesVoucher.objects.values(self.label_field, self.date_attribute).order_by(self.label_field,
+                                                                                           self.date_attribute).annotate(
+            sum=Count(self.label_field))
+
+
+class SalesAmountByAgent(SalesAmountWidget):
+    name = 'Sales Count by Agent'
+    label_field = 'sales_agent__name'
+
+
+class SalesAmountByParty(SalesAmountWidget):
+    name = 'Sales Count by Party'
+    label_field = 'party__name'
+
+
+WIDGETS = [SalesAmountByParty]
 
 WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
 WIDGET_DICT = {widget.name: widget for widget in WIDGETS}
