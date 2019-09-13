@@ -7,8 +7,6 @@ from apps.voucher.models import SalesVoucher
 class BaseWidget(object):
     date_attribute = 'date'
     data_field = 'cnt'
-    days = 5
-    date_indices = {}
 
     def __init__(self, *args, **kwargs):
 
@@ -16,12 +14,18 @@ class BaseWidget(object):
             raise NotImplementedError("Widgets must specify 'name' attribute!")
         self.instance = kwargs.get('instance')
         self.company_id = self.instance.user.company_id
+        self.type = self.instance.display_type
+        self.days = self.instance.day_count
         self.labels = []
         self.datasets = []
         self.values = []
+        self.date_indices = {}
 
     def is_series(self):
-        return self.type.lower() not in ['pie', 'percentage']
+        return self.type.lower() not in ['pie', 'percentage', 'table']
+
+    def is_table(self):
+        return self.type == 'Table'
 
     @property
     def today(self):
@@ -65,7 +69,9 @@ class BaseWidget(object):
 
     def get_data(self):
         data = self.get_queryset()
-        if self.is_series():
+        if self.is_table():
+            self.datasets = data
+        elif self.is_series():
             self.labels = self.get_date_labels()
             dct = {}
             for datum in data:
@@ -93,7 +99,7 @@ class BaseWidget(object):
             return self.get_nonseries_queryset()
 
 
-class SalesWidget(BaseWidget):
+class SalesCountWidget(BaseWidget):
     def get_nonseries_queryset(self):
         return SalesVoucher.objects.values(self.label_field).order_by(self.label_field).annotate(
             cnt=Count(self.label_field))
@@ -104,31 +110,17 @@ class SalesWidget(BaseWidget):
             cnt=Count(self.label_field))
 
 
-class DailySalesByAgent(SalesWidget):
-    name = 'Daily Sales by Agent'
+class SalesCountByAgent(SalesCountWidget):
+    name = 'Sales Count by Agent'
     label_field = 'sales_agent__name'
-    type = 'axis-mixed'
 
 
-class SalesByAgent(SalesWidget):
-    name = 'Sales by Agent'
-    label_field = 'sales_agent__name'
-    type = 'pie'
-
-
-class SalesByParty(SalesWidget):
-    name = 'Sales by Party'
+class SalesCountByParty(SalesCountWidget):
+    name = 'Sales Count by Party'
     label_field = 'party__name'
-    type = 'pie'
 
 
-class DailySalesByParty(SalesWidget):
-    name = 'Daily Sales by Party'
-    label_field = 'party__name'
-    type = 'axis-mixed'
-
-
-WIDGETS = [SalesByAgent, DailySalesByAgent, SalesByParty, DailySalesByParty]
+WIDGETS = [SalesCountByAgent, SalesCountByParty, ]
 
 WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
 WIDGET_DICT = {widget.name: widget for widget in WIDGETS}

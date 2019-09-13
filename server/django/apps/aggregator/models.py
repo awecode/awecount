@@ -34,8 +34,9 @@ class Widget(models.Model):
 
     def get_data(self):
         Widget = self.get_widget_class()
-        widget = Widget(instance=self)
-        return widget.get_data()
+        if Widget:
+            widget = Widget(instance=self)
+            return widget.get_data()
 
     def get_widget_class(self):
         return WIDGET_DICT.get(self.widget)
