@@ -1,0 +1,13 @@
+from import_export import resources
+
+from awecount.utils.resources import PrettyNameModelResource
+from auditlog.models import LogEntry
+
+
+class LogEntryResource(PrettyNameModelResource):
+    user = resources.Field('actor__full_name', column_name='User')
+    content_type = resources.Field('content_type__model', column_name='Type')
+
+    class Meta:
+        model = LogEntry
+        exclude = ('Actor')

@@ -1,10 +1,11 @@
 import tablib
+from auditlog.models import LogEntry
 from django.core.exceptions import PermissionDenied
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from import_export import resources
 
-from .export import get_zipped_csvs, import_zipped_csvs, FilteredResource
+from .resources import LogEntryResource
+from .export import get_zipped_csvs, import_zipped_csvs
 from datetime import datetime
 
 
@@ -39,10 +40,21 @@ def qs_to_xls(querysets):
         datasets.append(data)
     book = tablib.Databook(datasets)
     xls = book.xls
-    # import ipdb
-    # ipdb.set_trace()
-    # response = FileResponse(xls)
     response = HttpResponse(xls, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = '{}_{}.xls'.format(qs.model.__name__, datetime.today().date())
+    filename = '{}_{}.xls'.format(qs.model.__name__+'_', datetime.today().date())
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+    return response
+
+@csrf_exempt
+def export_auditlog(request):
+    if not request.user.is_authenticated or not request.company_id:
+        raise PermissionDenied
+    resource  = LogEntryResource()
+    qs = LogEntry.objects.filter(actor__company_id=request.user.company_id).select_related('content_type', 'actor')
+    dataset = resource.export(queryset=qs)
+    dataset.title='Audit Logs'
+    xls = dataset.xls
+    response = HttpResponse(xls, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = '{}_{}.xls'.format('Log_Entries_', datetime.today().date())
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
     return response

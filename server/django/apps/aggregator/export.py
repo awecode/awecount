@@ -5,7 +5,6 @@ import json
 import tablib
 from django.apps import apps
 from django.core.exceptions import SuspiciousOperation
-from django.http import FileResponse
 from import_export import resources, widgets
 
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeVoucher, ChequeDepositRow
