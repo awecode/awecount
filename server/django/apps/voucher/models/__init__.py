@@ -13,6 +13,7 @@ from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 from .invoice_design import InvoiceDesign
 from .journal_vouchers import JournalVoucher, JournalVoucherRow
+from .agent import SalesAgent
 
 STATUSES = (
     ('Draft', 'Draft'),
@@ -55,6 +56,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_vouchers')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_vouchers')
+    
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
