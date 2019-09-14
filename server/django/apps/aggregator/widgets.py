@@ -1,5 +1,6 @@
 import datetime
 from django.db.models import Count, Sum
+from django.db.models.functions import ExtractMonth
 
 from apps.voucher.models import SalesVoucher
 
@@ -19,7 +20,7 @@ class BaseWidget(object):
         self.labels = []
         self.datasets = []
         self.values = []
-        self.date_indices = {}
+        self.group_indices = {}
 
     def is_series(self):
         return self.type.lower() not in ['pie', 'percentage', 'table']
@@ -55,10 +56,15 @@ class BaseWidget(object):
 
     def get_date_labels(self):
         labels = []
-        for i in range(0, self.days):
-            sub_date = self.end_date - datetime.timedelta(days=(self.days - i - 1))
-            labels.append(sub_date)
-            self.date_indices[sub_date] = i
+        if self.group_by == self.date_attribute:
+            for i in range(0, self.days):
+                sub_date = self.end_date - datetime.timedelta(days=(self.days - i - 1))
+                labels.append(sub_date)
+                self.group_indices[sub_date] = i
+        else:
+            self.group_indices = {7: 0, 8: 1, 9: 2}
+            return ['July', 'August', 'September']
+
         return labels
 
     def __str__(self):
@@ -77,7 +83,7 @@ class BaseWidget(object):
             for datum in data:
                 if not datum[self.label_field] in dct.keys():
                     dct[datum[self.label_field]] = [0] * self.days
-                dct[datum[self.label_field]][self.date_indices[datum[self.date_attribute]]] = datum[self.data_field]
+                dct[datum[self.label_field]][self.group_indices[datum[self.group_by]]] = datum[self.data_field]
 
             for key, val in dct.items():
                 self.datasets.append({'name': key or 'None', 'values': val})
@@ -122,14 +128,17 @@ class SalesCountByParty(SalesCountWidget):
 
 class SalesAmountWidget(BaseWidget):
     data_field = 'sum'
+    group_by = 'month'
 
     def get_nonseries_queryset(self):
         return SalesVoucher.objects.values(self.label_field).annotate(sum=Sum('total_amount'))
 
     def get_series_queryset(self):
-        return SalesVoucher.objects.values(self.label_field, self.date_attribute).order_by(self.label_field,
-                                                                                           self.date_attribute).annotate(
-            sum=Sum('total_amount'))
+        qs = SalesVoucher.objects.filter()
+        qs = qs.annotate(month=ExtractMonth(self.date_attribute))
+        qs = qs.values(self.label_field, self.group_by).order_by(self.label_field, self.group_by)
+        qs = qs.annotate(sum=Sum('total_amount'))
+        return qs
 
 
 class SalesAmountByAgent(SalesAmountWidget):
