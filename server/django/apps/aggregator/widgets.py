@@ -1,8 +1,10 @@
 import datetime
 import time
 
+from dateutil.rrule import rrule, MONTHLY
+
 from django.db.models import Count, Sum
-from django.db.models.functions import ExtractMonth
+from django.db.models.functions import ExtractMonth, ExtractYear
 
 from apps.voucher.models import SalesVoucher
 
@@ -44,11 +46,11 @@ class BaseWidget(object):
         month = self.today.month
         day = self.today.day
         if delta == 'year':
-            year = year - count
+            year = year - count + 1
             month = 1
             day = 1
         if delta == 'month':
-            month = month - count
+            month = month - count + 1
             day = 1
         if delta in ['day', 'date']:
             day = day - count
@@ -77,10 +79,11 @@ class BaseWidget(object):
                 labels.append(sub_date)
                 self.group_indices[sub_date] = i
         elif self.group_by == 'month':
-            # self.group_indices = {7: 0, 8: 1, 9: 2}
-            # return ['July', 'August', 'September']
-            self.group_indices = {9: 0}
-            return ['September']
+            self.group_indices = {}
+            dates = [dt for dt in rrule(MONTHLY, dtstart=self.start_date, until=self.end_date)]
+            for idx, date in enumerate(dates):
+                self.group_indices[date.month] = idx
+                labels.append(date.strftime("%B"))
 
         return labels
 
@@ -153,6 +156,7 @@ class SalesAmountWidget(BaseWidget):
     def get_series_queryset(self):
         qs = SalesVoucher.objects.filter()
         qs = qs.annotate(month=ExtractMonth(self.date_attribute))
+        # qs = qs.annotate(year=ExtractYear(self.date_attribute))
         qs = qs.values(self.label_field, self.group_by).order_by(self.label_field, self.group_by)
         qs = qs.annotate(sum=Sum('total_amount'))
         return qs
