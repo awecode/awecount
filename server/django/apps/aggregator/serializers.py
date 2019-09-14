@@ -42,3 +42,9 @@ class WidgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
         exclude = ('user',)
+
+
+class WidgetUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Widget
+        exclude = ('user',)
