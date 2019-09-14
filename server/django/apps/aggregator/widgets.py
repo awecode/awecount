@@ -16,7 +16,8 @@ class BaseWidget(object):
         self.instance = kwargs.get('instance')
         self.company_id = self.instance.user.company_id
         self.type = self.instance.display_type
-        self.days = self.instance.day_count
+        self.group_by = self.instance.display_type
+        self.count = self.instance.count
         self.labels = []
         self.datasets = []
         self.values = []
@@ -34,7 +35,7 @@ class BaseWidget(object):
 
     @property
     def start_date(self):
-        return self.today - datetime.timedelta(days=(self.days - 1))
+        return self.today - datetime.timedelta(days=(self.count - 1))
 
     @property
     def end_date(self):
@@ -49,7 +50,7 @@ class BaseWidget(object):
         qs = self.get_base_queryset().filter(company_id=self.company_id)
         if hasattr(self, 'values') and self.values:
             qs = qs.values(*self.values)
-        if hasattr(self, 'days') and self.days:
+        if hasattr(self, 'count') and self.days:
             date_kwargs = {self.date_attribute + '__gte': self.start_date, self.date_attribute + '__lte': self.end_date}
             qs = qs.filter(**date_kwargs)
         return qs
@@ -61,7 +62,7 @@ class BaseWidget(object):
                 sub_date = self.end_date - datetime.timedelta(days=(self.days - i - 1))
                 labels.append(sub_date)
                 self.group_indices[sub_date] = i
-        else:
+        elif self.group_by == 'month':
             self.group_indices = {7: 0, 8: 1, 9: 2}
             return ['July', 'August', 'September']
 

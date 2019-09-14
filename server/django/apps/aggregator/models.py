@@ -20,12 +20,20 @@ DISPLAY_TYPES = (
     ('Heatmap', 'Heatmap'),
 )
 
+GROUP_BY = (
+    ('Day', 'Day'),
+    ('Week', 'Week'),
+    ('Month', 'Month'),
+    ('Year', 'Year'),
+)
+
 
 class Widget(models.Model):
     name = models.CharField(max_length=255, blank=True)
     widget = models.CharField(choices=WIDGET_CHOICES, max_length=255)
     order = models.PositiveSmallIntegerField(default=1)
-    day_count = models.PositiveSmallIntegerField(default=7)
+    group_by = models.CharField(choices=GROUP_BY, max_length=10, default=GROUP_BY[0][0])
+    count = models.PositiveSmallIntegerField(default=7)
     display_type = models.CharField(choices=DISPLAY_TYPES, default=DISPLAY_TYPES[0][0], max_length=255)
     user = models.ForeignKey(User, related_name='widgets', on_delete=models.CASCADE)
 
