@@ -1,5 +1,3 @@
-from django.db.models import Sum
-
 from apps.aggregator.base_widgets import BaseWidget
 from apps.voucher.models import SalesVoucher
 
@@ -20,13 +18,10 @@ class SalesCountByParty(SalesCountWidget):
 
 
 class SalesAmountWidget(BaseWidget):
-    data_field = 'sum'
+    sum = 'total_amount'
 
     def get_base_queryset(self):
         return SalesVoucher.objects.all()
-
-    def annotate(self, qs):
-        return qs.annotate(sum=Sum('total_amount'))
 
 
 class SalesAmountByAgent(SalesAmountWidget):

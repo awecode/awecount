@@ -4,12 +4,16 @@ import time
 from dateutil.rrule import rrule, MONTHLY, YEARLY
 from django.db.models.functions import ExtractMonth, ExtractYear
 
-from django.db.models import Count
+from django.db.models import Count, Sum
 
 
 class BaseWidget(object):
     date_attribute = 'date'
     data_field = 'cnt'
+    sum_field = None
+    
+    # By defaults, processes count of `label_field`
+    # Set `sum_field` to process sum
 
     def __init__(self, *args, **kwargs):
 
@@ -32,6 +36,9 @@ class BaseWidget(object):
         # TODO Run time check
         self.start_date = self.get_start_date(delta=self.group_by, count=self.count)
         self.end_date = self.today
+
+        if self.sum_field:
+            self.data_field = 'sum'
 
     def is_series(self):
         return self.type.lower() not in ['pie', 'percentage', 'table']
@@ -125,11 +132,11 @@ class BaseWidget(object):
             qs = self.get_nonseries_queryset()
         return self.annotate(qs)
 
-    def annotate(self, qs):
-        # Override for sum
-        # By default count 
+    def annotate(self, qs): 
         if self.data_field == 'cnt':
             return qs.annotate(cnt=Count(self.label_field))
+        elif self.data_field == 'sum':
+            return qs.annotate(sum=Sum(self.sum_field))
         return qs
 
     def get_nonseries_queryset(self):
