@@ -1,3 +1,4 @@
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 
 from rest_framework.decorators import action
@@ -23,6 +24,23 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
     row = ChequeDepositRow
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = super().get_queryset()
+        data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_cheque_deposit_update
+        return Response(data)
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_cleared(self, request, pk):
+        cheque_deposit = self.get_object()
+        try:
+            cheque_deposit.status = 'Cleared'
+            cheque_deposit.save()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
 
     def get_queryset(self):
         queryset = super(ChequeDepositViewSet, self).get_queryset()
