@@ -10,6 +10,7 @@ class SalesCountWidget(BaseWidget):
 class SalesCountByAgent(SalesCountWidget):
     name = 'Sales Count by Agent'
     label_field = 'sales_agent__name'
+    table_headings = ['Sales Agent', 'Sales Count']
 
 
 class SalesCountByParty(SalesCountWidget):

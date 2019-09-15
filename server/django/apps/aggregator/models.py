@@ -50,6 +50,6 @@ class Widget(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.name = self.widget + ' for last ' + str(self.count)
-        self.name += ' ' + self.group_by if self.count == 1 else self.group_by+'s'
+        self.name = '{} for last {} '.format(self.widget, self.count)
+        self.name += self.group_by if self.count == 1 else self.group_by+'s'
         super().save(*args, **kwargs)
