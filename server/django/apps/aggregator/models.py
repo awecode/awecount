@@ -26,6 +26,7 @@ DISPLAY_TYPES = (
 
 GROUP_BY = (
     ('Day', 'Day(s)'),
+    ('Week', 'Week(s)'),
     ('Month', 'Month(s)'),
     ('Year', 'Year(s)'),
 )
