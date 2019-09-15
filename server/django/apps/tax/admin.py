@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.tax.models import TaxScheme
+from .models import TaxScheme, TaxPayment
 
 
 class TaxSchemeAdmin(admin.ModelAdmin):
@@ -10,3 +10,12 @@ class TaxSchemeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TaxScheme, TaxSchemeAdmin)
+
+
+class TaxPaymentAdmin(admin.ModelAdmin):
+    search_fields = ('tax_scheme__name', 'tax_scheme__short_name', 'company__name', 'voucher_no', 'amount', 'remarks')
+    list_filter = ('company', 'cr_account', 'status')
+    list_display = ('date', 'voucher_no', 'amount')
+
+
+admin.site.register(TaxPayment, TaxPaymentAdmin)
