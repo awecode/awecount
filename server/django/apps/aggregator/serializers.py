@@ -2,6 +2,7 @@ import json
 
 from auditlog.models import LogEntry
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
 from .models import Widget
 
@@ -45,6 +46,14 @@ class WidgetSerializer(serializers.ModelSerializer):
 
 
 class WidgetUpdateSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if data.get('count') < 1:
+            # TODO proper exception message
+            raise APIException({'detail': 'Count is set as 0'})
+        data['user_id'] = self.context.get('request').user.id
+        return data
+
     class Meta:
         model = Widget
-        exclude = ('user', 'name',)
+        exclude = ('user', 'name', 'order')

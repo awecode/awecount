@@ -1,11 +1,9 @@
-from inspect import isclass
-
 from django.core.exceptions import ValidationError, SuspiciousOperation
-
-from rest_framework import mixins, viewsets, status, serializers
+from inspect import isclass
+from rest_framework import mixins, viewsets, serializers
+from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 from awecount.utils.helpers import merge_dicts
 
@@ -29,11 +27,11 @@ class GenericSerializer(serializers.Serializer):
 
 
 class CRULViewSet(CompanyViewSetMixin,
-                                      mixins.CreateModelMixin,
-                                      mixins.ListModelMixin,
-                                      mixins.UpdateModelMixin,
-                                      mixins.RetrieveModelMixin,
-                                      viewsets.GenericViewSet):
+                  mixins.CreateModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.RetrieveModelMixin,
+                  viewsets.GenericViewSet):
     """
     A viewset that provides `retrieve`, `create`, 'delete', and `list` actions.
 
@@ -97,7 +95,8 @@ class CRULViewSet(CompanyViewSetMixin,
         return Response(dct)
 
     def perform_create(self, serializer):
-        serializer.validated_data['company_id'] = self.request.company_id
+        if hasattr(serializer.instance.__class__, 'company_id'):
+            serializer.validated_data['company_id'] = self.request.company_id
         try:
             serializer.save()
         except ValidationError as e:

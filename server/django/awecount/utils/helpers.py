@@ -12,3 +12,10 @@ def merge_dicts(dict1, dict2):
             yield (k, dict1[k])
         else:
             yield (k, dict2[k])
+
+
+def choice_parser(options):
+    _list = [option[0] for option in options]
+    data = [{'value': value, 'text': value} for value in _list]
+    data.insert(0, {'value': '', 'text': '--------'})
+    return data
