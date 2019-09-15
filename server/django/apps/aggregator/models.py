@@ -35,6 +35,7 @@ class Widget(models.Model):
     group_by = models.CharField(choices=GROUP_BY, max_length=10, default=GROUP_BY[0][0])
     count = models.PositiveSmallIntegerField(default=7)
     display_type = models.CharField(choices=DISPLAY_TYPES, default=DISPLAY_TYPES[0][0], max_length=255)
+    is_active = models.BooleanField(default=True)
     user = models.ForeignKey(User, related_name='widgets', on_delete=models.CASCADE)
 
     def get_data(self):
