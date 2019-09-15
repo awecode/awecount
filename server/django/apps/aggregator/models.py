@@ -11,8 +11,10 @@ DISPLAY_TYPES = (
     ('Line', 'Line'),
     ('Radar', 'Radar'),
 
-    ('Bubble', 'Bubble'),
-    ('Scatter', 'Scatter'),
+    # #2D
+    # ('Bubble', 'Bubble'),
+    # #3D
+    # ('Scatter', 'Scatter'),
 
     # Non-Series
     ('Pie', 'Pie'),
