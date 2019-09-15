@@ -52,6 +52,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     remarks = models.TextField(blank=True, null=True)
     is_export = models.BooleanField(default=False)
 
+    total_amount = models.FloatField(blank=True, null=True)
+
     print_count = models.PositiveSmallIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_invoices')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_invoices')
@@ -77,6 +79,12 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             )
 
     def apply_transactions(self):
+
+        voucher_meta = self.get_voucher_meta()
+        if self.total_amount != voucher_meta['grand_total']:
+            self.total_amount = voucher_meta['grand_total']
+            self.save()
+
         if self.status == 'Cancelled':
             self.cancel_transactions()
             return
@@ -177,6 +185,8 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     remarks = models.TextField(blank=True, null=True)
     is_import = models.BooleanField(default=False)
 
+    total_amount = models.FloatField(blank=True, null=True)
+
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
@@ -196,6 +206,12 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             )
 
     def apply_transactions(self):
+
+        voucher_meta = self.get_voucher_meta()
+        if self.total_amount != voucher_meta['grand_total']:
+            self.total_amount = voucher_meta['grand_total']
+            self.save()
+
         if self.status == 'Cancelled':
             self.cancel_transactions()
             return
@@ -306,6 +322,8 @@ class CreditNote(TransactionModel, InvoiceModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
+    total_amount = models.FloatField(blank=True, null=True)
+
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credit_notes')
@@ -325,6 +343,11 @@ class CreditNote(TransactionModel, InvoiceModel):
             )
 
     def apply_transactions(self):
+        voucher_meta = self.get_voucher_meta()
+        if self.total_amount != voucher_meta['grand_total']:
+            self.total_amount = voucher_meta['grand_total']
+            self.save()
+
         if self.status == 'Cancelled':
             self.cancel_transactions()
             return
@@ -423,6 +446,8 @@ class DebitNote(TransactionModel, InvoiceModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
+    total_amount = models.FloatField(blank=True, null=True)
+
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='debit_notes')
@@ -442,6 +467,11 @@ class DebitNote(TransactionModel, InvoiceModel):
             )
 
     def apply_transactions(self):
+        voucher_meta = self.get_voucher_meta()
+        if self.total_amount != voucher_meta['grand_total']:
+            self.total_amount = voucher_meta['grand_total']
+            self.save()
+            
         if self.status == 'Cancelled':
             self.cancel_transactions()
             return

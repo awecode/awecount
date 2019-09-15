@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'apps.tax',
     'apps.product',
     'apps.bank',
+    'apps.aggregator',
 ]
 
 MIDDLEWARE = [

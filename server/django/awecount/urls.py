@@ -40,10 +40,12 @@ router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
-router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
 router.register('sales-agent', voucher.SalesAgentViewSet, base_name='sales-agent')
 router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchase-book')
+
+router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
+router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
 
 urlpatterns = [
                   path('aweadmin/', admin.site.urls),

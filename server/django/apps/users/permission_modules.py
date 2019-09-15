@@ -36,6 +36,7 @@ MODULES = [
     *gdp('ChequeIssue'),
     *gdp('ChequeDeposit'), 'ChequeDepositIssuedModify',
     *gdp('SalesAgent'),
+    *gdp('Widget'),
 ]
 
 module_pairs = [(module, module) for module in MODULES]
