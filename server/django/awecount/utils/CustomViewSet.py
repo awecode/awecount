@@ -95,7 +95,7 @@ class CRULViewSet(CompanyViewSetMixin,
         return Response(dct)
 
     def perform_create(self, serializer):
-        if hasattr(serializer.instance.__class__, 'company_id'):
+        if hasattr(serializer.Meta.model, 'company_id'):
             serializer.validated_data['company_id'] = self.request.company_id
         try:
             serializer.save()
