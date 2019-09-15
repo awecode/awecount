@@ -11,7 +11,8 @@ class BaseWidget(object):
     date_attribute = 'date'
     data_field = 'cnt'
     sum_field = None
-    
+    table_headings = []
+
     # By defaults, processes count of `label_field`
     # Set `sum_field` to process sum
 
@@ -91,10 +92,19 @@ class BaseWidget(object):
     def __str__(self):
         return self.name
 
+    def get_table_headings(self, data):
+        dct = {}
+        if data and len(data):
+            for idx, key in enumerate(data[0].keys()):
+                dct[key] = self.table_headings[idx] if self.table_headings else key.replace('__', ' ').replace('_', ' ').replace(
+                    'cnt', 'Count').title()
+        return dct
+
     def get_data(self):
         data = self.process_queryset()
         if self.is_table():
             self.datasets = data
+            self.labels = self.get_table_headings(data)
         elif self.is_series():
             self.labels = self.get_date_labels()
             dct = {}
@@ -132,7 +142,7 @@ class BaseWidget(object):
             qs = self.get_nonseries_queryset()
         return self.annotate(qs)
 
-    def annotate(self, qs): 
+    def annotate(self, qs):
         if self.data_field == 'cnt':
             return qs.annotate(cnt=Count(self.label_field))
         elif self.data_field == 'sum':

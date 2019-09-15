@@ -18,7 +18,7 @@ class SalesCountByParty(SalesCountWidget):
 
 
 class SalesAmountWidget(BaseWidget):
-    sum = 'total_amount'
+    sum_field = 'total_amount'
 
     def get_base_queryset(self):
         return SalesVoucher.objects.all()
@@ -27,6 +27,7 @@ class SalesAmountWidget(BaseWidget):
 class SalesAmountByAgent(SalesAmountWidget):
     name = 'Sales Amount by Agent'
     label_field = 'sales_agent__name'
+    table_headings = ['Sales Agent', 'Amount']
 
 
 class SalesAmountByParty(SalesAmountWidget):
