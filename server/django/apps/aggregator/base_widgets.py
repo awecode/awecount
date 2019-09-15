@@ -42,7 +42,7 @@ class BaseWidget(object):
             self.data_field = 'sum'
 
     def is_series(self):
-        return self.type.lower() not in ['pie', 'percentage', 'table']
+        return self.type.lower() not in ['table', 'pie', 'percentage', 'doughnut', 'polar area']
 
     def is_table(self):
         return self.type == 'Table'
@@ -114,17 +114,21 @@ class BaseWidget(object):
                 dct[datum[self.label_field]][self.group_indices[datum[self.group_by]]] = datum[self.data_field]
 
             for key, val in dct.items():
-                self.datasets.append({'name': key or 'None', 'values': val})
+                self.datasets.append({'label': key or 'None', 'data': val})
         else:
             for datum in data:
                 self.labels.append(datum.get(self.label_field) or 'None')
                 self.values.append(datum.get(self.data_field))
-            self.datasets = [{'values': self.values}]
+            self.datasets = [{'data': self.values}]
         return {
-            'type': self.type,
+            'type': self.title_case(self.type),
             'labels': self.labels,
             'datasets': self.datasets,
         }
+
+    def title_case(self, st):
+        ret = ''.join(x for x in st.title() if not x.isspace())
+        return ret[0].lower() + ret[1:]
 
     def process_queryset(self):
         qs = self.get_queryset().filter(company_id=self.company_id)
