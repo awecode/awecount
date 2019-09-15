@@ -1,4 +1,6 @@
 from auditlog.models import LogEntry
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -22,10 +24,11 @@ class WidgetViewSet(CRULViewSet):
         else:
             return WidgetUpdateSerializer
 
-    @property
-    def paginator(self):
-        if self.action == 'list':
-            return None
+
+    @action(detail=False)
+    def data(self, request):
+        qs = self.get_queryset().filter(is_active=True)
+        return Response(WidgetSerializer(qs, many=True).data)
 
     def get_queryset(self):
         return Widget.objects.filter(user=self.request.user).order_by('order')
