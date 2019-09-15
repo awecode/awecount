@@ -33,7 +33,7 @@ class WidgetViewSet(CRULViewSet):
         return Response(WidgetSerializer(qs, many=True).data)
 
     def get_queryset(self):
-        return Widget.objects.filter(user=self.request.user).order_by('order')
+        return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
 
     def get_defaults(self, request=None):
         data = {
