@@ -6,22 +6,27 @@ from .widgets import WIDGET_CHOICES, WIDGET_DICT
 DISPLAY_TYPES = (
     ('Table', 'Table'),
 
-    # Axis - 2 dimensions
+    # Series
     ('Bar', 'Bar'),
     ('Line', 'Line'),
-    ('Scatter', 'Scatter'),
+    ('Radar', 'Radar'),
 
-    ('Axis-mixed', 'Axis-mixed'),
+    # #2D
+    # ('Bubble', 'Bubble'),
+    # #3D
+    # ('Scatter', 'Scatter'),
 
-    # Pie
+    # Non-Series
     ('Pie', 'Pie'),
-    ('Percentage', 'Percentage'),
+    ('Doughnut', 'Doughnut'),
+    ('Polar Area', 'Polar Area'),
 
-    ('Heatmap', 'Heatmap'),
+    ('Mixed', 'Mixed'),
 )
 
 GROUP_BY = (
     ('Day', 'Day(s)'),
+    ('Week', 'Week(s)'),
     ('Month', 'Month(s)'),
     ('Year', 'Year(s)'),
 )
@@ -50,7 +55,6 @@ class Widget(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.name:
-            self.name = self.widget + ' for last ' + str(self.count)
-            self.name += self.group_by if self.count == 1 else self.group_by+'s'
+        self.name = '{} for last {} '.format(self.widget, self.count)
+        self.name += self.group_by if self.count == 1 else self.group_by + 's'
         super().save(*args, **kwargs)

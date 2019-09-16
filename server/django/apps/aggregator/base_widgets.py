@@ -1,8 +1,8 @@
 import datetime
 import time
 
-from dateutil.rrule import rrule, MONTHLY, YEARLY
-from django.db.models.functions import ExtractMonth, ExtractYear
+from dateutil.rrule import rrule, MONTHLY, YEARLY, WEEKLY
+from django.db.models.functions import ExtractMonth, ExtractYear, ExtractWeek
 
 from django.db.models import Count, Sum
 
@@ -42,7 +42,7 @@ class BaseWidget(object):
             self.data_field = 'sum'
 
     def is_series(self):
-        return self.type.lower() not in ['pie', 'percentage', 'table']
+        return self.type.lower() not in ['table', 'pie', 'percentage', 'doughnut', 'polar area']
 
     def is_table(self):
         return self.type == 'Table'
@@ -55,9 +55,11 @@ class BaseWidget(object):
             year = year - count + 1
             month = 1
             day = 1
-        if delta == 'month':
+        elif delta == 'month':
             month = month - count + 1
             day = 1
+        elif delta == 'week':
+            day = day - count * 7 + 1
         if delta in ['day', 'date']:
             day = day - count
         timestamp = time.mktime((year, month, day, 0, 0, 0, 0, 0, 0))
@@ -81,6 +83,12 @@ class BaseWidget(object):
             for idx, date in enumerate(dates):
                 self.group_indices[date.month] = idx
                 labels.append(date.strftime("%B"))
+        elif self.group_by == 'week':
+            dates = [dt for dt in rrule(WEEKLY, dtstart=self.start_date, until=self.end_date)]
+            for idx, date in enumerate(dates):
+                week_num = date.isocalendar()[1]
+                self.group_indices[week_num] = idx
+                labels.append('Week {}'.format(week_num))
         elif self.group_by == 'year':
             dates = [dt for dt in rrule(YEARLY, dtstart=self.start_date, until=self.end_date)]
             for idx, date in enumerate(dates):
@@ -114,17 +122,21 @@ class BaseWidget(object):
                 dct[datum[self.label_field]][self.group_indices[datum[self.group_by]]] = datum[self.data_field]
 
             for key, val in dct.items():
-                self.datasets.append({'name': key or 'None', 'values': val})
+                self.datasets.append({'label': key or 'None', 'data': val})
         else:
             for datum in data:
                 self.labels.append(datum.get(self.label_field) or 'None')
                 self.values.append(datum.get(self.data_field))
-            self.datasets = [{'values': self.values}]
+            self.datasets = [{'data': self.values}]
         return {
-            'type': self.type,
+            'type': self.title_case(self.type),
             'labels': self.labels,
             'datasets': self.datasets,
         }
+
+    def title_case(self, st):
+        ret = ''.join(x for x in st.title() if not x.isspace())
+        return ret[0].lower() + ret[1:]
 
     def process_queryset(self):
         qs = self.get_queryset().filter(company_id=self.company_id)
@@ -158,5 +170,7 @@ class BaseWidget(object):
             qs = qs.annotate(month=ExtractMonth(self.date_attribute))
         elif self.group_by == 'year':
             qs = qs.annotate(year=ExtractYear(self.date_attribute))
+        elif self.group_by == 'week':
+            qs = qs.annotate(week=ExtractWeek(self.date_attribute))
         qs = qs.values(self.label_field, self.group_by).order_by(self.label_field, self.group_by)
         return qs
