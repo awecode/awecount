@@ -25,23 +25,6 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = ChequeDeposit
     row = ChequeDepositRow
 
-    @action(detail=True)
-    def details(self, request, pk):
-        qs = super().get_queryset()
-        data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
-        data['can_update_issued'] = request.company.enable_cheque_deposit_update
-        return Response(data)
-
-    @action(detail=True, methods=['POST'])
-    def mark_as_cleared(self, request, pk):
-        cheque_deposit = self.get_object()
-        try:
-            cheque_deposit.status = 'Cleared'
-            cheque_deposit.save()
-            return Response({})
-        except Exception as e:
-            raise APIException(str(e))
-
     def get_queryset(self):
         queryset = super(ChequeDepositViewSet, self).get_queryset()
         return queryset.order_by('-pk')
@@ -53,15 +36,28 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = self.get_queryset()
+        qs = super().get_queryset()
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_cheque_deposit_update
         return Response(data)
 
-    @action(detail=False)
-    def get_next_no(self, request):
-        voucher_no = get_next_voucher_no(ChequeDeposit, request.company_id)
-        return Response({'voucher_no': voucher_no})
+    @action(detail=True, methods=['POST'])
+    def mark_as_cleared(self, request, pk):
+        cheque_deposit = self.get_object()
+        if cheque_deposit.status == 'Issued':
+            cheque_deposit.status = 'Cleared'
+            cheque_deposit.save()
+            return Response({})
+        else:
+            raise APIException('This voucher cannot be mark as cleared!')
+
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = self.get_queryset()
+        data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data['can_update_issued'] = request.company.enable_cheque_deposit_update
+        return Response(data)
 
 
 class ChequeIssueViewSet(CRULViewSet):

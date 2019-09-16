@@ -46,18 +46,16 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
 
     class Meta:
         model = ChequeDeposit
-        exclude = ('company', 'clearing_date', 'deposited_by',)
+        exclude = ('company', 'clearing_date',)
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-
-    def get_name(self, obj):
-        return '{}: {}'.format(obj.voucher_no, obj.deposited_by)
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.name')
+    benefactor_name = serializers.ReadOnlyField(source='bank_account.name')
 
     class Meta:
         model = ChequeDeposit
-        fields = ('id', 'voucher_no', 'bank_account', 'date', 'deposited_by', 'name')
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name')
 
 
 class ChequeIssueSerializer(serializers.ModelSerializer):
