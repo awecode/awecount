@@ -21,7 +21,7 @@ class TaxSchemeMinSerializer(serializers.ModelSerializer):
 
 
 class TaxPaymentSerializer(serializers.ModelSerializer):
-    cr_account_name  = serializers.ReadOnlyField(source="cr_account.name")
+    cr_account_name = serializers.ReadOnlyField(source="cr_account.name")
     tax_scheme_name = serializers.ReadOnlyField(source='tax_scheme.short_name')
 
     class Meta:
