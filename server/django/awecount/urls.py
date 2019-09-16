@@ -51,7 +51,7 @@ router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue
 
 # tax
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
-router.register('tax-payment', tax.TaxPaymentViewSet, base_name='tax-payment')
+router.register('tax-payments', tax.TaxPaymentViewSet, base_name='tax-payment')
 
 # aggregator
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
