@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework import filters as rf_filters
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.models import BankAccount
@@ -54,6 +55,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
          Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
          ItemSalesSerializer),
     ]
+    filter_backends = [rf_filters.OrderingFilter]
 
     def get_collections(self, request=None):
         if request.company.enable_sales_agents:
