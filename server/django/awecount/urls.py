@@ -23,12 +23,15 @@ router.register('parties', ledger.PartyViewSet, base_name='parties')
 router.register('categories', ledger.CategoryViewSet, base_name='categories')
 router.register('accounts', ledger.AccountViewSet, base_name='accounts')
 router.register('inventory-account', item.InventoryAccountViewSet, base_name='inventory-account')
+
+# item
 router.register('items', item.ItemViewSet, base_name='item')
 router.register('books', item.BookViewSet, base_name='book')
 router.register('brands', item.BrandViewSet, base_name='brands')
 router.register('units', item.UnitViewSet, base_name='unit')
 router.register('inventory-categories', item.InventoryCategoryViewSet, base_name='inventory-categories')
-router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
+
+# voucher
 router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
 router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, base_name='purchase-vouchers')
@@ -37,13 +40,20 @@ router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note
 router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
-router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
-router.register('bank-account', bank.BankAccountViewSet)
-router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
 router.register('sales-agent', voucher.SalesAgentViewSet, base_name='sales-agent')
 router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchase-book')
 
+# bank
+router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
+router.register('bank-account', bank.BankAccountViewSet)
+router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
+
+# tax
+router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
+router.register('tax-payment', tax.TaxPaymentViewSet, base_name='tax-payment')
+
+# aggregator
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
 
