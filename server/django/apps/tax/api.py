@@ -23,3 +23,6 @@ class TaxPaymentViewSet(CRULViewSet):
         ('cr_accounts', Account, AccountMinSerializer),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
     )
+
+    def get_queryset(self, **kwargs):
+        return super().get_queryset().order_by('-id')
