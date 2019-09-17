@@ -18,7 +18,7 @@ from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.filters import SalesVoucherDateFilterSet, PurchaseVoucherDateFilterSet
+from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherDateFilterSet
 from apps.voucher.models import SalesAgent
 
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
@@ -55,7 +55,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
          Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
          ItemSalesSerializer),
     ]
-    filter_backends = [rf_filters.OrderingFilter]
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+
+    filterset_class = SalesVoucherFilterSet
+
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number', 'customer_name',
+                     'rows__item__name']
 
     def get_collections(self, request=None):
         if request.company.enable_sales_agents:
@@ -580,7 +586,7 @@ class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
 class SalesBookViewSet(CRULViewSet):
     serializer_class = SalesBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = SalesVoucherDateFilterSet
+    filterset_class = SalesVoucherFilterSet
 
     def get_queryset(self, **kwargs):
         qs = super().get_queryset().prefetch_related(
