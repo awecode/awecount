@@ -12,13 +12,15 @@ class CompanySerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_logo_url(self, obj):
+        if not obj.logo:
+            return
         if self.request:
             request = self.request
             return request.build_absolute_uri(obj.logo.url)
         elif self.context.get('request'):
             request = self.context.get('request')
             return request.build_absolute_uri(obj.logo.url)
-        return obj.logo.url if obj.logo else None
+        return obj.logo.url
 
     class Meta:
         model = Company
