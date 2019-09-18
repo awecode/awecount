@@ -66,6 +66,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             DebitNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
+        instance.apply_transactions()
         return instance
 
     def update(self, instance, validated_data):
@@ -82,7 +83,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
-        DebitNote.apply_transactions(instance)
+        instance.apply_transactions()
         return instance
 
     class Meta:

@@ -188,7 +188,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item, ItemPurchaseSerializer),
+        ('items', Item.objects.filter(can_be_purchased=True), ItemPurchaseSerializer),
     )
 
     def get_create_defaults(self, request=None):
