@@ -30,13 +30,13 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     voucher_no = serializers.ReadOnlyField()
     rows = PurchaseVoucherRowSerializer(many=True)
 
-    def assign_voucher_number(self, validated_data, instance):
-        if instance and instance.voucher_no:
-            return
-        if validated_data.get('status') in ['Draft', 'Cancelled']:
-            return
-        next_voucher_no = get_next_voucher_no(PurchaseVoucher, self.context['request'].company_id)
-        validated_data['voucher_no'] = next_voucher_no
+    # def assign_voucher_number(self, validated_data, instance):
+    #     if instance and instance.voucher_no:
+    #         return
+    #     if validated_data.get('status') in ['Draft', 'Cancelled']:
+    #         return
+    #     next_voucher_no = get_next_voucher_no(PurchaseVoucher, self.context['request'].company_id)
+    #     validated_data['voucher_no'] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -60,7 +60,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         rows_data = validated_data.pop('rows')
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
-        self.assign_voucher_number(validated_data, instance=None)
+        # self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
@@ -75,7 +75,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         self.assign_fiscal_year(validated_data, instance=instance)
-        self.assign_voucher_number(validated_data, instance)
+        # self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
