@@ -12,6 +12,8 @@ class CompanySerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_logo_url(self, obj):
+        if not obj.logo:
+            return
         if self.request:
             request = self.request
             return request.build_absolute_uri(obj.logo.url)
