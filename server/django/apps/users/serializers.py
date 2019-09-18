@@ -18,7 +18,7 @@ class CompanySerializer(serializers.ModelSerializer):
         elif self.context.get('request'):
             request = self.context.get('request')
             return request.build_absolute_uri(obj.logo.url)
-        return obj.logo.url
+        return obj.logo.url if obj.logo else None
 
     class Meta:
         model = Company
