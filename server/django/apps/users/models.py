@@ -9,8 +9,8 @@ from separatedvaluesfield.models import SeparatedValuesField
 from .permission_modules import module_pairs
 
 ORGANIZATION_TYPES = (
-    ('sole_proprietorship', 'Sole Proprietorship'), ('partnership', 'Partnership'), ('corporation', 'Corporation'),
-    ('non_profit', 'Non-profit'))
+    ('private_limited', 'Private Limited'), ('public_limited', 'Public Limited'), ('sole_proprietorship', 'Sole Proprietorship'),
+    ('partnership', 'Partnership'), ('corporation', 'Corporation'), ('non_profit', 'Non-profit'))
 
 
 class FiscalYear(models.Model):
