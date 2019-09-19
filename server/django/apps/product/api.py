@@ -51,6 +51,10 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
         ('brands', Brand, BrandSerializer),
     )
 
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
+    filterset_class = ItemFilterSet
+
     def get_queryset(self, **kwargs):
         queryset = Item.objects.filter(category__name="Book", company=self.request.company)
         return queryset
