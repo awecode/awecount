@@ -87,9 +87,10 @@ class BrandViewSet(InputChoiceMixin, CRULViewSet):
 
 
 class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
-    filter_backends = (SearchFilter,)
-    search_fields = ('code', 'name',)
     serializer_class = InventoryAccountSerializer
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields = ('code', 'name',)
 
     @action(detail=True, methods=['get'], url_path='journal-entries')
     def journal_entries(self, request, pk=None):
