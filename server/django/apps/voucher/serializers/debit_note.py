@@ -96,7 +96,7 @@ class DebitNoteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DebitNote
-        fields = ('id', 'voucher_no', 'party', 'date',)
+        fields = ('id', 'voucher_no', 'party', 'date', 'status',)
 
 
 class DebitNoteDetailSerializer(serializers.ModelSerializer):
