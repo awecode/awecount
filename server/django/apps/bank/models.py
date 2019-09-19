@@ -53,9 +53,9 @@ class ChequeDeposit(models.Model):
     )
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
-    bank_account = models.ForeignKey(Account, related_name='cheque_deposits', on_delete=models.CASCADE)
     date = models.DateField()
     clearing_date = models.DateField(blank=True, null=True)
+    bank_account = models.ForeignKey(BankAccount, related_name='cheque_deposits', on_delete=models.CASCADE)
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=254, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
@@ -65,6 +65,9 @@ class ChequeDeposit(models.Model):
 
     def __str__(self):
         return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)
+
+    def get_voucher_no(self):
+        return self.id
 
     @property
     def total(self):

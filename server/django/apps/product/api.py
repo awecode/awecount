@@ -4,7 +4,6 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -24,9 +23,11 @@ from .models import Category as InventoryCategory
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
-    search_fields = ['name', 'code', 'description', 'search_data']
+    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price',]
     filterset_class = ItemFilterSet
+
     detail_serializer_class = ItemDetailSerializer
+
     collections = (
         ('brands', Brand, BrandSerializer),
         ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
@@ -48,6 +49,10 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
     collections = (
         ('brands', Brand, BrandSerializer),
     )
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
+    filterset_class = ItemFilterSet
 
     def get_queryset(self, **kwargs):
         queryset = Item.objects.filter(category__name="Book", company=self.request.company)
@@ -81,9 +86,10 @@ class BrandViewSet(InputChoiceMixin, CRULViewSet):
 
 
 class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
-    filter_backends = (SearchFilter,)
-    search_fields = ('code', 'name',)
     serializer_class = InventoryAccountSerializer
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields = ('code', 'name',)
 
     @action(detail=True, methods=['get'], url_path='journal-entries')
     def journal_entries(self, request, pk=None):

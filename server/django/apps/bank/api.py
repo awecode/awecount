@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeDepositRow
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeVoucherSerializer
-from apps.ledger.models import Party
+from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -24,6 +24,10 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
     row = ChequeDepositRow
+    collections = [
+        ('benefactors', Account.objects.only('id', 'name', )),
+        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
+    ]
 
     def get_queryset(self):
         queryset = super(ChequeDepositViewSet, self).get_queryset()

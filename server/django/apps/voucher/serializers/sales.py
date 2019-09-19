@@ -129,11 +129,11 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):
-    party = serializers.ReadOnlyField(source='party.name')
+    party_name = serializers.ReadOnlyField(source='party.name')
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party', 'date', 'status', 'customer_name')
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name', 'total_amount')
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from .models import Item
+from .models import Item, InventoryAccount
 
 
 class ItemFilterSet(filters.FilterSet):
