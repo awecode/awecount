@@ -50,8 +50,8 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
-    bank_account_name = serializers.ReadOnlyField(source='bank_account.name')
-    benefactor_name = serializers.ReadOnlyField(source='bank_account.name')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.account_number')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
 
     class Meta:
         model = ChequeDeposit
