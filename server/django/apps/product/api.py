@@ -24,9 +24,11 @@ from .models import Category as InventoryCategory
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
-    search_fields = ['name', 'code', 'description', 'search_data']
+    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price',]
     filterset_class = ItemFilterSet
+
     detail_serializer_class = ItemDetailSerializer
+
     collections = (
         ('brands', Brand, BrandSerializer),
         ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
