@@ -18,7 +18,7 @@ from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet
+from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet
 from apps.voucher.models import SalesAgent
 
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
@@ -284,6 +284,12 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
+                     'rows__item__name']
+    filterset_class = CreditNoteFilterSet
+
     collections = (
         ('discounts', SalesDiscount, SalesDiscountSerializer),
         ('units', Unit),

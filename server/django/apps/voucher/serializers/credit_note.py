@@ -96,7 +96,7 @@ class CreditNoteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreditNote
-        fields = ('id', 'voucher_no', 'party', 'date',)
+        fields = ('id', 'voucher_no', 'party', 'date', 'status',)
 
 
 class CreditNoteDetailSerializer(serializers.ModelSerializer):

@@ -1,11 +1,14 @@
 from django_filters import rest_framework as filters, DateFilter, MultipleChoiceFilter
 
-from .models import SalesVoucher, PurchaseVoucher, STATUSES
+from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote
 
 
-class SalesVoucherFilterSet(filters.FilterSet):
+class DateFilterSet(filters.FilterSet):
     start_date = DateFilter(field_name='date', lookup_expr='gte', )
     end_date = DateFilter(field_name='date', lookup_expr='lte')
+
+
+class SalesVoucherFilterSet(DateFilterSet):
     status = MultipleChoiceFilter(choices=STATUSES)
 
     class Meta:
@@ -13,11 +16,17 @@ class SalesVoucherFilterSet(filters.FilterSet):
         fields = ()
 
 
-class PurchaseVoucherFilterSet(filters.FilterSet):
-    start_date = DateFilter(field_name='date', lookup_expr='gte', )
-    end_date = DateFilter(field_name='date', lookup_expr='lte')
+class PurchaseVoucherFilterSet(DateFilterSet):
     status = MultipleChoiceFilter(choices=STATUSES)
 
     class Meta:
         model = PurchaseVoucher
+        fields = ()
+
+
+class CreditNoteFilterSet(DateFilterSet):
+    status = MultipleChoiceFilter(choices=CREDIT_NOTE_STATUSES)
+
+    class Meta:
+        model = CreditNote
         fields = ()
