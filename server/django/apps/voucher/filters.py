@@ -1,5 +1,6 @@
 from django_filters import rest_framework as filters, DateFilter, MultipleChoiceFilter
 
+from apps.voucher.models import SalesDiscount, PurchaseDiscount
 from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote
 
 
@@ -30,3 +31,15 @@ class CreditNoteFilterSet(DateFilterSet):
     class Meta:
         model = CreditNote
         fields = ()
+
+
+class SalesDiscountFilterSet(filters.FilterSet):
+    class Meta:
+        model = SalesDiscount
+        exclude = ()
+
+
+class PurchaseDiscountFilterSet(filters.FilterSet):
+    class Meta:
+        model = PurchaseDiscount
+        exclude = ()
