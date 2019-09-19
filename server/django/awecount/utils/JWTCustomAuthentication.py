@@ -29,7 +29,7 @@ class JWTCustomAuthentication(ObtainJSONWebToken):
             raise APIException({'non_field_errors': ['User not registered to any company.']})
 
         if user and 'token' in context:
-            context['company'] = CompanySerializer(user.company).data
+            context['company'] = CompanySerializer(user.company, request=request).data
             context['user'] = UserSerializer(user).data
         if user is not None:
             login(request, user)
@@ -52,7 +52,7 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
             raise APIException({'non_field_errors': ['User not registered to any company.']})
         data['refresh'] = text_type(refresh)
         data['access'] = text_type(refresh.access_token)
-        data['company'] = CompanySerializer(self.user.company).data
+        data['company'] = CompanySerializer(self.user.company, request=self.context.get('request')).data
         data['user'] = UserSerializer(self.user).data
         return data
 

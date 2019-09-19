@@ -1,5 +1,6 @@
 from django.core.files.base import ContentFile
 from rest_framework import serializers
+from rest_framework.exceptions import APIException, ValidationError
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountSerializer
@@ -53,7 +54,9 @@ class ItemPurchaseSerializer(serializers.ModelSerializer):
 class BookSerializer(ItemSerializer):
     def create(self, validated_data):
         request = self.context['request']
-        category = Category.objects.filter(name="Book", company=request.user.company)[0]
+        category = Category.objects.filter(name="Book", company=request.user.company).first()
+        if not category:
+            raise ValidationError({'detail': 'Please create "Book" category first!'})
         validated_data['category'] = category
 
         if category.items_purchase_ledger_type == 'global':

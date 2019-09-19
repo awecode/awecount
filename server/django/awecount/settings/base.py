@@ -59,7 +59,7 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'awecount.libs.pagination.PageNumberPagination',
-    'PAGINATE_BY': 20,
+    # 'PAGINATE_BY': 2,
     'PAGE_SIZE': 20,
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
