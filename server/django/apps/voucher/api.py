@@ -19,7 +19,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
-    SalesDiscountFilterSet, DebitNoteFilterSet
+    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet
 from apps.voucher.models import SalesAgent
 
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
@@ -604,6 +604,10 @@ class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
 
 class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = PurchaseDiscountSerializer
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['name', ]
+    filterset_class = PurchaseDiscountFilterSet
 
 
 class SalesBookViewSet(CRULViewSet):
