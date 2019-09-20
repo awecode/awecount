@@ -4,14 +4,17 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.bank.filters import ChequeDepositFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeDepositRow
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeVoucherSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer
-from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, DeleteRows
+
+from rest_framework import filters as rf_filters
+from django_filters import rest_framework as filters
 
 
 class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
@@ -28,6 +31,10 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('benefactors', Account.objects.only('id', 'name', )),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
     ]
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'bank_account__bank_name', 'bank_account__account_number', 'benefactor__name', 'deposited_by',]
+    filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
         queryset = super(ChequeDepositViewSet, self).get_queryset()
@@ -54,7 +61,6 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         else:
             raise APIException('This voucher cannot be mark as cleared!')
-
 
     @action(detail=True)
     def details(self, request, pk):

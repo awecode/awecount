@@ -55,7 +55,7 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name')
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'status')
 
 
 class ChequeIssueSerializer(serializers.ModelSerializer):
