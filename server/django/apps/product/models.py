@@ -311,6 +311,8 @@ class Item(models.Model):
                                                  related_name='discount_received_item')
     expense_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='expense_item')
+    fixed_asset_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                            related_name='fixed_asset_item')
 
     track_inventory = models.BooleanField(default=True)
     can_be_sold = models.BooleanField(default=True)
@@ -340,50 +342,32 @@ class Item(models.Model):
     def save(self, *args, **kwargs):
         if self.can_be_purchased and not self.purchase_ledger_id:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-            try:
-                ledger.category = AccountCategory.objects.get(name='Purchase', parent__name='Expenses',
-                                                              company=self.company)
-            except AccountCategory.DoesNotExist:
-                pass
+            ledger.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
+
             ledger.code = 'P-' + str(self.code)
             ledger.save()
             self.purchase_ledger = ledger
         if self.can_be_sold and not self.sales_ledger_id:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
-            try:
-                ledger.category = AccountCategory.objects.get(name='Sales', parent__name='Income', company=self.company)
-            except AccountCategory.DoesNotExist:
-                pass
+            ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
             ledger.code = 'S-' + str(self.code)
             ledger.save()
             self.sales_ledger = ledger
         if self.can_be_sold and not self.discount_allowed_ledger_id:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_ledger.code = 'DA-' + str(self.code)
-            try:
-                discount_allowed_ledger.category = AccountCategory.objects.get(
-                    name='Discount Expenses',
-                    parent__name='Indirect Expenses',
-                    company=self.company
-                )
-            except AccountCategory.DoesNotExist:
-                pass
+            discount_allowed_ledger.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
+                                                                           company=self.company)
             discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
 
         if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_ledger_id:
-            discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
-            discount_received_ledger.code = 'DR-' + str(self.code)
-            try:
-                discount_received_ledger.category = AccountCategory.objects.get(
-                    name='Discount Income',
-                    parent__name='Indirect Income',
-                    company=self.company
-                )
-            except AccountCategory.DoesNotExist:
-                pass
-            discount_received_ledger.save()
-            self.discount_received_ledger = discount_received_ledger
+            discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
+            discount_received_acc.code = 'DR-' + str(self.code)
+            discount_received_acc.category = AccountCategory.objects.get(name='Discount Income', default=True,
+                                                                         company=self.company)
+            discount_received_acc.save()
+            self.discount_received_ledger = discount_received_acc
 
         if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
             expense_account = Account(name=self.name, company=self.company)
@@ -397,6 +381,18 @@ class Item(models.Model):
             expense_account.save()
             self.expense_account = expense_account
 
+        if self.fixed_asset and not self.fixed_asset_account_id:
+            fixed_asset_account = Account(name=self.name, company=self.company)
+            fixed_asset_account.code = 'A-FA-' + str(self.code)
+            fixed_asset_account.category = AccountCategory.objects.get(name='Fixed Assets', company=self.company)
+            fixed_asset_account.save()
+            self.fixed_asset_account = fixed_asset_account
+
+        if not self.account_id and (self.track_inventory or self.fixed_asset):
+            account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
+            account.save()
+            self.account = account
+
         if self.category and self.category.extra_fields:
             search_data = []
             for field in self.category.extra_fields:
@@ -408,10 +404,6 @@ class Item(models.Model):
             search_text = ', '.join(search_data)
             self.search_data = search_text
 
-        if not self.account_id and (self.track_inventory or self.fixed_asset):
-            account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
-            account.save()
-            self.account = account
         self.validate_unique()
         super().save(*args, **kwargs)
 
