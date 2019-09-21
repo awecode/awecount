@@ -73,6 +73,7 @@ class Category(models.Model):
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
+    expense = models.BooleanField(default=False)
 
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
@@ -311,6 +312,7 @@ class Item(models.Model):
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
+    expense = models.BooleanField(default=False)
 
     extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
