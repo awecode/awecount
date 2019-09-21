@@ -55,13 +55,13 @@ class Category(models.Model):
                                            on_delete=models.SET_NULL)
 
     sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                     related_name='sales_category')
+                                      related_name='sales_category')
     purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                        related_name='purchase_category')
+                                         related_name='purchase_category')
     discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                related_name='discount_allowed_category')
+                                                 related_name='discount_allowed_category')
     discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='discount_received_category')
+                                                  related_name='discount_received_category')
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
@@ -306,9 +306,9 @@ class Item(models.Model):
     sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
     purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
     discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                related_name='discount_allowed_item')
+                                                 related_name='discount_allowed_item')
     discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='discount_received_item')
+                                                  related_name='discount_received_item')
     expense_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='expense_item')
     fixed_asset_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
@@ -339,6 +339,14 @@ class Item(models.Model):
     def is_trackable(self):
         return self.track_inventory or self.fixed_asset
 
+    @property
+    def dr_account(self):
+        if self.expense:
+            return self.expense_account
+        if self.fixed_asset:
+            return self.fixed_asset_account
+        return self.purchase_account
+
     def save(self, *args, **kwargs):
         if self.can_be_purchased and not self.purchase_account_id:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
@@ -357,7 +365,7 @@ class Item(models.Model):
             discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_account.code = 'DA-' + str(self.code)
             discount_allowed_account.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
-                                                                           company=self.company)
+                                                                            company=self.company)
             discount_allowed_account.save()
             self.discount_allowed_account = discount_allowed_account
 

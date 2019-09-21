@@ -271,10 +271,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                     entries.append(['dr', row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            if item.expense:
-                entries.append(['dr', item.expense_account, purchase_value])
-            else:
-                entries.append(['dr', item.purchase_account, purchase_value])
+            entries.append(['dr', item.dr_account, purchase_value])
 
             entries.append(['cr', cr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
@@ -536,10 +533,7 @@ class DebitNote(TransactionModel, InvoiceModel):
                     entries.append(['cr', row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            if item.expense:
-                entries.append(['cr', item.expense_account, purchase_value])
-            else:
-                entries.append(['cr', item.purchase_account, purchase_value])
+            entries.append(['dr', item.dr_account, purchase_value])
 
             entries.append(['dr', dr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
