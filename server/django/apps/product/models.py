@@ -54,7 +54,7 @@ class Category(models.Model):
     default_tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='categories',
                                            on_delete=models.SET_NULL)
 
-    sales_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales_category')
     purchase_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='purchase_category')
@@ -63,7 +63,7 @@ class Category(models.Model):
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_category')
 
-    items_sales_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_purchase_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
@@ -93,7 +93,7 @@ class Category(models.Model):
             ledger.code = 'P-C-' + str(self.code)
             ledger.save()
             self.purchase_ledger = ledger
-        if not self.sales_ledger:
+        if not self.sales_account:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             try:
                 ledger.category = AccountCategory.objects.get(name='Sales', parent__name='Income', company=self.company)
@@ -101,7 +101,7 @@ class Category(models.Model):
                 pass
             ledger.code = 'S-C-' + str(self.code)
             ledger.save()
-            self.sales_ledger = ledger
+            self.sales_account = ledger
         if not self.discount_allowed_ledger:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_ledger.code = 'DA-C-' + str(self.code)
@@ -303,7 +303,7 @@ class Item(models.Model):
 
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
-    sales_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
+    sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
     purchase_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='discount_allowed_item')
@@ -347,12 +347,12 @@ class Item(models.Model):
             ledger.code = 'P-' + str(self.code)
             ledger.save()
             self.purchase_ledger = ledger
-        if self.can_be_sold and not self.sales_ledger_id:
+        if self.can_be_sold and not self.sales_account_id:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
             ledger.code = 'S-' + str(self.code)
             ledger.save()
-            self.sales_ledger = ledger
+            self.sales_account = ledger
         if self.can_be_sold and not self.discount_allowed_ledger_id:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_ledger.code = 'DA-' + str(self.code)

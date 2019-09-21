@@ -111,7 +111,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_allowed_ledger',
-                                                     'item__sales_ledger'):
+                                                     'item__sales_account'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -143,7 +143,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(['cr', row.item.sales_ledger, sales_value])
+            entries.append(['cr', row.item.sales_account, sales_value])
             entries.append(['dr', dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
@@ -379,7 +379,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_allowed_ledger',
-                                                     'item__sales_ledger'):
+                                                     'item__sales_account'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -411,7 +411,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                     entries.append(['dr', row.tax_scheme.payable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(['dr', row.item.sales_ledger, sales_value])
+            entries.append(['dr', row.item.sales_account, sales_value])
             entries.append(['cr', cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)

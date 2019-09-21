@@ -62,8 +62,8 @@ class BookSerializer(ItemSerializer):
         if category.items_purchase_ledger_type == 'global':
             validated_data['purchase_ledger'] = Account.objects.get(name="Purchase Account", default=True)
 
-        if category.items_sales_ledger_type == 'global':
-            validated_data['sales_ledger'] = Account.objects.get(name="Sales Account", default=True)
+        if category.items_sales_account_type == 'global':
+            validated_data['sales_account'] = Account.objects.get(name="Sales Account", default=True)
 
         if category.items_discount_allowed_ledger_type == 'global':
             validated_data['discount_allowed_ledger'] = Account.objects.get(name="Discount Expenses", default=True)
@@ -111,7 +111,7 @@ class ItemDetailSerializer(serializers.ModelSerializer):
     discount_allowed_ledger = AccountSerializer()
     discount_received_ledger = AccountSerializer()
 
-    sales_ledger = AccountSerializer()
+    sales_account = AccountSerializer()
     purchase_ledger = AccountSerializer()
     tax_scheme = TaxSchemeSerializer()
 
