@@ -56,7 +56,7 @@ class Category(models.Model):
 
     sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales_category')
-    purchase_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='purchase_category')
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='discount_allowed_category')
@@ -64,7 +64,7 @@ class Category(models.Model):
                                                  related_name='discount_received_category')
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_purchase_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
@@ -83,7 +83,7 @@ class Category(models.Model):
     key = 'InventoryCategory'
 
     def save(self, *args, **kwargs):
-        if not self.purchase_ledger:
+        if not self.purchase_account:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
             try:
                 ledger.category = AccountCategory.objects.get(name='Purchase', parent__name='Expenses',
@@ -92,7 +92,7 @@ class Category(models.Model):
                 pass
             ledger.code = 'P-C-' + str(self.code)
             ledger.save()
-            self.purchase_ledger = ledger
+            self.purchase_account = ledger
         if not self.sales_account:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             try:
@@ -304,7 +304,7 @@ class Item(models.Model):
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
     sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
-    purchase_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
+    purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
     discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='discount_allowed_item')
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
@@ -340,13 +340,13 @@ class Item(models.Model):
         return self.track_inventory or self.fixed_asset
 
     def save(self, *args, **kwargs):
-        if self.can_be_purchased and not self.purchase_ledger_id:
+        if self.can_be_purchased and not self.purchase_account_id:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
             ledger.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
 
             ledger.code = 'P-' + str(self.code)
             ledger.save()
-            self.purchase_ledger = ledger
+            self.purchase_account = ledger
         if self.can_be_sold and not self.sales_account_id:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)

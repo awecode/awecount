@@ -238,7 +238,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
-                                                     'item__purchase_ledger'):
+                                                     'item__purchase_account'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -274,7 +274,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             if item.expense:
                 entries.append(['dr', item.expense_account, purchase_value])
             else:
-                entries.append(['dr', item.purchase_ledger, purchase_value])
+                entries.append(['dr', item.purchase_account, purchase_value])
 
             entries.append(['cr', cr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
@@ -503,7 +503,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
         # filter bypasses rows cached by prefetching
         for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
-                                                     'item__purchase_ledger'):
+                                                     'item__purchase_account'):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -539,7 +539,7 @@ class DebitNote(TransactionModel, InvoiceModel):
             if item.expense:
                 entries.append(['cr', item.expense_account, purchase_value])
             else:
-                entries.append(['cr', item.purchase_ledger, purchase_value])
+                entries.append(['cr', item.purchase_account, purchase_value])
 
             entries.append(['dr', dr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)

@@ -59,8 +59,8 @@ class BookSerializer(ItemSerializer):
             raise ValidationError({'detail': 'Please create "Book" category first!'})
         validated_data['category'] = category
 
-        if category.items_purchase_ledger_type == 'global':
-            validated_data['purchase_ledger'] = Account.objects.get(name="Purchase Account", default=True)
+        if category.items_purchase_account_type == 'global':
+            validated_data['purchase_account'] = Account.objects.get(name="Purchase Account", default=True)
 
         if category.items_sales_account_type == 'global':
             validated_data['sales_account'] = Account.objects.get(name="Sales Account", default=True)
@@ -112,7 +112,7 @@ class ItemDetailSerializer(serializers.ModelSerializer):
     discount_received_ledger = AccountSerializer()
 
     sales_account = AccountSerializer()
-    purchase_ledger = AccountSerializer()
+    purchase_account = AccountSerializer()
     tax_scheme = TaxSchemeSerializer()
 
     class Meta:
