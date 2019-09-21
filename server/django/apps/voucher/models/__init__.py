@@ -237,7 +237,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_account',
                                                      'item__purchase_account'):
             entries = []
 
@@ -263,7 +263,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
             item = row.item
             if row_discount > 0:
-                entries.append(['cr', item.discount_received_ledger, row_discount])
+                entries.append(['cr', item.discount_received_account, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
@@ -502,7 +502,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_ledger',
+        for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_received_account',
                                                      'item__purchase_account'):
             entries = []
 
@@ -528,7 +528,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
             item = row.item
             if row_discount > 0:
-                entries.append(['dr', item.discount_received_ledger, row_discount])
+                entries.append(['dr', item.discount_received_account, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100

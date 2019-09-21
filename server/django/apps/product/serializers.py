@@ -68,8 +68,8 @@ class BookSerializer(ItemSerializer):
         if category.items_discount_allowed_account_type == 'global':
             validated_data['discount_allowed_account'] = Account.objects.get(name="Discount Expenses", default=True)
 
-        if category.items_discount_received_ledger_type == 'global':
-            validated_data['discount_received_ledger'] = Account.objects.get(name="Discount Income", default=True)
+        if category.items_discount_received_account_type == 'global':
+            validated_data['discount_received_account'] = Account.objects.get(name="Discount Income", default=True)
 
         instance = super(BookSerializer, self).create(validated_data)
         return instance
@@ -109,7 +109,7 @@ class ItemDetailSerializer(serializers.ModelSerializer):
     account = InventoryAccountSerializer()
 
     discount_allowed_account = AccountSerializer()
-    discount_received_ledger = AccountSerializer()
+    discount_received_account = AccountSerializer()
 
     sales_account = AccountSerializer()
     purchase_account = AccountSerializer()
