@@ -274,7 +274,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             if item.expense:
                 entries.append(['dr', item.expense_account, purchase_value])
             else:
-                entries.append(['dr', row.item.purchase_ledger, purchase_value])
+                entries.append(['dr', item.purchase_ledger, purchase_value])
 
             entries.append(['cr', cr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
