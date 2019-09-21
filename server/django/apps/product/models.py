@@ -365,7 +365,7 @@ class Item(models.Model):
             discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
 
-        if self.can_be_purchased and not self.discount_received_ledger_id:
+        if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_ledger_id:
             discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
             discount_received_ledger.code = 'DR-' + str(self.code)
             try:

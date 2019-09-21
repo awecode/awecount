@@ -261,8 +261,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 else:
                     row_discount += row_dividend_discount
 
+            item = row.item
             if row_discount > 0:
-                entries.append(['cr', row.item.discount_received_ledger, row_discount])
+                entries.append(['cr', item.discount_received_ledger, row_discount])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
@@ -270,7 +271,11 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                     entries.append(['dr', row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(['dr', row.item.purchase_ledger, purchase_value])
+            if item.expense:
+                entries.append(['dr', item.expense_account, purchase_value])
+            else:
+                entries.append(['dr', row.item.purchase_ledger, purchase_value])
+
             entries.append(['cr', cr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -471,7 +476,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         if self.total_amount != voucher_meta['grand_total']:
             self.total_amount = voucher_meta['grand_total']
             self.save()
-            
+
         if self.status == 'Cancelled':
             self.cancel_transactions()
             return
