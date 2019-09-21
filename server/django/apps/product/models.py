@@ -298,6 +298,8 @@ class Item(models.Model):
 
     brand = models.ForeignKey(Brand, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
 
+    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
+
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
     sales_ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
@@ -306,7 +308,8 @@ class Item(models.Model):
                                                 related_name='discount_allowed_item')
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_item')
-    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='items', on_delete=models.SET_NULL)
+    expense_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                        related_name='expense_item')
 
     track_inventory = models.BooleanField(default=True)
     can_be_sold = models.BooleanField(default=True)
@@ -329,7 +332,7 @@ class Item(models.Model):
         return self.track_inventory or self.fixed_asset
 
     def save(self, *args, **kwargs):
-        if not self.purchase_ledger:
+        if self.can_be_purchased and not self.purchase_ledger_id:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
             try:
                 ledger.category = AccountCategory.objects.get(name='Purchase', parent__name='Expenses',
@@ -339,7 +342,7 @@ class Item(models.Model):
             ledger.code = 'P-' + str(self.code)
             ledger.save()
             self.purchase_ledger = ledger
-        if not self.sales_ledger:
+        if self.can_be_sold and not self.sales_ledger_id:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
             try:
                 ledger.category = AccountCategory.objects.get(name='Sales', parent__name='Income', company=self.company)
@@ -348,7 +351,7 @@ class Item(models.Model):
             ledger.code = 'S-' + str(self.code)
             ledger.save()
             self.sales_ledger = ledger
-        if not self.discount_allowed_ledger:
+        if self.can_be_sold and not self.discount_allowed_ledger_id:
             discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_ledger.code = 'DA-' + str(self.code)
             try:
@@ -361,7 +364,8 @@ class Item(models.Model):
                 pass
             discount_allowed_ledger.save()
             self.discount_allowed_ledger = discount_allowed_ledger
-        if not self.discount_received_ledger:
+
+        if self.can_be_purchased and not self.discount_received_ledger_id:
             discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
             discount_received_ledger.code = 'DR-' + str(self.code)
             try:
@@ -374,6 +378,13 @@ class Item(models.Model):
                 pass
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
+
+        if self.expense and not self.expense_account_id:
+            expense_account = Account(name=self.name, company=self.company)
+            expense_account.code = 'E-DE-' + str(self.code)
+            expense_account.category = AccountCategory.objects.get(name='Direct Expenses', default=True, company=self.company)
+            expense_account.save()
+            self.expense_account = expense_account
 
         if self.category and self.category.extra_fields:
             search_data = []

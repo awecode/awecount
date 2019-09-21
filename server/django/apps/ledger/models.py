@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 
-from decimal import Decimal, ROUND_HALF_UP, localcontext
+from decimal import ROUND_HALF_UP, localcontext
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.mail import mail_admins
 from django.db import models
 from django.db.models import F, Q
 from django.db.models.signals import pre_delete
@@ -260,9 +259,6 @@ class JournalEntry(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='journal_entries')
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
-
-    # TODO
-    # company
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
