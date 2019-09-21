@@ -82,8 +82,8 @@ class UnitSerializer(serializers.ModelSerializer):
 
 
 class InventoryCategorySerializer(serializers.ModelSerializer):
-    default_unit_id = serializers.IntegerField(required=False)
-    default_tax_scheme_id = serializers.IntegerField(required=False)
+    default_unit_id = serializers.IntegerField(required=False, allow_null=True)
+    default_tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = InventoryCategory
