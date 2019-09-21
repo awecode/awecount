@@ -195,7 +195,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True)),
+        ('items',
+         Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True) | Q(fixed_asset=True)),
          ItemPurchaseSerializer),
     )
 
