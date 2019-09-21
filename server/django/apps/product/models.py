@@ -73,7 +73,8 @@ class Category(models.Model):
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
-    expense = models.BooleanField(default=False)
+    direct_expense = models.BooleanField(default=False)
+    indirect_expense = models.BooleanField(default=False)
 
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
@@ -315,7 +316,8 @@ class Item(models.Model):
     can_be_sold = models.BooleanField(default=True)
     can_be_purchased = models.BooleanField(default=True)
     fixed_asset = models.BooleanField(default=False)
-    expense = models.BooleanField(default=False)
+    direct_expense = models.BooleanField(default=False)
+    indirect_expense = models.BooleanField(default=False)
 
     extra_data = JSONField(null=True, blank=True)
     search_data = models.TextField(blank=True, null=True)
@@ -326,6 +328,10 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def expense(self):
+        return self.direct_expense or self.indirect_expense
 
     @property
     def is_trackable(self):
@@ -379,10 +385,15 @@ class Item(models.Model):
             discount_received_ledger.save()
             self.discount_received_ledger = discount_received_ledger
 
-        if self.expense and not self.expense_account_id:
+        if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
             expense_account = Account(name=self.name, company=self.company)
-            expense_account.code = 'E-DE-' + str(self.code)
-            expense_account.category = AccountCategory.objects.get(name='Direct Expenses', default=True, company=self.company)
+            if self.direct_expense:
+                expense_account.code = 'E-DE-' + str(self.code)
+                expense_account.category = AccountCategory.objects.get(name='Direct Expenses', default=True, company=self.company)
+            else:
+                expense_account.code = 'E-IE-' + str(self.code)
+                expense_account.category = AccountCategory.objects.get(name='Indirect Expenses', default=True,
+                                                                       company=self.company)
             expense_account.save()
             self.expense_account = expense_account
 

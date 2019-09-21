@@ -195,7 +195,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item.objects.filter(Q(can_be_purchased=True)|Q(expense=True)), ItemPurchaseSerializer),
+        ('items', Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(direct_expense=True)),
+         ItemPurchaseSerializer),
     )
 
     def get_create_defaults(self, request=None):
@@ -598,7 +599,7 @@ class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = SalesDiscountSerializer
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ['name',]
+    search_fields = ['name', ]
     filterset_class = SalesDiscountFilterSet
 
 

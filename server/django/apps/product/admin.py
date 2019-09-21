@@ -5,7 +5,7 @@ from apps.product.models import Item, Unit, Category, JournalEntry, Transaction,
 
 class ItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'description', 'selling_price', 'cost_price')
-    list_filter = ('track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'expense')
+    list_filter = ('track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense')
     list_display = ('code', 'name', 'cost_price', 'selling_price')
 
 
@@ -15,7 +15,7 @@ class UnitAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'company__name')
-    list_filter = ('track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'expense')
+    list_filter = ('track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense')
     list_filter = ('company', 'default_unit', 'default_tax_scheme')
 
 

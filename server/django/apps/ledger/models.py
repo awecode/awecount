@@ -462,8 +462,8 @@ def handle_company_creation(sender, **kwargs):
     # Account.objects.create(name='Merchandise', category=assets, code='A-M', company=company, default=True)
     cash_equivalent_account = Category.objects.create(name='Cash Equivalent Account', code='A-CE', parent=assets,
                                                       company=company, default=True)
-    Account.objects.create(name='Cheque Account', category=cash_equivalent_account, code='A-CE-CQ', company=company,
-                           default=True)
+    # Account.objects.create(name='Cheque Account', category=cash_equivalent_account, code='A-CE-CQ', company=company,
+    #                        default=True)
 
     bank_account = Category.objects.create(name='Bank Accounts', code='A-B', parent=assets, company=company,
                                            default=True)
