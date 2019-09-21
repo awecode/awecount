@@ -58,14 +58,14 @@ class Category(models.Model):
                                      related_name='sales_category')
     purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='purchase_category')
-    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='discount_allowed_category')
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_category')
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_discount_allowed_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_ledger_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
     # type = models.CharField(max_length=20, choices=ITEM_TYPES)
@@ -102,19 +102,19 @@ class Category(models.Model):
             ledger.code = 'S-C-' + str(self.code)
             ledger.save()
             self.sales_account = ledger
-        if not self.discount_allowed_ledger:
-            discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
-            discount_allowed_ledger.code = 'DA-C-' + str(self.code)
+        if not self.discount_allowed_account:
+            discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
+            discount_allowed_account.code = 'DA-C-' + str(self.code)
             try:
-                discount_allowed_ledger.category = AccountCategory.objects.get(
+                discount_allowed_account.category = AccountCategory.objects.get(
                     name='Discount Expenses',
                     parent__name='Indirect Expenses',
                     company=self.company
                 )
             except AccountCategory.DoesNotExist:
                 pass
-            discount_allowed_ledger.save()
-            self.discount_allowed_ledger = discount_allowed_ledger
+            discount_allowed_account.save()
+            self.discount_allowed_account = discount_allowed_account
         if not self.discount_received_ledger:
             discount_received_ledger = Account(name='Discount Received ' + self.name, company=self.company)
             discount_received_ledger.code = 'DR-C-' + str(self.code)
@@ -305,7 +305,7 @@ class Item(models.Model):
 
     sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
     purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
-    discount_allowed_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+    discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                 related_name='discount_allowed_item')
     discount_received_ledger = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_received_item')
@@ -353,13 +353,13 @@ class Item(models.Model):
             ledger.code = 'S-' + str(self.code)
             ledger.save()
             self.sales_account = ledger
-        if self.can_be_sold and not self.discount_allowed_ledger_id:
-            discount_allowed_ledger = Account(name='Discount Allowed ' + self.name, company=self.company)
-            discount_allowed_ledger.code = 'DA-' + str(self.code)
-            discount_allowed_ledger.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
+        if self.can_be_sold and not self.discount_allowed_account_id:
+            discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
+            discount_allowed_account.code = 'DA-' + str(self.code)
+            discount_allowed_account.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
                                                                            company=self.company)
-            discount_allowed_ledger.save()
-            self.discount_allowed_ledger = discount_allowed_ledger
+            discount_allowed_account.save()
+            self.discount_allowed_account = discount_allowed_account
 
         if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_ledger_id:
             discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
