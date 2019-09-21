@@ -18,7 +18,8 @@ from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherDateFilterSet
+from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
+    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet
 from apps.voucher.models import SalesAgent
 
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
@@ -181,6 +182,12 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = PurchaseVoucherCreateSerializer
     model = PurchaseVoucher
     row = PurchaseVoucherRow
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
+                     'rows__item__name']
+    filterset_class = PurchaseVoucherFilterSet
+
     collections = (
         ('parties', Party, PartyMinSerializer),
         ('discounts', PurchaseDiscount, PurchaseDiscountSerializer),
@@ -278,6 +285,12 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
+                     'rows__item__name']
+    filterset_class = CreditNoteFilterSet
+
     collections = (
         ('discounts', SalesDiscount, SalesDiscountSerializer),
         ('units', Unit),
@@ -397,6 +410,12 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     serializer_class = DebitNoteCreateSerializer
     model = DebitNote
     row = DebitNoteRow
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
+                     'rows__item__name']
+    filterset_class = DebitNoteFilterSet
+
     collections = (
         ('discounts', PurchaseDiscount, PurchaseDiscountSerializer),
         ('units', Unit),
@@ -578,9 +597,17 @@ class InvoiceDesignViewSet(CRULViewSet):
 class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = SalesDiscountSerializer
 
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['name',]
+    filterset_class = SalesDiscountFilterSet
+
 
 class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = PurchaseDiscountSerializer
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['name', ]
+    filterset_class = PurchaseDiscountFilterSet
 
 
 class SalesBookViewSet(CRULViewSet):
@@ -599,7 +626,7 @@ class SalesBookViewSet(CRULViewSet):
 class PurchaseBookViewSet(CRULViewSet):
     serializer_class = PurchaseBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = PurchaseVoucherDateFilterSet
+    filterset_class = PurchaseVoucherFilterSet
 
     def get_queryset(self, **kwargs):
         qs = super().get_queryset().prefetch_related(

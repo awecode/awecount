@@ -46,10 +46,16 @@ class BankAccount(models.Model):
 
 
 class ChequeDeposit(models.Model):
-    voucher_no = models.IntegerField()
+    STATUSES = (
+        ('Draft', 'Draft'),
+        ('Issued', 'Issued'),
+        ('Cleared', 'Cleared'),
+    )
+    voucher_no = models.IntegerField(blank=True, null=True, default=None)
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     date = models.DateField()
-    bank_account = models.ForeignKey(Account, related_name='cheque_deposits', on_delete=models.CASCADE)
-    clearing_date = models.DateField(default=timezone.now)
+    clearing_date = models.DateField(blank=True, null=True)
+    bank_account = models.ForeignKey(BankAccount, related_name='cheque_deposits', on_delete=models.CASCADE)
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=254, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
@@ -57,13 +63,8 @@ class ChequeDeposit(models.Model):
 
     # files = models.ManyToManyField(File, blank=True)
 
-    def __init__(self, *args, **kwargs):
-        super(ChequeDeposit, self).__init__(*args, **kwargs)
-        if not self.pk and not self.voucher_no:
-            self.voucher_no = get_next_voucher_no(ChequeDeposit, self.company_id)
-
     def __str__(self):
-        return str(self.voucher_no) + ' : ' + str(self.deposited_by)
+        return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)
 
     def get_voucher_no(self):
         return self.id
@@ -75,9 +76,6 @@ class ChequeDeposit(models.Model):
             total = obj.amount
             grand_total += total
         return grand_total
-
-        # class Meta:
-        #     unique_together = ('voucher_no', 'company')
 
 
 class ChequeDepositRow(models.Model):

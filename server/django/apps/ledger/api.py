@@ -1,6 +1,7 @@
 from datetime import datetime
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
 from rest_framework.response import Response
 
 from apps.voucher.models import SalesVoucher
@@ -15,6 +16,8 @@ from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
 class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields =('name', 'tax_registration_number', 'contact_no', 'address',)
 
     @action(detail=True)
     def sales_vouchers(self, request, pk=None):
@@ -29,7 +32,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
 
 class AccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = AccountSerializer
-    filter_backends = (SearchFilter,)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
     def get_queryset(self):

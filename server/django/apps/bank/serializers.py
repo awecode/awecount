@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from awecount.utils.serializers import StatusReversionMixin
 from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeIssue
 
 
@@ -19,11 +20,11 @@ class ChequeDepositRowSerializer(serializers.ModelSerializer):
         exclude = ('cheque_deposit',)
 
 
-class ChequeDepositCreateSerializer(serializers.ModelSerializer):
+class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     rows = ChequeDepositRowSerializer(many=True)
-
-    # bank_account_id = serializers.IntegerField(required=False, allow_null=True)
-    # benefactor_id = serializers.IntegerField(required=False, allow_null=True)
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.name')
+    benefactor_name = serializers.ReadOnlyField(source='bank_account.name')
+    voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -45,19 +46,16 @@ class ChequeDepositCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        # exclude = ('company', 'benefactor', 'bank_account',)
-        exclude = ('company',)
+        exclude = ('company', 'clearing_date',)
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-
-    def get_name(self, obj):
-        return '{}: {}'.format(obj.voucher_no, obj.deposited_by)
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.account_number')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
 
     class Meta:
         model = ChequeDeposit
-        fields = ('id', 'voucher_no', 'bank_account', 'date', 'deposited_by', 'name')
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'status')
 
 
 class ChequeIssueSerializer(serializers.ModelSerializer):
