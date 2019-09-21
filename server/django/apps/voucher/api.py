@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
@@ -195,7 +195,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
-        ('items', Item.objects.filter(can_be_purchased=True), ItemPurchaseSerializer),
+        ('items', Item.objects.filter(Q(can_be_purchased=True)|Q(expense=True)), ItemPurchaseSerializer),
     )
 
     def get_create_defaults(self, request=None):
