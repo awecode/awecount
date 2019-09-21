@@ -57,7 +57,7 @@ class ChequeDeposit(models.Model):
     clearing_date = models.DateField(blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, related_name='cheque_deposits', on_delete=models.CASCADE)
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
-    deposited_by = models.CharField(max_length=254, blank=True, null=True)
+    deposited_by = models.CharField(max_length=255, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
@@ -81,8 +81,8 @@ class ChequeDeposit(models.Model):
 class ChequeDepositRow(models.Model):
     cheque_number = models.CharField(max_length=50)
     cheque_date = models.DateField(default=timezone.now)
-    drawee_bank = models.CharField(max_length=254)
-    drawee_bank_address = models.CharField(max_length=254)
+    drawee_bank = models.CharField(max_length=255)
+    drawee_bank_address = models.CharField(max_length=255)
     amount = models.FloatField()
     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
 

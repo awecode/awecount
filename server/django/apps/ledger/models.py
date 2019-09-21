@@ -17,7 +17,7 @@ from awecount.utils import zero_for_none, none_for_zero, decimalize
 
 class Category(MPTTModel):
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=254, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
     code = models.CharField(max_length=20, null=True, blank=True)
     default = models.BooleanField(default=False)
@@ -30,7 +30,7 @@ class Category(MPTTModel):
         node = Node(self)
         return node.get_data()
 
-    def get_descendant_ledgers(self):
+    def get_descendant_accounts(self):
         ledgers = self.accounts.all()
         for descendant in self.get_descendants():
             ledgers = ledgers | descendant.accounts.all()

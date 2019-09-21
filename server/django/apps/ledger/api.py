@@ -52,12 +52,6 @@ class AccountViewSet(InputChoiceMixin, CRULViewSet):
             return AccountDetailSerializer
         return AccountSerializer
 
-    @action(detail=True, methods=['get'])
-    def project_fy_cr_ledger_choices(self, request, pk=None):
-        instance = self.get_object()
-        data = AccountSerializer(instance, many=True).data
-        return Response(data)
-
     @action(detail=True, methods=['get'], url_path='journal-entries')
     def journal_entries(self, request, pk=None):
         param = request.GET
