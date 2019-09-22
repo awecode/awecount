@@ -28,7 +28,8 @@ class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
-
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    search_fields = ('code', 'name',)
     collections = (
         ('categories', Category, CategorySerializer),
     )
