@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
+from rest_framework.fields import SerializerMethodField
 
 from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction
 
@@ -50,7 +51,14 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class RecursiveField(serializers.Serializer):
+
+    def to_native(self, value):
+        return CategorySerializer(value, context={"parent": self.parent.object, "parent_serializer": self.parent})
+
+
 class CategorySerializer(serializers.ModelSerializer):
+    # parent = RecursiveField(many=True, read_only=True)
     class Meta:
         model = Category
         exclude = ('company',)

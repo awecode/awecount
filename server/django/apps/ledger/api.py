@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from .models import Account, JournalEntry
+from .models import Account, JournalEntry, Category
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -28,6 +28,10 @@ class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
+
+    collections = (
+        ('categories', Category, CategorySerializer),
+    )
 
 
 class AccountViewSet(InputChoiceMixin, CRULViewSet):
