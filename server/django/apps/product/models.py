@@ -25,11 +25,11 @@ class Unit(models.Model):
             Unit(name='Piece(s)', short_name='pcs', company=company),
             Unit(name='Unit(s)', short_name='unit', company=company),
         ]
-        Unit.objects.bulk_create(units)
+        return Unit.objects.bulk_create(units)
 
     def __str__(self):
         return self.short_name or self.name
-    
+
     class Meta:
         unique_together = ('short_name', 'company')
 
@@ -146,6 +146,7 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = 'Categories'
+        unique_together = (('code', 'company'), ('name', 'company'))
 
 
 class InventoryAccount(models.Model):

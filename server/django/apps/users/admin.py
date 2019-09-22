@@ -1,11 +1,12 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
     UserCreationForm as DjangoUserCreationForm
+from django.db import IntegrityError
 
 from apps.ledger.models import handle_company_creation
-from apps.product.models import Unit
-from apps.tax.models import setup_nepali_tax_schemes
+from apps.product.models import Unit, Category as InventoryCategory
+from apps.tax.models import TaxScheme
 from .models import User, Company, Role, FiscalYear
 from django import forms
 
@@ -95,20 +96,56 @@ admin.site.register(User, CustomUserAdmin)
 admin.site.register(Role)
 
 
-def setup_nepali_system(modeladmin, request, queryset):
+def setup_nepali_tax_schemes(modeladmin, request, queryset):
     for company in queryset:
-        setup_nepali_tax_schemes(company)
-        Unit.create_default_units(company)
+        try:
+            tax_schemes = TaxScheme.setup_nepali_tax_schemes(company)
+            messages.success(request, '{} tax scheme(s) created!'.format(len(tax_schemes)))
+        except IntegrityError:
+            messages.error(request, 'One or more tax schemes already exist!')
 
 
-setup_nepali_system.short_description = "Setup Nepali System"
+setup_nepali_tax_schemes.short_description = "Setup Nepali Tax Schemes"
+
+
+def setup_basic_units(modeladmin, request, queryset):
+    for company in queryset:
+        try:
+            units = Unit.create_default_units(company)
+            messages.success(request, '{} unit(s) created!'.format(len(units)))
+        except IntegrityError:
+            messages.error(request, 'One or more units already exist!')
+
+
+setup_basic_units.short_description = "Setup Basic Units"
+
+
+def setup_as_bookseller(modeladmin, request, queryset):
+    for company in queryset:
+        # 1. Create Book Category with extra fields
+        # 2. Import bestselling books with Publishers
+        unit, __ = Unit.objects.get_or_create(short_name='pcs', company=company, defaults={'name': 'Pieces'})
+        tax, __ = TaxScheme.objects.get_or_create(short_name='Taxless', company=company, defaults={'name': 'Taxless', 'rate': 0})
+        extra_fields = [{"name": "Author", "type": "Text", "enable_search": True},
+                        {"name": "Genre", "type": "Choices", "enable_search": True}]
+        try:
+            InventoryCategory.objects.create(name='Book', code='b', company=company, default_unit=unit,
+                                             default_tax_scheme=tax,
+                                             track_inventory=True, can_be_sold=True, can_be_purchased=True,
+                                             extra_fields=extra_fields)
+            messages.success(request, 'Book category created!')
+        except IntegrityError:
+            messages.error(request, 'Book category already exists!')
+
+
+setup_as_bookseller.short_description = "Setup as Bookseller"
 
 
 class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [handle_account_creation, setup_nepali_system]
+    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, setup_as_bookseller]
 
 
 admin.site.register(Company, CompanyAdmin)

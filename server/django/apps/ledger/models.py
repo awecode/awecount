@@ -436,7 +436,7 @@ def delete_rows(rows, model):
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get('company')
     # TODO make default Categories uneditable
-
+    #TODO Prevent calling twice
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
 
     equity = Category.objects.create(name='Equity', code='E', company=company, default=True)
@@ -542,7 +542,7 @@ def handle_company_creation(sender, **kwargs):
                                                 default=True)
     Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
     discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
-                                                        company=company)
+                                                        company=company, default=True)
     Account.objects.create(name='Discount Expenses', category=discount_expense_category, company=company, default=True)
 
     # Opening Balance Difference

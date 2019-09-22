@@ -39,7 +39,18 @@ class TaxScheme(models.Model):
             self.receivable.suggest_code()
         self.receivable.save()
         super(TaxScheme, self).save(*args, **kwargs)
-        
+
+    @staticmethod
+    def setup_nepali_tax_schemes(company):
+        schemes = [
+            TaxScheme(name='Value Added Tax', short_name='VAT', rate='13', recoverable=True, default=True, company=company),
+            TaxScheme(name='Taxless', short_name='Taxless', rate='0', recoverable=False, default=True, company=company),
+            TaxScheme(name='Export', short_name='Export', rate='0', recoverable=False, default=True, company=company),
+            TaxScheme(name='Tax Deduction at Source', short_name='TDS', rate='1.5', recoverable=False, default=True,
+                      company=company),
+        ]
+        return TaxScheme.objects.bulk_create((schemes))
+
     class Meta:
         unique_together = ('short_name', 'company')
 
@@ -68,11 +79,3 @@ class TaxPayment(models.Model):
         # def apply_transactions(self):
 
 
-def setup_nepali_tax_schemes(company):
-    schemes = [
-        TaxScheme(name='Value Added Tax', short_name='VAT', rate='13', recoverable=True, default=True, company=company),
-        TaxScheme(name='Taxless', short_name='Taxless', rate='0', recoverable=False, default=True, company=company),
-        TaxScheme(name='Export', short_name='Export', rate='0', recoverable=False, default=True, company=company),
-        TaxScheme(name='Tax Deduction at Source', short_name='TDS', rate='1.5', recoverable=False, default=True, company=company),
-    ]
-    TaxScheme.objects.bulk_create((schemes))
