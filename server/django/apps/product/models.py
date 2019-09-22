@@ -19,8 +19,19 @@ class Unit(models.Model):
     short_name = models.CharField(max_length=10, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
+    @staticmethod
+    def create_default_units(company):
+        units = [
+            Unit(name='Piece(s)', short_name='pcs', company=company),
+            Unit(name='Unit(s)', short_name='unit', company=company),
+        ]
+        Unit.objects.bulk_create(units)
+
     def __str__(self):
         return self.short_name or self.name
+    
+    class Meta:
+        unique_together = ('short_name', 'company')
 
 
 LEDGER_TYPES = (

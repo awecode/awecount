@@ -4,6 +4,8 @@ from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserCha
     UserCreationForm as DjangoUserCreationForm
 
 from apps.ledger.models import handle_company_creation
+from apps.product.models import Unit
+from apps.tax.models import setup_nepali_tax_schemes
 from .models import User, Company, Role, FiscalYear
 from django import forms
 
@@ -19,7 +21,7 @@ def handle_account_creation(modeladmin, request, queryset):
         handle_company_creation(modeladmin, company=company)
 
 
-handle_account_creation.short_description = "Create necessary accounts"
+handle_account_creation.short_description = "Create basic accounts"
 
 
 class UserCreationForm(DjangoUserCreationForm):
@@ -93,11 +95,20 @@ admin.site.register(User, CustomUserAdmin)
 admin.site.register(Role)
 
 
+def setup_nepali_system(modeladmin, request, queryset):
+    for company in queryset:
+        setup_nepali_tax_schemes(company)
+        Unit.create_default_units(company)
+
+
+setup_nepali_system.short_description = "Setup Nepali System"
+
+
 class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [handle_account_creation]
+    actions = [handle_account_creation, setup_nepali_system]
 
 
 admin.site.register(Company, CompanyAdmin)
