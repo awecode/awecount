@@ -30,6 +30,10 @@ class Unit(models.Model):
     def __str__(self):
         return self.short_name or self.name
 
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+        super().save(*args, **kwargs)
+
     class Meta:
         unique_together = ('short_name', 'company')
 
@@ -139,6 +143,7 @@ class Category(models.Model):
                 pass
             discount_received_account.save()
             self.discount_received_account = discount_received_account
+        self.validate_unique()
         super().save(*args, **kwargs)
 
     def __str__(self):

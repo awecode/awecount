@@ -545,7 +545,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self, **kwargs):
-        queryset = super(JournalVoucherViewSet, self).get_queryset()
+        queryset = super().get_queryset()
         return queryset
 
     def get_serializer_class(self):

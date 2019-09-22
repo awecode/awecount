@@ -44,7 +44,7 @@ class UserCreationForm(DjangoUserCreationForm):
 
     def save(self, commit=True):
         # Save the provided password in hashed format
-        user = super(UserCreationForm, self).save(commit=False)
+        user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
@@ -120,10 +120,8 @@ def setup_basic_units(modeladmin, request, queryset):
 setup_basic_units.short_description = "Setup Basic Units"
 
 
-def setup_as_bookseller(modeladmin, request, queryset):
+def create_book_category(modeladmin, request, queryset):
     for company in queryset:
-        # 1. Create Book Category with extra fields
-        # 2. Import bestselling books with Publishers
         unit, __ = Unit.objects.get_or_create(short_name='pcs', company=company, defaults={'name': 'Pieces'})
         tax, __ = TaxScheme.objects.get_or_create(short_name='Taxless', company=company, defaults={'name': 'Taxless', 'rate': 0})
         extra_fields = [{"name": "Author", "type": "Text", "enable_search": True},
@@ -138,14 +136,17 @@ def setup_as_bookseller(modeladmin, request, queryset):
             messages.error(request, 'Book category already exists!')
 
 
-setup_as_bookseller.short_description = "Setup as Bookseller"
+create_book_category.short_description = "Create Book Category"
+
+
+# 2. Import bestselling books with Publishers
 
 
 class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, setup_as_bookseller]
+    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, create_book_category]
 
 
 admin.site.register(Company, CompanyAdmin)

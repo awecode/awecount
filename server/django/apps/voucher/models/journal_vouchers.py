@@ -19,7 +19,7 @@ class JournalVoucher(models.Model):
         unique_together = ('company', 'voucher_no')
 
     def __init__(self, *args, **kwargs):
-        super(JournalVoucher, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not self.pk and not self.voucher_no:
             self.voucher_no = get_next_voucher_no(JournalVoucher, self.company_id)
 

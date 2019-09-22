@@ -38,7 +38,8 @@ class TaxScheme(models.Model):
             self.receivable.add_category('Tax Receivables')
             self.receivable.suggest_code()
         self.receivable.save()
-        super(TaxScheme, self).save(*args, **kwargs)
+        self.validate_unique()
+        super().save(*args, **kwargs)
 
     @staticmethod
     def setup_nepali_tax_schemes(company):
