@@ -4,7 +4,6 @@ from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserCha
     UserCreationForm as DjangoUserCreationForm
 from django.db import IntegrityError
 import requests
-import json
 
 from apps.ledger.models import handle_company_creation
 from apps.product.models import Unit, Category as InventoryCategory, Item, Brand
@@ -144,8 +143,7 @@ create_book_category.short_description = "Create Book Category"
 def import_sold_books(modeladmin, request, queryset):
     for company in queryset:
         url = 'https://thuprai.com/book/bestsellers.json'
-        requests_response = requests.get(url)
-        sold_list = json.loads(requests_response.content)
+        sold_list = requests.get(url).json()
         category = InventoryCategory.objects.get(name='Book', code='b', company=company)
         for obj in sold_list:
             item, __ = Item.objects.get_or_create(code=obj[1], company=company,
