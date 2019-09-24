@@ -42,7 +42,7 @@ class Category(MPTTModel):
 
 class Account(models.Model):
     code = models.CharField(max_length=50, blank=True, null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
@@ -115,6 +115,9 @@ class Account(models.Model):
         if len(transactions) > 0:
             return transactions[0].current_dr
         return 0
+    
+    # def save(self, *args, **kwargs):
+    #     super().save()
 
     # def save(self, *args, **kwargs):
     #     queryset = Account.objects.all()
