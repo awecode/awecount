@@ -436,7 +436,7 @@ def delete_rows(rows, model):
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get('company')
     # TODO make default Categories uneditable
-    #TODO Prevent calling twice
+    # TODO Prevent calling twice
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
 
     equity = Category.objects.create(name='Equity', code='E', company=company, default=True)

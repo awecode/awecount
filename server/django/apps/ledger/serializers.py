@@ -20,6 +20,12 @@ class PartyMinSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'address', 'logo', 'tax_registration_number')
 
 
+class PartyAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Party
+        fields = ('id', 'name', 'tax_registration_number')
+
+
 class PartySerializer(serializers.ModelSerializer):
     representative = PartyRepresentativeSerializer(many=True)
 
@@ -51,8 +57,16 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
-class RecursiveField(serializers.Serializer):
+class TransactionEntrySerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(source='journal_entry.date')
+    content_type = serializers.ReadOnlyField(source='journal_entry.content_type.model')
 
+    class Meta:
+        model = Transaction
+        fields = ('id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'content_type', 'account_id')
+
+
+class RecursiveField(serializers.Serializer):
     def to_native(self, value):
         return CategorySerializer(value, context={"parent": self.parent.object, "parent_serializer": self.parent})
 
