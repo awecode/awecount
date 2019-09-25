@@ -69,9 +69,6 @@ class JournalEntriesMixin(object):
         transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-pk', '-journal_entry__date') \
             .select_related('journal_entry__content_type')
 
-        # entries = JournalEntry.objects.filter(transactions__account_id__in=account_ids).order_by('pk',
-        #                                                                                          'date') \
-        #     .prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
         if start_date or end_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -80,6 +77,8 @@ class JournalEntriesMixin(object):
             else:
                 transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
 
+        # Only show 5 because fetching voucher_no is expensive because of GFK
+        self.paginator.page_size = 2
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['entries'] = self.paginator.get_response_data(serializer.data)

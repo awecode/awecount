@@ -576,6 +576,7 @@ class TransactionModel(models.Model):
     def get_source_id(self):
         if hasattr(self, 'voucher_id'):
             return self.voucher_id
+        return self.id
 
     def journal_entries(self):
         app_label = self._meta.app_label
