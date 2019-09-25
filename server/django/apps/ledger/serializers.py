@@ -77,7 +77,8 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ('id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')
+        fields = ('id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
+                  'voucher_no')
 
 
 class RecursiveField(serializers.Serializer):
@@ -95,7 +96,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        exclude = ('company',)
+        exclude = ('company', 'default')
 
 
 class AccountMinSerializer(serializers.ModelSerializer):
@@ -237,10 +238,10 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
 
 
 class AccountDetailSerializer(serializers.ModelSerializer):
-    journal_entries = serializers.SerializerMethodField()
+    # journal_entries = serializers.SerializerMethodField()
     closing_balance = serializers.ReadOnlyField(source='get_balance')
-    category = serializers.ReadOnlyField(source='category.name')
-    parent = serializers.ReadOnlyField(source='parent.name')
+    category_name = serializers.ReadOnlyField(source='category.name')
+    parent_name = serializers.ReadOnlyField(source='parent.name')
 
     def get_journal_entries(self, obj):
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
@@ -250,4 +251,6 @@ class AccountDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = (
+            'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr', 'category_name',
+            'parent_name', 'category_id', 'parent_id')

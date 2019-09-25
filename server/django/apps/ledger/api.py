@@ -10,10 +10,10 @@ from .models import Account, JournalEntry, Category, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, TransactionSerializer, PartyMinSerializer, PartyAccountSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
+from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 
 
-class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
+class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
@@ -43,15 +43,18 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     )
 
 
-class AccountViewSet(InputChoiceMixin, CRULViewSet):
+class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
+    def get_account_ids(self, obj):
+        return [obj.id]
+
     def get_queryset(self):
         # TODO View transaction with or without cr or dr amount
         # queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0), company=self.request.company)
-        queryset = Account.objects.filter(company=self.request.company)
+        queryset = Account.objects.filter(company=self.request.company).select_related('category', 'parent')
         return queryset
 
     def get_accounts_by_category_name(self, category_name):
@@ -61,7 +64,7 @@ class AccountViewSet(InputChoiceMixin, CRULViewSet):
         return serializer.data
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'transactions':
             return AccountDetailSerializer
         return AccountSerializer
 

@@ -7,13 +7,13 @@ from apps.tax.filters import TaxPaymentFilterSet
 from apps.tax.models import TaxScheme, STATUSES
 from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin, ShortNameChoiceMixin
+from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
 
 from rest_framework import filters as rf_filters
 from django_filters import rest_framework as filters
 
 
-class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, JournalEntriesMixin, CRULViewSet):
+class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = TaxSchemeSerializer
     account_keys = ['receivable', 'payable']
     extra_fields = {

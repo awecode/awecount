@@ -56,9 +56,9 @@ class DeleteRows(object):
         return super(DeleteRows, self).update(request, *args, **kwargs)
 
 
-class JournalEntriesMixin(object):
+class TransactionsViewMixin(object):
     @action(detail=True, methods=['get'])
-    def accounts(self, request, pk=None):
+    def transactions(self, request, pk=None):
         param = request.GET
         obj = self.get_object()
         serializer_class = self.get_serializer_class()
