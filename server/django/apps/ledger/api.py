@@ -16,8 +16,8 @@ from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
 class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
-    search_fields =('name', 'tax_registration_number', 'contact_no', 'address',)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    search_fields = ('name', 'tax_registration_number', 'contact_no', 'address',)
 
     @action(detail=True)
     def sales_vouchers(self, request, pk=None):
@@ -28,7 +28,7 @@ class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
     collections = (
         ('categories', Category, CategorySerializer),
@@ -37,7 +37,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
 
 class AccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = AccountSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
     def get_queryset(self):

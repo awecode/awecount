@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
-from apps.tax.serializers import  TaxSchemeMinSerializer
+from apps.tax.serializers import TaxSchemeMinSerializer
 from .filters import ItemFilterSet
 from .models import Item, JournalEntry, Category, Brand, Unit
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
@@ -22,8 +22,8 @@ from .models import Category as InventoryCategory
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
-    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price',]
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
 
     detail_serializer_class = ItemDetailSerializer
@@ -50,7 +50,7 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
         ('brands', Brand, BrandSerializer),
     )
 
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
 
@@ -90,7 +90,7 @@ class BrandViewSet(InputChoiceMixin, CRULViewSet):
 class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = InventoryAccountSerializer
 
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
     @action(detail=True, methods=['get'], url_path='journal-entries')
