@@ -16,7 +16,8 @@ from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('name', 'tax_registration_number', 'contact_no', 'address',)
 
     def get_account_ids(self, obj):
@@ -36,7 +37,7 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
     collections = (
         ('categories', Category, CategorySerializer),
@@ -45,7 +46,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
 
 class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
     def get_account_ids(self, obj):
