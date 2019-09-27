@@ -20,6 +20,12 @@ class PartyMinSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'address', 'logo', 'tax_registration_number')
 
 
+class PartyAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Party
+        fields = ('id', 'name', 'tax_registration_number')
+
+
 class PartySerializer(serializers.ModelSerializer):
     representative = PartyRepresentativeSerializer(many=True)
 
@@ -51,8 +57,31 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
-class RecursiveField(serializers.Serializer):
+class TransactionEntrySerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(source='journal_entry.date')
+    source_type = serializers.SerializerMethodField()
+    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
 
+    # voucher_no is too expensive on DB -
+    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
+
+    def get_source_type(self, obj):
+        v_type = obj.journal_entry.content_type.name
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return v_type.strip().title()
+
+    class Meta:
+        model = Transaction
+        fields = ('id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
+                  'voucher_no')
+
+
+class RecursiveField(serializers.Serializer):
     def to_native(self, value):
         return CategorySerializer(value, context={"parent": self.parent.object, "parent_serializer": self.parent})
 
@@ -67,7 +96,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        exclude = ('company',)
+        exclude = ('company', 'default')
 
 
 class AccountMinSerializer(serializers.ModelSerializer):
@@ -209,10 +238,10 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
 
 
 class AccountDetailSerializer(serializers.ModelSerializer):
-    journal_entries = serializers.SerializerMethodField()
+    # journal_entries = serializers.SerializerMethodField()
     closing_balance = serializers.ReadOnlyField(source='get_balance')
-    category = serializers.ReadOnlyField(source='category.name')
-    parent = serializers.ReadOnlyField(source='parent.name')
+    category_name = serializers.ReadOnlyField(source='category.name')
+    parent_name = serializers.ReadOnlyField(source='parent.name')
 
     def get_journal_entries(self, obj):
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
@@ -222,4 +251,6 @@ class AccountDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = (
+            'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr', 'category_name',
+            'parent_name', 'category_id', 'parent_id')

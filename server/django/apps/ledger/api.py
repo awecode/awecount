@@ -1,23 +1,31 @@
 from datetime import datetime
 from rest_framework.decorators import action
 from django_filters import rest_framework as filters
-from rest_framework import filters as rf_filters
+from rest_framework import filters as rf_filters, viewsets, mixins
 from rest_framework.response import Response
 
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from .models import Account, JournalEntry, Category
+from .models import Account, JournalEntry, Category, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer
+    JournalEntrySerializer, TransactionSerializer, PartyMinSerializer, PartyAccountSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, JournalEntriesMixin
+from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 
 
-class PartyViewSet(InputChoiceMixin, JournalEntriesMixin, CRULViewSet):
+class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
-    search_fields =('name', 'tax_registration_number', 'contact_no', 'address',)
+    search_fields = ('name', 'tax_registration_number', 'contact_no', 'address',)
+
+    def get_account_ids(self, obj):
+        return [obj.supplier_account_id, obj.customer_account_id]
+
+    def get_serializer_class(self):
+        if self.action == 'accounts':
+            return PartyAccountSerializer
+        return PartySerializer
 
     @action(detail=True)
     def sales_vouchers(self, request, pk=None):
@@ -35,15 +43,18 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     )
 
 
-class AccountViewSet(InputChoiceMixin, CRULViewSet):
+class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
+    def get_account_ids(self, obj):
+        return [obj.id]
+
     def get_queryset(self):
         # TODO View transaction with or without cr or dr amount
         # queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0), company=self.request.company)
-        queryset = Account.objects.filter(company=self.request.company)
+        queryset = Account.objects.filter(company=self.request.company).select_related('category', 'parent')
         return queryset
 
     def get_accounts_by_category_name(self, category_name):
@@ -53,7 +64,7 @@ class AccountViewSet(InputChoiceMixin, CRULViewSet):
         return serializer.data
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'transactions':
             return AccountDetailSerializer
         return AccountSerializer
 
@@ -75,6 +86,5 @@ class AccountViewSet(InputChoiceMixin, CRULViewSet):
                 entries = entries.filter(date=start_date)
             else:
                 entries = entries.filter(date__range=[start_date, end_date])
-
         data = JournalEntrySerializer(entries, context={'account': obj}, many=True).data
         return Response(data)
