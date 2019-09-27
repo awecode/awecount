@@ -20,6 +20,11 @@ class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewM
         'rate': IntegerField
     }
 
+    def get_account_ids(self, obj):
+        if obj.recoverable:
+            return [obj.receivable_id, obj.payable_id]
+        return [obj.payable_id]
+
 
 class TaxPaymentViewSet(CRULViewSet):
     serializer_class = TaxPaymentSerializer
@@ -29,7 +34,7 @@ class TaxPaymentViewSet(CRULViewSet):
     )
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ['voucher_no', 'cr_account__name', 'date', 'tax_scheme__name', 'remarks', 'amount',]
+    search_fields = ['voucher_no', 'cr_account__name', 'date', 'tax_scheme__name', 'remarks', 'amount', ]
     filterset_class = TaxPaymentFilterSet
 
     def get_queryset(self, **kwargs):

@@ -94,7 +94,7 @@ class Account(models.Model):
         return self.opening_dr - self.opening_cr
 
     def add_category(self, category):
-        category_instance, created = Category.objects.get_or_create(name=category, company=self.company)
+        category_instance= Category.objects.get(name=category, company=self.company, default=True)
         self.category = category_instance
 
     def get_all_categories(self):
