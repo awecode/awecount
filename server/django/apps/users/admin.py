@@ -3,9 +3,10 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
     UserCreationForm as DjangoUserCreationForm
 from django.db import IntegrityError
+import requests
 
 from apps.ledger.models import handle_company_creation
-from apps.product.models import Unit, Category as InventoryCategory
+from apps.product.models import Unit, Category as InventoryCategory, Item, Brand
 from apps.tax.models import TaxScheme
 from .models import User, Company, Role, FiscalYear
 from django import forms
@@ -139,14 +140,30 @@ def create_book_category(modeladmin, request, queryset):
 create_book_category.short_description = "Create Book Category"
 
 
-# 2. Import bestselling books with Publishers
+def import_sold_books(modeladmin, request, queryset):
+    for company in queryset:
+        url = 'https://thuprai.com/book/bestsellers.json'
+        sold_list = requests.get(url).json()
+        category = InventoryCategory.objects.get(name='Book', code='b', company=company)
+        for obj in sold_list:
+            item, __ = Item.objects.get_or_create(code=obj[1], company=company,
+                                                  defaults={'name': obj[0], 'selling_price': obj[2], 'category': category})
+            if not item.brand_id and obj[3]:
+                brand, __ = Brand.objects.get_or_create(name=obj[3], company=company)
+                item.brand = brand
+                item.save()
+
+        messages.success(request, '{} books imported!'.format(len(sold_list)))
+
+
+import_sold_books.short_description = "Import Sold Books"
 
 
 class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, create_book_category]
+    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
 
 
 admin.site.register(Company, CompanyAdmin)

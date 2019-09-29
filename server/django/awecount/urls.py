@@ -2,11 +2,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
-from rest_framework_jwt.views import obtain_jwt_token
 from django.conf.urls.static import static
 
 from apps.product.views import book_by_isbn
-from awecount.utils.JWTCustomAuthentication import obtain_jwt_token_custom, TokenObtainPairView
+from awecount.utils.JWTCustomAuthentication import TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
 from apps.tax import api as tax
@@ -22,6 +21,8 @@ router = DefaultRouter()
 router.register('parties', ledger.PartyViewSet, base_name='parties')
 router.register('categories', ledger.CategoryViewSet, base_name='categories')
 router.register('accounts', ledger.AccountViewSet, base_name='accounts')
+
+
 router.register('inventory-account', item.InventoryAccountViewSet, base_name='inventory-account')
 
 # item

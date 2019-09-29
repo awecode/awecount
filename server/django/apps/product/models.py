@@ -156,7 +156,7 @@ class Category(models.Model):
 
 class InventoryAccount(models.Model):
     code = models.CharField(max_length=50, blank=True, null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
@@ -366,18 +366,18 @@ class Item(models.Model):
 
     def save(self, *args, **kwargs):
         if self.can_be_purchased and not self.purchase_account_id:
-            ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-            ledger.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
+            account = Account(name=self.name + ' (Purchase)', company=self.company)
+            account.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
 
-            ledger.code = 'P-' + str(self.code)
-            ledger.save()
-            self.purchase_account = ledger
+            account.code = 'P-' + str(self.code)
+            account.save()
+            self.purchase_account = account
         if self.can_be_sold and not self.sales_account_id:
-            ledger = Account(name=self.name + ' (Sales)', company=self.company)
-            ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
-            ledger.code = 'S-' + str(self.code)
-            ledger.save()
-            self.sales_account = ledger
+            account = Account(name=self.name + ' (Sales)', company=self.company)
+            account.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
+            account.code = 'S-' + str(self.code)
+            account.save()
+            self.sales_account = account
         if self.can_be_sold and not self.discount_allowed_account_id:
             discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_account.code = 'DA-' + str(self.code)

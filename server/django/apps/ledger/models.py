@@ -42,7 +42,7 @@ class Category(MPTTModel):
 
 class Account(models.Model):
     code = models.CharField(max_length=50, blank=True, null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
@@ -94,7 +94,7 @@ class Account(models.Model):
         return self.opening_dr - self.opening_cr
 
     def add_category(self, category):
-        category_instance, created = Category.objects.get_or_create(name=category, company=self.company)
+        category_instance= Category.objects.get(name=category, company=self.company, default=True)
         self.category = category_instance
 
     def get_all_categories(self):
@@ -115,6 +115,9 @@ class Account(models.Model):
         if len(transactions) > 0:
             return transactions[0].current_dr
         return 0
+    
+    # def save(self, *args, **kwargs):
+    #     super().save()
 
     # def save(self, *args, **kwargs):
     #     queryset = Account.objects.all()
@@ -436,7 +439,7 @@ def delete_rows(rows, model):
 def handle_company_creation(sender, **kwargs):
     company = kwargs.get('company')
     # TODO make default Categories uneditable
-    #TODO Prevent calling twice
+    # TODO Prevent calling twice
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
 
     equity = Category.objects.create(name='Equity', code='E', company=company, default=True)
@@ -576,6 +579,7 @@ class TransactionModel(models.Model):
     def get_source_id(self):
         if hasattr(self, 'voucher_id'):
             return self.voucher_id
+        return self.id
 
     def journal_entries(self):
         app_label = self._meta.app_label
