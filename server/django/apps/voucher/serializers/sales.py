@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.product.serializers import ItemSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import SalesAgent
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -175,3 +176,17 @@ class SalesAgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesAgent
         exclude = ('company',)
+
+
+class SalesRowSerializer(serializers.ModelSerializer):
+    item  = serializers.CharField(source="item.name")
+    unit  = serializers.CharField(source="unit.name")
+    buyers_name = serializers.ReadOnlyField(source='voucher.buyer_name')
+    buyers_pan = serializers.ReadOnlyField(source='voucher.party.tax_registration_number')
+    bill_no = serializers.CharField(source="voucher.voucher_no")
+    voucher_id = serializers.CharField(source="voucher.id")
+    tax_scheme = serializers.CharField(source="tax_scheme.name")
+
+    class Meta:
+        model = SalesVoucherRow
+        exclude = ()

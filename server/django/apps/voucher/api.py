@@ -30,7 +30,8 @@ from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
-    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
+    InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, \
+    PurchaseDiscount, \
     DebitNote, DebitNoteRow
 from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerializer, CreditNoteCreateSerializer, \
     CreditNoteListSerializer, InvoiceDesignSerializer, \
@@ -38,7 +39,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer
+    SalesAgentSerializer, SalesVoucherRowSerializer, SalesRowSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -53,7 +54,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
         ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
         ('items',
-         Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
+         Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(
+             can_be_sold=True),
          ItemSalesSerializer),
     ]
 
@@ -61,7 +63,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     filterset_class = SalesVoucherFilterSet
 
-    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number', 'customer_name',
+    search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
+                     'customer_name',
                      'rows__item__name']
 
     def get_collections(self, request=None):
@@ -99,7 +102,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def details(self, request, pk):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                                  'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_sales_invoice_update
@@ -163,17 +167,20 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def by_voucher_no(self, request):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                                  'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
-                                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                                       queryset=qs)).data)
+        return Response(
+            SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                           fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                           queryset=qs)).data)
 
     @action(detail=False)
     def export(self, request):
         params = [
             ('Invoices', self.get_queryset(), SalesVoucherResource),
-            ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id), SalesVoucherRowResource),
+            ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id),
+             SalesVoucherRowResource),
         ]
         return qs_to_xls(params)
 
@@ -196,7 +203,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('bank_accounts', BankAccount, BankAccountSerializer),
         ('items',
-         Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True) | Q(fixed_asset=True)),
+         Item.objects.filter(
+             Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True) | Q(fixed_asset=True)),
          ItemPurchaseSerializer),
     )
 
@@ -251,9 +259,10 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                      PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                      'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
-                                                                          fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                                          queryset=qs)).data)
+        return Response(
+            PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                              fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                              queryset=qs)).data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
@@ -361,7 +370,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     def details(self, request, pk):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                                'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
         data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_credit_note_update
@@ -486,7 +496,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     def details(self, request, pk):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
-                     DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj', 'tax_scheme'))).select_related(
+                     DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
+                                                               'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
         data = DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_debit_note_update
@@ -535,7 +546,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
 class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
-                                                                queryset=JournalVoucherRow.objects.order_by('-type', 'id')))
+                                                                queryset=JournalVoucherRow.objects.order_by('-type',
+                                                                                                            'id')))
     serializer_class = JournalVoucherCreateSerializer
     model = JournalVoucher
     row = JournalVoucherRow
@@ -622,6 +634,14 @@ class SalesBookViewSet(CRULViewSet):
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
+        return qs.order_by('-pk')
+
+
+class SalesRowViewSet(CRULViewSet):
+    serializer_class = SalesRowSerializer
+
+    def get_queryset(self, **kwargs):
+        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related('item', 'discount_obj', 'tax_scheme', 'voucher', 'unit')
         return qs.order_by('-pk')
 
 

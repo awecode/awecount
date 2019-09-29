@@ -41,6 +41,7 @@ router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
+router.register('sales-row', voucher.SalesRowViewSet, base_name='sales-row')
 router.register('sales-agent', voucher.SalesAgentViewSet, base_name='sales-agent')
 router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchase-book')
 

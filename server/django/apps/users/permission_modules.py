@@ -23,6 +23,7 @@ MODULES = [
     *gdp('TaxScheme'),
     # Voucher
     *gdp('SalesVoucher'), 'SalesVoucherIssuedModify', 'SalesVoucherCancel',
+    *gdp('SalesVoucherRow'),
     *gdp('PurchaseVoucher'),
     *gdp('CreditNote'), 'CreditNoteIssuedModify', 'CreditNoteCancel',
     *gdp('DebitNote'), 'DebitNoteIssuedModify', 'DebitNoteCancel',
