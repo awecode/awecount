@@ -64,7 +64,10 @@ class Account(models.Model):
         return self.get_balance()
 
     def get_balance(self):
-        return zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
+        with localcontext() as ctx:
+            ctx.rounding = ROUND_HALF_UP
+            val = zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
+            return float(round(decimalize(val), 2))
 
     def get_day_opening_dr(self, before_date=None):
         if not before_date:
@@ -94,7 +97,7 @@ class Account(models.Model):
         return self.opening_dr - self.opening_cr
 
     def add_category(self, category):
-        category_instance= Category.objects.get(name=category, company=self.company, default=True)
+        category_instance = Category.objects.get(name=category, company=self.company, default=True)
         self.category = category_instance
 
     def get_all_categories(self):
@@ -115,7 +118,7 @@ class Account(models.Model):
         if len(transactions) > 0:
             return transactions[0].current_dr
         return 0
-    
+
     # def save(self, *args, **kwargs):
     #     super().save()
 

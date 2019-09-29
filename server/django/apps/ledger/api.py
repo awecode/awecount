@@ -24,9 +24,15 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return [obj.supplier_account_id, obj.customer_account_id]
 
     def get_serializer_class(self):
-        if self.action == 'accounts':
+        if self.action == 'transactions':
             return PartyAccountSerializer
         return PartySerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'transactions':
+            qs = qs.select_related('supplier_account', 'customer_account')
+        return qs
 
     @action(detail=True)
     def sales_vouchers(self, request, pk=None):

@@ -47,14 +47,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = SalesVoucher
     row = SalesVoucherRow
     collections = [
-        ('parties', Party.objects.only('name', 'address', 'logo', 'tax_registration_number'), PartyMinSerializer),
-        ('units', Unit.objects.only('name', 'short_name')),
-        ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
-        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
-        ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
-        ('items',
-         Item.objects.only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code', 'description').filter(can_be_sold=True),
-         ItemSalesSerializer),
+        ('parties', Party, PartyMinSerializer),
+        ('units', Unit),
+        ('discounts', SalesDiscount, SalesDiscountMinSerializer),
+        ('bank_accounts', BankAccount),
+        ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
+        ('items', Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]

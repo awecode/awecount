@@ -20,10 +20,25 @@ class PartyMinSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'address', 'logo', 'tax_registration_number')
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        exclude = ('company', 'default')
+
+
+class AccountBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ('id', 'code', 'current_dr', 'current_cr', 'balance')
+
+
 class PartyAccountSerializer(serializers.ModelSerializer):
+    supplier_account = AccountBalanceSerializer()
+    customer_account = AccountBalanceSerializer()
+
     class Meta:
         model = Party
-        fields = ('id', 'name', 'tax_registration_number')
+        fields = ('id', 'name', 'tax_registration_number', 'supplier_account', 'customer_account')
 
 
 class PartySerializer(serializers.ModelSerializer):
@@ -91,12 +106,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         exclude = ('company',)
-
-
-class AccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        exclude = ('company', 'default')
 
 
 class AccountMinSerializer(serializers.ModelSerializer):
