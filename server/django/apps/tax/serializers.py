@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.ledger.serializers import AccountBalanceSerializer
 from apps.tax.models import TaxScheme, TaxPayment
 
 
@@ -10,6 +11,15 @@ class TaxSchemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxScheme
         exclude = ('company',)
+
+
+class TaxAccountSerializer(serializers.ModelSerializer):
+    payable = AccountBalanceSerializer()
+    receivable = AccountBalanceSerializer()
+
+    class Meta:
+        model = TaxScheme
+        fields = ('id', 'name', 'payable', 'receivable', 'recoverable')
 
 
 class TaxSchemeMinSerializer(serializers.ModelSerializer):

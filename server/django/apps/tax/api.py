@@ -5,7 +5,7 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.filters import TaxPaymentFilterSet
 from apps.tax.models import TaxScheme, STATUSES
-from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer
+from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, TaxAccountSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
 
@@ -15,7 +15,6 @@ from django_filters import rest_framework as filters
 
 class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = TaxSchemeSerializer
-    account_keys = ['receivable', 'payable']
     extra_fields = {
         'rate': IntegerField
     }
@@ -24,6 +23,17 @@ class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewM
         if obj.recoverable:
             return [obj.receivable_id, obj.payable_id]
         return [obj.payable_id]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'transactions':
+            qs = qs.select_related('receivable', 'payable')
+        return qs
+
+    def get_serializer_class(self):
+        if self.action == 'transactions':
+            return TaxAccountSerializer
+        return TaxSchemeSerializer
 
 
 class TaxPaymentViewSet(CRULViewSet):
