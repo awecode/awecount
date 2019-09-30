@@ -6,7 +6,7 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category
+from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, Transaction
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -172,3 +172,27 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
         fields = '__all__'
+
+
+class TransactionEntrySerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(source='journal_entry.date')
+    source_type = serializers.SerializerMethodField()
+    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+
+    # voucher_no is too expensive on DB -
+    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
+
+    def get_source_type(self, obj):
+        v_type = obj.journal_entry.content_type.name
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return v_type.strip().title()
+
+    class Meta:
+        model = Transaction
+        fields = (
+        'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')

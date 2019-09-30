@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Sum
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 
@@ -12,9 +13,9 @@ from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from .filters import ItemFilterSet
-from .models import Item, JournalEntry, Category, Brand, Unit
+from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
-    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer
+    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, TransactionEntrySerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .models import Category as InventoryCategory
@@ -93,6 +94,9 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
 
+    def get_account_ids(self, obj):
+        return [obj.id]
+
     @action(detail=True, methods=['get'], url_path='journal-entries')
     def journal_entries(self, request, pk=None):
 
@@ -114,3 +118,33 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 entries = entries.filter(date__range=[start_date, end_date])
         serializer = JournalEntrySerializer(entries, context={'account': obj}, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def transactions(self, request, pk=None):
+        param = request.GET
+        obj = self.get_object()
+        serializer_class = self.get_serializer_class()
+        data = serializer_class(obj).data
+        account_ids = self.get_account_ids(obj)
+        start_date = param.get('start_date', None)
+        end_date = param.get('end_date', None)
+        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-pk', '-journal_entry__date') \
+            .select_related('journal_entry__content_type')
+
+        aggregate = {}
+        if start_date or end_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            if start_date == end_date:
+                transactions = transactions.filter(journal_entry__date=start_date)
+            else:
+                transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
+            aggregate = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
+
+        # Only show 5 because fetching voucher_no is expensive because of GFK
+        self.paginator.page_size = 5
+        page = self.paginate_queryset(transactions)
+        serializer = TransactionEntrySerializer(page, many=True)
+        data['transactions'] = self.paginator.get_response_data(serializer.data)
+        data['aggregate'] = aggregate
+        return Response(data)
