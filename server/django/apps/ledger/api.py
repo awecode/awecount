@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.db.models import Sum
 from rest_framework.decorators import action
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, viewsets, mixins

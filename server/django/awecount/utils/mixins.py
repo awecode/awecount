@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.db.models import Sum
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -69,6 +71,7 @@ class TransactionsViewMixin(object):
         transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-pk', '-journal_entry__date') \
             .select_related('journal_entry__content_type')
 
+        aggregate = {}
         if start_date or end_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -76,10 +79,12 @@ class TransactionsViewMixin(object):
                 transactions = transactions.filter(journal_entry__date=start_date)
             else:
                 transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
+            aggregate = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
         # Only show 5 because fetching voucher_no is expensive because of GFK
-        self.paginator.page_size = 2
+        self.paginator.page_size = 5
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
-        data['entries'] = self.paginator.get_response_data(serializer.data)
+        data['transactions'] = self.paginator.get_response_data(serializer.data)
+        data['aggregate'] = aggregate
         return Response(data)
