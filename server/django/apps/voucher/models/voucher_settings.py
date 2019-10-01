@@ -1,7 +1,9 @@
 from django.db import models
+from django.dispatch import receiver
 
 from apps.bank.models import BankAccount
 from apps.users.models import Company
+from apps.users.signals import company_creation
 
 
 class SalesSetting(models.Model):
@@ -34,3 +36,10 @@ class PurchaseSetting(models.Model):
 
     def __str__(self):
         return 'Purchase Setting - {}'.format(self.company.name)
+
+
+@receiver(company_creation)
+def handle_company_creation(sender, **kwargs):
+    company = kwargs.get('company')
+    SalesSetting.objects.create(company=company)
+    PurchaseSetting.objects.create(company=company)
