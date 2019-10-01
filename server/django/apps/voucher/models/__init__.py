@@ -14,6 +14,7 @@ from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 from .invoice_design import InvoiceDesign
 from .journal_vouchers import JournalVoucher, JournalVoucherRow
 from .agent import SalesAgent
+from .voucher_settings import SalesSetting, PurchaseSetting
 
 STATUSES = (
     ('Draft', 'Draft'),
