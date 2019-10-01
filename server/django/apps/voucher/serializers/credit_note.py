@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import ValidationError
 
-from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
+from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
 from ..models import CreditNoteRow, CreditNote
 
 
