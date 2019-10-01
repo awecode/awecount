@@ -26,7 +26,8 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
-from apps.voucher.serializers.voucher_settings import SalesSettingSerializer, PurchaseSettingSerializer
+from apps.voucher.serializers.voucher_settings import SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, \
+    SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -115,29 +116,24 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 'can_update_issued': request.company.enable_sales_invoice_update,
                 'enable_sales_agents': request.company.enable_sales_agents
             },
-            'options': SalesSettingSerializer(request.company.sales_setting).data
         }
         return data
 
     def get_create_defaults(self, request=None):
-        voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
-        data = {
-            'options': {
-                'voucher_no': voucher_no,
-            }
+        options = SalesCreateSettingSerializer(request.company.sales_setting).data
+        options['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
+        return {
+            'options': options
         }
-        return data
 
     def get_update_defaults(self, request=None):
+        options = SalesUpdateSettingSerializer(request.company.sales_setting).data
         obj = self.get_object()
         if not obj.voucher_no:
-            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
-            return {
-                'options': {
-                    'voucher_no': voucher_no,
-                }
-            }
-        return {}
+            options['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
+        return {
+            'options': options
+        }
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
@@ -209,21 +205,19 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
          ItemPurchaseSerializer),
     )
 
-    def get_defaults(self, request=None):
+    def get_create_defaults(self, request=None):
         return {
-            'options': PurchaseSettingSerializer(request.company.purchase_setting).data
+            'options': PurchaseCreateSettingSerializer(request.company.purchase_setting).data
         }
 
     def get_update_defaults(self, request=None):
+        options = PurchaseUpdateSettingSerializer(request.company.purchase_setting).data
         obj = self.get_object()
         if not obj.voucher_no:
-            voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
-            return {
-                'options': {
-                    'voucher_no': voucher_no,
-                }
-            }
-        return {}
+            options['voucher_no'] = get_next_voucher_no(PurchaseVoucher, request.company_id)
+        return {
+            'options': options
+        }
 
     def get_queryset(self, **kwargs):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
@@ -327,10 +321,10 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         return CreditNoteCreateSerializer
 
     def get_defaults(self, request=None):
-        options = SalesSettingSerializer(request.company.sales_setting).data
-        options['fiscal_years'] = FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
         data = {
-            'options': options,
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            },
             'fields': {
                 'can_update_issued': request.company.enable_credit_note_update
             }
@@ -338,31 +332,26 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         return data
 
     def get_create_defaults(self, request=None):
-        voucher_no = get_next_voucher_no(CreditNote, request.company_id)
-        data = {
-            'options': {
-                'voucher_no': voucher_no,
-            }
+        options = SalesCreateSettingSerializer(request.company.sales_setting).data
+        options['voucher_no'] = get_next_voucher_no(CreditNote, request.company_id)
+        return {
+            'options': options
         }
-        return data
 
     def get_update_defaults(self, request=None):
+        options = SalesUpdateSettingSerializer(request.company.sales_setting).data
+
         obj = self.get_object()
         invoice_objs = []
         for inv in obj.invoices.all():
             invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
-        data = {
-            'options': {
-                'sales_invoice_objs': invoice_objs,
-            }
-        }
+        options['sales_invoice_objs'] = invoice_objs
         if not obj.voucher_no:
-            voucher_no = get_next_voucher_no(SalesVoucher, request.company_id)
-            data['options'] = {
-                'voucher_no': voucher_no,
-            }
+            options['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
 
-        return data
+        return {
+            'options': options
+        }
 
     @action(detail=True)
     def details(self, request, pk):
@@ -453,10 +442,10 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         return DebitNoteCreateSerializer
 
     def get_defaults(self, request=None):
-        options = PurchaseSettingSerializer(request.company.purchase_setting).data
-        options['fiscal_years'] = FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
         data = {
-            'options': options,
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            },
             'fields': {
                 'can_update_issued': request.company.enable_debit_note_update
             }
@@ -464,31 +453,25 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         return data
 
     def get_create_defaults(self, request=None):
-        voucher_no = get_next_voucher_no(DebitNote, request.company_id)
-        data = {
-            'options': {
-                'voucher_no': voucher_no,
-            }
+        options = PurchaseCreateSettingSerializer(request.company.purchase_setting).data
+        options['voucher_no'] = get_next_voucher_no(DebitNote, request.company_id)
+        return {
+            'options': options
         }
-        return data
 
     def get_update_defaults(self, request=None):
+        options = PurchaseUpdateSettingSerializer(request.company.purchase_setting).data
         obj = self.get_object()
         invoice_objs = []
         for inv in obj.invoices.all():
             invoice_objs.append({'id': inv.id, 'voucher_no': inv.voucher_no})
-        data = {
-            'options': {
-                'purchase_invoice_objs': invoice_objs,
-            }
-        }
-        if not obj.voucher_no:
-            voucher_no = get_next_voucher_no(PurchaseVoucher, request.company_id)
-            data['options'] = {
-                'voucher_no': voucher_no,
-            }
+        options['purchase_invoice_objs'] = invoice_objs
 
-        return data
+        if not obj.voucher_no:
+            options['voucher_no'] = get_next_voucher_no(PurchaseVoucher, request.company_id)
+        return {
+            'options': options
+        }
 
     @action(detail=True)
     def details(self, request, pk):
