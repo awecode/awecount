@@ -17,6 +17,9 @@ class SalesSetting(models.Model):
 
     enable_row_description = models.BooleanField(default=False)
 
+    def __str__(self):
+        return 'Sales Setting - {}'.format(self.company.name)
+
 
 class PurchaseSetting(models.Model):
     company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='purchase_setting')
@@ -28,3 +31,6 @@ class PurchaseSetting(models.Model):
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
     enable_row_description = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'Purchase Setting - {}'.format(self.company.name)

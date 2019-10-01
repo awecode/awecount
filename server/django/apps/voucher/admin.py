@@ -3,7 +3,7 @@ from django.contrib import admin
 from apps.product.models import Brand
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
-    DebitNote, SalesAgent
+    DebitNote, SalesAgent, SalesSetting, PurchaseSetting
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -109,3 +109,21 @@ class SalesAgentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SalesAgent, SalesAgentAdmin)
+
+
+class SalesSettingAdmin(admin.ModelAdmin):
+    list_display = ('company',)
+    search_fields = ('company__name',)
+    list_filter = ('show_party_by_default', 'show_trade_discount_in_voucher', 'mode', 'enable_row_description')
+
+
+admin.site.register(SalesSetting, SalesSettingAdmin)
+
+
+class PurchaseSettingAdmin(admin.ModelAdmin):
+    list_display = ('company',)
+    search_fields = ('company__name',)
+    list_filter = ('show_trade_discount_in_voucher', 'mode', 'enable_row_description')
+
+
+admin.site.register(PurchaseSetting, PurchaseSettingAdmin)
