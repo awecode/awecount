@@ -44,6 +44,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
@@ -179,6 +180,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='purchases')
 
@@ -319,6 +321,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='credit_notes')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
@@ -443,6 +446,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='debit_notes')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
