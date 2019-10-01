@@ -41,9 +41,9 @@ class InvoiceModel(models.Model):
             elif discount_obj.type == 'Percent':
                 return sub_total_after_row_discounts * (discount_obj.value / 100), discount_obj.trade_discount
         elif self.discount and self.discount_type == 'Amount':
-            return self.discount, False
+            return self.discount, self.trade_discount
         elif self.discount and self.discount_type == 'Percent':
-            return sub_total_after_row_discounts * (self.discount / 100), False
+            return sub_total_after_row_discounts * (self.discount / 100), self.trade_discount
         return 0, False
 
     # Used by get_voucher_meta
@@ -153,9 +153,9 @@ class InvoiceRowModel(models.Model):
             elif discount_obj.type == 'Percent':
                 return sub_total * (discount_obj.value / 100), discount_obj.trade_discount
         elif self.discount and self.discount_type == 'Amount':
-            return self.discount, False
+            return self.discount, self.trade_discount
         elif self.discount and self.discount_type == 'Percent':
-            return sub_total * (self.discount / 100), False
+            return sub_total * (self.discount / 100), self.trade_discount
         return 0, False
 
     def get_tax_amount(self):

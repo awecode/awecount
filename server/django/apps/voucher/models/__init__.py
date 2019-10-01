@@ -165,6 +165,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
@@ -178,6 +179,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
     trade_discount = models.BooleanField(default=False)
@@ -288,10 +290,13 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     quantity = models.FloatField()
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     rate = models.FloatField()
+
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='purchase_rows')
+
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):
@@ -427,10 +432,13 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
     rate = models.FloatField()
+
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='credit_note_rows')
+
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_note_rows')
 
 
@@ -553,10 +561,13 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel):
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
     rate = models.FloatField()
+
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    trade_discount = models.BooleanField(default=False)
     discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='debit_note_rows')
+
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_note_rows')
 
 
