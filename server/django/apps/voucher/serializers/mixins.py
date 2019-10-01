@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 # Serializer mixins need to inherit from serializers.Serializer
 class DiscountObjectTypeSerializerMixin(serializers.Serializer):
     discount_type = serializers.CharField(required=False, allow_null=True)
@@ -16,10 +17,12 @@ class DiscountObjectTypeSerializerMixin(serializers.Serializer):
             validated_data['discount_obj_id'] = discount_key
             validated_data['discount'] = 0
             validated_data['discount_type'] = None
+            validated_data['trade_discount'] = False
         else:
             validated_data['discount_obj_id'] = None
         return validated_data
-    
+
+
 class ModeCumBankSerializerMixin(serializers.Serializer):
     mode = serializers.CharField(required=True)
     bank_account_id = serializers.IntegerField(required=False, allow_null=True)

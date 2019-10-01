@@ -259,6 +259,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             'discount_obj', 'bank_account')
         return Response(
             PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                              party_id=request.query_params.get('party'),
                                                               fiscal_year_id=request.query_params.get('fiscal_year'),
                                                               queryset=qs)).data)
 
