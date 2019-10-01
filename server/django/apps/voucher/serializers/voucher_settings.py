@@ -6,10 +6,10 @@ from apps.voucher.models import SalesSetting, PurchaseSetting
 class SalesSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        exclude = ('company',)
+        exclude = ('id', 'company',)
 
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        exclude = ('company',)
+        exclude = ('id', 'company',)
