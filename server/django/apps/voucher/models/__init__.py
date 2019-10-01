@@ -537,7 +537,7 @@ class DebitNote(TransactionModel, InvoiceModel):
                     entries.append(['cr', row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
 
-            entries.append(['dr', item.dr_account, purchase_value])
+            entries.append(['cr', item.dr_account, purchase_value])
 
             entries.append(['dr', dr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
