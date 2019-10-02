@@ -8,6 +8,7 @@ MODULES = [
     # aggregated
     'Dashboard',
     'LogEntryView',
+    'PurchaseSettings',
     # Product
     *gdp('Item'),
     *gdp('Unit'),
