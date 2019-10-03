@@ -25,3 +25,10 @@ class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
         exclude = ('id', 'company', 'is_trade_discount_in_voucher', 'is_trade_discount_in_row', 'mode', 'bank_account')
+
+
+class PurchaseSettingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PurchaseSetting
+        fields = '__all__'

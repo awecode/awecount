@@ -27,7 +27,7 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from apps.voucher.serializers.voucher_settings import SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, \
-    SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer
+    SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -622,8 +622,10 @@ class SalesRowViewSet(CRULViewSet):
     serializer_class = SalesRowSerializer
 
     def get_queryset(self, **kwargs):
-        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related('item', 'discount_obj',
-                                                                                                        'tax_scheme', 'voucher',
+        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related('item',
+                                                                                                        'discount_obj',
+                                                                                                        'tax_scheme',
+                                                                                                        'voucher',
                                                                                                         'unit')
         return qs.order_by('-pk')
 
@@ -643,3 +645,18 @@ class PurchaseBookViewSet(CRULViewSet):
 
 class SalesAgentViewSet(CRULViewSet):
     serializer_class = SalesAgentSerializer
+
+
+class PurchaseSettingsViewSet(CRULViewSet):
+    serializer_class = PurchaseSettingSerializer
+    collections = (
+        ('bank_accounts', BankAccount, BankAccountSerializer),
+    )
+
+    def get_defaults(self, request=None):
+        p_setting = self.request.company.purchase_setting
+
+        data = {
+            'fields': PurchaseSettingSerializer(p_setting).data
+        }
+        return data

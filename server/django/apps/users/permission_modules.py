@@ -8,7 +8,6 @@ MODULES = [
     # aggregated
     'Dashboard',
     'LogEntryView',
-    'PurchaseSettings',
     # Product
     *gdp('Item'),
     *gdp('Unit'),
@@ -40,6 +39,7 @@ MODULES = [
     *gdp('SalesAgent'),
     *gdp('Widget'),
     *gdp('TaxPayment'),
+    *gdp('PurchaseSetting'),
 ]
 
 module_pairs = [(module, module) for module in MODULES]

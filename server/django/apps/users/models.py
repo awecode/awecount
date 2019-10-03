@@ -83,7 +83,7 @@ class UserManager(BaseUserManager):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = SeparatedValuesField(choices=module_pairs, max_length=2000, blank=True, null=True, token=',')
+    modules = SeparatedValuesField(choices=module_pairs, max_length=3000, blank=True, null=True, token=',')
 
     def __str__(self):
         return self.name

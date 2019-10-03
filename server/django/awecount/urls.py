@@ -37,6 +37,7 @@ router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
 router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, base_name='purchase-vouchers')
 router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name='purchase-discount')
+router.register('purchase-settings', voucher.PurchaseSettingsViewSet, base_name='purchase-settings')
 router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note')
 router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
@@ -58,6 +59,7 @@ router.register('tax-payments', tax.TaxPaymentViewSet, base_name='tax-payment')
 # aggregator
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
+router.register('', aggregator.WidgetViewSet, base_name='widget')
 
 urlpatterns = [
                   path('aweadmin/', admin.site.urls),
