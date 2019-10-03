@@ -92,8 +92,9 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ('id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
-                  'voucher_no')
+        fields = (
+        'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
+        'voucher_no')
 
 
 class RecursiveField(serializers.Serializer):
@@ -103,6 +104,8 @@ class RecursiveField(serializers.Serializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     # parent = RecursiveField(many=True, read_only=True)
+    is_default = serializers.ReadOnlyField()
+
     class Meta:
         model = Category
         exclude = ('company',)
@@ -261,5 +264,6 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = (
-            'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr', 'category_name',
+            'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr',
+            'category_name',
             'parent_name', 'category_id', 'parent_id')
