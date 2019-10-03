@@ -27,7 +27,7 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from apps.voucher.serializers.voucher_settings import SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, \
-    SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer
+    SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 from awecount.utils import get_next_voucher_no
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
@@ -658,5 +658,20 @@ class PurchaseSettingsViewSet(CRULViewSet):
 
         data = {
             'fields': PurchaseSettingSerializer(p_setting).data
+        }
+        return data
+
+
+class SalesSettingsViewSet(CRULViewSet):
+    serializer_class = SalesSettingsSerializer
+    collections = (
+        ('bank_accounts', BankAccount, BankAccountSerializer),
+    )
+
+    def get_defaults(self, request=None):
+        s_setting = self.request.company.sales_setting
+
+        data = {
+            'fields': SalesSettingsSerializer(s_setting).data
         }
         return data

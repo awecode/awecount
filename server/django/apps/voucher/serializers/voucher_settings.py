@@ -28,7 +28,12 @@ class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
 
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PurchaseSetting
+        fields = '__all__'
+
+
+class SalesSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesSetting
         fields = '__all__'

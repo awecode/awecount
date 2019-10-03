@@ -63,9 +63,7 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
 
     @action(detail=False)
     def category(self, request):
-        import ipdb
-        ipdb.set_trace()
-        cat = Category.objects.get(company=self.request.company, name="Book")
+        cat = Category.objects.filter(company=self.request.company, name="Book").first()
         return Response(InventoryCategorySerializer(cat).data)
 
 

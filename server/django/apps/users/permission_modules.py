@@ -40,6 +40,7 @@ MODULES = [
     *gdp('Widget'),
     *gdp('TaxPayment'),
     *gdp('PurchaseSetting'),
+    *gdp('SalesSetting'),
 ]
 
 module_pairs = [(module, module) for module in MODULES]
