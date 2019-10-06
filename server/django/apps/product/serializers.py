@@ -125,7 +125,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
     voucher_type = serializers.SerializerMethodField()
-    voucher_no = serializers.ReadOnlyField(source='source.voucher_no')
+    voucher_no = serializers.ReadOnlyField(source='source.get_voucher_no')
     source_id = serializers.ReadOnlyField(source='source.get_source_id')
 
     def get_voucher_type(self, obj):
@@ -180,7 +180,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
 
     # voucher_no is too expensive on DB -
-    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.voucher_no')
+    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
 
     def get_source_type(self, obj):
         v_type = obj.journal_entry.content_type.name

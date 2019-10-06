@@ -38,6 +38,9 @@ class JournalVoucher(models.Model):
             total_cr_amount += o.cr_amount
         return total_cr_amount
 
+    def get_voucher_no(self):
+        return self.voucher_no
+
     def apply_transactions(self):
         if self.status == 'Cancelled':
             self.cancel_transactions()
@@ -74,6 +77,5 @@ class JournalVoucherRow(models.Model):
     def get_source_id(self):
         return self.journal_voucher_id
 
-    @property
-    def voucher_no(self):
+    def get_voucher_no(self):
         return self.journal_voucher.voucher_no

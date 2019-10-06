@@ -66,8 +66,7 @@ class ChequeDeposit(models.Model):
     def __str__(self):
         return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)
 
-    @property
-    def voucher_no(self):
+    def get_voucher_no(self):
         return self.id
 
     @property
@@ -89,8 +88,7 @@ class ChequeDepositRow(models.Model):
 
     company_id_accessor = 'cheque_deposit__company_id'
 
-    @property
-    def voucher_no(self):
+    def get_voucher_no(self):
         return self.cheque_deposit_id
 
 
