@@ -21,6 +21,23 @@ class SalesSetting(models.Model):
 
     enable_row_description = models.BooleanField(default=False)
 
+    @property
+    def fields(self):
+        return {
+            'mode': self.bank_account_id or self.mode,
+            'trade_discount': self.is_trade_discount_in_voucher
+        }
+
+    @property
+    def options(self):
+        return {
+            'show_customer': not self.show_party_by_default,
+            'show_trade_discount_in_voucher': self.show_trade_discount_in_voucher,
+            'show_trade_discount_in_row': self.show_trade_discount_in_row,
+            'enable_row_descriptions': self.enable_row_description,
+            'is_trade_discount_in_row': self.is_trade_discount_in_row
+        }
+
     def __str__(self):
         return 'Sales Setting - {}'.format(self.company.name)
 
@@ -37,6 +54,22 @@ class PurchaseSetting(models.Model):
     mode = models.CharField(default='Credit', max_length=15)
 
     enable_row_description = models.BooleanField(default=False)
+
+    @property
+    def fields(self):
+        return {
+            'mode': self.bank_account_id or self.mode,
+            'trade_discount': self.is_trade_discount_in_voucher
+        }
+
+    @property
+    def options(self):
+        return {
+            'show_trade_discount_in_voucher': self.show_trade_discount_in_voucher,
+            'show_trade_discount_in_row': self.show_trade_discount_in_row,
+            'enable_row_descriptions': self.enable_row_description,
+            'is_trade_discount_in_row': self.is_trade_discount_in_row
+        }
 
     def __str__(self):
         return 'Purchase Setting - {}'.format(self.company.name)

@@ -6,34 +6,34 @@ from apps.voucher.models import SalesSetting, PurchaseSetting
 class SalesCreateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        exclude = ('id', 'company',)
+        fields = ('fields', 'options')
 
 
 class SalesUpdateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        exclude = ('id', 'company', 'is_trade_discount_in_voucher', 'is_trade_discount_in_row', 'mode', 'bank_account')
+        fields = ('options',)
 
 
 class PurchaseCreateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        exclude = ('id', 'company',)
+        fields = ('fields', 'options')
 
 
 class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        exclude = ('id', 'company', 'is_trade_discount_in_voucher', 'is_trade_discount_in_row', 'mode', 'bank_account')
+        fields = ('options',)
 
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        fields = '__all__'
+        exclude = ('company',)
 
 
 class SalesSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        fields = '__all__'
+        exclude = ('company',)

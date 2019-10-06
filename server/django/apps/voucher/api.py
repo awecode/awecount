@@ -111,29 +111,24 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response(data)
 
     def get_defaults(self, request=None):
-        data = {
-            'fields': {
-                'can_update_issued': request.company.enable_sales_invoice_update,
+        return {
+            'options': {
                 'enable_sales_agents': request.company.enable_sales_agents
             },
         }
-        return data
 
     def get_create_defaults(self, request=None):
-        options = SalesCreateSettingSerializer(request.company.sales_setting).data
-        options['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
-        return {
-            'options': options
-        }
+        data = SalesCreateSettingSerializer(request.company.sales_setting).data
+        data['options']['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
+        return data
 
     def get_update_defaults(self, request=None):
-        options = SalesUpdateSettingSerializer(request.company.sales_setting).data
+        data = SalesUpdateSettingSerializer(request.company.sales_setting).data
+        data['options']['can_update_issued'] = request.company.enable_sales_invoice_update
         obj = self.get_object()
         if not obj.voucher_no:
-            options['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
-        return {
-            'options': options
-        }
+            data['options']['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
+        return data
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
