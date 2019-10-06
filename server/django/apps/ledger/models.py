@@ -152,6 +152,10 @@ class Account(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def get_creditable_accounts(self):
+        return Account.objects.filter(Q(name='Cash', default=True) | Q(category__name='Bank Accounts', category__default=True)| Q(category__name='Customers', category__default=True))
+
     class Meta:
         # unique_together = ('name', 'fy')
         ordering = ('order',)
@@ -183,27 +187,18 @@ class Party(models.Model):
             post_save = True
         super().save(*args, **kwargs)
         if post_save:
-            if not self.customer_account:
+            if not self.customer_account_id:
                 customer_account = Account(name=self.name, company=self.company, code='PR-' + str(self.id))
                 customer_account.name += ' (Receivable)'
-                try:
-                    customer_account.category = Category.objects.get(name='Customers',
-                                                                     parent__name='Account Receivables',
-                                                                     company=self.company)
-                except Category.DoesNotExist:
-                    pass
+                customer_account.category = Category.objects.get(name='Customers', default=True, company=self.company)
                 customer_account.save()
                 self.customer_account = customer_account
-            if not self.supplier_account:
-                try:
-                    account2 = Account(name=self.name + ' (Payable)', code='PR-' + str(self.id))
-                    account2.company = self.company
-                    account2.category = Category.objects.get(name='Suppliers', parent__name='Account Payables',
-                                                             company=self.company)
-                    account2.save()
-                    self.supplier_account = account2
-                except Category.DoesNotExist:
-                    pass
+            if not self.supplier_account_id:
+                account2 = Account(name=self.name + ' (Payable)', code='PR-' + str(self.id))
+                account2.company = self.company
+                account2.category = Category.objects.get(name='Suppliers', default=True, company=self.company)
+                account2.save()
+                self.supplier_account = account2
             self.save()
 
 
@@ -454,13 +449,13 @@ def handle_company_creation(sender, **kwargs):
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
 
     assets = Category.objects.create(name='Assets', code='A', company=company, default=True)
-    Category.objects.create(name='Other Receivables', code='A-OR', parent=assets, company=company, default=True)
+    # Category.objects.create(name='Other Receivables', code='A-OR', parent=assets, company=company, default=True)
     Category.objects.create(name='Tax Receivables', code='A-TR', parent=assets, company=company, default=True)
-    Category.objects.create(name='Deferred Assets', code='A-DA', parent=assets, company=company, default=True)
+    # Category.objects.create(name='Deferred Assets', code='A-DA', parent=assets, company=company, default=True)
     Category.objects.create(name='Fixed Assets', code='A-FA', parent=assets, company=company, default=True)
-    Category.objects.create(name='Loans and Advances Given', code='A-L', parent=assets, company=company, default=True)
-    Category.objects.create(name='Deposits Made', code='A-D', parent=assets, company=company, default=True)
-    Category.objects.create(name='Employee', code='A-E', parent=assets, company=company, default=True)
+    # Category.objects.create(name='Loans and Advances Given', code='A-L', parent=assets, company=company, default=True)
+    # Category.objects.create(name='Deposits Made', code='A-D', parent=assets, company=company, default=True)
+    # Category.objects.create(name='Employee', code='A-E', parent=assets, company=company, default=True)
 
     cash_account = Category.objects.create(name='Cash Accounts', code='A-C', parent=assets, company=company,
                                            default=True)
@@ -471,18 +466,15 @@ def handle_company_creation(sender, **kwargs):
     # Account.objects.create(name='Cheque Account', category=cash_equivalent_account, code='A-CE-CQ', company=company,
     #                        default=True)
 
-    bank_account = Category.objects.create(name='Bank Accounts', code='A-B', parent=assets, company=company,
-                                           default=True)
-    # Account(name='ATM Account', category=bank_account, code='A-B-A', company=company, default=True).save()
-    # Account(name='Bank Account', category=bank_account, code='A-B-B', company=company, default=True).save()
-    # Account(name='Card Account', category=bank_account, code='A-B-Ca', company=company, default=True).save()
+    Category.objects.create(name='Bank Accounts', code='A-B', parent=assets, company=company,
+                            default=True)
 
     account_receivables = Category.objects.create(name='Account Receivables', code='A-AR', parent=assets,
                                                   company=company, default=True)
     Category.objects.create(name='Customers', code='A-AR-C', parent=account_receivables, company=company, default=True)
 
-    employee_deductions = Category.objects.create(name='Employee Deductions', code='A-ED', parent=assets,
-                                                  company=company, default=True)
+    # employee_deductions = Category.objects.create(name='Employee Deductions', code='A-ED', parent=assets,
+    #                                               company=company, default=True)
     # Account.objects.create(name='Advances', category=employee_deductions, code='A-ED-AD', company=company, default=True)
     # Account.objects.create(name='Loans', category=employee_deductions, code='A-ED-L', company=company, default=True)
     # Account.objects.create(name='Payroll Taxes', category=employee_deductions, code='A-ED-T', company=company,
@@ -498,19 +490,19 @@ def handle_company_creation(sender, **kwargs):
     account_payables = Category.objects.create(name='Account Payables', code='L-AP', parent=liabilities,
                                                company=company, default=True)
     Category.objects.create(name='Suppliers', parent=account_payables, code='L-AP-S', company=company, default=True)
-    other_payables = Category.objects.create(name='Other Payables', code='L-OP', parent=liabilities, company=company,
-                                             default=True)
+    # other_payables = Category.objects.create(name='Other Payables', code='L-OP', parent=liabilities, company=company,
+    #                                          default=True)
     # Account.objects.create(name='Utility Bills Account', category=other_payables, code='L-OP-U', company=company,
     #                        default=True)
-    Category.objects.create(name='Provisions', code='L-P', parent=liabilities, company=company, default=True)
-    secured_loans = Category.objects.create(name='Secured Loans', code='L-SL', parent=liabilities, company=company,
-                                            default=True)
+    # Category.objects.create(name='Provisions', code='L-P', parent=liabilities, company=company, default=True)
+    # secured_loans = Category.objects.create(name='Secured Loans', code='L-SL', parent=liabilities, company=company,
+    #                                         default=True)
     # Account.objects.create(name='Bank OD', category=secured_loans, code='L-SL-OD', company=company, default=True)
     # Account.objects.create(name='Bank Loans', category=secured_loans, code='L-SL-BL', company=company, default=True)
-    Category.objects.create(name='Unsecured Loans', code='L-US', parent=liabilities, company=company, default=True)
-    Category.objects.create(name='Deposits Taken', code='L-DT', parent=liabilities, company=company, default=True)
-    Category.objects.create(name='Loans & Advances Taken', code='L-L&A', parent=liabilities, company=company,
-                            default=True)
+    # Category.objects.create(name='Unsecured Loans', code='L-US', parent=liabilities, company=company, default=True)
+    # Category.objects.create(name='Deposits Taken', code='L-DT', parent=liabilities, company=company, default=True)
+    # Category.objects.create(name='Loans & Advances Taken', code='L-L&A', parent=liabilities, company=company,
+    #                         default=True)
     duties_and_taxes = Category.objects.create(name='Duties & Taxes', code='L-T', parent=liabilities, company=company,
                                                default=True)
     # Account.objects.create(name='Sales Tax', category=duties_and_taxes, code='L-T-S', company=company, default=True)

@@ -20,13 +20,9 @@ class BankAccount(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ledger:
-            ledger = Account(name=self.account_number, company=self.company)
-            try:
-                ledger.category = Category.objects.get(name='Bank Accounts', parent__name='Assets',
-                                                       company=self.company)
-            except Category.DoesNotExist:
-                pass
-            ledger.code = 'P-' + str(self.account_number)
+            ledger = Account(name=self.full_name, company=self.company)
+            ledger.category = Category.objects.get(name='Bank Accounts', default=True, company=self.company)
+            ledger.code = 'A-B-' + str(self.account_number)
             ledger.save()
             self.ledger = ledger
         super().save(*args, **kwargs)
@@ -34,6 +30,14 @@ class BankAccount(models.Model):
     def increase_cheque_no(self):
         self.current_cheque_no = self.get_cheque_no()
         self.save()
+
+    @property
+    def friendly_name(self):
+        return self.short_name or self.bank_name
+
+    @property
+    def full_name(self):
+        return '{} ({})'.format(self.short_name or self.bank_name, self.account_number)
 
     def get_cheque_no(self):
         if not self.start_cheque_no:
