@@ -34,7 +34,7 @@ class SalesSetting(models.Model):
             'show_customer': not self.show_party_by_default,
             'show_trade_discount_in_voucher': self.show_trade_discount_in_voucher,
             'show_trade_discount_in_row': self.show_trade_discount_in_row,
-            'enable_row_descriptions': self.enable_row_description,
+            'enable_row_description': self.enable_row_description,
             'is_trade_discount_in_row': self.is_trade_discount_in_row
         }
 

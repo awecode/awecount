@@ -201,18 +201,14 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     )
 
     def get_create_defaults(self, request=None):
-        return {
-            'options': PurchaseCreateSettingSerializer(request.company.purchase_setting).data
-        }
+        return PurchaseCreateSettingSerializer(request.company.purchase_setting).data
 
     def get_update_defaults(self, request=None):
-        options = PurchaseUpdateSettingSerializer(request.company.purchase_setting).data
+        data = PurchaseUpdateSettingSerializer(request.company.purchase_setting).data
         obj = self.get_object()
         if not obj.voucher_no:
-            options['voucher_no'] = get_next_voucher_no(PurchaseVoucher, request.company_id)
-        return {
-            'options': options
-        }
+            data['options']['voucher_no'] = get_next_voucher_no(PurchaseVoucher, request.company_id)
+        return data
 
     def get_queryset(self, **kwargs):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
