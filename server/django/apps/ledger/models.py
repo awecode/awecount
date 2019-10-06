@@ -610,3 +610,6 @@ class TransactionModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+set_ledger_transactions = set_transactions

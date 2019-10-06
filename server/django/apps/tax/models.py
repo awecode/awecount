@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.ledger.models import Account
+from apps.ledger.models import Account, set_ledger_transactions, JournalEntry
 from apps.users.models import Company
 
 
@@ -74,9 +74,28 @@ class TaxPayment(models.Model):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_payments')
 
+    def get_voucher_no(self):
+        return self.voucher_no
+
+    def get_source_id(self):
+        return self.id
+
     def __str__(self):
         return self.voucher_no or self.date
 
-        # def apply_transactions(self):
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.status == 'Paid':
+            self.apply_transactions()
+        if self.status == 'Cancelled':
+            self.cancel_transactions()
 
+    def apply_transactions(self):
+        entries = [
+            ['dr', self.tax_scheme.payable, self.amount],
+            ['cr', self.cr_account, self.amount]
+        ]
+        set_ledger_transactions(self, self.date, *entries, clear=True)
 
+    def cancel_transactions(self):
+        JournalEntry.objects.filter(content_type__model='taxpayment', object_id=self.id).delete()
