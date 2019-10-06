@@ -569,7 +569,8 @@ def get_account(request_or_company, name):
 
 
 class TransactionModel(models.Model):
-    def get_voucher_no(self):
+    @property
+    def voucher_no(self):
         if hasattr(self, 'voucher_no'):
             return self.voucher_no
         if hasattr(self, 'voucher'):

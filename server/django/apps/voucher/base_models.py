@@ -131,7 +131,8 @@ class InvoiceRowModel(models.Model):
     def __str__(self):
         return str(self.voucher.voucher_no)
 
-    def get_voucher_no(self):
+    @property
+    def voucher_no(self):
         return self.voucher.voucher_no
 
     def get_source_id(self):

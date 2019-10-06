@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.ledger.models import Account, set_ledger_transactions, JournalEntry
+from apps.ledger.models import Account, set_ledger_transactions, JournalEntry, TransactionModel
 from apps.users.models import Company
 
 
@@ -63,7 +63,7 @@ STATUSES = (
 )
 
 
-class TaxPayment(models.Model):
+class TaxPayment(TransactionModel):
     voucher_no = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField()
     tax_scheme = models.ForeignKey(TaxScheme, related_name='payments', on_delete=models.CASCADE)
@@ -73,12 +73,6 @@ class TaxPayment(models.Model):
     status = models.CharField(choices=STATUSES, max_length=10, default='Draft')
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_payments')
-
-    def get_voucher_no(self):
-        return self.voucher_no
-
-    def get_source_id(self):
-        return self.id
 
     def __str__(self):
         return self.voucher_no or self.date
