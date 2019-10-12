@@ -47,7 +47,7 @@ class Account(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
-    category = models.ForeignKey(Category, related_name='accounts', blank=True, null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey(Category, related_name='accounts',on_delete=models.PROTECT)
     tax_rate = models.FloatField(blank=True, null=True)
     opening_dr = models.FloatField(default=0)
     opening_cr = models.FloatField(default=0)
