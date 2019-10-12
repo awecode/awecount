@@ -33,7 +33,7 @@ class Company(models.Model):
     email = models.EmailField()
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='private_limited')
     tax_registration_number = models.IntegerField(blank=True, null=True)
-    force_preview_before_save = models.BooleanField(default=False)
+    # force_preview_before_save = models.BooleanField(default=False)
     enable_sales_invoice_update = models.BooleanField(default=False)
     enable_cheque_deposit_update= models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
@@ -95,7 +95,7 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     roles = models.ManyToManyField(Role, blank=True, related_name='users')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, related_name='users', null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', ]

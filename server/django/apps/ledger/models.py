@@ -38,6 +38,7 @@ class Category(MPTTModel):
 
     class Meta:
         verbose_name_plural = u'Categories'
+        unique_together = ('code', 'company')
 
 
 class Account(models.Model):
@@ -547,8 +548,10 @@ def handle_company_creation(sender, **kwargs):
 
     # Opening Balance Difference
 
-    opening_balance_difference = Category.objects.create(name='Opening Balance Difference', code='O', company=company, default=True)
-    Account.objects.create(name='Opening Balance Difference', code='O-OBD', category=opening_balance_difference, company=company, default=True)
+    opening_balance_difference = Category.objects.create(name='Opening Balance Difference', code='O', company=company,
+                                                         default=True)
+    Account.objects.create(name='Opening Balance Difference', code='O-OBD', category=opening_balance_difference, company=company,
+                           default=True)
 
 
 def get_account(request_or_company, name):
