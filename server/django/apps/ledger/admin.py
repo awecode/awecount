@@ -25,7 +25,8 @@ admin.site.register(JournalEntry)
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'company',)
+    list_display = ('code', 'name', 'parent', 'company')
+    list_filter = ('company', 'default')
 
 
 admin.site.register(Category, CategoryAdmin)

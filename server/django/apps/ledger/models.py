@@ -19,7 +19,7 @@ class Category(MPTTModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
-    code = models.CharField(max_length=20, null=True, blank=True)
+    code = models.CharField(max_length=20)
     default = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_categories')
 
@@ -47,7 +47,7 @@ class Account(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.SET_NULL)
-    category = models.ForeignKey(Category, related_name='accounts',on_delete=models.PROTECT)
+    category = models.ForeignKey(Category, related_name='accounts', on_delete=models.PROTECT)
     tax_rate = models.FloatField(blank=True, null=True)
     opening_dr = models.FloatField(default=0)
     opening_cr = models.FloatField(default=0)
@@ -443,11 +443,11 @@ def handle_company_creation(sender, **kwargs):
     # TODO Prevent calling twice
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
 
-    equity = Category.objects.create(name='Equity', code='E', company=company, default=True)
-    # Account.objects.create(name='Paid in Capital', category=equity, code='E-PC', company=company, default=True)
-    # Account.objects.create(name='Retained Earnings', category=equity, code='E-RE', company=company, default=True)
-    # Account.objects.create(name='Profit and Loss Account', category=equity, code='E-PL', company=company, default=True)
-    Account.objects.create(name='Opening Balance Equity', category=equity, code='E-OBE', company=company, default=True)
+    equity = Category.objects.create(name='Equity', code='Q', company=company, default=True)
+    # Account.objects.create(name='Paid in Capital', category=equity, code='Q-PC', company=company, default=True)
+    # Account.objects.create(name='Retained Earnings', category=equity, code='Q-RE', company=company, default=True)
+    # Account.objects.create(name='Profit and Loss Account', category=equity, code='Q-PL', company=company, default=True)
+    Account.objects.create(name='Opening Balance Equity', category=equity, code='Q-OBE', company=company, default=True)
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
 
@@ -456,7 +456,7 @@ def handle_company_creation(sender, **kwargs):
     Category.objects.create(name='Tax Receivables', code='A-TR', parent=assets, company=company, default=True)
     Category.objects.create(name='Deferred Assets', code='A-DA', parent=assets, company=company, default=True)
     Category.objects.create(name='Fixed Assets', code='A-FA', parent=assets, company=company, default=True)
-    Category.objects.create(name='Loans and Advances Given', code='A-L', parent=assets, company=company, default=True)
+    Category.objects.create(name='Loans and Advances Given', code='A-LA', parent=assets, company=company, default=True)
     Category.objects.create(name='Deposits Made', code='A-D', parent=assets, company=company, default=True)
     Category.objects.create(name='Employee', code='A-E', parent=assets, company=company, default=True)
 
@@ -516,17 +516,18 @@ def handle_company_creation(sender, **kwargs):
 
     income = Category.objects.create(name='Income', code='I', company=company, default=True)
     sales_category = Category.objects.create(name='Sales', code='I-S', parent=income, company=company, default=True)
-    Account.objects.create(name='Sales Account', category=sales_category, company=company, default=True)
+    Account.objects.create(name='Sales Account', code='I-S-S', category=sales_category, company=company, default=True)
     direct_income = Category.objects.create(name='Direct Income', code='I-D', parent=income, company=company,
                                             default=True)
-    Category.objects.create(name='Transfer and Remittance', code='I-D-T&R', parent=direct_income, company=company,
+    Category.objects.create(name='Transfer and Remittance', code='I-D-TR', parent=direct_income, company=company,
                             default=True)
-    indirect_income = Category.objects.create(name='Indirect Income', code='I-II', parent=income, company=company,
+    indirect_income = Category.objects.create(name='Indirect Income', code='I-I', parent=income, company=company,
                                               default=True)
 
-    discount_income_category = Category.objects.create(name='Discount Income', parent=indirect_income,
+    discount_income_category = Category.objects.create(name='Discount Income', code='I-I-DI', parent=indirect_income,
                                                        company=company, default=True)
-    Account.objects.create(name='Discount Income', category=discount_income_category, company=company, default=True)
+    Account.objects.create(name='Discount Income', code='I-I-DI-DI', category=discount_income_category, company=company,
+                           default=True)
 
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
 
@@ -535,16 +536,17 @@ def handle_company_creation(sender, **kwargs):
     purchase_category = Category.objects.create(name='Purchase', code='E-P', parent=expenses, company=company, default=True)
     Account.objects.create(name='Purchase Account', category=purchase_category, company=company, default=True)
 
-    direct_expenses = Category.objects.create(name='Direct Expenses', code='E-DE', parent=expenses, company=company,
+    direct_expenses = Category.objects.create(name='Direct Expenses', code='E-D', parent=expenses, company=company,
                                               default=True)
-    Category.objects.create(name='Purchase Expenses', code='E-DE-PE', parent=direct_expenses, company=company,
+    Category.objects.create(name='Purchase Expenses', code='E-D-PE', parent=direct_expenses, company=company,
                             default=True)
-    indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-IE', parent=expenses, company=company,
+    indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=expenses, company=company,
                                                 default=True)
-    Category.objects.create(name='Pay Head', code='E-IE-P', parent=indirect_expenses, company=company, default=True)
-    discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
+    Category.objects.create(name='Pay Head', code='E-I-P', parent=indirect_expenses, company=company, default=True)
+    discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses, code='E-I-DE',
                                                         company=company, default=True)
-    Account.objects.create(name='Discount Expenses', category=discount_expense_category, company=company, default=True)
+    Account.objects.create(name='Discount Expenses', category=discount_expense_category, code='E-I-DE-DE', company=company,
+                           default=True)
 
     # Opening Balance Difference
 
