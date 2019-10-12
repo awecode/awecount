@@ -100,47 +100,28 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         if not self.purchase_account:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-            try:
-                ledger.category = AccountCategory.objects.get(name='Purchase', parent__name='Expenses',
-                                                              company=self.company)
-            except AccountCategory.DoesNotExist:
-                pass
+            ledger.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
             ledger.code = 'P-C-' + str(self.code)
             ledger.save()
             self.purchase_account = ledger
         if not self.sales_account:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
-            try:
-                ledger.category = AccountCategory.objects.get(name='Sales', parent__name='Income', company=self.company)
-            except AccountCategory.DoesNotExist:
-                pass
+            ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
             ledger.code = 'S-C-' + str(self.code)
             ledger.save()
             self.sales_account = ledger
         if not self.discount_allowed_account:
             discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
             discount_allowed_account.code = 'DA-C-' + str(self.code)
-            try:
-                discount_allowed_account.category = AccountCategory.objects.get(
-                    name='Discount Expenses',
-                    parent__name='Indirect Expenses',
-                    company=self.company
-                )
-            except AccountCategory.DoesNotExist:
-                pass
+            discount_allowed_account.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
+                                                                            company=self.company)
             discount_allowed_account.save()
             self.discount_allowed_account = discount_allowed_account
         if not self.discount_received_account:
             discount_received_account = Account(name='Discount Received ' + self.name, company=self.company)
             discount_received_account.code = 'DR-C-' + str(self.code)
-            try:
-                discount_received_account.category = AccountCategory.objects.get(
-                    name='Discount Income',
-                    parent__name='Indirect Income',
-                    company=self.company
-                )
-            except AccountCategory.DoesNotExist:
-                pass
+            discount_received_account.category = AccountCategory.objects.get(name='Discount Income', default=True,
+                                                                             company=self.company)
             discount_received_account.save()
             self.discount_received_account = discount_received_account
         self.validate_unique()
@@ -368,7 +349,6 @@ class Item(models.Model):
         if self.can_be_purchased and not self.purchase_account_id:
             account = Account(name=self.name + ' (Purchase)', company=self.company)
             account.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
-
             account.code = 'P-' + str(self.code)
             account.save()
             self.purchase_account = account
@@ -409,7 +389,7 @@ class Item(models.Model):
         if self.fixed_asset and not self.fixed_asset_account_id:
             fixed_asset_account = Account(name=self.name, company=self.company)
             fixed_asset_account.code = 'A-FA-' + str(self.code)
-            fixed_asset_account.category = AccountCategory.objects.get(name='Fixed Assets', company=self.company)
+            fixed_asset_account.category = AccountCategory.objects.get(name='Fixed Assets', company=self.company, default=True)
             fixed_asset_account.save()
             self.fixed_asset_account = fixed_asset_account
 
