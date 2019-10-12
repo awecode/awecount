@@ -165,6 +165,9 @@ class CompanyAdmin(admin.ModelAdmin):
     list_filter = ('organization_type',)
     actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(Company, CompanyAdmin)
 
