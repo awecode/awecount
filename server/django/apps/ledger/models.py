@@ -42,7 +42,7 @@ class Category(MPTTModel):
 
 
 class Account(models.Model):
-    code = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=50)
     name = models.CharField(max_length=255)
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
@@ -534,7 +534,7 @@ def handle_company_creation(sender, **kwargs):
     expenses = Category.objects.create(name='Expenses', code='E', company=company, default=True)
 
     purchase_category = Category.objects.create(name='Purchase', code='E-P', parent=expenses, company=company, default=True)
-    Account.objects.create(name='Purchase Account', category=purchase_category, company=company, default=True)
+    Account.objects.create(name='Purchase Account', code='E-P-P', category=purchase_category, company=company, default=True)
 
     direct_expenses = Category.objects.create(name='Direct Expenses', code='E-D', parent=expenses, company=company,
                                               default=True)
