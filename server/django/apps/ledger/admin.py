@@ -17,6 +17,7 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'current_dr', 'current_cr', 'category', 'parent', 'default')
     search_fields = ('company__name', 'code', 'name')
     list_filter = ('company', 'default')
+    readonly_fields = ('default',)
 
 
 admin.site.register(Account, AccountAdmin)
@@ -27,6 +28,7 @@ admin.site.register(JournalEntry)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'parent', 'company')
     list_filter = ('company', 'default')
+    readonly_fields = ('default',)
 
 
 admin.site.register(Category, CategoryAdmin)

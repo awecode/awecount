@@ -128,7 +128,7 @@ def create_book_category(modeladmin, request, queryset):
         extra_fields = [{"name": "Author", "type": "Text", "enable_search": True},
                         {"name": "Genre", "type": "Choices", "enable_search": True}]
         try:
-            InventoryCategory.objects.create(name='Book', code='b', company=company, default_unit=unit,
+            InventoryCategory.objects.create(name='Book', code='book', company=company, default_unit=unit,
                                              default_tax_scheme=tax,
                                              track_inventory=True, can_be_sold=True, can_be_purchased=True,
                                              extra_fields=extra_fields)
@@ -144,7 +144,7 @@ def import_sold_books(modeladmin, request, queryset):
     for company in queryset:
         url = 'https://thuprai.com/book/bestsellers.json'
         sold_list = requests.get(url).json()
-        category = InventoryCategory.objects.get(name='Book', code='b', company=company)
+        category = InventoryCategory.objects.get(name='Book', code='book', company=company)
         for obj in sold_list:
             item, __ = Item.objects.get_or_create(code=obj[1], company=company,
                                                   defaults={'name': obj[0], 'selling_price': obj[2], 'category': category})
