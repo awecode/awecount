@@ -18,12 +18,12 @@ admin.site.site_title = "Awecount Admin Portal"
 admin.site.index_title = "Welcome to Awecount"
 
 
-def handle_account_creation(modeladmin, request, queryset):
+def create_company_defaults(modeladmin, request, queryset):
     for company in queryset:
         handle_company_creation(modeladmin, company=company)
 
 
-handle_account_creation.short_description = "Create basic accounts"
+create_company_defaults.short_description = "Create company defaults"
 
 
 class UserCreationForm(DjangoUserCreationForm):
@@ -163,7 +163,7 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [handle_account_creation, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
+    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
 
 
 admin.site.register(Company, CompanyAdmin)
