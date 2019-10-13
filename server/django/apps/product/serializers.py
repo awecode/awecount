@@ -42,6 +42,14 @@ class ItemSalesSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code', 'description', 'is_trackable')
 
 
+class ItemPOSSerializer(serializers.ModelSerializer):
+    rate = serializers.ReadOnlyField(source='selling_price')
+
+    class Meta:
+        model = Item
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code')
+
+
 class ItemPurchaseSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source='cost_price')
     is_trackable = serializers.ReadOnlyField()
@@ -195,4 +203,4 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-        'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')
+            'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')

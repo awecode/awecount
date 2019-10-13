@@ -14,7 +14,7 @@ from apps.ledger.models import Party, Account
 from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer, JournalEntriesSerializer, \
     AccountSerializer
 from apps.product.models import Unit, Item
-from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
+from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer, ItemPOSSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
@@ -175,6 +175,35 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
              SalesVoucherRowResource),
         ]
         return qs_to_xls(params)
+
+
+class POSViewSet(DeleteRows, CRULViewSet):
+    queryset = SalesVoucher.objects.all()
+    serializer_class = SalesVoucherCreateSerializer
+    model = SalesVoucher
+    ITEMS_SIZE = 1
+    collections = [
+        ('parties', Party.objects.only('name', 'address', 'logo', 'tax_registration_number'), PartyMinSerializer),
+        ('units', Unit.objects.only('name', 'short_name')),
+        ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
+        ('bank_accounts', BankAccount.objects.only('short_name', 'bank_name')),
+        ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
+    ]
+
+    def get_collections(self, request=None):
+        data = super().get_collections(request)
+
+        # self.paginator.page_size = self.ITEMS_SIZE
+        # items = Item.objects.filter(can_be_sold=True)
+        # page = self.paginate_queryset(items)
+        # serializer = ItemPOSSerializer(page, many=True)
+        # data['items'] = self.paginator.get_response_data(serializer.data)
+
+        qs = Item.objects.filter(can_be_sold=True, company_id=request.company_id).only(
+            'name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code')[:self.ITEMS_SIZE]
+        data['items'] = ItemPOSSerializer(qs, many=True).data
+
+        return data
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):

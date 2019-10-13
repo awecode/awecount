@@ -47,7 +47,7 @@ class BankAccount(models.Model):
         return cheque_no + 1
 
     def __str__(self):
-        return self.short_name or self.account_number
+        return self.short_name or self.bank_name
 
 
 class ChequeDeposit(models.Model):
