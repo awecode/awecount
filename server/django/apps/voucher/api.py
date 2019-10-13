@@ -4,6 +4,7 @@ from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework import filters as rf_filters
 
@@ -29,7 +30,7 @@ from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, Debit
 from apps.voucher.serializers.voucher_settings import SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, \
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.CustomViewSet import CRULViewSet
+from awecount.utils.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, \
@@ -41,7 +42,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer, SalesVoucherRowSerializer, SalesRowSerializer
+    SalesAgentSerializer, SalesRowSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -203,6 +204,15 @@ class POSViewSet(DeleteRows, CRULViewSet):
         data['items'] = ItemPOSSerializer(qs, many=True).data
 
         return data
+
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.is_issued():
+            if not request.company.enable_sales_invoice_update:
+                raise APIException({'detail': 'Issued sales invoices can\'t be updated'})
+            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
+            self.request.user.check_perm(permission)
+        return super().update(request, *args, **kwargs)
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
