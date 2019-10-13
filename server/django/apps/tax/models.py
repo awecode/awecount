@@ -13,32 +13,32 @@ class TaxScheme(models.Model):
     default = models.BooleanField(default=False)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='tax_schemes')
-    receivable = models.ForeignKey(Account, related_name='tax_receivable', blank=True, null=True,
+    receivable = models.ForeignKey(Account, related_name='receivable_taxes', blank=True, null=True,
                                    on_delete=models.CASCADE)
-    payable = models.ForeignKey(Account, related_name='tax_payable', blank=True, null=True, on_delete=models.CASCADE)
+    payable = models.ForeignKey(Account, related_name='payable_taxes', blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.short_name or self.name
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            receivable = Account(name=self.name + ' Receivable')
-            receivable.company = self.company
-            receivable.suggest_code()
+        self.validate_unique()
+
+        # needed for code generation
+        super().save(*args, **kwargs)
+
+        if self.recoverable and not self.receivable_id:
+            receivable = Account(name=self.name + ' Receivable', company=self.company)
+            self.receivable.add_category('Tax Receivables')
+            receivable.suggest_code(self)
             receivable.save()
             self.receivable = receivable
-            payable = Account(name=self.name + ' Payable')
-            payable.company = self.company
+        if not self.payable_id:
+            payable = Account(name=self.name + ' Payable', company=self.company)
             payable.add_category('Duties & Taxes')
-            payable.suggest_code()
+            payable.suggest_code(self)
             payable.save()
             self.payable = payable
-        self.receivable.category = None
-        if self.recoverable:
-            self.receivable.add_category('Tax Receivables')
-            self.receivable.suggest_code()
-        self.receivable.save()
-        self.validate_unique()
+
         super().save(*args, **kwargs)
 
     @staticmethod

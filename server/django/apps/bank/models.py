@@ -19,13 +19,14 @@ class BankAccount(models.Model):
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
-            ledger.category = Category.objects.get(name='Bank Accounts', default=True, company=self.company)
-            ledger.code = 'A-B-' + str(self.account_number)
+            ledger.add_category('Bank Accounts')
+            ledger.suggest_code(self)
             ledger.save()
             self.ledger = ledger
-        super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def increase_cheque_no(self):
         self.current_cheque_no = self.get_cheque_no()

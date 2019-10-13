@@ -100,28 +100,26 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         if not self.purchase_account:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-            ledger.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
-            ledger.code = 'P-C-' + str(self.code)
+            ledger.category = AccountCategory.get(self.company, 'Purchase')
+            ledger.suggest_code(self)
             ledger.save()
             self.purchase_account = ledger
         if not self.sales_account:
             ledger = Account(name=self.name + ' (Sales)', company=self.company)
-            ledger.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
-            ledger.code = 'S-C-' + str(self.code)
+            ledger.category = AccountCategory.get(self.company, 'Sales')
+            ledger.suggest_code(self)
             ledger.save()
             self.sales_account = ledger
         if not self.discount_allowed_account:
             discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
-            discount_allowed_account.code = 'DA-C-' + str(self.code)
-            discount_allowed_account.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
-                                                                            company=self.company)
+            discount_allowed_account.suggest_code(self)
+            discount_allowed_account.category = AccountCategory.get(self.company, 'Discount Expenses')
             discount_allowed_account.save()
             self.discount_allowed_account = discount_allowed_account
         if not self.discount_received_account:
             discount_received_account = Account(name='Discount Received ' + self.name, company=self.company)
-            discount_received_account.code = 'DR-C-' + str(self.code)
-            discount_received_account.category = AccountCategory.objects.get(name='Discount Income', default=True,
-                                                                             company=self.company)
+            discount_received_account.suggest_code(self)
+            discount_received_account.category = AccountCategory.get(self.company, 'Discount Income')
             discount_received_account.save()
             self.discount_received_account = discount_received_account
         self.validate_unique()
@@ -346,71 +344,73 @@ class Item(models.Model):
         return self.purchase_account
 
     def save(self, *args, **kwargs):
-        if self.can_be_purchased and not self.purchase_account_id:
-            account = Account(name=self.name + ' (Purchase)', company=self.company)
-            account.category = AccountCategory.objects.get(name='Purchase', default=True, company=self.company)
-            account.code = 'P-' + str(self.code)
-            account.save()
-            self.purchase_account = account
-        if self.can_be_sold and not self.sales_account_id:
-            account = Account(name=self.name + ' (Sales)', company=self.company)
-            account.category = AccountCategory.objects.get(name='Sales', default=True, company=self.company)
-            account.code = 'S-' + str(self.code)
-            account.save()
-            self.sales_account = account
-        if self.can_be_sold and not self.discount_allowed_account_id:
-            discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
-            discount_allowed_account.code = 'DA-' + str(self.code)
-            discount_allowed_account.category = AccountCategory.objects.get(name='Discount Expenses', default=True,
-                                                                            company=self.company)
-            discount_allowed_account.save()
-            self.discount_allowed_account = discount_allowed_account
-
-        if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_account_id:
-            discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
-            discount_received_acc.code = 'DR-' + str(self.code)
-            discount_received_acc.category = AccountCategory.objects.get(name='Discount Income', default=True,
-                                                                         company=self.company)
-            discount_received_acc.save()
-            self.discount_received_account = discount_received_acc
-
-        if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
-            expense_account = Account(name=self.name, company=self.company)
-            if self.direct_expense:
-                expense_account.code = 'E-DE-' + str(self.code)
-                expense_account.category = AccountCategory.objects.get(name='Direct Expenses', default=True, company=self.company)
-            else:
-                expense_account.code = 'E-IE-' + str(self.code)
-                expense_account.category = AccountCategory.objects.get(name='Indirect Expenses', default=True,
-                                                                       company=self.company)
-            expense_account.save()
-            self.expense_account = expense_account
-
-        if self.fixed_asset and not self.fixed_asset_account_id:
-            fixed_asset_account = Account(name=self.name, company=self.company)
-            fixed_asset_account.code = 'A-FA-' + str(self.code)
-            fixed_asset_account.category = AccountCategory.objects.get(name='Fixed Assets', company=self.company, default=True)
-            fixed_asset_account.save()
-            self.fixed_asset_account = fixed_asset_account
-
-        if not self.account_id and (self.track_inventory or self.fixed_asset):
-            account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
-            account.save()
-            self.account = account
-
-        if self.category and self.category.extra_fields:
-            search_data = []
-            for field in self.category.extra_fields:
-                if type(field) in [dict, OrderedDict]:
-                    if field.get('enable_search'):
-                        if type(self.extra_data) in [dict, OrderedDict]:
-                            search_data.append(str(self.extra_data.get(field.get('name'))))
-
-            search_text = ', '.join(search_data)
-            self.search_data = search_text
-
         self.validate_unique()
         super().save(*args, **kwargs)
+
+        post_save = kwargs.pop('post_save', True)
+        if post_save:
+
+            if self.can_be_purchased and not self.purchase_account_id:
+                account = Account(name=self.name + ' (Purchase)', company=self.company)
+                account.add_category('Purchase')
+                account.suggest_code(self)
+                account.save()
+                self.purchase_account = account
+            if self.can_be_sold and not self.sales_account_id:
+                account = Account(name=self.name + ' (Sales)', company=self.company)
+                account.add_category('Sales')
+                account.suggest_code(self)
+                account.save()
+                self.sales_account = account
+            if self.can_be_sold and not self.discount_allowed_account_id:
+                discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
+                discount_allowed_account.add_category('Discount Expenses')
+                discount_allowed_account.suggest_code(self)
+                discount_allowed_account.save()
+                self.discount_allowed_account = discount_allowed_account
+
+            if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_account_id:
+                discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
+                discount_received_acc.add_category('Discount Income')
+                discount_received_acc.suggest_code(self)
+                discount_received_acc.save()
+                self.discount_received_account = discount_received_acc
+
+            if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
+                expense_account = Account(name=self.name, company=self.company)
+                if self.direct_expense:
+                    expense_account.add_category('Direct Expenses')
+                else:
+                    expense_account.add_category('Indirect Expenses')
+                expense_account.suggest_code(self)
+                expense_account.save()
+                self.expense_account = expense_account
+
+            if self.fixed_asset and not self.fixed_asset_account_id:
+                fixed_asset_account = Account(name=self.name, company=self.company)
+                fixed_asset_account.add_category('Fixed Assets')
+                fixed_asset_account.suggest_code(self)
+                fixed_asset_account.save()
+                self.fixed_asset_account = fixed_asset_account
+
+            if not self.account_id and (self.track_inventory or self.fixed_asset):
+                account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
+                account.save()
+                self.account = account
+
+            if self.category and self.category.extra_fields:
+                search_data = []
+                for field in self.category.extra_fields:
+                    if type(field) in [dict, OrderedDict]:
+                        if field.get('enable_search'):
+                            if type(self.extra_data) in [dict, OrderedDict]:
+                                search_data.append(str(self.extra_data.get(field.get('name'))))
+
+                search_text = ', '.join(search_data)
+                self.search_data = search_text
+
+            # prevents recursion
+            self.save(post_save=False)
 
     class Meta:
         unique_together = ('code', 'company',)

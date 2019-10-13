@@ -41,6 +41,10 @@ class Category(MPTTModel):
             raise ValidationError('Requires Parent', code='parent')
         super().save(*args, **kwargs)
 
+    @classmethod
+    def get(cls, name, company):
+        return cls.objects.get(default=True, company=company, name=name)
+
     def get_data(self):
         node = Node(self)
         return node.get_data()
@@ -152,18 +156,14 @@ class Account(models.Model):
     #             nxt += 1
     #     return super(Account, self).save(*args, **kwargs)
 
-    def suggest_code(self):
-        if self.category:
-            cat_code = self.category.code or ''
-            max = 0
-            for account in self.category.accounts.all():
-                code = account.code.strip(cat_code + '-')
-                if code.isdigit() and int(code) > max:
-                    max = int(code)
-            if cat_code:
-                self.code = cat_code + '-' + str(max + 1)
-            else:
-                self.code = str(max + 1)
+    def suggest_code(self, obj):
+        cat_code = self.category.code
+        if type(obj) in [int, str]:
+            self.code = '{}-{}'.format(cat_code, obj)
+        elif hasattr(obj, 'id'):
+            self.code = '{}-{}'.format(cat_code, obj.id)
+        elif hasattr(obj, 'code'):
+            self.code = '{}-{}'.format(cat_code, obj.code)
 
     def __str__(self):
         return self.name
@@ -206,17 +206,17 @@ class Party(models.Model):
         super().save(*args, **kwargs)
         if post_save:
             if not self.customer_account_id:
-                customer_account = Account(name=self.name, company=self.company, code='PR-' + str(self.id))
-                customer_account.name += ' (Receivable)'
-                customer_account.category = Category.objects.get(name='Customers', default=True, company=self.company)
+                customer_account = Account(name=self.name + ' (Receivable)', company=self.company)
+                customer_account.add_category('Customers')
+                customer_account.suggest_code(self)
                 customer_account.save()
                 self.customer_account = customer_account
             if not self.supplier_account_id:
-                account2 = Account(name=self.name + ' (Payable)', code='PR-' + str(self.id))
-                account2.company = self.company
-                account2.category = Category.objects.get(name='Suppliers', default=True, company=self.company)
-                account2.save()
-                self.supplier_account = account2
+                supplier_account = Account(name=self.name + ' (Payable)', company=self.company)
+                supplier_account.add_category('Suppliers')
+                supplier_account.suggest_code(self)
+                supplier_account.save()
+                self.supplier_account = supplier_account
             self.save()
 
 
