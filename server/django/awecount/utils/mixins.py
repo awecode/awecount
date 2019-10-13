@@ -22,7 +22,6 @@ class InputChoiceMixin(object):
             self._paginator = None
         return self._paginator
 
-
     @action(detail=False)
     def choices(self, request):
         return self.list(request)
@@ -44,7 +43,11 @@ class ShortNameChoiceMixin(object):
 class DeleteRows(object):
     def update(self, request, *args, **kwargs):
         params = request.data
-        delete_rows(params.get('deleted_rows', None), self.row)
+        if hasattr(self, 'row'):
+            row_class = self.row
+        else:
+            row_class = self.queryset.model.rows.field.model
+        delete_rows(params.get('deleted_rows', None), row_class)
         return super(DeleteRows, self).update(request, *args, **kwargs)
 
 

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
@@ -175,11 +176,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs_to_xls(params)
 
 
-class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, viewsets.GenericViewSet):
+class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                 viewsets.GenericViewSet):
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
-    ITEMS_SIZE = 1
+    ITEMS_SIZE = 2
     collections = [
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
@@ -202,13 +204,18 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
 
         return data
 
+    def perform_create(self, serializer):
+        serializer.validated_data['company_id'] = self.request.company_id
+        if serializer.validated_data['status'] != 'Draft':
+            serializer.validated_data['print_count'] = 1
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})
+
     def update(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.is_issued():
-            if not request.company.enable_sales_invoice_update:
-                raise APIException({'detail': 'Issued sales invoices can\'t be updated'})
-            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
-            self.request.user.check_perm(permission)
+        if self.get_object().is_issued():
+            raise APIException({'detail': 'Issued POS invoices can\'t be updated'})
         return super().update(request, *args, **kwargs)
 
 
