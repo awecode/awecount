@@ -1,12 +1,10 @@
 from django.db.models import Prefetch, Q
-
 from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
-from rest_framework import filters as rf_filters
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.models import BankAccount
@@ -22,7 +20,6 @@ from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
     SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet
 from apps.voucher.models import SalesAgent
-
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
@@ -178,7 +175,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs_to_xls(params)
 
 
-class POSViewSet(DeleteRows, CRULViewSet):
+class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
