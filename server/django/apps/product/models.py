@@ -345,9 +345,9 @@ class Item(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate_unique()
-        super().save(*args, **kwargs)
 
         post_save = kwargs.pop('post_save', True)
+        super().save(*args, **kwargs)
         if post_save:
 
             if self.can_be_purchased and not self.purchase_account_id:
