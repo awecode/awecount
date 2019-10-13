@@ -183,7 +183,6 @@ class POSViewSet(DeleteRows, CRULViewSet):
     model = SalesVoucher
     ITEMS_SIZE = 1
     collections = [
-        # ('parties', Party.objects.only('name', 'address', 'logo', 'tax_registration_number'), PartyMinSerializer),
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
         ('bank_accounts', BankAccount.objects.only('short_name', 'bank_name')),
