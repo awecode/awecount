@@ -25,21 +25,25 @@ class TaxScheme(models.Model):
 
         # needed for code generation
         super().save(*args, **kwargs)
+        post_save = False
 
         if self.recoverable and not self.receivable_id:
             receivable = Account(name=self.name + ' Receivable', company=self.company)
-            self.receivable.add_category('Tax Receivables')
+            receivable.add_category('Tax Receivables')
             receivable.suggest_code(self)
             receivable.save()
             self.receivable = receivable
+            post_save = True
         if not self.payable_id:
             payable = Account(name=self.name + ' Payable', company=self.company)
             payable.add_category('Duties & Taxes')
             payable.suggest_code(self)
             payable.save()
             self.payable = payable
+            post_save = True
 
-        super().save(*args, **kwargs)
+        if post_save:
+            self.save()
 
     @staticmethod
     def setup_nepali_tax_schemes(company):
