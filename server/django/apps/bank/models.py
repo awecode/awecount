@@ -26,7 +26,7 @@ class BankAccount(models.Model):
             ledger.suggest_code(self)
             ledger.save()
             self.ledger = ledger
-            super().save(*args, **kwargs)
+            self.save()
 
     def increase_cheque_no(self):
         self.current_cheque_no = self.get_cheque_no()
