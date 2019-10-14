@@ -28,6 +28,8 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'transactions':
             return PartyAccountSerializer
+        elif self.action == 'choices':
+            return PartyMinSerializer
         return PartySerializer
 
     def get_queryset(self):

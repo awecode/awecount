@@ -1,11 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
-
 from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import filters as rf_filters
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.models import BankAccount
@@ -14,14 +14,13 @@ from apps.ledger.models import Party, Account
 from apps.ledger.serializers import SalesJournalEntrySerializer, PartyMinSerializer, JournalEntriesSerializer, \
     AccountSerializer
 from apps.product.models import Unit, Item
-from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
+from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer, ItemPOSSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
     SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet
 from apps.voucher.models import SalesAgent
-
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
@@ -29,7 +28,7 @@ from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, Debit
 from apps.voucher.serializers.voucher_settings import SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, \
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 from awecount.utils import get_next_voucher_no
-from awecount.utils.CustomViewSet import CRULViewSet
+from awecount.utils.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.utils.mixins import DeleteRows, InputChoiceMixin
 from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, \
@@ -41,7 +40,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer, SalesVoucherRowSerializer, SalesRowSerializer
+    SalesAgentSerializer, SalesRowSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -175,6 +174,49 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
              SalesVoucherRowResource),
         ]
         return qs_to_xls(params)
+
+
+class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                 viewsets.GenericViewSet):
+    queryset = SalesVoucher.objects.all()
+    serializer_class = SalesVoucherCreateSerializer
+    model = SalesVoucher
+    ITEMS_SIZE = 2
+    collections = [
+        ('units', Unit.objects.only('name', 'short_name')),
+        ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
+        ('bank_accounts', BankAccount.objects.only('short_name', 'bank_name')),
+        ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
+    ]
+
+    def get_collections(self, request=None):
+        data = super().get_collections(request)
+
+        # self.paginator.page_size = self.ITEMS_SIZE
+        # items = Item.objects.filter(can_be_sold=True)
+        # page = self.paginate_queryset(items)
+        # serializer = ItemPOSSerializer(page, many=True)
+        # data['items'] = self.paginator.get_response_data(serializer.data)
+
+        qs = Item.objects.filter(can_be_sold=True, company_id=request.company_id).only(
+            'name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code')[:self.ITEMS_SIZE]
+        data['items'] = ItemPOSSerializer(qs, many=True).data
+
+        return data
+
+    def perform_create(self, serializer):
+        serializer.validated_data['company_id'] = self.request.company_id
+        if serializer.validated_data['status'] != 'Draft':
+            serializer.validated_data['print_count'] = 1
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})
+
+    def update(self, request, *args, **kwargs):
+        if self.get_object().is_issued():
+            raise APIException({'detail': 'Issued POS invoices can\'t be updated'})
+        return super().update(request, *args, **kwargs)
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):

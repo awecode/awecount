@@ -20,26 +20,29 @@ class CompanyViewSetMixin(object):
             company_id = self.request.company_id
         return qs.filter(company_id=company_id)
 
+    def perform_create(self, serializer):
+        if serializer.instance:
+            model = serializer.instance.__class__
+        else:
+            model = serializer.Meta.model
+        if hasattr(model, 'company_id'):
+            serializer.validated_data['company_id'] = self.request.company_id
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})
 
-class GenericSerializer(serializers.Serializer):
-    name = serializers.ReadOnlyField(source='__str__')
-    id = serializers.ReadOnlyField()
+    def perform_update(self, serializer):
+        if hasattr(serializer.instance.__class__, 'company_id'):
+            if serializer.instance.company_id != self.request.company_id:
+                raise SuspiciousOperation('Modifying object owned by other company!')
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise APIException({'detail': e.messages})
 
 
-class CRULViewSet(CompanyViewSetMixin,
-                  mixins.CreateModelMixin,
-                  mixins.ListModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.RetrieveModelMixin,
-                  viewsets.GenericViewSet):
-    """
-    A viewset that provides `retrieve`, `create`, 'delete', and `list` actions.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-
-    """
-
+class CollectionViewSet(object):
     def get_defaults(self, request=None):
         return {}
 
@@ -94,23 +97,17 @@ class CRULViewSet(CompanyViewSetMixin,
             dct['collections'] = collections
         return Response(dct)
 
-    def perform_create(self, serializer):
-        if serializer.instance:
-            model = serializer.instance.__class__
-        else:
-            model = serializer.Meta.model
-        if hasattr(model, 'company_id'):
-            serializer.validated_data['company_id'] = self.request.company_id
-        try:
-            serializer.save()
-        except ValidationError as e:
-            raise APIException({'detail': e.messages})
 
-    def perform_update(self, serializer):
-        if hasattr(serializer.instance.__class__, 'company_id'):
-            if serializer.instance.company_id != self.request.company_id:
-                raise SuspiciousOperation('Modifying object owned by other company!')
-        try:
-            serializer.save()
-        except ValidationError as e:
-            raise APIException({'detail': e.messages})
+class GenericSerializer(serializers.Serializer):
+    name = serializers.ReadOnlyField(source='__str__')
+    id = serializers.ReadOnlyField()
+
+
+class CRULViewSet(CompanyViewSetMixin,
+                  CollectionViewSet,
+                  mixins.CreateModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.RetrieveModelMixin,
+                  viewsets.GenericViewSet):
+    pass

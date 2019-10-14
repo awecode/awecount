@@ -17,7 +17,7 @@ class PartyRepresentativeSerializer(serializers.ModelSerializer):
 class PartyMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
-        fields = ('id', 'name', 'address', 'logo', 'tax_registration_number')
+        fields = ('id', 'name', 'address', 'tax_registration_number')
 
 
 class AccountSerializer(serializers.ModelSerializer):
