@@ -6,6 +6,7 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, viewsets, mixins
 from rest_framework.response import Response
 
+from apps.ledger.filters import AccountFilterSet
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from .models import Account, JournalEntry, Category, Transaction
@@ -58,6 +59,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
+    filter_class = AccountFilterSet
 
     def get_account_ids(self, obj):
         return [obj.id]
