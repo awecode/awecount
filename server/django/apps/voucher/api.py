@@ -181,7 +181,7 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
-    ITEMS_SIZE = 1
+    ITEMS_SIZE = 20
     collections = [
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
