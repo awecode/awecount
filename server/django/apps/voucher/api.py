@@ -19,7 +19,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
-    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet
+    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet
 from apps.voucher.models import SalesAgent
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
@@ -565,6 +565,12 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     serializer_class = JournalVoucherCreateSerializer
     model = JournalVoucher
     row = JournalVoucherRow
+    # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter,]
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+
+    search_fields = ['voucher_no', 'narration',]
+    filterset_class = JournalVoucherFilterSet
+
     collections = (
         ('accounts', Account, AccountSerializer),
 
