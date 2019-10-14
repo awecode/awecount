@@ -100,7 +100,6 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         if not self.purchase_account:
             ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-            # ledger.category = AccountCategory.get(self.company, 'Purchase')
             ledger.add_category('Purchase')
             ledger.suggest_code(self)
             ledger.save()
