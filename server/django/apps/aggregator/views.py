@@ -3,9 +3,11 @@ import json
 import tablib
 from django.contrib.auth import authenticate
 from auditlog.models import LogEntry
-from django.core.exceptions import PermissionDenied
-from django.http import FileResponse, JsonResponse, HttpResponse
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import FileResponse, JsonResponse, HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.exceptions import APIException
 
 from .resources import LogEntryResource
 from .export import get_zipped_csvs, import_zipped_csvs
@@ -16,7 +18,6 @@ from datetime import datetime
 def export_data(request):
     data = json.loads(request.body)
     user = authenticate(email=data.get('email'), password=data.get('password'))
-
     if user and user.is_authenticated:
         zipped_data = get_zipped_csvs(request.company_id)
         response = FileResponse(zipped_data)
@@ -24,7 +25,7 @@ def export_data(request):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
         return response
     else:
-        raise PermissionDenied
+        return JsonResponse({'non_field_errors': 'Provide Valid Credential'}, status=401)
 
 
 @csrf_exempt
@@ -48,18 +49,19 @@ def qs_to_xls(querysets):
     book = tablib.Databook(datasets)
     xls = book.xls
     response = HttpResponse(xls, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = '{}_{}.xls'.format(qs.model.__name__+'_', datetime.today().date())
+    filename = '{}_{}.xls'.format(qs.model.__name__ + '_', datetime.today().date())
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
     return response
+
 
 @csrf_exempt
 def export_auditlog(request):
     if not request.user.is_authenticated or not request.company_id:
         raise PermissionDenied
-    resource  = LogEntryResource()
+    resource = LogEntryResource()
     qs = LogEntry.objects.filter(actor__company_id=request.user.company_id).select_related('content_type', 'actor')
     dataset = resource.export(queryset=qs)
-    dataset.title='Audit Logs'
+    dataset.title = 'Audit Logs'
     xls = dataset.xls
     response = HttpResponse(xls, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     filename = '{}_{}.xls'.format('Log_Entries_', datetime.today().date())
