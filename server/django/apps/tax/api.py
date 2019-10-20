@@ -1,11 +1,15 @@
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework.fields import (  # NOQA # isort:skip
     IntegerField, )
+from rest_framework.response import Response
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.filters import TaxPaymentFilterSet
-from apps.tax.models import TaxScheme, STATUSES
-from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, TaxAccountSerializer
+from apps.tax.models import TaxScheme, STATUSES, TaxPayment
+from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, \
+    TaxAccountSerializer, TaxPaymentJournalEntrySerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
 
@@ -49,3 +53,9 @@ class TaxPaymentViewSet(CRULViewSet):
 
     def get_queryset(self, **kwargs):
         return super().get_queryset().order_by('-id')
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        sale_voucher = get_object_or_404(TaxPayment, pk=pk)
+        journals = sale_voucher.journal_entries()
+        return Response(TaxPaymentJournalEntrySerializer(journals, many=True).data)

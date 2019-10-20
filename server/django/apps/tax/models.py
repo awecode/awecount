@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 from apps.ledger.models import Account, set_ledger_transactions, JournalEntry
 from apps.users.models import Company
@@ -48,7 +49,8 @@ class TaxScheme(models.Model):
     @staticmethod
     def setup_nepali_tax_schemes(company):
         schemes = [
-            TaxScheme(name='Value Added Tax', short_name='VAT', rate='13', recoverable=True, default=True, company=company),
+            TaxScheme(name='Value Added Tax', short_name='VAT', rate='13', recoverable=True, default=True,
+                      company=company),
             TaxScheme(name='Taxless', short_name='Taxless', rate='0', recoverable=False, default=True, company=company),
             TaxScheme(name='Export', short_name='Export', rate='0', recoverable=False, default=True, company=company),
             TaxScheme(name='Tax Deduction at Source', short_name='TDS', rate='1.5', recoverable=False, default=True,
@@ -103,3 +105,10 @@ class TaxPayment(models.Model):
 
     def cancel_transactions(self):
         JournalEntry.objects.filter(content_type__model='taxpayment', object_id=self.id).delete()
+
+    def journal_entries(self):
+        app_label = self._meta.app_label
+        model = self.__class__.__name__.lower()
+        qs = JournalEntry.objects.filter(content_type__app_label=app_label)
+        qs = qs.filter(content_type__model=model, object_id=self.id)
+        return qs

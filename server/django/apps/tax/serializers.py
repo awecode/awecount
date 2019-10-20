@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.ledger.serializers import AccountBalanceSerializer
+from apps.ledger.serializers import AccountBalanceSerializer, TransactionSerializer, JournalEntrySerializer
 from apps.tax.models import TaxScheme, TaxPayment
 
 
@@ -37,3 +37,11 @@ class TaxPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxPayment
         exclude = ('company',)
+
+
+class TaxPaymentJournalEntrySerializer(JournalEntrySerializer):
+    transactions = serializers.SerializerMethodField()
+
+    def get_transactions(self, obj):
+        transactions = obj.transactions.all()
+        return TransactionSerializer(transactions, many=True).data
