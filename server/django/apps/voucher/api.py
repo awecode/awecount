@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
+from django.conf import settings
+
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
@@ -181,7 +183,6 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
-    ITEMS_SIZE = 20
     collections = [
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
@@ -196,13 +197,13 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     def get_collections(self, request=None):
         data = super().get_collections(request)
         qs = self.get_item_queryset(request.company_id)
-        self.paginator.page_size = self.ITEMS_SIZE
+        self.paginator.page_size = settings.POS_ITEMS_SIZE
         page = self.paginate_queryset(qs)
         serializer = ItemPOSSerializer(page, many=True)
         data['items'] = self.paginator.get_response_data(serializer.data)
 
-        # qs = qs[: self.ITEMS_SIZE]
-        # data['items'] = {'results': ItemPOSSerializer(qs, many=True).data, 'pagination': {'page': 1, 'size': self.ITEMS_SIZE}}
+        # qs = qs[: self.POS_ITEMS_SIZE]
+        # data['items'] = {'results': ItemPOSSerializer(qs, many=True).data, 'pagination': {'page': 1, 'size': settings.POS_ITEMS_SIZE}}
 
         return data
 
@@ -219,14 +220,6 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
         if self.get_object().is_issued():
             raise APIException({'detail': 'Issued POS invoices can\'t be updated'})
         return super().update(request, *args, **kwargs)
-
-    @action(detail=False)
-    def items(self, request):
-        qs = self.get_item_queryset(request.company_id)
-        self.paginator.page_size = self.ITEMS_SIZE
-        page = self.paginate_queryset(qs)
-        serializer = ItemPOSSerializer(page, many=True)
-        return Response(self.paginator.get_response_data(serializer.data))
 
 
 class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
