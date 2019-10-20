@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db.models import Sum
+from django.conf import settings
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 
@@ -44,6 +45,14 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         item = get_object_or_404(queryset=super().get_queryset(), pk=pk)
         serializer = self.detail_serializer_class(item, context={'request': request}).data
         return Response(serializer)
+
+    # items listing for POS
+    @action(detail=False)
+    def pos(self, request):
+        self.filter_backends = (rf_filters.SearchFilter,)
+        self.search_fields = ['name', 'code', 'description', 'search_data', ]
+        self.paginator.page_size = settings.POS_ITEMS_SIZE
+        return super().list(request)
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
