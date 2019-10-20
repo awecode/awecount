@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
+from django.conf import settings
+
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
@@ -181,7 +183,6 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
-    ITEMS_SIZE = 2
     collections = [
         ('units', Unit.objects.only('name', 'short_name')),
         ('discounts', SalesDiscount.objects.only('name', 'type', 'value'), SalesDiscountMinSerializer),
@@ -189,18 +190,20 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
         ('tax_schemes', TaxScheme.objects.only('name', 'short_name', 'rate'), TaxSchemeMinSerializer),
     ]
 
+    def get_item_queryset(self, company_id):
+        return Item.objects.filter(can_be_sold=True, company_id=company_id).only('name', 'unit_id', 'selling_price',
+                                                                                 'tax_scheme_id', 'code')
+
     def get_collections(self, request=None):
         data = super().get_collections(request)
+        qs = self.get_item_queryset(request.company_id)
+        self.paginator.page_size = settings.POS_ITEMS_SIZE
+        page = self.paginate_queryset(qs)
+        serializer = ItemPOSSerializer(page, many=True)
+        data['items'] = self.paginator.get_response_data(serializer.data)
 
-        # self.paginator.page_size = self.ITEMS_SIZE
-        # items = Item.objects.filter(can_be_sold=True)
-        # page = self.paginate_queryset(items)
-        # serializer = ItemPOSSerializer(page, many=True)
-        # data['items'] = self.paginator.get_response_data(serializer.data)
-
-        qs = Item.objects.filter(can_be_sold=True, company_id=request.company_id).only(
-            'name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code')[:self.ITEMS_SIZE]
-        data['items'] = ItemPOSSerializer(qs, many=True).data
+        # qs = qs[: self.POS_ITEMS_SIZE]
+        # data['items'] = {'results': ItemPOSSerializer(qs, many=True).data, 'pagination': {'page': 1, 'size': settings.POS_ITEMS_SIZE}}
 
         return data
 

@@ -72,6 +72,8 @@ REST_FRAMEWORK = {
     ),
 }
 
+POS_ITEMS_SIZE = 10
+
 WSGI_APPLICATION = 'awecount.wsgi.application'
 
 LANGUAGE_CODE = 'en-us'
