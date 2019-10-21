@@ -56,6 +56,6 @@ class TaxPaymentViewSet(CRULViewSet):
 
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):
-        sale_voucher = get_object_or_404(TaxPayment, pk=pk)
-        journals = sale_voucher.journal_entries()
+        tax_payment = get_object_or_404(TaxPayment, pk=pk)
+        journals = tax_payment.journal_entries()
         return Response(TaxPaymentJournalEntrySerializer(journals, many=True).data)
