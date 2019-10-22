@@ -134,16 +134,17 @@ def create_book_category(modeladmin, request, queryset):
             {"name": "nepali_description", "type": "Text", "enable_search": True},
             {"name": "genre", "type": "Choices", "enable_search": True},
             {"name": "authors", "type": "Text", "enable_search": True},
+            {"name": "pages", "type": "Text", "enable_search": True},
             {"name": "format", "type": "Choices", "enable_search": True},
             {"name": "language", "type": "Choices", "enable_search": True},
             {"name": "edition", "type": "Choices", "enable_search": True},
             {"name": "published_date", "type": "Text", "enable_search": True},
             {"name": "published_year", "type": "Text", "enable_search": True},
             {"name": "published_month", "type": "Text", "enable_search": True},
-            {"name": "height", "type": "Choices", "enable_search": True},
-            {"name": "width", "type": "Choices", "enable_search": True},
-            {"name": "thickness", "type": "Choices", "enable_search": True},
-            {"name": "weight", "type": "Choices", "enable_search": True}
+            {"name": "height", "type": "Text", "enable_search": True},
+            {"name": "width", "type": "Text", "enable_search": True},
+            {"name": "thickness", "type": "Text", "enable_search": True},
+            {"name": "weight", "type": "Text", "enable_search": True}
         ]
         try:
             InventoryCategory.objects.create(name='Book', code='book', company=company, default_unit=unit,
