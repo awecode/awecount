@@ -124,9 +124,27 @@ setup_basic_units.short_description = "Setup Basic Units"
 def create_book_category(modeladmin, request, queryset):
     for company in queryset:
         unit, __ = Unit.objects.get_or_create(short_name='pcs', company=company, defaults={'name': 'Pieces'})
-        tax, __ = TaxScheme.objects.get_or_create(short_name='Taxless', company=company, defaults={'name': 'Taxless', 'rate': 0})
-        extra_fields = [{"name": "Author", "type": "Text", "enable_search": True},
-                        {"name": "Genre", "type": "Choices", "enable_search": True}]
+        tax, __ = TaxScheme.objects.get_or_create(short_name='Taxless', company=company,
+                                                  defaults={'name': 'Taxless', 'rate': 0})
+        extra_fields = [
+            {"name": "nepali_title", "type": "Text", "enable_search": True},
+            {"name": "english_subtitle", "type": "Text", "enable_search": True},
+            {"name": "nepali_subtitle", "type": "Text", "enable_search": True},
+            {"name": "english_description", "type": "Text", "enable_search": True},
+            {"name": "nepali_description", "type": "Text", "enable_search": True},
+            {"name": "genre", "type": "Choices", "enable_search": True},
+            {"name": "authors", "type": "Text", "enable_search": True},
+            {"name": "format", "type": "Choices", "enable_search": True},
+            {"name": "language", "type": "Choices", "enable_search": True},
+            {"name": "edition", "type": "Choices", "enable_search": True},
+            {"name": "published_date", "type": "Text", "enable_search": True},
+            {"name": "published_year", "type": "Text", "enable_search": True},
+            {"name": "published_month", "type": "Text", "enable_search": True},
+            {"name": "height", "type": "Choices", "enable_search": True},
+            {"name": "width", "type": "Choices", "enable_search": True},
+            {"name": "thickness", "type": "Choices", "enable_search": True},
+            {"name": "weight", "type": "Choices", "enable_search": True}
+        ]
         try:
             InventoryCategory.objects.create(name='Book', code='book', company=company, default_unit=unit,
                                              default_tax_scheme=tax,
@@ -147,7 +165,8 @@ def import_sold_books(modeladmin, request, queryset):
         category = InventoryCategory.objects.get(name='Book', code='book', company=company)
         for obj in sold_list:
             item, __ = Item.objects.get_or_create(code=obj[1], company=company,
-                                                  defaults={'name': obj[0], 'selling_price': obj[2], 'category': category})
+                                                  defaults={'name': obj[0], 'selling_price': obj[2],
+                                                            'category': category})
             if not item.brand_id and obj[3]:
                 brand, __ = Brand.objects.get_or_create(name=obj[3], company=company)
                 item.brand = brand
@@ -163,7 +182,8 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
     list_filter = ('organization_type',)
-    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
+    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category,
+               import_sold_books]
 
     def has_delete_permission(self, request, obj=None):
         return False
