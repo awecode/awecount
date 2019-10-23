@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.bank.filters import ChequeDepositFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeDepositRow
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
-    ChequeIssueSerializer, BankAccountChequeVoucherSerializer
+    ChequeIssueSerializer, BankAccountChequeIssueSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -73,6 +73,6 @@ class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 class ChequeIssueViewSet(CRULViewSet):
     serializer_class = ChequeIssueSerializer
     collections = (
-        ('bank_accounts', BankAccount, BankAccountChequeVoucherSerializer),
+        ('bank_accounts', BankAccount, BankAccountChequeIssueSerializer),
         ('parties', Party, PartyMinSerializer),
     )

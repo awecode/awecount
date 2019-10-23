@@ -89,7 +89,7 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
         exclude = ('user', 'company',)
 
 
-class BankAccountChequeVoucherSerializer(serializers.ModelSerializer):
+class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='__str__')
     cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
 

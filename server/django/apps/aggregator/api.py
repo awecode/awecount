@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from apps.aggregator.resources import LogEntryResource
+from apps.aggregator.views import qs_to_xls
 from apps.aggregator.widgets import WIDGET_CHOICES
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.helpers import choice_parser
@@ -17,6 +19,12 @@ class LogEntryViewSet(ReadOnlyModelViewSet):
         return LogEntry.objects.filter(actor__company_id=self.request.user.company_id).select_related('content_type',
                                                                                                       'actor')
 
+    @action(detail=False)
+    def export(self, request):
+        params = [
+            ('Audit Logs', self.get_queryset(), LogEntryResource),
+        ]
+        return qs_to_xls(params)
 
 class WidgetViewSet(CRULViewSet):
     serializer_class = WidgetSerializer

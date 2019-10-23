@@ -10,4 +10,4 @@ class LogEntryResource(PrettyNameModelResource):
 
     class Meta:
         model = LogEntry
-        exclude = ('Actor')
+        exclude = ('actor', 'actor_id',)
