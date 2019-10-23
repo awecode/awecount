@@ -167,6 +167,8 @@ def import_sold_books(modeladmin, request, queryset):
         for obj in sold_list:
             item, __ = Item.objects.get_or_create(code=obj[1], company=company,
                                                   defaults={'name': obj[0], 'selling_price': obj[2],
+                                                            'unit_id': category.default_unit_id,
+                                                            'tax_scheme_id': category.default_tax_scheme_id,
                                                             'category': category})
             if not item.brand_id and obj[3]:
                 brand, __ = Brand.objects.get_or_create(name=obj[3], company=company)
