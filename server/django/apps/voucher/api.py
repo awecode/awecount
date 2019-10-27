@@ -90,8 +90,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if obj.is_issued():
             if not request.company.enable_sales_invoice_update:
                 raise APIException({'detail': 'Issued sales invoices can\'t be updated'})
-            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
-            self.request.user.check_perm(permission)
+            self.request.user.check_perm('SalesIssuedModify')
         return super().update(request, *args, **kwargs)
 
     @action(detail=True, url_path='journal-entries')
@@ -347,8 +346,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
                 raise APIException({'detail': 'Issued credit notes can\'t be updated'})
-            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
-            self.request.user.check_perm(permission)
+            self.request.user.check_perm('CreditNoteIssuedModify')
         return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
@@ -468,8 +466,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         if obj.is_issued():
             if not request.company.enable_credit_note_update:
                 raise APIException({'detail': 'Issued debit notes can\'t be updated'})
-            permission = '{}IssuedModify'.format(self.get_queryset().model.__name__)
-            self.request.user.check_perm(permission)
+            self.request.user.check_perm('DebitNoteIssuedModify')
         return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
