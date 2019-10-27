@@ -22,7 +22,7 @@ MODULES = [
     # Tax
     *gdp('TaxScheme'),
     # Voucher
-    *gdp('SalesVoucher'), 'SalesIssuedModify', 'SalesCancel',
+    *gdp('Sales'), 'SalesIssuedModify', 'SalesCancel',
     *gdp('PurchaseVoucher'),
     *gdp('CreditNote'), 'CreditNoteIssuedModify', 'CreditNoteCancel',
     *gdp('DebitNote'), 'DebitNoteIssuedModify', 'DebitNoteCancel',
@@ -42,4 +42,5 @@ MODULES = [
     *gdp('SalesSetting'),
 ]
 
+MODULES.sort()
 module_pairs = [(module, module) for module in MODULES]
