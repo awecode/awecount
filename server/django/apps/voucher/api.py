@@ -650,9 +650,9 @@ class SalesBookViewSet(CRULViewSet):
     filterset_class = SalesVoucherFilterSet
 
     def get_queryset(self, **kwargs):
-        qs = super().get_queryset().prefetch_related(
-            Prefetch('rows',
-                     SalesVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+        qs = super().get_queryset().filter(company_id=self.request.company_id,
+                                           status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
+            Prefetch('rows', SalesVoucherRow.objects.select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')
 
@@ -661,10 +661,11 @@ class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gener
     serializer_class = SalesRowSerializer
 
     def get_queryset(self, **kwargs):
-        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related('item',
-                                                                                                        'discount_obj',
-                                                                                                        'tax_scheme',
-                                                                                                        'voucher__party')
+        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id,
+                                            voucher__status__in=['Issued', 'Paid', 'Partially Paid']).select_related('item',
+                                                                                                                     'discount_obj',
+                                                                                                                     'tax_scheme',
+                                                                                                                     'voucher__party')
         return qs.order_by('-pk')
 
 
@@ -674,9 +675,9 @@ class PurchaseBookViewSet(CRULViewSet):
     filterset_class = PurchaseVoucherFilterSet
 
     def get_queryset(self, **kwargs):
-        qs = super().get_queryset().prefetch_related(
-            Prefetch('rows',
-                     PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+        qs = super().get_queryset().filter(company_id=self.request.company_id,
+                                           status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
+            Prefetch('rows', PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')
 
