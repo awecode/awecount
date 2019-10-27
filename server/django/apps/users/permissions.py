@@ -5,7 +5,7 @@ from .permission_modules import MODULES
 
 
 class ModuleAccessPermission(permissions.BasePermission):
-    message = 'Permission not enough.'
+    message = "You don't have the permission to perform this action!"
 
     def has_permission(self, request, view):
         model = view.get_queryset().model
@@ -22,15 +22,15 @@ class ModuleAccessPermission(permissions.BasePermission):
 
         if view.action == 'cancel' and request.method == 'POST' and cancel_permission in MODULES:
             if cancel_permission not in modules:
-                raise PermissionDenied({'detail': 'User does not have permission to cancel %s.' % _model_name})
+                raise PermissionDenied({'detail': "You don't have the permission to cancel %s." % _model_name})
         else:
             if request.method == 'GET' and list_permission not in modules:
                 raise PermissionDenied({'detail': self.message})
 
             if request.method == 'POST' and create_permission not in modules:
-                raise PermissionDenied({'detail': 'User does not have permission to create %s.' % _model_name})
+                raise PermissionDenied({'detail': "You don't have the permission to create %s." % _model_name})
 
             if request.method == 'PUT' and modify_permission not in modules:
-                raise PermissionDenied({'detail': 'User does not have permission to update %s.' % _model_name})
+                raise PermissionDenied({'detail': "You don't have the permission to update %s." % _model_name})
 
         return True

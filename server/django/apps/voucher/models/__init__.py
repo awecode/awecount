@@ -62,6 +62,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_invoices')
     sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='sales_invoices', on_delete=models.SET_NULL)
 
+    # Model key for module based permission
+    key = 'Sales'
+
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
 
