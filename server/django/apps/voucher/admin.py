@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from apps.product.models import Brand
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
     DebitNote, SalesAgent, SalesSetting, PurchaseSetting
@@ -93,14 +92,6 @@ class DiscountAdmin(admin.ModelAdmin):
 
 admin.site.register(SalesDiscount, DiscountAdmin)
 admin.site.register(PurchaseDiscount, DiscountAdmin)
-
-
-class BrandAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'description')
-    list_filter = ('company',)
-
-
-admin.site.register(Brand, BrandAdmin)
 
 
 class SalesAgentAdmin(admin.ModelAdmin):
