@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
 
 from apps.users.signals import company_creation
@@ -102,7 +103,7 @@ class User(AbstractBaseUser):
 
     objects = UserManager()
 
-    @property
+    @cached_property
     def role_modules(self):
         modules = []
         for role in self.roles.all():
