@@ -179,14 +179,15 @@ class SalesAgentSerializer(serializers.ModelSerializer):
 
 
 class SalesRowSerializer(serializers.ModelSerializer):
-    item  = serializers.CharField(source="item.name")
-    unit  = serializers.CharField(source="unit.name")
+    item = serializers.CharField(source="item.name")
+    # unit  = serializers.CharField(source="unit.name")
     buyers_name = serializers.ReadOnlyField(source='voucher.buyer_name')
     buyers_pan = serializers.ReadOnlyField(source='voucher.party.tax_registration_number')
     bill_no = serializers.CharField(source="voucher.voucher_no")
-    voucher_id = serializers.CharField(source="voucher.id")
+    date = serializers.CharField(source="voucher.date")
+    # voucher_id = serializers.CharField(source="voucher.id")
     tax_scheme = serializers.CharField(source="tax_scheme.name")
 
     class Meta:
         model = SalesVoucherRow
-        exclude = ()
+        fields = ('id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date')

@@ -568,7 +568,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter,]
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
 
-    search_fields = ['voucher_no', 'narration',]
+    search_fields = ['voucher_no', 'narration', ]
     filterset_class = JournalVoucherFilterSet
 
     collections = (
@@ -657,15 +657,14 @@ class SalesBookViewSet(CRULViewSet):
         return qs.order_by('-pk')
 
 
-class SalesRowViewSet(CRULViewSet):
+class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
 
     def get_queryset(self, **kwargs):
         qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related('item',
                                                                                                         'discount_obj',
                                                                                                         'tax_scheme',
-                                                                                                        'voucher',
-                                                                                                        'unit')
+                                                                                                        'voucher__party')
         return qs.order_by('-pk')
 
 
