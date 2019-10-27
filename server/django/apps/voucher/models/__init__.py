@@ -174,6 +174,9 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
                                      related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
 
+    # Model key for module based permission
+    key = 'Sales'
+
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField()
