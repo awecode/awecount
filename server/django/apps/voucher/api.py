@@ -141,9 +141,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
-        sale_voucher = self.get_object()
+        sales_voucher = self.get_object()
         try:
-            sale_voucher.cancel()
+            sales_voucher.cancel(request.data.get('message'))
             return Response({})
         except Exception as e:
             raise APIException(str(e))

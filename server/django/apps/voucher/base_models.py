@@ -103,8 +103,11 @@ class InvoiceModel(models.Model):
 
         return dct
 
-    def cancel(self):
+    def cancel(self, message=None):
         self.status = 'Cancelled'
+        if message:
+            self.remarks = self.remarks or ''
+            self.remarks += '\nReason for cancellation: ' + message
         self.save()
         self.cancel_transactions()
 
