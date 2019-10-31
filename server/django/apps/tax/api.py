@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.fields import (  # NOQA # isort:skip
     IntegerField, )
@@ -7,14 +9,11 @@ from rest_framework.response import Response
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.filters import TaxPaymentFilterSet
-from apps.tax.models import TaxScheme, STATUSES, TaxPayment
+from apps.tax.models import TaxScheme, TaxPayment
 from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, \
     TaxAccountSerializer, TaxPaymentJournalEntrySerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
-
-from rest_framework import filters as rf_filters
-from django_filters import rest_framework as filters
 
 
 class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet):

@@ -1,7 +1,6 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q
-from django.conf import settings
-
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
