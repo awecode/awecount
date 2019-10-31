@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from django.utils import timezone
@@ -13,12 +14,13 @@ class BankAccount(models.Model):
     bank_name = models.CharField(max_length=250, blank=True, null=True)
     short_name = models.CharField(max_length=250, blank=True, null=True)
     branch_name = models.CharField(max_length=250, blank=True, null=True)
-    start_cheque_no = models.IntegerField(blank=True, null=True)
-    current_cheque_no = models.IntegerField(blank=True, null=True)
+    next_cheque_no = models.CharField(blank=True, null=True, max_length=255)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
     def save(self, *args, **kwargs):
+        if not self.next_cheque_no.isdigit():
+            raise ValidationError('Cheque No. can only contain digits.')
         super().save(*args, **kwargs)
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
@@ -29,7 +31,8 @@ class BankAccount(models.Model):
             self.save()
 
     def increase_cheque_no(self):
-        self.current_cheque_no = self.get_cheque_no()
+        leading_zeroes = len(self.next_cheque_no) - len(self.next_cheque_no.lstrip('0'))
+        self.next_cheque_no = '0' * leading_zeroes + str(int(self.next_cheque_no) + 1)
         self.save()
 
     @property
@@ -39,12 +42,6 @@ class BankAccount(models.Model):
     @property
     def full_name(self):
         return '{} ({})'.format(self.short_name or self.bank_name, self.account_number)
-
-    def get_cheque_no(self):
-        if not self.start_cheque_no:
-            return
-        cheque_no = self.current_cheque_no if self.current_cheque_no else self.start_cheque_no
-        return cheque_no + 1
 
     def __str__(self):
         return self.short_name or self.bank_name

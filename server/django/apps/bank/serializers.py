@@ -91,7 +91,7 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
 
 class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='__str__')
-    cheque_no = serializers.ReadOnlyField(source='get_cheque_no')
+    cheque_no = serializers.ReadOnlyField(source='next_cheque_no')
 
     class Meta:
         model = BankAccount
