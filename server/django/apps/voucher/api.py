@@ -42,7 +42,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer, SalesRowSerializer
+    SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -583,6 +583,8 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return JournalVoucherListSerializer
+        elif self.action == 'retrieve':
+            return JournalVoucherDetailSerializer
         return JournalVoucherCreateSerializer
 
     def get_create_defaults(self, request=None):

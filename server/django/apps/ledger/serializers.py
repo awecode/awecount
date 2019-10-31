@@ -92,8 +92,8 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-        'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
-        'voucher_no')
+            'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
+            'voucher_no')
 
 
 class RecursiveField(serializers.Serializer):
@@ -250,7 +250,6 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
 
 class AccountDetailSerializer(serializers.ModelSerializer):
     # journal_entries = serializers.SerializerMethodField()
-    default = serializers.ReadOnlyField()
     closing_balance = serializers.ReadOnlyField(source='get_balance')
     category_name = serializers.ReadOnlyField(source='category.name')
     parent_name = serializers.ReadOnlyField(source='parent.name')

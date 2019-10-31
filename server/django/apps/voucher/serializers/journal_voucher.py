@@ -55,3 +55,19 @@ class JournalVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalVoucher
         fields = ('id', 'voucher_no', 'date', 'status',)
+
+
+class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
+    account_name = serializers.ReadOnlyField(source='account.name')
+
+    class Meta:
+        model = JournalVoucherRow
+        fields = ('account_id', 'account_name', 'type', 'dr_amount', 'cr_amount')
+
+
+class JournalVoucherDetailSerializer(serializers.ModelSerializer):
+    rows = JournalVoucherRowDetailSerializer(many=True)
+
+    class Meta:
+        model = JournalVoucher
+        fields = ('id', 'voucher_no', 'date', 'status', 'rows')
