@@ -67,18 +67,6 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
     def get_amount_in_words(self, obj):
         return obj.amount_in_words
 
-    def create(self, validated_data):
-        request = self.context['request']
-        user = request.user
-        validated_data['user'] = user
-        return super(ChequeIssueSerializer, self).create(validated_data)
-
-    def update(self, instance, validated_data):
-        request = self.context['request']
-        user = request.user
-        validated_data['user'] = user
-        return super(ChequeIssueSerializer, self).update(instance, validated_data)
-
     def get_payee(self, obj):
         if obj.party:
             return obj.party.name
@@ -86,7 +74,7 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeIssue
-        exclude = ('user', 'company',)
+        exclude = ('company',)
 
 
 class BankAccountChequeIssueSerializer(serializers.ModelSerializer):

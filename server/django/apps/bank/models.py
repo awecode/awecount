@@ -1,11 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-
 from django.utils import timezone
 
-from apps.ledger.models import Account, Category, Party
+from apps.ledger.models import Account, Party
 from apps.users.models import Company, User
-from awecount.utils import get_next_voucher_no, wGenerator
+from awecount.utils import wGenerator
 
 
 class BankAccount(models.Model):
@@ -100,8 +99,8 @@ class ChequeIssue(models.Model):
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
+    dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues', on_delete=models.SET_NULL)
     amount = models.IntegerField()
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name="cheques")
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
@@ -110,7 +109,7 @@ class ChequeIssue(models.Model):
         super(ChequeIssue, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.date.strftime('%d-%m-%Y') + ': ' + str(self.user)
+        return self.date
 
     @property
     def amount_in_words(self):
