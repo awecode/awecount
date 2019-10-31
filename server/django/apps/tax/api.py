@@ -52,7 +52,7 @@ class TaxPaymentViewSet(CRULViewSet):
     filterset_class = TaxPaymentFilterSet
 
     def get_queryset(self, **kwargs):
-        return super().get_queryset().order_by('-id')
+        return super().get_queryset().select_related('tax_scheme', 'cr_account').order_by('-id')
 
     @action(detail=True, url_path='journal-entries')
     def journal_entries(self, request, pk):
