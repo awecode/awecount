@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from django.db.models import Sum
 from django.conf import settings
+from django.db.models import Sum
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
-
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -13,13 +12,14 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from .filters import ItemFilterSet
-from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
-    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, TransactionEntrySerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
+from .filters import ItemFilterSet
 from .models import Category as InventoryCategory
+from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
+from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, TransactionEntrySerializer, \
+    ItemPOSSerializer
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
@@ -50,6 +50,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=False)
     def pos(self, request):
         self.filter_backends = (rf_filters.SearchFilter,)
+        self.serializer_class = ItemPOSSerializer
         self.search_fields = ['name', 'code', 'description', 'search_data', ]
         self.paginator.page_size = settings.POS_ITEMS_SIZE
         return super().list(request)
