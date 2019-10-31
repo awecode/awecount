@@ -67,6 +67,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
+        instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
@@ -84,6 +85,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
         instance.apply_transactions()
+        instance.synchronize()
         return instance
 
     class Meta:

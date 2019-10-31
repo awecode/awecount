@@ -79,6 +79,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.create(voucher=instance, **row)
         instance.apply_transactions()
+        instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
@@ -94,6 +95,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         instance.apply_transactions()
+        instance.synchronize(verb='PATCH')
         return instance
 
     class Meta:

@@ -158,6 +158,16 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
             raise ValueError('Issued invoices need a voucher number!')
         super().save(*args, **kwargs)
+        
+    @property
+    def cbms_nepal_data(self):
+        meta = self.get_voucher_meta()
+        data = {
+            'total': meta['grand_total'],
+            'date': str(self.date)
+        }
+        return data
+
 
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
@@ -429,6 +439,9 @@ class CreditNote(TransactionModel, InvoiceModel):
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()
+        
+    def synchronize_cbms_nepal(self, conf):
+        pass
 
 
 class CreditNoteRow(TransactionModel, InvoiceRowModel):
