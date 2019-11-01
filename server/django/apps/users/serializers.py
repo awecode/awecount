@@ -6,6 +6,7 @@ from apps.users.models import Company, User, Role, FiscalYear
 class CompanySerializer(serializers.ModelSerializer):
     request = None
     logo_url = serializers.SerializerMethodField()
+    current_fiscal_year = serializers.ReadOnlyField(source='current_fiscal_year.name')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
