@@ -1,13 +1,13 @@
-import requests
+from datetime import datetime
 
+import requests
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.conf import settings
 
 from apps.ledger.models import JournalEntry
 from apps.product.models import JournalEntry as InventoryJournalEntry
 from awecount.utils import wGenerator
-from awecount.utils.helpers import merge_dicts
 
 
 class InvoiceModel(models.Model):
@@ -128,22 +128,30 @@ class InvoiceModel(models.Model):
         else:
             raise ValueError('This voucher cannot be mark as resolved!')
 
-    def synchronize(self, verb='POST'):
-        if self.company.synchronize_cbms_nepal_live:
-            conf = settings.CBMS_NEPAL.get('LIVE')
-            conf['verb'] = verb
-            self.synchronize_cbms_nepal(conf)
-        elif self.company.synchronize_cbms_nepal_test:
-            conf = settings.CBMS_NEPAL.get('TEST')
-            conf['verb'] = verb
-            self.synchronize_cbms_nepal(conf)
+    def party_tax_reg_no(self):
+        if self.party_id and self.party.tax_registration_number:
+            return self.party.tax_registration_number
+        return ''
 
-    def synchronize_cbms_nepal(self, conf):
-        data = dict(merge_dicts(self.cbms_nepal_data, conf['data']))
-        if conf['verb'] == 'POST':
-            r = requests.post(url=conf['url'], data=data)
-            print(r.text)
-        
+    def party_name(self):
+        if self.party_id and self.party.name:
+            return self.party.name
+        return ''
+
+    def synchronize(self):
+        if self.company.synchronize_cbms_nepal_live or self.company.synchronize_cbms_nepal_test:
+            if self.company.synchronize_cbms_nepal_test:
+                conf = settings.CBMS_NEPAL.get('TEST')
+            else:
+                conf = settings.CBMS_NEPAL.get('LIVE')
+            data, endpoint = self.cbms_nepal_data(conf)
+            data['username'] = conf['username']
+            data['password'] = conf['password']
+            data['isrealtime'] = True
+            data['datetimeclient'] = datetime.now().strftime("%-m/%-d/%Y %H:%M:%S %p")
+            response = requests.post(url=conf['base_url'] + endpoint, data=data)
+            print(response.text)
+
     class Meta:
         abstract = True
 
