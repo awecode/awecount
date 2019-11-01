@@ -14,7 +14,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
-from .filters import ItemFilterSet
+from .filters import ItemFilterSet, BookFilterSet
 from .models import Category as InventoryCategory
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
@@ -63,7 +63,7 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
 
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
-    filterset_class = ItemFilterSet
+    filterset_class = BookFilterSet
 
     def get_queryset(self, **kwargs):
         queryset = Item.objects.filter(category__name="Book", company=self.request.company)
