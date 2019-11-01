@@ -11,8 +11,16 @@ class HasBalanceFilter(filters.BooleanFilter):
         return qs
 
 
+class CategoryFilter(filters.ModelChoiceFilter):
+    def filter(self, qs, value):
+        if value:
+            return qs.filter(category__in=value.get_descendants(include_self=True))
+        return qs
+
+
 class AccountFilterSet(filters.FilterSet):
-    hasbalance = HasBalanceFilter()
+    has_balance = HasBalanceFilter()
+    category = CategoryFilter(queryset=Category.objects.all())
 
     class Meta:
         model = Account
