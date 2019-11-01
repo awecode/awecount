@@ -5,7 +5,7 @@ from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.ledger.filters import AccountFilterSet
+from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -49,6 +49,8 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
+    filter_class = CategoryFilterSet
+
     collections = (
         ('categories', Category, CategorySerializer),
     )
