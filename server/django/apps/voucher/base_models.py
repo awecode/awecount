@@ -136,6 +136,8 @@ class InvoiceModel(models.Model):
     def party_name(self):
         if self.party_id and self.party.name:
             return self.party.name
+        if hasattr(self, 'customer_name') and self.customer_name:
+            return self.customer_name
         return ''
 
     def synchronize(self):

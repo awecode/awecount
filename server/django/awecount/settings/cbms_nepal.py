@@ -32,9 +32,10 @@ CBMS_NEPAL = {
                 'invoice_date': '2074.07.06',
             },
             'credit_note_data': {
-                'red_invoice_number': '102',
+                'ref_invoice_number': '102',
                 'credit_note_number': '1',
-                'reason_for_return': 'defect in peice',
+                'credit_note_date': '2074.07.06',
+                'reason_for_return': 'defect in piece',
             }
         },
     'LIVE':
@@ -42,6 +43,8 @@ CBMS_NEPAL = {
             'base_url': 'http://103.1.92.174:9050/',
             'sales_invoice_endpoint': 'api/bill',
             'credit_note_endpoint': 'api/billreturn',
+            'username': 'Test_CBMS',
+            'password': 'test@321',
             'data': {
                 'fiscal_year': '2075.076',
                 'excisable_amount': 0,

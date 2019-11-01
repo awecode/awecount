@@ -9,6 +9,7 @@ from apps.product.models import Item, Unit, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
+from awecount.utils import nepdate
 from awecount.utils.helpers import merge_dicts
 
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -164,13 +165,15 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         meta = self.get_voucher_meta()
         data = {
             'seller_pan': self.company.tax_registration_number,
-            'buyer_pan': self.party_tax_reg_no,
-            'buyer_name': self.party_name,
+            'buyer_pan': self.party_tax_reg_no(),
+            'buyer_name': self.party_name(),
             'total_sales': meta['grand_total'],
             'taxable_sales_vat': meta['taxable'],
             'vat': meta['tax'],
             'export_sales': 0,
             'tax_exempted_sales': meta['non_taxable'],
+            'invoice_number': self.voucher_no,
+            'invoice_date': nepdate.string_from_tuple(nepdate.ad2bs(str(self.date))).replace('-', '.')
         }
         if self.is_export:
             data['taxable_sales_vat'] = 0
@@ -453,8 +456,33 @@ class CreditNote(TransactionModel, InvoiceModel):
 
         self.apply_inventory_transaction()
 
-    def synchronize_cbms_nepal(self, conf):
-        pass
+    def cbms_nepal_data(self, conf):
+        invoice = self.invoices.first()
+        if invoice:
+            meta = invoice.get_voucher_meta()
+            data = {
+                'seller_pan': self.company.tax_registration_number,
+                'buyer_pan': self.party_tax_reg_no(),
+                'buyer_name': self.party_name(),
+                'total_sales': meta['grand_total'],
+                'taxable_sales_vat': meta['taxable'],
+                'vat': meta['tax'],
+                'export_sales': 0,
+                'tax_exempted_sales': meta['non_taxable'],
+                'ref_invoice_number': invoice.voucher_no,
+                'credit_note_number': self.voucher_no,
+                'credit_note_date': nepdate.string_from_tuple(nepdate.ad2bs(str(self.date))).replace('-', '.'),
+                'reason_for_return': self.remarks,
+            }
+            if invoice.is_export:
+                data['taxable_sales_vat'] = 0
+                data['vat'] = 0
+                data['export_sales'] = meta['grand_total']
+                data['tax_exempted_sales'] = meta['grand_total']
+
+            merged_data = dict(merge_dicts(data, conf['data']))
+            merged_data = dict(merge_dicts(merged_data, conf['credit_note_data']))
+            return merged_data, conf['credit_note_endpoint']
 
 
 class CreditNoteRow(TransactionModel, InvoiceRowModel):
