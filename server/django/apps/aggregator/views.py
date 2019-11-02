@@ -18,7 +18,7 @@ from datetime import datetime
 def export_data(request):
     data = json.loads(request.body)
     user = authenticate(email=data.get('email'), password=data.get('password'))
-    if user and user.is_authenticated:
+    if user and request.user == user:
         zipped_data = get_zipped_csvs(request.company_id)
         response = FileResponse(zipped_data)
         filename = 'accounting_export_{}.zip'.format(datetime.today().date())
@@ -30,11 +30,13 @@ def export_data(request):
 
 @csrf_exempt
 def import_data(request):
-    if not request.user.is_authenticated or not request.company_id:
-        raise PermissionDenied
-    # TODO Verify password as well
-    result = import_zipped_csvs(request.company_id, request.FILES.get('import_file'))
-    return JsonResponse(result)
+    data = json.loads(request.body)
+    user = authenticate(email=data.get('email'), password=data.get('password'))
+    if user and request.user == user:
+        result = import_zipped_csvs(request.company_id, request.FILES.get('import_file'))
+        return JsonResponse(result)
+    else:
+        return JsonResponse({'detail': 'Please provide valid credential!'}, status=401)
 
 
 # not a real view
