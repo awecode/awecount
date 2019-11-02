@@ -95,7 +95,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         instance.apply_transactions()
-        instance.synchronize(verb='PATCH')
+        # instance.synchronize(verb='PATCH')
         return instance
 
     class Meta:
