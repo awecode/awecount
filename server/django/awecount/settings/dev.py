@@ -4,7 +4,7 @@ DEBUG = True
 
 SECRET_KEY = '4oiwq=^7+@ub=shgbo#=gj17jveh+_*9tuqfx5fa-1orav(7xx'
 
-INSTALLED_APPS += ['debug_toolbar', ]
+INSTALLED_APPS += ['debug_toolbar', 'django_extensions']
 
 MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]
 

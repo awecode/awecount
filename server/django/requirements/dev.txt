@@ -2,3 +2,5 @@
 ipdb
 ipython
 django-debug-toolbar
+django-extensions
+pygraphviz
