@@ -104,7 +104,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                   'tax_scheme'))).select_related(
-            'discount_obj', 'bank_account')
+            'discount_obj', 'bank_account', 'company__sales_setting')
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_sales_invoice_update
         return Response(data)
@@ -268,7 +268,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             Prefetch('rows',
                      PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                      'tax_scheme'))).select_related(
-            'discount_obj', 'bank_account')
+            'discount_obj', 'bank_account', 'company__purchase_setting')
         return Response(PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
 
     @action(detail=True, url_path='journal-entries')

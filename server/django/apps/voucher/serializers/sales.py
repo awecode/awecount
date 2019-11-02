@@ -125,6 +125,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
     rows = SalesVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
+    enable_row_description = serializers.ReadOnlyField(source='company.sales_setting.enable_row_description')
 
     class Meta:
         model = SalesVoucher
