@@ -5,6 +5,7 @@ import json
 import tablib
 from django.apps import apps
 from django.core.exceptions import SuspiciousOperation
+from django.db import IntegrityError
 from import_export import resources, widgets
 
 from apps.bank.models import BankAccount, ChequeDeposit, ChequeIssue, ChequeDepositRow
@@ -74,10 +75,13 @@ class FilteredResource(JSONResourceMixin, resources.ModelResource):
         if hasattr(self, 'exclude_kwargs') and self.exclude_kwargs:
             qs = qs.exclude(**self.exclude_kwargs)
         return qs
-    
-    def export_book(self):
-        import ipdb
-        ipdb.set_trace()
+
+    def save_instance(self, instance, using_transactions=True, dry_run=False):
+        # Assuming the instance already exists
+        try:
+            super().save_instance(instance, using_transactions, dry_run)
+        except IntegrityError:
+            pass
 
     class Meta:
         exclude = ('extra_data')

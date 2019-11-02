@@ -109,7 +109,7 @@ class ChequeIssue(models.Model):
         super(ChequeIssue, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.date
+        return str(self.date)
 
     @property
     def amount_in_words(self):

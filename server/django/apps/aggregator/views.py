@@ -25,7 +25,7 @@ def export_data(request):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
         return response
     else:
-        return JsonResponse({'non_field_errors': 'Provide Valid Credential'}, status=401)
+        return JsonResponse({'detail': 'Please provide valid credential!'}, status=401)
 
 
 @csrf_exempt
