@@ -18,7 +18,7 @@ class BankAccount(models.Model):
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
     def save(self, *args, **kwargs):
-        if not self.next_cheque_no.isdigit():
+        if not self.next_cheque_no or not self.next_cheque_no.isdigit():
             raise ValidationError('Cheque No. can only contain digits.')
         super().save(*args, **kwargs)
         if not self.ledger:
@@ -43,7 +43,7 @@ class BankAccount(models.Model):
         return '{} ({})'.format(self.short_name or self.bank_name, self.account_number)
 
     def __str__(self):
-        return self.short_name or self.bank_name
+        return self.short_name or self.bank_name or self.account_number
 
 
 class ChequeDeposit(models.Model):
