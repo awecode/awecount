@@ -103,7 +103,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                                  'tax_scheme'))).select_related(
+                                                                  'tax_scheme').order_by('pk'))).select_related(
             'discount_obj', 'bank_account', 'company__sales_setting')
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_sales_invoice_update
@@ -267,7 +267,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                                     'tax_scheme'))).select_related(
+                                                                     'tax_scheme').order_by('pk'))).select_related(
             'discount_obj', 'bank_account', 'company__purchase_setting')
         return Response(PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
 
@@ -391,7 +391,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                                'tax_scheme'))).select_related(
+                                                                'tax_scheme').order_by('pk'))).select_related(
             'discount_obj', 'bank_account')
         data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_credit_note_update
@@ -510,7 +510,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                               'tax_scheme'))).select_related(
+                                                               'tax_scheme').order_by('pk'))).select_related(
             'discount_obj', 'bank_account')
         data = DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_debit_note_update
