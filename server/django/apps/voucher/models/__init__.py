@@ -205,7 +205,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
-    voucher_no = models.PositiveIntegerField()
+    voucher_no = models.CharField(max_length=25)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
