@@ -70,6 +70,9 @@ class ChequeDeposit(models.Model):
     def get_voucher_no(self):
         return self.id
 
+    def apply_transactions(self):
+        pass
+
     @property
     def total(self):
         grand_total = 0

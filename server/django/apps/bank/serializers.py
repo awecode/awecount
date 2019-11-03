@@ -31,7 +31,7 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
         cheque_deposit = ChequeDeposit.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             ChequeDepositRow.objects.create(cheque_deposit=cheque_deposit, **row)
-        # ChequeDeposit.apply_transactions(voucher)
+        cheque_deposit.apply_transactions()
         return cheque_deposit
 
     def update(self, instance, validated_data):
@@ -41,7 +41,7 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
             row['cheque_deposit'] = instance
             ChequeDepositRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        # ChequeDeposit.apply_transactions(instance)
+        instance.apply_transactions()
         return instance
 
     class Meta:
