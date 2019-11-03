@@ -30,11 +30,13 @@ def export_data(request):
 
 @csrf_exempt
 def import_data(request):
-    data = json.loads(request.body)
+    data = request.POST
     user = authenticate(email=data.get('email'), password=data.get('password'))
+
     if user and request.user == user:
-        result = import_zipped_csvs(request.company_id, request.FILES.get('import_file'))
+        result = import_zipped_csvs(request.company_id, request.FILES.get('file'))
         return JsonResponse(result)
+
     else:
         return JsonResponse({'detail': 'Please provide valid credential!'}, status=401)
 
