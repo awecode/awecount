@@ -75,7 +75,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     def get_queryset(self, **kwargs):
         qs = super(SalesVoucherViewSet, self).get_queryset()
-        if self.action == 'list':
+        if self.action == 'retrieve':
+            qs = qs.prefetch_related('rows')
+        elif self.action == 'list':
             qs = qs.select_related('party')
         return qs.order_by('-pk')
 
@@ -255,6 +257,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     def get_queryset(self, **kwargs):
         queryset = super(PurchaseVoucherViewSet, self).get_queryset()
+        if self.action == 'retrieve':
+            queryset = queryset.prefetch_related('rows')
         return queryset.order_by('-pk')
 
     def get_serializer_class(self):
@@ -338,7 +342,10 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-id')
+        queryset = super().get_queryset()
+        if self.action == 'retrieve':
+            queryset = queryset.prefetch_related('rows')
+        return queryset.order_by('-id')
 
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -458,7 +465,12 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-id')
+        queryset = super().get_queryset()
+        if self.action == 'retrieve':
+            queryset = queryset.prefetch_related('rows')
+        return queryset.order_by('-id')
+
+    
 
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
