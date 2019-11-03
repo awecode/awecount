@@ -30,7 +30,7 @@ class BankAccount(models.Model):
             self.save()
 
     def increase_cheque_no(self):
-        leading_zeroes = len(self.next_cheque_no) - len(self.next_cheque_no.lstrip('0'))
+        leading_zeroes = len(self.next_cheque_no) - len(str(int(self.next_cheque_no) + 1))
         self.next_cheque_no = '0' * leading_zeroes + str(int(self.next_cheque_no) + 1)
         self.save()
 
