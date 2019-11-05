@@ -1,10 +1,17 @@
+from functools import reduce
+
 from apps.aggregator.base_widgets import BaseWidget
-from apps.voucher.models import SalesVoucher
+from apps.voucher.models import SalesVoucher, PurchaseVoucher
 
 
 class SalesCountWidget(BaseWidget):
     def get_base_queryset(self):
         return SalesVoucher.objects.all()
+
+
+class PurchaseCountWidget(BaseWidget):
+    def get_base_queryset(self):
+        return PurchaseVoucher.objects.all()
 
 
 class SalesCountByAgent(SalesCountWidget):
@@ -16,6 +23,16 @@ class SalesCountByAgent(SalesCountWidget):
 class SalesCountByParty(SalesCountWidget):
     name = 'Sales Count by Party'
     label_field = 'party__name'
+
+
+class SalesCountByMode(SalesCountWidget):
+    name = "Sales Count by Mode"
+    label_field = 'mode'
+
+
+class PurchaseCountByMode(PurchaseCountWidget):
+    name = "Purchase Count by Mode"
+    label_field = 'mode'
 
 
 class SalesAmountWidget(BaseWidget):
@@ -36,7 +53,42 @@ class SalesAmountByParty(SalesAmountWidget):
     label_field = 'party__name'
 
 
-WIDGETS = [SalesAmountByParty, SalesAmountByAgent, SalesCountByAgent, SalesCountByParty]
+# class TotalSales(SalesAmountWidget):
+#     name = "Total Sales",
+#     label_field = ''
+
+
+class PurchaseAmountWidget(BaseWidget):
+    sum_field = 'total_amount'
+
+    def get_base_queryset(self):
+        return PurchaseVoucher.objects.all()
+
+
+class SalesAmountWidget(BaseWidget):
+    sum_field = 'total_amount'
+
+    def get_base_queryset(self):
+        return SalesVoucher.objects.all()
+
+
+class TotalPurchaseAmount(PurchaseAmountWidget):
+    name = "Total Purchase Amount"
+    label_field = 'date'
+
+
+class TotalSalesAmount(SalesAmountWidget):
+    name = "Total Sales Amount"
+    label_field = 'date'
+
+
+class PurchaseCountByParty(PurchaseCountWidget):
+    name = "Purchase Count by Party"
+    label_field = 'party__name'
+
+
+WIDGETS = [SalesAmountByParty, SalesAmountByAgent, SalesCountByAgent, SalesCountByParty, PurchaseCountByParty,
+           TotalPurchaseAmount, TotalSalesAmount, SalesCountByMode, PurchaseCountByMode]
 
 WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
 WIDGET_DICT = {widget.name: widget for widget in WIDGETS}
