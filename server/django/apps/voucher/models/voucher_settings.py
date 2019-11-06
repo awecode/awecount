@@ -15,6 +15,7 @@ class SalesSetting(models.Model):
     is_trade_discount_in_voucher = models.BooleanField(default=False)
     show_trade_discount_in_row = models.BooleanField(default=False)
     is_trade_discount_in_row = models.BooleanField(default=False)
+    hide_due_date_in_voucher = models.BooleanField(default=False)
 
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     mode = models.CharField(default='Credit', max_length=15)
