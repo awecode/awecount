@@ -1,3 +1,4 @@
+from datetime import date
 from django_filters import rest_framework as filters, DateFilter, MultipleChoiceFilter
 
 from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher
@@ -11,7 +12,11 @@ class DateFilterSet(filters.FilterSet):
 
 class SalesVoucherFilterSet(DateFilterSet):
     status = MultipleChoiceFilter(choices=STATUSES)
-    # is_due =
+    is_due = filters.BooleanFilter(method='is_due_filter')
+
+    def is_due_filter(self, queryset, name, value):
+        today = date.today()
+        return queryset.filter(due_date__lt=today).exclude(status="PAID")
 
     class Meta:
         model = SalesVoucher
@@ -20,6 +25,11 @@ class SalesVoucherFilterSet(DateFilterSet):
 
 class PurchaseVoucherFilterSet(DateFilterSet):
     status = MultipleChoiceFilter(choices=STATUSES)
+    is_due = filters.BooleanFilter(method='is_due_filter')
+
+    def is_due_filter(self, queryset, name, value):
+        today = date.today()
+        return queryset.filter(due_date__lt=today).exclude(status="PAID")
 
     class Meta:
         model = PurchaseVoucher
