@@ -49,6 +49,7 @@ class PurchaseSetting(models.Model):
     is_trade_discount_in_voucher = models.BooleanField(default=False)
     show_trade_discount_in_row = models.BooleanField(default=False)
     is_trade_discount_in_row = models.BooleanField(default=False)
+    hide_due_date_in_voucher = models.BooleanField(default=False)
 
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
     mode = models.CharField(default='Credit', max_length=15)
@@ -68,7 +69,8 @@ class PurchaseSetting(models.Model):
             'show_trade_discount_in_voucher': self.show_trade_discount_in_voucher,
             'show_trade_discount_in_row': self.show_trade_discount_in_row,
             'enable_row_description': self.enable_row_description,
-            'is_trade_discount_in_row': self.is_trade_discount_in_row
+            'is_trade_discount_in_row': self.is_trade_discount_in_row,
+            'hide_due_date_in_voucher': self.hide_due_date_in_voucher
         }
 
     def __str__(self):

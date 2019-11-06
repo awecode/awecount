@@ -11,6 +11,7 @@ class DateFilterSet(filters.FilterSet):
 
 class SalesVoucherFilterSet(DateFilterSet):
     status = MultipleChoiceFilter(choices=STATUSES)
+    # is_due =
 
     class Meta:
         model = SalesVoucher
