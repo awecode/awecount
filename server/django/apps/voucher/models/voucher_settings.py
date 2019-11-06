@@ -36,7 +36,8 @@ class SalesSetting(models.Model):
             'show_trade_discount_in_voucher': self.show_trade_discount_in_voucher,
             'show_trade_discount_in_row': self.show_trade_discount_in_row,
             'enable_row_description': self.enable_row_description,
-            'is_trade_discount_in_row': self.is_trade_discount_in_row
+            'is_trade_discount_in_row': self.is_trade_discount_in_row,
+            'hide_due_date_in_voucher': self.hide_due_date_in_voucher
         }
 
     def __str__(self):
