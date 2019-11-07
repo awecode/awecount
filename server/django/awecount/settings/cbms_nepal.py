@@ -23,9 +23,6 @@ CBMS_NEPAL = {
                 'esf': 0,
                 'export_sales': 0,
                 'tax_exempted_sales': 0,
-
-                # 'isrealtime': True,
-                # 'datetimeclient': datetime.now()
             },
             'sales_invoice_data': {
                 'invoice_number': '102',

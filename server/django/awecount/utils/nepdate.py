@@ -308,3 +308,15 @@ def is_valid(date_as_str):
     except:
         raise Exception('The year ' + str(year) + ' isn\'t supported.')
     return True
+
+
+def get_fiscal_year(ad_date=None):
+    ad_date = ad_date or datetime.datetime.today().date()
+    bs_date = ad2bs(ad_date)
+    start_year = bs_date[0] - 1 if bs_date[1] < 4 else bs_date[0]
+    return start_year, start_year + 1
+
+
+def get_fiscal_year_for_cbms(ad_date=None):
+    fiscal_year = get_fiscal_year(ad_date)
+    return '{}.{}'.format(fiscal_year[0], str(fiscal_year[1])[1:])

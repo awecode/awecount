@@ -7,7 +7,7 @@ from django.db import models
 
 from apps.ledger.models import JournalEntry
 from apps.product.models import JournalEntry as InventoryJournalEntry
-from awecount.utils import wGenerator
+from awecount.utils import wGenerator, nepdate
 
 
 class InvoiceModel(models.Model):
@@ -151,6 +151,7 @@ class InvoiceModel(models.Model):
             data['password'] = conf['password']
             data['isrealtime'] = True
             data['datetimeclient'] = datetime.now().strftime("%-m/%-d/%Y %H:%M:%S %p")
+            data['fiscal_year'] = nepdate.get_fiscal_year_for_cbms()
             response = requests.post(url=conf['base_url'] + endpoint, data=data)
             print(response.text)
 
