@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.users.models import User, Company
+from apps.users.models import User, Company, AccessKey
 
 
 class CompanyMiddleware(object):
@@ -20,7 +20,14 @@ class CompanyMiddleware(object):
             except:
                 pass
 
-        if request.user.is_authenticated:
+        elif request.META.get('HTTP_SECRET'):
+            secret = request.META.get('HTTP_SECRET')
+            request.user = AccessKey.get_user(secret)
+
+        # import ipdb
+        # ipdb.set_trace()
+
+        if request.user and request.user.is_authenticated:
             request.__class__.role_modules = request.user.role_modules
             try:
                 if request.user.company_id:

@@ -1,7 +1,7 @@
 import uuid
 
-from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -142,14 +142,14 @@ class AccessKey(models.Model):
         try:
             return cls.objects.filter(enabled=True).select_related('user__company').get(key=key).user
         except (cls.DoesNotExist, ValidationError):
-            raise PermissionDenied
+            return
 
     @classmethod
     def get_company(cls, key):
         try:
             return cls.objects.filter(enabled=True).select_related('user__company').get(key=key).user.company
         except (cls.DoesNotExist, ValidationError):
-            raise PermissionDenied
+            return
 
     def __str__(self):
         return str(self.user)
