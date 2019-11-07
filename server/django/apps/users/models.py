@@ -1,14 +1,14 @@
 import uuid
 
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
-
-from apps.users.signals import company_creation
 from separatedvaluesfield.models import SeparatedValuesField
 
+from apps.users.signals import company_creation
 from .permission_modules import module_pairs
 
 ORGANIZATION_TYPES = (
@@ -136,20 +136,20 @@ class AccessKey(models.Model):
     key = models.UUIDField(default=uuid.uuid4())
     enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
-    
+
     @classmethod
     def get_user(cls, key):
         try:
-            return cls.objects.filter(enabled=True).select_related('user').get(key=key).user
-        except cls.DoesNotExist:
-            return
+            return cls.objects.filter(enabled=True).select_related('user__company').get(key=key).user
+        except (cls.DoesNotExist, ValidationError):
+            raise PermissionDenied
 
     @classmethod
     def get_company(cls, key):
         try:
             return cls.objects.filter(enabled=True).select_related('user__company').get(key=key).user.company
-        except cls.DoesNotExist:
-            return
+        except (cls.DoesNotExist, ValidationError):
+            raise PermissionDenied
 
     def __str__(self):
         return str(self.user)
