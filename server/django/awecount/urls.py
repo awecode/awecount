@@ -73,7 +73,6 @@ urlpatterns = [
                   path('export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
                   path('export/', aggregator_views.export_data, name='export_data'),
                   path('import/', aggregator_views.import_data, name='import_data'),
-                  path('api/v1/sales-invoice/', aggregator_views.sales_invoice_api, name='sales_invoice_api'),
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

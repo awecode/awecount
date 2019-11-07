@@ -4,12 +4,10 @@ from datetime import datetime
 import tablib
 from auditlog.models import LogEntry
 from django.contrib.auth import authenticate
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import PermissionDenied
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from apps.users.models import AccessKey
-from apps.voucher.models import SalesVoucher
 from .export import get_zipped_csvs, import_zipped_csvs
 from .resources import LogEntryResource
 
@@ -71,33 +69,3 @@ def export_auditlog(request):
     filename = '{}_{}.xls'.format('Log_Entries_', datetime.today().date())
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
     return response
-
-
-@csrf_exempt
-def sales_invoice_api(request):
-    if request.method != 'POST':
-        raise PermissionDenied
-    data = request.POST
-    required_fields = ['status', 'mode']
-    for field in required_fields:
-        if field not in data:
-            raise SuspiciousOperation('{} field is required!'.format(field))
-    user = AccessKey.get_user(request.META.get('HTTP_SECRET'))
-    company = user.company
-    voucher = SalesVoucher(
-        customer_name = data.get('customer_name'),
-        address=data.get('address'),
-        date=datetime.today(),
-        status = data.get('status'),
-        discount = data.get('discount') or 0,
-        discount_type=data.get('discount_type'),
-        trade_discount=data.get('trade_discount') or False,
-        mode=data.get('mode'),
-        remarks=data.get('remarks'),
-        user=user,
-        company=company,
-        fiscal_year_id=company.current_fiscal_year_id
-    )
-    #voucher_no
-    voucher.save()
-    return JsonResponse({})
