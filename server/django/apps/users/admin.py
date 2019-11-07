@@ -8,7 +8,7 @@ import requests
 from apps.ledger.models import handle_company_creation
 from apps.product.models import Unit, Category as InventoryCategory, Item, Brand
 from apps.tax.models import TaxScheme
-from .models import User, Company, Role, FiscalYear
+from .models import User, Company, Role, FiscalYear, AccessKey
 from django import forms
 
 admin.site.unregister(Group)
@@ -206,3 +206,11 @@ class FiscalYearAdmin(admin.ModelAdmin):
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
+
+
+class AccessKeyAdmin(admin.ModelAdmin):
+    list_display = ('user', 'key', 'enabled')
+    list_filter = ('user', 'user__company', 'enabled')
+    readonly_fields = ('created_at',)
+    
+admin.site.register(AccessKey, AccessKeyAdmin)

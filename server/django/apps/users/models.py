@@ -134,18 +134,20 @@ class User(AbstractBaseUser):
 class AccessKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     key = models.UUIDField(default=uuid.uuid4())
+    enabled = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
     
     @classmethod
     def get_user(cls, key):
         try:
-            return cls.objects.select_related('user').get(key=key).user
+            return cls.objects.filter(enabled=True).select_related('user').get(key=key).user
         except cls.DoesNotExist:
             return
 
     @classmethod
     def get_company(cls, key):
         try:
-            return cls.objects.select_related('user__company').get(key=key).user.company
+            return cls.objects.filter(enabled=True).select_related('user__company').get(key=key).user.company
         except cls.DoesNotExist:
             return
 
