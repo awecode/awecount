@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
@@ -36,7 +38,7 @@ class Company(models.Model):
     tax_registration_number = models.IntegerField()
     # force_preview_before_save = models.BooleanField(default=False)
     enable_sales_invoice_update = models.BooleanField(default=False)
-    enable_cheque_deposit_update= models.BooleanField(default=False)
+    enable_cheque_deposit_update = models.BooleanField(default=False)
     enable_credit_note_update = models.BooleanField(default=False)
     enable_debit_note_update = models.BooleanField(default=False)
     enable_sales_agents = models.BooleanField(default=False)
@@ -127,3 +129,25 @@ class User(AbstractBaseUser):
     def check_perm(self, perm):
         if perm not in self.role_modules:
             raise APIException({'detail': 'User does not have enough permissions to perform the action.'})
+
+
+class AccessKey(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    key = models.UUIDField(default=uuid.uuid4())
+    
+    @classmethod
+    def get_user(cls, key):
+        try:
+            return cls.objects.select_related('user').get(key=key).user
+        except cls.DoesNotExist:
+            return
+
+    @classmethod
+    def get_company(cls, key):
+        try:
+            return cls.objects.select_related('user__company').get(key=key).user.company
+        except cls.DoesNotExist:
+            return
+
+    def __str__(self):
+        return str(self.user)
