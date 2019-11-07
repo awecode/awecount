@@ -1,7 +1,9 @@
+import datetime
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.product.serializers import ItemSerializer
+from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import SalesAgent
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -31,6 +33,35 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     class Meta:
         model = SalesVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+
+
+class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
+    item_id = serializers.IntegerField(required=False)
+    item_obj = serializers.DictField(required=False, )
+
+    def validate(self, data):
+        data = super().validate(data)
+        if 'item_id' not in data:
+            if 'item_obj' not in data:
+                raise ValidationError({'item': ['item_id or item_obj is required.']})
+            if 'code' not in data['item_obj']:
+                raise ValidationError({'item': ['item_obj.code is required.']})
+            try:
+                item_obj = Item.objects.get(code=data['item_obj'].get('code'), company_id=self.context['request'].company_id)
+                if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
+                    item_obj.name = data['item_obj'].get('name')
+                    item_obj.save()
+            except Item.DoesNotExist:
+                item_obj = Item.objects.create(code=str(data['item_obj'].get('code')),
+                                               name=str(data['item_obj'].get('name') or data['item_obj'].get('code')),
+                                               unit_id=data['unit_id'],
+                                               category_id=data.get('category_id'),
+                                               selling_price=data['rate'], tax_scheme_id=data['tax_scheme_id'],
+                                               company_id=self.context['request'].company_id)
+            data['item_id'] = item_obj.id
+            del data['item_obj']
+
+        return data
 
 
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -101,6 +132,20 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     class Meta:
         model = SalesVoucher
         exclude = ('company', 'user', 'bank_account', 'discount_obj', 'fiscal_year',)
+
+
+class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
+    '''
+    {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
+    
+    '''
+
+    date = serializers.DateField(default=datetime.datetime.today().date)
+    rows = SalesVoucherRowAccessSerializer(many=True)
+    pdf_url = serializers.ReadOnlyField()
+    view_url = serializers.ReadOnlyField()
+
+
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):

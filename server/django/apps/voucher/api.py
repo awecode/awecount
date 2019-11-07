@@ -41,7 +41,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer
+    SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -82,6 +82,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs.order_by('-pk')
 
     def get_serializer_class(self):
+        if self.request.META.get('HTTP_SECRET'):
+            return SalesVoucherAccessSerializer
         if self.action in ('choices', 'list'):
             return SalesVoucherListSerializer
         return SalesVoucherCreateSerializer

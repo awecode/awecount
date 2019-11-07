@@ -184,6 +184,14 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(data, conf['data']))
         merged_data = dict(merge_dicts(merged_data, conf['sales_invoice_data']))
         return merged_data, conf['sales_invoice_endpoint']
+    
+    @property
+    def pdf_url(self):
+        return 'https://accountant.com/sales-voucher/{}/pdf'.format(self.pk)
+
+    @property
+    def view_url(self):
+        return 'https://accountant.com/sales-voucher/{}/view'.format(self.pk)
 
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
