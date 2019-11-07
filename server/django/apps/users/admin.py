@@ -212,5 +212,6 @@ class AccessKeyAdmin(admin.ModelAdmin):
     list_display = ('user', 'key', 'enabled')
     list_filter = ('user', 'user__company', 'enabled')
     readonly_fields = ('created_at',)
+    search_fields = ('user__full_name', 'user__company__name', 'key')
     
 admin.site.register(AccessKey, AccessKeyAdmin)
