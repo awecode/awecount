@@ -72,7 +72,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-POS_ITEMS_SIZE = 10
+POS_ITEMS_SIZE = 30
 
 WSGI_APPLICATION = 'awecount.wsgi.application'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
