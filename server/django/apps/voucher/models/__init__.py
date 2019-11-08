@@ -2,6 +2,7 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.conf import settings
 
 from apps.bank.models import BankAccount
 from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel
@@ -187,11 +188,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     
     @property
     def pdf_url(self):
-        return 'https://accountant.com/sales-voucher/{}/pdf'.format(self.pk)
+        return '{}sales-voucher/{}/view?pdf=1'.format(settings.BASE_URL, self.pk)
 
     @property
     def view_url(self):
-        return 'https://accountant.com/sales-voucher/{}/view'.format(self.pk)
+        return '{}sales-voucher/{}/view'.format(settings.BASE_URL, self.pk)
 
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):

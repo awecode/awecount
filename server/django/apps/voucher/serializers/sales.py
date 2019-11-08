@@ -37,7 +37,8 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
 
 class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
     item_id = serializers.IntegerField(required=False)
-    item_obj = serializers.DictField(required=False, )
+    item_obj = serializers.DictField(required=False)
+    item_code = serializers.ReadOnlyField(source='item.code')
 
     def validate(self, data):
         data = super().validate(data)
