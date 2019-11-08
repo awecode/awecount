@@ -49,9 +49,9 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 raise ValidationError({'item': ['item_obj.code is required.']})
             try:
                 item_obj = Item.objects.get(code=data['item_obj'].get('code'), company_id=self.context['request'].company_id)
-                if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
-                    item_obj.name = data['item_obj'].get('name')
-                    item_obj.save()
+                # if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
+                #     item_obj.name = data['item_obj'].get('name')
+                #     item_obj.save()
             except Item.DoesNotExist:
                 item_obj = Item.objects.create(code=str(data['item_obj'].get('code')),
                                                name=str(data['item_obj'].get('name') or data['item_obj'].get('code')),
@@ -145,8 +145,6 @@ class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
     rows = SalesVoucherRowAccessSerializer(many=True)
     pdf_url = serializers.ReadOnlyField()
     view_url = serializers.ReadOnlyField()
-
-
 
 
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
