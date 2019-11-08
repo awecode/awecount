@@ -24,10 +24,14 @@ class SalesVoucherFilterSet(DateFilterSet):
         fields = ()
 
 
-class SalesRowFilterSet(DateFilterSet):
+class SalesRowFilterSet(filters.FilterSet):
+    start_date = DateFilter(field_name='voucher__date', lookup_expr='gte', )
+    end_date = DateFilter(field_name='voucher__date', lookup_expr='lte')
+    sales_agent = filters.CharFilter(field_name='voucher__sales_agent__name')
+
     class Meta:
-        model = SalesVoucher
-        fields = ()
+        model = SalesVoucherRow
+        fields = ('sales_agent',)
 
 
 class PurchaseVoucherFilterSet(DateFilterSet):

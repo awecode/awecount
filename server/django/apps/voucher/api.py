@@ -20,7 +20,7 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
-    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet
+    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet, SalesRowFilterSet
 from apps.voucher.models import SalesAgent
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
@@ -673,7 +673,7 @@ class SalesBookViewSet(CRULViewSet):
 class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    # filterset_class = SalesRowFilterSet
+    filterset_class = SalesRowFilterSet
 
     search_fields = ['voucher__sales_agent__name', 'voucher__party__name', 'voucher__party__name',
                      'voucher__party__tax_registration_number', 'item__name', ]
