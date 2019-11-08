@@ -75,6 +75,7 @@ REST_FRAMEWORK = {
 POS_ITEMS_SIZE = 10
 
 WSGI_APPLICATION = 'awecount.wsgi.application'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kathmandu'
