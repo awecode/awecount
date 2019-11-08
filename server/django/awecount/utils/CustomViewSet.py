@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError, SuspiciousOperation
 from inspect import isclass
 from rest_framework import mixins, viewsets, serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError as RESTValidationError
 from rest_framework.response import Response
 
 from awecount.utils.helpers import merge_dicts
@@ -30,7 +30,7 @@ class CompanyViewSetMixin(object):
         try:
             serializer.save()
         except ValidationError as e:
-            raise APIException({'detail': e.messages})
+            raise RESTValidationError({'detail': e.messages})
 
     def perform_update(self, serializer):
         if hasattr(serializer.instance.__class__, 'company_id'):
@@ -39,7 +39,7 @@ class CompanyViewSetMixin(object):
         try:
             serializer.save()
         except ValidationError as e:
-            raise APIException({'detail': e.messages})
+            raise RESTValidationError({'detail': e.messages})
 
 
 class CollectionViewSet(object):
