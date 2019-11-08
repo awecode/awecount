@@ -138,7 +138,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
     '''
     {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
-    
+
     '''
 
     date = serializers.DateField(default=datetime.datetime.today().date)
@@ -236,7 +236,8 @@ class SalesRowSerializer(serializers.ModelSerializer):
     date = serializers.CharField(source="voucher.date")
     # voucher_id = serializers.CharField(source="voucher.id")
     tax_scheme = serializers.CharField(source="tax_scheme.name")
+    amount = serializers.CharField(source='total_amount')
 
     class Meta:
         model = SalesVoucherRow
-        fields = ('id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date')
+        fields = ('id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date', 'amount',)

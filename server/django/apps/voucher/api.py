@@ -472,8 +472,6 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
             queryset = queryset.prefetch_related('rows')
         return queryset.order_by('-id')
 
-    
-
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.is_issued():
@@ -674,13 +672,19 @@ class SalesBookViewSet(CRULViewSet):
 
 class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    # filterset_class = SalesRowFilterSet
+
+    search_fields = ['voucher__sales_agent__name', 'voucher__party__name', 'voucher__party__name',
+                     'voucher__party__tax_registration_number', 'item__name', ]
 
     def get_queryset(self, **kwargs):
         qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id,
-                                            voucher__status__in=['Issued', 'Paid', 'Partially Paid']).select_related('item',
-                                                                                                                     'discount_obj',
-                                                                                                                     'tax_scheme',
-                                                                                                                     'voucher__party')
+                                            voucher__status__in=['Issued', 'Paid', 'Partially Paid']).select_related(
+            'item',
+            'discount_obj',
+            'tax_scheme',
+            'voucher__party')
         return qs.order_by('-pk')
 
 
@@ -692,7 +696,8 @@ class PurchaseBookViewSet(CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super().get_queryset().filter(company_id=self.request.company_id,
                                            status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
-            Prefetch('rows', PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+            Prefetch('rows',
+                     PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')
 

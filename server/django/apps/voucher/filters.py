@@ -1,7 +1,8 @@
 from datetime import date
 from django_filters import rest_framework as filters, DateFilter, MultipleChoiceFilter
 
-from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher
+from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher, \
+    SalesVoucherRow
 from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote
 
 
@@ -18,6 +19,12 @@ class SalesVoucherFilterSet(DateFilterSet):
         today = date.today()
         return queryset.filter(due_date__lt=today).exclude(status="PAID")
 
+    class Meta:
+        model = SalesVoucher
+        fields = ()
+
+
+class SalesRowFilterSet(DateFilterSet):
     class Meta:
         model = SalesVoucher
         fields = ()
