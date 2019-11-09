@@ -60,7 +60,6 @@ router.register('tax-payments', tax.TaxPaymentViewSet, base_name='tax-payment')
 # aggregator
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
-router.register('', aggregator.WidgetViewSet, base_name='widget')
 
 urlpatterns = [
                   path('aweadmin/', admin.site.urls),
@@ -70,9 +69,9 @@ urlpatterns = [
                   path('v1/auth/', include('djoser.urls.base')),
                   path('v1/auth/', include('djoser.urls.jwt')),
                   path('v1/auth/login/', TokenObtainPairView.as_view(), name='login'),
-                  path('export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
-                  path('export/', aggregator_views.export_data, name='export_data'),
-                  path('import/', aggregator_views.import_data, name='import_data'),
+                  path('v1/export/', aggregator_views.export_data, name='export_data'),
+                  path('v1/export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
+                  path('v1/import/', aggregator_views.import_data, name='import_data'),
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
