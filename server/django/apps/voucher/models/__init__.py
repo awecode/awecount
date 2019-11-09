@@ -63,7 +63,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales_invoices')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_invoices')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='sales_invoices')
-    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='sales_invoices', on_delete=models.SET_NULL)
+    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='sales_invoices',
+                                    on_delete=models.SET_NULL)
 
     # Model key for module based permission
     key = 'Sales'
@@ -185,7 +186,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(data, conf['data']))
         merged_data = dict(merge_dicts(merged_data, conf['sales_invoice_data']))
         return merged_data, conf['sales_invoice_endpoint']
-    
+
     @property
     def pdf_url(self):
         return '{}sales-voucher/{}/view?pdf=1'.format(settings.BASE_URL, self.pk)
@@ -211,6 +212,10 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
 
     # Model key for module based permission
     key = 'Sales'
+
+    @property
+    def total_amount(self):
+        return self.rate * self.quantity
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
@@ -387,7 +392,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -543,7 +548,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
