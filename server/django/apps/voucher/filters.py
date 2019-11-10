@@ -27,7 +27,9 @@ class SalesVoucherFilterSet(DateFilterSet):
 class SalesRowFilterSet(filters.FilterSet):
     start_date = DateFilter(field_name='voucher__date', lookup_expr='gte', )
     end_date = DateFilter(field_name='voucher__date', lookup_expr='lte')
-    sales_agent = filters.CharFilter(field_name='voucher__sales_agent__name')
+    sales_agent = filters.CharFilter(field_name='voucher__sales_agent')
+    party = filters.CharFilter(field_name='voucher__party')
+    item_category = filters.CharFilter(field_name='item__category')
 
     class Meta:
         model = SalesVoucherRow

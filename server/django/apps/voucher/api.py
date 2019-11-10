@@ -688,7 +688,7 @@ class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gener
         return qs.order_by('-pk')
 
 
-class PurchaseBookViewSet(CRULViewSet):
+class PurchaseBookViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = PurchaseBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PurchaseVoucherFilterSet
@@ -702,7 +702,7 @@ class PurchaseBookViewSet(CRULViewSet):
         return qs.order_by('-pk')
 
 
-class SalesAgentViewSet(CRULViewSet):
+class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = SalesAgentSerializer
 
 
