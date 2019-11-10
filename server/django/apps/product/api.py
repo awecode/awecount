@@ -18,7 +18,8 @@ from .filters import ItemFilterSet, BookFilterSet
 from .models import Category as InventoryCategory
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
-    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, TransactionEntrySerializer, \
+    ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
+    TransactionEntrySerializer, \
     ItemPOSSerializer
 
 
@@ -81,7 +82,7 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = UnitSerializer
 
 
-class InventoryCategoryViewSet(InputChoiceMixin, CRULViewSet):
+class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
     collections = (
         ('units', Unit, UnitSerializer),
