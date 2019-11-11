@@ -21,6 +21,7 @@ class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewM
     extra_fields = {
         'rate': IntegerField
     }
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
 
     def get_account_ids(self, obj):
         if obj.recoverable:
