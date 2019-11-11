@@ -194,7 +194,8 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
 
     def get_item_queryset(self, company_id):
         return Item.objects.filter(can_be_sold=True, company_id=company_id).only('name', 'unit_id', 'selling_price',
-                                                                                 'tax_scheme_id', 'code')
+                                                                                 'tax_scheme_id', 'code').order_by(
+            '-sales_rows__pk')
 
     def get_collections(self, request=None):
         data = super().get_collections(request)

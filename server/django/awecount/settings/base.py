@@ -65,11 +65,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
         'apps.users.permissions.ModuleAccessPermission',
     ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'apps.users.authentication.AccessKeyAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-    ),
+        'apps.users.authentication.AccessKeyAuthentication'
+    ],
 }
 
 POS_ITEMS_SIZE = 30

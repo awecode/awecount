@@ -198,7 +198,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='sales_rows')
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
