@@ -32,9 +32,9 @@ def import_data(request):
     user = authenticate(email=data.get('email'), password=data.get('password'))
 
     if user and request.user == user:
+        #TODO Move as background job
         result = import_zipped_csvs(request.company_id, request.FILES.get('file'))
         return JsonResponse(result)
-
     else:
         return JsonResponse({'detail': 'Please provide valid credential!'}, status=401)
 

@@ -15,7 +15,6 @@ class JWTCustomAuthentication(ObtainJSONWebToken):
     def post(self, request, *args, **kwargs):
         data = request.data
         user = authenticate(email=data.get('email'), password=data.get('password'))
-        context = {}
         if user:
             payload = jwt_payload_handler(user)
             context = {
