@@ -657,7 +657,7 @@ class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = PurchaseDiscountFilterSet
 
 
-class SalesBookViewSet(CRULViewSet):
+class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SalesBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = SalesVoucherFilterSet
@@ -700,7 +700,7 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
         return self.get_paginated_response(data)
 
 
-class PurchaseBookViewSet(InputChoiceMixin, CRULViewSet):
+class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = PurchaseBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PurchaseVoucherFilterSet

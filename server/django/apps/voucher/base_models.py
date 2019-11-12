@@ -63,7 +63,6 @@ class InvoiceModel(models.Model):
             return {'type': self.discount_type, 'value': self.discount}
 
     def get_voucher_meta(self, update_row_data=False):
-        print('Computing voucher meta...')
         dct = {
             'sub_total': 0,
             'sub_total_after_row_discounts': 0,
