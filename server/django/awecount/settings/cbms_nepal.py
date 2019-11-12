@@ -25,12 +25,12 @@ CBMS_NEPAL = {
                 'tax_exempted_sales': 0,
             },
             'sales_invoice_data': {
-                'invoice_number': '102',
+                'invoice_number': 'sajhydawe78e4',
                 'invoice_date': '2074.07.06',
             },
             'credit_note_data': {
-                'ref_invoice_number': '102',
-                'credit_note_number': '1',
+                'ref_invoice_number': 'sajhydawe78e4',
+                'credit_note_number': 'utyijd9pwe',
                 'credit_note_date': '2074.07.06',
                 'reason_for_return': 'defect in piece',
             }
