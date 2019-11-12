@@ -15,7 +15,11 @@ class InputChoiceMixin(object):
     @action(detail=False)
     def choices(self, request):
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = GenericSerializer(queryset, many=True)
+        if hasattr(self, 'choice_serializer_class'):
+            serializer_class = self.choice_serializer_class
+        else:
+            serializer_class = GenericSerializer
+        serializer = serializer_class(queryset, many=True)
         return Response(serializer.data)
 
 

@@ -18,7 +18,7 @@ from .serializers import PartySerializer, AccountSerializer, AccountDetailSerial
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
-
+    choice_serializer_class = PartyMinSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('name', 'tax_registration_number', 'contact_no', 'address',)
 
@@ -28,8 +28,6 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'transactions':
             return PartyAccountSerializer
-        elif self.action == 'choices':
-            return PartyMinSerializer
         return PartySerializer
 
     def get_queryset(self):
