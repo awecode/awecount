@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.mail import mail_admins
 from django.db.models import Prefetch, Q, Sum, Avg, Count
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
@@ -685,7 +684,6 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
         return qs.order_by('-pk')
 
     def list(self, request, *args, **kwargs):
-        mail_admins('request.META', str(request.META))
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
