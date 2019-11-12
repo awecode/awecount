@@ -4,7 +4,7 @@ from django.db.models import Prefetch, Q, Sum, Avg, Count
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -145,11 +145,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
         sales_voucher = self.get_object()
+        message = request.data.get('message')
+        if not message:
+            raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
         try:
             sales_voucher.cancel(request.data.get('message'))
             return Response({})
         except Exception as e:
-            raise APIException(str(e))
+            raise RESTValidationError({'detail': e.messages})
 
     @action(detail=True, methods=['POST'], url_path='log-print')
     def log_print(self, request, pk):
