@@ -680,8 +680,7 @@ class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gener
                      'voucher__party__tax_registration_number', 'item__name', ]
 
     def get_queryset(self, **kwargs):
-        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id,
-                                            voucher__status__in=['Issued', 'Paid', 'Partially Paid']).select_related(
+        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related(
             'item', 'voucher__party')
         return qs.order_by('-pk')
 
