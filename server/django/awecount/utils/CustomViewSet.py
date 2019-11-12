@@ -102,6 +102,9 @@ class GenericSerializer(serializers.Serializer):
     name = serializers.ReadOnlyField(source='__str__')
     id = serializers.ReadOnlyField()
 
+    class Meta:
+        fields = ('id', 'name')
+
 
 class CRULViewSet(CompanyViewSetMixin,
                   CollectionViewSet,

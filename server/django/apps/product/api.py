@@ -12,7 +12,7 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from awecount.utils.CustomViewSet import CRULViewSet
+from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet
 from .models import Category as InventoryCategory
@@ -51,10 +51,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=False)
     def pos(self, request):
         self.filter_backends = (rf_filters.SearchFilter,)
+        self.queryset = self.get_queryset().filter(can_be_sold=True)
         self.serializer_class = ItemPOSSerializer
         self.search_fields = ['name', 'code', 'description', 'search_data', ]
         self.paginator.page_size = settings.POS_ITEMS_SIZE
         return super().list(request)
+
+    @action(detail=False, url_path='sales-choices')
+    def sales_choices(self, request):
+        queryset = self.get_queryset().filter(can_be_sold=True)
+        serializer = GenericSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):

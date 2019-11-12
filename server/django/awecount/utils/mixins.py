@@ -7,24 +7,16 @@ from rest_framework.response import Response
 from apps.ledger.models import JournalEntry, Transaction
 from apps.ledger.serializers import JournalEntryMultiAccountSerializer, TransactionEntrySerializer
 from awecount.utils import delete_rows
+from awecount.utils.CustomViewSet import GenericSerializer
 from awecount.utils.serializers import ShortNameChoiceSerializer
 
 
 class InputChoiceMixin(object):
-    @property
-    def paginator(self):
-        if not hasattr(self, '_paginator'):
-            if self.pagination_class is None:
-                self._paginator = None
-            else:
-                self._paginator = self.pagination_class()
-        if self.action in ('choices',):
-            self._paginator = None
-        return self._paginator
-
     @action(detail=False)
     def choices(self, request):
-        return self.list(request)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = GenericSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ShortNameChoiceMixin(object):
