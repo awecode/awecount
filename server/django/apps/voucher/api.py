@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, Sum, Avg, Count
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters, mixins, viewsets
 from rest_framework.decorators import action
@@ -671,7 +671,7 @@ class SalesBookViewSet(CRULViewSet):
         return qs.order_by('-pk')
 
 
-class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
     filterset_class = SalesRowFilterSet
@@ -683,6 +683,22 @@ class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gener
         qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related(
             'item', 'voucher__party')
         return qs.order_by('-pk')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = serializer.data
+
+        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in
+                          self.filterset_class.base_filters.keys())
+        if is_filtered:
+            aggregate = queryset.aggregate(Sum('quantity'), Sum('discount_amount'), Sum('tax_amount'), Sum('net_amount'),
+                                           Avg('rate'), Count('item'), Count('voucher'), Count('voucher__party'),
+                                           Count('voucher__sales_agent'))
+            self.paginator.aggregate = aggregate
+        return self.get_paginated_response(data)
 
 
 class PurchaseBookViewSet(InputChoiceMixin, CRULViewSet):

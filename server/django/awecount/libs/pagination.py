@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 # noinspection PyClassHasNoInit
 class PageNumberPagination(BasePageNumberPagination):
+    aggregate = None
     def get_paginated_response(self, data):
         return Response(self.get_response_data(data))
 
@@ -18,7 +19,10 @@ class PageNumberPagination(BasePageNumberPagination):
             'next': self.get_next_link(),
             'size': size,
         }
-        return {
+        response_data = {
             'pagination': pagination,
             'results': data
         }
+        if self.aggregate:
+            response_data['aggregate'] = self.aggregate
+        return response_data
