@@ -213,6 +213,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
+    net_amount = models.FloatField(blank=True, null=True)
 
     # Model key for module based permission
     key = 'Sales'

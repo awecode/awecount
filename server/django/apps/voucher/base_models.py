@@ -111,6 +111,7 @@ class InvoiceModel(models.Model):
                 row_obj = row_objs[row_data['id']]
                 row_obj.discount_amount = total_row_discount
                 row_obj.tax_amount = row_data['tax_amount']
+                row_obj.net_amount = row_data['pure_total'] + row_data['tax_amount']
                 row_obj.save()
 
         dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
@@ -183,10 +184,6 @@ class InvoiceRowModel(models.Model):
 
     def get_source_id(self):
         return self.voucher_id
-
-    @property
-    def total_amount(self):
-        return self.rate * self.quantity
 
     def has_discount(self):
         return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False

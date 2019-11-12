@@ -229,31 +229,13 @@ class SalesAgentSerializer(serializers.ModelSerializer):
 
 class SalesRowSerializer(serializers.ModelSerializer):
     item = serializers.CharField(source="item.name")
-    # unit  = serializers.CharField(source="unit.name")
     buyers_name = serializers.ReadOnlyField(source='voucher.buyer_name')
     buyers_pan = serializers.ReadOnlyField(source='voucher.party.tax_registration_number')
-    bill_no = serializers.CharField(source="voucher.voucher_no")
-    date = serializers.CharField(source="voucher.date")
-    # voucher_id = serializers.CharField(source="voucher.id")
-    tax_scheme = serializers.CharField(source="tax_scheme.name")
-    amount = serializers.CharField(source='total_amount')
-    row_discount = serializers.SerializerMethodField()
-    voucher_discount = serializers.SerializerMethodField()
-    # tax_amount = serializers.SerializerMethodField()
-    tax_rate = serializers.ReadOnlyField(source='tax_scheme.rate')
-
-    # def get_tax_amount(self, obj):
-    #     return obj.tax_scheme.rate * obj.rate / 100
-
-    def get_row_discount(self, obj):
-        return obj.get_discount()
-
-    def get_voucher_discount(self, obj):
-        return obj.voucher.get_discount(use_prefetched=True)
+    voucher__voucher_no = serializers.CharField(source="voucher.voucher_no")
+    voucher__date = serializers.CharField(source="voucher.date")
 
     class Meta:
         model = SalesVoucherRow
         fields = (
-            'id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date',
-            'amount', 'tax_rate',
-            'row_discount', 'voucher_discount')
+            'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity', 'voucher__date',
+            'tax_amount', 'discount_amount', 'net_amount')
