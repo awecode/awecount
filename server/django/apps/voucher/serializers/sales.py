@@ -235,7 +235,23 @@ class SalesRowSerializer(serializers.ModelSerializer):
     # voucher_id = serializers.CharField(source="voucher.id")
     tax_scheme = serializers.CharField(source="tax_scheme.name")
     amount = serializers.CharField(source='total_amount')
+    row_discount = serializers.SerializerMethodField()
+    voucher_discount = serializers.SerializerMethodField()
+    # tax_amount = serializers.SerializerMethodField()
+    tax_rate = serializers.ReadOnlyField(source='tax_scheme.rate')
+
+    # def get_tax_amount(self, obj):
+    #     return obj.tax_scheme.rate * obj.rate / 100
+
+    def get_row_discount(self, obj):
+        return obj.get_discount()
+
+    def get_voucher_discount(self, obj):
+        return obj.voucher.get_discount(use_prefetched=True)
 
     class Meta:
         model = SalesVoucherRow
-        fields = ('id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date', 'amount',)
+        fields = (
+            'id', 'item', 'buyers_name', 'buyers_pan', 'bill_no', 'voucher_id', 'tax_scheme', 'rate', 'quantity', 'date',
+            'amount', 'tax_rate',
+            'row_discount', 'voucher_discount')

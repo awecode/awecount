@@ -685,7 +685,7 @@ class SalesRowViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gener
             'item',
             'discount_obj',
             'tax_scheme',
-            'voucher__party')
+            'voucher__party').prefetch_related('voucher__rows')
         return qs.order_by('-pk')
 
 

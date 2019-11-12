@@ -213,10 +213,6 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     # Model key for module based permission
     key = 'Sales'
 
-    @property
-    def total_amount(self):
-        return self.rate * self.quantity
-
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.CharField(max_length=25)

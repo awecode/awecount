@@ -25,19 +25,22 @@ class InvoiceModel(models.Model):
     def amount_in_words(self):
         return wGenerator.convertNumberToWords(self.get_voucher_meta()['grand_total'])
 
-    def get_total_after_row_discounts(self):
+    def get_total_after_row_discounts(self, use_prefetched=False):
         total = 0
-        for row in self.rows.filter():
+        rows = self.rows.all() if use_prefetched else self.rows.filter()
+        for row in rows:
             total += row.total_after_row_discount
         return total
 
-    def get_discount(self, sub_total_after_row_discounts=None):
+    def get_discount(self, sub_total_after_row_discounts=None, use_prefetched=False):
         """
         :type sub_total_after_row_discounts: float
         returns:
         discount_amount:float, is_trade_discount:boolean
         """
-        sub_total_after_row_discounts = sub_total_after_row_discounts or self.get_total_after_row_discounts()
+        # Allow 0
+        if sub_total_after_row_discounts is None:
+            sub_total_after_row_discounts = self.get_total_after_row_discounts(use_prefetched=use_prefetched)
         if self.discount_obj_id:
             discount_obj = self.discount_obj
             if discount_obj.type == 'Amount':
@@ -170,6 +173,10 @@ class InvoiceRowModel(models.Model):
 
     def get_source_id(self):
         return self.voucher_id
+
+    @property
+    def total_amount(self):
+        return self.rate * self.quantity
 
     def has_discount(self):
         return True if self.discount_obj_id or self.discount_type in ['Amount', 'Percent'] and self.discount else False
