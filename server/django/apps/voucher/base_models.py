@@ -34,7 +34,8 @@ class InvoiceModel(models.Model):
 
     def get_discount(self, sub_total_after_row_discounts=None, use_prefetched=False):
         """
-        :type sub_total_after_row_discounts: float
+        :param use_prefetched: controls if prefetched rows are to be used
+        :type sub_total_after_row_discounts: float or None
         returns:
         discount_amount:float, is_trade_discount:boolean
         """
@@ -61,7 +62,8 @@ class InvoiceModel(models.Model):
         else:
             return {'type': self.discount_type, 'value': self.discount}
 
-    def get_voucher_meta(self):
+    def get_voucher_meta(self, update_row_data=False):
+        print('Computing voucher meta...')
         dct = {
             'sub_total': 0,
             'sub_total_after_row_discounts': 0,
@@ -71,15 +73,17 @@ class InvoiceModel(models.Model):
             'tax': 0
         }
         rows_data = []
+        row_objs = {}
         # bypass prefetch cache using filter
         for row in self.rows.filter():
-            row_data = dict(quantity=row.quantity, rate=row.rate, total=row.rate * row.quantity,
+            row_data = dict(id=row.id, quantity=row.quantity, rate=row.rate, total=row.rate * row.quantity,
                             row_discount=row.get_discount()[0] if row.has_discount() else 0)
             row_data['gross_total'] = row_data['total'] - row_data['row_discount']
             row_data['tax_rate'] = row.tax_scheme.rate if row.tax_scheme else 0
             dct['sub_total_after_row_discounts'] += row_data['gross_total']
             dct['sub_total'] += row_data['total']
             rows_data.append(row_data)
+            row_objs[row.id] = row
 
         voucher_discount_data = self.get_voucher_discount_data()
 
@@ -94,14 +98,20 @@ class InvoiceModel(models.Model):
             row_data['dividend_discount'] = dividend_discount
             row_data['pure_total'] = row_data['gross_total'] - dividend_discount
             row_data['tax_amount'] = row_data['tax_rate'] * row_data['pure_total'] / 100
-
-            dct['discount'] += row_data['row_discount'] + row_data['dividend_discount']
+            total_row_discount = row_data['row_discount'] + row_data['dividend_discount']
+            dct['discount'] += total_row_discount
             dct['tax'] += row_data['tax_amount']
 
             if row_data['tax_amount']:
                 dct['taxable'] += row_data['pure_total']
             else:
                 dct['non_taxable'] += row_data['pure_total']
+
+            if update_row_data:
+                row_obj = row_objs[row_data['id']]
+                row_obj.discount_amount = total_row_discount
+                row_obj.tax_amount = row_data['tax_amount']
+                row_obj.save()
 
         dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
 

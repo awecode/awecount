@@ -87,9 +87,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 ['cr', row.item.account, int(row.quantity)],
             )
 
-    def apply_transactions(self):
+    def apply_transactions(self, voucher_meta=None):
 
-        voucher_meta = self.get_voucher_meta()
+        voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta['grand_total']:
             self.total_amount = voucher_meta['grand_total']
             self.save()
@@ -209,6 +209,10 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL,
                                      related_name='sales_rows')
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='sales_rows')
+
+    # Computed values
+    discount_amount = models.FloatField(blank=True, null=True)
+    tax_amount = models.FloatField(blank=True, null=True)
 
     # Model key for module based permission
     key = 'Sales'
@@ -388,7 +392,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -544,7 +548,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
