@@ -1,5 +1,5 @@
 from datetime import date
-from django_filters import rest_framework as filters, DateFilter, MultipleChoiceFilter
+from django_filters import rest_framework as filters
 
 from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher, \
     SalesVoucherRow
@@ -7,12 +7,12 @@ from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSE
 
 
 class DateFilterSet(filters.FilterSet):
-    start_date = DateFilter(field_name='date', lookup_expr='gte', )
-    end_date = DateFilter(field_name='date', lookup_expr='lte')
+    start_date = filters.DateFilter(field_name='date', lookup_expr='gte', )
+    end_date = filters.DateFilter(field_name='date', lookup_expr='lte')
 
 
 class SalesVoucherFilterSet(DateFilterSet):
-    status = MultipleChoiceFilter(choices=STATUSES)
+    status = filters.MultipleChoiceFilter(choices=STATUSES)
     is_due = filters.BooleanFilter(method='is_due_filter')
 
     def is_due_filter(self, queryset, name, value):
@@ -25,10 +25,10 @@ class SalesVoucherFilterSet(DateFilterSet):
 
 
 class SalesRowFilterSet(filters.FilterSet):
-    start_date = DateFilter(field_name='voucher__date', lookup_expr='gte', )
-    end_date = DateFilter(field_name='voucher__date', lookup_expr='lte')
+    start_date = filters.DateFilter(field_name='voucher__date', lookup_expr='gte', )
+    end_date = filters.DateFilter(field_name='voucher__date', lookup_expr='lte')
     sales_agent = filters.CharFilter(field_name='voucher__sales_agent')
-    status = filters.CharFilter(field_name='voucher__status')
+    status = filters.MultipleChoiceFilter(field_name='voucher__status', choices=STATUSES)
     party = filters.CharFilter(field_name='voucher__party')
     item_category = filters.CharFilter(field_name='item__category')
 
@@ -38,7 +38,7 @@ class SalesRowFilterSet(filters.FilterSet):
 
 
 class PurchaseVoucherFilterSet(DateFilterSet):
-    status = MultipleChoiceFilter(choices=STATUSES)
+    status = filters.MultipleChoiceFilter(choices=STATUSES)
     is_due = filters.BooleanFilter(method='is_due_filter')
 
     def is_due_filter(self, queryset, name, value):
@@ -51,7 +51,7 @@ class PurchaseVoucherFilterSet(DateFilterSet):
 
 
 class CreditNoteFilterSet(DateFilterSet):
-    status = MultipleChoiceFilter(choices=CREDIT_NOTE_STATUSES)
+    status = filters.MultipleChoiceFilter(choices=CREDIT_NOTE_STATUSES)
 
     class Meta:
         model = CreditNote
@@ -59,7 +59,7 @@ class CreditNoteFilterSet(DateFilterSet):
 
 
 class DebitNoteFilterSet(DateFilterSet):
-    status = MultipleChoiceFilter(choices=CREDIT_NOTE_STATUSES)
+    status = filters.MultipleChoiceFilter(choices=CREDIT_NOTE_STATUSES)
 
     class Meta:
         model = DebitNote
@@ -67,7 +67,7 @@ class DebitNoteFilterSet(DateFilterSet):
 
 
 class SalesDiscountFilterSet(filters.FilterSet):
-    type = MultipleChoiceFilter(choices=DISCOUNT_TYPES)
+    type = filters.MultipleChoiceFilter(choices=DISCOUNT_TYPES)
 
     class Meta:
         model = SalesDiscount
@@ -75,7 +75,7 @@ class SalesDiscountFilterSet(filters.FilterSet):
 
 
 class PurchaseDiscountFilterSet(filters.FilterSet):
-    type = MultipleChoiceFilter(choices=DISCOUNT_TYPES)
+    type = filters.MultipleChoiceFilter(choices=DISCOUNT_TYPES)
 
     class Meta:
         model = PurchaseDiscount
@@ -83,7 +83,7 @@ class PurchaseDiscountFilterSet(filters.FilterSet):
 
 
 class JournalVoucherFilterSet(DateFilterSet):
-    status = MultipleChoiceFilter(choices=JournalVoucher.STATUSES)
+    status = filters.MultipleChoiceFilter(choices=JournalVoucher.STATUSES)
 
     class Meta:
         model = JournalVoucher
