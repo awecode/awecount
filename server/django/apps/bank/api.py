@@ -1,9 +1,8 @@
-import datetime
-
+from django_filters import rest_framework as filters
+from rest_framework import filters as rf_filters
+from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
-
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet
@@ -13,10 +12,7 @@ from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSeri
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, DeleteRows
-
-from rest_framework import filters as rf_filters
-from django_filters import rest_framework as filters
+from awecount.utils.mixins import InputChoiceMixin
 
 
 class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
@@ -58,10 +54,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     def mark_as_cleared(self, request, pk):
         cheque_deposit = self.get_object()
         if cheque_deposit.status == 'Issued':
-            cheque_deposit.status = 'Cleared'
-            cheque_deposit.clearing_date = datetime.datetime.today()
-            cheque_deposit.save()
-            cheque_deposit.apply_transactions()
+            cheque_deposit.clear()
             return Response({})
         else:
             raise APIException('This voucher cannot be mark as cleared!')
@@ -69,9 +62,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
         cheque_deposit = self.get_object()
-        cheque_deposit.status = 'Cancelled'
-        cheque_deposit.save()
-        cheque_deposit.cancel_transactions()
+        cheque_deposit.cancel()
         return Response({})
 
     @action(detail=True)

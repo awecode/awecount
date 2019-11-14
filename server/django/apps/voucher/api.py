@@ -768,7 +768,7 @@ class PaymentReceiptViewSet(CRULViewSet):
     collections = (
         ('bank_accounts', BankAccount),
     )
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.order_by('-pk')
@@ -789,6 +789,7 @@ class PaymentReceiptViewSet(CRULViewSet):
     @action(detail=True, methods=['POST'])
     def mark_as_cleared(self, request, pk):
         obj = self.get_object()
+        # TODO Move to Model
         if obj.status == 'Issued':
             obj.status = 'Cleared'
             obj.clearing_date = datetime.datetime.today()
@@ -806,6 +807,7 @@ class PaymentReceiptViewSet(CRULViewSet):
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
         obj = self.get_object()
+        # TODO Move to Model
         obj.status = 'Cancelled'
         obj.save()
         obj.cancel_transactions()

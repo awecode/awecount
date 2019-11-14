@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -89,6 +91,24 @@ class ChequeDeposit(TransactionModel):
             return
         JournalEntry.objects.filter(content_type__model='chequedeposit', object_id=self.id).delete()
 
+    def clear(self):
+        self.status = 'Cleared'
+        self.clearing_date = datetime.datetime.today()
+        self.save()
+        self.apply_transactions()
+        for receipt in self.payment_receipts.all():
+            receipt.status = 'Cleared'
+            receipt.clearing_date = datetime.datetime.today()
+            receipt.save()
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.cancel_transactions()
+        for receipt in self.payment_receipts.all():
+            receipt.status = 'Cancelled'
+            receipt.save()
+
 
 # class ChequeDepositRow(models.Model):
 #     cheque_number = models.CharField(max_length=50)
@@ -126,17 +146,17 @@ class ChequeIssue(models.Model):
     def amount_in_words(self):
         return wGenerator.convertNumberToWords(self.amount)
 
-# class CashDeposit(models.Model):
-#     STATUSES = (
-#         ('Draft', 'Draft'),
-#         ('Deposited', 'Deposited'),
-#         ('Cancelled', 'Cancelled'),
-#     )
-#     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
-#     amount = models.FloatField()
-#     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
-#     deposited_by = models.CharField(max_length=255, blank=True, null=True)
-#     narration = models.TextField(null=True, blank=True)
-#     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-#     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
-#     date = models.DateField()
+        # class CashDeposit(models.Model):
+        #     STATUSES = (
+        #         ('Draft', 'Draft'),
+        #         ('Deposited', 'Deposited'),
+        #         ('Cancelled', 'Cancelled'),
+        #     )
+        #     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
+        #     amount = models.FloatField()
+        #     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
+        #     deposited_by = models.CharField(max_length=255, blank=True, null=True)
+        #     narration = models.TextField(null=True, blank=True)
+        #     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+        #     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
+        #     date = models.DateField()
