@@ -1,10 +1,8 @@
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 from apps.ledger.models import Account, Party, set_ledger_transactions, JournalEntry
-from apps.users.models import Company, User
+from apps.users.models import Company
 from awecount.utils import wGenerator
 
 
@@ -127,3 +125,18 @@ class ChequeIssue(models.Model):
     @property
     def amount_in_words(self):
         return wGenerator.convertNumberToWords(self.amount)
+
+# class CashDeposit(models.Model):
+#     STATUSES = (
+#         ('Draft', 'Draft'),
+#         ('Deposited', 'Deposited'),
+#         ('Cancelled', 'Cancelled'),
+#     )
+#     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
+#     amount = models.FloatField()
+#     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
+#     deposited_by = models.CharField(max_length=255, blank=True, null=True)
+#     narration = models.TextField(null=True, blank=True)
+#     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+#     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
+#     date = models.DateField()

@@ -3,6 +3,7 @@ import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import SalesAgent, PaymentReceipt
@@ -90,9 +91,19 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         # elif instance.amount and len(self.invoice_ids) === 1:
         #     instance.invoices.update(status='Partially Paid')
         if self.validated_data['mode'] == 'Cheque':
-            # Create or update cheque_deposit instance here
-            import ipdb
-            ipdb.set_trace()
+            cheque_deposit = instance.cheque_deposit or ChequeDeposit(company_id=self.context['request'].company_id)
+            cheque_deposit.status = 'Issued'
+            cheque_deposit.date = instance.date
+            cheque_deposit.bank_account = instance.bank_account
+            cheque_deposit.cheque_date = cheque_deposit_data.get('date')
+            cheque_deposit.cheque_number = cheque_deposit_data.get('cheque_number')
+            cheque_deposit.drawee_bank = cheque_deposit_data.get('drawee_bank')
+            cheque_deposit.amount = instance.amount
+            cheque_deposit.benefactor = instance.party.customer_account
+            cheque_deposit.save()
+            if not instance.cheque_deposit:
+                instance.cheque_deposit = cheque_deposit
+                instance.save()
         # 6. Apply transactions for bank deposit and cleared
         return instance
 
