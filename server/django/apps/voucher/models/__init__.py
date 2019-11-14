@@ -660,7 +660,9 @@ class PaymentReceipt(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='payment_receipts')
     date = models.DateField()
     mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
-    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True, on_delete=models.PROTECT)
+    cleared = models.BooleanField(default=False)
+    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True,
+                                                   on_delete=models.PROTECT)
     transaction_charge = models.FloatField(default=0)
     bank_account = models.ForeignKey(BankAccount, related_name='payment_receipts', on_delete=models.CASCADE, blank=True,
                                      null=True)

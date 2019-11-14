@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
-from apps.voucher.models import SalesAgent
+from apps.voucher.models import SalesAgent, PaymentReceipt
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
@@ -22,6 +22,14 @@ class SalesDiscountMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesDiscount
         fields = ('id', 'name', 'type', 'value')
+
+
+class PaymentReceiptSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+
+    class Meta:
+        model = PaymentReceipt
+        fields = ('id', 'date', 'cleared', 'mode', 'party_name')
 
 
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
