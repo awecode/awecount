@@ -133,7 +133,7 @@ class User(AbstractBaseUser):
 
 class AccessKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    key = models.UUIDField(default=uuid.uuid4())
+    key = models.UUIDField(default=uuid.uuid4)
     enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
 
