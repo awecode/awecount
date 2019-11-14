@@ -4,8 +4,9 @@ from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
 
-from apps.bank.models import BankAccount
-from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel
+from apps.bank.models import BankAccount, ChequeDeposit
+from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel, \
+    TransactionCharge
 from apps.product.models import Item, Unit, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
@@ -645,6 +646,30 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel):
                                      related_name='debit_note_rows')
 
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_note_rows')
+
+
+PAYMENT_MODES = (
+    ('Cheque', 'Cheque'),
+    ('Cash', 'Cash'),
+    ('Bank Deposit', 'Bank Deposit'),
+)
+
+
+class PaymentReceipt(models.Model):
+    invoices = models.ManyToManyField(SalesVoucher, related_name='payment_receipts')
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='payment_receipts')
+    date = models.DateField()
+    mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
+    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True, on_delete=models.PROTECT)
+    transaction_charge = models.FloatField(default=0)
+    bank_account = models.ForeignKey(BankAccount, related_name='payment_receipts', on_delete=models.CASCADE, blank=True,
+                                     null=True)
+    cheque_deposit = models.ForeignKey(ChequeDeposit, blank=True, null=True, related_name='payment_receipts',
+                                       on_delete=models.SET_NULL)
+    remarks = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.date)
 
 
 auditlog.register(SalesVoucher)

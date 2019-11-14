@@ -634,3 +634,12 @@ class TransactionModel(models.Model):
 
 
 set_ledger_transactions = set_transactions
+
+class TransactionCharge(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    account = models.ForeignKey(Account, related_name='transaction_charges', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.name

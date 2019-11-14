@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Q
 
 from apps.ledger.models import Account, set_ledger_transactions, JournalEntry
 from apps.users.models import Company
