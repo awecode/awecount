@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from awecount.utils.serializers import StatusReversionMixin
-from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeIssue
+from .models import BankAccount, ChequeDeposit, ChequeIssue
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -12,34 +12,18 @@ class BankAccountSerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
-class ChequeDepositRowSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
-
-    class Meta:
-        model = ChequeDepositRow
-        exclude = ('cheque_deposit',)
-
-
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
-    rows = ChequeDepositRowSerializer(many=True)
     bank_account_name = serializers.ReadOnlyField(source='bank_account.name')
     benefactor_name = serializers.ReadOnlyField(source='bank_account.name')
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
-        rows_data = validated_data.pop('rows')
         cheque_deposit = ChequeDeposit.objects.create(**validated_data)
-        for index, row in enumerate(rows_data):
-            ChequeDepositRow.objects.create(cheque_deposit=cheque_deposit, **row)
         cheque_deposit.apply_transactions()
         return cheque_deposit
 
     def update(self, instance, validated_data):
-        rows_data = validated_data.pop('rows')
         ChequeDeposit.objects.filter(pk=instance.id).update(**validated_data)
-        for index, row in enumerate(rows_data):
-            row['cheque_deposit'] = instance
-            ChequeDepositRow.objects.update_or_create(pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         instance.apply_transactions()
         return instance

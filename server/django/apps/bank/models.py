@@ -57,6 +57,10 @@ class ChequeDeposit(models.Model):
     date = models.DateField()
     clearing_date = models.DateField(blank=True, null=True)
     bank_account = models.ForeignKey(BankAccount, related_name='cheque_deposits', on_delete=models.CASCADE)
+    cheque_number = models.CharField(max_length=50)
+    cheque_date = models.DateField(default=timezone.now)
+    drawee_bank = models.CharField(max_length=255)
+    amount = models.FloatField()
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=255, blank=True, null=True)
     narration = models.TextField(null=True, blank=True)
@@ -66,35 +70,27 @@ class ChequeDeposit(models.Model):
     # TODO Find payment and set as cleared for cleared cheque deposits
 
     def __str__(self):
-        return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)
+        return str(self.date)
 
     def get_voucher_no(self):
-        return self.id
+        return self.voucher_no or self.id
 
     def apply_transactions(self):
         pass
 
-    @property
-    def total(self):
-        grand_total = 0
-        for obj in self.rows.all():
-            total = obj.amount
-            grand_total += total
-        return grand_total
 
-
-class ChequeDepositRow(models.Model):
-    cheque_number = models.CharField(max_length=50)
-    cheque_date = models.DateField(default=timezone.now)
-    drawee_bank = models.CharField(max_length=255)
-    drawee_bank_address = models.CharField(max_length=255)
-    amount = models.FloatField()
-    cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
-
-    company_id_accessor = 'cheque_deposit__company_id'
-
-    def get_voucher_no(self):
-        return self.cheque_deposit_id
+# class ChequeDepositRow(models.Model):
+#     cheque_number = models.CharField(max_length=50)
+#     cheque_date = models.DateField(default=timezone.now)
+#     drawee_bank = models.CharField(max_length=255)
+#     drawee_bank_address = models.CharField(max_length=255)
+#     amount = models.FloatField()
+#     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
+# 
+#     company_id_accessor = 'cheque_deposit__company_id'
+# 
+#     def get_voucher_no(self):
+#         return self.cheque_deposit_id
 
 
 class ChequeIssue(models.Model):

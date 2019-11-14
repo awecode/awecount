@@ -8,7 +8,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.db import IntegrityError
 from import_export import resources, widgets
 
-from apps.bank.models import BankAccount, ChequeDeposit, ChequeIssue, ChequeDepositRow
+from apps.bank.models import BankAccount, ChequeDeposit, ChequeIssue
 from apps.ledger.models import Category, Account, Party, PartyRepresentative
 from apps.product.models import Unit, Brand, Category as InventoryCategory, InventoryAccount, Item
 from apps.tax.models import TaxScheme
@@ -33,7 +33,6 @@ COMPANY_FILTERS = [
 # JournalEntry ?
 COMPANY_ID_ACCESSOR_FILTERS = [
     # Bank
-    ChequeDepositRow,
     # Ledger
     PartyRepresentative,
     # Vouchers

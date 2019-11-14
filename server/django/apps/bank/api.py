@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet
-from apps.bank.models import BankAccount, ChequeDeposit, ChequeDepositRow
+from apps.bank.models import BankAccount, ChequeDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer
 from apps.ledger.models import Party, Account
@@ -22,11 +22,10 @@ class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BankAccountSerializer
 
 
-class ChequeDepositViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
+class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     queryset = ChequeDeposit.objects.all()
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
-    row = ChequeDepositRow
     collections = [
         ('benefactors', Account.objects.only('id', 'name', )),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),

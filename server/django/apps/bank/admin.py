@@ -1,14 +1,10 @@
 from django.contrib import admin
 
-from .models import BankAccount, ChequeDepositRow, ChequeDeposit, ChequeIssue
-
-
-class ChequeDepositRowTabular(admin.TabularInline):
-    model = ChequeDepositRow
+from .models import BankAccount, ChequeDeposit, ChequeIssue
 
 
 class ChequeDepositAdmin(admin.ModelAdmin):
-    inlines = (ChequeDepositRowTabular,)
+    list_filter = ('company',)
 
 
 admin.site.register(ChequeDeposit, ChequeDepositAdmin)
