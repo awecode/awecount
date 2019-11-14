@@ -35,6 +35,7 @@ router.register('inventory-categories', item.InventoryCategoryViewSet, base_name
 router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('pos', voucher.POSViewSet)
 router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
+router.register('payment-receipt', voucher.PaymentReceiptViewSet, base_name='payment-receipt')
 router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, base_name='purchase-vouchers')
 router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name='purchase-discount')
 router.register('purchase-settings', voucher.PurchaseSettingsViewSet, base_name='purchase-settings')

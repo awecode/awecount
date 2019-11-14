@@ -20,8 +20,9 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
-    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet, SalesRowFilterSet
-from apps.voucher.models import SalesAgent
+    SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet, SalesRowFilterSet, \
+    PaymentReceiptFilterSet
+from apps.voucher.models import SalesAgent, PaymentReceipt
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
@@ -41,7 +42,8 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     JournalVoucherCreateSerializer, PurchaseVoucherCreateSerializer, PurchaseVoucherListSerializer, \
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
-    SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer
+    SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer, \
+    PaymentReceiptSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -752,3 +754,12 @@ class SalesSettingsViewSet(CRULViewSet):
             'fields': SalesSettingsSerializer(s_setting).data
         }
         return data
+
+
+class PaymentReceiptViewSet(CRULViewSet):
+    serializer_class = PaymentReceiptSerializer
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    queryset = PaymentReceipt.objects.all()
+    search_fields = ['party__name']
+
+    filterset_class = PaymentReceiptFilterSet

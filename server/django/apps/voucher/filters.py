@@ -2,7 +2,7 @@ from datetime import date
 from django_filters import rest_framework as filters
 
 from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher, \
-    SalesVoucherRow
+    SalesVoucherRow, PAYMENT_MODES, PaymentReceipt
 from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote
 
 
@@ -88,3 +88,13 @@ class JournalVoucherFilterSet(DateFilterSet):
     class Meta:
         model = JournalVoucher
         exclude = ()
+
+
+class PaymentReceiptFilterSet(DateFilterSet):
+    party = filters.CharFilter()
+    mode = filters.MultipleChoiceFilter(choices=PAYMENT_MODES)
+    cleared = filters.BooleanFilter()
+
+    class Meta:
+        model = PaymentReceipt
+        fields = ()
