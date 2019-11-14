@@ -30,7 +30,7 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'cleared', 'mode', 'party_name')
+        fields = ('id', 'date', 'status', 'mode', 'party_name')
 
 
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
@@ -46,8 +46,8 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'cleared', 'mode', 'party_name', 'invoice_nos', 'amount', 'bank_account_name', 'cheque_date',
-                  'cheque_number', 'drawee_bank')
+        fields = ('id', 'date', 'status', 'mode', 'party_name', 'invoice_nos', 'amount', 'bank_account_name', 'cheque_date',
+                  'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
@@ -66,7 +66,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         self.invoice_ids = []
         self.total_amount = 0
         for invoice in data.get('invoices'):
-            if not data.get('id') and invoice.status == 'Paid':
+            if not (self.instance and self.instance.id) and invoice.status == 'Paid':
                 raise ValidationError({'invoice': 'Invoice has already been paid'})
             if invoice.status == 'Cancelled':
                 raise ValidationError({'invoice': 'Invoice has already been cancelled'})
@@ -95,15 +95,15 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         return data
 
     def save(self, **kwargs):
+        cheque_deposit_data = self.validated_data.pop('cheque_deposit', {})
         if self.validated_data['mode'] == 'Cheque':
-            cheque_deposit_data = self.validated_data.pop('cheque_deposit', {})
             cheque_deposit_data['bank_account'] = self.validated_data['bank_account']
         # import ipdb
         # ipdb.set_trace()
         instance = super().save(**kwargs)
         if instance.amount >= self.total_amount and instance.mode in ['Cash', 'Bank Deposit']:
             instance.invoices.update(status='Paid')
-            instance.cleared = True
+            instance.status = 'Cleared'
             instance.save()
         # elif instance.amount and len(self.invoice_ids) === 1:
         #     instance.invoices.update(status='Partially Paid')
@@ -121,7 +121,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             if not instance.cheque_deposit:
                 instance.cheque_deposit = cheque_deposit
                 instance.save()
-        # 6. Apply transactions for bank deposit and cleared
+        instance.apply_transactions()
         return instance
 
     class Meta:

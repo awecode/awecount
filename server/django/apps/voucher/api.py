@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q, Sum, Avg, Count
@@ -770,8 +772,6 @@ class PaymentReceiptViewSet(CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return PaymentReceiptSerializer
-        if self.action == 'retrieve':
-            return PaymentReceiptDetailSerializer
         return PaymentReceiptFormSerializer
 
     def get_defaults(self, request=None):
@@ -781,6 +781,41 @@ class PaymentReceiptViewSet(CRULViewSet):
             }
         }
         return data
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_cleared(self, request, pk):
+        obj = self.get_object()
+        if obj.status == 'Issued':
+            obj.status = 'Cleared'
+            obj.clearing_date = datetime.datetime.today()
+            obj.save()
+            obj.invoices.update(status='Paid')
+            if obj.mode == 'Cheque':
+                obj.cheque_deposit.status = 'Cleared'
+                obj.cheque_deposit.clearing_date = datetime.datetime.today()
+                obj.cheque_deposit.save()
+            obj.apply_transactions()
+            return Response({})
+        else:
+            raise APIException('This receipt cannot be mark as cleared!')
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        obj.status = 'Cancelled'
+        obj.save()
+        obj.cancel_transactions()
+        if obj.mode == 'Cheque':
+            obj.cheque_deposit.status = 'Cancelled'
+            obj.cheque_deposit.save()
+            obj.cheque_deposit.cancel_transactions()
+        return Response({})
+
+    @action(detail=True)
+    def details(self, request, pk):
+        qs = super().get_queryset().select_related('bank_account')
+        data = PaymentReceiptDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        return Response(data)
 
     @action(detail=False, url_path='fetch-invoice')
     def fetch_invoice(self, request):

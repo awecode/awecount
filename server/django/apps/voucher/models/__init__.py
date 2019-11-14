@@ -6,7 +6,7 @@ from django.conf import settings
 
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel, \
-    TransactionCharge
+    TransactionCharge, JournalEntry
 from apps.product.models import Item, Unit, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
@@ -654,6 +654,12 @@ PAYMENT_MODES = (
     ('Bank Deposit', 'Bank Deposit'),
 )
 
+PAYMENT_STATUSES = (
+    ('Issued', 'Issued'),
+    ('Cleared', 'Cleared'),
+    ('Cancelled', 'Cancelled'),
+)
+
 
 class PaymentReceipt(models.Model):
     invoices = models.ManyToManyField(SalesVoucher, related_name='payment_receipts')
@@ -661,7 +667,7 @@ class PaymentReceipt(models.Model):
     date = models.DateField()
     mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
     amount = models.FloatField()
-    cleared = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0])
     transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True,
                                                    on_delete=models.PROTECT)
     transaction_charge = models.FloatField(default=0)
@@ -670,7 +676,31 @@ class PaymentReceipt(models.Model):
     cheque_deposit = models.ForeignKey(ChequeDeposit, blank=True, null=True, related_name='payment_receipts',
                                        on_delete=models.SET_NULL)
     remarks = models.TextField(blank=True, null=True)
+    clearing_date = models.DateField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.cancel_transactions()
+            return
+        if not self.status == 'Cleared':
+            return
+        if self.mode == 'Cheque':
+            self.cheque_deposit.apply_transactions()
+            return
+        if self.mode == 'Cash':
+            dr_acc = get_account(self.company, 'Cash')
+        elif self.mode == 'Bank Deposit':
+            dr_acc = self.bank_account.ledger
+        else:
+            raise ValueError('Invalid mode - {}!'.format(self.mode))
+        entries = [['dr', dr_acc, self.amount], ['cr', self.party.customer_account, self.amount]]
+        set_ledger_transactions(self, self.date, *entries, clear=True)
+
+    def cancel_transactions(self):
+        if not self.status == 'Cancelled':
+            return
+        JournalEntry.objects.filter(content_type__model='paymentreceipt', object_id=self.id).delete()
 
     def __str__(self):
         return str(self.date)
