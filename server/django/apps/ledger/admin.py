@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative
+from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, TransactionCharge
 
 
 class PartyAdmin(admin.ModelAdmin):
@@ -32,3 +32,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Category, CategoryAdmin)
+
+
+class TransactionChargeAdmin(admin.ModelAdmin):
+    list_filter = ('company',)
+
+
+admin.site.register(TransactionCharge, TransactionChargeAdmin)
