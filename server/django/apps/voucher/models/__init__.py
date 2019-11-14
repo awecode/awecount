@@ -661,7 +661,7 @@ PAYMENT_STATUSES = (
 )
 
 
-class PaymentReceipt(models.Model):
+class PaymentReceipt(TransactionModel):
     invoices = models.ManyToManyField(SalesVoucher, related_name='payment_receipts')
     party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='payment_receipts')
     date = models.DateField()

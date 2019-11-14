@@ -11,7 +11,7 @@ from apps.bank.models import BankAccount, ChequeDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer
 from apps.ledger.models import Party, Account
-from apps.ledger.serializers import PartyMinSerializer
+from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, DeleteRows
 
@@ -39,7 +39,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
-        queryset = super(ChequeDepositViewSet, self).get_queryset()
+        queryset = super().get_queryset()
         return queryset.order_by('-pk')
 
     def get_serializer_class(self):
@@ -80,6 +80,12 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_cheque_deposit_update
         return Response(data)
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        obj = get_object_or_404(self.get_queryset(), pk=pk)
+        journals = obj.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)
 
 
 class ChequeIssueViewSet(CRULViewSet):

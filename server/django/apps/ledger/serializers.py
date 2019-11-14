@@ -184,8 +184,7 @@ class SalesJournalEntrySerializer(JournalEntrySerializer):
     def get_transactions(self, obj):
         transactions = obj.transactions.all()
         return TransactionSerializer(transactions, many=True).data
-
-
+    
 class JournalEntriesSerializer(JournalEntrySerializer):
     transactions = serializers.SerializerMethodField()
 

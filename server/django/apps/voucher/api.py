@@ -768,6 +768,10 @@ class PaymentReceiptViewSet(CRULViewSet):
     collections = (
         ('bank_accounts', BankAccount),
     )
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -837,3 +841,9 @@ class PaymentReceiptViewSet(CRULViewSet):
             'amount': invoice.total_amount
         }
         return Response(data)
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        obj = get_object_or_404(self.get_queryset(), pk=pk)
+        journals = obj.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)

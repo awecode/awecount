@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from apps.ledger.models import Account, Party, set_ledger_transactions, JournalEntry
+from apps.ledger.models import Account, Party, set_ledger_transactions, JournalEntry, TransactionModel
 from apps.users.models import Company
 from awecount.utils import wGenerator
 
@@ -45,7 +45,7 @@ class BankAccount(models.Model):
         return self.short_name or self.bank_name or self.account_number
 
 
-class ChequeDeposit(models.Model):
+class ChequeDeposit(TransactionModel):
     STATUSES = (
         ('Draft', 'Draft'),
         ('Issued', 'Issued'),
