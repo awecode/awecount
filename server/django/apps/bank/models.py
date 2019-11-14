@@ -1,8 +1,9 @@
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from apps.ledger.models import Account, Party
+from apps.ledger.models import Account, Party, set_ledger_transactions, JournalEntry
 from apps.users.models import Company, User
 from awecount.utils import wGenerator
 
@@ -51,6 +52,7 @@ class ChequeDeposit(models.Model):
         ('Draft', 'Draft'),
         ('Issued', 'Issued'),
         ('Cleared', 'Cleared'),
+        ('Cancelled', 'Cancelled'),
     )
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
@@ -76,7 +78,18 @@ class ChequeDeposit(models.Model):
         return self.voucher_no or self.id
 
     def apply_transactions(self):
-        pass
+        if self.status == 'Cancelled':
+            self.cancel_transactions()
+            return
+        if not self.status == 'Cleared':
+            return
+        entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
+        set_ledger_transactions(self, self.date, *entries, clear=True)
+
+    def cancel_transactions(self):
+        if not self.status == 'Cancelled':
+            return
+        JournalEntry.objects.filter(content_type__model='chequedeposit', object_id=self.id).delete()
 
 
 # class ChequeDepositRow(models.Model):

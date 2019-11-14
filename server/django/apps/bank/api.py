@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 
@@ -27,12 +29,13 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
     collections = [
-        ('benefactors', Account.objects.only('id', 'name', )),
+        ('benefactors', Account.objects.only('id', 'name', ).filter(category__name='Customers')),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ['voucher_no', 'bank_account__bank_name', 'bank_account__account_number', 'benefactor__name', 'deposited_by',]
+    search_fields = ['voucher_no', 'bank_account__bank_name', 'bank_account__account_number', 'benefactor__name',
+                     'deposited_by', ]
     filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
@@ -56,10 +59,20 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
         cheque_deposit = self.get_object()
         if cheque_deposit.status == 'Issued':
             cheque_deposit.status = 'Cleared'
+            cheque_deposit.clearing_date = datetime.datetime.today()
             cheque_deposit.save()
+            cheque_deposit.apply_transactions()
             return Response({})
         else:
             raise APIException('This voucher cannot be mark as cleared!')
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        cheque_deposit = self.get_object()
+        cheque_deposit.status = 'Cancelled'
+        cheque_deposit.save()
+        cheque_deposit.cancel_transactions()
+        return Response({})
 
     @action(detail=True)
     def details(self, request, pk):

@@ -13,8 +13,9 @@ class BankAccountSerializer(serializers.ModelSerializer):
 
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
-    bank_account_name = serializers.ReadOnlyField(source='bank_account.name')
-    benefactor_name = serializers.ReadOnlyField(source='bank_account.name')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
+    clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
@@ -24,13 +25,14 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
 
     def update(self, instance, validated_data):
         ChequeDeposit.objects.filter(pk=instance.id).update(**validated_data)
-        instance.refresh_from_db()
-        instance.apply_transactions()
+        if instance.status == 'Cleared':
+            instance.refresh_from_db()
+            instance.apply_transactions()
         return instance
 
     class Meta:
         model = ChequeDeposit
-        exclude = ('company', 'clearing_date',)
+        exclude = ('company',)
 
 
 class ChequeDepositListSerializer(serializers.ModelSerializer):
