@@ -43,7 +43,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
     SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer, \
-    PaymentReceiptSerializer
+    PaymentReceiptSerializer, PaymentReceiptFormSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -729,7 +729,7 @@ class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
 class PurchaseSettingsViewSet(CRULViewSet):
     serializer_class = PurchaseSettingSerializer
     collections = (
-        ('bank_accounts', BankAccount, BankAccountSerializer),
+        ('bank_accounts', BankAccount),
     )
 
     def get_defaults(self, request=None):
@@ -744,7 +744,7 @@ class PurchaseSettingsViewSet(CRULViewSet):
 class SalesSettingsViewSet(CRULViewSet):
     serializer_class = SalesSettingsSerializer
     collections = (
-        ('bank_accounts', BankAccount, BankAccountSerializer),
+        ('bank_accounts', BankAccount),
     )
 
     def get_defaults(self, request=None):
@@ -757,9 +757,46 @@ class SalesSettingsViewSet(CRULViewSet):
 
 
 class PaymentReceiptViewSet(CRULViewSet):
-    serializer_class = PaymentReceiptSerializer
+    serializer_class = PaymentReceiptFormSerializer
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
     queryset = PaymentReceipt.objects.all()
     search_fields = ['party__name']
 
     filterset_class = PaymentReceiptFilterSet
+    collections = (
+        ('bank_accounts', BankAccount),
+    )
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PaymentReceiptSerializer
+        return PaymentReceiptFormSerializer
+
+    def get_defaults(self, request=None):
+        data = {
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            }
+        }
+        return data
+
+    @action(detail=False, url_path='fetch-invoice')
+    def fetch_invoice(self, request):
+        qs = SalesVoucher.objects.filter(company_id=request.company_id).select_related('party')
+        invoice = get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                    fiscal_year_id=request.query_params.get('fiscal_year'),
+                                    queryset=qs)
+        if invoice.status == 'Paid':
+            return Response({'detail': 'Invoice has already been paid for!'}, status=400)
+        if invoice.status == 'Cancelled':
+            return Response({'detail': 'Invoice has already been canceled!'}, status=400)
+        if not invoice.party_id:
+            return Response({'detail': 'Requested invoice isn\'t for a party!'}, status=400)
+        data = {
+            'id': invoice.id,
+            'voucher_no': invoice.voucher_no,
+            'party_id': invoice.party_id,
+            'party_name': invoice.party.name,
+            'amount': invoice.total_amount
+        }
+        return Response(data)

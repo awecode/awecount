@@ -63,6 +63,7 @@ class ChequeDeposit(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     # files = models.ManyToManyField(File, blank=True)
+    # TODO Find payment and set as cleared for cleared cheque deposits
 
     def __str__(self):
         return str(self.date.strftime('%d-%m-%Y')) + ' : ' + str(self.benefactor)

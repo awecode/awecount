@@ -32,6 +32,65 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
         fields = ('id', 'date', 'cleared', 'mode', 'party_name')
 
 
+class PaymentReceiptFormSerializer(serializers.ModelSerializer):
+    cheque_date = serializers.DateField(required=False)
+    cheque_number = serializers.CharField(required=False)
+    drawee_bank = serializers.CharField(required=False)
+    remarks = serializers.CharField(required=False)
+
+    def validate(self, data):
+        party_id = None
+        self.invoice_ids = []
+        # 1. Check none of the invoices are already paid
+        # 2. Check if all invoices are for single party
+        # 3. Check none of the invoices are already cancelled
+        self.total_amount = 0
+        for invoice in data.get('invoices'):
+            if invoice.status == 'Paid':
+                raise ValidationError({'invoice': 'Invoice has already been paid'})
+            if invoice.status == 'Cancelled':
+                raise ValidationError({'invoice': 'Invoice has already been cancelled'})
+            if party_id and invoice.party_id != party_id:
+                raise ValidationError({'invoice': 'A single payment receipt can be issued to a single party only!'})
+            party_id = invoice.party_id
+            self.invoice_ids.append(invoice.id)
+            self.total_amount += invoice.total_amount
+
+        if data.get('mode') == 'Cheque':
+            for field in ['bank_account', 'cheque_date', 'cheque_number', 'drawee_bank']:
+                if not data.get(field):
+                    raise ValidationError({field: 'This field is required.'})
+
+        for field in ['cheque_date', 'cheque_number', 'drawee_bank']:
+            data.pop(field)
+        data['party_id'] = party_id
+        # import ipdb
+        # ipdb.set_trace()
+        # 4. Mark invoices as paid
+        # 5. If cash or bank deposit, set as cleared
+        # 6. Apply transactions for bank deposit and cleared
+        # 7. Create cheque deposit
+        # 8. Validate cheque deposit
+        return data
+
+    def save(self, **kwargs):
+        import ipdb
+        ipdb.set_trace()
+        instance = super().save(**kwargs)
+        if instance.amount >= self.total_amount and instance.mode in ['Cash', 'Bank Deposit']:
+            instance.invoices.update(status='Paid')
+            instance.cleared = True
+            instance.save()
+        # elif instance.amount and len(self.invoice_ids) === 1:
+        #     instance.invoices.update(status='Partially Paid')
+        return instance
+
+    class Meta:
+        model = PaymentReceipt
+        fields = (
+            'id', 'date', 'invoices', 'amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank', 'remarks', 'mode')
+
+
 class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
