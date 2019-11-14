@@ -667,6 +667,7 @@ class PaymentReceipt(models.Model):
     cheque_deposit = models.ForeignKey(ChequeDeposit, blank=True, null=True, related_name='payment_receipts',
                                        on_delete=models.SET_NULL)
     remarks = models.TextField(blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.date)

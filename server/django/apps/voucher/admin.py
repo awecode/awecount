@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
-    DebitNote, SalesAgent, SalesSetting, PurchaseSetting
+    DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -118,3 +118,10 @@ class PurchaseSettingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseSetting, PurchaseSettingAdmin)
+
+
+class PaymentReceiptAdmin(admin.ModelAdmin):
+    list_display = ('date', 'mode')
+    list_filter = ('company', 'mode')
+    
+admin.site.register(PaymentReceipt, PaymentReceiptAdmin)
