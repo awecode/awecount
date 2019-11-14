@@ -56,7 +56,8 @@ class TaxScheme(models.Model):
             TaxScheme(name='Tax Deduction at Source', short_name='TDS', rate='1.5', recoverable=False, default=True,
                       company=company),
         ]
-        return TaxScheme.objects.bulk_create((schemes))
+        # bulk doesn't work here because save isn't triggered and hence accounts are not created
+        [scheme.save() for scheme in schemes]
 
     class Meta:
         unique_together = ('short_name', 'company')
