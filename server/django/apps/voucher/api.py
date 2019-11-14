@@ -43,7 +43,7 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
     SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer, \
-    PaymentReceiptSerializer, PaymentReceiptFormSerializer
+    PaymentReceiptSerializer, PaymentReceiptFormSerializer, PaymentReceiptDetailSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -770,6 +770,8 @@ class PaymentReceiptViewSet(CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return PaymentReceiptSerializer
+        if self.action == 'retrieve':
+            return PaymentReceiptDetailSerializer
         return PaymentReceiptFormSerializer
 
     def get_defaults(self, request=None):

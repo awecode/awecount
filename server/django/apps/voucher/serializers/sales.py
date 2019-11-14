@@ -33,6 +33,23 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
         fields = ('id', 'date', 'cleared', 'mode', 'party_name')
 
 
+class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
+    invoice_nos = serializers.SerializerMethodField()
+    cheque_date = serializers.ReadOnlyField(source='cheque_deposit.cheque_date')
+    cheque_number = serializers.ReadOnlyField(source='cheque_deposit.cheque_number')
+    drawee_bank = serializers.ReadOnlyField(source='cheque_deposit.drawee_bank')
+
+    def get_invoice_nos(self, obj):
+        return [invoice.voucher_no for invoice in obj.invoices.all()]
+
+    class Meta:
+        model = PaymentReceipt
+        fields = ('id', 'date', 'cleared', 'mode', 'party_name', 'invoice_nos', 'amount', 'bank_account_name', 'cheque_date',
+                  'cheque_number', 'drawee_bank')
+
+
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     cheque_date = serializers.DateField(required=False, source='cheque_deposit.date')
     cheque_number = serializers.CharField(required=False, source='cheque_deposit.cheque_number')
