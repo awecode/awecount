@@ -35,20 +35,15 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.order_by('-pk')
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('benefactor', 'bank_account')
+        return qs.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
             return ChequeDepositListSerializer
         return ChequeDepositCreateSerializer
-
-    @action(detail=True)
-    def details(self, request, pk):
-        qs = super().get_queryset()
-        data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
-        data['can_update_issued'] = request.company.enable_cheque_deposit_update
-        return Response(data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_cleared(self, request, pk):
@@ -67,9 +62,8 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = self.get_queryset()
+        qs = self.get_queryset().select_related('benefactor', 'bank_account')
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
-        data['can_update_issued'] = request.company.enable_cheque_deposit_update
         return Response(data)
 
     @action(detail=True, url_path='journal-entries')
@@ -85,3 +79,9 @@ class ChequeIssueViewSet(CRULViewSet):
         ('bank_accounts', BankAccount, BankAccountChequeIssueSerializer),
         ('parties', Party, PartyMinSerializer),
     )
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-pk')

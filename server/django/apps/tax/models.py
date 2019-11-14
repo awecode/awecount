@@ -19,6 +19,10 @@ class TaxScheme(models.Model):
 
     def __str__(self):
         return self.short_name or self.name
+    
+    @property
+    def friendly_name(self):
+        return self.short_name or self.name
 
     def save(self, *args, **kwargs):
         self.validate_unique()

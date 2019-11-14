@@ -112,7 +112,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             Prefetch('rows',
                      SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                   'tax_scheme').order_by('pk'))).select_related(
-            'discount_obj', 'bank_account', 'company__sales_setting')
+            'discount_obj', 'bank_account', 'company__sales_setting', 'party')
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_sales_invoice_update
         return Response(data)
@@ -265,10 +265,12 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return data
 
     def get_queryset(self, **kwargs):
-        queryset = super(PurchaseVoucherViewSet, self).get_queryset()
+        qs = super().get_queryset()
         if self.action == 'retrieve':
-            queryset = queryset.prefetch_related('rows')
-        return queryset.order_by('-pk')
+            qs = qs.prefetch_related('rows')
+        elif self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
@@ -281,7 +283,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             Prefetch('rows',
                      PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                      'tax_scheme').order_by('pk'))).select_related(
-            'discount_obj', 'bank_account', 'company__purchase_setting')
+            'discount_obj', 'bank_account', 'company__purchase_setting', 'party')
         return Response(PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
 
     @action(detail=True, url_path='journal-entries')
@@ -351,10 +353,12 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        qs = super().get_queryset()
         if self.action == 'retrieve':
-            queryset = queryset.prefetch_related('rows')
-        return queryset.order_by('-id')
+            qs = qs.prefetch_related('rows')
+        elif self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-id')
 
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -408,7 +412,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
             Prefetch('rows',
                      CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                 'tax_scheme').order_by('pk'))).select_related(
-            'discount_obj', 'bank_account')
+            'discount_obj', 'bank_account', 'party')
         data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_credit_note_update
         return Response(data)
@@ -477,10 +481,12 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        qs = super().get_queryset()
         if self.action == 'retrieve':
-            queryset = queryset.prefetch_related('rows')
-        return queryset.order_by('-id')
+            qs = qs.prefetch_related('rows')
+        elif self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-id')
 
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -533,7 +539,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
             Prefetch('rows',
                      DebitNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                'tax_scheme').order_by('pk'))).select_related(
-            'discount_obj', 'bank_account')
+            'discount_obj', 'bank_account', 'party')
         data = DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_debit_note_update
         return Response(data)
@@ -580,9 +586,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
 
 class JournalVoucherViewSet(DeleteRows, CRULViewSet):
-    queryset = JournalVoucher.objects.prefetch_related(Prefetch('rows',
-                                                                queryset=JournalVoucherRow.objects.order_by('-type',
-                                                                                                            'id')))
+    queryset = JournalVoucher.objects.all()
     serializer_class = JournalVoucherCreateSerializer
     model = JournalVoucher
     row = JournalVoucherRow
@@ -598,8 +602,11 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     )
 
     def get_queryset(self, **kwargs):
-        queryset = super().get_queryset()
-        return queryset
+        qs = super().get_queryset()
+        if self.action != 'list':
+            qs = qs.prefetch_related(
+                Prefetch('rows', JournalVoucherRow.objects.order_by('-type','id').select_related('account')))
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -770,8 +777,10 @@ class PaymentReceiptViewSet(CRULViewSet):
     )
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.order_by('-pk')
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -819,7 +828,7 @@ class PaymentReceiptViewSet(CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().select_related('bank_account')
+        qs = super().get_queryset().select_related('bank_account', 'cheque_deposit', 'party')
         data = PaymentReceiptDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         return Response(data)
 

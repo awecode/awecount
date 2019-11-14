@@ -16,7 +16,7 @@ class DiscountObjectTypeSerializerMixin(serializers.Serializer):
         if discount_key and str(discount_key).isdigit():
             validated_data['discount_obj_id'] = discount_key
             validated_data['discount'] = 0
-            validated_data['discount_type'] = None
+            validated_data['discount_type'] = ''
             validated_data['trade_discount'] = False
         else:
             validated_data['discount_obj_id'] = None
