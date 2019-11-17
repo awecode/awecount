@@ -475,12 +475,13 @@ def handle_company_creation(sender, **kwargs):
     # ================================================
 
     Category.objects.create(name='Other Receivables', code='A-OR', parent=root['Assets'], company=company, default=True)
-    Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Deferred Assets', code='A-DA', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Fixed Assets', code='A-FA', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Loans and Advances Given', code='A-LA', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Deposits Made', code='A-D', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Employee', code='A-E', parent=root['Assets'], company=company, default=True)
+    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'], company=company, default=True)
+    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables, code='A-TR-TDS')
 
     cash_account = Category.objects.create(name='Cash Accounts', code='A-C', parent=root['Assets'], company=company,
                                            default=True)
