@@ -323,7 +323,6 @@ def set_transactions(submodel, date, *entries, check=True, clear=False):
     :type clear: object
     Clears all transactions not accounted here
     """
-    # print(args)
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
     journal_entry, created = JournalEntry.objects.get_or_create(
@@ -586,8 +585,10 @@ def get_account(request_or_company, name):
         company = request_or_company
     if name in ['Purchase', 'Purchases']:
         return Account.objects.get(name='Purchase', category__name='Purchase', company=company)
-    if name in ['Cash', 'Cash Account']:
+    elif name in ['Cash', 'Cash Account']:
         return Account.objects.get(name='Cash', category__name='Cash Accounts', company=company)
+    else:
+        return Account.objects.get(name=name, default=True)
 
 
 class TransactionModel(models.Model):

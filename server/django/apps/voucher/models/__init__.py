@@ -667,6 +667,7 @@ class PaymentReceipt(TransactionModel):
     date = models.DateField()
     mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
     amount = models.FloatField()
+    tds_amount = models.FloatField(default=0)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0])
     transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True,
                                                    on_delete=models.PROTECT)
@@ -687,15 +688,24 @@ class PaymentReceipt(TransactionModel):
             return
         if self.mode == 'Cheque':
             self.cheque_deposit.apply_transactions()
-            return
-        if self.mode == 'Cash':
+        elif self.mode == 'Cash':
             dr_acc = get_account(self.company, 'Cash')
         elif self.mode == 'Bank Deposit':
             dr_acc = self.bank_account.ledger
         else:
             raise ValueError('Invalid mode - {}!'.format(self.mode))
-        entries = [['dr', dr_acc, self.amount], ['cr', self.party.customer_account, self.amount]]
-        set_ledger_transactions(self, self.date, *entries, clear=True)
+        entries = []
+        cr_amount = 0
+        if self.mode != 'Cheque':
+            entries.append(['dr', dr_acc, self.amount])
+            cr_amount += self.amount
+        if self.tds_amount:
+            entries.append(['dr', get_account(self.company, 'TDS Receivables'), self.tds_amount])
+            cr_amount += self.tds_amount
+        if cr_amount:
+            entries.append(['cr', self.party.customer_account, cr_amount])
+        if len(entries):
+            set_ledger_transactions(self, self.date, *entries, clear=True)
 
     def cancel_transactions(self):
         if not self.status == 'Cancelled':

@@ -46,7 +46,7 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'status', 'mode', 'party_name', 'invoice_nos', 'amount', 'bank_account_name', 'cheque_date',
+        fields = ('id', 'date', 'status', 'mode', 'party_name', 'invoice_nos', 'amount', 'tds_amount', 'bank_account_name', 'cheque_date',
                   'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
@@ -98,8 +98,6 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         cheque_deposit_data = self.validated_data.pop('cheque_deposit', {})
         if self.validated_data['mode'] == 'Cheque':
             cheque_deposit_data['bank_account'] = self.validated_data['bank_account']
-        # import ipdb
-        # ipdb.set_trace()
         instance = super().save(**kwargs)
         if instance.amount >= self.total_amount and instance.mode in ['Cash', 'Bank Deposit']:
             instance.invoices.update(status='Paid')
@@ -127,7 +125,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentReceipt
         fields = (
-            'id', 'date', 'invoices', 'amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank', 'remarks', 'mode',
+            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank', 'remarks', 'mode',
             'party_id', 'party_name', 'invoice_nos')
 
 
