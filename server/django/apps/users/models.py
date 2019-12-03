@@ -31,7 +31,7 @@ class FiscalYear(models.Model):
 class Company(models.Model):
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
-    logo = models.ImageField(blank=True, null=True)
+    logo = models.ImageField(blank=True, null=True, upload_to='logos/')
     contact_no = models.CharField(max_length=25)
     email = models.EmailField()
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='private_limited')
