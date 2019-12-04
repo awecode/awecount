@@ -45,7 +45,7 @@ class PartySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
-        instance = super(PartySerializer, self).create(validated_data)
+        instance = super().create(validated_data)
         for representative in representatives:
             representative['party_id'] = instance.id
             PartyRepresentative.objects.create(**representative)
@@ -53,7 +53,8 @@ class PartySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         representatives = validated_data.pop('representative', None)
-        Party.objects.filter(pk=instance.id).update(**validated_data)
+        instance = super().update(instance, validated_data)
+        # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
             representative['party_id'] = instance.id
             try:
@@ -63,7 +64,6 @@ class PartySerializer(serializers.ModelSerializer):
                 )
             except IntegrityError:
                 raise APIException({'detail': 'Party representative already created.'})
-        instance.refresh_from_db()
         return instance
 
     class Meta:
