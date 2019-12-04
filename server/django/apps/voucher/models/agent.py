@@ -10,3 +10,10 @@ class SalesAgent(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        unique_together = ('name', 'company')
+        
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+        super().save(*args, **kwargs)
