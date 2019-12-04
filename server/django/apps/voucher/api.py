@@ -605,7 +605,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
         qs = super().get_queryset()
         if self.action != 'list':
             qs = qs.prefetch_related(
-                Prefetch('rows', JournalVoucherRow.objects.order_by('-type','id').select_related('account')))
+                Prefetch('rows', JournalVoucherRow.objects.order_by('-type', 'id').select_related('account')))
         return qs
 
     def get_serializer_class(self):
@@ -803,7 +803,26 @@ class PaymentReceiptViewSet(CRULViewSet):
             obj.status = 'Cleared'
             obj.clearing_date = datetime.datetime.today()
             obj.save()
-            obj.invoices.update(status='Paid')
+            total_payment_amount = obj.amount + obj.tds_amount
+            total_invoice_amount = 0
+            for invoice in obj.invoices.all():
+                total_invoice_amount += invoice.total_amount
+            if total_payment_amount >= total_invoice_amount:
+                obj.invoices.update(status='Paid')
+            else:
+                # obj.invoices.update(status='Partially Paid')
+                for invoice in obj.invoices.all():
+                    total_receipt_amount = 0
+                    for receipt in invoice.payment_receipts.filter(status='Cleared'):
+                        # Take receipts with single invoices only into account
+                        if receipt.invoices.count() == 1:
+                            total_receipt_amount += receipt.amount + receipt.tds_amount
+                    if total_receipt_amount >= invoice.total_amount:
+                        invoice.status = 'Paid'
+                    else:
+                        invoice.status = 'Partially Paid'
+                    invoice.save()
+
             if obj.mode == 'Cheque':
                 obj.cheque_deposit.status = 'Cleared'
                 obj.cheque_deposit.clearing_date = datetime.datetime.today()

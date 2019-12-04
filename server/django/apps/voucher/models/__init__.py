@@ -25,7 +25,6 @@ STATUSES = (
     ('Issued', 'Issued'),
     ('Cancelled', 'Cancelled'),
     ('Paid', 'Paid'),
-    # TODO create partial payment system
     ('Partially Paid', 'Partially Paid'),
 )
 MODES = (
