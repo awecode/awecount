@@ -711,8 +711,8 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
                           self.filterset_class.base_filters.keys())
         if is_filtered:
             aggregate = queryset.aggregate(Sum('quantity'), Sum('discount_amount'), Sum('tax_amount'), Sum('net_amount'),
-                                           Avg('rate'), Count('item'), Count('voucher'), Count('voucher__party'),
-                                           Count('voucher__sales_agent'))
+                                           Avg('rate'), Count('item', distinct=True), Count('voucher', distinct=True), Count('voucher__party', distinct=True),
+                                           Count('voucher__sales_agent', distinct=True))
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
 
