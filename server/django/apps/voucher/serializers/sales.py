@@ -36,18 +36,23 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
     bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
-    invoice_nos = serializers.SerializerMethodField()
+    invoices = serializers.SerializerMethodField()
     cheque_date = serializers.ReadOnlyField(source='cheque_deposit.cheque_date')
     cheque_number = serializers.ReadOnlyField(source='cheque_deposit.cheque_number')
     drawee_bank = serializers.ReadOnlyField(source='cheque_deposit.drawee_bank')
 
-    def get_invoice_nos(self, obj):
-        return [invoice.voucher_no for invoice in obj.invoices.all()]
+    def get_invoices(self, obj):
+        data = []
+        for invoice in obj.invoices.all():
+            data.append(
+                {'voucher_no': invoice.voucher_no, 'total_amount': invoice.total_amount, 'date': invoice.date, 'id': invoice.id})
+        return data
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'status', 'mode', 'party_name', 'invoice_nos', 'amount', 'tds_amount', 'bank_account_name', 'cheque_date',
-                  'cheque_number', 'drawee_bank', 'cheque_deposit_id')
+        fields = (
+        'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name', 'cheque_date',
+        'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
@@ -125,7 +130,8 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentReceipt
         fields = (
-            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank', 'remarks', 'mode',
+            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank',
+            'remarks', 'mode',
             'party_id', 'party_name', 'invoice_nos')
 
 
