@@ -1,12 +1,12 @@
 from auditlog.registry import auditlog
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils import timezone
 from django.conf import settings
 
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel, \
-    TransactionCharge, JournalEntry
+    TransactionCharge, JournalEntry, Transaction
 from apps.product.models import Item, Unit, set_inventory_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
@@ -710,6 +710,22 @@ class PaymentReceipt(TransactionModel):
         if not self.status == 'Cancelled':
             return
         JournalEntry.objects.filter(content_type__model='paymentreceipt', object_id=self.id).delete()
+
+    def journal_entries(self):
+        app_label = self._meta.app_label
+        model = self.__class__.__name__.lower()
+        qs = JournalEntry.objects.all().prefetch_related(
+            Prefetch('transactions', Transaction.objects.all().select_related('account')))
+        if self.mode == 'Cheque' and self.cheque_deposit_id:
+            qs = qs.filter(
+                Q(content_type__app_label=app_label, content_type__model=model, object_id=self.id) | Q(
+                    content_type__app_label='bank', content_type__model='chequedeposit',
+                    object_id=self.cheque_deposit_id))
+        else:
+            qs = qs.filter(
+                content_type__app_label='bank', content_type__model='chequedeposit',
+                object_id=self.cheque_deposit_id)
+        return qs
 
     def __str__(self):
         return str(self.date)
