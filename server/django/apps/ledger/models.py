@@ -588,7 +588,7 @@ def get_account(request_or_company, name):
     elif name in ['Cash', 'Cash Account']:
         return Account.objects.get(name='Cash', category__name='Cash Accounts', company=company)
     else:
-        return Account.objects.get(name=name, default=True)
+        return Account.objects.get(name=name, default=True, company=company)
 
 
 class TransactionModel(models.Model):
