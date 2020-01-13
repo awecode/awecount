@@ -107,13 +107,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
             'voucher_no')
 
 
-class RecursiveField(serializers.Serializer):
-    def to_native(self, value):
-        return CategorySerializer(value, context={"parent": self.parent.object, "parent_serializer": self.parent})
-
-
 class CategorySerializer(serializers.ModelSerializer):
-    # parent = RecursiveField(many=True, read_only=True)
     is_default = serializers.ReadOnlyField()
 
     class Meta:
@@ -290,3 +284,18 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'children']
+
+
+class OpeningTransactionTrialBalanceSerializer(serializers.ModelSerializer):
+    account_name = serializers.ReadOnlyField(source='account.name')
+    category_id = serializers.ReadOnlyField(source='account.category_id')
+
+    class Meta:
+        model = Transaction
+        fields = ('dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'account_name', 'account_id', 'category_id')
+
+
+class ClosingTransactionTrialBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('current_dr', 'current_cr', 'account_id')
