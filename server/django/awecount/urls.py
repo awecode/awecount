@@ -65,6 +65,7 @@ router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
 urlpatterns = [
                   path('aweadmin/', admin.site.urls),
                   path('', include('apps.voucher.urls')),
+                  path('v1/trial-balance/', ledger.TrialBalanceView.as_view(), name='trial-balance'),
                   re_path(r'^v1/book/isbn-api/(?P<isbn>[0-9]+?)/$', book_by_isbn, name='book-isbn-api'),
                   path('v1/', include(router.urls)),
                   path('v1/auth/', include('djoser.urls.base')),

@@ -1,9 +1,11 @@
 from datetime import datetime
 
 from django_filters import rest_framework as filters
+from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.voucher.models import SalesVoucher
@@ -100,3 +102,20 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
                 entries = entries.filter(date__range=[start_date, end_date])
         data = JournalEntrySerializer(entries, context={'account': obj}, many=True).data
         return Response(data)
+
+
+class TrialBalanceView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Category.objects.all()
+
+    def get(self, request, format=None):
+        tree = get_cached_trees(Category.objects.filter(company=request.company))
+        for root_node in tree:
+            # import ipdb
+            # ipdb.set_trace()
+            print(root_node.get_children())
+        # import ipdb
+        # ipdb.set_trace()
+        return Response({})
