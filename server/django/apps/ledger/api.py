@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -109,7 +110,7 @@ class CategoryTreeView(APIView):
     action = 'list'
 
     def get_queryset(self):
-        return Category.objects.all()
+        return Category.objects.exclude(Q(accounts__isnull=True) & Q(children__isnull=True))
 
     def get(self, request, format=None):
         queryset = self.get_queryset().filter(company=request.company)
@@ -125,7 +126,7 @@ class TrialBalanceView(APIView):
         return Account.objects.none()
 
     def get(self, request, format=None):
-        date_from = '2020-01-03'
+        date_from = '2012-01-01'
         date_to = '2020-01-05'
         qs = Transaction.objects.distinct('account_id').filter(
             account__company_id=request.company_id).filter(journal_entry__date__gte=date_from,
@@ -134,6 +135,7 @@ class TrialBalanceView(APIView):
                                                                                                         'cr_amount', 'current_dr',
                                                                                                         'current_cr')
         closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
+        # TODO Maybe Equity and Fixed Assets Only
         others = Account.objects.exclude(transactions__journal_entry__date__gte=date_from,
                                          transactions__journal_entry__date__lte=date_to).exclude(current_cr__isnull=True,
                                                                                                  current_dr__isnull=True).only(
@@ -143,5 +145,4 @@ class TrialBalanceView(APIView):
             'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data,
             'others': AccountTrialBalanceSerializer(others, many=True).data
         }
-        # serializer = AccountSerializer(queryset, many=True)
         return Response(ctx)
