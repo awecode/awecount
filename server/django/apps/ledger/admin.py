@@ -1,4 +1,5 @@
 from django.contrib import admin
+from mptt.admin import MPTTModelAdmin
 
 from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, TransactionCharge
 
@@ -14,7 +15,7 @@ admin.site.register(PartyRepresentative)
 
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'current_dr', 'current_cr', 'category', 'parent', 'default')
+    list_display = ('name', 'code', 'current_dr', 'current_cr', 'category', 'parent', 'default')
     search_fields = ('company__name', 'code', 'name')
     list_filter = ('company', 'default')
     readonly_fields = ('default',)
@@ -25,8 +26,8 @@ admin.site.register(Transaction)
 admin.site.register(JournalEntry)
 
 
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'parent', 'company')
+class CategoryAdmin(MPTTModelAdmin):
+    list_display = ('name', 'code', 'parent', 'company')
     list_filter = ('company', 'default')
     readonly_fields = ('default',)
 
