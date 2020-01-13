@@ -104,7 +104,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return Response(data)
 
 
-class TrialBalanceView(APIView):
+class CategoryTreeView(APIView):
     action = 'list'
 
     def get_queryset(self):
