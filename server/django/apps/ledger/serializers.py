@@ -2,6 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
+from awecount.libs.drf_fields import RoundedField
 from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction
 
 
@@ -20,12 +21,18 @@ class PartyMinSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+
     class Meta:
         model = Account
         exclude = ('company', 'default')
 
 
 class AccountBalanceSerializer(serializers.ModelSerializer):
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+
     class Meta:
         model = Account
         fields = ('id', 'code', 'current_dr', 'current_cr', 'balance')
@@ -75,6 +82,10 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+    dr_amount = RoundedField()
+    cr_amount = RoundedField()
 
     # voucher_no is too expensive on DB -
     voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
@@ -184,7 +195,8 @@ class SalesJournalEntrySerializer(JournalEntrySerializer):
     def get_transactions(self, obj):
         transactions = obj.transactions.all()
         return TransactionSerializer(transactions, many=True).data
-    
+
+
 class JournalEntriesSerializer(JournalEntrySerializer):
     transactions = serializers.SerializerMethodField()
 
@@ -252,6 +264,8 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     closing_balance = serializers.ReadOnlyField(source='get_balance')
     category_name = serializers.ReadOnlyField(source='category.name')
     parent_name = serializers.ReadOnlyField(source='parent.name')
+    current_dr = RoundedField()
+    current_cr = RoundedField()
 
     def get_journal_entries(self, obj):
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',

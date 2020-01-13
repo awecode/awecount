@@ -316,7 +316,7 @@ def alter(account, date, dr_difference, cr_difference):
         current_cr=none_for_zero(zero_for_none(F('current_cr')) + zero_for_none(cr_difference)))
 
 
-def set_transactions(submodel, date, *entries, check=True, clear=False):
+def set_transactions(submodel, date, *entries, check=True, clear=True):
     """
 
     :param date: datetime object
@@ -339,9 +339,10 @@ def set_transactions(submodel, date, *entries, check=True, clear=False):
     for arg in entries:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
         matches = journal_entry.transactions.filter(account=arg[1])
-        with localcontext() as ctx:
-            ctx.rounding = ROUND_HALF_UP
-            val = round(decimalize(arg[2]), 2)
+        # with localcontext() as ctx:
+        #     ctx.rounding = ROUND_HALF_UP
+        #     val = round(decimalize(arg[2]), 2)
+        val = arg[2]
         all_accounts.append(arg[1])
         if not matches:
             if arg[1] is None:
