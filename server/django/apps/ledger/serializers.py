@@ -279,3 +279,14 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr',
             'category_name',
             'parent_name', 'category_id', 'parent_id')
+
+
+class CategoryTreeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    def get_children(self, obj):
+        return CategoryTreeSerializer(obj.get_children(), many=True).data
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'children']

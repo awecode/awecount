@@ -14,7 +14,7 @@ from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer
+    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -111,11 +111,7 @@ class TrialBalanceView(APIView):
         return Category.objects.all()
 
     def get(self, request, format=None):
-        tree = get_cached_trees(Category.objects.filter(company=request.company))
-        for root_node in tree:
-            # import ipdb
-            # ipdb.set_trace()
-            print(root_node.get_children())
-        # import ipdb
-        # ipdb.set_trace()
-        return Response({})
+        queryset = self.get_queryset().filter(company=request.company)
+        category_tree = get_cached_trees(queryset)
+        serializer = CategoryTreeSerializer(category_tree, many=True) 
+        return Response(serializer.data)
