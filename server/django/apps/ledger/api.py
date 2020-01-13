@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.db.models import Prefetch
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -16,7 +15,7 @@ from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, \
-    OpeningTransactionTrialBalanceSerializer, ClosingTransactionTrialBalanceSerializer
+    OpeningTransactionTrialBalanceSerializer, ClosingTransactionTrialBalanceSerializer, AccountTrialBalanceSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -126,17 +125,23 @@ class TrialBalanceView(APIView):
         return Account.objects.none()
 
     def get(self, request, format=None):
+        date_from = '2020-01-03'
+        date_to = '2020-01-05'
         qs = Transaction.objects.distinct('account_id').filter(
-            account__company_id=request.company_id).filter(journal_entry__date__gte='2020-01-03',
-                                                           journal_entry__date__lte='2020-01-05')
+            account__company_id=request.company_id).filter(journal_entry__date__gte=date_from,
+                                                           journal_entry__date__lte=date_to)
         opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account', 'dr_amount',
                                                                                                         'cr_amount', 'current_dr',
                                                                                                         'current_cr')
         closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
-        # TODO Accounts without transactions in the range
+        others = Account.objects.exclude(transactions__journal_entry__date__gte=date_from,
+                                         transactions__journal_entry__date__lte=date_to).exclude(current_cr__isnull=True,
+                                                                                                 current_dr__isnull=True).only(
+            'current_dr', 'current_cr', 'name', 'category_id')
         ctx = {
             'opening': OpeningTransactionTrialBalanceSerializer(opening, many=True).data,
-            'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data
+            'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data,
+            'others': AccountTrialBalanceSerializer(others, many=True).data
         }
         # serializer = AccountSerializer(queryset, many=True)
         return Response(ctx)
