@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -129,25 +129,12 @@ class TrialBalanceView(APIView):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         if start_date and end_date:
-            qs = Transaction.objects.distinct('account_id').filter(
-                account__company_id=request.company_id).filter(journal_entry__date__gte=start_date,
-                                                               journal_entry__date__lte=end_date)
-            opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account',
-                                                                                                            'dr_amount',
-                                                                                                            'cr_amount',
-                                                                                                            'current_dr',
-                                                                                                            'current_cr')
-            closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
-            # TODO Maybe Equity and Fixed Assets Only
-            others = Account.objects.filter(company_id=request.company_id).exclude(
-                transactions__journal_entry__date__gte=start_date,
-                transactions__journal_entry__date__lte=end_date).exclude(current_cr__isnull=True,
-                                                                         current_dr__isnull=True).only(
-                'current_dr', 'current_cr', 'name', 'category_id')
-            ctx = {
-                'opening': OpeningTransactionTrialBalanceSerializer(opening, many=True).data,
-                'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data,
-                'others': AccountTrialBalanceSerializer(others, many=True).data
-            }
-            return Response(ctx)
+            qq = Account.objects.annotate(
+                od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+                cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+            ) \
+                .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
+            return Response(list(qq))
         return Response({})
