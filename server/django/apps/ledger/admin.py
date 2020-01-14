@@ -20,9 +20,12 @@ class AccountAdmin(admin.ModelAdmin):
     list_filter = ('company', 'default')
     readonly_fields = ('default',)
 
+class TransactionAdmin(admin.ModelAdmin):
+    list_filter = ('account__company', 'journal_entry__content_type')
+    search_fields = ('journal_entry__date', 'journal_entry__object_id')
 
 admin.site.register(Account, AccountAdmin)
-admin.site.register(Transaction)
+admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(JournalEntry)
 
 
