@@ -126,23 +126,25 @@ class TrialBalanceView(APIView):
         return Account.objects.none()
 
     def get(self, request, format=None):
-        date_from = '2012-01-01'
-        date_to = '2020-01-05'
-        qs = Transaction.objects.distinct('account_id').filter(
-            account__company_id=request.company_id).filter(journal_entry__date__gte=date_from,
-                                                           journal_entry__date__lte=date_to)
-        opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account', 'dr_amount',
-                                                                                                        'cr_amount', 'current_dr',
-                                                                                                        'current_cr')
-        closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
-        # TODO Maybe Equity and Fixed Assets Only
-        others = Account.objects.exclude(transactions__journal_entry__date__gte=date_from,
-                                         transactions__journal_entry__date__lte=date_to).exclude(current_cr__isnull=True,
-                                                                                                 current_dr__isnull=True).only(
-            'current_dr', 'current_cr', 'name', 'category_id')
-        ctx = {
-            'opening': OpeningTransactionTrialBalanceSerializer(opening, many=True).data,
-            'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data,
-            'others': AccountTrialBalanceSerializer(others, many=True).data
-        }
-        return Response(ctx)
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            qs = Transaction.objects.distinct('account_id').filter(
+                account__company_id=request.company_id).filter(journal_entry__date__gte=start_date,
+                                                               journal_entry__date__lte=end_date)
+            opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account', 'dr_amount',
+                                                                                                            'cr_amount', 'current_dr',
+                                                                                                            'current_cr')
+            closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
+            # TODO Maybe Equity and Fixed Assets Only
+            others = Account.objects.exclude(transactions__journal_entry__date__gte=start_date,
+                                             transactions__journal_entry__date__lte=end_date).exclude(current_cr__isnull=True,
+                                                                                                     current_dr__isnull=True).only(
+                'current_dr', 'current_cr', 'name', 'category_id')
+            ctx = {
+                'opening': OpeningTransactionTrialBalanceSerializer(opening, many=True).data,
+                'closing': ClosingTransactionTrialBalanceSerializer(closing, many=True).data,
+                'others': AccountTrialBalanceSerializer(others, many=True).data
+            }
+            return Response(ctx)
+        return Response({})
