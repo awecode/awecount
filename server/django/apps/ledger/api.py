@@ -132,14 +132,17 @@ class TrialBalanceView(APIView):
             qs = Transaction.objects.distinct('account_id').filter(
                 account__company_id=request.company_id).filter(journal_entry__date__gte=start_date,
                                                                journal_entry__date__lte=end_date)
-            opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account', 'dr_amount',
-                                                                                                            'cr_amount', 'current_dr',
+            opening = qs.order_by('account_id', 'journal_entry__date', 'id').select_related('account').only('account',
+                                                                                                            'dr_amount',
+                                                                                                            'cr_amount',
+                                                                                                            'current_dr',
                                                                                                             'current_cr')
             closing = qs.order_by('account_id', '-journal_entry__date', '-id').only('current_dr', 'current_cr', 'account_id')
             # TODO Maybe Equity and Fixed Assets Only
-            others = Account.objects.exclude(transactions__journal_entry__date__gte=start_date,
-                                             transactions__journal_entry__date__lte=end_date).exclude(current_cr__isnull=True,
-                                                                                                     current_dr__isnull=True).only(
+            others = Account.objects.filter(company_id=request.company_id).exclude(
+                transactions__journal_entry__date__gte=start_date,
+                transactions__journal_entry__date__lte=end_date).exclude(current_cr__isnull=True,
+                                                                         current_dr__isnull=True).only(
                 'current_dr', 'current_cr', 'name', 'category_id')
             ctx = {
                 'opening': OpeningTransactionTrialBalanceSerializer(opening, many=True).data,
