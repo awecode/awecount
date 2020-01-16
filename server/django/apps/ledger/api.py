@@ -117,6 +117,7 @@ class CategoryTreeView(APIView):
         serializer = CategoryTreeSerializer(category_tree, many=True)
         return Response(serializer.data)
 
+
 class FullCategoryTreeView(APIView):
     action = 'list'
 
@@ -129,6 +130,7 @@ class FullCategoryTreeView(APIView):
         serializer = CategoryTreeSerializer(category_tree, many=True)
         return Response(serializer.data)
 
+
 class TrialBalanceView(APIView):
     action = 'list'
 
@@ -139,7 +141,7 @@ class TrialBalanceView(APIView):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         if start_date and end_date:
-            qq = Account.objects.annotate(
+            qq = Account.objects.filter(company=request.company).annotate(
                 od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
                 oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
                 cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
