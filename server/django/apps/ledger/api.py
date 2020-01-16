@@ -13,10 +13,9 @@ from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category, Transaction
+from .models import Account, JournalEntry, Category
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, \
-    OpeningTransactionTrialBalanceSerializer, ClosingTransactionTrialBalanceSerializer, AccountTrialBalanceSerializer
+    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -118,6 +117,17 @@ class CategoryTreeView(APIView):
         serializer = CategoryTreeSerializer(category_tree, many=True)
         return Response(serializer.data)
 
+class FullCategoryTreeView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Category.objects.all()
+
+    def get(self, request, format=None):
+        queryset = self.get_queryset().filter(company=request.company)
+        category_tree = get_cached_trees(queryset)
+        serializer = CategoryTreeSerializer(category_tree, many=True)
+        return Response(serializer.data)
 
 class TrialBalanceView(APIView):
     action = 'list'
