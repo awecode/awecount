@@ -174,6 +174,11 @@ class Account(models.Model):
             Q(name='Cash', default=True) | Q(category__name='Bank Accounts', category__default=True) | Q(
                 category__name='Customers', category__default=True))
 
+    @classmethod
+    def get_payment_accounts(self):
+        return Account.objects.filter(
+            Q(name='Cash', default=True) | Q(category__name='Bank Accounts', category__default=True))
+
     class Meta:
         unique_together = ('code', 'company')
         ordering = ('order',)
