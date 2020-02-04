@@ -6,11 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
+from apps.product.serializers import AccountOpeningBalanceSerializer
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category
+from .models import Account, JournalEntry, Category, AccountOpeningBalance
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer
 
@@ -100,3 +101,20 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
                 entries = entries.filter(date__range=[start_date, end_date])
         data = JournalEntrySerializer(entries, context={'account': obj}, many=True).data
         return Response(data)
+
+
+class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
+    serializer_class = AccountOpeningBalanceSerializer
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    search_fields = ('account__name', 'opening_balance',)
+
+    def get_queryset(self):
+        # TODO IF current_fiscal_year is updated in company
+        queryset = AccountOpeningBalance.objects.filter(
+            company__current_fiscal_year=self.request.company.current_fiscal_year)
+        return queryset
+
+    collections = (
+        ('accounts', Account),
+    )
