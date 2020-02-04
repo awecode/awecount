@@ -1,18 +1,23 @@
 from datetime import datetime
 
+from django.db.models import Q, Sum
 from django_filters import rest_framework as filters
+from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category, AccountOpeningBalance
+from .models import Account, JournalEntry, Category, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, AccountOpeningBalanceSerializer
+    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, \
+    OpeningTransactionTrialBalanceSerializer, ClosingTransactionTrialBalanceSerializer, AccountTrialBalanceSerializer, \
+    AccountOpeningBalance, AccountOpeningBalanceSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -100,6 +105,40 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
                 entries = entries.filter(date__range=[start_date, end_date])
         data = JournalEntrySerializer(entries, context={'account': obj}, many=True).data
         return Response(data)
+
+
+class CategoryTreeView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Category.objects.exclude(Q(accounts__isnull=True) & Q(children__isnull=True))
+
+    def get(self, request, format=None):
+        queryset = self.get_queryset().filter(company=request.company)
+        category_tree = get_cached_trees(queryset)
+        serializer = CategoryTreeSerializer(category_tree, many=True)
+        return Response(serializer.data)
+
+
+class TrialBalanceView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get(self, request, format=None):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            qq = Account.objects.annotate(
+                od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+                cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+            ) \
+                .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
+            return Response(list(qq))
+        return Response({})
 
 
 class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):

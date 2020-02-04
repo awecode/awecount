@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-
+from awecount.libs.drf_fields import RoundedField
 from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction, AccountOpeningBalance
 
 
@@ -20,12 +20,18 @@ class PartyMinSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+
     class Meta:
         model = Account
         exclude = ('company', 'default')
 
 
 class AccountBalanceSerializer(serializers.ModelSerializer):
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+
     class Meta:
         model = Account
         fields = ('id', 'code', 'current_dr', 'current_cr', 'balance')
@@ -45,7 +51,7 @@ class PartySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
-        instance = super(PartySerializer, self).create(validated_data)
+        instance = super().create(validated_data)
         for representative in representatives:
             representative['party_id'] = instance.id
             PartyRepresentative.objects.create(**representative)
@@ -53,7 +59,8 @@ class PartySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         representatives = validated_data.pop('representative', None)
-        Party.objects.filter(pk=instance.id).update(**validated_data)
+        instance = super().update(instance, validated_data)
+        # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
             representative['party_id'] = instance.id
             try:
@@ -63,7 +70,6 @@ class PartySerializer(serializers.ModelSerializer):
                 )
             except IntegrityError:
                 raise APIException({'detail': 'Party representative already created.'})
-        instance.refresh_from_db()
         return instance
 
     class Meta:
@@ -75,6 +81,10 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+    current_dr = RoundedField()
+    current_cr = RoundedField()
+    dr_amount = RoundedField()
+    cr_amount = RoundedField()
 
     # voucher_no is too expensive on DB -
     voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
@@ -97,13 +107,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
             'voucher_no')
 
 
-class RecursiveField(serializers.Serializer):
-    def to_native(self, value):
-        return CategorySerializer(value, context={"parent": self.parent.object, "parent_serializer": self.parent})
-
-
 class CategorySerializer(serializers.ModelSerializer):
-    # parent = RecursiveField(many=True, read_only=True)
     is_default = serializers.ReadOnlyField()
 
     class Meta:
@@ -254,6 +258,8 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     closing_balance = serializers.ReadOnlyField(source='get_balance')
     category_name = serializers.ReadOnlyField(source='category.name')
     parent_name = serializers.ReadOnlyField(source='parent.name')
+    current_dr = RoundedField()
+    current_cr = RoundedField()
 
     def get_journal_entries(self, obj):
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
@@ -267,6 +273,40 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr',
             'category_name',
             'parent_name', 'category_id', 'parent_id')
+
+
+class CategoryTreeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    def get_children(self, obj):
+        return CategoryTreeSerializer(obj.get_children(), many=True).data
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'children']
+
+
+class OpeningTransactionTrialBalanceSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='account.name')
+    category_id = serializers.ReadOnlyField(source='account.category_id')
+
+    class Meta:
+        model = Transaction
+        fields = ('dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'name', 'account_id', 'category_id')
+
+
+class ClosingTransactionTrialBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('current_dr', 'current_cr', 'account_id')
+
+
+class AccountTrialBalanceSerializer(serializers.ModelSerializer):
+    account_id = serializers.ReadOnlyField(source='pk')
+
+    class Meta:
+        model = Account
+        fields = ('current_dr', 'current_cr', 'account_id', 'name', 'category_id')
 
 
 class AccountOpeningBalanceSerializer(serializers.ModelSerializer):

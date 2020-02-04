@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     'auditlog',
+    'mptt',
 
     'apps.users',
     'apps.voucher',
@@ -98,3 +99,4 @@ SIMPLE_JWT = {
 }
 
 EMAIL_SUBJECT_PREFIX = '[AWECOUNTING] '
+MPTT_ADMIN_LEVEL_INDENT = 20

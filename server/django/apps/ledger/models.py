@@ -198,8 +198,10 @@ class Party(models.Model):
 
     class Meta:
         verbose_name_plural = 'Parties'
+        unique_together = ('company', 'tax_registration_number')
 
     def save(self, *args, **kwargs):
+        self.validate_unique()
         post_save = False
         if self.pk is None:
             post_save = True
@@ -294,7 +296,7 @@ class JournalEntry(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions')
     dr_amount = models.FloatField(null=True, blank=True)
     cr_amount = models.FloatField(null=True, blank=True)
     current_dr = models.FloatField(null=True, blank=True)
@@ -314,7 +316,7 @@ def alter(account, date, dr_difference, cr_difference):
         current_cr=none_for_zero(zero_for_none(F('current_cr')) + zero_for_none(cr_difference)))
 
 
-def set_transactions(submodel, date, *entries, check=True, clear=False):
+def set_transactions(submodel, date, *entries, check=True, clear=True):
     """
 
     :param date: datetime object
@@ -337,13 +339,16 @@ def set_transactions(submodel, date, *entries, check=True, clear=False):
     for arg in entries:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
         matches = journal_entry.transactions.filter(account=arg[1])
-        with localcontext() as ctx:
-            ctx.rounding = ROUND_HALF_UP
-            val = round(decimalize(arg[2]), 2)
+        # with localcontext() as ctx:
+        #     ctx.rounding = ROUND_HALF_UP
+        #     val = round(decimalize(arg[2]), 2)
+        val = decimalize(arg[2])
+        # val = arg[2]
         all_accounts.append(arg[1])
         if not matches:
-            transaction = Transaction()
-            transaction.account = arg[1]
+            if arg[1] is None:
+                raise ValidationError('Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
+            transaction = Transaction(account=arg[1])
             if arg[0] == 'dr':
                 transaction.dr_amount = val
                 transaction.cr_amount = None
@@ -482,10 +487,9 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Category.objects.create(name='Deposits Made', code='A-D', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Employee', code='A-E', parent=root['Assets'], company=company, default=True)
-    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'],
-                                              company=company, default=True)
-    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables,
-                           code='A-TR-TDS')
+    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'], company=company,
+                                              default=True)
+    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables, code='A-TR-TDS')
 
     cash_account = Category.objects.create(name='Cash Accounts', code='A-C', parent=root['Assets'], company=company,
                                            default=True)
@@ -606,7 +610,7 @@ def get_account(request_or_company, name):
     elif name in ['Cash', 'Cash Account']:
         return Account.objects.get(name='Cash', category__name='Cash Accounts', company=company)
     else:
-        return Account.objects.get(name=name, default=True)
+        return Account.objects.get(name=name, default=True, company=company)
 
 
 class TransactionModel(models.Model):
