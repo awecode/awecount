@@ -6,14 +6,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
-from apps.product.serializers import AccountOpeningBalanceSerializer
 from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer
+    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, AccountOpeningBalanceSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):

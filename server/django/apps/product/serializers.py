@@ -1,12 +1,13 @@
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
-from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, Transaction
+from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, \
+    Transaction
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -109,7 +110,6 @@ class InventoryAccountSerializer(serializers.ModelSerializer):
         model = InventoryAccount
         fields = '__all__'
 
-
 class ItemDetailSerializer(serializers.ModelSerializer):
     brand = BrandSerializer()
     category = InventoryCategorySerializer()
@@ -203,4 +203,5 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')
+            'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id',
+            'voucher_no')

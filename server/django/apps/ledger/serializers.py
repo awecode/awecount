@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
-from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction
+from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction, AccountOpeningBalance
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
@@ -92,7 +92,8 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id', 'source_id',
+            'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id',
+            'source_id',
             'voucher_no')
 
 
@@ -184,7 +185,8 @@ class SalesJournalEntrySerializer(JournalEntrySerializer):
     def get_transactions(self, obj):
         transactions = obj.transactions.all()
         return TransactionSerializer(transactions, many=True).data
-    
+
+
 class JournalEntriesSerializer(JournalEntrySerializer):
     transactions = serializers.SerializerMethodField()
 
@@ -265,3 +267,11 @@ class AccountDetailSerializer(serializers.ModelSerializer):
             'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr',
             'category_name',
             'parent_name', 'category_id', 'parent_id')
+
+
+class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='account.name')
+
+    class Meta:
+        model = AccountOpeningBalance
+        exclude = ('company',)
