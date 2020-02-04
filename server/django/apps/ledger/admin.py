@@ -27,9 +27,18 @@ class TransactionAdmin(admin.ModelAdmin):
     search_fields = ('journal_entry__date', 'journal_entry__object_id')
 
 
+class TransactionInline(admin.TabularInline):
+    model = Transaction
+
+
+class JournalEntryAdmin(admin.ModelAdmin):
+    list_display = ('date', 'content_type', 'object_id')
+    inlines = [TransactionInline]
+
+
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.register(JournalEntry)
+admin.site.register(JournalEntry, JournalEntryAdmin)
 
 
 class CategoryAdmin(MPTTModelAdmin):

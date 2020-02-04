@@ -694,9 +694,24 @@ class AccountOpeningBalance(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='account_opening_balances')
 
     def save(self, *args, **kwargs):
+        if self.opening_dr and self.opening_cr:
+            raise ValidationError('Can\'t have both opening dr and cr')
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
+        opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference', default=True)
+        dr_entries = [
+        ]
+        cr_entries = [
+        ]
+        if self.opening_dr:
+            dr_entries.append(['dr', self.account, self.opening_dr])
+            dr_entries.append(['cr', opening_balance_difference, self.opening_dr])
+            set_ledger_transactions(self, self.fiscal_year.start, *dr_entries, check=True, clear=True)
+        else:
+            cr_entries.append(['cr', self.account, self.opening_cr])
+            cr_entries.append(['dr', opening_balance_difference, self.opening_cr])
+            set_ledger_transactions(self, self.fiscal_year.start, *cr_entries, check=True, clear=True)
 
     def __str__(self):
         return self.account.name
