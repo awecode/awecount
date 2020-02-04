@@ -715,3 +715,9 @@ class AccountOpeningBalance(models.Model):
 
     def __str__(self):
         return self.account.name
+
+    def get_voucher_no(self):
+        return self.pk
+
+    def get_source_id(self):
+        return self.pk
