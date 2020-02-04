@@ -13,9 +13,9 @@ from apps.voucher.models import SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category
-from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
-    JournalEntrySerializer, PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer
+from .models import Account, JournalEntry, Category, AccountOpeningBalance
+from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, JournalEntrySerializer, \
+    PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -150,3 +150,20 @@ class TrialBalanceView(APIView):
                 .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
             return Response(list(qq))
         return Response({})
+
+
+class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
+    serializer_class = AccountOpeningBalanceSerializer
+
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    search_fields = ('account__name', 'opening_balance',)
+
+    def get_queryset(self):
+        # TODO IF current_fiscal_year is updated in company
+        queryset = AccountOpeningBalance.objects.filter(
+            company__current_fiscal_year=self.request.company.current_fiscal_year)
+        return queryset
+
+    collections = (
+        ('accounts', Account),
+    )
