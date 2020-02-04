@@ -21,9 +21,11 @@ class AccountAdmin(admin.ModelAdmin):
     list_filter = ('company', 'default')
     readonly_fields = ('default',)
 
+
 class TransactionAdmin(admin.ModelAdmin):
     list_filter = ('account__company', 'journal_entry__content_type')
     search_fields = ('journal_entry__date', 'journal_entry__object_id')
+
 
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Transaction, TransactionAdmin)
@@ -45,4 +47,11 @@ class TransactionChargeAdmin(admin.ModelAdmin):
 
 admin.site.register(TransactionCharge, TransactionChargeAdmin)
 
-admin.site.register(AccountOpeningBalance)
+
+class AccountOpeningBalanceAdmin(admin.ModelAdmin):
+    list_display = ('account', 'opening_dr', 'opening_cr')
+    search_fields = ('account__name', 'opening_dr', 'opening_cr')
+    list_filter = ('company', 'fiscal_year')
+
+
+admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)

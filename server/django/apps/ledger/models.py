@@ -11,7 +11,7 @@ from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
-from apps.users.models import Company
+from apps.users.models import Company, FiscalYear
 from apps.users.signals import company_creation
 from awecount.utils import zero_for_none, none_for_zero, decimalize
 
@@ -687,9 +687,16 @@ class TransactionCharge(models.Model):
 
 
 class AccountOpeningBalance(models.Model):
-    account = models.ForeignKey(Account, related_name='account_opening_balance', on_delete=models.CASCADE)
-    opening_balance = models.PositiveIntegerField()
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='account_opening_balance')
+    account = models.ForeignKey(Account, related_name='account_opening_balances', on_delete=models.CASCADE)
+    opening_dr = models.FloatField()
+    opening_cr = models.FloatField()
+    fiscal_year = models.ForeignKey(FiscalYear, related_name='account_opening_balances', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='account_opening_balances')
+
+    def save(self, *args, **kwargs):
+        if not self.fiscal_year_id:
+            self.fiscal_year_id = self.company.current_fiscal_year_id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.account.name

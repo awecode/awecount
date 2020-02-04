@@ -309,9 +309,15 @@ class AccountTrialBalanceSerializer(serializers.ModelSerializer):
         fields = ('current_dr', 'current_cr', 'account_id', 'name', 'category_id')
 
 
-class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
+class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='account.name')
 
     class Meta:
         model = AccountOpeningBalance
-        exclude = ('company',)
+        fields = ('id', 'name', 'opening_dr', 'opening_cr')
+
+
+class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccountOpeningBalance
+        fields = ('id', 'account', 'opening_dr', 'opening_cr')
