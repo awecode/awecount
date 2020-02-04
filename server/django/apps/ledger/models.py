@@ -688,14 +688,16 @@ class TransactionCharge(models.Model):
 
 class AccountOpeningBalance(models.Model):
     account = models.ForeignKey(Account, related_name='account_opening_balances', on_delete=models.CASCADE)
-    opening_dr = models.FloatField()
-    opening_cr = models.FloatField()
+    opening_dr = models.FloatField(default=0)
+    opening_cr = models.FloatField(default=0)
     fiscal_year = models.ForeignKey(FiscalYear, related_name='account_opening_balances', on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='account_opening_balances')
 
     def save(self, *args, **kwargs):
         if self.opening_dr and self.opening_cr:
-            raise ValidationError('Can\'t have both opening dr and cr')
+            raise ValidationError('Can\'t have both opening dr and cr.')
+        if not self.opening_dr and not self.opening_cr:
+            raise ValidationError('Either opening dr or cr is required.')
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
