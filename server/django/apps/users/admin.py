@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
     UserCreationForm as DjangoUserCreationForm
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import requests
 
@@ -104,6 +105,8 @@ def setup_nepali_tax_schemes(modeladmin, request, queryset):
             messages.success(request, '{} tax scheme(s) created!'.format(len(tax_schemes)))
         except IntegrityError:
             messages.error(request, 'One or more tax schemes already exist!')
+        except ValidationError as ex:
+            pass
 
 
 setup_nepali_tax_schemes.short_description = "Setup Nepali Tax Schemes"

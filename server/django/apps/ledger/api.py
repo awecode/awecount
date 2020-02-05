@@ -148,7 +148,7 @@ class TrialBalanceView(APIView):
                 cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
                 cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
             ) \
-                .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
+                .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude()
             return Response(list(qq))
         return Response({})
 

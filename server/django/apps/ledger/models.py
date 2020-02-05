@@ -481,6 +481,8 @@ def handle_company_creation(sender, **kwargs):
     # Account.objects.create(name='Profit and Loss Account', category=equity, code='Q-PL', company=company, default=True)
     Account.objects.create(name='Opening Balance Equity', category=root['Equity'], code='Q-OBE', company=company,
                            default=True)
+    Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company, default=True)
+    Account.objects.create(name='Drawing Capital', category=root['Equity'], code='Q-DC', company=company, default=True)
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
     # ================================================
@@ -547,12 +549,20 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Category.objects.create(name='Loans & Advances Taken', code='L-LA', parent=root['Liabilities'], company=company,
                             default=True)
+    Account.objects.create(name='Provision for Accumulated Depreciation', category=root['Liabilities'], code='L-DEP',
+                           company=company, default=True)
+    Account.objects.create(name='Audit Fee Payable', category=root['Liabilities'], code='L-AFP', company=company, default=True)
+    Account.objects.create(name='Other Payables', category=root['Liabilities'], code='L-OP', company=company, default=True)
     duties_and_taxes = Category.objects.create(name='Duties & Taxes', code='L-T', parent=root['Liabilities'],
                                                company=company,
                                                default=True)
     # Account.objects.create(name='Sales Tax', category=duties_and_taxes, code='L-T-S', company=company, default=True)
     # Account.objects.create(name='Payroll Tax', category=duties_and_taxes, code='L-T-P', company=company, default=True)
-    # Account.objects.create(name='Income Tax', category=duties_and_taxes, code='L-T-I', company=company, default=True)
+    Account.objects.create(name='Income Tax', category=duties_and_taxes, code='L-T-I', company=company, default=True)
+    Account.objects.create(name='TDS (Audit Fee)', category=duties_and_taxes, code='L-T-TA', company=company,
+                           default=True)
+    Account.objects.create(name='TDS (Rent)', category=duties_and_taxes, code='L-T-TR', company=company,
+                           default=True)
 
     # CREATE DEFAULT CATEGORIES FOR INCOME
     # =====================================
@@ -582,20 +592,19 @@ def handle_company_creation(sender, **kwargs):
                            default=True)
 
     direct_expenses = Category.objects.create(name='Direct Expenses', code='E-D', parent=root['Expenses'],
-                                              company=company,
-                                              default=True)
+                                              company=company, default=True)
     Category.objects.create(name='Purchase Expenses', code='E-D-PE', parent=direct_expenses, company=company,
                             default=True)
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=root['Expenses'],
-                                                company=company,
-                                                default=True)
+                                                company=company, default=True)
+    Account.objects.create(name='Bank Charges', category=indirect_expenses, code='E-I-BC', company=company, default=True)
+    Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
+                           default=True)
     Category.objects.create(name='Pay Head', code='E-I-P', parent=indirect_expenses, company=company, default=True)
     discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
-                                                        code='E-I-DE',
-                                                        company=company, default=True)
+                                                        code='E-I-DE', company=company, default=True)
     Account.objects.create(name='Discount Expenses', category=discount_expense_category, code='E-I-DE-DE',
-                           company=company,
-                           default=True)
+                           company=company, default=True)
 
     # Opening Balance Difference
     # ==========================
