@@ -107,25 +107,25 @@ class Category(models.Model):
             if not self.purchase_account:
                 ledger = Account(name=self.name + ' (Purchase)', company=self.company)
                 ledger.add_category('Purchase')
-                ledger.suggest_code(self)
+                ledger.suggest_code(self, prefix='C')
                 ledger.save()
                 self.purchase_account = ledger
             if not self.sales_account:
                 ledger = Account(name=self.name + ' (Sales)', company=self.company)
                 ledger.add_category('Sales')
-                ledger.suggest_code(self)
+                ledger.suggest_code(self, prefix='C')
                 ledger.save()
                 self.sales_account = ledger
             if not self.discount_allowed_account:
                 discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
                 discount_allowed_account.add_category('Discount Expenses')
-                discount_allowed_account.suggest_code(self)
+                discount_allowed_account.suggest_code(self, prefix='C')
                 discount_allowed_account.save()
                 self.discount_allowed_account = discount_allowed_account
             if not self.discount_received_account:
                 discount_received_account = Account(name='Discount Received ' + self.name, company=self.company)
                 discount_received_account.add_category('Discount Income')
-                discount_received_account.suggest_code(self)
+                discount_received_account.suggest_code(self, prefix='C')
                 discount_received_account.save()
                 self.discount_received_account = discount_received_account
 

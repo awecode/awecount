@@ -156,8 +156,10 @@ class Account(models.Model):
     #             nxt += 1
     #     return super(Account, self).save(*args, **kwargs)
 
-    def suggest_code(self, obj):
+    def suggest_code(self, obj, prefix=None):
         cat_code = self.category.code
+        if prefix:
+            cat_code = cat_code + '-' + str(prefix)
         if type(obj) in [int, str]:
             self.code = '{}-{}'.format(cat_code, obj)
         elif hasattr(obj, 'id'):
