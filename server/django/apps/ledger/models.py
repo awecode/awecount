@@ -618,6 +618,14 @@ def handle_company_creation(sender, **kwargs):
     Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
                            default=True)
     Category.objects.create(name='Pay Head', code='E-I-P', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Repair and Maintenance', code='E-I-RM', parent=indirect_expenses, company=company,
+                            default=True)
+    Category.objects.create(name='Fuel and Transport', code='E-I-FT', parent=indirect_expenses, company=company,
+                            default=True)
     discount_expense_category = Category.objects.create(name='Discount Expenses', parent=indirect_expenses,
                                                         code='E-I-DE', company=company, default=True)
     Account.objects.create(name='Discount Expenses', category=discount_expense_category, code='E-I-DE-DE',
