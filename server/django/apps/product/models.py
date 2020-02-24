@@ -419,29 +419,40 @@ class Item(models.Model):
         post_save = kwargs.pop('post_save', True)
         super().save(*args, **kwargs)
         if post_save:
-
-            if self.can_be_purchased and not self.purchase_account_id:
-                account = Account(name=self.name + ' (Purchase)', company=self.company)
-                account.add_category('Purchase')
-                account.suggest_code(self)
-                account.save()
-                self.purchase_account = account
             if self.can_be_sold and not self.sales_account_id:
                 account = Account(name=self.name + ' (Sales)', company=self.company)
-                account.add_category('Sales')
+                if self.category.sales_account_category_id:
+                    account.category = self.category.sales_account_category
+                else:
+                    account.add_category('Sales')
                 account.suggest_code(self)
                 account.save()
                 self.sales_account = account
+            if self.can_be_purchased and not self.purchase_account_id:
+                account = Account(name=self.name + ' (Purchase)', company=self.company)
+                if self.category.purchase_account_category_id:
+                    account.category = self.category.purchase_account_category
+                else:
+                    account.add_category('Purchase')
+                account.suggest_code(self)
+                account.save()
+                self.purchase_account = account
             if self.can_be_sold and not self.discount_allowed_account_id:
                 discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
-                discount_allowed_account.add_category('Discount Expenses')
+                if self.category.discount_allowed_account_category_id:
+                    discount_allowed_account.category = self.category.discount_allowed_account_category
+                else:
+                    discount_allowed_account.add_category('Discount Expenses')
                 discount_allowed_account.suggest_code(self)
                 discount_allowed_account.save()
                 self.discount_allowed_account = discount_allowed_account
 
             if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_account_id:
                 discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
-                discount_received_acc.add_category('Discount Income')
+                if self.category.discount_received_account_category_id:
+                    discount_received_acc.category = self.category.discount_received_account_category
+                else:
+                    discount_received_acc.add_category('Discount Income')
                 discount_received_acc.suggest_code(self)
                 discount_received_acc.save()
                 self.discount_received_account = discount_received_acc
@@ -449,16 +460,25 @@ class Item(models.Model):
             if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
                 expense_account = Account(name=self.name, company=self.company)
                 if self.direct_expense:
-                    expense_account.add_category('Direct Expenses')
+                    if self.category.direct_expense_account_category_id:
+                        expense_account.category = self.category.direct_expense_account_category
+                    else:
+                        expense_account.add_category('Direct Expenses')
                 else:
-                    expense_account.add_category('Indirect Expenses')
+                    if self.category.indirect_expense_account_category_id:
+                        expense_account.category = self.category.indirect_expense_account_category
+                    else:
+                        expense_account.add_category('Indirect Expenses')
                 expense_account.suggest_code(self)
                 expense_account.save()
                 self.expense_account = expense_account
 
             if self.fixed_asset and not self.fixed_asset_account_id:
                 fixed_asset_account = Account(name=self.name, company=self.company)
-                fixed_asset_account.add_category('Fixed Assets')
+                if self.category.fixed_asset_account_category_id:
+                    fixed_asset_account.category = self.category.fixed_asset_account_category
+                else:
+                    fixed_asset_account.add_category('Fixed Assets')
                 fixed_asset_account.suggest_code(self)
                 fixed_asset_account.save()
                 self.fixed_asset_account = fixed_asset_account

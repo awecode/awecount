@@ -124,6 +124,8 @@ class ItemDetailSerializer(serializers.ModelSerializer):
 
     sales_account = AccountSerializer()
     purchase_account = AccountSerializer()
+    expense_account = AccountSerializer()
+    fixed_asset_account = AccountSerializer()
     tax_scheme = TaxSchemeSerializer()
 
     class Meta:
