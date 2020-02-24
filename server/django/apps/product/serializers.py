@@ -96,7 +96,9 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryCategory
-        exclude = ('company', 'default_unit', 'default_tax_scheme')
+        exclude = ('company', 'default_unit', 'default_tax_scheme', 'sales_account_category', 'purchase_account_category',
+                   'discount_allowed_account_category', 'discount_received_account_category', 'fixed_asset_account_category',
+                   'direct_expense_account_category', 'indirect_expense_account_category')
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -109,6 +111,7 @@ class InventoryAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryAccount
         fields = '__all__'
+
 
 class ItemDetailSerializer(serializers.ModelSerializer):
     brand = BrandSerializer()

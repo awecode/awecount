@@ -79,21 +79,19 @@ class Category(models.Model):
                                                   related_name='discount_received_categories')
 
     sales_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                      related_name='sales_item_categories')
+                                               related_name='sales_item_categories')
     purchase_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                         related_name='purchase_item_categories')
+                                                  related_name='purchase_item_categories')
     discount_allowed_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='discount_allowed_item_categories')
+                                                          related_name='discount_allowed_item_categories')
     discount_received_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                                  related_name='discount_received_item_categories')
+                                                           related_name='discount_received_item_categories')
     fixed_asset_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                                           related_name='fixed_asset_account_category')
+                                                     related_name='fixed_asset_account_category')
     direct_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                                     related_name='direct_expense_account_category')
+                                                        related_name='direct_expense_account_category')
     indirect_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
-                                                        related_name='indirect_expense_account_category')
-    
-    
+                                                          related_name='indirect_expense_account_category')
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
@@ -125,30 +123,75 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
         if post_save:
-            if not self.purchase_account:
-                ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-                ledger.add_category('Purchase')
-                ledger.suggest_code(self, prefix='C')
-                ledger.save()
-                self.purchase_account = ledger
             if not self.sales_account:
                 ledger = Account(name=self.name + ' (Sales)', company=self.company)
                 ledger.add_category('Sales')
                 ledger.suggest_code(self, prefix='C')
                 ledger.save()
                 self.sales_account = ledger
+            if not self.purchase_account:
+                ledger = Account(name=self.name + ' (Purchase)', company=self.company)
+                ledger.add_category('Purchase')
+                ledger.suggest_code(self, prefix='C')
+                ledger.save()
+                self.purchase_account = ledger
             if not self.discount_allowed_account:
-                discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
+                discount_allowed_account = Account(name='Discount Allowed - ' + self.name, company=self.company)
                 discount_allowed_account.add_category('Discount Expenses')
                 discount_allowed_account.suggest_code(self, prefix='C')
                 discount_allowed_account.save()
                 self.discount_allowed_account = discount_allowed_account
             if not self.discount_received_account:
-                discount_received_account = Account(name='Discount Received ' + self.name, company=self.company)
+                discount_received_account = Account(name='Discount Received - ' + self.name, company=self.company)
                 discount_received_account.add_category('Discount Income')
                 discount_received_account.suggest_code(self, prefix='C')
                 discount_received_account.save()
                 self.discount_received_account = discount_received_account
+
+            # Handle account category
+            if self.use_account_category:
+                if self.can_be_sold and not self.sales_account_category_id:
+                    category = AccountCategory(name=self.name + ' (Sales)', company=self.company)
+                    category.add_parent('Sales')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.sales_account_category = category
+                if self.can_be_purchased and not self.purchase_account_category_id:
+                    category = AccountCategory(name=self.name + ' (Purchase)', company=self.company)
+                    category.add_parent('Purchase')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.purchase_account_category = category
+                if self.can_be_sold and not self.discount_allowed_account_category_id:
+                    category = AccountCategory(name='Discount Allowed - ' + self.name, company=self.company)
+                    category.add_parent('Discount Expenses')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.discount_allowed_account_category = category
+                if self.can_be_purchased and not self.discount_received_account_category_id:
+                    category = AccountCategory(name='Discount Received - ' + self.name, company=self.company)
+                    category.add_parent('Discount Income')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.discount_received_account_category = category
+                if self.fixed_asset and not self.fixed_asset_account_category_id:
+                    category = AccountCategory(name=self.name, company=self.company)
+                    category.add_parent('Fixed Assets')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.fixed_asset_account_category = category
+                if self.direct_expense and not self.direct_expense_account_category_id:
+                    category = AccountCategory(name=self.name, company=self.company)
+                    category.add_parent('Direct Expenses')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.direct_expense_account_category = category
+                if self.indirect_expense and not self.indirect_expense_account_category_id:
+                    category = AccountCategory(name=self.name, company=self.company)
+                    category.add_parent('Indirect Expenses')
+                    category.suggest_code(self, prefix='C')
+                    category.save()
+                    self.indirect_expense_account_category = category
 
             self.save(post_save=False)
 

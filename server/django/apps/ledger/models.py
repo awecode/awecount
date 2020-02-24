@@ -24,6 +24,21 @@ class Category(MPTTModel):
     default = models.BooleanField(default=False, editable=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_categories')
 
+    def add_parent(self, category):
+        parent_instance = Category.objects.get(name=category, company=self.company, default=True)
+        self.parent = parent_instance
+
+    def suggest_code(self, obj, prefix=None):
+        cat_code = self.parent.code
+        if prefix:
+            cat_code = cat_code + '-' + str(prefix)
+        if type(obj) in [int, str]:
+            self.code = '{}-{}'.format(cat_code, obj)
+        elif hasattr(obj, 'id'):
+            self.code = '{}-{}'.format(cat_code, obj.id)
+        elif hasattr(obj, 'code'):
+            self.code = '{}-{}'.format(cat_code, obj.code)
+
     ROOT = (
         ('Assets', 'A'),
         ('Liabilities', 'L'),

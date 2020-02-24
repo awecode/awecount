@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from apps.ledger.models import Account
+from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -96,7 +96,14 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ('accounts', Account, AccountMinSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
-        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
+        ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer),
+        ('fixed_assets_categories',
+         AccountCategory.objects.get(name='Fixed Assets', default=True).get_descendants(include_self=True)),
+        ('direct_expenses_categories',
+         AccountCategory.objects.get(name='Direct Expenses', default=True).get_descendants(include_self=True)),
+        ('indirect_expenses_categories',
+         AccountCategory.objects.get(name='Indirect Expenses', default=True).get_descendants(include_self=True).exclude(
+             name='Discount Expenses', default=True).exclude(parent__name='Discount Expenses', parent__default=True)),
     )
 
 
