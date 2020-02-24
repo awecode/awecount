@@ -70,13 +70,30 @@ class Category(models.Model):
                                            on_delete=models.SET_NULL)
 
     sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                      related_name='sales_category')
+                                      related_name='sales_categories')
     purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                         related_name='purchase_category')
+                                         related_name='purchase_categories')
     discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='discount_allowed_category')
+                                                 related_name='discount_allowed_categories')
     discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                  related_name='discount_received_category')
+                                                  related_name='discount_received_categories')
+
+    sales_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                      related_name='sales_item_categories')
+    purchase_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                         related_name='purchase_item_categories')
+    discount_allowed_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                                 related_name='discount_allowed_item_categories')
+    discount_received_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                                  related_name='discount_received_item_categories')
+    fixed_asset_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                                           related_name='fixed_asset_account_category')
+    direct_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                                     related_name='direct_expense_account_category')
+    indirect_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+                                                        related_name='indirect_expense_account_category')
+    
+    
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
@@ -94,6 +111,10 @@ class Category(models.Model):
     extra_fields = JSONField(default=list, null=True, blank=True)
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
 
+    use_account_category = models.BooleanField(default=False)
+    parent_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, related_name='item_categories',
+                                                on_delete=models.SET_NULL)
+
     # Required for module-wise permission check
     key = 'InventoryCategory'
 
@@ -102,7 +123,7 @@ class Category(models.Model):
 
         post_save = kwargs.pop('post_save', True)
         super().save(*args, **kwargs)
-        
+
         if post_save:
             if not self.purchase_account:
                 ledger = Account(name=self.name + ' (Purchase)', company=self.company)
