@@ -24,9 +24,6 @@ class CompanyMiddleware(object):
             secret = request.META.get('HTTP_SECRET')
             request.user = AccessKey.get_user(secret)
 
-        # import ipdb
-        # ipdb.set_trace()
-
         if request.user and request.user.is_authenticated:
             request.__class__.role_modules = request.user.role_modules
             try:

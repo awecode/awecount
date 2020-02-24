@@ -150,45 +150,59 @@ class Category(models.Model):
 
             # Handle account category
             if self.use_account_category:
-                if self.can_be_sold and not self.sales_account_category_id:
-                    category = AccountCategory(name=self.name + ' (Sales)', company=self.company)
-                    category.add_parent('Sales')
+                if self.can_be_sold:
+                    category = self.sales_account_category if self.sales_account_category_id else AccountCategory(
+                        name=self.name + ' (Sales)', company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Sales')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.sales_account_category = category
-                if self.can_be_purchased and not self.purchase_account_category_id:
-                    category = AccountCategory(name=self.name + ' (Purchase)', company=self.company)
-                    category.add_parent('Purchase')
+                if self.can_be_purchased:
+                    category = self.purchase_account_category if self.purchase_account_category_id else AccountCategory(
+                        name=self.name + ' (Purchase)', company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Purchase')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.purchase_account_category = category
-                if self.can_be_sold and not self.discount_allowed_account_category_id:
-                    category = AccountCategory(name='Discount Allowed - ' + self.name, company=self.company)
-                    category.add_parent('Discount Expenses')
+                if self.can_be_sold:
+                    category = self.discount_allowed_account_category if self.discount_allowed_account_category_id else AccountCategory(
+                        name='Discount Allowed - ' + self.name, company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Discount Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.discount_allowed_account_category = category
-                if self.can_be_purchased and not self.discount_received_account_category_id:
-                    category = AccountCategory(name='Discount Received - ' + self.name, company=self.company)
-                    category.add_parent('Discount Income')
+                if self.can_be_purchased:
+                    category = self.discount_received_account_category if self.discount_received_account_category_id else AccountCategory(
+                        name='Discount Received - ' + self.name, company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Discount Income')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.discount_received_account_category = category
-                if self.fixed_asset and not self.fixed_asset_account_category_id:
-                    category = AccountCategory(name=self.name, company=self.company)
-                    category.add_parent('Fixed Assets')
+                if self.fixed_asset:
+                    category = self.fixed_asset_account_category if self.fixed_asset_account_category_id else AccountCategory(
+                        name=self.name, company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Fixed Assets')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.fixed_asset_account_category = category
-                if self.direct_expense and not self.direct_expense_account_category_id:
-                    category = AccountCategory(name=self.name, company=self.company)
-                    category.add_parent('Direct Expenses')
+                if self.direct_expense:
+                    category = self.direct_expense_account_category if self.direct_expense_account_category_id else AccountCategory(
+                        name=self.name, company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Direct Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.direct_expense_account_category = category
-                if self.indirect_expense and not self.indirect_expense_account_category_id:
-                    category = AccountCategory(name=self.name, company=self.company)
-                    category.add_parent('Indirect Expenses')
+                if self.indirect_expense:
+                    category = self.indirect_expense_account_category if self.indirect_expense_account_category_id else AccountCategory(
+                        name=self.name, company=self.company)
+                    category.set_parent((
+                                            self.use_account_category and self.parent_account_category_id and self.parent_account_category) or 'Indirect Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.indirect_expense_account_category = category

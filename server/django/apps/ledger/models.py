@@ -24,8 +24,11 @@ class Category(MPTTModel):
     default = models.BooleanField(default=False, editable=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_categories')
 
-    def add_parent(self, category):
-        parent_instance = Category.objects.get(name=category, company=self.company, default=True)
+    def set_parent(self, category):
+        if type(category) == str:
+            parent_instance = Category.objects.get(name=category, company=self.company, default=True)
+        else:
+            parent_instance = category
         self.parent = parent_instance
 
     def suggest_code(self, obj, prefix=None):
@@ -621,7 +624,8 @@ def handle_company_creation(sender, **kwargs):
     Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company, default=True)
     Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company, default=True)
     Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company,
+                            default=True)
     Category.objects.create(name='Repair and Maintenance', code='E-I-RM', parent=indirect_expenses, company=company,
                             default=True)
     Category.objects.create(name='Fuel and Transport', code='E-I-FT', parent=indirect_expenses, company=company,
