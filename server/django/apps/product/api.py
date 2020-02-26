@@ -98,11 +98,11 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer),
         ('fixed_assets_categories',
-         AccountCategory.objects.get(name='Fixed Assets', default=True).get_descendants(include_self=True)),
+         AccountCategory.objects.filter(name='Fixed Assets', default=True).get_descendants(include_self=True)),
         ('direct_expenses_categories',
-         AccountCategory.objects.get(name='Direct Expenses', default=True).get_descendants(include_self=True)),
+         AccountCategory.objects.filter(name='Direct Expenses', default=True).get_descendants(include_self=True)),
         ('indirect_expenses_categories',
-         AccountCategory.objects.get(name='Indirect Expenses', default=True).get_descendants(include_self=True).exclude(
+         AccountCategory.objects.filter(name='Indirect Expenses', default=True).get_descendants(include_self=True).exclude(
              name='Discount Expenses', default=True).exclude(parent__name='Discount Expenses', parent__default=True)),
     )
 
