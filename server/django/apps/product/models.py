@@ -110,7 +110,7 @@ class Category(models.Model):
     # {'name': 'Author', 'type': 'Text/Number/Date/Long Text', 'enable_search': 'false/true'}
 
     use_account_subcategory = models.BooleanField(default=False)
-    parent_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, related_name='item_categories',
+    account_category = models.ForeignKey(AccountCategory, blank=True, null=True, related_name='item_categories',
                                                 on_delete=models.SET_NULL)
 
     # Required for module-wise permission check
@@ -154,7 +154,7 @@ class Category(models.Model):
                     category = self.sales_account_category if self.sales_account_category_id else AccountCategory(
                         name=self.name + ' (Sales)', company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Sales')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Sales')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.sales_account_category = category
@@ -162,7 +162,7 @@ class Category(models.Model):
                     category = self.purchase_account_category if self.purchase_account_category_id else AccountCategory(
                         name=self.name + ' (Purchase)', company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Purchase')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Purchase')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.purchase_account_category = category
@@ -170,7 +170,7 @@ class Category(models.Model):
                     category = self.discount_allowed_account_category if self.discount_allowed_account_category_id else AccountCategory(
                         name='Discount Allowed - ' + self.name, company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Discount Expenses')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Discount Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.discount_allowed_account_category = category
@@ -178,7 +178,7 @@ class Category(models.Model):
                     category = self.discount_received_account_category if self.discount_received_account_category_id else AccountCategory(
                         name='Discount Received - ' + self.name, company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Discount Income')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Discount Income')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.discount_received_account_category = category
@@ -186,7 +186,7 @@ class Category(models.Model):
                     category = self.fixed_asset_account_category if self.fixed_asset_account_category_id else AccountCategory(
                         name=self.name, company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Fixed Assets')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Fixed Assets')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.fixed_asset_account_category = category
@@ -194,7 +194,7 @@ class Category(models.Model):
                     category = self.direct_expense_account_category if self.direct_expense_account_category_id else AccountCategory(
                         name=self.name, company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Direct Expenses')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Direct Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.direct_expense_account_category = category
@@ -202,7 +202,7 @@ class Category(models.Model):
                     category = self.indirect_expense_account_category if self.indirect_expense_account_category_id else AccountCategory(
                         name=self.name, company=self.company)
                     category.set_parent((
-                                            self.use_account_subcategory and self.parent_account_category_id and self.parent_account_category) or 'Indirect Expenses')
+                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Indirect Expenses')
                     category.suggest_code(self, prefix='C')
                     category.save()
                     self.indirect_expense_account_category = category
