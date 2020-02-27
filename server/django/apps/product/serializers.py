@@ -139,7 +139,7 @@ class ItemListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('id', 'name', 'category')
+        fields = ('id', 'name', 'category', 'cost_price', 'selling_price')
 
 
 class JournalEntrySerializer(serializers.ModelSerializer):
