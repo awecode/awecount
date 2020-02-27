@@ -6,6 +6,7 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
+from awecount.utils.CustomViewSet import GenericSerializer
 from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, \
     Transaction
 
@@ -130,7 +131,15 @@ class ItemDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = '__all__'
+        exclude = ('company',)
+
+
+class ItemListSerializer(serializers.ModelSerializer):
+    category = GenericSerializer()
+
+    class Meta:
+        model = Item
+        fields = ('id', 'name', 'category')
 
 
 class JournalEntrySerializer(serializers.ModelSerializer):

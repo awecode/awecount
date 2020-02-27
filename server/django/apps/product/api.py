@@ -20,7 +20,7 @@ from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
-    ItemPOSSerializer
+    ItemPOSSerializer, ItemListSerializer
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
@@ -28,8 +28,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
-
-    detail_serializer_class = ItemDetailSerializer
 
     collections = (
         ('brands', Brand, BrandSerializer),
@@ -41,10 +39,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
     )
 
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ItemDetailSerializer
+        if self.action == 'list':
+            return ItemListSerializer
+        return self.serializer_class
+
     @action(detail=True)
     def details(self, request, pk=None):
         item = get_object_or_404(queryset=super().get_queryset(), pk=pk)
-        serializer = self.detail_serializer_class(item, context={'request': request}).data
+        serializer = self.get_serializer_class()(item, context={'request': request}).data
         return Response(serializer)
 
     # items listing for POS
