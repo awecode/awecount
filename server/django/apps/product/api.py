@@ -121,6 +121,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             qs = qs.order_by('-id')
         return qs
 
+
 class BrandViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BrandSerializer
 

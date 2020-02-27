@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, transaction
 from django.db.models import F
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -195,6 +195,11 @@ class Category(models.Model):
                 account_category = self.get_account_category('Fixed Assets')
                 self.fixed_asset_account_category = account_category
                 Account.objects.filter(fixed_asset_item__category=self).update(category=account_category)
+
+            if self.use_account_subcategory and self.account_category_id and self.account_category:
+                with transaction.atomic():
+                    # TODO Slow
+                    AccountCategory.objects.rebuild()
 
             self.save(post_save=False)
 
