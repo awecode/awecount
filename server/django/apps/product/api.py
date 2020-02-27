@@ -115,6 +115,12 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
              name='Discount Expenses', default=True).exclude(parent__name='Discount Expenses', parent__default=True)),
     )
     
+    # def get_collections(self, request=None):
+    #     with transaction.atomic():
+    #         # TODO Slow
+    #         AccountCategory.objects.rebuild()
+    #     return super().get_collections(self.request)
+
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == 'list':

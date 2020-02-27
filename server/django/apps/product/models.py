@@ -125,7 +125,8 @@ class Category(models.Model):
             account_category.set_parent(self.account_category)
             code = account_category.suggest_code(self, prefix='C')
             try:
-                account_category.save()
+                with transaction.atomic():
+                    account_category.save()
             except IntegrityError:
                 account_category = AccountCategory.objects.get(code=code, company=self.company)
         else:
