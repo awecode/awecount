@@ -41,6 +41,7 @@ class Category(MPTTModel):
             self.code = '{}-{}'.format(cat_code, obj.id)
         elif hasattr(obj, 'code'):
             self.code = '{}-{}'.format(cat_code, obj.code)
+        return self.code
 
     ROOT = (
         ('Assets', 'A'),

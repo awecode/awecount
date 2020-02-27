@@ -114,7 +114,12 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
          AccountCategory.objects.filter(name='Indirect Expenses', default=True).get_descendants(include_self=True).exclude(
              name='Discount Expenses', default=True).exclude(parent__name='Discount Expenses', parent__default=True)),
     )
-
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.order_by('-id')
+        return qs
 
 class BrandViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BrandSerializer

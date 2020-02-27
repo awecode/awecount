@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import F
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -111,10 +111,27 @@ class Category(models.Model):
 
     use_account_subcategory = models.BooleanField(default=False)
     account_category = models.ForeignKey(AccountCategory, blank=True, null=True, related_name='item_categories',
-                                                on_delete=models.SET_NULL)
+                                         on_delete=models.SET_NULL)
 
     # Required for module-wise permission check
     key = 'InventoryCategory'
+
+    def get_account_category(self, default_category_name, prefix=''):
+        if self.use_account_subcategory and self.account_category_id and self.account_category:
+            name = self.name
+            if prefix:
+                name = '{} - {}'.format(prefix, name)
+            account_category = AccountCategory(name=name, company=self.company)
+            account_category.set_parent(self.account_category)
+            code = account_category.suggest_code(self, prefix='C')
+            try:
+                account_category.save()
+            except IntegrityError:
+                account_category = AccountCategory.objects.get(code=code, company=self.company)
+        else:
+            account_category = self.account_category or AccountCategory.objects.get(name=default_category_name, default=True,
+                                                                                    company=self.company)
+        return account_category
 
     def save(self, *args, **kwargs):
         self.validate_unique()
@@ -148,64 +165,36 @@ class Category(models.Model):
                 discount_received_account.save()
                 self.discount_received_account = discount_received_account
 
-            # Handle account category
-            if self.use_account_subcategory:
-                if self.can_be_sold:
-                    category = self.sales_account_category if self.sales_account_category_id else AccountCategory(
-                        name=self.name + ' (Sales)', company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Sales')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.sales_account_category = category
-                if self.can_be_purchased:
-                    category = self.purchase_account_category if self.purchase_account_category_id else AccountCategory(
-                        name=self.name + ' (Purchase)', company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Purchase')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.purchase_account_category = category
-                if self.can_be_sold:
-                    category = self.discount_allowed_account_category if self.discount_allowed_account_category_id else AccountCategory(
-                        name='Discount Allowed - ' + self.name, company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Discount Expenses')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.discount_allowed_account_category = category
-                if self.can_be_purchased:
-                    category = self.discount_received_account_category if self.discount_received_account_category_id else AccountCategory(
-                        name='Discount Received - ' + self.name, company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Discount Income')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.discount_received_account_category = category
-                if self.fixed_asset:
-                    category = self.fixed_asset_account_category if self.fixed_asset_account_category_id else AccountCategory(
-                        name=self.name, company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Fixed Assets')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.fixed_asset_account_category = category
-                if self.direct_expense:
-                    category = self.direct_expense_account_category if self.direct_expense_account_category_id else AccountCategory(
-                        name=self.name, company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Direct Expenses')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.direct_expense_account_category = category
-                if self.indirect_expense:
-                    category = self.indirect_expense_account_category if self.indirect_expense_account_category_id else AccountCategory(
-                        name=self.name, company=self.company)
-                    category.set_parent((
-                                            self.use_account_subcategory and self.account_category_id and self.account_category) or 'Indirect Expenses')
-                    category.suggest_code(self, prefix='C')
-                    category.save()
-                    self.indirect_expense_account_category = category
+            # Set/Update account categories
+
+            if self.can_be_sold:
+                account_category = self.get_account_category('Sales', prefix='Sales')
+                self.sales_account_category = account_category
+                Account.objects.filter(sales_item__category=self).update(category=account_category)
+                account_category = self.get_account_category('Discount Expenses', prefix='Discount Allowed')
+                self.discount_allowed_account_category = account_category
+                Account.objects.filter(discount_allowed_item__category=self).update(category=account_category)
+
+            if self.can_be_purchased:
+                account_category = self.get_account_category('Purchase', prefix='Purchase')
+                self.purchase_account_category = account_category
+                Account.objects.filter(purchase_item__category=self).update(category=account_category)
+                account_category = self.get_account_category('Discount Income', prefix='Discount Received')
+                self.discount_received_account_category = account_category
+                Account.objects.filter(discount_allowed_item__category=self).update(category=account_category)
+
+            if self.direct_expense:
+                account_category = self.get_account_category('Direct Expenses')
+                self.direct_expense_account_category = account_category
+                Account.objects.filter(expense_item__category=self).update(category=account_category)
+            elif self.indirect_expense:
+                account_category = self.get_account_category('Indirect Expenses')
+                self.indirect_expense_account_category = account_category
+                Account.objects.filter(expense_item__category=self).update(category=account_category)
+            elif self.fixed_asset:
+                account_category = self.get_account_category('Fixed Assets')
+                self.fixed_asset_account_category = account_category
+                Account.objects.filter(fixed_asset_item__category=self).update(category=account_category)
 
             self.save(post_save=False)
 
