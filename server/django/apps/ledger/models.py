@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-
 from decimal import ROUND_HALF_UP, localcontext
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -185,6 +185,7 @@ class Account(models.Model):
             self.code = '{}-{}'.format(cat_code, obj.id)
         elif hasattr(obj, 'code'):
             self.code = '{}-{}'.format(cat_code, obj.code)
+        return self.code
 
     def __str__(self):
         return self.name

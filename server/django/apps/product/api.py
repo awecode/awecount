@@ -106,20 +106,20 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer),
-        ('fixed_assets_categories',
-         AccountCategory.objects.filter(name='Fixed Assets', default=True).get_descendants(include_self=True)),
-        ('direct_expenses_categories',
-         AccountCategory.objects.filter(name='Direct Expenses', default=True).get_descendants(include_self=True)),
-        ('indirect_expenses_categories',
-         AccountCategory.objects.filter(name='Indirect Expenses', default=True).get_descendants(include_self=True).exclude(
-             name='Discount Expenses', default=True).exclude(parent__name='Discount Expenses', parent__default=True)),
     )
-    
-    # def get_collections(self, request=None):
-    #     with transaction.atomic():
-    #         # TODO Slow
-    #         AccountCategory.objects.rebuild()
-    #     return super().get_collections(self.request)
+
+    def get_collections(self, request=None):
+        collections_data = super().get_collections(self.request)
+        collections_data['fixed_assets_categories'] = GenericSerializer(
+            AccountCategory.objects.get(name='Fixed Assets', default=True, company=self.request.company).get_descendants(
+                include_self=True), many=True).data
+        collections_data['direct_expenses_categories'] = GenericSerializer(
+            AccountCategory.objects.get(name='Direct Expenses', default=True, company=self.request.company).get_descendants(
+                include_self=True), many=True).data
+        collections_data['indirect_expenses_categories'] = GenericSerializer(
+            AccountCategory.objects.get(name='Indirect Expenses', default=True, company=self.request.company).get_descendants(
+                include_self=True), many=True).data
+        return collections_data
 
     def get_queryset(self):
         qs = super().get_queryset()

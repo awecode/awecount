@@ -117,22 +117,28 @@ class Category(models.Model):
     key = 'InventoryCategory'
 
     def get_account_category(self, default_category_name, prefix=''):
-        if self.use_account_subcategory and self.account_category_id and self.account_category:
+
+        if default_category_name in ['Fixed Assets', 'Direct Expenses',
+                                     'Indirect Expenses'] and self.account_category_id and self.account_category:
+            parent_account_category = self.account_category
+        else:
+            parent_account_category = AccountCategory.objects.get(name=default_category_name, default=True, company=self.company)
+
+        if self.use_account_subcategory:
             name = self.name
             if prefix:
                 name = '{} - {}'.format(prefix, name)
             account_category = AccountCategory(name=name, company=self.company)
-            account_category.set_parent(self.account_category)
+            account_category.set_parent(parent_account_category)
             code = account_category.suggest_code(self, prefix='C')
             try:
                 with transaction.atomic():
                     account_category.save()
             except IntegrityError:
                 account_category = AccountCategory.objects.get(code=code, company=self.company)
+            return account_category
         else:
-            account_category = self.account_category or AccountCategory.objects.get(name=default_category_name, default=True,
-                                                                                    company=self.company)
-        return account_category
+            return parent_account_category
 
     def save(self, *args, **kwargs):
         self.validate_unique()
@@ -197,10 +203,9 @@ class Category(models.Model):
                 self.fixed_asset_account_category = account_category
                 Account.objects.filter(fixed_asset_item__category=self).update(category=account_category)
 
-            if self.use_account_subcategory and self.account_category_id and self.account_category:
-                with transaction.atomic():
-                    # TODO Slow
-                    AccountCategory.objects.rebuild()
+            # if self.use_account_subcategory and self.account_category_id and self.account_category:
+            #     with transaction.atomic():
+            #         AccountCategory.objects.rebuild()
 
             self.save(post_save=False)
 
