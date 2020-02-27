@@ -24,7 +24,7 @@ from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerial
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
-    serializer_class = ItemDetailSerializer
+    serializer_class = ItemSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
@@ -39,9 +39,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
     )
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.order_by('-id')
+        return qs
+
     def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return ItemDetailSerializer
         if self.action == 'list':
             return ItemListSerializer
         return self.serializer_class
@@ -49,7 +53,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=True)
     def details(self, request, pk=None):
         item = get_object_or_404(queryset=super().get_queryset(), pk=pk)
-        serializer = self.get_serializer_class()(item, context={'request': request}).data
+        serializer = ItemDetailSerializer(item, context={'request': request}).data
         return Response(serializer)
 
     # items listing for POS
