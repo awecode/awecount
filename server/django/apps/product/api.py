@@ -24,7 +24,7 @@ from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerial
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
-    serializer_class = ItemSerializer
+    serializer_class = ItemDetailSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
