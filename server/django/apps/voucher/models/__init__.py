@@ -257,9 +257,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 ['dr', row.item.account, int(row.quantity)],
             )
 
-    def apply_transactions(self):
+    def apply_transactions(self, voucher_meta=None):
 
-        voucher_meta = self.get_voucher_meta()
+        voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta['grand_total']:
             self.total_amount = voucher_meta['grand_total']
             self.save()
@@ -346,6 +346,11 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
                                      related_name='purchase_rows')
 
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
+
+    # Computed values
+    discount_amount = models.FloatField(blank=True, null=True)
+    tax_amount = models.FloatField(blank=True, null=True)
+    net_amount = models.FloatField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.item.cost_price:

@@ -686,6 +686,21 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
             'discount_obj', 'party')
         return qs.order_by('-pk')
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = serializer.data
+
+        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in
+                          self.filterset_class.base_filters.keys())
+
+        if is_filtered:
+            aggregate = queryset.aggregate(Sum('rows__discount_amount'), Sum('rows__tax_amount'), Sum('rows__net_amount'), )
+            self.paginator.aggregate = aggregate
+        return self.get_paginated_response(data)
+
 
 class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
@@ -711,7 +726,8 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
                           self.filterset_class.base_filters.keys())
         if is_filtered:
             aggregate = queryset.aggregate(Sum('quantity'), Sum('discount_amount'), Sum('tax_amount'), Sum('net_amount'),
-                                           Avg('rate'), Count('item', distinct=True), Count('voucher', distinct=True), Count('voucher__party', distinct=True),
+                                           Avg('rate'), Count('item', distinct=True), Count('voucher', distinct=True),
+                                           Count('voucher__party', distinct=True),
                                            Count('voucher__sales_agent', distinct=True))
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
@@ -729,6 +745,21 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
                      PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
         return qs.order_by('-pk')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = serializer.data
+
+        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in
+                          self.filterset_class.base_filters.keys())
+
+        if is_filtered:
+            aggregate = queryset.aggregate(Sum('rows__discount_amount'), Sum('rows__tax_amount'), Sum('rows__net_amount'), )
+            self.paginator.aggregate = aggregate
+        return self.get_paginated_response(data)
 
 
 class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
