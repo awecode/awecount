@@ -749,11 +749,11 @@ class AccountOpeningBalance(models.Model):
         if self.opening_dr:
             dr_entries.append(['dr', self.account, self.opening_dr])
             dr_entries.append(['cr', opening_balance_difference, self.opening_dr])
-            set_ledger_transactions(self, self.fiscal_year.start, *dr_entries, check=True, clear=True)
+            set_ledger_transactions(self, self.fiscal_year.previous_day, *dr_entries, check=True, clear=True)
         else:
             cr_entries.append(['cr', self.account, self.opening_cr])
             cr_entries.append(['dr', opening_balance_difference, self.opening_cr])
-            set_ledger_transactions(self, self.fiscal_year.start, *cr_entries, check=True, clear=True)
+            set_ledger_transactions(self, self.fiscal_year.previous_day, *cr_entries, check=True, clear=True)
 
     def __str__(self):
         return self.account.name

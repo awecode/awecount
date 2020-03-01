@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
@@ -26,6 +27,10 @@ class FiscalYear(models.Model):
 
     def includes(self, date):
         return self.start <= date <= self.end
+
+    @property
+    def previous_day(self):
+        return self.start - timedelta(days=1)
 
 
 class Company(models.Model):
