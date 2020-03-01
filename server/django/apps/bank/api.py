@@ -78,6 +78,7 @@ class ChequeIssueViewSet(CRULViewSet):
     collections = (
         ('bank_accounts', BankAccount, BankAccountChequeIssueSerializer),
         ('parties', Party, PartyMinSerializer),
+        ('accounts', Account),
     )
 
     def get_queryset(self):

@@ -56,7 +56,7 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
     def get_payee(self, obj):
         if obj.party:
             return obj.party.name
-        return obj.customer_name
+        return obj.issued_to
 
     class Meta:
         model = ChequeIssue

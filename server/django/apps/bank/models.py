@@ -126,18 +126,33 @@ class ChequeDeposit(TransactionModel):
 
 class ChequeIssue(models.Model):
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.PROTECT)
+    bank_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT)
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
-    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    issued_to = models.CharField(max_length=255, blank=True, null=True)
     dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues', on_delete=models.SET_NULL)
     amount = models.IntegerField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk and self.bank_account_id:
             self.bank_account.increase_cheque_no()
+        if self.party_id:
+            self.dr_account = None
+        else:
+            if not self.issued_to:
+                raise ValidationError('Party or Issued To is required.')
+            if not self.dr_account:
+                raise ValidationError('Dr Account is required.')
+
         super(ChequeIssue, self).save(*args, **kwargs)
+        self.apply_transactions()
+
+    def get_voucher_no(self):
+        return self.cheque_no
+
+    def get_source_id(self):
+        return self.id
 
     def __str__(self):
         return str(self.date)
@@ -145,6 +160,14 @@ class ChequeIssue(models.Model):
     @property
     def amount_in_words(self):
         return wGenerator.convertNumberToWords(self.amount)
+
+    def apply_transactions(self):
+        entries = [['cr', self.bank_account.ledger, self.amount]]
+        if self.party_id:
+            entries.append(['dr', self.party.supplier_account, self.amount])
+        else:
+            entries.append(['dr', self.dr_account, self.amount])
+        set_ledger_transactions(self, self.date, *entries, clear=True)
 
         # class CashDeposit(models.Model):
         #     STATUSES = (
