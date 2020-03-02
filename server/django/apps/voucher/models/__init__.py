@@ -398,7 +398,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -554,7 +554,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -673,7 +673,8 @@ class PaymentReceipt(TransactionModel):
     amount = models.FloatField()
     tds_amount = models.FloatField(default=0)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0])
-    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True, null=True,
+    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name='payment_receipts', blank=True,
+                                                   null=True,
                                                    on_delete=models.PROTECT)
     transaction_charge = models.FloatField(default=0)
     bank_account = models.ForeignKey(BankAccount, related_name='payment_receipts', on_delete=models.CASCADE, blank=True,
@@ -734,6 +735,173 @@ class PaymentReceipt(TransactionModel):
 
     def __str__(self):
         return str(self.date)
+
+
+class Challan(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    date = models.DateField()
+    due_date = models.DateField(blank=True, null=True)
+
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
+    remarks = models.TextField(blank=True, null=True)
+    is_export = models.BooleanField(default=False)
+
+    print_count = models.PositiveSmallIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challan')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='challan')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='challan')
+    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='challan',
+                                    on_delete=models.SET_NULL)
+    # Model key for module based permission
+    key = 'Challan'
+
+
+#
+#     # Model key for module based permission
+#     key = 'Sales'
+#
+#     class Meta:
+#         unique_together = ('company', 'voucher_no', 'fiscal_year')
+#
+#     @property
+#     def buyer_name(self):
+#         if self.party_id:
+#             return self.party.name
+#         return self.customer_name
+#
+#     def apply_inventory_transactions(self):
+#         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
+#                 'item__account'):
+#             set_inventory_transactions(
+#                 row,
+#                 self.date,
+#                 ['cr', row.item.account, int(row.quantity)],
+#             )
+#
+#     def apply_transactions(self, voucher_meta=None):
+#
+#         voucher_meta = voucher_meta or self.get_voucher_meta()
+#         if self.total_amount != voucher_meta['grand_total']:
+#             self.total_amount = voucher_meta['grand_total']
+#             self.save()
+#
+#         if self.status == 'Cancelled':
+#             self.cancel_transactions()
+#             return
+#         if self.status == 'Draft':
+#             return
+#
+#         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+#         if self.mode == 'Credit':
+#             dr_acc = self.party.customer_account
+#         elif self.mode == 'Cash':
+#             dr_acc = get_account(self.company, 'Cash')
+#             self.status = 'Paid'
+#         elif self.mode == 'Bank Deposit':
+#             dr_acc = self.bank_account.ledger
+#             self.status = 'Paid'
+#         else:
+#             raise ValueError('No such mode!')
+#
+#         self.save()
+#
+#         sub_total_after_row_discounts = self.get_total_after_row_discounts()
+#
+#         dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
+#
+#         # filter bypasses rows cached by prefetching
+#         for row in self.rows.filter().select_related('tax_scheme', 'discount_obj', 'item__discount_allowed_account',
+#                                                      'item__sales_account'):
+#             entries = []
+#
+#             row_total = row.quantity * row.rate
+#             sales_value = row_total + 0
+#
+#             row_discount = 0
+#             if row.has_discount():
+#                 row_discount_amount, trade_discount = row.get_discount()
+#                 row_total -= row_discount_amount
+#                 if trade_discount:
+#                     sales_value -= row_discount_amount
+#                 else:
+#                     row_discount += row_discount_amount
+#
+#             if dividend_discount > 0:
+#                 row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+#                 row_total -= row_dividend_discount
+#                 if dividend_trade_discount:
+#                     sales_value -= row_dividend_discount
+#                 else:
+#                     row_discount += row_dividend_discount
+#
+#             if row_discount > 0:
+#                 entries.append(['dr', row.item.discount_allowed_account, row_discount])
+#
+#             if row.tax_scheme:
+#                 row_tax_amount = row.tax_scheme.rate * row_total / 100
+#                 if row_tax_amount:
+#                     entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
+#                     row_total += row_tax_amount
+#
+#             entries.append(['cr', row.item.sales_account, sales_value])
+#             entries.append(['dr', dr_acc, row_total])
+#
+#             set_ledger_transactions(row, self.date, *entries, clear=True)
+#         self.apply_inventory_transactions()
+#
+#     def save(self, *args, **kwargs):
+#         if self.status not in ['Draft', 'Cancelled'] and not self.voucher_no:
+#             raise ValueError('Issued invoices need a voucher number!')
+#         super().save(*args, **kwargs)
+#
+#     def cbms_nepal_data(self, conf):
+#         meta = self.get_voucher_meta()
+#         data = {
+#             'seller_pan': self.company.tax_registration_number,
+#             'buyer_pan': self.party_tax_reg_no(),
+#             'buyer_name': self.party_name(),
+#             'total_sales': meta['grand_total'],
+#             'taxable_sales_vat': meta['taxable'],
+#             'vat': meta['tax'],
+#             'export_sales': 0,
+#             'tax_exempted_sales': meta['non_taxable'],
+#             'invoice_number': self.voucher_no,
+#             'invoice_date': nepdate.string_from_tuple(nepdate.ad2bs(str(self.date))).replace('-', '.')
+#         }
+#         if self.is_export:
+#             data['taxable_sales_vat'] = 0
+#             data['vat'] = 0
+#             data['export_sales'] = meta['grand_total']
+#             data['tax_exempted_sales'] = meta['grand_total']
+#
+#         merged_data = dict(merge_dicts(data, conf['data']))
+#         merged_data = dict(merge_dicts(merged_data, conf['sales_invoice_data']))
+#         return merged_data, conf['sales_invoice_endpoint']
+#
+#     @property
+#     def pdf_url(self):
+#         return '{}sales-voucher/{}/view?pdf=1'.format(settings.BASE_URL, self.pk)
+#
+#     @property
+#     def view_url(self):
+#         return '{}sales-voucher/{}/view'.format(settings.BASE_URL, self.pk)
+
+
+class ChallanRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name='rows')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='challan_rows')
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    rate = models.FloatField()
+
+    # Model key for module based permission
+    key = 'Challan'
 
 
 auditlog.register(SalesVoucher)
