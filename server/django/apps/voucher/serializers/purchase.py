@@ -90,7 +90,7 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseVoucher
-        fields = ('id', 'voucher_no', 'party', 'date', 'name', 'status',)
+        fields = ('id', 'voucher_no', 'party', 'date', 'name', 'status', 'total_amount')
 
 
 class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
