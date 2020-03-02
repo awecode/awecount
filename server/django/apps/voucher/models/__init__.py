@@ -27,6 +27,11 @@ STATUSES = (
     ('Paid', 'Paid'),
     ('Partially Paid', 'Partially Paid'),
 )
+
+CHALLAN_STATUSES = (
+    ('Approved', 'Approved'),
+    ('Unapproved', 'Unapproved'),
+)
 MODES = (
     ('Credit', 'Credit'),
     ('Cash', 'Cash'),
@@ -747,6 +752,7 @@ class Challan(TransactionModel, InvoiceModel):
     date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
 
+    # TODO: CHALLAN_STATUSES
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     remarks = models.TextField(blank=True, null=True)
 
@@ -759,13 +765,10 @@ class Challan(TransactionModel, InvoiceModel):
     # Model key for module based permission
     key = 'Challan'
 
+    class Meta:
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
 
-#
-#     # Model key for module based permission
-#     key = 'Sales'
-#
-#     class Meta:
-#         unique_together = ('company', 'voucher_no', 'fiscal_year')
+
 #
 #     @property
 #     def buyer_name(self):
@@ -902,6 +905,8 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     key = 'Challan'
 
 
+auditlog.register(Challan)
+auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
 auditlog.register(SalesVoucherRow)
 auditlog.register(PurchaseVoucher)

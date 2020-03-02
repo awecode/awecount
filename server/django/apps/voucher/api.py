@@ -23,7 +23,7 @@ from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
     SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet, SalesRowFilterSet, \
-    PaymentReceiptFilterSet
+    PaymentReceiptFilterSet, ChallanFilterSet
 from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
 from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource, PurchaseVoucherResource, \
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
@@ -45,7 +45,8 @@ from .serializers import SalesVoucherCreateSerializer, SalesVoucherListSerialize
     SalesDiscountSerializer, PurchaseDiscountSerializer, SalesVoucherDetailSerializer, SalesBookSerializer, \
     CreditNoteDetailSerializer, SalesDiscountMinSerializer, PurchaseVoucherDetailSerializer, PurchaseBookSerializer, \
     SalesAgentSerializer, SalesRowSerializer, JournalVoucherDetailSerializer, SalesVoucherAccessSerializer, \
-    PaymentReceiptSerializer, PaymentReceiptFormSerializer, PaymentReceiptDetailSerializer, ChallanCreateSerializer
+    PaymentReceiptSerializer, PaymentReceiptFormSerializer, PaymentReceiptDetailSerializer, ChallanCreateSerializer, \
+    ChallanListSerializer
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -926,7 +927,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
 
-    # filterset_class = SalesVoucherFilterSet
+    filterset_class = ChallanFilterSet
 
     search_fields = ['voucher_no', 'party__name', 'remarks', 'party__tax_registration_number',
                      'customer_name',
@@ -948,10 +949,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs.order_by('-pk')
 
     def get_serializer_class(self):
-        if self.request.META.get('HTTP_SECRET'):
-            return SalesVoucherAccessSerializer
         if self.action in ('choices', 'list'):
-            return ChallanCreateSerializer
+            return ChallanListSerializer
         return ChallanCreateSerializer
 
     def update(self, request, *args, **kwargs):
@@ -987,63 +986,58 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         }
 
     def get_create_defaults(self, request=None):
-        data = SalesCreateSettingSerializer(request.company.sales_setting).data
-        data['options']['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
-        return data
-
-    def get_update_defaults(self, request=None):
-        data = SalesUpdateSettingSerializer(request.company.sales_setting).data
-        data['options']['can_update_issued'] = request.company.enable_sales_invoice_update
-        obj = self.get_object()
-        if not obj.voucher_no:
-            data['options']['voucher_no'] = get_next_voucher_no(SalesVoucher, request.company_id)
+        data = {
+            'options': {
+                'voucher_no': get_next_voucher_no(Challan, request.company_id)
+            }
+        }
         return data
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
-        sale_voucher = self.get_object()
+        challan = self.get_object()
         try:
-            sale_voucher.mark_as_resolved(status='Paid')
+            challan.mark_as_resolved(status='Paid')
             return Response({})
         except Exception as e:
             raise APIException(str(e))
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
-        sales_voucher = self.get_object()
+        challan = self.get_object()
         message = request.data.get('message')
         if not message:
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
         try:
-            sales_voucher.cancel(request.data.get('message'))
+            challan.cancel(request.data.get('message'))
             return Response({})
         except Exception as e:
             raise RESTValidationError({'detail': e.messages})
 
     @action(detail=True, methods=['POST'], url_path='log-print')
     def log_print(self, request, pk):
-        sale_voucher = self.get_object()
-        sale_voucher.print_count += 1
-        sale_voucher.save()
-        return Response({'print_count': sale_voucher.print_count})
+        challan = self.get_object()
+        challan.print_count += 1
+        challan.save()
+        return Response({'print_count': challan.print_count})
 
-    @action(detail=False, url_path='by-voucher-no')
-    def by_voucher_no(self, request):
-        qs = super().get_queryset().prefetch_related(
-            Prefetch('rows',
-                     SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                                  'tax_scheme'))).select_related(
-            'discount_obj', 'bank_account')
-        return Response(
-            SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
-                                                           fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                           queryset=qs)).data)
+    # @action(detail=False, url_path='by-voucher-no')
+    # def by_voucher_no(self, request):
+    #     qs = super().get_queryset().prefetch_related(
+    #         Prefetch('rows',
+    #                  SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+    #                                                               'tax_scheme'))).select_related(
+    #         'discount_obj', 'bank_account')
+    #     return Response(
+    #         SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+    #                                                        fiscal_year_id=request.query_params.get('fiscal_year'),
+    #                                                        queryset=qs)).data)
 
-    @action(detail=False)
-    def export(self, request):
-        params = [
-            ('Invoices', self.get_queryset(), SalesVoucherResource),
-            ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id),
-             SalesVoucherRowResource),
-        ]
-        return qs_to_xls(params)
+    # @action(detail=False)
+    # def export(self, request):
+    #     params = [
+    #         ('Invoices', self.get_queryset(), SalesVoucherResource),
+    #         ('Sales Rows', Challan.objects.filter(voucher__company_id=request.company_id),
+    #          SalesVoucherRowResource),
+    #     ]
+    #     return qs_to_xls(params)

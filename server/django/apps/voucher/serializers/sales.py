@@ -45,14 +45,16 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
         data = []
         for invoice in obj.invoices.all():
             data.append(
-                {'voucher_no': invoice.voucher_no, 'total_amount': invoice.total_amount, 'date': invoice.date, 'id': invoice.id})
+                {'voucher_no': invoice.voucher_no, 'total_amount': invoice.total_amount, 'date': invoice.date,
+                 'id': invoice.id})
         return data
 
     class Meta:
         model = PaymentReceipt
         fields = (
-        'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name', 'cheque_date',
-        'cheque_number', 'drawee_bank', 'cheque_deposit_id')
+            'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name',
+            'cheque_date',
+            'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
@@ -130,7 +132,8 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentReceipt
         fields = (
-            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank',
+            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number',
+            'drawee_bank',
             'remarks', 'mode',
             'party_id', 'party_name', 'invoice_nos')
 
@@ -159,7 +162,8 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
             if 'code' not in data['item_obj']:
                 raise ValidationError({'item': ['item_obj.code is required.']})
             try:
-                item_obj = Item.objects.get(code=data['item_obj'].get('code'), company_id=self.context['request'].company_id)
+                item_obj = Item.objects.get(code=data['item_obj'].get('code'),
+                                            company_id=self.context['request'].company_id)
                 # if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
@@ -348,7 +352,8 @@ class SalesRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucherRow
         fields = (
-            'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity', 'voucher__date',
+            'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity',
+            'voucher__date',
             'tax_amount', 'discount_amount', 'net_amount')
 
 
@@ -359,11 +364,19 @@ class ChallanRowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallanRow
-        exclude = ('item', 'voucher', 'unit', )
+        exclude = ('item', 'voucher', 'unit',)
+
+
+class ChallanListSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+
+    class Meta:
+        model = Challan
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name',)
 
 
 class ChallanCreateSerializer(StatusReversionMixin,
-                                   serializers.ModelSerializer):
+                              serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = ChallanRowSerializer(many=True)
@@ -425,4 +438,4 @@ class ChallanCreateSerializer(StatusReversionMixin,
 
     class Meta:
         model = Challan
-        exclude = ('company', 'user','fiscal_year',)
+        exclude = ('company', 'user', 'fiscal_year',)
