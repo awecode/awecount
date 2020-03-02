@@ -408,10 +408,12 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().prefetch_related(
-            Prefetch('rows',
-                     CreditNoteRow.objects.all().select_related('item', 'unit', 'discount_obj',
-                                                                'tax_scheme').order_by('pk'))).select_related(
+        qs = super().get_queryset().prefetch_related('invoices',
+                                                     Prefetch('rows',
+                                                              CreditNoteRow.objects.all().select_related('item', 'unit',
+                                                                                                         'discount_obj',
+                                                                                                         'tax_scheme').order_by(
+                                                                  'pk'))).select_related(
             'discount_obj', 'bank_account', 'party')
         data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data['can_update_issued'] = request.company.enable_credit_note_update
