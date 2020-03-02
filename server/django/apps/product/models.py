@@ -203,6 +203,14 @@ class Category(models.Model):
                 self.fixed_asset_account_category = account_category
                 Account.objects.filter(fixed_asset_item__category=self).update(category=account_category)
 
+            from apps.voucher.models import PurchaseVoucher, SalesVoucher
+
+            for voucher in PurchaseVoucher.objects.filter(rows__item__category=self):
+                voucher.apply_transactions()
+
+            for voucher in SalesVoucher.objects.filter(rows__item__category=self):
+                voucher.apply_transactions()
+
             # if self.use_account_subcategory and self.account_category_id and self.account_category:
             #     with transaction.atomic():
             #         AccountCategory.objects.rebuild()
