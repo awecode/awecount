@@ -898,8 +898,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    rate = models.FloatField()
-
+    
     # Model key for module based permission
     key = 'Challan'
 

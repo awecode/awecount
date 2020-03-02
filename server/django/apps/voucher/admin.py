@@ -3,7 +3,7 @@ from django.contrib import admin
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
     DebitNoteRow, \
-    DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt, ChallanRow
+    DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt, ChallanRow, Challan
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -140,3 +140,6 @@ class ChallanAdmin(admin.ModelAdmin):
     list_filter = ('company',)
     list_display = ('company', 'voucher_no', 'party',)
     inlines = (ChallanRowTabular,)
+
+
+admin.site.register(Challan, ChallanAdmin)
