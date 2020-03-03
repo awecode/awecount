@@ -440,7 +440,9 @@ class Item(models.Model):
 
         post_save = kwargs.pop('post_save', True)
         super().save(*args, **kwargs)
+
         if post_save:
+
             if self.can_be_sold:
                 name = self.name + ' (Sales)'
                 if not self.sales_account_id:
@@ -455,65 +457,93 @@ class Item(models.Model):
                 elif self.sales_account.name != name:
                     self.sales_account.name = name
                     self.sales_account.save()
-            if self.can_be_purchased and not self.purchase_account_id:
-                account = Account(name=self.name + ' (Purchase)', company=self.company)
-                if self.category and self.category.purchase_account_category_id:
-                    account.category = self.category.purchase_account_category
-                else:
-                    account.add_category('Purchase')
-                account.suggest_code(self)
-                account.save()
-                self.purchase_account = account
-            if self.can_be_sold and not self.discount_allowed_account_id:
-                discount_allowed_account = Account(name='Discount Allowed ' + self.name, company=self.company)
-                if self.category and self.category.discount_allowed_account_category_id:
-                    discount_allowed_account.category = self.category.discount_allowed_account_category
-                else:
-                    discount_allowed_account.add_category('Discount Expenses')
-                discount_allowed_account.suggest_code(self)
-                discount_allowed_account.save()
-                self.discount_allowed_account = discount_allowed_account
 
-            if (self.can_be_purchased or self.fixed_asset or self.expense) and not self.discount_received_account_id:
-                discount_received_acc = Account(name='Discount Received ' + self.name, company=self.company)
-                if self.category and self.category.discount_received_account_category_id:
-                    discount_received_acc.category = self.category.discount_received_account_category
-                else:
-                    discount_received_acc.add_category('Discount Income')
-                discount_received_acc.suggest_code(self)
-                discount_received_acc.save()
-                self.discount_received_account = discount_received_acc
-
-            if (self.direct_expense or self.indirect_expense) and not self.expense_account_id:
-                expense_account = Account(name=self.name, company=self.company)
-                if self.direct_expense:
-                    if self.category and self.category.direct_expense_account_category_id:
-                        expense_account.category = self.category.direct_expense_account_category
+                name = 'Discount Allowed - ' + self.name
+                if not self.discount_allowed_account_id:
+                    discount_allowed_account = Account(name=name, company=self.company)
+                    if self.category and self.category.discount_allowed_account_category_id:
+                        discount_allowed_account.category = self.category.discount_allowed_account_category
                     else:
-                        expense_account.add_category('Direct Expenses')
-                else:
-                    if self.category and self.category.indirect_expense_account_category_id:
-                        expense_account.category = self.category.indirect_expense_account_category
+                        discount_allowed_account.add_category('Discount Expenses')
+                    discount_allowed_account.suggest_code(self)
+                    discount_allowed_account.save()
+                    self.discount_allowed_account = discount_allowed_account
+                elif self.discount_allowed_account.name != name:
+                    self.discount_allowed_account.name = name
+                    self.discount_allowed_account.save()
+
+            if self.can_be_purchased:
+                name = self.name + ' (Purchase)'
+                if not self.purchase_account_id:
+                    account = Account(name=name, company=self.company)
+                    if self.category and self.category.purchase_account_category_id:
+                        account.category = self.category.purchase_account_category
                     else:
-                        expense_account.add_category('Indirect Expenses')
-                expense_account.suggest_code(self)
-                expense_account.save()
-                self.expense_account = expense_account
+                        account.add_category('Purchase')
+                    account.suggest_code(self)
+                    account.save()
+                    self.purchase_account = account
+                elif self.purchase_account.name != name:
+                    self.purchase_account.name = name
+                    self.purchase_account.save()
 
-            if self.fixed_asset and not self.fixed_asset_account_id:
-                fixed_asset_account = Account(name=self.name, company=self.company)
-                if self.category and self.category.fixed_asset_account_category_id:
-                    fixed_asset_account.category = self.category.fixed_asset_account_category
-                else:
-                    fixed_asset_account.add_category('Fixed Assets')
-                fixed_asset_account.suggest_code(self)
-                fixed_asset_account.save()
-                self.fixed_asset_account = fixed_asset_account
+            if self.can_be_purchased or self.fixed_asset or self.expense:
+                name = 'Discount Received - ' + self.name
+                if not self.discount_received_account_id:
+                    discount_received_acc = Account(name=name, company=self.company)
+                    if self.category and self.category.discount_received_account_category_id:
+                        discount_received_acc.category = self.category.discount_received_account_category
+                    else:
+                        discount_received_acc.add_category('Discount Income')
+                    discount_received_acc.suggest_code(self)
+                    discount_received_acc.save()
+                    self.discount_received_account = discount_received_acc
+                elif self.discount_received_account.name != name:
+                    self.discount_received_account.name = name
+                    self.discount_received_account.save()
 
-            if not self.account_id and (self.track_inventory or self.fixed_asset):
-                account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
-                account.save()
-                self.account = account
+            if self.direct_expense or self.indirect_expense:
+                if not self.expense_account_id:
+                    expense_account = Account(name=self.name, company=self.company)
+                    if self.direct_expense:
+                        if self.category and self.category.direct_expense_account_category_id:
+                            expense_account.category = self.category.direct_expense_account_category
+                        else:
+                            expense_account.add_category('Direct Expenses')
+                    else:
+                        if self.category and self.category.indirect_expense_account_category_id:
+                            expense_account.category = self.category.indirect_expense_account_category
+                        else:
+                            expense_account.add_category('Indirect Expenses')
+                    expense_account.suggest_code(self)
+                    expense_account.save()
+                    self.expense_account = expense_account
+                elif self.expense_account.name != self.name:
+                    self.expense_account.name = self.name
+                    self.expense_account.save()
+
+            if self.fixed_asset:
+                if not self.fixed_asset_account_id:
+                    fixed_asset_account = Account(name=self.name, company=self.company)
+                    if self.category and self.category.fixed_asset_account_category_id:
+                        fixed_asset_account.category = self.category.fixed_asset_account_category
+                    else:
+                        fixed_asset_account.add_category('Fixed Assets')
+                    fixed_asset_account.suggest_code(self)
+                    fixed_asset_account.save()
+                    self.fixed_asset_account = fixed_asset_account
+                elif self.fixed_asset_account.name != self.name:
+                    self.fixed_asset_account.name = self.name
+                    self.fixed_asset_account.save()
+
+            if self.track_inventory or self.fixed_asset:
+                if not self.account_id:
+                    account = InventoryAccount(code=self.code, name=self.name, company_id=self.company_id)
+                    account.save()
+                    self.account = account
+                elif self.account.name != self.name:
+                    self.account.name = self.name
+                    self.account.save()
 
             if self.category and self.category.extra_fields:
                 search_data = []
