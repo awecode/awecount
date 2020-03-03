@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
-from apps.voucher.models import SalesAgent, PaymentReceipt
+from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.utils import get_next_voucher_no
 from awecount.utils.serializers import StatusReversionMixin
@@ -45,14 +45,16 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
         data = []
         for invoice in obj.invoices.all():
             data.append(
-                {'voucher_no': invoice.voucher_no, 'total_amount': invoice.total_amount, 'date': invoice.date, 'id': invoice.id})
+                {'voucher_no': invoice.voucher_no, 'total_amount': invoice.total_amount, 'date': invoice.date,
+                 'id': invoice.id})
         return data
 
     class Meta:
         model = PaymentReceipt
         fields = (
-        'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name', 'cheque_date',
-        'cheque_number', 'drawee_bank', 'cheque_deposit_id')
+            'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name',
+            'cheque_date',
+            'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
@@ -130,7 +132,8 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentReceipt
         fields = (
-            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number', 'drawee_bank',
+            'id', 'date', 'invoices', 'amount', 'tds_amount', 'bank_account', 'cheque_date', 'cheque_number',
+            'drawee_bank',
             'remarks', 'mode',
             'party_id', 'party_name', 'invoice_nos')
 
@@ -159,7 +162,8 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
             if 'code' not in data['item_obj']:
                 raise ValidationError({'item': ['item_obj.code is required.']})
             try:
-                item_obj = Item.objects.get(code=data['item_obj'].get('code'), company_id=self.context['request'].company_id)
+                item_obj = Item.objects.get(code=data['item_obj'].get('code'),
+                                            company_id=self.context['request'].company_id)
                 # if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
@@ -348,5 +352,90 @@ class SalesRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucherRow
         fields = (
-            'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity', 'voucher__date',
+            'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity',
+            'voucher__date',
             'tax_amount', 'discount_amount', 'net_amount')
+
+
+class ChallanRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = ChallanRow
+        exclude = ('item', 'voucher', 'unit',)
+
+
+class ChallanListSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+
+    class Meta:
+        model = Challan
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name',)
+
+
+class ChallanCreateSerializer(StatusReversionMixin,
+                              serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
+    print_count = serializers.ReadOnlyField()
+    rows = ChallanRowSerializer(many=True)
+
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get('status') in ['Draft', 'Cancelled']:
+            return
+        next_voucher_no = get_next_voucher_no(Challan, self.context['request'].company_id)
+        validated_data['voucher_no'] = next_voucher_no
+
+    def assign_fiscal_year(self, validated_data, instance=None):
+        if instance and instance.fiscal_year_id:
+            return
+        fiscal_year = self.context['request'].company.current_fiscal_year
+        if fiscal_year.includes(validated_data.get('date')):
+            validated_data['fiscal_year_id'] = fiscal_year.id
+        else:
+            raise ValidationError(
+                {'date': ['Date not in current fiscal year.']},
+            )
+
+    def validate(self, data):
+        if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
+            raise ValidationError(
+                {'party': ['Party is required for a credit issue.']},
+            )
+        return data
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop('rows')
+        request = self.context['request']
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
+        validated_data['company_id'] = request.company_id
+        validated_data['user_id'] = request.user.id
+        instance = Challan.objects.create(**validated_data)
+        for index, row in enumerate(rows_data):
+            ChallanRow.objects.create(voucher=instance, **row)
+        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
+        # instance.apply_transactions(voucher_meta=voucher_meta)
+        instance.synchronize()
+        return instance
+
+    def update(self, instance, validated_data):
+        rows_data = validated_data.pop('rows')
+        self.assign_fiscal_year(validated_data, instance=instance)
+        self.validate_voucher_status(validated_data, instance)
+        self.assign_voucher_number(validated_data, instance)
+        Challan.objects.filter(pk=instance.id).update(**validated_data)
+        for index, row in enumerate(rows_data):
+            ChallanRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        instance.refresh_from_db()
+        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
+        # instance.apply_transactions(voucher_meta=voucher_meta)
+        # instance.synchronize(verb='PATCH')
+        return instance
+
+    class Meta:
+        model = Challan
+        exclude = ('company', 'user', 'fiscal_year',)

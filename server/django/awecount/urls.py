@@ -25,7 +25,6 @@ router.register('accounts', ledger.AccountViewSet, base_name='accounts')
 router.register('inventory-account', item.InventoryAccountViewSet, base_name='inventory-account')
 router.register('account-opening-balance', ledger.AccountOpeningBalanceViewSet, base_name='account-opening-balance')
 
-
 # item
 router.register('items', item.ItemViewSet, base_name='item')
 router.register('books', item.BookViewSet, base_name='book')
@@ -43,6 +42,7 @@ router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name=
 router.register('purchase-settings', voucher.PurchaseSettingsViewSet, base_name='purchase-settings')
 router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note')
 router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')
+router.register('challan', voucher.ChallanViewSet, base_name='challan')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
 router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')

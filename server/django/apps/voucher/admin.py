@@ -1,8 +1,9 @@
 from django.contrib import admin
 
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
-    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, DebitNoteRow, \
-    DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt
+    JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
+    DebitNoteRow, \
+    DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt, ChallanRow, Challan
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -23,6 +24,10 @@ class DebitNoteRowTabular(admin.TabularInline):
 
 class JournalVoucherRowTabular(admin.TabularInline):
     model = JournalVoucherRow
+
+
+class ChallanRowTabular(admin.TabularInline):
+    model = ChallanRow
 
 
 class SalesVoucherAdmin(admin.ModelAdmin):
@@ -123,5 +128,18 @@ admin.site.register(PurchaseSetting, PurchaseSettingAdmin)
 class PaymentReceiptAdmin(admin.ModelAdmin):
     list_display = ('date', 'mode')
     list_filter = ('company', 'mode')
-    
+
+
 admin.site.register(PaymentReceipt, PaymentReceiptAdmin)
+
+
+class ChallanAdmin(admin.ModelAdmin):
+    search_fields = (
+        'voucher_no', 'party__name', 'party__tax_registration_number', 'company__name',
+        'company__tax_registration_number')
+    list_filter = ('company',)
+    list_display = ('company', 'voucher_no', 'party',)
+    inlines = (ChallanRowTabular,)
+
+
+admin.site.register(Challan, ChallanAdmin)

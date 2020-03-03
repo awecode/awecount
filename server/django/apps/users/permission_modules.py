@@ -29,6 +29,7 @@ MODULES = [
     *gdp('SalesDiscount'),
     *gdp('PurchaseDiscount'),
     *gdp('JournalVoucher'),
+    *gdp('Challan'),
     *gdp('InvoiceDesign'),
     # Bank
     *gdp('BankAccount'),
