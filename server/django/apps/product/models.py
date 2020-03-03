@@ -441,15 +441,20 @@ class Item(models.Model):
         post_save = kwargs.pop('post_save', True)
         super().save(*args, **kwargs)
         if post_save:
-            if self.can_be_sold and not self.sales_account_id:
-                account = Account(name=self.name + ' (Sales)', company=self.company)
-                if self.category and self.category.sales_account_category_id:
-                    account.category = self.category.sales_account_category
-                else:
-                    account.add_category('Sales')
-                account.suggest_code(self)
-                account.save()
-                self.sales_account = account
+            if self.can_be_sold:
+                name = self.name + ' (Sales)'
+                if not self.sales_account_id:
+                    account = Account(name=name, company=self.company)
+                    if self.category and self.category.sales_account_category_id:
+                        account.category = self.category.sales_account_category
+                    else:
+                        account.add_category('Sales')
+                    account.suggest_code(self)
+                    account.save()
+                    self.sales_account = account
+                elif self.sales_account.name != name:
+                    self.sales_account.name = name
+                    self.sales_account.save()
             if self.can_be_purchased and not self.purchase_account_id:
                 account = Account(name=self.name + ' (Purchase)', company=self.company)
                 if self.category and self.category.purchase_account_category_id:
