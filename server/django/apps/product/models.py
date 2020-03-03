@@ -117,7 +117,6 @@ class Category(models.Model):
     key = 'InventoryCategory'
 
     def get_account_category(self, default_category_name, prefix=''):
-
         if default_category_name in ['Fixed Assets', 'Direct Expenses',
                                      'Indirect Expenses'] and self.account_category_id and self.account_category:
             parent_account_category = self.account_category
@@ -136,6 +135,9 @@ class Category(models.Model):
                     account_category.save()
             except IntegrityError:
                 account_category = AccountCategory.objects.get(code=code, company=self.company)
+                if account_category.name != name:
+                    account_category.name = name
+                    account_category.save()
             return account_category
         else:
             return parent_account_category
