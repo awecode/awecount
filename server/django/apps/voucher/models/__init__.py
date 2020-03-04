@@ -60,6 +60,15 @@ class Challan(TransactionModel, InvoiceModel):
     # Model key for module based permission
     key = 'Challan'
 
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
+                'item__account'):
+            set_inventory_transactions(
+                row,
+                self.date,
+                ['cr', row.item.account, int(row.quantity)],
+            )
+
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
 

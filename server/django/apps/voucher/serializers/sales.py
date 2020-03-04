@@ -421,8 +421,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             ChallanRow.objects.create(voucher=instance, **row)
-        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        # instance.apply_transactions(voucher_meta=voucher_meta)
+        instance.apply_inventory_transactions()
         instance.synchronize()
         return instance
 
@@ -435,8 +434,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         for index, row in enumerate(rows_data):
             ChallanRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        # instance.apply_transactions(voucher_meta=voucher_meta)
+        instance.apply_inventory_transactions()
         # instance.synchronize(verb='PATCH')
         return instance
 
