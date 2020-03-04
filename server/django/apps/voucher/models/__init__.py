@@ -95,7 +95,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
 
-    challans = models.ManyToManyField(Challan, related_name='sales')
+    challans = models.ManyToManyField(Challan, related_name='sales', blank=True)
 
     remarks = models.TextField(blank=True, null=True)
     is_export = models.BooleanField(default=False)
