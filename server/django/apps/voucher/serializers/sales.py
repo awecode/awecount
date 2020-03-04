@@ -372,7 +372,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challan
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name',)
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name',)
 
 
 class ChallanCreateSerializer(StatusReversionMixin,
@@ -383,8 +383,6 @@ class ChallanCreateSerializer(StatusReversionMixin,
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
-            return
-        if validated_data.get('status') in ['Draft', 'Cancelled']:
             return
         next_voucher_no = get_next_voucher_no(Challan, self.context['request'].company_id)
         validated_data['voucher_no'] = next_voucher_no

@@ -39,6 +39,42 @@ MODES = (
 )
 
 
+class Challan(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    date = models.DateField()
+    due_date = models.DateField(blank=True, null=True)
+
+    remarks = models.TextField(blank=True, null=True)
+
+    print_count = models.PositiveSmallIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challan')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='challan')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='challan')
+    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='challan',
+                                    on_delete=models.SET_NULL)
+    # Model key for module based permission
+    key = 'Challan'
+
+    class Meta:
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
+
+
+class ChallanRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name='rows')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='challan_rows')
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Model key for module based permission
+    key = 'Challan'
+
+
 class SalesVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
@@ -58,6 +94,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                                      related_name='sales')
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+
+    challans = models.ManyToManyField(Challan, related_name='sales')
 
     remarks = models.TextField(blank=True, null=True)
     is_export = models.BooleanField(default=False)
@@ -742,33 +780,6 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-class Challan(TransactionModel, InvoiceModel):
-    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
-    customer_name = models.CharField(max_length=255, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-
-    issue_datetime = models.DateTimeField(default=timezone.now)
-    date = models.DateField()
-    due_date = models.DateField(blank=True, null=True)
-
-    # TODO: CHALLAN_STATUSES
-    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
-    remarks = models.TextField(blank=True, null=True)
-
-    print_count = models.PositiveSmallIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challan')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='challan')
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='challan')
-    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name='challan',
-                                    on_delete=models.SET_NULL)
-    # Model key for module based permission
-    key = 'Challan'
-
-    class Meta:
-        unique_together = ('company', 'voucher_no', 'fiscal_year')
-
-
 #
 #     @property
 #     def buyer_name(self):
@@ -892,17 +903,6 @@ class Challan(TransactionModel, InvoiceModel):
 #     @property
 #     def view_url(self):
 #         return '{}sales-voucher/{}/view'.format(settings.BASE_URL, self.pk)
-
-
-class ChallanRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name='rows')
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='challan_rows')
-    description = models.TextField(blank=True, null=True)
-    quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-
-    # Model key for module based permission
-    key = 'Challan'
 
 
 auditlog.register(Challan)
