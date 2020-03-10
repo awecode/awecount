@@ -28,6 +28,12 @@ class AccountSerializer(serializers.ModelSerializer):
         exclude = ('company', 'default')
 
 
+class AccountFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ('id', 'name', 'code', 'parent', 'category')
+
+
 class AccountBalanceSerializer(serializers.ModelSerializer):
     current_dr = RoundedField()
     current_cr = RoundedField()

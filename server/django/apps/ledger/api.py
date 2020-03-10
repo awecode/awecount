@@ -16,7 +16,7 @@ from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -82,6 +82,8 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'transactions':
             return AccountDetailSerializer
+        if self.action in ['create', 'update']:
+            return AccountFormSerializer
         return AccountSerializer
 
     @action(detail=True, methods=['get'], url_path='journal-entries')
