@@ -121,6 +121,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_defaults(self, request=None):
         return {
             'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data,
                 'enable_sales_agents': request.company.enable_sales_agents
             },
         }
@@ -1022,6 +1023,16 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         challan.print_count += 1
         challan.save()
         return Response({'print_count': challan.print_count})
+
+    @action(detail=False, url_path='by-voucher-no')
+    def by_voucher_no(self, request):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows',
+                     ChallanRow.objects.all().select_related('item', 'unit')))
+        return Response(
+            ChallanCreateSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+                                                      fiscal_year_id=request.query_params.get('fiscal_year'),
+                                                      queryset=qs)).data)
 
     # @action(detail=False, url_path='by-voucher-no')
     # def by_voucher_no(self, request):

@@ -214,6 +214,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
+        challans = validated_data.pop('challans')
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
@@ -226,12 +227,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.create(voucher=instance, **row)
         voucher_meta = instance.get_voucher_meta(update_row_data=True)
+        instance.challans.clear()
+        instance.challans.add(*challans)
         instance.apply_transactions(voucher_meta=voucher_meta)
         instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        challans = validated_data.pop('challans')
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
@@ -241,6 +245,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        instance.challans.clear()
+        instance.challans.add(*challans)
         instance.refresh_from_db()
         voucher_meta = instance.get_voucher_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=voucher_meta)
@@ -372,7 +378,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challan
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name',)
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name',)
 
 
 class ChallanCreateSerializer(StatusReversionMixin,
@@ -383,8 +389,6 @@ class ChallanCreateSerializer(StatusReversionMixin,
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
-            return
-        if validated_data.get('status') in ['Draft', 'Cancelled']:
             return
         next_voucher_no = get_next_voucher_no(Challan, self.context['request'].company_id)
         validated_data['voucher_no'] = next_voucher_no
@@ -417,8 +421,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             ChallanRow.objects.create(voucher=instance, **row)
-        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        # instance.apply_transactions(voucher_meta=voucher_meta)
+        instance.apply_inventory_transactions()
         instance.synchronize()
         return instance
 
@@ -431,8 +434,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         for index, row in enumerate(rows_data):
             ChallanRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        # voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        # instance.apply_transactions(voucher_meta=voucher_meta)
+        instance.apply_inventory_transactions()
         # instance.synchronize(verb='PATCH')
         return instance
 
