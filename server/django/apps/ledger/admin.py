@@ -2,7 +2,7 @@ from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
 from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, \
-    TransactionCharge, AccountOpeningBalance
+    TransactionCharge, AccountOpeningBalance, JournalVoucher
 
 
 class PartyAdmin(admin.ModelAdmin):
@@ -64,3 +64,5 @@ class AccountOpeningBalanceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)
+
+admin.site.register(JournalVoucher)
