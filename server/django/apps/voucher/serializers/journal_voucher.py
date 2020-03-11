@@ -62,7 +62,7 @@ class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalVoucherRow
-        fields = ('account_id', 'account_name', 'type', 'dr_amount', 'cr_amount')
+        fields = ('id', 'account_id', 'account_name', 'type', 'dr_amount', 'cr_amount')
 
 
 class JournalVoucherDetailSerializer(serializers.ModelSerializer):
