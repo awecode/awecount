@@ -62,7 +62,7 @@ class Brand(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     default_unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
