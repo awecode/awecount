@@ -206,7 +206,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             entries.append(['cr', row.item.sales_account, sales_value])
             entries.append(['dr', dr_acc, row_total])
-
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 

@@ -445,6 +445,11 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
             journal_entry.transactions.add(transaction)
         all_transaction_ids.append(transaction.id)
 
+    # if date is updated on source calling set_transactions, update date on JE
+    if journal_entry.date != date:
+        journal_entry.date = date
+        journal_entry.save()
+
     if clear:
         obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
         obsolete_transactions.delete()
