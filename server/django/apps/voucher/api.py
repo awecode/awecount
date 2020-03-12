@@ -84,7 +84,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             qs = qs.prefetch_related('rows')
         elif self.action == 'list':
             qs = qs.select_related('party')
-        return qs.order_by('-pk')
+        return qs.order_by('-date', '-voucher_no')
 
     def get_serializer_class(self):
         if self.request.META.get('HTTP_SECRET'):
@@ -688,7 +688,7 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                                            status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
             Prefetch('rows', SalesVoucherRow.objects.select_related('discount_obj', 'tax_scheme'))).select_related(
             'discount_obj', 'party')
-        return qs.order_by('-pk')
+        return qs.order_by('-date', '-voucher_no')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

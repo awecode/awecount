@@ -57,7 +57,7 @@ class TransactionsViewMixin(object):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-pk', '-journal_entry__date') \
+        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-journal_entry__date', '-pk') \
             .select_related('journal_entry__content_type')
 
         aggregate = {}

@@ -87,8 +87,6 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()
     source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
-    current_dr = RoundedField()
-    current_cr = RoundedField()
     dr_amount = RoundedField()
     cr_amount = RoundedField()
 
@@ -108,9 +106,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'date', 'source_type', 'account_id',
-            'source_id',
-            'voucher_no')
+            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no')
 
 
 class CategorySerializer(serializers.ModelSerializer):
