@@ -212,10 +212,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             )
         return data
 
-    def validate_invoice_date(self, data):
+    def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
         if data.get('status') == 'Issued':
-            if SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),company_id=data.get('company_id')).exists():
+            qs = SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),company_id=data.get('company_id'))
+            if voucher_no:
+                qs = qs.filter(voucher_no__lt=voucher_no)
+            if qs.exists():
+                import ipdb
+                ipdb.set_trace()
                 raise ValidationError(
                     {'date': ['Invoice with later date already exists!']},
                 )
@@ -253,7 +258,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         # Check if there are invoices in later date
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
-        self.validate_invoice_date(validated_data)
+        self.validate_invoice_date(validated_data, voucher_no = instance.voucher_no)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
