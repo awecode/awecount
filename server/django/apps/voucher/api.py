@@ -901,12 +901,14 @@ class PaymentReceiptViewSet(CRULViewSet):
             return Response({'detail': 'Invoice has already been canceled!'}, status=400)
         if not invoice.party_id:
             return Response({'detail': 'Requested invoice isn\'t for a party!'}, status=400)
+        voucher_meta = invoice.get_voucher_meta()
         data = {
             'id': invoice.id,
             'voucher_no': invoice.voucher_no,
             'party_id': invoice.party_id,
             'party_name': invoice.party.name,
-            'amount': invoice.total_amount
+            'amount': invoice.total_amount,
+            'taxable': voucher_meta.get('taxable') or 0
         }
         return Response(data)
 
