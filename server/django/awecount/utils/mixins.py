@@ -71,7 +71,7 @@ class TransactionsViewMixin(object):
             aggregate = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
         # Only show 5 because fetching voucher_no is expensive because of GFK
-        self.paginator.page_size = 40
+        self.paginator.page_size = 10
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)
