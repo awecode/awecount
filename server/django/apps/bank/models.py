@@ -125,6 +125,10 @@ class ChequeDeposit(TransactionModel):
 
 
 class ChequeIssue(models.Model):
+    STATUSES = (
+        ('Issued', 'Issued'),
+        ('Cancelled', 'Cancelled'),
+    )
     cheque_no = models.CharField(max_length=100, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT)
     date = models.DateField()
@@ -132,6 +136,7 @@ class ChequeIssue(models.Model):
     issued_to = models.CharField(max_length=255, blank=True, null=True)
     dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues', on_delete=models.SET_NULL)
     amount = models.IntegerField()
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
@@ -162,12 +167,23 @@ class ChequeIssue(models.Model):
         return wGenerator.convertNumberToWords(self.amount)
 
     def apply_transactions(self):
-        entries = [['cr', self.bank_account.ledger, self.amount]]
-        if self.party_id:
-            entries.append(['dr', self.party.supplier_account, self.amount])
-        else:
-            entries.append(['dr', self.dr_account, self.amount])
-        set_ledger_transactions(self, self.date, *entries, clear=True)
+        if self.status == 'Issued':
+            entries = [['cr', self.bank_account.ledger, self.amount]]
+            if self.party_id:
+                entries.append(['dr', self.party.supplier_account, self.amount])
+            else:
+                entries.append(['dr', self.dr_account, self.amount])
+            set_ledger_transactions(self, self.date, *entries, clear=True)
+        elif self.status == 'Cancelled':
+            self.cancel_transactions()
+
+    def cancel_transactions(self):
+        JournalEntry.objects.filter(content_type__model='chequeissue', object_id=self.id).delete()
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.cancel_transactions()
 
         # class CashDeposit(models.Model):
         #     STATUSES = (

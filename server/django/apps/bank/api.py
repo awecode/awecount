@@ -81,6 +81,12 @@ class ChequeIssueViewSet(CRULViewSet):
         ('accounts', Account),
     )
 
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        obj.cancel()
+        return Response({})
+
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == 'list':
