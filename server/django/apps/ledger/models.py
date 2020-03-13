@@ -768,3 +768,6 @@ class AccountOpeningBalance(models.Model):
 
     def get_source_id(self):
         return self.pk
+    
+    class Meta:
+        unique_together = ('company', 'fiscal_year', 'account')
