@@ -113,8 +113,8 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         # elif instance.amount and len(self.invoice_ids) === 1:
         #     instance.invoices.update(status='Partially Paid')
         if self.validated_data['mode'] == 'Cheque':
-            cheque_deposit = instance.cheque_deposit or ChequeDeposit(company_id=self.context['request'].company_id)
-            cheque_deposit.status = 'Issued'
+            cheque_deposit = instance.cheque_deposit or ChequeDeposit(company_id=self.context['request'].company_id,
+                                                                      status='Issued')
             cheque_deposit.date = instance.date
             cheque_deposit.bank_account = instance.bank_account
             cheque_deposit.cheque_date = cheque_deposit_data.get('date')
@@ -123,6 +123,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             cheque_deposit.amount = instance.amount
             cheque_deposit.benefactor = instance.party.customer_account
             cheque_deposit.save()
+            cheque_deposit.apply_transactions()
             if not instance.cheque_deposit:
                 instance.cheque_deposit = cheque_deposit
                 instance.save()
@@ -215,7 +216,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
         if data.get('status') == 'Issued':
-            qs = SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),company_id=data.get('company_id'))
+            qs = SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),
+                                             company_id=data.get('company_id'))
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
             if qs.exists():
@@ -258,7 +260,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         # Check if there are invoices in later date
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
-        self.validate_invoice_date(validated_data, voucher_no = instance.voucher_no)
+        self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
