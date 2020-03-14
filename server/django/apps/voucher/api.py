@@ -610,7 +610,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
         if self.action != 'list':
             qs = qs.prefetch_related(
                 Prefetch('rows', JournalVoucherRow.objects.order_by('-type', 'id').select_related('account')))
-        return qs
+        return qs.order_by('-pk')
 
     def get_serializer_class(self):
         if self.action == 'list':
