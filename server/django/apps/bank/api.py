@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -25,7 +26,8 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ChequeDepositCreateSerializer
     model = ChequeDeposit
     collections = [
-        ('benefactors', Account.objects.only('id', 'name', ).filter(category__name='Customers')),
+        ('benefactors',
+         Account.objects.only('id', 'name', ).filter(Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
     ]
 
