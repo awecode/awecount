@@ -68,8 +68,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     filterset_class = SalesVoucherFilterSet
 
     search_fields = ['voucher_no', 'party__name', 'remarks', 'total_amount', 'party__tax_registration_number',
-                     'customer_name',
-                     'rows__item__name']
+                     'customer_name', 'date', 'rows__item__name']
 
     def get_collections(self, request=None):
         sales_agent_tuple = ('sales_agents', SalesAgent)
