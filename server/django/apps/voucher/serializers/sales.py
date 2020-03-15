@@ -215,7 +215,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
         if data.get('status') == 'Issued':
-            qs = SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),company_id=data.get('company_id'))
+            qs = SalesVoucher.objects.filter(date__gt=data.get('date'), fiscal_year_id=data.get('fiscal_year_id'),
+                                             company_id=data.get('company_id'))
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
             if qs.exists():
@@ -227,7 +228,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
-        challans = validated_data.pop('challans')
+        challans = validated_data.pop('challans', None)
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
@@ -241,15 +242,18 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.create(voucher=instance, **row)
         voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        instance.challans.clear()
-        instance.challans.add(*challans)
+
+        if challans:
+            instance.challans.clear()
+            instance.challans.add(*challans)
+
         instance.apply_transactions(voucher_meta=voucher_meta)
         instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
-        challans = validated_data.pop('challans')
+        challans = validated_data.pop('challans', None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
@@ -258,14 +262,17 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         # Check if there are invoices in later date
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
-        self.validate_invoice_date(validated_data, voucher_no = instance.voucher_no)
+        self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
+
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
-        instance.challans.clear()
-        instance.challans.add(*challans)
-        instance.refresh_from_db()
+
+        if challans:
+            instance.challans.clear()
+            instance.challans.add(*challans)
+            instance.refresh_from_db()
         voucher_meta = instance.get_voucher_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=voucher_meta)
         # instance.synchronize(verb='PATCH')
