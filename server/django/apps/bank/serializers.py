@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from awecount.utils.serializers import StatusReversionMixin
-from .models import BankAccount, ChequeDeposit, ChequeIssue
+from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -70,3 +70,25 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = ('id', 'name', 'account_number', 'cheque_no',)
+
+
+class BankCashDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
+    voucher_no = serializers.IntegerField(required=False, allow_null=True)
+
+    def create(self, validated_data):
+        bank_cash_deposit = BankCashDeposit.objects.create(**validated_data)
+        # cheque_deposit.apply_transactions()
+        return bank_cash_deposit
+
+    def update(self, instance, validated_data):
+        BankCashDeposit.objects.filter(pk=instance.id).update(**validated_data)
+        # if instance.status == 'Cleared':
+        #     instance.refresh_from_db()
+        #     instance.apply_transactions()
+        return instance
+
+    class Meta:
+        model = BankCashDeposit
+        exclude = ('company',)
