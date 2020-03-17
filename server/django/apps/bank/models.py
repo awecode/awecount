@@ -117,9 +117,9 @@ class ChequeDeposit(TransactionModel):
 #     drawee_bank_address = models.CharField(max_length=255)
 #     amount = models.FloatField()
 #     cheque_deposit = models.ForeignKey(ChequeDeposit, related_name='rows', on_delete=models.CASCADE)
-# 
+#
 #     company_id_accessor = 'cheque_deposit__company_id'
-# 
+#
 #     def get_voucher_no(self):
 #         return self.cheque_deposit_id
 
@@ -134,7 +134,8 @@ class ChequeIssue(models.Model):
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     issued_to = models.CharField(max_length=255, blank=True, null=True)
-    dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues', on_delete=models.SET_NULL)
+    dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues',
+                                   on_delete=models.SET_NULL)
     amount = models.IntegerField()
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -199,3 +200,52 @@ class ChequeIssue(models.Model):
         #     company = models.ForeignKey(Company, on_delete=models.CASCADE)
         #     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
         #     date = models.DateField()
+
+
+class BankCashDeposit(TransactionModel):
+    voucher_no = models.IntegerField(blank=True, null=True, default=None)
+    date = models.DateField()
+    bank_account = models.ForeignKey(BankAccount, related_name='bank_cash_deposits', on_delete=models.CASCADE)
+    amount = models.FloatField()
+    benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
+    deposited_by = models.CharField(max_length=255, blank=True, null=True)
+    narration = models.TextField(null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.date)
+
+    def get_voucher_no(self):
+        return self.voucher_no or self.id
+
+    # def apply_transactions(self):
+    #     if self.status == 'Cancelled':
+    #         self.cancel_transactions()
+    #         return
+    #     if not self.status == 'Cleared':
+    #         return
+    #     entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
+    #     set_ledger_transactions(self, self.date, *entries, clear=True)
+    #
+    # def cancel_transactions(self):
+    #     if not self.status == 'Cancelled':
+    #         return
+    #     JournalEntry.objects.filter(content_type__model='bankcashdeposit', object_id=self.id).delete()
+    #
+    # def clear(self):
+    #     self.status = 'Cleared'
+    #     self.clearing_date = datetime.datetime.today()
+    #     self.save()
+    #     self.apply_transactions()
+    #     for receipt in self.payment_receipts.all():
+    #         receipt.status = 'Cleared'
+    #         receipt.clearing_date = datetime.datetime.today()
+    #         receipt.save()
+    #
+    # def cancel(self):
+    #     self.status = 'Cancelled'
+    #     self.save()
+    #     self.cancel_transactions()
+    #     for receipt in self.payment_receipts.all():
+    #         receipt.status = 'Cancelled'
+    #         receipt.save()
