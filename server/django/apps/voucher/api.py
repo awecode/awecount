@@ -806,7 +806,7 @@ class PaymentReceiptViewSet(CRULViewSet):
     serializer_class = PaymentReceiptFormSerializer
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
     queryset = PaymentReceipt.objects.all()
-    search_fields = ['party__name']
+    search_fields = ['party__name', 'amount']
 
     filterset_class = PaymentReceiptFilterSet
     collections = (
