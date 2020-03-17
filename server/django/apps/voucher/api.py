@@ -817,7 +817,7 @@ class PaymentReceiptViewSet(CRULViewSet):
         qs = super().get_queryset()
         if self.action == 'list':
             qs = qs.select_related('party')
-        return qs.order_by('-pk')
+        return qs.order_by('-date')
 
     def get_serializer_class(self):
         if self.action == 'list':
