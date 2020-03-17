@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from apps.bank.filters import ChequeDepositFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
-    ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer
+    ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
+    BankCashDepositListSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -101,7 +102,7 @@ class CashDepositViewSet(CRULViewSet):
     queryset = BankCashDeposit.objects.all()
     serializer_class = BankCashDepositCreateSerializer
     model = BankCashDeposit
-    
+
     collections = [
         ('benefactors',
          Account.objects.only('id', 'name', ).filter(
@@ -121,5 +122,5 @@ class CashDepositViewSet(CRULViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action in ('choices',):
-            return ChequeDepositListSerializer
+            return BankCashDepositListSerializer
         return BankCashDepositCreateSerializer

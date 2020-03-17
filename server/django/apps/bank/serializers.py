@@ -44,6 +44,15 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'status')
 
 
+class BankCashDepositListSerializer(serializers.ModelSerializer):
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.account_number')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
+
+    class Meta:
+        model = BankCashDeposit
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name','deposited_by',)
+
+
 class ChequeIssueSerializer(serializers.ModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
     payee = serializers.SerializerMethodField()
