@@ -220,10 +220,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                                              company_id=data.get('company_id'))
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
-            if qs.exists():
-                raise ValidationError(
-                    {'date': ['Invoice with later date already exists!']},
-                )
+            # if qs.exists():
+            #     raise ValidationError(
+            #         {'date': ['Invoice with later date already exists!']},
+            #     )
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
