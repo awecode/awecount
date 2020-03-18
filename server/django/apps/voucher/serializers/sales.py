@@ -221,8 +221,6 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
             if qs.exists():
-                import ipdb
-                ipdb.set_trace()
                 raise ValidationError(
                     {'date': ['Invoice with later date already exists!']},
                 )
