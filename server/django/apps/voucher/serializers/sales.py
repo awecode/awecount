@@ -35,6 +35,7 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
 
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
+    party_address = serializers.ReadOnlyField(source='party.address')
     bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
     invoices = serializers.SerializerMethodField()
     cheque_date = serializers.ReadOnlyField(source='cheque_deposit.cheque_date')
@@ -53,7 +54,7 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
         model = PaymentReceipt
         fields = (
             'id', 'date', 'status', 'mode', 'party_name', 'invoices', 'amount', 'tds_amount', 'bank_account_name',
-            'cheque_date',
+            'cheque_date', 'party_address',
             'cheque_number', 'drawee_bank', 'cheque_deposit_id')
 
 
@@ -220,10 +221,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                                              company_id=data.get('company_id'))
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
-            # if qs.exists():
-            #     raise ValidationError(
-            #         {'date': ['Invoice with later date already exists!']},
-            #     )
+                # if qs.exists():
+                #     raise ValidationError(
+                #         {'date': ['Invoice with later date already exists!']},
+                #     )
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')

@@ -39,6 +39,7 @@ class Company(models.Model):
     logo = models.ImageField(blank=True, null=True, upload_to='logos/')
     contact_no = models.CharField(max_length=25)
     email = models.EmailField()
+    website = models.URLField(blank=True, null=True)
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='private_limited')
     tax_registration_number = models.IntegerField()
     # force_preview_before_save = models.BooleanField(default=False)
