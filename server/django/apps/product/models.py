@@ -437,6 +437,14 @@ class Item(models.Model):
             return self.fixed_asset_account
         return self.purchase_account
 
+    def update_opening_balance(self, fiscal_year):
+        date = fiscal_year.previous_day
+        set_inventory_transactions(
+            self,
+            date,
+            ['dr', self.account, self.account.opening_balance],
+        )
+
     def save(self, *args, **kwargs):
         self.validate_unique()
 

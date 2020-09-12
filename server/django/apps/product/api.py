@@ -12,10 +12,11 @@ from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
+from apps.users.models import FiscalYear
 from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
-from .models import Category as InventoryCategory, InventoryAccount
+from .models import Category as InventoryCategory, InventoryAccount, set_inventory_transactions
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
@@ -101,7 +102,14 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
         account = get_object_or_404(InventoryAccount, item__id=data.get('item_id'), opening_balance=0, company=request.company)
         account.opening_balance = data.get('opening_balance')
         account.save()
+        fiscal_year = self.request.company.current_fiscal_year
+        account.item.update_opening_balance(fiscal_year)
         return Response({})
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        fiscal_year = self.request.company.current_fiscal_year
+        serializer.instance.item.update_opening_balance(fiscal_year)
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
