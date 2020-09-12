@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -78,8 +78,9 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['item__name', 'item__code', 'item__description', 'item__search_data', 'opening_balance', ]
     filterset_class = InventoryAccountFilterSet
+
     collections = (
-        ('items', Item.objects.filter(track_inventory=True), ItemListSerializer),
+        ('items', Item.objects.filter(track_inventory=True, account__opening_balance=0), ItemListSerializer),
     )
 
     def get_queryset(self, company_id=None):
@@ -87,6 +88,13 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
         if self.action == 'list':
             qs = qs.filter(opening_balance__gt=0)
         return qs
+
+    def get_update_defaults(self, request=None):
+        self.collections = (
+            ('items', Item.objects.filter(track_inventory=True).filter(
+                Q(account__opening_balance=0) | Q(account_id=self.kwargs.get('pk'))), ItemListSerializer),
+        )
+        return self.get_defaults(request=request)
 
     def create(self, request, *args, **kwargs):
         data = request.data
