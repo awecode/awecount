@@ -445,6 +445,10 @@ class Item(models.Model):
             ['dr', self.account, self.account.opening_balance],
         )
 
+    def get_source_id(self):
+        # Used as transaction source for opening balance
+        return self.id
+
     def save(self, *args, **kwargs):
         self.validate_unique()
 
