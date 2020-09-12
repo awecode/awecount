@@ -44,6 +44,15 @@ class ItemSalesSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'code', 'description', 'is_trackable')
 
 
+class ItemOpeningSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='item.name')
+    item_id = serializers.ReadOnlyField(source='item.id')
+
+    class Meta:
+        model = InventoryAccount
+        fields = ('id', 'name', 'item_id', 'opening_balance',)
+
+
 class ItemPOSSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source='selling_price')
 

@@ -14,13 +14,13 @@ from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
-from .filters import ItemFilterSet, BookFilterSet
-from .models import Category as InventoryCategory
+from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
+from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
-    ItemPOSSerializer, ItemListSerializer
+    ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
@@ -71,6 +71,29 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         queryset = self.get_queryset().filter(can_be_sold=True)
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class ItemOpeningBalanceViewSet(CRULViewSet):
+    serializer_class = ItemOpeningSerializer
+    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    search_fields = ['item__name', 'item__code', 'item__description', 'item__search_data', 'opening_balance', ]
+    filterset_class = InventoryAccountFilterSet
+    collections = (
+        ('items', Item.objects.filter(track_inventory=True), ItemListSerializer),
+    )
+
+    def get_queryset(self, company_id=None):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.filter(opening_balance__gt=0)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        account = get_object_or_404(InventoryAccount, item__id=data.get('item_id'), opening_balance=0, company=request.company)
+        account.opening_balance = data.get('opening_balance')
+        account.save()
+        return Response({})
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):

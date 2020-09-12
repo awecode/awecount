@@ -1,12 +1,18 @@
 from django_filters import rest_framework as filters
 
-from .models import Item
+from .models import Item, InventoryAccount
 
 
 class ItemFilterSet(filters.FilterSet):
     class Meta:
         model = Item
         fields = ('can_be_sold', 'can_be_purchased', 'search_data',)
+
+
+class InventoryAccountFilterSet(filters.FilterSet):
+    class Meta:
+        model = InventoryAccount
+        fields = ('opening_balance',)
 
 
 class BookFilterSet(filters.FilterSet):

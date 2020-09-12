@@ -31,6 +31,7 @@ router.register('books', item.BookViewSet, base_name='book')
 router.register('brands', item.BrandViewSet, base_name='brands')
 router.register('units', item.UnitViewSet, base_name='unit')
 router.register('inventory-categories', item.InventoryCategoryViewSet, base_name='inventory-categories')
+router.register('item-opening-balance', item.ItemOpeningBalanceViewSet, base_name='item-opening-balance')
 
 # voucher
 router.register('sales-voucher', voucher.SalesVoucherViewSet)
@@ -65,7 +66,7 @@ router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry'
 router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
 
 urlpatterns = [
-                  path('aweadmin/', admin.site.urls),
+                  path('admin/' if settings.DEBUG == True else 'aweadmin/', admin.site.urls),
                   path('', include('apps.voucher.urls')),
                   path('v1/category-tree/', ledger.CategoryTreeView.as_view(), name='category-tree'),
                   path('v1/full-category-tree/', ledger.FullCategoryTreeView.as_view(), name='full-category-tree'),
