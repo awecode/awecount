@@ -127,10 +127,10 @@ class User(AbstractBaseUser):
         return self.is_superuser
 
     def has_module_perms(self, app_label):
-        return True
+        return self.is_superuser
 
     def has_perm(self, perm, obj=None):
-        return True
+        return self.is_superuser
 
     def check_perm(self, perm):
         if perm not in self.role_modules:
