@@ -54,6 +54,7 @@ router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchas
 
 # bank
 router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
+router.register('bank-cash-deposits', bank.CashDepositViewSet, base_name='cash-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
 

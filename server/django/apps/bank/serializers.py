@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from awecount.utils.serializers import StatusReversionMixin
-from .models import BankAccount, ChequeDeposit, ChequeIssue
+from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -44,6 +44,15 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
         fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'status')
 
 
+class BankCashDepositListSerializer(serializers.ModelSerializer):
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.account_number')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
+
+    class Meta:
+        model = BankCashDeposit
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name','deposited_by',)
+
+
 class ChequeIssueSerializer(serializers.ModelSerializer):
     # party_id = serializers.IntegerField(source='party.id', required=False)
     payee = serializers.SerializerMethodField()
@@ -70,3 +79,25 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = ('id', 'name', 'account_number', 'cheque_no',)
+
+
+class BankCashDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
+    bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
+    benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
+    voucher_no = serializers.IntegerField(required=False, allow_null=True)
+
+    def create(self, validated_data):
+        bank_cash_deposit = BankCashDeposit.objects.create(**validated_data)
+        # cheque_deposit.apply_transactions()
+        return bank_cash_deposit
+
+    def update(self, instance, validated_data):
+        BankCashDeposit.objects.filter(pk=instance.id).update(**validated_data)
+        # if instance.status == 'Cleared':
+        #     instance.refresh_from_db()
+        #     instance.apply_transactions()
+        return instance
+
+    class Meta:
+        model = BankCashDeposit
+        exclude = ('company',)

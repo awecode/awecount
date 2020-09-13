@@ -7,9 +7,10 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet
-from apps.bank.models import BankAccount, ChequeDeposit
+from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
-    ChequeIssueSerializer, BankAccountChequeIssueSerializer
+    ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
+    BankCashDepositListSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -27,7 +28,8 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     model = ChequeDeposit
     collections = [
         ('benefactors',
-         Account.objects.only('id', 'name', ).filter(Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
+         Account.objects.only('id', 'name', ).filter(
+             Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
         ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
     ]
 
@@ -94,3 +96,31 @@ class ChequeIssueViewSet(CRULViewSet):
         if self.action == 'list':
             qs = qs.select_related('party')
         return qs.order_by('-pk')
+
+
+class CashDepositViewSet(CRULViewSet):
+    queryset = BankCashDeposit.objects.all()
+    serializer_class = BankCashDepositCreateSerializer
+    model = BankCashDeposit
+
+    collections = [
+        ('benefactors',
+         Account.objects.only('id', 'name', ).filter(
+             Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
+        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
+    ]
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'bank_account__bank_name', 'bank_account__account_number', 'benefactor__name',
+                     'deposited_by', ]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('benefactor', 'bank_account')
+        return qs.order_by('-pk')
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action in ('choices',):
+            return BankCashDepositListSerializer
+        return BankCashDepositCreateSerializer
