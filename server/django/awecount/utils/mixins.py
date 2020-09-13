@@ -57,7 +57,7 @@ class TransactionsViewMixin(object):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-journal_entry__date', '-pk') \
+        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('journal_entry__date', 'pk') \
             .select_related('journal_entry__content_type')
 
         aggregate = {}
@@ -68,10 +68,12 @@ class TransactionsViewMixin(object):
                 transactions = transactions.filter(journal_entry__date=start_date)
             else:
                 transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
-            aggregate = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
+            aggregate['total'] = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
+            aggregate['opening'] = Transaction.objects.select_related('journal_entry__content_type').filter(
+                account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
-        # Only show 5 because fetching voucher_no is expensive because of GFK
-        self.paginator.page_size = 10
+        # Only show 5 because fetching voucher_no is expensive because of GFK, GFK to be cached
+        # self.paginator.page_size = 5
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)
