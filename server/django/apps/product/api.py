@@ -21,7 +21,7 @@ from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
-    ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer
+    ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
 
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
@@ -166,6 +166,11 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             qs = qs.order_by('-id')
         return qs
 
+    @action(detail=False, url_path='trial-balance')
+    def trial_balance(self, request):
+        qs = self.get_queryset().filter(Q(track_inventory=True) | Q(fixed_asset=True))
+        return Response(InventoryCategoryTrialBalanceSerializer(qs, many=True).data)
+
 
 class BrandViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BrandSerializer
@@ -224,10 +229,25 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
             aggregate = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
-        # Only show 5 because fetching voucher_no is expensive because of GFK
-        self.paginator.page_size = 5
+        # Only show 5 because fetching voucher_no is expensive because of GFK, GFK to be cached
+        # self.paginator.page_size = 5
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)
         data['aggregate'] = aggregate
         return Response(data)
+
+    @action(detail=False, url_path='trial-balance')
+    def trial_balance(self, request, format=None):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if start_date and end_date:
+            qq = InventoryAccount.objects.filter(company=request.company).annotate(
+                od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
+                cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+                cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+            ) \
+                .values('id', 'name', 'item__category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
+            return Response(list(qq))
+        return Response({})

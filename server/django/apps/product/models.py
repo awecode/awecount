@@ -286,7 +286,7 @@ class JournalEntry(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(InventoryAccount, on_delete=models.CASCADE)
+    account = models.ForeignKey(InventoryAccount, on_delete=models.CASCADE, related_name='transactions')
     dr_amount = models.FloatField(null=True, blank=True)
     cr_amount = models.FloatField(null=True, blank=True)
     current_balance = models.FloatField(null=True, blank=True)

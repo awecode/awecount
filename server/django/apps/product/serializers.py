@@ -110,6 +110,11 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
                    'discount_allowed_account_category', 'discount_received_account_category', 'fixed_asset_account_category',
                    'direct_expense_account_category', 'indirect_expense_account_category')
 
+class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryCategory
+        fields = ('name', 'id', 'can_be_sold', 'can_be_purchased', 'fixed_asset')
+
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
