@@ -6,7 +6,7 @@ from .models import Item, InventoryAccount
 class ItemFilterSet(filters.FilterSet):
     class Meta:
         model = Item
-        fields = ('can_be_sold', 'can_be_purchased', 'search_data',)
+        fields = ('can_be_sold', 'can_be_purchased', 'search_data', 'category')
 
 
 class InventoryAccountFilterSet(filters.FilterSet):
