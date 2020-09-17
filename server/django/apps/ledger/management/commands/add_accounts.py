@@ -25,6 +25,6 @@ class Command(BaseCommand):
             # Category.objects.create(name='Fuel and Transport', code='E-I-FT', parent=indirect_expenses, company=company,
             #                         default=True)
 
-            if not Category.objects.filter(name='Bank Charges').exists():
+            if not Category.objects.filter(name='Bank Charges', company=company).exists():
                 Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses, company=company,
                                         default=True)
