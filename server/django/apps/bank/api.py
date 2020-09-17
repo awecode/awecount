@@ -30,7 +30,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
         ('benefactors',
          Account.objects.only('id', 'name', ).filter(
              Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
-        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
+        ('bank_accounts', BankAccount.objects.filter(is_wallet=False).only('short_name', 'account_number')),
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
@@ -80,7 +80,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
 class ChequeIssueViewSet(CRULViewSet):
     serializer_class = ChequeIssueSerializer
     collections = (
-        ('bank_accounts', BankAccount, BankAccountChequeIssueSerializer),
+        ('bank_accounts', BankAccount.objects.filter(is_wallet=False), BankAccountChequeIssueSerializer),
         ('parties', Party, PartyMinSerializer),
         ('accounts', Account),
     )
@@ -107,7 +107,7 @@ class CashDepositViewSet(CRULViewSet):
         ('benefactors',
          Account.objects.only('id', 'name', ).filter(
              Q(category__name='Customers') | Q(category__name='Bank Accounts'))),
-        ('bank_accounts', BankAccount.objects.only('short_name', 'account_number')),
+        ('bank_accounts', BankAccount.objects.filter(is_wallet=False).only('short_name', 'account_number')),
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
