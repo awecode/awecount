@@ -205,14 +205,16 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(['cr', row.item.sales_account, sales_value])
+
             # Handle wallet commissions
             if self.mode == 'Bank Deposit' and self.bank_account.is_wallet:
                 commission = row_total * self.bank_account.transaction_commission_percent / 100
                 entries.append(['dr', dr_acc, row_total - commission])
                 if commission:
-                    pass
+                    entries.append(['dr', self.bank_account.commission_account, commission])
             else:
                 entries.append(['dr', dr_acc, row_total])
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
