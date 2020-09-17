@@ -19,6 +19,7 @@ class BankAccount(models.Model):
     transaction_commission_percent = models.FloatField(blank=True, null=True, default=0)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='bank_accounts')
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
+    commission_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='wallet_accounts')
 
     def save(self, *args, **kwargs):
         if self.is_wallet:
@@ -30,12 +31,22 @@ class BankAccount(models.Model):
             if not self.next_cheque_no or not self.next_cheque_no.isdigit():
                 raise ValidationError('Cheque No. can only contain digits!')
         super().save(*args, **kwargs)
+        post_save = False
+        if self.is_wallet and self.transaction_commission_percent and not self.commission_account_id:
+            commission_account = Account(name=self.full_name + ' Commission', company=self.company)
+            commission_account.add_category('Bank Charges')
+            commission_account.suggest_code(self)
+            commission_account.save()
+            self.commission_account = commission_account
+            post_save = True
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
             ledger.add_category('Bank Accounts')
             ledger.suggest_code(self)
             ledger.save()
             self.ledger = ledger
+            post_save = True
+        if post_save:
             self.save()
 
     def increase_cheque_no(self):

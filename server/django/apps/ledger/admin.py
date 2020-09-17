@@ -45,6 +45,7 @@ class CategoryAdmin(MPTTModelAdmin):
     list_display = ('name', 'code', 'parent', 'company')
     list_filter = ('company', 'default')
     readonly_fields = ('default',)
+    search_fields = ('name',)
 
 
 admin.site.register(Category, CategoryAdmin)

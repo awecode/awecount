@@ -205,7 +205,14 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(['cr', row.item.sales_account, sales_value])
-            entries.append(['dr', dr_acc, row_total])
+            # Handle wallet commissions
+            if self.mode == 'Bank Deposit' and self.bank_account.is_wallet:
+                commission = row_total * self.bank_account.transaction_commission_percent / 100
+                entries.append(['dr', dr_acc, row_total - commission])
+                if commission:
+                    pass
+            else:
+                entries.append(['dr', dr_acc, row_total])
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
@@ -449,7 +456,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -605,7 +612,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,
