@@ -21,8 +21,14 @@ class BankAccount(models.Model):
     ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='bank_accounts')
 
     def save(self, *args, **kwargs):
-        if not self.next_cheque_no or not self.next_cheque_no.isdigit():
-            raise ValidationError('Cheque No. can only contain digits.')
+        if self.is_wallet:
+            if not self.bank_name:
+                raise ValidationError('Wallet name is required!')
+        else:
+            if not self.account_number:
+                raise ValidationError('Account Number is required!')
+            if not self.next_cheque_no or not self.next_cheque_no.isdigit():
+                raise ValidationError('Cheque No. can only contain digits!')
         super().save(*args, **kwargs)
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
@@ -220,34 +226,34 @@ class BankCashDeposit(TransactionModel):
     def get_voucher_no(self):
         return self.voucher_no or self.id
 
-    # def apply_transactions(self):
-    #     if self.status == 'Cancelled':
-    #         self.cancel_transactions()
-    #         return
-    #     if not self.status == 'Cleared':
-    #         return
-    #     entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
-    #     set_ledger_transactions(self, self.date, *entries, clear=True)
-    #
-    # def cancel_transactions(self):
-    #     if not self.status == 'Cancelled':
-    #         return
-    #     JournalEntry.objects.filter(content_type__model='bankcashdeposit', object_id=self.id).delete()
-    #
-    # def clear(self):
-    #     self.status = 'Cleared'
-    #     self.clearing_date = datetime.datetime.today()
-    #     self.save()
-    #     self.apply_transactions()
-    #     for receipt in self.payment_receipts.all():
-    #         receipt.status = 'Cleared'
-    #         receipt.clearing_date = datetime.datetime.today()
-    #         receipt.save()
-    #
-    # def cancel(self):
-    #     self.status = 'Cancelled'
-    #     self.save()
-    #     self.cancel_transactions()
-    #     for receipt in self.payment_receipts.all():
-    #         receipt.status = 'Cancelled'
-    #         receipt.save()
+        # def apply_transactions(self):
+        #     if self.status == 'Cancelled':
+        #         self.cancel_transactions()
+        #         return
+        #     if not self.status == 'Cleared':
+        #         return
+        #     entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
+        #     set_ledger_transactions(self, self.date, *entries, clear=True)
+        #
+        # def cancel_transactions(self):
+        #     if not self.status == 'Cancelled':
+        #         return
+        #     JournalEntry.objects.filter(content_type__model='bankcashdeposit', object_id=self.id).delete()
+        #
+        # def clear(self):
+        #     self.status = 'Cleared'
+        #     self.clearing_date = datetime.datetime.today()
+        #     self.save()
+        #     self.apply_transactions()
+        #     for receipt in self.payment_receipts.all():
+        #         receipt.status = 'Cleared'
+        #         receipt.clearing_date = datetime.datetime.today()
+        #         receipt.save()
+        #
+        # def cancel(self):
+        #     self.status = 'Cancelled'
+        #     self.save()
+        #     self.cancel_transactions()
+        #     for receipt in self.payment_receipts.all():
+        #         receipt.status = 'Cancelled'
+        #         receipt.save()
