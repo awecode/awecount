@@ -49,7 +49,10 @@ class BankAccount(models.Model):
 
     @property
     def full_name(self):
-        return '{} ({})'.format(self.short_name or self.bank_name, self.account_number)
+        if self.account_number:
+            return '{} ({})'.format(self.short_name or self.bank_name, self.account_number)
+        else:
+            return '{}'.format(self.short_name or self.bank_name)
 
     def __str__(self):
         return self.short_name or self.bank_name or self.account_number
