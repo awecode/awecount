@@ -411,7 +411,7 @@ class Item(models.Model):
     direct_expense = models.BooleanField(default=False)
     indirect_expense = models.BooleanField(default=False)
 
-    extra_data = JSONField(null=True, blank=True)
+    extra_data = JSONField(null=True, default=dict)
     search_data = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
