@@ -74,8 +74,8 @@ class BaseWidget(object):
         labels = []
         self.group_indices = {}
         if self.group_by == self.date_attribute:
-            for i in range(0, self.count):
-                sub_date = self.end_date - datetime.timedelta(days=(self.count - i - 1))
+            for i in range(0, self.count + 1):
+                sub_date = self.end_date - datetime.timedelta(days=(self.count - i))
                 labels.append(sub_date)
                 self.group_indices[sub_date] = i
         elif self.group_by == 'month':
@@ -118,7 +118,7 @@ class BaseWidget(object):
             dct = {}
             for datum in data:
                 if not datum[self.label_field] in dct.keys():
-                    dct[datum[self.label_field]] = [0] * self.count
+                    dct[datum[self.label_field]] = [0] * (self.count + 1)
                 dct[datum[self.label_field]][self.group_indices[datum[self.group_by]]] = datum[self.data_field]
 
             for key, val in dct.items():
