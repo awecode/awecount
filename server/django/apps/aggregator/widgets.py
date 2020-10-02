@@ -75,11 +75,13 @@ class SalesAmountWidget(BaseWidget):
 class TotalPurchaseAmount(PurchaseAmountWidget):
     name = "Total Purchase Amount"
     label_field = 'date'
+    series = False
 
 
 class TotalSalesAmount(SalesAmountWidget):
     name = "Total Sales Amount"
     label_field = 'date'
+    series = False
 
 
 class PurchaseCountByParty(PurchaseCountWidget):

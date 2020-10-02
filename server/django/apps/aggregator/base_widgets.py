@@ -12,6 +12,7 @@ class BaseWidget(object):
     data_field = 'cnt'
     sum_field = None
     table_headings = []
+    series = True
 
     # By defaults, processes count of `label_field`
     # Set `sum_field` to process sum
@@ -42,7 +43,7 @@ class BaseWidget(object):
             self.data_field = 'sum'
 
     def is_series(self):
-        return self.type.lower() not in ['table', 'pie', 'percentage', 'doughnut', 'polar area']
+        return self.series and self.type.lower() not in ['table', 'pie', 'percentage', 'doughnut', 'polar area']
 
     def is_table(self):
         return self.type == 'Table'
@@ -127,7 +128,7 @@ class BaseWidget(object):
             for datum in data:
                 self.labels.append(datum.get(self.label_field) or 'None')
                 self.values.append(datum.get(self.data_field))
-            self.datasets = [{'data': self.values}]
+            self.datasets = [{'data': self.values, 'label': ''}]
         return {
             'type': self.title_case(self.type),
             'labels': self.labels,
