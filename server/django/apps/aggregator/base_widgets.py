@@ -162,7 +162,7 @@ class BaseWidget(object):
         return qs
 
     def get_nonseries_queryset(self):
-        return self.get_base_queryset().values(self.label_field)
+        return self.get_base_queryset().values(self.label_field).order_by(self.label_field, self.group_by)
 
     def get_series_queryset(self):
         qs = self.get_base_queryset()
