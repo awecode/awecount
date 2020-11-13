@@ -9,7 +9,7 @@ from apps.aggregator.widgets import WIDGET_CHOICES
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.helpers import choice_parser
 from .models import Widget, GROUP_BY, DISPLAY_TYPES
-from .serializers import LogEntrySerializer, WidgetSerializer, WidgetUpdateSerializer
+from .serializers import LogEntrySerializer, WidgetSerializer, WidgetUpdateSerializer, WidgetListSerializer
 
 
 class LogEntryViewSet(ReadOnlyModelViewSet):
@@ -31,7 +31,7 @@ class WidgetViewSet(CRULViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return WidgetSerializer
+            return WidgetListSerializer
         else:
             return WidgetUpdateSerializer
 
