@@ -163,7 +163,16 @@ class BaseWidget(object):
         return qs
 
     def get_nonseries_queryset(self):
-        return self.get_base_queryset().values(self.label_field).order_by(self.label_field, self.group_by)
+        qs = self.get_base_queryset()
+        if self.date_attribute:
+            if self.group_by == 'month':
+                qs = qs.annotate(month=ExtractMonth(self.date_attribute))
+            elif self.group_by == 'year':
+                qs = qs.annotate(year=ExtractYear(self.date_attribute))
+            elif self.group_by == 'week':
+                qs = qs.annotate(week=ExtractWeek(self.date_attribute))
+        qs = qs.values(self.label_field).order_by(self.label_field, self.group_by)
+        return qs
 
     def get_series_queryset(self):
         qs = self.get_base_queryset()
