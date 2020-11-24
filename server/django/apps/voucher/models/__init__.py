@@ -89,6 +89,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
     issue_datetime = models.DateTimeField(default=timezone.now)
     date = models.DateField()
