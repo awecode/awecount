@@ -279,6 +279,14 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     # Model key for module based permission
     key = 'Sales'
 
+    @property
+    def amount_before_tax(self):
+        return self.net_amount - self.tax_amount
+
+    @property
+    def amount_before_discount(self):
+        return self.net_amount - self.tax_amount + self.discount_amount
+
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.CharField(max_length=25)

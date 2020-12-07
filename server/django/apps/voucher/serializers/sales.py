@@ -145,6 +145,9 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+    item_name = serializers.ReadOnlyField(source='item.name')
+    amount_before_tax = serializers.ReadOnlyField()
+    amount_before_discount = serializers.ReadOnlyField()
 
     class Meta:
         model = SalesVoucherRow
@@ -187,6 +190,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
+    voucher_meta = serializers.ReadOnlyField()
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -385,8 +389,7 @@ class SalesRowSerializer(serializers.ModelSerializer):
         model = SalesVoucherRow
         fields = (
             'item', 'buyers_name', 'buyers_pan', 'voucher__voucher_no', 'voucher_id', 'rate', 'quantity',
-            'voucher__date',
-            'tax_amount', 'discount_amount', 'net_amount')
+            'voucher__date', 'tax_amount', 'discount_amount', 'net_amount')
 
 
 class ChallanRowSerializer(serializers.ModelSerializer):

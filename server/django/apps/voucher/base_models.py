@@ -62,6 +62,10 @@ class InvoiceModel(models.Model):
         else:
             return {'type': self.discount_type, 'value': self.discount}
 
+    @property
+    def voucher_meta(self):
+        return self.get_voucher_meta()
+
     def get_voucher_meta(self, update_row_data=False):
         dct = {
             'sub_total': 0,
