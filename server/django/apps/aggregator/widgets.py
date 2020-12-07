@@ -6,12 +6,12 @@ from apps.voucher.models import SalesVoucher, PurchaseVoucher
 
 class SalesCountWidget(BaseWidget):
     def get_base_queryset(self):
-        return SalesVoucher.objects.all()
+        return SalesVoucher.objects.exclude(status__in=['Draft', 'Cancelled'])
 
 
 class PurchaseCountWidget(BaseWidget):
     def get_base_queryset(self):
-        return PurchaseVoucher.objects.all()
+        return PurchaseVoucher.objects.exclude(status__in=['Draft', 'Cancelled'])
 
 
 class SalesCountByAgent(SalesCountWidget):
@@ -39,7 +39,7 @@ class SalesAmountWidget(BaseWidget):
     sum_field = 'total_amount'
 
     def get_base_queryset(self):
-        return SalesVoucher.objects.all()
+        return SalesVoucher.objects.exclude(status__in=['Draft', 'Cancelled'])
 
 
 class SalesAmountByAgent(SalesAmountWidget):
@@ -53,23 +53,11 @@ class SalesAmountByParty(SalesAmountWidget):
     label_field = 'party__name'
 
 
-# class TotalSales(SalesAmountWidget):
-#     name = "Total Sales",
-#     label_field = ''
-
-
 class PurchaseAmountWidget(BaseWidget):
     sum_field = 'total_amount'
 
     def get_base_queryset(self):
-        return PurchaseVoucher.objects.all()
-
-
-class SalesAmountWidget(BaseWidget):
-    sum_field = 'total_amount'
-
-    def get_base_queryset(self):
-        return SalesVoucher.objects.all()
+        return PurchaseVoucher.objects.exclude(status__in=['Draft', 'Cancelled'])
 
 
 class TotalPurchaseAmount(PurchaseAmountWidget):
