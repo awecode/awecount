@@ -1035,23 +1035,23 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
                                                       queryset=qs)).data)
 
-    # @action(detail=False, url_path='by-voucher-no')
-    # def by_voucher_no(self, request):
-    #     qs = super().get_queryset().prefetch_related(
-    #         Prefetch('rows',
-    #                  SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
-    #                                                               'tax_scheme'))).select_related(
-    #         'discount_obj', 'bank_account')
-    #     return Response(
-    #         SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
-    #                                                        fiscal_year_id=request.query_params.get('fiscal_year'),
-    #                                                        queryset=qs)).data)
+        # @action(detail=False, url_path='by-voucher-no')
+        # def by_voucher_no(self, request):
+        #     qs = super().get_queryset().prefetch_related(
+        #         Prefetch('rows',
+        #                  SalesVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
+        #                                                               'tax_scheme'))).select_related(
+        #         'discount_obj', 'bank_account')
+        #     return Response(
+        #         SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+        #                                                        fiscal_year_id=request.query_params.get('fiscal_year'),
+        #                                                        queryset=qs)).data)
 
-    # @action(detail=False)
-    # def export(self, request):
-    #     params = [
-    #         ('Invoices', self.get_queryset(), SalesVoucherResource),
-    #         ('Sales Rows', Challan.objects.filter(voucher__company_id=request.company_id),
-    #          SalesVoucherRowResource),
-    #     ]
-    #     return qs_to_xls(params)
+        # @action(detail=False)
+        # def export(self, request):
+        #     params = [
+        #         ('Invoices', self.get_queryset(), SalesVoucherResource),
+        #         ('Sales Rows', Challan.objects.filter(voucher__company_id=request.company_id),
+        #          SalesVoucherRowResource),
+        #     ]
+        #     return qs_to_xls(params)

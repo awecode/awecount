@@ -15,7 +15,7 @@ class BankAccountSerializer(serializers.ModelSerializer):
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
     benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
-    clearing_date = serializers.ReadOnlyField()
+    # clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
     def create(self, validated_data):
