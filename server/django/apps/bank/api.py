@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from apps.bank.filters import ChequeDepositFilterSet
+from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
@@ -84,6 +84,10 @@ class ChequeIssueViewSet(CRULViewSet):
         ('parties', Party, PartyMinSerializer),
         ('accounts', Account),
     )
+    filterset_class = ChequeIssueFilterSet
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['cheque_no', 'bank_account__bank_name', 'bank_account__account_number', 'party__name',
+                     'issued_to', 'dr_account__name', 'amount']
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
