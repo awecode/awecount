@@ -180,8 +180,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False)
     def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
         params = [
-            ('Invoices', self.get_queryset(), SalesVoucherResource),
+            ('Invoices', queryset, SalesVoucherResource),
             ('Sales Rows', SalesVoucherRow.objects.filter(voucher__company_id=request.company_id),
              SalesVoucherRowResource),
         ]
@@ -326,8 +327,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False)
     def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
         params = [
-            ('Invoices', self.get_queryset(), PurchaseVoucherResource),
+            ('Invoices', queryset, PurchaseVoucherResource),
             ('Purchase Rows', PurchaseVoucherRow.objects.filter(voucher__company_id=request.company_id),
              PurchaseVoucherRowResource),
         ]
@@ -580,8 +582,9 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=False)
     def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
         params = [
-            ('Invoices', self.get_queryset(), DebitNoteResource),
+            ('Invoices', queryset, DebitNoteResource),
             ('Debit Note Rows', DebitNoteRow.objects.filter(voucher__company_id=request.company_id),
              DebitNoteRowResource),
         ]
@@ -1049,8 +1052,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
         # @action(detail=False)
         # def export(self, request):
+        # queryset = self.filter_queryset(self.get_queryset())
         #     params = [
-        #         ('Invoices', self.get_queryset(), SalesVoucherResource),
+        #         ('Invoices', queryset, SalesVoucherResource),
         #         ('Sales Rows', Challan.objects.filter(voucher__company_id=request.company_id),
         #          SalesVoucherRowResource),
         #     ]

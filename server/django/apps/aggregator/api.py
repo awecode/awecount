@@ -21,8 +21,9 @@ class LogEntryViewSet(ReadOnlyModelViewSet):
 
     @action(detail=False)
     def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
         params = [
-            ('Audit Logs', self.get_queryset(), LogEntryResource),
+            ('Audit Logs', queryset, LogEntryResource),
         ]
         return qs_to_xls(params)
 
