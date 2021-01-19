@@ -44,6 +44,13 @@ class WidgetViewSet(CRULViewSet):
     def get_queryset(self):
         return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
 
+    @action(detail=True, methods=['POST'])
+    def delete(self, request, pk):
+        obj = self.get_object()
+        obj.is_active = False
+        obj.save()
+        return Response({})
+
     def get_defaults(self, request=None):
         data = {
             'options': {
