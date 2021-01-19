@@ -604,7 +604,6 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
 
     collections = (
         ('accounts', Account, AccountSerializer),
-
     )
 
     def get_queryset(self, **kwargs):

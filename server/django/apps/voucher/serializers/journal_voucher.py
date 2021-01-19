@@ -54,7 +54,7 @@ class JournalVoucherCreateSerializer(StatusReversionMixin, serializers.ModelSeri
 class JournalVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalVoucher
-        fields = ('id', 'voucher_no', 'date', 'status',)
+        fields = ('id', 'voucher_no', 'date', 'status', 'narration')
 
 
 class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
