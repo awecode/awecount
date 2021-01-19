@@ -57,6 +57,13 @@ class JournalVoucher(models.Model):
         set_ledger_transactions(self, self.date, *entries, clear=True)
         return
 
+    def cancel(self, reason=''):
+        self.status = 'Cancelled'
+        self.cancel_transactions()
+        if reason:
+            self.narration = '{}\nReason for cancellation: {}'.format(self.narration, reason) if self.narration else reason
+        self.save()
+
     def cancel_transactions(self):
         content_type = ContentType.objects.get(model='journalvoucher')
         row_ids = self.rows.values_list('id', flat=True)

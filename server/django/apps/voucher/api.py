@@ -634,6 +634,15 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
         voucher_no = get_next_voucher_no(JournalVoucher, request.company_id)
         return Response({'voucher_no': voucher_no})
 
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        try:
+            obj.cancel(reason=request.data.get('message'))
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))
+
 
 class InvoiceDesignViewSet(CRULViewSet):
     queryset = InvoiceDesign.objects.all()
