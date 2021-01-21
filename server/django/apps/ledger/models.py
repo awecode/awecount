@@ -158,6 +158,9 @@ class Account(models.Model):
             return transactions[0].current_dr
         return 0
 
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+
     # def save(self, *args, **kwargs):
     #     super().save()
 
@@ -768,6 +771,6 @@ class AccountOpeningBalance(models.Model):
 
     def get_source_id(self):
         return self.pk
-    
+
     class Meta:
         unique_together = ('company', 'fiscal_year', 'account')

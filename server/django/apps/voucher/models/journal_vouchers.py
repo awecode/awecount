@@ -69,6 +69,9 @@ class JournalVoucher(models.Model):
         row_ids = self.rows.values_list('id', flat=True)
         JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
+    def save(self, *args, **kwargs):
+        self.validate_unique()
+
 
 class JournalVoucherRow(models.Model):
     TYPES = [('Dr', 'Dr'), ('Cr', 'Cr')]
