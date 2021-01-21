@@ -66,8 +66,9 @@ class JournalVoucher(models.Model):
 
     def cancel_transactions(self):
         content_type = ContentType.objects.get(model='journalvoucher')
-        row_ids = self.rows.values_list('id', flat=True)
-        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        # row_ids = self.rows.values_list('id', flat=True)
+        # JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        JournalEntry.objects.filter(content_type=content_type, object_id=self.id).delete()
 
     def save(self, *args, **kwargs):
         self.validate_unique()
