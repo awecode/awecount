@@ -22,6 +22,7 @@ class ShortNameChoiceSerializer(serializers.Serializer):
             return obj.short_name
         return obj.name
 
+
 class StatusReversionMixin(object):
     UNISSUED_TYPES = ['Unapproved', 'Cancelled', 'Draft']
 
@@ -29,4 +30,14 @@ class StatusReversionMixin(object):
         if instance.status not in self.UNISSUED_TYPES and validated_data.get('status') in self.UNISSUED_TYPES:
             raise ValidationError(
                 {'detail': 'Issued voucher cannot be unissued.'},
+            )
+
+
+class DisableCancelEditMixin(object):
+    CANCELLED_STATUSES = ['Canceled', 'Cancelled', ]
+
+    def disable_cancel_edit(self, validated_data, instance):
+        if instance.status in self.CANCELLED_STATUSES and validated_data.get('status') not in self.CANCELLED_STATUSES:
+            raise ValidationError(
+                {'detail': 'Cancelled vouchers cannot be reverted.'},
             )

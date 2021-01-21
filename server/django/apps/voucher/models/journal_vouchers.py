@@ -71,6 +71,7 @@ class JournalVoucher(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate_unique()
+        super().save(*args, **kwargs)
 
 
 class JournalVoucherRow(models.Model):

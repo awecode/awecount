@@ -160,6 +160,7 @@ class Account(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate_unique()
+        super().save(*args, **kwargs)
 
     # def save(self, *args, **kwargs):
     #     super().save()

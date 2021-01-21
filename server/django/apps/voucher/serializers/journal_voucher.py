@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from ..models import JournalVoucherRow, JournalVoucher
-from awecount.utils.serializers import StatusReversionMixin
+from awecount.utils.serializers import StatusReversionMixin, DisableCancelEditMixin
 
 
 class JournalVoucherRowSerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
         exclude = ('account', 'journal_voucher',)
 
 
-class JournalVoucherCreateSerializer(serializers.ModelSerializer):
+class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSerializer):
     rows = JournalVoucherRowSerializer(many=True)
 
     def create(self, validated_data):
@@ -32,7 +32,7 @@ class JournalVoucherCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         validated_data['company_id'] = self.context['request'].company_id
-        # self.validate_voucher_status(validated_data, instance)
+        self.disable_cancel_edit(validated_data, instance)
         JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             account = row.pop('account')
