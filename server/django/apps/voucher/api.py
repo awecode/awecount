@@ -711,9 +711,17 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                           self.filterset_class.base_filters.keys())
 
         if is_filtered:
-            aggregate = queryset.aggregate(Sum('rows__discount_amount'), Sum('rows__tax_amount'),
-                                           Sum('rows__net_amount'), )
+            aggregate = queryset.aggregate(total_discount=Sum('rows__discount_amount'), total_tax=Sum('rows__tax_amount'),
+                                           total_amount=Sum('rows__net_amount'), )
             self.paginator.aggregate = aggregate
+            if self.is_month_filter():
+                aggregate['total_taxable'] = 0
+                aggregate['total_non_taxable'] = 0
+                aggregate['total_export'] = 0
+                for datum in data:
+                    aggregate['total_taxable'] += datum['voucher_meta']['taxable']
+                    aggregate['total_non_taxable'] += datum['voucher_meta']['non_taxable']
+                    aggregate['total_export'] += datum['voucher_meta']['grand_total'] if datum['is_export'] else 0
         return self.get_paginated_response(data)
 
 

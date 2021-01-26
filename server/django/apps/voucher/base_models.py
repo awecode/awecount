@@ -66,7 +66,7 @@ class InvoiceModel(models.Model):
     def voucher_meta(self):
         return self.get_voucher_meta()
 
-    def get_voucher_meta(self, update_row_data=False):
+    def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
         dct = {
             'sub_total': 0,
             'sub_total_after_row_discounts': 0,
@@ -78,7 +78,8 @@ class InvoiceModel(models.Model):
         rows_data = []
         row_objs = {}
         # bypass prefetch cache using filter
-        for row in self.rows.filter():
+        rows = self.rows.all() if prefetched_rows else self.rows.filter()
+        for row in rows:
             row_data = dict(id=row.id, quantity=row.quantity, rate=row.rate, total=row.rate * row.quantity,
                             row_discount=row.get_discount()[0] if row.has_discount() else 0)
             row_data['gross_total'] = row_data['total'] - row_data['row_discount']

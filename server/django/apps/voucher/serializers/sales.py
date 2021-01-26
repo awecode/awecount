@@ -355,7 +355,10 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 class SalesBookSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source='buyer_name')
     buyers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
-    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    voucher_meta = serializers.SerializerMethodField()
+
+    def get_voucher_meta(self, obj):
+        return obj.get_voucher_meta(prefetched_rows=True)
 
     class Meta:
         model = SalesVoucher

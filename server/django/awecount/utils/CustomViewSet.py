@@ -4,6 +4,7 @@ from rest_framework import mixins, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError as RESTValidationError
 from rest_framework.response import Response
+from datetime import datetime, timedelta
 
 from awecount.utils.helpers import merge_dicts
 
@@ -40,6 +41,14 @@ class CompanyViewSetMixin(object):
             serializer.save()
         except ValidationError as e:
             raise RESTValidationError({'detail': e.messages})
+
+    def is_month_filter(self):
+        if 'start_date' in self.request.query_params.keys() and 'end_date' in self.request.query_params.keys():
+            start_date = datetime.strptime(self.request.query_params['start_date'], '%Y-%m-%d')
+            end_date = datetime.strptime(self.request.query_params['end_date'], '%Y-%m-%d')
+            delta = end_date - start_date
+            if delta.days < 33:
+                return True
 
 
 class CollectionViewSet(object):
