@@ -152,6 +152,7 @@ class InvoiceModel(models.Model):
             'taxable': self.meta_taxable,
             'tax': self.meta_tax
         }
+        dct['grand_total'] = dct['sub_total'] - dct['discount'] + dct['tax']
         return dct
 
     def cancel(self, message=None):
