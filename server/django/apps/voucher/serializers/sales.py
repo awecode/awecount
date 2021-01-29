@@ -245,13 +245,12 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             SalesVoucherRow.objects.create(voucher=instance, **row)
-        voucher_meta = instance.get_voucher_meta(update_row_data=True)
 
         if challans:
             instance.challans.clear()
             instance.challans.add(*challans)
-
-        instance.apply_transactions(voucher_meta=voucher_meta)
+        meta = instance.generate_meta(update_row_data=True)
+        instance.apply_transactions(voucher_meta=meta)
         instance.synchronize()
         return instance
 
@@ -278,8 +277,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             instance.challans.add(*challans)
 
         instance.refresh_from_db()
-        voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        instance.apply_transactions(voucher_meta=voucher_meta)
+        meta = instance.generate_meta(update_row_data=True)
+        instance.apply_transactions(voucher_meta=meta)
         # instance.synchronize(verb='PATCH')
         return instance
 
@@ -355,10 +354,7 @@ class InvoiceDesignSerializer(serializers.ModelSerializer):
 class SalesBookSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source='buyer_name')
     buyers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
-    voucher_meta = serializers.SerializerMethodField()
-
-    def get_voucher_meta(self, obj):
-        return obj.get_voucher_meta(prefetched_rows=True)
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
 
     class Meta:
         model = SalesVoucher

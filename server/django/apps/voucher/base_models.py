@@ -11,6 +11,13 @@ from awecount.utils import wGenerator, nepdate
 
 
 class InvoiceModel(models.Model):
+    meta_sub_total = models.FloatField(blank=True, null=True)
+    meta_sub_total_after_row_discounts = models.FloatField(blank=True, null=True)
+    meta_discount = models.FloatField(blank=True, null=True)
+    meta_non_taxable = models.FloatField(blank=True, null=True)
+    meta_taxable = models.FloatField(blank=True, null=True)
+    meta_tax = models.FloatField(blank=True, null=True)
+
     def __str__(self):
         return str(self.voucher_no)
 
@@ -54,7 +61,7 @@ class InvoiceModel(models.Model):
             return sub_total_after_row_discounts * (self.discount / 100), self.trade_discount
         return 0, False
 
-    # Used by get_voucher_meta
+    # Used by generate_meta
     def get_voucher_discount_data(self):
         if self.discount_obj_id:
             discount_obj = self.discount_obj
@@ -66,7 +73,7 @@ class InvoiceModel(models.Model):
     def voucher_meta(self):
         return self.get_voucher_meta()
 
-    def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
+    def generate_meta(self, update_row_data=False, prefetched_rows=False, save=True):
         dct = {
             'sub_total': 0,
             'sub_total_after_row_discounts': 0,
@@ -123,6 +130,28 @@ class InvoiceModel(models.Model):
         for key, val in dct.items():
             dct[key] = round(val, 2)
 
+        if save:
+            self.meta_sub_total = dct['sub_total']
+            self.meta_sub_total_after_row_discounts = dct['sub_total_after_row_discounts']
+            self.meta_discount = dct['discount']
+            self.meta_non_taxable = dct['non_taxable']
+            self.meta_taxable = dct['taxable']
+            self.meta_tax = dct['tax']
+            self.save()
+
+        return dct
+
+    def get_voucher_meta(self, update_row_data=False, prefetched_rows=False):
+        if self.meta_tax is None:
+            self.generate_meta(save=True)
+        dct = {
+            'sub_total': self.meta_sub_total,
+            'sub_total_after_row_discounts': self.meta_sub_total_after_row_discounts,
+            'discount': self.meta_discount,
+            'non_taxable': self.meta_non_taxable,
+            'taxable': self.meta_taxable,
+            'tax': self.meta_tax
+        }
         return dct
 
     def cancel(self, message=None):

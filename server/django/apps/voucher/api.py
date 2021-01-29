@@ -719,9 +719,8 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                 aggregate['total_non_taxable'] = 0
                 aggregate['total_export'] = 0
                 for datum in data:
-                    aggregate['total_taxable'] += datum['voucher_meta']['taxable']
-                    aggregate['total_non_taxable'] += datum['voucher_meta']['non_taxable']
-                    aggregate['total_export'] += datum['voucher_meta']['grand_total'] if datum['is_export'] else 0
+                    # TODO
+                    pass
         return self.get_paginated_response(data)
 
 
@@ -919,14 +918,13 @@ class PaymentReceiptViewSet(CRULViewSet):
             return Response({'detail': 'Invoice has already been canceled!'}, status=400)
         if not invoice.party_id:
             return Response({'detail': 'Requested invoice isn\'t for a party!'}, status=400)
-        voucher_meta = invoice.get_voucher_meta()
         data = {
             'id': invoice.id,
             'voucher_no': invoice.voucher_no,
             'party_id': invoice.party_id,
             'party_name': invoice.party.name,
             'amount': invoice.total_amount,
-            'taxable': voucher_meta.get('taxable') or 0
+            'taxable': invoice.get_voucher_meta().get('taxable') or 0
         }
         return Response(data)
 

@@ -58,8 +58,8 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
-        voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        instance.apply_transactions(voucher_meta=voucher_meta)
+        meta = instance.generate_meta(update_row_data=True)
+        instance.apply_transactions(voucher_meta=meta)
         return instance
 
     def update(self, instance, validated_data):
@@ -72,8 +72,8 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
-        voucher_meta = instance.get_voucher_meta(update_row_data=True)
-        instance.apply_transactions(voucher_meta=voucher_meta)
+        meta = instance.generate_meta(update_row_data=True)
+        instance.apply_transactions(voucher_meta=meta)
         return instance
 
     class Meta:
