@@ -358,7 +358,9 @@ class SalesBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export')
+        fields = (
+            'id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export', 'meta_discount', 'meta_tax',
+            'meta_taxable')
 
 
 class PurchaseBookSerializer(serializers.ModelSerializer):
