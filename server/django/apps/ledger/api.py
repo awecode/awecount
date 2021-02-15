@@ -5,6 +5,7 @@ from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
+from rest_framework.mixins import DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -19,7 +20,7 @@ from .serializers import PartySerializer, AccountSerializer, AccountDetailSerial
     AccountOpeningBalanceListSerializer, AccountFormSerializer
 
 
-class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
+class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
     serializer_class = PartySerializer
     account_keys = ['supplier_account', 'customer_account']
     choice_serializer_class = PartyMinSerializer

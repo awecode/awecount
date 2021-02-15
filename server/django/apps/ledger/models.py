@@ -13,6 +13,7 @@ from mptt.models import MPTTModel
 
 from apps.users.models import Company, FiscalYear
 from apps.users.signals import company_creation
+from awecount.libs.exception import BadOperation
 from awecount.utils import zero_for_none, none_for_zero, decimalize
 
 
@@ -223,6 +224,18 @@ class Party(models.Model):
                                             on_delete=models.SET_NULL)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='parties')
+
+    def can_be_deleted(self):
+        # Allow party to be deleted only if no transactions exist
+        return Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+                                    company_id=self.company_id, id=self.id).exists()
+
+    def delete(self, *args, **kwargs):
+        # Allow party to be deleted only if no transactions exist
+        if not Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+                                    company_id=self.company_id, id=self.id).exists():
+            raise BadOperation('This party has transactions.')
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return self.name
