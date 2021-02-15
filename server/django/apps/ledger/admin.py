@@ -12,7 +12,15 @@ class PartyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Party, PartyAdmin)
-admin.site.register(PartyRepresentative)
+
+
+class PartyRepresentativeAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'phone', 'email', 'position')
+    list_display = ('name', 'phone', 'email', 'position')
+    list_display_links = ('name', 'phone', 'email', 'position')
+
+
+admin.site.register(PartyRepresentative, PartyRepresentativeAdmin)
 
 
 class AccountAdmin(admin.ModelAdmin):

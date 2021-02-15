@@ -275,6 +275,9 @@ class PartyRepresentative(models.Model):
 
     company_id_accessor = 'party__company_id'
 
+    def __str__(self):
+        return self.name
+
 
 class Node(object):
     def __init__(self, model, parent=None, depth=0):
