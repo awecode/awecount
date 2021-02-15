@@ -36,7 +36,7 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
         return PartySerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().order_by('-pk')
         if self.action == 'transactions':
             qs = qs.select_related('supplier_account', 'customer_account')
         return qs
