@@ -234,7 +234,7 @@ class Party(models.Model):
         # Allow party to be deleted only if no transactions exist
         if not Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists():
-            raise BadOperation('This party has transactions.')
+            raise BadOperation('This party has transactions and therefore can not be deleted.')
         try:
             super().delete(*args, **kwargs)
         except ProtectedError as exc:
