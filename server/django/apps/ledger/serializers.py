@@ -59,9 +59,9 @@ class PartySerializer(serializers.ModelSerializer):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
         for representative in representatives:
-            representative['party_id'] = instance.id
             if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
                     'position'):
+                representative['party_id'] = instance.id
                 PartyRepresentative.objects.create(**representative)
         return instance
 
@@ -70,14 +70,16 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
-            representative['party_id'] = instance.id
-            try:
-                PartyRepresentative.objects.update_or_create(
-                    pk=representative.get('id'),
-                    defaults=representative
-                )
-            except IntegrityError:
-                raise APIException({'detail': 'Party representative already created.'})
+            if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
+                    'position'):
+                representative['party_id'] = instance.id
+                try:
+                    PartyRepresentative.objects.update_or_create(
+                        pk=representative.get('id'),
+                        defaults=representative
+                    )
+                except IntegrityError:
+                    raise APIException({'detail': 'Party representative already created.'})
         return instance
 
     class Meta:

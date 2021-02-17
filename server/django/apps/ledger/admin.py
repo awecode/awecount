@@ -16,8 +16,8 @@ admin.site.register(Party, PartyAdmin)
 
 class PartyRepresentativeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'phone', 'email', 'position')
-    list_display = ('name', 'phone', 'email', 'position')
-    list_display_links = ('name', 'phone', 'email', 'position')
+    list_display = ('__str__', 'phone', 'email', 'position')
+    list_display_links = ('__str__', 'phone', 'email', 'position')
 
 
 admin.site.register(PartyRepresentative, PartyRepresentativeAdmin)

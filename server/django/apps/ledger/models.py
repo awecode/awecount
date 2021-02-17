@@ -276,7 +276,7 @@ class PartyRepresentative(models.Model):
     company_id_accessor = 'party__company_id'
 
     def __str__(self):
-        return self.name
+        return self.name or '-'
 
 
 class Node(object):
