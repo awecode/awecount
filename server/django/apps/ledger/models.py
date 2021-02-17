@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Q, ProtectedError
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
@@ -235,7 +235,10 @@ class Party(models.Model):
         if not Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists():
             raise BadOperation('This party has transactions.')
-        super().delete(*args, **kwargs)
+        try:
+            super().delete(*args, **kwargs)
+        except ProtectedError as exc:
+            raise BadOperation(str(exc))
 
     def __str__(self):
         return self.name

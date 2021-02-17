@@ -70,6 +70,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'apps.users.authentication.AccessKeyAuthentication'
     ],
+    'EXCEPTION_HANDLER': 'awecount.libs.exception.exception_handler',
 }
 
 POS_ITEMS_SIZE = 30
