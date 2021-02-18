@@ -132,13 +132,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         return self.customer_name
 
     def apply_inventory_transactions(self):
+        challan_enabled = self.company.sales_setting.enable_import_challan
+        challan_dct = {}
+        if challan_enabled:
+            challan_rows = ChallanRow.objects.filter(voucher__in=self.challans.all()).values('item_id', 'quantity')
+            for challan_row in challan_rows:
+                challan_dct[challan_row.get('item_id')] = challan_row.get('quantity')
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
                 'item__account'):
-            set_inventory_transactions(
-                row,
-                self.date,
-                ['cr', row.item.account, int(row.quantity)],
-            )
+            quantity = int(row.quantity)
+            if challan_enabled and challan_dct.get(row.item_id):
+                quantity = quantity - challan_dct.get(row.item_id)
+            if quantity:
+                set_inventory_transactions(
+                    row,
+                    self.date,
+                    ['cr', row.item.account, quantity],
+                )
 
     def apply_transactions(self, voucher_meta=None):
 
