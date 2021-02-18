@@ -41,7 +41,7 @@ MODES = (
 
 class Challan(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
 
@@ -86,7 +86,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
 
 class SalesVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -290,7 +290,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.CharField(max_length=25)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
@@ -437,7 +437,7 @@ CREDIT_NOTE_STATUSES = (
 
 
 class CreditNote(TransactionModel, InvoiceModel):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -593,7 +593,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
 
 
 class DebitNote(TransactionModel, InvoiceModel):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -736,7 +736,7 @@ PAYMENT_STATUSES = (
 
 class PaymentReceipt(TransactionModel):
     invoices = models.ManyToManyField(SalesVoucher, related_name='payment_receipts')
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='payment_receipts')
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, related_name='payment_receipts')
     date = models.DateField()
     mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
     amount = models.FloatField()

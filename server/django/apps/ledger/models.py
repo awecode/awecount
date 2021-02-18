@@ -274,7 +274,7 @@ class PartyRepresentative(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     position = models.CharField(max_length=100, blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='representative')
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, related_name='representative')
 
     company_id_accessor = 'party__company_id'
 
