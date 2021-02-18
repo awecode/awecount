@@ -89,7 +89,7 @@ class CustomUserAdmin(UserAdmin):
                                   'company',
                                   )}),
                      )
-    search_fields = ('full_name', 'email', 'company', 'is_superuser',)
+    search_fields = ('full_name', 'email', 'company__name', 'is_superuser',)
     readonly_fields = ('is_superuser', 'date_joined', 'last_login',)
 
 
