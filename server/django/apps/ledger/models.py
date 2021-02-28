@@ -392,7 +392,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         # with localcontext() as ctx:
         #     ctx.rounding = ROUND_HALF_UP
         #     val = round(decimalize(arg[2]), 2)
-        val = decimalize(arg[2])
+        val = decimalize(str(arg[2]))
         # val = arg[2]
         all_accounts.append(arg[1])
         if not matches:
