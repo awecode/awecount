@@ -570,6 +570,10 @@ class Item(models.Model):
                 search_text = ', '.join(search_data)
                 self.search_data = search_text
 
+            # this triggers account category update
+            if self.category:
+                self.category.save()
+
             # prevents recursion
             self.save(post_save=False)
 
