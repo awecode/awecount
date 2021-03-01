@@ -570,9 +570,31 @@ class Item(models.Model):
                 search_text = ', '.join(search_data)
                 self.search_data = search_text
 
-            # this triggers account category update
             if self.category:
+                # this triggers account category update
                 self.category.save()
+            else:
+                if self.sales_account and self.sales_account.category.name != 'Sales':
+                    self.sales_account.add_category('Sales')
+                    self.sales_account.save()
+                if self.discount_allowed_account and self.discount_allowed_account.category.name != 'Discount Expenses':
+                    self.discount_allowed_account.add_category('Discount Expenses')
+                    self.discount_allowed_account.save()
+                if self.purchase_account and self.purchase_account.category.name != 'Purchase':
+                    self.purchase_account.add_category('Purchase')
+                    self.purchase_account.save()
+                if self.discount_received_account and self.discount_received_account.category.name != 'Discount Income':
+                    self.discount_received_account.add_category('Discount Income')
+                    self.discount_received_account.save()
+                if self.expense_account and self.direct_expense and self.expense_account.category.name != 'Direct Expenses':
+                    self.expense_account.add_category('Direct Expenses')
+                    self.expense_account.save()
+                if self.expense_account and self.indirect_expense and self.expense_account.category.name != 'Indirect Expenses':
+                    self.expense_account.add_category('Indirect Expenses')
+                    self.expense_account.save()
+                if self.fixed_asset and self.fixed_asset_account.category.name != 'Fixed Assets':
+                    self.fixed_asset_account.add_category('Fixed Assets')
+                    self.fixed_asset_account.save()
 
             # prevents recursion
             self.save(post_save=False)
