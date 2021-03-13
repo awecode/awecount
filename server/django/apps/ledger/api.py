@@ -1,16 +1,18 @@
 from datetime import datetime
 
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Prefetch, Case, When, F
+from django.http import Http404, JsonResponse
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
-from apps.voucher.models import SalesVoucher
+from apps.voucher.models import SalesVoucher, SalesVoucherRow, PurchaseVoucherRow, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
@@ -154,6 +156,76 @@ class TrialBalanceView(APIView):
                 .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
             return Response(list(qq))
         return Response({})
+
+
+class TaxSummaryView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get_sales_queryset(self, **kwargs):
+        qs = SalesVoucher.objects.filter(company_id=self.request.company_id,
+                                         status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
+            Prefetch('rows', SalesVoucherRow.objects.select_related('discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'party')
+        return qs.order_by('-date', '-voucher_no')
+
+    def get_non_import_purchase_queryset(self, **kwargs):
+        qs = PurchaseVoucher.objects.filter(is_import=False).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
+            company_id=self.request.company_id, status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
+            Prefetch('rows',
+                     PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'party')
+        return qs.distinct().order_by('-date', '-pk')
+
+    def get_import_purchase_queryset(self, **kwargs):
+        qs = PurchaseVoucher.objects.filter(is_import=True).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
+            company_id=self.request.company_id, status__in=['Issued', 'Paid', 'Partially Paid']).prefetch_related(
+            Prefetch('rows',
+                     PurchaseVoucherRow.objects.all().select_related('discount_obj', 'tax_scheme'))).select_related(
+            'discount_obj', 'party')
+        return qs.distinct().order_by('-date', '-pk')
+
+    def get(self, request, format=None):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        if not (start_date and end_date):
+            raise ValidationError('Start and end dates are required.')
+
+        sales_data = self.get_sales_queryset().filter(date__gte=start_date, date__lte=end_date).aggregate(
+            total_amount=Sum('total_amount'),
+            total_meta_discount=Sum('meta_discount'),
+            total_meta_tax=Sum('meta_tax'),
+            total_meta_taxable=Sum('meta_taxable'), total_meta_non_taxable=Sum('meta_non_taxable'),
+            total_export=Sum(Case(When(is_export=True, then=F('total_amount'))))
+        )
+
+        sales_data['total_export'] = sales_data['total_export'] or 0
+
+        non_import_purchase_data = self.get_non_import_purchase_queryset().filter(date__gte=start_date,
+                                                                                  date__lte=end_date).aggregate(
+            total_amount=Sum('total_amount'),
+            total_meta_discount=Sum('meta_discount'),
+            total_meta_tax=Sum('meta_tax'),
+            total_meta_taxable=Sum('meta_taxable'), total_meta_non_taxable=Sum('meta_non_taxable'),
+        )
+
+        import_purchase_data = self.get_import_purchase_queryset().filter(date__gte=start_date, date__lte=end_date).aggregate(
+            total_amount=Sum('total_amount'),
+            total_meta_discount=Sum('meta_discount'),
+            total_meta_tax=Sum('meta_tax'),
+            total_meta_taxable=Sum('meta_taxable'), total_meta_non_taxable=Sum('meta_non_taxable'),
+        )
+
+        # TODO Find total import
+
+        return JsonResponse({
+            'sales': sales_data,
+            'purchase': non_import_purchase_data,
+            'import': import_purchase_data,
+        }, safe=False)
 
 
 class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
