@@ -158,7 +158,7 @@ class ChequeIssue(models.Model):
     issued_to = models.CharField(max_length=255, blank=True, null=True)
     dr_account = models.ForeignKey(Account, blank=True, null=True, related_name='cheque_issues',
                                    on_delete=models.SET_NULL)
-    amount = models.IntegerField()
+    amount = models.FloatField()
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
