@@ -36,12 +36,9 @@ class AccountFormSerializer(serializers.ModelSerializer):
 
 
 class AccountBalanceSerializer(serializers.ModelSerializer):
-    current_dr = RoundedField()
-    current_cr = RoundedField()
-
     class Meta:
         model = Account
-        fields = ('id', 'code', 'current_dr', 'current_cr', 'balance')
+        fields = ('id', 'code', 'amounts')
 
 
 class PartyAccountSerializer(serializers.ModelSerializer):
