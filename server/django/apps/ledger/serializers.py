@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
+
 from awecount.libs.drf_fields import RoundedField
 from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction, AccountOpeningBalance
 
@@ -20,8 +21,8 @@ class PartyMinSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    current_dr = RoundedField()
-    current_cr = RoundedField()
+    # current_dr = RoundedField()
+    # current_cr = RoundedField()
 
     class Meta:
         model = Account
@@ -264,8 +265,6 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     closing_balance = serializers.ReadOnlyField(source='get_balance')
     category_name = serializers.ReadOnlyField(source='category.name')
     parent_name = serializers.ReadOnlyField(source='parent.name')
-    current_dr = RoundedField()
-    current_cr = RoundedField()
 
     def get_journal_entries(self, obj):
         entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
@@ -276,8 +275,7 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = (
-            'id', 'code', 'closing_balance', 'name', 'current_dr', 'current_cr', 'opening_dr', 'opening_cr',
-            'category_name',
+            'id', 'code', 'closing_balance', 'name', 'amounts', 'opening_dr', 'opening_cr', 'category_name', 'amounts',
             'parent_name', 'category_id', 'parent_id')
 
 

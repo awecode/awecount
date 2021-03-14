@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q, ProtectedError
+from django.db.models import F, Q, ProtectedError, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from mptt.fields import TreeForeignKey
@@ -205,6 +205,10 @@ class Account(models.Model):
     def get_payment_accounts(self):
         return Account.objects.filter(
             Q(name='Cash', default=True) | Q(category__name='Bank Accounts', category__default=True))
+
+    @property
+    def amounts(self):
+        return Transaction.objects.filter(account=self).aggregate(dr=Sum('dr_amount'), cr=Sum('cr_amount'))
 
     class Meta:
         unique_together = ('code', 'company')
