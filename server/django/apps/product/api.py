@@ -53,7 +53,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk=None):
-        item = get_object_or_404(queryset=super().get_queryset(), pk=pk)
+        qs = super().get_queryset().select_related('account', 'sales_account', 'purchase_account', 'discount_allowed_account',
+                                                   'discount_received_account', 'expense_account', 'fixed_asset_account',
+                                                   'tax_scheme')
+        item = get_object_or_404(queryset=qs, pk=pk)
         serializer = ItemDetailSerializer(item, context={'request': request}).data
         return Response(serializer)
 

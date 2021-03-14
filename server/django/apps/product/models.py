@@ -4,7 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
 from django.db import models, IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
@@ -258,6 +258,10 @@ class InventoryAccount(models.Model):
         except:
             return None
         return category
+
+    @property
+    def amounts(self):
+        return Transaction.objects.filter(account=self).aggregate(dr=Sum('dr_amount'), cr=Sum('cr_amount'))
 
     def save(self, *args, **kwargs):
         if not self.account_no:

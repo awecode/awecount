@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
-from apps.ledger.serializers import AccountSerializer
+from apps.ledger.serializers import AccountSerializer, AccountBalanceSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.utils.Base64FileField import Base64FileField
 from awecount.utils.CustomViewSet import GenericSerializer
@@ -110,6 +110,7 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
                    'discount_allowed_account_category', 'discount_received_account_category', 'fixed_asset_account_category',
                    'direct_expense_account_category', 'indirect_expense_account_category')
 
+
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryCategory
@@ -128,19 +129,25 @@ class InventoryAccountSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class InventoryAccountBalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryAccount
+        fields = ('id', 'amounts')
+
+
 class ItemDetailSerializer(serializers.ModelSerializer):
     brand = BrandSerializer()
     category = InventoryCategorySerializer()
     unit = UnitSerializer()
-    account = InventoryAccountSerializer()
+    account = InventoryAccountBalanceSerializer()
 
-    discount_allowed_account = AccountSerializer()
-    discount_received_account = AccountSerializer()
+    discount_allowed_account = AccountBalanceSerializer()
+    discount_received_account = AccountBalanceSerializer()
 
-    sales_account = AccountSerializer()
-    purchase_account = AccountSerializer()
-    expense_account = AccountSerializer()
-    fixed_asset_account = AccountSerializer()
+    sales_account = AccountBalanceSerializer()
+    purchase_account = AccountBalanceSerializer()
+    expense_account = AccountBalanceSerializer()
+    fixed_asset_account = AccountBalanceSerializer()
     tax_scheme = TaxSchemeSerializer()
 
     class Meta:
