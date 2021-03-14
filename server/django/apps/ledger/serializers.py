@@ -287,29 +287,6 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'children']
 
 
-class OpeningTransactionTrialBalanceSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='account.name')
-    category_id = serializers.ReadOnlyField(source='account.category_id')
-
-    class Meta:
-        model = Transaction
-        fields = ('dr_amount', 'cr_amount', 'current_dr', 'current_cr', 'name', 'account_id', 'category_id')
-
-
-class ClosingTransactionTrialBalanceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Transaction
-        fields = ('current_dr', 'current_cr', 'account_id')
-
-
-class AccountTrialBalanceSerializer(serializers.ModelSerializer):
-    account_id = serializers.ReadOnlyField(source='pk')
-
-    class Meta:
-        model = Account
-        fields = ('current_dr', 'current_cr', 'account_id', 'name', 'category_id')
-
-
 class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='account.name')
 
