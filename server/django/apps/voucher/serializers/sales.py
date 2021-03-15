@@ -299,6 +299,12 @@ class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
     view_url = serializers.ReadOnlyField()
 
 
+class SalesAgentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesAgent
+        exclude = ('company',)
+
+
 class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     item_id = serializers.IntegerField()
     unit_id = serializers.IntegerField()
@@ -318,6 +324,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source='bank_account.friendly_name')
     discount_obj = SalesDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    sales_agent = SalesAgentSerializer()
 
     rows = SalesVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
@@ -371,12 +378,6 @@ class PurchaseBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         fields = ('id', 'date', 'sellers_name', 'sellers_pan', 'voucher_no', 'voucher_meta', 'is_import',)
-
-
-class SalesAgentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalesAgent
-        exclude = ('company',)
 
 
 class SalesRowSerializer(serializers.ModelSerializer):
