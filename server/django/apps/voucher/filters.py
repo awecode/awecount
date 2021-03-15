@@ -94,6 +94,7 @@ class PaymentReceiptFilterSet(DateFilterSet):
     party = filters.CharFilter()
     mode = filters.MultipleChoiceFilter(choices=PAYMENT_MODES)
     status = filters.MultipleChoiceFilter(choices=PAYMENT_STATUSES)
+    sales_agent = filters.CharFilter(field_name='invoices__sales_agent')
 
     class Meta:
         model = PaymentReceipt
