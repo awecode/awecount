@@ -1,6 +1,7 @@
 from auditlog.registry import auditlog
 from django.db import models
 from django.db.models import Q, Prefetch
+from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.conf import settings
 
