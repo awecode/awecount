@@ -33,6 +33,7 @@ class AccountAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_filter = ('account__company', 'journal_entry__content_type')
     search_fields = ('journal_entry__date', 'journal_entry__object_id')
+    raw_id_fields = ('account', 'journal_entry')
 
 
 class TransactionInline(admin.TabularInline):
