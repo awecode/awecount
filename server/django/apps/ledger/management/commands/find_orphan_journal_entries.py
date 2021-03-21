@@ -13,4 +13,4 @@ class Command(BaseCommand):
                 cnt += 1
                 print(jv.id)
 
-        print('{} orphan journal entries!')
+        print('{} orphan journal entries!'.format(cnt))
