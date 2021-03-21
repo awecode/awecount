@@ -38,6 +38,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
+    raw_id_fields = ('account', 'journal_entry')
 
 
 class JournalEntryAdmin(admin.ModelAdmin):
