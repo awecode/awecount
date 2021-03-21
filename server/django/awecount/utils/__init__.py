@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.db import connection
 from django.conf import settings
 
+from django.contrib.contenttypes.models import ContentType
+
 
 def get_next_voucher_no(cls, company_id, attr='voucher_no'):
     from django.db.models import Max
@@ -53,10 +55,21 @@ def model_exists_in_db(model):
 
 def delete_rows(rows, model):
     if rows:
+        from apps.ledger.models import JournalEntry
+        from apps.product.models import JournalEntry as InventoryJournalEntry
+        # Assuming all rows have the same content type, find content type only once
+        content_type = None
+        row_ids = []
         for row in rows:
             if row.get('id'):
                 instance = model.objects.get(id=row.get('id'))
+                if not content_type:
+                    content_type = ContentType.objects.get_for_model(instance)
                 instance.delete()
+                row_ids.append(row.get('id'))
+
+        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
 
 
 def link_callback(uri, rel):
