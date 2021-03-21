@@ -143,3 +143,10 @@ class ChallanAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Challan, ChallanAdmin)
+
+
+class PurchaseVoucherRowAdmin(admin.ModelAdmin):
+    raw_id_fields = ('item',)
+
+
+admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)
