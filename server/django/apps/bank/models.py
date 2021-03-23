@@ -91,7 +91,6 @@ class ChequeDeposit(TransactionModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     # files = models.ManyToManyField(File, blank=True)
-    # TODO Find payment and set as cleared for cleared cheque deposits
 
     def __str__(self):
         return str(self.date)
@@ -113,21 +112,22 @@ class ChequeDeposit(TransactionModel):
             return
         JournalEntry.objects.filter(content_type__model='chequedeposit', object_id=self.id).delete()
 
-    def clear(self):
+    def clear(self, handle_receipt=True):
         self.status = 'Cleared'
         self.clearing_date = datetime.datetime.today()
         self.save()
         self.apply_transactions()
-        for receipt in self.payment_receipts.all():
-            receipt.clear(handle_cheque=False)
+        if handle_receipt:
+            for receipt in self.payment_receipts.all():
+                receipt.clear(handle_cheque=False)
 
-    def cancel(self):
+    def cancel(self, handle_receipt=True):
         self.status = 'Cancelled'
         self.save()
         self.cancel_transactions()
-        for receipt in self.payment_receipts.all():
-            receipt.status = 'Cancelled'
-            receipt.save()
+        if handle_receipt:
+            for receipt in self.payment_receipts.all():
+                receipt.cancel(handle_cheque=False)
 
 
 # class ChequeDepositRow(models.Model):

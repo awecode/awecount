@@ -793,6 +793,13 @@ class PaymentReceipt(TransactionModel):
         if len(entries):
             set_ledger_transactions(self, self.date, *entries, clear=True)
 
+    def cancel(self, handle_cheque=True):
+        self.status = 'Cancelled'
+        self.save()
+        self.cancel_transactions()
+        if handle_cheque and self.mode == 'Cheque':
+            self.cheque_deposit.cancel(handle_receipt=False)
+
     def cancel_transactions(self):
         if not self.status == 'Cancelled':
             return
@@ -810,7 +817,6 @@ class PaymentReceipt(TransactionModel):
             if total_payment_amount >= total_invoice_amount:
                 self.invoices.update(status='Paid')
             else:
-                # obj.invoices.update(status='Partially Paid')
                 for invoice in self.invoices.all():
                     total_receipt_amount = 0
                     for receipt in invoice.payment_receipts.filter(status='Cleared'):
@@ -824,9 +830,7 @@ class PaymentReceipt(TransactionModel):
                     invoice.save()
 
             if handle_cheque and self.mode == 'Cheque':
-                self.cheque_deposit.status = 'Cleared'
-                self.cheque_deposit.clearing_date = datetime.datetime.today()
-                self.cheque_deposit.save()
+                self.cheque_deposit.clear(handle_receipt=False)
             self.apply_transactions()
         else:
             raise ValidationError('This receipt cannot be mark as cleared!')
