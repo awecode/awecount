@@ -74,8 +74,8 @@ class TransactionsViewMixin(object):
                 account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
         page_size = param.get('page_size', None)
-        if page_size:
-            self.paginator.page_size = page_size
+        if page_size and page_size.is_integer():
+            self.paginator.page_size = int(page_size)
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)
