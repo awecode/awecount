@@ -99,7 +99,12 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     def get_accounts(self, obj):
         # TODO Optimize
-        return obj.journal_entry.transactions.values('account_id', 'account__name')
+        accounts = []
+        for transaction in obj.journal_entry.transactions.all():
+            accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
+            print(transaction.account)
+        return accounts
+        # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
         v_type = obj.journal_entry.content_type.name

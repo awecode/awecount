@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Sum
+from django.db.models import Sum, Prefetch
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -58,7 +58,8 @@ class TransactionsViewMixin(object):
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
         transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-journal_entry__date', '-pk') \
-            .select_related('journal_entry__content_type').prefetch_related('journal_entry__transactions')
+            .select_related('journal_entry__content_type').prefetch_related(
+            Prefetch('journal_entry__transactions', Transaction.objects.select_related('account')))
 
         aggregate = {}
         if start_date or end_date:
