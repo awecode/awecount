@@ -808,9 +808,7 @@ class PaymentReceipt(TransactionModel):
                     content_type__app_label='bank', content_type__model='chequedeposit',
                     object_id=self.cheque_deposit_id))
         else:
-            qs = qs.filter(
-                content_type__app_label='bank', content_type__model='chequedeposit',
-                object_id=self.cheque_deposit_id)
+            qs = qs.filter(content_type__app_label=app_label, content_type__model=model, object_id=self.id)
         return qs
 
     def __str__(self):
