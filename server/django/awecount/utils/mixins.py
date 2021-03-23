@@ -73,8 +73,9 @@ class TransactionsViewMixin(object):
             aggregate['opening'] = Transaction.objects.select_related('journal_entry__content_type').filter(
                 account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'), Sum('cr_amount'))
 
-        # Only show 5 because fetching voucher_no is expensive because of GFK, GFK to be cached
-        # self.paginator.page_size = 5
+        page_size = param.get('page_size', None)
+        if page_size:
+            self.paginator.page_size = page_size
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)

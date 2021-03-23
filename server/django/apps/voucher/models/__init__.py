@@ -797,6 +797,7 @@ class PaymentReceipt(TransactionModel):
         self.status = 'Cancelled'
         self.save()
         self.cancel_transactions()
+        # TODO Revert back invoice status
         if handle_cheque and self.mode == 'Cheque':
             self.cheque_deposit.cancel(handle_receipt=False)
 
