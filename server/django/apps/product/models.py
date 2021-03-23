@@ -8,7 +8,7 @@ from django.db.models import F, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
-from apps.ledger.models import Account, Category as AccountCategory
+from apps.ledger.models import Account, Category as AccountCategory, Transaction as AccountTransaction
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
 from awecount.utils import none_for_zero, zero_for_none
@@ -205,6 +205,9 @@ class Category(models.Model):
                 self.fixed_asset_account_category = account_category
                 Account.objects.filter(fixed_asset_item__category=self).update(category=account_category)
 
+            # TODO Optimize
+            # AccountTransaction.objects.filter()
+            # Maybe required if category is changed
             # from apps.voucher.models import PurchaseVoucher, SalesVoucher
 
             # for voucher in PurchaseVoucher.objects.filter(rows__item__category=self):
