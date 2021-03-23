@@ -1,9 +1,11 @@
+import datetime
+
 from auditlog.registry import auditlog
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, Prefetch
-from django.db.models.expressions import RawSQL
 from django.utils import timezone
-from django.conf import settings
 
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel, \
@@ -14,11 +16,10 @@ from apps.users.models import Company, User, FiscalYear
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.utils import nepdate
 from awecount.utils.helpers import merge_dicts
-
+from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 from .invoice_design import InvoiceDesign
 from .journal_vouchers import JournalVoucher, JournalVoucherRow
-from .agent import SalesAgent
 from .voucher_settings import SalesSetting, PurchaseSetting
 
 STATUSES = (
@@ -796,6 +797,39 @@ class PaymentReceipt(TransactionModel):
         if not self.status == 'Cancelled':
             return
         JournalEntry.objects.filter(content_type__model='paymentreceipt', object_id=self.id).delete()
+
+    def clear(self, handle_cheque=True):
+        if self.status == 'Issued':
+            self.status = 'Cleared'
+            self.clearing_date = datetime.datetime.today()
+            self.save()
+            total_payment_amount = self.amount + self.tds_amount
+            total_invoice_amount = 0
+            for invoice in self.invoices.all():
+                total_invoice_amount += invoice.total_amount
+            if total_payment_amount >= total_invoice_amount:
+                self.invoices.update(status='Paid')
+            else:
+                # obj.invoices.update(status='Partially Paid')
+                for invoice in self.invoices.all():
+                    total_receipt_amount = 0
+                    for receipt in invoice.payment_receipts.filter(status='Cleared'):
+                        # Take receipts with single invoices only into account
+                        if receipt.invoices.count() == 1:
+                            total_receipt_amount += receipt.amount + receipt.tds_amount
+                    if total_receipt_amount >= invoice.total_amount:
+                        invoice.status = 'Paid'
+                    else:
+                        invoice.status = 'Partially Paid'
+                    invoice.save()
+
+            if handle_cheque and self.mode == 'Cheque':
+                self.cheque_deposit.status = 'Cleared'
+                self.cheque_deposit.clearing_date = datetime.datetime.today()
+                self.cheque_deposit.save()
+            self.apply_transactions()
+        else:
+            raise ValidationError('This receipt cannot be mark as cleared!')
 
     def journal_entries(self):
         app_label = self._meta.app_label

@@ -119,9 +119,7 @@ class ChequeDeposit(TransactionModel):
         self.save()
         self.apply_transactions()
         for receipt in self.payment_receipts.all():
-            receipt.status = 'Cleared'
-            receipt.clearing_date = datetime.datetime.today()
-            receipt.save()
+            receipt.clear(handle_cheque=False)
 
     def cancel(self):
         self.status = 'Cancelled'
