@@ -30,7 +30,7 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'status', 'mode', 'party_name', 'amount')
+        fields = ('id', 'date', 'status', 'mode', 'party_name', 'amount', 'tds_amount')
 
 
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
