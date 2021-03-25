@@ -337,6 +337,15 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
     enable_row_description = serializers.ReadOnlyField(source='company.sales_setting.enable_row_description')
 
+    payment_receipts = serializers.SerializerMethodField()
+
+    def get_payment_receipts(self, obj):
+        receipts = []
+        for receipt in obj.receipts:
+            receipts.append(
+                {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
+        return receipts
+
     class Meta:
         model = SalesVoucher
         exclude = ('company', 'user', 'bank_account',)
