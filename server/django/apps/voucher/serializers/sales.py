@@ -27,10 +27,17 @@ class SalesDiscountMinSerializer(serializers.ModelSerializer):
 
 class PaymentReceiptSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
+    invoices = serializers.SerializerMethodField()
+
+    def get_invoices(self, obj):
+        invoices = []
+        for invoice in obj.invoices.all():
+            invoices.append({'id': invoice.id, 'voucher_no': invoice.voucher_no})
+        return invoices
 
     class Meta:
         model = PaymentReceipt
-        fields = ('id', 'date', 'status', 'mode', 'party_name', 'amount', 'tds_amount')
+        fields = ('id', 'date', 'status', 'mode', 'party_name', 'amount', 'tds_amount', 'invoices')
 
 
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
