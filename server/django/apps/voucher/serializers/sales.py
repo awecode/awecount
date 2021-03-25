@@ -342,12 +342,26 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         exclude = ('company', 'user', 'bank_account',)
 
 
+class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesVoucher
+        fields = ('id', 'voucher_no', 'date', 'status', 'customer_name', 'total_amount')
+
+
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
+    payment_receipts = serializers.SerializerMethodField()
+
+    def get_payment_receipts(self, obj):
+        receipts = []
+        for receipt in obj.receipts:
+            receipts.append(
+                {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
+        return receipts
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name', 'total_amount')
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name', 'total_amount', 'payment_receipts')
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
