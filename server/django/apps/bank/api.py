@@ -35,7 +35,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
     search_fields = ['voucher_no', 'bank_account__bank_name', 'bank_account__account_number', 'benefactor__name',
-                     'deposited_by', 'cheque_number']
+                     'deposited_by', 'cheque_number', 'drawee_bank']
     filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
