@@ -102,7 +102,6 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         accounts = []
         for transaction in obj.journal_entry.transactions.all():
             accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
-            print(transaction.account)
         return accounts
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
