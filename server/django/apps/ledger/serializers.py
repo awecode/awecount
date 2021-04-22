@@ -85,6 +85,16 @@ class PartySerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class PartyListSerializer(serializers.ModelSerializer):
+    dr = serializers.ReadOnlyField()
+    cr = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Party
+        fields = (
+            'id', 'name', 'address', 'contact_no', 'email', 'tax_registration_number', 'dr', 'cr')
+
+
 class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()

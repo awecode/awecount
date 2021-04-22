@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Sum, Case, When, F
+from django.db.models import Q, Sum, Case, When, F, Prefetch
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -16,10 +16,10 @@ from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category, AccountOpeningBalance
+from .models import Account, JournalEntry, Category, AccountOpeningBalance, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer, AccountFormSerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -35,12 +35,20 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
     def get_serializer_class(self):
         if self.action == 'transactions':
             return PartyAccountSerializer
+        if self.action in ['list', 'customers', 'suppliers']:
+            return PartyListSerializer
         return PartySerializer
 
     def get_queryset(self):
         qs = super().get_queryset().order_by('-pk')
         if self.action == 'transactions':
             qs = qs.select_related('supplier_account', 'customer_account')
+        if self.action == 'customers':
+            qs = qs.filter(customer_account__transactions__isnull=False).annotate(
+                dr=Sum('customer_account__transactions__dr_amount'), cr=Sum('customer_account__transactions__cr_amount'))
+        if self.action == 'suppliers':
+            qs = qs.filter(customer_account__transactions__isnull=False).annotate(
+                dr=Sum('supplier_account__transactions__dr_amount'), cr=Sum('supplier_account__transactions__cr_amount'))
         return qs
 
     @action(detail=True)
@@ -48,6 +56,14 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
         sales_vouchers = SalesVoucher.objects.filter(party_id=pk)
         data = SaleVoucherOptionsSerializer(sales_vouchers, many=True).data
         return Response(data)
+
+    @action(detail=False)
+    def customers(self, request):
+        return super().list(request)
+
+    @action(detail=False)
+    def suppliers(self, request):
+        return super().list(request)
 
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
