@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db.models import Q, Sum, Case, When, F, Prefetch
+from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -45,7 +46,8 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
             qs = qs.select_related('supplier_account', 'customer_account')
         if self.action == 'customers':
             qs = qs.filter(customer_account__transactions__isnull=False).annotate(
-                dr=Sum('customer_account__transactions__dr_amount'), cr=Sum('customer_account__transactions__cr_amount'))
+                dr=Coalesce(Sum('customer_account__transactions__dr_amount'), 0),
+                cr=Coalesce(Sum('customer_account__transactions__cr_amount'), 0)).annotate(balance=F('dr') - F('cr'))
         if self.action == 'suppliers':
             qs = qs.filter(customer_account__transactions__isnull=False).annotate(
                 dr=Sum('supplier_account__transactions__dr_amount'), cr=Sum('supplier_account__transactions__cr_amount'))

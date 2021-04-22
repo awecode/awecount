@@ -88,11 +88,12 @@ class PartySerializer(serializers.ModelSerializer):
 class PartyListSerializer(serializers.ModelSerializer):
     dr = serializers.ReadOnlyField()
     cr = serializers.ReadOnlyField()
+    balance = serializers.ReadOnlyField()
 
     class Meta:
         model = Party
         fields = (
-            'id', 'name', 'address', 'contact_no', 'email', 'tax_registration_number', 'dr', 'cr')
+            'id', 'name', 'address', 'contact_no', 'email', 'tax_registration_number', 'dr', 'cr', 'balance')
 
 
 class TransactionEntrySerializer(serializers.ModelSerializer):
