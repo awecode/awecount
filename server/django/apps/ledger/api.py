@@ -20,7 +20,7 @@ from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance, Transaction
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -49,8 +49,9 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
                 dr=Coalesce(Sum('customer_account__transactions__dr_amount'), 0),
                 cr=Coalesce(Sum('customer_account__transactions__cr_amount'), 0)).annotate(balance=F('dr') - F('cr'))
         if self.action == 'suppliers':
-            qs = qs.filter(customer_account__transactions__isnull=False).annotate(
-                dr=Sum('supplier_account__transactions__dr_amount'), cr=Sum('supplier_account__transactions__cr_amount'))
+            qs = qs.filter(supplier_account__transactions__isnull=False).annotate(
+                dr=Coalesce(Sum('supplier_account__transactions__dr_amount'), 0),
+                cr=Coalesce(Sum('supplier_account__transactions__cr_amount'), 0)).annotate(balance=F('dr') - F('cr'))
         return qs
 
     @action(detail=True)
@@ -89,10 +90,12 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return [obj.id]
 
     def get_queryset(self):
-        # TODO View transaction with or without cr or dr amount
-        # queryset = Account.objects.filter(Q(current_dr__gt=0)|Q(current_cr__gt=0), company=self.request.company)
-        queryset = Account.objects.filter(company=self.request.company).select_related('category', 'parent')
-        return queryset
+        qs = Account.objects.filter(company=self.request.company).select_related('category', 'parent')
+        if self.action == 'list':
+            qs = qs.annotate(
+                dr=Coalesce(Sum('transactions__dr_amount'), 0),
+                cr=Coalesce(Sum('transactions__cr_amount'), 0)).annotate(computed_balance=F('dr') - F('cr'))
+        return qs
 
     def get_accounts_by_category_name(self, category_name):
         queryset = self.get_queryset()
@@ -105,6 +108,8 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
             return AccountDetailSerializer
         if self.action in ['create', 'update']:
             return AccountFormSerializer
+        if self.action in ['list']:
+            return AccountListSerializer
         return AccountSerializer
 
     @action(detail=True, methods=['get'], url_path='journal-entries')

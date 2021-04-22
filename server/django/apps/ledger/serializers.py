@@ -20,6 +20,23 @@ class PartyMinSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'address', 'tax_registration_number')
 
 
+class CategoryMinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name')
+
+
+class AccountListSerializer(serializers.ModelSerializer):
+    dr = RoundedField()
+    cr = RoundedField()
+    computed_balance = RoundedField()
+    category = CategoryMinSerializer()
+
+    class Meta:
+        model = Account
+        fields = ('id', 'code', 'name', 'dr', 'cr', 'computed_balance', 'category')
+
+
 class AccountSerializer(serializers.ModelSerializer):
     # current_dr = RoundedField()
     # current_cr = RoundedField()
