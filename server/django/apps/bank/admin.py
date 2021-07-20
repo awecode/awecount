@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit
+from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit, FundTransfer
 
 
 class ChequeDepositAdmin(admin.ModelAdmin):
@@ -18,3 +18,10 @@ admin.site.register(BankCashDeposit, BankCashDepositAdmin)
 
 admin.site.register(BankAccount)
 admin.site.register(ChequeIssue)
+
+
+class FundTransferAdmin(admin.ModelAdmin):
+    list_filter = ('company', 'status')
+
+
+admin.site.register(FundTransfer, FundTransferAdmin)
