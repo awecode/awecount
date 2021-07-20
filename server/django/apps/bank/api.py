@@ -7,13 +7,13 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, FundTransferFilterSet
-from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
+from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit, FundTransferTemplate
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
     BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer, AccountSerializer
-from awecount.utils.CustomViewSet import CRULViewSet
+from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.utils.mixins import InputChoiceMixin
 
 
@@ -141,15 +141,12 @@ class FundTransferViewSet(CRULViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        data = serializer.data
-        # data['templates'] = 
+        serializer = self.get_serializer(page, many=True)
+        paginated_response = self.get_paginated_response(serializer.data)
+        data = paginated_response.data
+        templates = FundTransferTemplate.objects.filter(company=request.company)
+        data['templates'] = GenericSerializer(templates, many=True).data
         return Response(data)
 
 
