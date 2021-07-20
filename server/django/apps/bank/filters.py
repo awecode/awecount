@@ -1,6 +1,6 @@
 from django_filters import MultipleChoiceFilter
 
-from apps.bank.models import ChequeDeposit, ChequeIssue
+from apps.bank.models import ChequeDeposit, ChequeIssue, FundTransfer
 from apps.voucher.filters import DateFilterSet
 
 
@@ -18,3 +18,11 @@ class ChequeIssueFilterSet(DateFilterSet):
     class Meta:
         model = ChequeIssue
         fields = ('bank_account',)
+
+
+class FundTransferFilterSet(DateFilterSet):
+    status = MultipleChoiceFilter(choices=ChequeIssue.STATUSES)
+
+    class Meta:
+        model = FundTransfer
+        fields = ('status', 'date')

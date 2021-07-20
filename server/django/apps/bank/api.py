@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet
+from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, FundTransferFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
@@ -116,10 +116,10 @@ class FundTransferViewSet(CRULViewSet):
         ('transaction_fee_account', Account.objects.filter(category__name='Bank Charges', category__default=True)),
     )
 
-    # filterset_class = ChequeIssueFilterSet
-    # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    # search_fields = ['cheque_no', 'bank_account__bank_name', 'bank_account__account_number', 'party__name',
-    #                  'issued_to', 'dr_account__name', 'amount']
+    filterset_class = FundTransferFilterSet
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    search_fields = ['voucher_no', 'from_account__name', 'to_account__name', 'transaction_fee_account__name', 'amount',
+                     'transaction_fee']
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
