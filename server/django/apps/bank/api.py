@@ -107,9 +107,13 @@ class FundTransferViewSet(CRULViewSet):
     list_serializer_class = FundTransferListSerializer
 
     collections = (
-        ('from_account', Account.objects.filter()),
-        ('to_account', Account.objects.filter()),
-        ('transaction_fee_account', Account.objects.filter()),
+        ('from_account', Account.objects.filter(
+            Q(category__name='Bank Accounts', category__default=True) | Q(category__name='Customers',
+                                                                          category__default=True)).order_by('category__name')),
+        ('to_account', Account.objects.filter(
+            Q(category__name='Bank Accounts', category__default=True) | Q(category__name='Suppliers',
+                                                                          category__default=True)).order_by('category__name')),
+        ('transaction_fee_account', Account.objects.filter(category__name='Bank Charges', category__default=True)),
     )
 
     # filterset_class = ChequeIssueFilterSet
