@@ -232,7 +232,7 @@ class FundTransfer(models.Model):
     from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_from')
     to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_to')
     amount = models.FloatField()
-    transaction_fee_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT, blank=True, null=True,
+    transaction_fee_account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True,
                                                 related_name='charged_fund_transfers')
     transaction_fee = models.FloatField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
@@ -258,11 +258,9 @@ class FundTransfer(models.Model):
 
     def apply_transactions(self):
         if self.status == 'Issued':
-            entries = [['cr', self.bank_account.ledger, self.amount]]
-            if self.party_id:
-                entries.append(['dr', self.party.supplier_account, self.amount])
-            else:
-                entries.append(['dr', self.dr_account, self.amount])
+            entries = [['dr', self.to_account, self.amount],['cr', self.from_account, self.amount]]
+            if self.transaction_fee_account_id and self.transaction_fee:
+                entries.append(['dr', self.transaction_fee_account, self.transaction_fee])
             set_ledger_transactions(self, self.date, *entries, clear=True)
         elif self.status == 'Cancelled':
             self.cancel_transactions()

@@ -57,6 +57,7 @@ router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-
 router.register('bank-cash-deposits', bank.CashDepositViewSet, base_name='cash-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
 router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
+router.register('fund-transfer', bank.FundTransferViewSet, base_name='fund-transfer')
 
 # tax
 router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
