@@ -35,6 +35,7 @@ MODULES = [
     *gdp('BankAccount'),
     *gdp('BankBranch'),
     *gdp('ChequeIssue'),
+    *gdp('FundTransfer'),
     *gdp('ChequeDeposit'),
     *gdp('BankCashDeposit'),
     *gdp('SalesAgent'),
