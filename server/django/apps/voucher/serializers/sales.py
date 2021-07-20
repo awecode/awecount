@@ -341,9 +341,10 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
     def get_payment_receipts(self, obj):
         receipts = []
-        for receipt in obj.receipts:
-            receipts.append(
-                {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
+        if hasattr(obj, 'receipts'):
+            for receipt in obj.receipts:
+                receipts.append(
+                    {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
         return receipts
 
     class Meta:
