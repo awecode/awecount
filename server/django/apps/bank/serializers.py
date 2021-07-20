@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from awecount.utils.serializers import StatusReversionMixin
-from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit, FundTransfer
+from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit, FundTransfer, FundTransferTemplate
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -86,6 +86,12 @@ class FundTransferListSerializer(serializers.ModelSerializer):
         model = FundTransfer
         fields = (
             'id', 'voucher_no', 'date', 'from_account', 'to_account', 'from_account_name', 'to_account_name', 'amount', 'status')
+
+
+class FundTransferTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FundTransferTemplate
+        fields = ('id', 'name', 'from_account', 'to_account', 'transaction_fee_account', 'transaction_fee',)
 
 
 class BankAccountChequeIssueSerializer(serializers.ModelSerializer):

@@ -10,10 +10,10 @@ from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, Fund
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit, FundTransferTemplate
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
-    BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer
+    BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer, FundTransferTemplateSerializer
 from apps.ledger.models import Party, Account
-from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer, AccountSerializer
-from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
+from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
+from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin
 
 
@@ -146,7 +146,7 @@ class FundTransferViewSet(CRULViewSet):
         paginated_response = self.get_paginated_response(serializer.data)
         data = paginated_response.data
         templates = FundTransferTemplate.objects.filter(company=request.company)
-        data['templates'] = GenericSerializer(templates, many=True).data
+        data['templates'] = FundTransferTemplateSerializer(templates, many=True).data
         return Response(data)
 
 
