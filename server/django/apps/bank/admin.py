@@ -29,6 +29,7 @@ admin.site.register(FundTransfer, FundTransferAdmin)
 
 class FundTransferTemplateAdmin(admin.ModelAdmin):
     list_filter = ('company',)
+    autocomplete_fields = ('from_account', 'to_account', 'transaction_fee_account')
 
 
 admin.site.register(FundTransferTemplate, FundTransferTemplateAdmin)
