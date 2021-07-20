@@ -222,6 +222,59 @@ class ChequeIssue(models.Model):
         #     date = models.DateField()
 
 
+class FundTransfer(models.Model):
+    STATUSES = (
+        ('Issued', 'Issued'),
+        ('Cancelled', 'Cancelled'),
+    )
+    voucher_no = models.CharField(blank=True, null=True, max_length=50)
+    date = models.DateField()
+    from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_from')
+    to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_to')
+    amount = models.FloatField()
+    transaction_fee_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT, blank=True, null=True,
+                                                related_name='charged_fund_transfers')
+    transaction_fee = models.FloatField(blank=True, null=True)
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.apply_transactions()
+
+    def get_voucher_no(self):
+        return self.voucher_no
+
+    def get_source_id(self):
+        return self.id
+
+    def __str__(self):
+        return str(self.date)
+
+    @property
+    def amount_in_words(self):
+        return wGenerator.convertNumberToWords(self.amount)
+
+    def apply_transactions(self):
+        if self.status == 'Issued':
+            entries = [['cr', self.bank_account.ledger, self.amount]]
+            if self.party_id:
+                entries.append(['dr', self.party.supplier_account, self.amount])
+            else:
+                entries.append(['dr', self.dr_account, self.amount])
+            set_ledger_transactions(self, self.date, *entries, clear=True)
+        elif self.status == 'Cancelled':
+            self.cancel_transactions()
+
+    def cancel_transactions(self):
+        JournalEntry.objects.filter(content_type__model='fundtransfer', object_id=self.id).delete()
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.cancel_transactions()
+
+
 class BankCashDeposit(TransactionModel):
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     date = models.DateField()
