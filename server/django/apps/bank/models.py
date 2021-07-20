@@ -287,6 +287,7 @@ class FundTransfer(TransactionModel):
 
 
 class FundTransferTemplate(models.Model):
+    name = models.CharField(max_length=255)
     from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_from_template', blank=True,
                                      null=True)
     to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_to_template', blank=True,
@@ -297,7 +298,8 @@ class FundTransferTemplate(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{} -> {}'.format(str(self.from_account), str(self.to_account))
+        return self.name
+        # return '{} -> {}'.format(str(self.from_account), str(self.to_account))
 
 
 class BankCashDeposit(TransactionModel):

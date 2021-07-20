@@ -139,6 +139,19 @@ class FundTransferViewSet(CRULViewSet):
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        # data['templates'] = 
+        return Response(data)
+
 
 class CashDepositViewSet(CRULViewSet):
     queryset = BankCashDeposit.objects.all()
