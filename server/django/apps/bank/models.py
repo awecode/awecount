@@ -241,6 +241,8 @@ class FundTransfer(TransactionModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        if not 'Bank Accounts' in [self.from_account.category.name, self.to_account.category.name]:
+            raise ValidationError('One of the account needs to be a bank account')
         self.apply_transactions()
 
     def get_voucher_no(self):
