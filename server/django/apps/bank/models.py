@@ -240,9 +240,11 @@ class FundTransfer(TransactionModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
         if not 'Bank Accounts' in [self.from_account.category.name, self.to_account.category.name]:
-            raise ValidationError('One of the account needs to be a bank account')
+            raise ValidationError('One of the account needs to be a bank account.')
+        if self.from_account_id == self.to_account_id:
+            raise ValidationError('Transferring to the same account is not allowed.')
+        super().save(*args, **kwargs)
         self.apply_transactions()
 
     def get_voucher_no(self):
