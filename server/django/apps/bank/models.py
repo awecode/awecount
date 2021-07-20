@@ -222,7 +222,7 @@ class ChequeIssue(models.Model):
         #     date = models.DateField()
 
 
-class FundTransfer(models.Model):
+class FundTransfer(TransactionModel):
     STATUSES = (
         ('Issued', 'Issued'),
         ('Cancelled', 'Cancelled'),

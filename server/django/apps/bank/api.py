@@ -133,6 +133,12 @@ class FundTransferViewSet(CRULViewSet):
             qs = qs.select_related('from_account', 'to_account')
         return qs.order_by('-pk')
 
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        obj = get_object_or_404(self.get_queryset(), pk=pk)
+        journals = obj.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)
+
 
 class CashDepositViewSet(CRULViewSet):
     queryset = BankCashDeposit.objects.all()
