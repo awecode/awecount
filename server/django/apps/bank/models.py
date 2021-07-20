@@ -236,6 +236,7 @@ class FundTransfer(models.Model):
                                                 related_name='charged_fund_transfers')
     transaction_fee = models.FloatField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
+    narration = models.TextField(null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
