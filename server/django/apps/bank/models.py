@@ -286,6 +286,20 @@ class FundTransfer(TransactionModel):
         self.cancel_transactions()
 
 
+class FundTransferTemplate(models.Model):
+    from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_from_template', blank=True,
+                                     null=True)
+    to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='fund_transfers_to_template', blank=True,
+                                   null=True)
+    transaction_fee_account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True,
+                                                related_name='charged_fund_transfers_template')
+    transaction_fee = models.FloatField(blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{} -> {}'.format(str(self.from_account), str(self.to_account))
+
+
 class BankCashDeposit(TransactionModel):
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     date = models.DateField()
