@@ -10,6 +10,11 @@ from awecount.utils.helpers import merge_dicts
 
 
 class CompanyViewSetMixin(object):
+    def get_serializer_class(self):
+        if self.action == 'list' and hasattr(self, 'list_serializer_class'):
+            return self.list_serializer_class
+        return super().get_serializer_class()
+
     def get_queryset(self, company_id=None):
         if self.queryset:
             qs = self.queryset

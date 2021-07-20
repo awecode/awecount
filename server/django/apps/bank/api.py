@@ -10,7 +10,7 @@ from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
-    BankCashDepositListSerializer, FundTransferSerializer
+    BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer, AccountSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
@@ -101,13 +101,17 @@ class ChequeIssueViewSet(CRULViewSet):
             qs = qs.select_related('party')
         return qs.order_by('-pk')
 
+
 class FundTransferViewSet(CRULViewSet):
     serializer_class = FundTransferSerializer
+    list_serializer_class = FundTransferListSerializer
+
     collections = (
         ('from_account', Account.objects.filter()),
         ('to_account', Account.objects.filter()),
         ('transaction_fee_account', Account.objects.filter()),
     )
+
     # filterset_class = ChequeIssueFilterSet
     # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
     # search_fields = ['cheque_no', 'bank_account__bank_name', 'bank_account__account_number', 'party__name',

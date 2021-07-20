@@ -78,6 +78,16 @@ class FundTransferSerializer(serializers.ModelSerializer):
         exclude = ('company',)
 
 
+class FundTransferListSerializer(serializers.ModelSerializer):
+    from_account_name = serializers.ReadOnlyField(source='from_account.name')
+    to_account_name = serializers.ReadOnlyField(source='to_account.name')
+
+    class Meta:
+        model = FundTransfer
+        fields = (
+            'id', 'voucher_no', 'date', 'from_account', 'to_account', 'from_account_name', 'to_account_name', 'amount', 'status')
+
+
 class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='__str__')
     cheque_no = serializers.ReadOnlyField(source='next_cheque_no')

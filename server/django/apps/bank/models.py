@@ -258,9 +258,12 @@ class FundTransfer(models.Model):
 
     def apply_transactions(self):
         if self.status == 'Issued':
-            entries = [['dr', self.to_account, self.amount],['cr', self.from_account, self.amount]]
+            entries = [['dr', self.to_account, self.amount]]
+            cr_amount = self.amount
             if self.transaction_fee_account_id and self.transaction_fee:
                 entries.append(['dr', self.transaction_fee_account, self.transaction_fee])
+                cr_amount += self.transaction_fee
+            entries.append(['cr', self.from_account, cr_amount])
             set_ledger_transactions(self, self.date, *entries, clear=True)
         elif self.status == 'Cancelled':
             self.cancel_transactions()
