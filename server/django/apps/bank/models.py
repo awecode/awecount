@@ -244,8 +244,13 @@ class FundTransfer(TransactionModel):
             raise ValidationError('One of the account needs to be a bank account.')
         if self.from_account_id == self.to_account_id:
             raise ValidationError('Transferring to the same account is not allowed.')
+        if self.pk and not self.voucher_no:
+            self.voucher_no = self.pk
         super().save(*args, **kwargs)
         self.apply_transactions()
+        if not self.voucher_no:
+            self.voucher_no = self.pk
+            super().save(*args, **kwargs)
 
     def get_voucher_no(self):
         return self.voucher_no
