@@ -12,7 +12,7 @@ from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSeri
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
     BankCashDepositListSerializer
 from apps.ledger.models import Party, Account
-from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
+from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer, AccountSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin
 
@@ -99,6 +99,30 @@ class ChequeIssueViewSet(CRULViewSet):
         qs = super().get_queryset()
         if self.action == 'list':
             qs = qs.select_related('party')
+        return qs.order_by('-pk')
+
+class FundTransferViewSet(CRULViewSet):
+    serializer_class = ChequeIssueSerializer
+    collections = (
+        ('from_account', Account.objects.filter()),
+        ('to_account', Account.objects.filter()),
+        ('transaction_fee_account', Account.objects.filter()),
+    )
+    # filterset_class = ChequeIssueFilterSet
+    # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    # search_fields = ['cheque_no', 'bank_account__bank_name', 'bank_account__account_number', 'party__name',
+    #                  'issued_to', 'dr_account__name', 'amount']
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        obj.cancel()
+        return Response({})
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.select_related('from_account', 'to_account')
         return qs.order_by('-pk')
 
 
