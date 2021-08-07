@@ -67,8 +67,14 @@ router.register('tax-payments', tax.TaxPaymentViewSet, base_name='tax-payment')
 router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
                   path('admin/' if settings.DEBUG == True else 'aweadmin/', admin.site.urls),
+                  path('debug/', trigger_error),
                   path('', include('apps.voucher.urls')),
                   path('v1/category-tree/', ledger.CategoryTreeView.as_view(), name='category-tree'),
                   path('v1/full-category-tree/', ledger.FullCategoryTreeView.as_view(), name='full-category-tree'),
