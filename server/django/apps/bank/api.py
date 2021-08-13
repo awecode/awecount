@@ -176,3 +176,21 @@ class CashDepositViewSet(CRULViewSet):
         if self.action == 'list' or self.action in ('choices',):
             return BankCashDepositListSerializer
         return BankCashDepositCreateSerializer
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        obj.cancel()
+        return Response({})
+
+    @action(detail=True, url_path='journal-entries')
+    def journal_entries(self, request, pk):
+        obj = get_object_or_404(self.get_queryset(), pk=pk)
+        journals = obj.journal_entries()
+        return Response(JournalEntriesSerializer(journals, many=True).data)
+
+    @action(detail=True, methods=['POST'])
+    def cancel(self, request, pk):
+        obj = self.get_object()
+        obj.cancel()
+        return Response({})

@@ -110,14 +110,14 @@ class BankCashDepositCreateSerializer(StatusReversionMixin, serializers.ModelSer
 
     def create(self, validated_data):
         bank_cash_deposit = BankCashDeposit.objects.create(**validated_data)
-        # cheque_deposit.apply_transactions()
+        bank_cash_deposit.apply_transactions()
         return bank_cash_deposit
 
     def update(self, instance, validated_data):
         BankCashDeposit.objects.filter(pk=instance.id).update(**validated_data)
-        # if instance.status == 'Cleared':
-        #     instance.refresh_from_db()
-        #     instance.apply_transactions()
+        if instance.status == 'Cleared':
+            instance.refresh_from_db()
+            instance.apply_transactions()
         return instance
 
     class Meta:
