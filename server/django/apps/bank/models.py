@@ -303,8 +303,13 @@ class FundTransferTemplate(models.Model):
 
 
 class BankCashDeposit(TransactionModel):
+    STATUSES = (
+        ('Cleared', 'Cleared'),
+        ('Cancelled', 'Cancelled'),
+    )
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     date = models.DateField()
+    status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     bank_account = models.ForeignKey(BankAccount, related_name='bank_cash_deposits', on_delete=models.CASCADE)
     amount = models.FloatField()
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -318,34 +323,25 @@ class BankCashDeposit(TransactionModel):
     def get_voucher_no(self):
         return self.voucher_no or self.id
 
-        # def apply_transactions(self):
-        #     if self.status == 'Cancelled':
-        #         self.cancel_transactions()
-        #         return
-        #     if not self.status == 'Cleared':
-        #         return
-        #     entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
-        #     set_ledger_transactions(self, self.date, *entries, clear=True)
-        #
-        # def cancel_transactions(self):
-        #     if not self.status == 'Cancelled':
-        #         return
-        #     JournalEntry.objects.filter(content_type__model='bankcashdeposit', object_id=self.id).delete()
-        #
-        # def clear(self):
-        #     self.status = 'Cleared'
-        #     self.clearing_date = datetime.datetime.today()
-        #     self.save()
-        #     self.apply_transactions()
-        #     for receipt in self.payment_receipts.all():
-        #         receipt.status = 'Cleared'
-        #         receipt.clearing_date = datetime.datetime.today()
-        #         receipt.save()
-        #
-        # def cancel(self):
-        #     self.status = 'Cancelled'
-        #     self.save()
-        #     self.cancel_transactions()
-        #     for receipt in self.payment_receipts.all():
-        #         receipt.status = 'Cancelled'
-        #         receipt.save()
+    def apply_transactions(self):
+        if self.status == 'Cancelled':
+            self.cancel_transactions()
+            return
+        entries = [['dr', self.bank_account.ledger, self.amount], ['cr', self.benefactor, self.amount]]
+        set_ledger_transactions(self, self.date, *entries, clear=True)
+
+    def cancel_transactions(self):
+        if not self.status == 'Cancelled':
+            return
+        JournalEntry.objects.filter(content_type__model='bankcashdeposit', object_id=self.id).delete()
+
+    def clear(self):
+        self.status = 'Cleared'
+        self.clearing_date = datetime.datetime.today()
+        self.save()
+        self.apply_transactions()
+
+    def cancel(self):
+        self.status = 'Cancelled'
+        self.save()
+        self.cancel_transactions()
