@@ -50,7 +50,7 @@ class BankCashDepositListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BankCashDeposit
-        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'deposited_by',)
+        fields = ('id', 'voucher_no', 'bank_account', 'date', 'bank_account_name', 'benefactor_name', 'deposited_by', 'status')
 
 
 class ChequeIssueSerializer(serializers.ModelSerializer):
