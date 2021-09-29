@@ -36,8 +36,13 @@ class CategoryAdmin(admin.ModelAdmin):
 
 admin.site.register(Category, CategoryAdmin)
 
+
+class InventoryAccountAdmin(admin.ModelAdmin):
+    search_fields = ('adhunikalochana', 'Adhunik Alochana Anek Rup')
+
+
 admin.site.register(Item, ItemAdmin)
-admin.site.register(InventoryAccount)
+admin.site.register(InventoryAccount, InventoryAccountAdmin)
 admin.site.register(JournalEntry)
 admin.site.register(Transaction)
 admin.site.register(Unit)
