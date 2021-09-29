@@ -10,7 +10,7 @@ from django.utils import timezone
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import Party, set_transactions as set_ledger_transactions, get_account, TransactionModel, \
     TransactionCharge, JournalEntry, Transaction
-from apps.product.models import Item, Unit, set_inventory_transactions
+from apps.product.models import Item, Unit, set_inventory_transactions, find_obsolete_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
@@ -328,6 +328,15 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
+        
+    def find_invalid_transaction(self):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
+                'item__account'):
+            find_obsolete_transactions(
+                row,
+                self.date,
+                ['dr', row.item.account, int(row.quantity)],
+            )
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(

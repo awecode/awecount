@@ -340,6 +340,28 @@ def _transaction_delete(sender, instance, **kwargs):
 
     transaction.account.save()
 
+def find_obsolete_transactions(model, date, *args):
+    args = [arg for arg in args if arg is not None]
+    
+    journal_entry = JournalEntry.objects.get(
+        content_type=ContentType.objects.get_for_model(model), object_id=model.id,
+        defaults={
+            'date': date
+        })
+    all_transaction_ids = []
+    for arg in args:
+        matches = journal_entry.transactions.filter(account=arg[1])
+        if not matches:
+            transaction = Transaction()
+        else:
+            transaction = matches[0]
+        all_transaction_ids.append(transaction.id)
+
+    obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
+    if obsolete_transactions.count():
+        print(obsolete_transactions)
+        # obsolete_transactions.delete()
+
 
 def set_inventory_transactions(model, date, *args, clear=True):
     args = [arg for arg in args if arg is not None]
