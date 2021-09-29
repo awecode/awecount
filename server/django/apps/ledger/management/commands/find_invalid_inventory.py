@@ -20,6 +20,7 @@ class Command(BaseCommand):
                 )
 
         svs = SalesVoucher.objects.all()
+        print('------------Sales----------------')
         for pv in svs:
             for row in pv.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
                     'item__account'):
