@@ -345,8 +345,7 @@ def find_obsolete_transactions(model, date, *args):
     args = [arg for arg in args if arg is not None]
 
     try:
-        journal_entry = JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(model), object_id=model.id,
-                                                 date=date)
+        journal_entry = JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(model), object_id=model.id)
     except JournalEntry.DoesNotExist:
         # import ipdb
         # ipdb.set_trace()
