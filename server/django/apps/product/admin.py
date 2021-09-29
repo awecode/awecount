@@ -38,7 +38,7 @@ admin.site.register(Category, CategoryAdmin)
 
 
 class InventoryAccountAdmin(admin.ModelAdmin):
-    search_fields = ('adhunikalochana', 'Adhunik Alochana Anek Rup')
+    search_fields = ('code', 'name', 'account_no')
 
 
 admin.site.register(Item, ItemAdmin)
