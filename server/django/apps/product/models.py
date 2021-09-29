@@ -365,7 +365,7 @@ def find_obsolete_transactions(model, date, *args):
     obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
     if obsolete_transactions.count():
         print(obsolete_transactions)
-        # obsolete_transactions.delete()
+        obsolete_transactions.delete()
 
 
 def set_inventory_transactions(model, date, *args, clear=True):
