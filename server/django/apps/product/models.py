@@ -349,7 +349,8 @@ def find_obsolete_transactions(model, date, *args):
     except JournalEntry.DoesNotExist:
         # import ipdb
         # ipdb.set_trace()
-        print('Not found', model, model.voucher.status, model.voucher.id)
+        if model.voucher.status not in ['Cancelled', 'Draft']:
+            print('Not found', model, model.voucher.status, model.voucher.id)
         return
 
     all_transaction_ids = []
