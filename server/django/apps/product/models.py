@@ -341,13 +341,15 @@ def _transaction_delete(sender, instance, **kwargs):
     transaction.account.save()
 
 
-def set_inventory_transactions(model, date, *args):
+def set_inventory_transactions(model, date, *args, clear=True):
     args = [arg for arg in args if arg is not None]
     journal_entry, created = JournalEntry.objects.get_or_create(
         content_type=ContentType.objects.get_for_model(model), object_id=model.id,
         defaults={
             'date': date
         })
+
+    all_transaction_ids = []
 
     for arg in args:
         matches = journal_entry.transactions.filter(account=arg[1])
@@ -380,6 +382,11 @@ def set_inventory_transactions(model, date, *args):
         transaction.account.save()
         journal_entry.transactions.add(transaction, bulk=False)
         alter(transaction.account, date, diff)
+        all_transaction_ids.append(transaction.id)
+
+    if clear:
+        obsolete_transactions = journal_entry.transactions.exclude(id__in=all_transaction_ids)
+        obsolete_transactions.delete()
 
 
 class Item(models.Model):
