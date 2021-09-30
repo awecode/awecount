@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.db import transaction
+from django.db.models import ProtectedError
 
 from apps.product.models import Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, Brand
 
@@ -24,15 +26,19 @@ def delete_item_data(modeladmin, request, queryset):
         messages.warning(request, 'Please select only one item.')
     else:
         item = queryset[0]
-        item.account and item.account.delete()
-        item.sales_account and item.sales_account.delete()
-        item.purchase_account and item.purchase_account.delete()
-        item.discount_allowed_account and item.discount_allowed_account.delete()
-        item.discount_received_account and item.discount_received_account.delete()
-        item.expense_account and item.expense_account.delete()
-        item.fixed_asset_account and item.fixed_asset_account.delete()
-        item.delete()
-        messages.success(request, 'Deleted items!'.format(count))
+        try:
+            with transaction.atomic():
+                item.account and item.account.delete()
+                item.sales_account and item.sales_account.delete()
+                item.purchase_account and item.purchase_account.delete()
+                item.discount_allowed_account and item.discount_allowed_account.delete()
+                item.discount_received_account and item.discount_received_account.delete()
+                item.expense_account and item.expense_account.delete()
+                item.fixed_asset_account and item.fixed_asset_account.delete()
+                item.delete()
+                messages.success(request, 'Deleted items!'.format(count))
+        except ProtectedError:
+            messages.error(request, 'Cannot delete! Transactions exist.'.format(count))
 
 
 delete_item_data.short_description = "Delete Full Item Data"
