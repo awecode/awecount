@@ -126,7 +126,7 @@ class BrandSerializer(serializers.ModelSerializer):
 class InventoryAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryAccount
-        fields = ('account_no', 'code', 'current_balance', 'id', 'name', 'opening_balance', 'item_id')
+        fields = ('account_no', 'code', 'current_balance', 'id', 'name', 'opening_balance', 'item')
 
 
 class InventoryAccountBalanceSerializer(serializers.ModelSerializer):
