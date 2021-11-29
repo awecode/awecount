@@ -257,9 +257,12 @@ class CustomerClosingView(APIView):
 
     def get(self, request, format=None):
         customers = self.get_queryset().filter(company_id=self.request.user.company_id).exclude(transactions__isnull=True)
-        result = customers.annotate(dr=Sum('transactions__dr_amount'), cr=Sum('transactions__cr_amount'),
-                                    last_invoice_date=Max(Case(
-                                        When(customer_detail__sales_invoices__status__in=['Issued', 'Paid', 'Partially Paid'],
-                                             then='customer_detail__sales_invoices__date')))).values(
-            'name', 'dr', 'cr', 'customer_detail__tax_registration_number', 'id', 'last_invoice_date')
-        return Response(result)
+
+        balances = customers.annotate(dr=Sum('transactions__dr_amount'), cr=Sum('transactions__cr_amount'), ).values(
+            'dr', 'cr', 'customer_detail__tax_registration_number', 'id')
+
+        last_invoice_dates = customers.annotate(last_invoice_date=Max(Case(
+            When(customer_detail__sales_invoices__status__in=['Issued', 'Paid', 'Partially Paid'],
+                 then='customer_detail__sales_invoices__date')))).values('customer_detail__tax_registration_number', 'id',
+                                                                         'last_invoice_date')
+        return Response({'balances': balances, 'last_invoice_dates': last_invoice_dates})
