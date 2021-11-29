@@ -88,7 +88,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
 
 class SalesVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True, related_name='sales_invoices')
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)

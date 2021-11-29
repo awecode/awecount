@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Sum, Case, When, F, Prefetch
+from django.db.models import Q, Sum, Case, When, F, Prefetch, Max
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
@@ -247,3 +247,19 @@ class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
     collections = (
         ('accounts', Account.objects.exclude(name__startswith='Opening Balance')),
     )
+
+
+class CustomerClosingView(APIView):
+    action = 'list'
+
+    def get_queryset(self):
+        return Account.objects.filter(customer_detail__isnull=False)
+
+    def get(self, request, format=None):
+        customers = self.get_queryset().filter(company_id=self.request.user.company_id).exclude(transactions__isnull=True)
+        result = customers.annotate(dr=Sum('transactions__dr_amount'), cr=Sum('transactions__cr_amount'),
+                                    last_invoice_date=Max(Case(
+                                        When(customer_detail__sales_invoices__status__in=['Issued', 'Paid', 'Partially Paid'],
+                                             then='customer_detail__sales_invoices__date')))).values(
+            'name', 'dr', 'cr', 'customer_detail__tax_registration_number', 'id', 'last_invoice_date')
+        return Response(result)
