@@ -10,6 +10,7 @@ from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
 
 from apps.users.signals import company_creation
+from awecount.libs.fields import ChoiceArrayField
 from .permission_modules import module_pairs
 
 ORGANIZATION_TYPES = (
@@ -95,7 +96,7 @@ class UserManager(BaseUserManager):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = ArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list, blank=True)
+    modules = ChoiceArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list, blank=True)
 
     def __str__(self):
         return self.name
