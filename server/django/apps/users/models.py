@@ -2,18 +2,20 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
-from separatedvaluesfield.models import SeparatedValuesField
+# from separatedvaluesfield.models import SeparatedValuesField
 
 from apps.users.signals import company_creation
 from .permission_modules import module_pairs
 
 ORGANIZATION_TYPES = (
-    ('private_limited', 'Private Limited'), ('public_limited', 'Public Limited'), ('sole_proprietorship', 'Sole Proprietorship'),
+    ('private_limited', 'Private Limited'), ('public_limited', 'Public Limited'),
+    ('sole_proprietorship', 'Sole Proprietorship'),
     ('partnership', 'Partnership'), ('corporation', 'Corporation'), ('non_profit', 'Non-profit'))
 
 
@@ -94,7 +96,8 @@ class UserManager(BaseUserManager):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = SeparatedValuesField(choices=module_pairs, max_length=3000, blank=True, null=True, token=',')
+    # modules = SeparatedValuesField(choices=module_pairs, max_length=3000, blank=True, null=True, token=',')
+    modules = ArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list, blank=True)
 
     def __str__(self):
         return self.name

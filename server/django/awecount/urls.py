@@ -18,54 +18,54 @@ from apps.aggregator import views as aggregator_views
 router = DefaultRouter()
 
 # TODO fix singular/plural
-router.register('parties', ledger.PartyViewSet, base_name='parties')
-router.register('categories', ledger.CategoryViewSet, base_name='categories')
-router.register('accounts', ledger.AccountViewSet, base_name='accounts')
+router.register('parties', ledger.PartyViewSet, basename='parties')
+router.register('categories', ledger.CategoryViewSet, basename='categories')
+router.register('accounts', ledger.AccountViewSet, basename='accounts')
 
-router.register('inventory-account', item.InventoryAccountViewSet, base_name='inventory-account')
-router.register('account-opening-balance', ledger.AccountOpeningBalanceViewSet, base_name='account-opening-balance')
+router.register('inventory-account', item.InventoryAccountViewSet, basename='inventory-account')
+router.register('account-opening-balance', ledger.AccountOpeningBalanceViewSet, basename='account-opening-balance')
 
 # item
-router.register('items', item.ItemViewSet, base_name='item')
-router.register('books', item.BookViewSet, base_name='book')
-router.register('brands', item.BrandViewSet, base_name='brands')
-router.register('units', item.UnitViewSet, base_name='unit')
-router.register('inventory-categories', item.InventoryCategoryViewSet, base_name='inventory-categories')
-router.register('item-opening-balance', item.ItemOpeningBalanceViewSet, base_name='item-opening-balance')
+router.register('items', item.ItemViewSet, basename='item')
+router.register('books', item.BookViewSet, basename='book')
+router.register('brands', item.BrandViewSet, basename='brands')
+router.register('units', item.UnitViewSet, basename='unit')
+router.register('inventory-categories', item.InventoryCategoryViewSet, basename='inventory-categories')
+router.register('item-opening-balance', item.ItemOpeningBalanceViewSet, basename='item-opening-balance')
 
 # voucher
 router.register('sales-voucher', voucher.SalesVoucherViewSet)
 router.register('pos', voucher.POSViewSet)
-router.register('sales-discount', voucher.SalesDiscountViewSet, base_name='sales-discount')
-router.register('payment-receipt', voucher.PaymentReceiptViewSet, base_name='payment-receipt')
-router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, base_name='purchase-vouchers')
-router.register('purchase-discount', voucher.PurchaseDiscountViewSet, base_name='purchase-discount')
-router.register('purchase-settings', voucher.PurchaseSettingsViewSet, base_name='purchase-settings')
-router.register('credit-note', voucher.CreditNoteViewSet, base_name='credit-note')
-router.register('debit-note', voucher.DebitNoteViewSet, base_name='debit-note')
-router.register('challan', voucher.ChallanViewSet, base_name='challan')
+router.register('sales-discount', voucher.SalesDiscountViewSet, basename='sales-discount')
+router.register('payment-receipt', voucher.PaymentReceiptViewSet, basename='payment-receipt')
+router.register('purchase-vouchers', voucher.PurchaseVoucherViewSet, basename='purchase-vouchers')
+router.register('purchase-discount', voucher.PurchaseDiscountViewSet, basename='purchase-discount')
+router.register('purchase-settings', voucher.PurchaseSettingsViewSet, basename='purchase-settings')
+router.register('credit-note', voucher.CreditNoteViewSet, basename='credit-note')
+router.register('debit-note', voucher.DebitNoteViewSet, basename='debit-note')
+router.register('challan', voucher.ChallanViewSet, basename='challan')
 router.register('journal-voucher', voucher.JournalVoucherViewSet)
 router.register('invoice-design', voucher.InvoiceDesignViewSet)
-router.register('sales-book', voucher.SalesBookViewSet, base_name='sales-book')
-router.register('sales-row', voucher.SalesRowViewSet, base_name='sales-row')
-router.register('sales-agent', voucher.SalesAgentViewSet, base_name='sales-agent')
-router.register('sales-settings', voucher.SalesSettingsViewSet, base_name='sales-settings')
-router.register('purchase-book', voucher.PurchaseBookViewSet, base_name='purchase-book')
+router.register('sales-book', voucher.SalesBookViewSet, basename='sales-book')
+router.register('sales-row', voucher.SalesRowViewSet, basename='sales-row')
+router.register('sales-agent', voucher.SalesAgentViewSet, basename='sales-agent')
+router.register('sales-settings', voucher.SalesSettingsViewSet, basename='sales-settings')
+router.register('purchase-book', voucher.PurchaseBookViewSet, basename='purchase-book')
 
 # bank
-router.register('cheque-deposits', bank.ChequeDepositViewSet, base_name='cheque-deposit')
-router.register('bank-cash-deposits', bank.CashDepositViewSet, base_name='cash-deposit')
+router.register('cheque-deposits', bank.ChequeDepositViewSet, basename='cheque-deposit')
+router.register('bank-cash-deposits', bank.CashDepositViewSet, basename='cash-deposit')
 router.register('bank-account', bank.BankAccountViewSet)
-router.register('cheque-issue', bank.ChequeIssueViewSet, base_name='cheque-issue')
-router.register('fund-transfer', bank.FundTransferViewSet, base_name='fund-transfer')
+router.register('cheque-issue', bank.ChequeIssueViewSet, basename='cheque-issue')
+router.register('fund-transfer', bank.FundTransferViewSet, basename='fund-transfer')
 
 # tax
-router.register('tax_scheme', tax.TaxSchemeViewSet, base_name='tax')
-router.register('tax-payments', tax.TaxPaymentViewSet, base_name='tax-payment')
+router.register('tax_scheme', tax.TaxSchemeViewSet, basename='tax')
+router.register('tax-payments', tax.TaxPaymentViewSet, basename='tax-payment')
 
 # aggregator
-router.register('log-entries', aggregator.LogEntryViewSet, base_name='log-entry')
-router.register('widgets', aggregator.WidgetViewSet, base_name='widget')
+router.register('log-entries', aggregator.LogEntryViewSet, basename='log-entry')
+router.register('widgets', aggregator.WidgetViewSet, basename='widget')
 
 
 def trigger_error(request):
@@ -80,7 +80,8 @@ urlpatterns = [
                   path('v1/full-category-tree/', ledger.FullCategoryTreeView.as_view(), name='full-category-tree'),
                   path('v1/trial-balance/', ledger.TrialBalanceView.as_view(), name='trial-balance'),
                   path('v1/tax-summary/', ledger.TaxSummaryView.as_view(), name='tax-summary'),
-                  path('v1/customer-closing-summary/', ledger.CustomerClosingView.as_view(), name='customer-closing-summary'),
+                  path('v1/customer-closing-summary/', ledger.CustomerClosingView.as_view(),
+                       name='customer-closing-summary'),
                   re_path(r'^v1/book/isbn-api/(?P<isbn>[0-9]+?)/$', book_by_isbn, name='book-isbn-api'),
                   path('v1/', include(router.urls)),
                   path('v1/auth/', include('djoser.urls.base')),

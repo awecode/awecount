@@ -2,13 +2,12 @@ from collections import OrderedDict
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.fields import JSONField
 from django.db import models, IntegrityError, transaction
-from django.db.models import F, Sum
+from django.db.models import F, Sum, JSONField
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
-from apps.ledger.models import Account, Category as AccountCategory, Transaction as AccountTransaction
+from apps.ledger.models import Account, Category as AccountCategory
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
 from awecount.utils import none_for_zero, zero_for_none
