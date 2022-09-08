@@ -15,6 +15,10 @@ class CompanyViewSetMixin(object):
             return self.list_serializer_class
         return super().get_serializer_class()
 
+    def is_filtered(self):
+        return any(x in self.request.query_params if self.request.query_params.get(x) else None for x in
+                   self.filterset_class.base_filters.keys())
+
     def get_queryset(self, company_id=None):
         if self.queryset:
             qs = self.queryset

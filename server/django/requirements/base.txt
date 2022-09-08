@@ -15,3 +15,4 @@ django-ses
 requests
 django-import-export
 django-auditlog
+openpyxl
