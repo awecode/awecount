@@ -19,6 +19,9 @@ class CompanyViewSetMixin(object):
         return any(x in self.request.query_params if self.request.query_params.get(x) else None for x in
                    self.filterset_class.base_filters.keys())
 
+    def is_filtered_by_date(self):
+        return 'start_date' in self.request.query_params and 'end_date' in self.request.query_params
+
     def get_queryset(self, company_id=None):
         if self.queryset:
             qs = self.queryset

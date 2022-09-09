@@ -275,6 +275,10 @@ def ad2bs(ad_date):
         return add_bs_days(bs_equiv, date_delta)
 
 
+def ad2bs_str(ad_date):
+    return string_from_tuple(ad2bs(ad_date))
+
+
 def today():
     """
     Returns today's date in B.S. as tuple in the format (year, month, day)

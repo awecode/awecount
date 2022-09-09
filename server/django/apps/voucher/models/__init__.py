@@ -268,13 +268,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     def view_url(self):
         return '{}sales-voucher/{}/view'.format(settings.BASE_URL, self.pk)
 
+    @property
+    def item_names(self):
+        # TODO Optimize - SalesBookExportSerializer
+        return ', '.join(set(Item.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+
+    @property
+    def units(self):
+        # TODO Optimize - SalesBookExportSerializer
+        return ', '.join(set(Unit.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name='rows')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='sales_rows')
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True, related_name='sales_rows')
     rate = models.FloatField()
     discount = models.FloatField(default=0)
     discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
@@ -328,7 +338,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
-        
+
     def find_invalid_transaction(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
                 'item__account'):
@@ -488,7 +498,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -644,7 +654,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     def apply_inventory_transaction(self):
         for row in self.rows.filter(is_returned=True).filter(
-                        Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
             set_inventory_transactions(
                 row,
                 self.date,

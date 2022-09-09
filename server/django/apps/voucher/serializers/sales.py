@@ -344,7 +344,8 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'receipts'):
             for receipt in obj.receipts:
                 receipts.append(
-                    {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
+                    {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount,
+                     'status': receipt.status})
         return receipts
 
     class Meta:
@@ -366,12 +367,14 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
         receipts = []
         for receipt in obj.receipts:
             receipts.append(
-                {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount, 'status': receipt.status})
+                {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount,
+                 'status': receipt.status})
         return receipts
 
     class Meta:
         model = SalesVoucher
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name', 'total_amount', 'payment_receipts')
+        fields = (
+            'id', 'voucher_no', 'party_name', 'date', 'status', 'customer_name', 'total_amount', 'payment_receipts')
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
@@ -397,8 +400,26 @@ class SalesBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = (
-            'id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export', 'meta_discount', 'meta_tax',
+            'id', 'date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export', 'meta_discount',
+            'meta_tax',
             'meta_taxable')
+
+
+class SalesBookExportSerializer(serializers.ModelSerializer):
+    buyers_name = serializers.ReadOnlyField(source='buyer_name')
+    buyers_pan = serializers.ReadOnlyField(source='party.tax_registration_number')
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    item_names = serializers.ReadOnlyField()
+    total_quantity = serializers.SerializerMethodField()
+
+    def get_total_quantity(self, obj):
+        # Annotate this on queryset on api that uses this serializer
+        return obj.total_quantity
+
+    class Meta:
+        model = SalesVoucher
+        fields = ('date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export', 'item_names', 'units',
+                  'total_quantity')
 
 
 class PurchaseBookSerializer(serializers.ModelSerializer):
