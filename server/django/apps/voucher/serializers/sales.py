@@ -419,7 +419,7 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ('date', 'buyers_name', 'buyers_pan', 'voucher_no', 'voucher_meta', 'is_export', 'item_names', 'units',
-                  'total_quantity')
+                  'total_quantity', 'status')
 
 
 class PurchaseBookSerializer(serializers.ModelSerializer):
