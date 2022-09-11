@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Sum, Case, When, F, Prefetch, Max
+from django.db.models import Q, Sum, Case, When, F, Max
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
@@ -17,8 +17,9 @@ from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.utils.CustomViewSet import CRULViewSet
 from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
-from .models import Account, JournalEntry, Category, AccountOpeningBalance, Transaction
-from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, JournalEntrySerializer, \
+from .models import Account, JournalEntry, Category, AccountOpeningBalance
+from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
+    JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
     AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer
 
@@ -46,12 +47,14 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
             qs = qs.select_related('supplier_account', 'customer_account')
         if self.action == 'customers':
             qs = qs.filter(customer_account__transactions__isnull=False).annotate(
-                dr=Coalesce(Sum('customer_account__transactions__dr_amount'), 0),
-                cr=Coalesce(Sum('customer_account__transactions__cr_amount'), 0)).annotate(balance=F('dr') - F('cr'))
+                dr=Coalesce(Sum('customer_account__transactions__dr_amount'), 0.0),
+                cr=Coalesce(Sum('customer_account__transactions__cr_amount'), 0.0)).annotate(
+                balance=F('dr') - F('cr'))
         if self.action == 'suppliers':
             qs = qs.filter(supplier_account__transactions__isnull=False).annotate(
-                dr=Coalesce(Sum('supplier_account__transactions__dr_amount'), 0),
-                cr=Coalesce(Sum('supplier_account__transactions__cr_amount'), 0)).annotate(balance=F('dr') - F('cr'))
+                dr=Coalesce(Sum('supplier_account__transactions__dr_amount'), 0.0),
+                cr=Coalesce(Sum('supplier_account__transactions__cr_amount'), 0.0)).annotate(
+                balance=F('dr') - F('cr'))
         return qs
 
     @action(detail=True)
@@ -93,8 +96,9 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         qs = Account.objects.filter(company=self.request.company).select_related('category', 'parent')
         if self.action == 'list':
             qs = qs.annotate(
-                dr=Coalesce(Sum('transactions__dr_amount'), 0),
-                cr=Coalesce(Sum('transactions__cr_amount'), 0)).annotate(computed_balance=F('dr') - F('cr'))
+                dr=Coalesce(Sum('transactions__dr_amount'), 0.0),
+                cr=Coalesce(Sum('transactions__cr_amount'), 0.0)).annotate(
+                computed_balance=F('dr') - F('cr'))
         return qs
 
     def get_accounts_by_category_name(self, category_name):
@@ -188,14 +192,17 @@ class TaxSummaryView(APIView):
         return TaxScheme.objects.none()
 
     def get_sales_queryset(self, **kwargs):
-        return SalesVoucher.objects.filter(company_id=self.request.company_id, status__in=['Issued', 'Paid', 'Partially Paid'])
+        return SalesVoucher.objects.filter(company_id=self.request.company_id,
+                                           status__in=['Issued', 'Paid', 'Partially Paid'])
 
     def get_non_import_purchase_queryset(self, **kwargs):
-        return PurchaseVoucher.objects.filter(is_import=False).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
+        return PurchaseVoucher.objects.filter(is_import=False).filter(
+            Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
             company_id=self.request.company_id, status__in=['Issued', 'Paid', 'Partially Paid']).distinct()
 
     def get_import_purchase_queryset(self, **kwargs):
-        return PurchaseVoucher.objects.filter(is_import=True).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
+        return PurchaseVoucher.objects.filter(is_import=True).filter(
+            Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(
             company_id=self.request.company_id, status__in=['Issued', 'Paid', 'Partially Paid']).distinct()
 
     def get(self, request, format=None):
@@ -217,7 +224,8 @@ class TaxSummaryView(APIView):
             total_meta_taxable=Sum('meta_taxable'), total_meta_non_taxable=Sum('meta_non_taxable'),
         )
 
-        import_purchase_data = self.get_import_purchase_queryset().filter(date__gte=start_date, date__lte=end_date).aggregate(
+        import_purchase_data = self.get_import_purchase_queryset().filter(date__gte=start_date,
+                                                                          date__lte=end_date).aggregate(
             total_meta_tax=Sum('meta_tax'),
             total_meta_taxable=Sum('meta_taxable'), total_meta_non_taxable=Sum('meta_non_taxable'),
         )
@@ -256,13 +264,15 @@ class CustomerClosingView(APIView):
         return Account.objects.filter(customer_detail__isnull=False)
 
     def get(self, request, format=None):
-        customers = self.get_queryset().filter(company_id=self.request.user.company_id).exclude(transactions__isnull=True)
+        customers = self.get_queryset().filter(company_id=self.request.user.company_id).exclude(
+            transactions__isnull=True)
 
         balances = customers.annotate(dr=Sum('transactions__dr_amount'), cr=Sum('transactions__cr_amount'), ).values(
             'dr', 'cr', 'customer_detail__tax_registration_number', 'id')
 
         last_invoice_dates = customers.annotate(last_invoice_date=Max(Case(
             When(customer_detail__sales_invoices__status__in=['Issued', 'Paid', 'Partially Paid'],
-                 then='customer_detail__sales_invoices__date')))).values('customer_detail__tax_registration_number', 'id',
+                 then='customer_detail__sales_invoices__date')))).values('customer_detail__tax_registration_number',
+                                                                         'id',
                                                                          'last_invoice_date')
         return Response({'balances': balances, 'last_invoice_dates': last_invoice_dates})
