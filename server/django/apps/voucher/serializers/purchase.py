@@ -24,7 +24,8 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
 
-class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
+class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin,
+                                      ModeCumBankSerializerMixin,
                                       serializers.ModelSerializer):
     rows = PurchaseVoucherRowSerializer(many=True)
 
@@ -120,3 +121,20 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseVoucher
         exclude = ('company', 'user', 'bank_account',)
+
+
+class PurchaseBookExportSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+    tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
+    voucher_meta = serializers.ReadOnlyField(source='get_voucher_meta')
+    item_names = serializers.ReadOnlyField()
+    total_quantity = serializers.SerializerMethodField()
+
+    def get_total_quantity(self, obj):
+        # Annotate this on queryset on api that uses this serializer
+        return obj.total_quantity
+
+    class Meta:
+        model = PurchaseVoucher
+        fields = ('date', 'party_name', 'tax_registration_number', 'voucher_no', 'voucher_meta', 'item_names', 'units',
+                  'total_quantity')

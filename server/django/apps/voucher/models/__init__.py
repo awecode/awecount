@@ -335,6 +335,16 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
 
     @property
+    def item_names(self):
+        # TODO Optimize - PurchaseBookExportSerializer
+        return ', '.join(set(Item.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+
+    @property
+    def units(self):
+        # TODO Optimize - PurchaseBookExportSerializer
+        return ', '.join(set(Unit.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+
+    @property
     def buyer_name(self):
         if self.party_id:
             return self.party.name
