@@ -337,12 +337,12 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     @property
     def item_names(self):
         # TODO Optimize - PurchaseBookExportSerializer
-        return ', '.join(set(Item.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+        return ', '.join(set(Item.objects.filter(purchase_rows__voucher_id=self.id).values_list('name', flat=True)))
 
     @property
     def units(self):
         # TODO Optimize - PurchaseBookExportSerializer
-        return ', '.join(set(Unit.objects.filter(sales_rows__voucher_id=self.id).values_list('name', flat=True)))
+        return ', '.join(set(Unit.objects.filter(purchase_rows__voucher_id=self.id).values_list('name', flat=True)))
 
     @property
     def buyer_name(self):
@@ -443,10 +443,10 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
 class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(PurchaseVoucher, related_name='rows', on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, related_name='purchases', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, related_name='purchase_rows', on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     quantity = models.FloatField()
-    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
+    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL, related_name='purchase_rows')
     rate = models.FloatField()
 
     discount = models.FloatField(default=0)
