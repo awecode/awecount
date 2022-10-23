@@ -46,12 +46,22 @@ delete_item_data.short_description = "Delete Full Item Data"
 
 
 def fix_book_title(modeladmin, request, queryset):
+    saved_cnt = 0
+    skipped_cnt = 0
     for item in queryset:
         url = 'https://tbe.thuprai.com/v1/book/isbn/{}/'.format(item.code)
-        book_detail = requests.get(url).json()
-        if book_detail.get('english_title'):
-            item.name = book_detail.get('english_title')
-            item.save()
+        response = requests.get(url)
+        if response.ok:
+            book_detail = response.json()
+            if book_detail.get('english_title'):
+                item.name = book_detail.get('english_title')
+                item.save()
+                saved_cnt += 1
+            else:
+                skipped_cnt += 1
+        else:
+            skipped_cnt += 1
+    messages.warning(request, 'Saved {} items, skipped {} items'.format(saved_cnt, skipped_cnt))
 
 
 fix_book_title.short_description = "Fix book title to English"
