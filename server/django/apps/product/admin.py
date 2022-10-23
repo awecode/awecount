@@ -1,3 +1,4 @@
+import requests
 from django.contrib import admin, messages
 from django.db import transaction
 from django.db.models import ProtectedError
@@ -44,12 +45,28 @@ def delete_item_data(modeladmin, request, queryset):
 delete_item_data.short_description = "Delete Full Item Data"
 
 
+def fix_book_title(modeladmin, request, queryset):
+    for item in queryset:
+        url = 'https://tbe.thuprai.com/v1/book/isbn/{}/'.format(item.code)
+        book_detail = requests.get(url).json()
+        if book_detail.get('english_title'):
+            item.name = book_detail.get('english_title')
+            item.save()
+
+
+fix_book_title.short_description = "Fix book title to English"
+
+
 class ItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'description', 'selling_price', 'cost_price')
     list_filter = (
-        'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense', 'brand')
+        'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense',
+        'brand')
     list_display = ('code', 'name', 'cost_price', 'selling_price', 'brand')
-    actions = (delete_item_data,)
+    actions = (delete_item_data, fix_book_title)
+    readonly_fields = (
+        'account', 'sales_account', 'purchase_account', 'discount_allowed_account', 'discount_received_account',
+        'expense_account', 'fixed_asset_account')
 
 
 class UnitAdmin(admin.ModelAdmin):
@@ -58,7 +75,8 @@ class UnitAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'company__name')
-    list_filter = ('track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense')
+    list_filter = (
+        'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense')
 
 
 admin.site.register(Category, CategoryAdmin)
