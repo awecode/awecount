@@ -7,7 +7,8 @@ from django.db import models
 
 from apps.ledger.models import JournalEntry
 from apps.product.models import JournalEntry as InventoryJournalEntry
-from awecount.utils import wGenerator, nepdate
+from awecount.libs import wGenerator
+from awecount.libs import nepdate
 
 
 class InvoiceModel(models.Model):

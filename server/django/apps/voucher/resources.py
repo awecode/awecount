@@ -1,6 +1,6 @@
 from import_export import resources
 
-from awecount.utils.resources import PrettyNameModelResource
+from awecount.libs.resources import PrettyNameModelResource
 from .models import SalesVoucher, SalesVoucherRow, PurchaseVoucher, PurchaseVoucherRow, CreditNote, CreditNoteRow, \
     DebitNoteRow, DebitNote
 

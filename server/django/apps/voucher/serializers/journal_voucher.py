@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from ..models import JournalVoucherRow, JournalVoucher
-from awecount.utils.serializers import StatusReversionMixin, DisableCancelEditMixin
+from awecount.libs.serializers import DisableCancelEditMixin
 
 
 class JournalVoucherRowSerializer(serializers.ModelSerializer):

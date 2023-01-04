@@ -3,10 +3,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
-from apps.ledger.serializers import AccountSerializer, AccountBalanceSerializer
+from apps.ledger.serializers import AccountBalanceSerializer
 from apps.tax.serializers import TaxSchemeSerializer
-from awecount.utils.Base64FileField import Base64FileField
-from awecount.utils.CustomViewSet import GenericSerializer
+from awecount.libs.Base64FileField import Base64FileField
+from awecount.libs.CustomViewSet import GenericSerializer
 from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, \
     Transaction
 

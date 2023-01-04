@@ -12,8 +12,8 @@ from apps.tax.filters import TaxPaymentFilterSet
 from apps.tax.models import TaxScheme, TaxPayment
 from apps.tax.serializers import TaxSchemeSerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, \
     TaxAccountSerializer, TaxPaymentJournalEntrySerializer
-from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
+from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin, ShortNameChoiceMixin
 
 
 class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet):

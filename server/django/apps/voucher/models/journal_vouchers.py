@@ -3,7 +3,7 @@ from django.db import models
 
 from apps.ledger.models import set_transactions as set_ledger_transactions, JournalEntry, Account
 from apps.users.models import Company
-from awecount.utils import get_next_voucher_no
+from awecount.libs import get_next_voucher_no
 
 
 class JournalVoucher(models.Model):

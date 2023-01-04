@@ -14,7 +14,7 @@ from mptt.models import MPTTModel
 from apps.users.models import Company, FiscalYear
 from apps.users.signals import company_creation
 from awecount.libs.exception import BadOperation
-from awecount.utils import zero_for_none, none_for_zero, decimalize
+from awecount.libs import zero_for_none, none_for_zero, decimalize
 
 
 class Category(MPTTModel):

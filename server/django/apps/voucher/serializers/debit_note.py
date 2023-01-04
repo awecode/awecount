@@ -2,8 +2,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.voucher.serializers import PurchaseDiscountSerializer, PurchaseVoucherRowDetailSerializer
-from awecount.utils import get_next_voucher_no
-from awecount.utils.serializers import StatusReversionMixin
+from awecount.libs import get_next_voucher_no
+from awecount.libs.serializers import StatusReversionMixin
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from ..models import DebitNoteRow, DebitNote
 

@@ -14,8 +14,8 @@ from apps.product.models import Item, Unit, set_inventory_transactions, find_obs
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, User, FiscalYear
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
-from awecount.utils import nepdate
-from awecount.utils.helpers import merge_dicts
+from awecount.libs import nepdate
+from awecount.libs.helpers import merge_dicts
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
 from .invoice_design import InvoiceDesign

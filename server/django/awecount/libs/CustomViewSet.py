@@ -4,9 +4,9 @@ from rest_framework import mixins, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError as RESTValidationError
 from rest_framework.response import Response
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from awecount.utils.helpers import merge_dicts
+from awecount.libs.helpers import merge_dicts
 
 
 class CompanyViewSetMixin(object):

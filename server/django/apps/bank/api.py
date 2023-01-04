@@ -13,8 +13,8 @@ from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSeri
     BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer, FundTransferTemplateSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
-from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin
+from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.mixins import InputChoiceMixin
 
 
 class BankAccountViewSet(InputChoiceMixin, CRULViewSet):

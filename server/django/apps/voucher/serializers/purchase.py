@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
-from awecount.utils.serializers import StatusReversionMixin
+from awecount.libs.serializers import StatusReversionMixin
 from ..models import PurchaseDiscount, PurchaseVoucherRow, PurchaseVoucher
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 

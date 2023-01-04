@@ -10,7 +10,7 @@ from django.dispatch import receiver
 from apps.ledger.models import Account, Category as AccountCategory
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
-from awecount.utils import none_for_zero, zero_for_none
+from awecount.libs import none_for_zero, zero_for_none
 
 
 class Unit(models.Model):

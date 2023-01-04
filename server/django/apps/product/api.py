@@ -12,11 +12,10 @@ from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from apps.users.models import FiscalYear
-from awecount.utils.CustomViewSet import CRULViewSet, GenericSerializer
-from awecount.utils.mixins import InputChoiceMixin, ShortNameChoiceMixin
+from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
+from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
-from .models import Category as InventoryCategory, InventoryAccount, set_inventory_transactions
+from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
 from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \

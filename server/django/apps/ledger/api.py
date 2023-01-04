@@ -15,8 +15,8 @@ from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.tax.models import TaxScheme
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.mixins import InputChoiceMixin, TransactionsViewMixin
+from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
 from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \

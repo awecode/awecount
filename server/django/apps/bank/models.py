@@ -5,7 +5,7 @@ from django.db import models
 
 from apps.ledger.models import Account, Party, set_ledger_transactions, JournalEntry, TransactionModel
 from apps.users.models import Company
-from awecount.utils import wGenerator
+from awecount.libs import wGenerator
 
 
 class BankAccount(models.Model):

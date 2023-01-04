@@ -6,8 +6,8 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from apps.aggregator.resources import LogEntryResource
 from apps.aggregator.views import qs_to_xls
 from apps.aggregator.widgets import WIDGET_CHOICES
-from awecount.utils.CustomViewSet import CRULViewSet
-from awecount.utils.helpers import choice_parser
+from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.helpers import choice_parser
 from .models import Widget, GROUP_BY, DISPLAY_TYPES
 from .serializers import LogEntrySerializer, WidgetSerializer, WidgetUpdateSerializer, WidgetListSerializer
 

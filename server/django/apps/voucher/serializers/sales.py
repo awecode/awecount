@@ -8,9 +8,9 @@ from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
-from awecount.utils import get_next_voucher_no
-from awecount.utils.serializers import StatusReversionMixin
-from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, CreditNote, PurchaseVoucher
+from awecount.libs import get_next_voucher_no
+from awecount.libs.serializers import StatusReversionMixin
+from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):

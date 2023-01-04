@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from awecount.utils.serializers import StatusReversionMixin
+from awecount.libs.serializers import StatusReversionMixin
 from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit, FundTransfer, FundTransferTemplate
 
 

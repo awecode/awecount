@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 
 from apps.product.views import book_by_isbn
-from awecount.utils.JWTCustomAuthentication import TokenObtainPairView
+from awecount.libs.JWTCustomAuthentication import TokenObtainPairView
 from apps.ledger import api as ledger
 from apps.product import api as item
 from apps.tax import api as tax
