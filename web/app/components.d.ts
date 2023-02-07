@@ -10,6 +10,7 @@ declare module '@vue/runtime-core' {
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
+    NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

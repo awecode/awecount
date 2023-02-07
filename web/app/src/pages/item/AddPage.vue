@@ -18,8 +18,14 @@
           <q-input v-model="fields.selling_price" type="number" label="Selling Price" />
         </div>
       </div>
+      <div class="twoInputField">
+        <div>
+          <q-select v-model="fields.brand" :options="formDefaults.collections?.brands" label="Brands" />
+        </div>
+      </div>
       <q-btn @click.prevent="submitForm" color="primary" label="Submit" class="q-ml-auto" />
     </q-form>
+    <!-- {{ formDefaults }}--formDefaults -->
   </div>
 </template>
 
