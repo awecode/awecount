@@ -3,22 +3,49 @@
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
     <q-header elevated class="bg-white text-grey-8 q-pa-sm">
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
         <q-toolbar-title>Dashboard</q-toolbar-title>
         <div>
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
            -->
           <div class="row btns-Con">
-            <q-btn>79/80 <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
-            <q-btn class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="() => activeDateFormat = (activeDateFormat === 'AD' ? 'BS' : 'AD')">{{
-                activeDateFormat
-              }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
+            <q-btn
+              >79/80
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Fiscal Yaar</q-tooltip
+              ></q-btn
+            >
+            <q-btn
+              class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="
+                () =>
+                  (activeDateFormat = activeDateFormat === 'AD' ? 'BS' : 'AD')
+              "
+              >{{ activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Change Date Format</q-tooltip
+              >
             </q-btn>
-            <q-btn><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
-                :offset="[0, 10]">Help</q-tooltip></q-btn>
-            <q-btn><q-icon name="mdi-logout" /><q-tooltip :delay="1000" :offset="[0, 10]">Logout</q-tooltip></q-btn>
+            <q-btn
+              ><q-icon name="mdi-help-circle-outline"></q-icon
+              ><q-tooltip :delay="1000" :offset="[0, 10]"
+                >Help</q-tooltip
+              ></q-btn
+            >
+            <q-btn
+              ><q-icon name="mdi-logout" /><q-tooltip
+                :delay="1000"
+                :offset="[0, 10]"
+                >Logout</q-tooltip
+              ></q-btn
+            >
           </div>
         </div>
         <!-- <div>ERP v{{ $q.version }}</div> -->
@@ -35,7 +62,11 @@
 
         <div class="q-mb-md"></div>
 
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+        <EssentialLink
+          v-for="link in essentialLinks"
+          :key="link.title"
+          v-bind="link"
+        />
       </q-list>
     </q-drawer>
     <q-page-container>
@@ -45,15 +76,15 @@
 </template>
 
 <script setup lang="ts">
-import { EssentialLinkProps } from 'components/EssentialLink.vue'
-import { useLoginStore } from '../stores/login-info.js'
+import { EssentialLinkProps } from 'components/EssentialLink.vue';
+import { useLoginStore } from '../stores/login-info.js';
 // import useApi from 'src/composables/useApi'
 import { ref } from 'vue';
-const store = useLoginStore()
+const store = useLoginStore();
 // const router = useRouter()
 // const $q = useQuasar()
-console.log(store.email)
-const activeDateFormat: Ref<string> = ref('AD')
+console.log(store.email);
+const activeDateFormat: Ref<string> = ref('AD');
 
 const essentialLinks: EssentialLinkProps[] = [
   {
@@ -166,7 +197,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Purchase Book',
         icon: 'book',
         link: '/party/',
-      }
+      },
     ],
   },
   {
@@ -176,7 +207,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Ledger',
         icon: 'mdi-notebook-multiple',
-        link: '/income/',
+        link: '/account/',
       },
       {
         title: 'Categories',
@@ -186,18 +217,19 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Journal Vouchers',
         icon: 'mdi-shuffle',
-        link: '/retention/',
+        link: '/journal-voucher/',
       },
-      {
-        title: 'All Accounts',
-        icon: 'mdi-notebook-multiple',
-        link: '/party/',
-      },
+      // {
+      //   title: 'All Accounts',
+      //   icon: 'mdi-notebook-multiple',
+      //   link: '/party/',
+      // },
+      // // TODO: Same as Ledger
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
-        link: '/income/item/',
-      }
+        link: '/account/opening-balance/',
+      },
     ],
   },
   {
@@ -228,7 +260,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
         link: '/income/item/',
-      }
+      },
     ],
   },
   {
@@ -238,28 +270,28 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Accounts',
         icon: 'mdi-bank',
-        link: '/income/',
+        link: '/bank/',
       },
       {
         title: 'Cheque Issues',
         icon: 'mdi-checkbook',
-        link: '/account/category/',
+        link: 'bank/cheque-issue/',
       },
       {
         title: 'Collection Deposits',
         icon: 'mdi-ballot',
-        link: '/retention/',
+        link: 'bank/cheque-deposit/',
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
-        link: '/party/',
+        link: 'bank/cash-deposit/',
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
-        link: '/income/item/',
-      }
+        link: 'bank/fund-transfer/',
+      },
     ],
   },
   {
@@ -281,7 +313,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Periodic Summary',
         icon: 'mdi-file-chart',
         link: '/account/category/',
-      }
+      },
     ],
   },
   {
@@ -344,7 +376,7 @@ const essentialLinks: EssentialLinkProps[] = [
   {
     title: 'POS ',
     icon: 'mdi-cart-arrow-right',
-    link: 'pos'
+    link: 'pos',
   },
 
   // {
@@ -357,12 +389,12 @@ const essentialLinks: EssentialLinkProps[] = [
   //   icon: 'power_settings_new',
   //   link: '/login/',
   // },
-]
+];
 
-const leftDrawerOpen = ref(false)
+const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+  leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 // function confirmSignOut() {
 //   $q.dialog({
@@ -383,8 +415,6 @@ function toggleLeftDrawer() {
 //         .catch(() => {
 //           // console.log(error)
 //         })
-
-
 
 //     })
 //     .onOk(() => {

@@ -18,16 +18,32 @@
               :error-message="errors.name"
               :error="!!errors.name"
             />
-          </div>
-          <div>
             <q-input
-              v-model="fields.description"
-              label="Description"
+              v-model="fields.code"
+              label="Code *"
               class="col-6"
-              :error-message="errors.description"
-              :error="!!errors.description"
-              type="textarea"
+              :error-message="errors.code"
+              :error="!!errors.code"
             />
+          </div>
+          <div class="row q-col-gutter-md q-gutter-y-md">
+            <div class="col-6">
+              <n-auto-complete
+                v-model="fields.parent"
+                :options="formDefaults.collections?.account"
+                label="Parent"
+                :error="errors?.parent"
+              />
+            </div>
+            <div class="col-6">
+              <n-auto-complete
+                v-model="fields.category"
+                :options="formDefaults.collections?.category"
+                label="Category *"
+                :modal-component="CategoryForm"
+                :error="errors?.category"
+              />
+            </div>
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
@@ -44,17 +60,19 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
+import useForm from '/src/composables/useForm'
+import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/brands/';
+    const endpoint = '/v1/account/'
     return {
       ...useForm(endpoint, {
         getDefaults: true,
-        successRoute: '/brand/',
+        successRoute: '/account/',
       }),
-    };
+      CategoryForm,
+    }
   },
-};
+}
 </script>
