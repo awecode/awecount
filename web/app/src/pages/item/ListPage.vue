@@ -23,6 +23,7 @@
           <q-btn icon="delete" color="red" dense flat @click="confirmDeletion(props.row.id)" />
           <!-- {{ props }} -->
         </q-td>
+        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>

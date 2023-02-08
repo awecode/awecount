@@ -20,7 +20,10 @@
       </div>
       <div class="twoInputField">
         <div>
-          <q-select v-model="fields.brand" :options="formDefaults.collections?.brands" label="Brands" />
+          <!-- <q-select v-model="fields.brand" :options="formDefaults.collections?.brands" label="Brands" /> -->
+          <n-auto-complete label="Brand" :modelValue="fields.brands" :options="formDefaults.collections?.brands"
+            :modalComponent="{}" />
+          <!-- TODO: add modal -->
         </div>
       </div>
       <q-btn @click.prevent="submitForm" color="primary" label="Submit" class="q-ml-auto" />
@@ -30,9 +33,11 @@
 </template>
 
 <script>
+import NAutoComplete from 'src/components/NAutoComplete.vue'
 // import LedgerForm from '../account/ledger/LedgerForm.vue'
 import useForm from '/src/composables/useForm'
 export default {
+  components: { NAutoComplete },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/items/'
