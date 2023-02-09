@@ -75,7 +75,7 @@
                   label="Category"
                   v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories"
-                  :modal-component="BrandForm"
+                  :modal-component="InventoryCategoryForm"
                   :error="errors.category"
                 />
               </div>
@@ -316,6 +316,7 @@ images
 <script setup>
 import NAutoComplete from 'src/components/NAutoComplete.vue';
 import BrandForm from '../inventory/product/brand/BrandForm.vue';
+import InventoryCategoryForm from '../inventory/product/category/InventoryCategoryForm.vue';
 // export default {
 //   components: { NAutoComplete },
 //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
