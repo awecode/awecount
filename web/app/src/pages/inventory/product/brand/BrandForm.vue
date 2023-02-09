@@ -48,7 +48,7 @@ import useForm from '/src/composables/useForm';
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/brands/';
+    const endpoint = '/v1/brands/';
     return {
       ...useForm(endpoint, {
         getDefaults: true,
