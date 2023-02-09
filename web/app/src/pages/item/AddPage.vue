@@ -98,6 +98,18 @@
                 @click="toggleExpenses('direct_expense')" />
             </div>
           </q-card>
+          <div class="row q-gutter-y-lg">
+            <q-file class="col-5" outlined v-model="model">
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
+            <q-file class="col-5" outlined v-model="model">
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
+          </div>
           <!-- <div>
             <q-input
               v-model="fields.selling_price"
