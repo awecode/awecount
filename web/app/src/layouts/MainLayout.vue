@@ -104,22 +104,22 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Units',
         icon: 'mdi-scale-balance',
-        link: '/income/item/',
+        link: '/units/list/',
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
-        link: '/retention/',
+        link: '/inventory-category/list/',
       },
       {
         title: 'Brands',
         icon: 'mdi-domain',
-        link: '/party/',
+        link: '/brand/list/',
       },
       {
         title: 'Inventory Ledger',
         icon: 'inventory',
-        link: '/income/item/',
+        link: '/inventory-account/list/',
       },
       {
         title: 'Opening Stock',

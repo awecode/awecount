@@ -4,15 +4,14 @@
       <div></div>
       <q-btn
         color="green"
-        to="/account/category/add/"
-        label="New Category"
+        to="/items/add/"
+        label="Add Income Item"
         class="q-ml-lg"
         icon-right="add"
       />
     </div>
-
     <q-table
-      title="Categories"
+      title="Income Items"
       :rows="rows"
       :columns="columns"
       :loading="loading"
@@ -22,18 +21,21 @@
       @request="onRequest"
       class="q-mt-md"
     >
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
+      <template v-slot:top>
+        <div class="search-bar">
+          <q-input
+            dense
+            debounce="500"
+            v-model="searchQuery"
+            placeholder="Search"
+            class="search-bar-wrapper"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="filterbtn">filters</q-btn>
+        </div>
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
@@ -43,28 +45,61 @@
             color="amber"
             dense
             flat
-            :to="`/account/category/${props.row.id}/edit/`"
+            :to="`/income/item/${props.row.id}/edit/`"
           />
-          <!-- <q-btn
+          <q-btn
             icon="delete"
             color="red"
             dense
             flat
             @click="confirmDeletion(props.row.id)"
-          /> -->
+          />
           <!-- {{ props }} -->
         </q-td>
+        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>
 </template>
 
-<script>
-import useList from '/src/composables/useList'
-export default {
-  setup() {
-    const endpoint = '/v1/category/'
-    return { ...useList(endpoint) }
-  },
-}
+<script setup>
+import useList from '/src/composables/useList';
+const endpoint = '/v1/items';
+// console.log(useList(endpoint))
+// export default {
+//   setup() {
+//     const endpoint = '/v1/category/'
+//     return { ...useList(endpoint) }
+//   },
+// }
+const {
+  columns,
+  rows,
+  resetFilters,
+  filters,
+  loading,
+  searchQuery,
+  pagination,
+  onRequest,
+  confirmDeletion,
+  initiallyLoaded,
+} = useList(endpoint);
 </script>
+
+<style>
+.search-bar {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.search-bar-wrapper {
+  width: 100%;
+}
+
+.filterbtn {
+  width: 100px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+</style>

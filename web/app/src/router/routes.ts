@@ -8,13 +8,78 @@ const routes: RouteRecordRaw[] = [
       { path: 'dashboard', component: () => import('pages/IndexPage.vue') },
       {
         path: 'items/list/',
-        component: () => import('src/pages/item/ListPage.vue'),
+        component: () => import('src/pages/inventory/item/ItemList.vue'),
       },
       {
         path: 'items/add/',
-        component: () => import('src/pages/item/AddPage.vue'),
+        component: () => import('src/pages/inventory/item/ItemAdd.vue'),
       },
-
+      {
+        path: 'items/details/:id/',
+        component: () => import('src/pages/inventory/item/ItemDetails.vue'),
+      },
+      {
+        path: 'inventory-category/list/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryList.vue'
+          ),
+      },
+      {
+        path: 'inventory-category/add/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+          ),
+      },
+      {
+        path: 'inventory-account/list/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
+          ),
+      },
+      {
+        path: '/inventory-account/add/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+          ),
+      },
+      //
+      {
+        path: 'inventory-account/detail/:id/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
+          ),
+      },
+      {
+        path: '/inventory-account/add/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+          ),
+      },
+      //
+      {
+        path: 'brand/list/',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandList.vue'),
+      },
+      {
+        path: 'brand/add/',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandForm.vue'),
+      },
+      {
+        path: 'units/list/',
+        component: () => import('src/pages/inventory/unit/UnitList.vue'),
+      },
+      {
+        path: 'units/add/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+      },
       // egov Port
       {
         path: 'bank/account/add/',

@@ -14,13 +14,13 @@
             <q-input
               class="col-6"
               v-model="fields.name"
-              label="Name"
+              label="Name *"
               :error-message="errors.name"
               :error="!!errors.name"
             />
             <q-input
               v-model="fields.code"
-              label="Code"
+              label="Code *"
               class="col-6"
               :error-message="errors.code"
               :error="!!errors.code"
@@ -315,8 +315,8 @@ images
 
 <script setup>
 import NAutoComplete from 'src/components/NAutoComplete.vue';
-import BrandForm from '../inventory/product/brand/BrandForm.vue';
-import InventoryCategoryForm from '../inventory/product/category/InventoryCategoryForm.vue';
+import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue';
+import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue';
 // export default {
 //   components: { NAutoComplete },
 //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
