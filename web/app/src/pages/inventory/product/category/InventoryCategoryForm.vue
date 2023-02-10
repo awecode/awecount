@@ -3,7 +3,7 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span v-if="!isEdit">Update {{ fields.name }}</span>
+          <span v-if="isEdit">Update {{ fields.name }}</span>
           <span v-else>New Inventory Category</span>
         </div>
       </q-card-section>
@@ -19,7 +19,8 @@
           <div class="row q-col-gutter-md q-gutter-y-md">
             <div class="col-6">
               <n-auto-complete class="col-6 q-full-width" label="Unit" v-model="fields.default_unit_id"
-                :options="formDefaults.collections?.units" :modal-component="{}" :error="errors.default_unit_id" />
+                :options="formDefaults.collections?.units" :modal-component="UnitForm"
+                :error="errors.default_unit_id" />
               <!-- TODO: add Unit Form  -->
             </div>
             <div class="col-6">
@@ -126,7 +127,6 @@
                 </span>
               </div>
             </div>
-            {{ fields.extra_fields }}--fields.extra_fields
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
@@ -137,10 +137,10 @@
     </q-card>
   </q-form>
 </template>
-images
 
 <script setup>
 import NAutoComplete from 'src/components/NAutoComplete.vue';
+import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 // const emptyField = {
 
 // }
@@ -214,30 +214,6 @@ const addExtraFields = () => {
 const removeExtraFields = (idx) => {
   fields.value.extra_fields.splice(idx, 1);
 }
-// const onFileChange = (dct, event, attr) => {
-//   const file = event;
-//   let reader = new FileReader();
-//   reader.readAsDataURL(file);
-//   reader.fileName = file.name;
-//   reader.onload = () => {
-//     fields.value[`${attr}`] = {
-//       name: reader.fileName,
-//       data: reader.result,
-//     };
-//   };
-//   reader.onerror = function (error) {
-//     console.error('Error: ', error);
-//   };
-// };
-
-// onMounted(() => {
-//   fields.value.direct_expense = false;
-//   fields.value.indirect_expense = false;
-//   fields.value.track_inventory = false;
-//   fields.value.can_be_sold = false;
-//   fields.value.fixed_asset = false;
-//   fields.value.can_be_purchased = false;
-// });
 </script>
 
 <style scoped>
