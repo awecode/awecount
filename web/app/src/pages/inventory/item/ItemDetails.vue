@@ -65,6 +65,17 @@
           cr: 150,
           bal: 30,
         },
+      ]"
+      title="Accounts"
+      hide-bottom
+    >
+      <!-- :rows="[
+        {
+          ac: 'asvahsv',
+          dr: 120,
+          cr: 150,
+          bal: 30,
+        },
         {
           ac: 'Sales',
           dr: data.sales_account?.amounts.dr,
@@ -73,11 +84,93 @@
             (data.sales_account?.amounts.dr || 0) -
             (data.sales_account?.amounts.cr || 0),
         },
-      ]"
-      :binary-state-sort="true"
-      title="Accounts"
-    >
+      ]" -->
+      <template v-slot:body="props">
+        <q-tr :props="props" v-if="data.account">
+          <q-td
+            ><router-link :to="`/inventory-account/detail/${data.account?.id}/`"
+              >Stock</router-link
+            ></q-td
+          >
+          <q-td>{{ data.account?.amounts.dr }}</q-td>
+          <q-td>{{ data.account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.account?.amounts.dr || 0) - (data.account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+        <q-tr :props="props">
+          <q-td
+            ><router-link :to="`/account/detail/${data.sales_account?.id}`"
+              >Sales</router-link
+            ></q-td
+          >
+          <q-td>{{ data.sales_account?.amounts.dr }}</q-td>
+          <q-td>{{ data.sales_account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.sales_account?.amounts.dr || 0) -
+            (data.sales_account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+        <q-tr :props="props" v-if="data.purchase_account">
+          <q-td
+            ><router-link :to="`/accounts/detail/${data.purchase_account?.id}`"
+              >Purchase</router-link
+            ></q-td
+          >
+          <q-td>{{ data.purchase_account?.amounts.dr }}</q-td>
+          <q-td>{{ data.purchase_account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.purchase_account?.amounts.dr || 0) -
+            (data.purchase_account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+        <q-tr :props="props" v-if="data.expense_account">
+          <q-td
+            ><router-link :to="`/accounts/detail/${data.expense_account?.id}`"
+              >Expenses</router-link
+            ></q-td
+          >
+          <q-td>{{ data.expense_account?.amounts.dr }}</q-td>
+          <q-td>{{ data.expense_account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.expense_account?.amounts.dr || 0) -
+            (data.expense_account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+        <q-tr :props="props" v-if="data.fixed_asset_account">
+          <q-td
+            ><router-link
+              :to="`/accounts/detail/${data.fixed_asset_account?.id}`"
+              >Fixed Assets</router-link
+            ></q-td
+          >
+          <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td
+          >data.purchase_account
+          <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.fixed_asset_account?.amounts.dr || 0) -
+            (data.fixed_asset_account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+        <q-tr :props="props" v-if="data.discount_received_account">
+          <q-td
+            ><router-link
+              :to="`/accounts/detail/${data.discount_received_account?.id}`"
+              >Discount Received</router-link
+            ></q-td
+          >
+          <q-td>{{ data.discount_received_account?.amounts.dr }}</q-td>
+          <q-td>{{ data.discount_received_account?.amounts.cr }}</q-td>
+          <q-td>{{
+            (data.discount_received_account?.amounts.dr || 0) -
+            (data.discount_received_account?.amounts.cr || 0)
+          }}</q-td>
+        </q-tr>
+      </template>
     </q-table>
+    <router-link :to="`/items/${data.id}/`">
+      <q-btn color="orange-7" class="q-mt-md q-px-lg">Edit</q-btn>
+    </router-link>
   </q-card>
 </template>
 

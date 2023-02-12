@@ -23,7 +23,6 @@
           </template>
         </q-input>
       </template>
-      {{ $hasPerm('InventoryCategoryCreate') }}--perm
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
