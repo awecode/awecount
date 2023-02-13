@@ -131,7 +131,7 @@ const essentialLinks: EssentialLinkProps[] = [
   {
     title: 'Books',
     icon: 'mdi-library',
-    link: '/retention/',
+    link: '/book/list/',
   },
   {
     title: 'Sales',
@@ -140,7 +140,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales invoices',
         icon: 'mdi-point-of-sale',
-        link: '/income/',
+        link: '/sales-voucher/list/',
       },
       {
         title: 'Credit Notes',

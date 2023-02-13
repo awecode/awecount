@@ -37,11 +37,29 @@ const routes: RouteRecordRaw[] = [
           ),
       },
       {
+        path: '/sales-voucher/list/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherList.vue'),
+      },
+      {
+        path: '/sales-voucher/add/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+      },
+      {
         path: '/items/opening/:id',
         component: () =>
           import(
             'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
           ),
+      },
+      {
+        path: 'book/list/',
+        component: () => import('src/pages/book/BookList.vue'),
+      },
+      {
+        path: 'book/add/',
+        component: () => import('src/pages/book/BookForm.vue'),
       },
       {
         path: 'inventory-category/list/',
