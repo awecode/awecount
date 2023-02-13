@@ -15,8 +15,33 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/inventory/item/ItemAdd.vue'),
       },
       {
+        path: 'items/:id/',
+        component: () => import('src/pages/inventory/item/ItemAdd.vue'),
+      },
+      {
         path: 'items/details/:id/',
         component: () => import('src/pages/inventory/item/ItemDetails.vue'),
+      },
+      {
+        path: 'items/opening/',
+        component: () =>
+          import(
+            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceList.vue'
+          ),
+      },
+      {
+        path: 'items/opening/add',
+        component: () =>
+          import(
+            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
+          ),
+      },
+      {
+        path: '/items/opening/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
+          ),
       },
       {
         path: 'inventory-category/list/',

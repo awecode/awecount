@@ -168,8 +168,8 @@
         </q-tr>
       </template>
     </q-table>
-    <router-link :to="`/items/${data.id}/`">
-      <q-btn color="orange-7" class="q-mt-md q-px-lg">Edit</q-btn>
+    <router-link :to="`/items/${data.id}/`" class="no-underline">
+      <q-btn color="orange-7" class="q-mt-md q-px-lg no-underline">Edit</q-btn>
     </router-link>
   </q-card>
 </template>
@@ -187,7 +187,7 @@ img {
   width: 100%;
   object-fit: contain;
 }
-.link {
+a {
   text-decoration: none;
   color: cornflowerblue;
 }

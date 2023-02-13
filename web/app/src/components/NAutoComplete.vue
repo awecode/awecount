@@ -1,15 +1,40 @@
 <template>
   <div class="row no-wrap">
-    <q-select v-model="modalValue" input-debounce="0" :label="label" use-input :options="filteredOptions"
-      @filter="filterFn" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
-      @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error" />
+    <q-select
+      v-model="modalValue"
+      input-debounce="0"
+      :label="label"
+      use-input
+      :options="filteredOptions"
+      @filter="filterFn"
+      option-value="id"
+      option-label="name"
+      map-options
+      emit-value
+      class="q-mr-xs col"
+      @update:modelValue="valUpdated"
+      :disable="props.disabled"
+      :error-message="props?.error"
+      :error="!!props?.error"
+    />
     <div>
-      <q-btn v-if="modalComponent" color="white" label="+" class="q-ml-auto text-black q-mt-md" @click="openModal" />
+      <q-btn
+        v-if="modalComponent"
+        color="white"
+        label="+"
+        class="q-ml-auto text-black q-mt-md"
+        @click="openModal"
+      />
     </div>
   </div>
   <q-dialog v-model="isModalOpen">
     <q-card style="min-width: 80vw">
-      <component :is="modalComponent" :is-modal="true" @modalSignal="handleModalSignal" @closeModal="closeModal">
+      <component
+        :is="modalComponent"
+        :is-modal="true"
+        @modalSignal="handleModalSignal"
+        @closeModal="closeModal"
+      >
       </component>
     </q-card>
   </q-dialog>
@@ -50,10 +75,17 @@ export default {
     const valUpdated = (val) => {
       emit('update:modelValue', val);
     };
-    const modalValue = ref(props.modelValue)
+    const modalValue = ref(props.modelValue);
     const allOptions = ref(props.options || []);
     const isModalOpen = ref(false);
     const filteredOptions = ref(props.options);
+
+    watch(
+      () => props.modelValue,
+      (newValue) => {
+        modalValue.value = newValue;
+      }
+    );
 
     watch(
       () => props.options,
@@ -101,7 +133,7 @@ export default {
       closeModal,
       handleModalSignal,
       props,
-      modalValue
+      modalValue,
     };
   },
 };

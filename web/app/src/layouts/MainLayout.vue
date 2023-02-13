@@ -124,7 +124,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Opening Stock',
         icon: 'edit_note',
-        link: '/retention/',
+        link: '/items/opening/',
       },
     ],
   },

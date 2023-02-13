@@ -84,18 +84,19 @@
             <div class="row q-col-gutter-md q-gutter-y-md">
               <div class="col-6">
                 <n-auto-complete
-                  class="col-6 q-full-width"
+                  class="q-full-width"
                   label="Unit"
-                  :v-model="fields.unit_id"
+                  v-model="fields.unit_id"
                   :options="formDefaults.collections?.units"
                   :modal-component="BrandForm"
                   :error="errors.unit_id"
                 />
               </div>
+              <!-- {{ fields.unit_id }}--uit id -->
               <div class="col-6">
                 <n-auto-complete
-                  class="col-6 q-full-width"
-                  label="Category"
+                  class="q-full-width"
+                  label="Tax Scheme"
                   v-model="fields.tax_scheme_id"
                   :options="formDefaults.collections?.tax_scheme"
                   :modal-component="BrandForm"
@@ -119,7 +120,7 @@
                   class="col-6 q-full-width"
                   label="Purchase Account"
                   v-model="fields.purchase_account"
-                  :options="formDefaults.collections?.purchase_account"
+                  :options="formDefaults.collections?.accounts"
                   :modal-component="BrandForm"
                   :error="errors.purchase_account"
                 />
@@ -131,7 +132,7 @@
                   class="col-6 q-full-width"
                   label="Discount Allowed Account"
                   v-model="fields.discount_allowed_account"
-                  :options="formDefaults.collections?.discount_allowed_account"
+                  :options="formDefaults.collections?.accounts"
                   :modal-component="BrandForm"
                   :error="errors.discount_allowed_account"
                 />
@@ -141,7 +142,7 @@
                   class="col-6 q-full-width"
                   label="Discount Received Account"
                   v-model="fields.discount_received_account"
-                  :options="formDefaults.collections?.discount_received_account"
+                  :options="formDefaults.collections?.accounts"
                   :modal-component="BrandForm"
                   :error="errors.discount_received_account"
                 />
@@ -174,7 +175,7 @@
               <q-checkbox
                 class="col-4"
                 v-model="fields.fixed_asset"
-                label="Track Inventory"
+                label="Fixed Assets"
                 :error-message="errors.fixed_asset"
                 :error="!!errors.fixed_asset"
                 :disable="fields.direct_expense || fields.indirect_expense"
@@ -199,23 +200,30 @@
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
             <div
-              class="col-5"
+              class="col-5 row q-col-gutter-md items-end"
               v-if="
                 typeof fields.front_image === 'string' && fields.front_image
               "
             >
               <div>Front Image</div>
-              <v-col>
-                <q-btn target="_blank" class="info" :href="fields.front_image"
+              <div>
+                <q-btn
+                  target="_blank"
+                  class="info"
+                  color="blue"
+                  :href="fields.front_image"
                   >PREVIEW</q-btn
                 >
-                <span
-                  class="btn btn-info btn-fill ml-5"
+              </div>
+              <div>
+                <q-btn
+                  color="orange-7"
+                  class="ml-5"
                   style="cursor: pointer"
-                  @click="clear(fields, 'front_image')"
-                  >clear</span
+                  @click="clear('front_image')"
+                  >clear</q-btn
                 >
-              </v-col>
+              </div>
             </div>
             <div v-else class="col-5">
               <q-file
@@ -233,21 +241,58 @@
               </q-file>
             </div>
             <div
+              class="col-5 row q-col-gutter-md items-end"
+              v-if="typeof fields.back_image === 'string' && fields.back_image"
+            >
+              <div>Back Image</div>
+              <div>
+                <q-btn
+                  target="_blank"
+                  class="info"
+                  color="blue"
+                  :href="fields.back_image"
+                  >PREVIEW</q-btn
+                >
+              </div>
+              <div>
+                <q-btn
+                  color="orange-7"
+                  class="ml-5"
+                  style="cursor: pointer"
+                  @click="clear('back_image')"
+                  >clear</q-btn
+                >
+              </div>
+            </div>
+            <div v-else class="col-5">
+              <q-file
+                v-model="fields.back_image"
+                class="col-5 q-full-width"
+                :error-messages="errors.back_image"
+                label="Back Image"
+                @update:model-value="onFileChange(fields, $event, 'back_image')"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+            </div>
+            <!-- <div
               class="col-5"
               v-if="typeof fields.back_image === 'string' && fields.back_image"
             >
-              <div>Front Image</div>
-              <v-col>
+              <div class="row">
+                <div>Front Image agshah</div>
                 <q-btn target="_blank" class="info" :href="fields.back_image"
                   >PREVIEW</q-btn
                 >
                 <span
                   class="btn btn-info btn-fill ml-5"
                   style="cursor: pointer"
-                  @click="clear(fields, 'back_image')"
+                  @click="clear('back_image')"
                   >clear</span
                 >
-              </v-col>
+              </div>
             </div>
             <div v-else class="col-5">
               <q-file
@@ -261,7 +306,7 @@
                   <q-icon name="attach_file" />
                 </template>
               </q-file>
-            </div>
+            </div> -->
           </div>
 
           <!-- <div>
@@ -311,7 +356,6 @@
     </v-row> -->
   </q-form>
 </template>
-images
 
 <script setup>
 import NAutoComplete from 'src/components/NAutoComplete.vue';
@@ -387,7 +431,7 @@ const onFileChange = (dct, event, attr) => {
     console.error('Error: ', error);
   };
 };
-
+const clear = (field) => (fields.value[field] = null);
 // onMounted(() => {
 //   fields.value.direct_expense = false;
 //   fields.value.indirect_expense = false;

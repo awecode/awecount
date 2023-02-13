@@ -1,12 +1,11 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
+    <div class="row">
       <q-btn
         color="green"
         to="/items/add/"
         label="Add Item"
-        class="q-ml-lg"
+        class="q-ml-auto"
         icon-right="add"
       />
     </div>
@@ -40,20 +39,18 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/income/item/${props.row.id}/edit/`"
-          />
-          <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          />
+          <div class="row q-gutter-x-md">
+            <q-btn
+              color="blue"
+              label="View"
+              :to="`/inventory-account/detail/${props.row.id}/`"
+            />
+            <q-btn
+              color="orange-6"
+              label="Edit"
+              :to="`/items/${props.row.id}/`"
+            />
+          </div>
           <!-- {{ props }} -->
         </q-td>
         <!-- TODO: add modals -->
