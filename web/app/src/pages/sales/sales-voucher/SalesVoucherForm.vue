@@ -3,7 +3,7 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span v-if="!isEdit">New Account</span>
+          <span v-if="!isEdit">New Sales Invoice | Draft</span>
           <span v-else>Update Account</span>
         </div>
       </q-card-section>
@@ -11,13 +11,15 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md q-gutter-y-md">
-            <q-input
-              v-model="fields.name"
-              label="Name *"
-              class="col-6"
-              :error-message="errors.name"
-              :error="!!errors.name"
-            />
+            <div class="col-6">
+              <n-auto-complete
+                v-model="fields.party"
+                :options="formDefaults.collections?.parties"
+                label="Party"
+                :error="errors?.party"
+                :modal-component="PartyForm"
+              />
+            </div>
             <q-input
               v-model="fields.code"
               label="Code *"
@@ -30,7 +32,7 @@
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.parent"
-                :options="formDefaults.collections?.account"
+                :options="formDefaults.collections?.parties"
                 label="Parent"
                 :error="errors?.parent"
               />
@@ -62,16 +64,18 @@
 <script>
 import useForm from '/src/composables/useForm';
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue';
+import PartyForm from 'src/pages/party/PartyForm.vue';
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/sales-voucher/';
+    const endpoint = '/v1/sales-voucher/';
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/account/',
       }),
       CategoryForm,
+      PartyForm,
     };
   },
 };
