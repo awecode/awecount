@@ -25,16 +25,13 @@
           label="Email"
           class="col-12 col-md-6"
           type="email"
-          :error="true"
-          :error-message="() => 'elol'"
+          :error="!!errors.representative"
+          :error-message="errors.representative"
         />
       </div>
-      {{ isErrorComputed }}--computed -- props errr
     </div>
-    <!-- {{ errors[0]?.email[0] }}--err -->
   </q-card>
 </template>
-
 <script>
 export default {
   props: {
@@ -53,7 +50,9 @@ export default {
     errors: {
       type: [Object, String],
       default: () => {
-        return {};
+        return {
+          representative: null,
+        };
       },
     },
   },
@@ -62,34 +61,25 @@ export default {
   setup(props, { emit }) {
     const modalValue = ref(props.modelValueProp);
     const endpoint = '/v1/sales-voucher/';
-    const isErrorComputed = computed(() => {
-      const error = props.errors;
-      debugger;
-      if (error) {
-        return error;
-      }
-    });
+    // const isErrorComputed = computed(() => {
+    //   // const error = errors;
+    //   debugger;
+    //   if (errors) {
+    //     return errors;
+    //   }
+    // });
     watch(
       () => props.modelValueProp,
       (newValue) => {
         modalValue.value = newValue;
       }
     );
-    watch(
-      modalValue,
-      (newValue) => {
-        emit('update:modelValue', newValue);
-      },
-      { deep: true }
-    );
-
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/account/',
       }),
       modalValue,
-      isErrorComputed,
     };
   },
 };

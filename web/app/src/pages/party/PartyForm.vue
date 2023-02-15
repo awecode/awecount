@@ -55,7 +55,7 @@
           </div>
           <PartyRepresentative
             v-model="fields.representative"
-            :errors="errors.representative"
+            :errors="errors"
           ></PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
