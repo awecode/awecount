@@ -21,30 +21,45 @@
               />
             </div>
             <q-input
-              v-model="fields.code"
-              label="Code *"
+              v-model="fields.date"
               class="col-6"
-              :error-message="errors.code"
-              :error="!!errors.code"
-            />
+              label="Deposit Date*"
+              :error-message="errors.date"
+              :error="!!errors.date"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date v-model="fields.date" today-btn mask="YYYY-MM-DD">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Close" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
           </div>
           <div class="row q-col-gutter-md q-gutter-y-md">
-            <div class="col-6">
-              <n-auto-complete
-                v-model="fields.parent"
-                :options="formDefaults.collections?.parties"
-                label="Parent"
-                :error="errors?.parent"
-              />
-            </div>
-            <div class="col-6">
-              <n-auto-complete
-                v-model="fields.category"
-                :options="formDefaults.collections?.category"
-                label="Category *"
-                :modal-component="CategoryForm"
-                :error="errors?.category"
-              />
+            <q-input
+              v-model="fields.address"
+              class="col-6"
+              label="Address"
+              :error-message="errors.address"
+              :error="!!errors.address"
+            ></q-input>
+            <div>
+              <q-input
+                v-model="fields.date"
+                class="col-6"
+                label="Deposit Date*"
+                :error-message="errors.date"
+                :error="!!errors.date"
+              ></q-input>
             </div>
           </div>
         </q-card-section>
@@ -69,6 +84,7 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/sales-voucher/';
+    const openDatePicker = ref(false);
     return {
       ...useForm(endpoint, {
         getDefaults: true,
@@ -76,6 +92,7 @@ export default {
       }),
       CategoryForm,
       PartyForm,
+      openDatePicker,
     };
   },
 };

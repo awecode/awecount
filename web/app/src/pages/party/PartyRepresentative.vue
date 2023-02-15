@@ -7,11 +7,13 @@
           v-model="representative.name"
           label="Name"
           class="col-12 col-md-6"
+          @change="updateVal"
         />
         <q-input
           v-model="representative.position"
           label="Positions"
           class="col-12 col-md-6"
+          @change="updateVal"
         />
       </div>
       <div class="row q-col-gutter-md q-gutter-y-md">
@@ -19,6 +21,7 @@
           v-model="representative.phone"
           label="Phone Number"
           class="col-12 col-md-6"
+          @change="updateVal"
         />
         <q-input
           v-model="representative.email"
@@ -27,6 +30,7 @@
           type="email"
           :error="!!errors.representative"
           :error-message="errors.representative"
+          @change="updateVal"
         />
       </div>
     </div>
@@ -61,13 +65,10 @@ export default {
   setup(props, { emit }) {
     const modalValue = ref(props.modelValueProp);
     const endpoint = '/v1/sales-voucher/';
-    // const isErrorComputed = computed(() => {
-    //   // const error = errors;
-    //   debugger;
-    //   if (errors) {
-    //     return errors;
-    //   }
-    // });
+    const updateVal = () => {
+      console.log(modalValue.value);
+      emit('update:modelValue', modalValue.value);
+    };
     watch(
       () => props.modelValueProp,
       (newValue) => {
@@ -80,6 +81,7 @@ export default {
         successRoute: '/account/',
       }),
       modalValue,
+      updateVal,
     };
   },
 };
