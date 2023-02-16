@@ -25,7 +25,7 @@
           </div>
         </div>
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.account_name"
               label="Account Name"

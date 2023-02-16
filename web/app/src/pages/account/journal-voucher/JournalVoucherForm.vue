@@ -1,6 +1,7 @@
 <template>
   <q-form class="q-pa-lg">
-    <q-card class="q-pa-xs"><q-card-section>
+    <q-card class="q-pa-xs"
+      ><q-card-section>
         <q-card>
           <q-card-section class="bg-green text-white">
             <div class="text-h6">
@@ -9,12 +10,28 @@
             </div>
           </q-card-section>
           <q-card class="q-pt-md">
-            <div class="row q-col-gutter-md q-gutter-y-md q-px-md q-pb-md">
-              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no" :error="!!errors?.voucher_no" />
-              <q-input v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date" :error="!!errors?.date">
+            <div class="row q-col-gutter-md q-px-md q-pb-md">
+              <q-input
+                v-model="fields.voucher_no"
+                label="Voucher No."
+                class="col-6"
+                :error-message="errors?.voucher_no"
+                :error="!!errors?.voucher_no"
+              />
+              <q-input
+                v-model="fields.date"
+                class="col-6"
+                label="Date"
+                :error-message="errors?.date"
+                :error="!!errors?.date"
+              >
                 <template v-slot:append>
                   <q-icon name="event" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
                       <q-date v-model="fields.date" today-btn mask="YYYY-MM-DD">
                         <div class="row items-center justify-end">
                           <q-btn v-close-popup label="Close" flat />
@@ -38,7 +55,14 @@
               <div class="col-1"></div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts" :errors="errors" @updateVoucher="updateVoucher" @deleteVoucher="deleteVoucher" />
+              <VoucherRow
+                :voucher="voucher"
+                :index="index"
+                :options="formDefaults.collections?.accounts"
+                :errors="errors"
+                @updateVoucher="updateVoucher"
+                @deleteVoucher="deleteVoucher"
+              />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
@@ -62,19 +86,44 @@
               </div>
               <div class="col-1"></div>
             </div>
-            <q-btn @click.prevent="addNewVoucher" outline style="color: green" label="ADD NEW ROW" class="q-mt-lg" />
+            <q-btn
+              @click.prevent="addNewVoucher"
+              outline
+              style="color: green"
+              label="ADD NEW ROW"
+              class="q-mt-lg"
+            />
           </q-card-section>
         </q-card>
       </q-card-section>
 
       <div class="row">
-        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md" :error-message="errors?.narration" :error="!!errors?.narration" />
+        <q-input
+          v-model="fields.narration"
+          type="textarea"
+          autogrow
+          label="Narration *"
+          class="col-12 q-pa-md q-mb-md"
+          :error-message="errors?.narration"
+          :error="!!errors?.narration"
+        />
       </div>
     </q-card>
     <div class="row q-mt-md">
-      <q-btn v-if="fields.status != 'Approved' || !fields?.id" @click.prevent="; (fields.status = 'Unapproved'), submitForm()" color="amber" icon="fa-solid fa-pen-to-square" label="Save Draft"
-        class="q-mr-md q-py-sm" />
-      <q-btn @click.prevent=";(fields.status = 'Approved'), submitForm()" color="green" icon="fa-solid fa-floppy-disk" :label="isEdit ? 'Update' : 'Save'" />
+      <q-btn
+        v-if="fields.status != 'Approved' || !fields?.id"
+        @click.prevent=";(fields.status = 'Unapproved'), submitForm()"
+        color="amber"
+        icon="fa-solid fa-pen-to-square"
+        label="Save Draft"
+        class="q-mr-md q-py-sm"
+      />
+      <q-btn
+        @click.prevent=";(fields.status = 'Approved'), submitForm()"
+        color="green"
+        icon="fa-solid fa-floppy-disk"
+        :label="isEdit ? 'Update' : 'Save'"
+      />
     </div>
   </q-form>
 </template>
@@ -107,9 +156,10 @@ export default {
       successRoute: '/journal-voucher/',
     })
 
-    formData.fields.value.voucher_no = formData?.formDefaults?.value.voucher_no || null
+    formData.fields.value.voucher_no =
+      formData?.formDefaults?.value.voucher_no || null
 
-    watch(formData?.formDefaults, a => {
+    watch(formData?.formDefaults, (a) => {
       formData.fields.value.voucher_no = a.fields.voucher_no || null
     })
     formData.fields.value.date = formData.fields.value.date || formData.today

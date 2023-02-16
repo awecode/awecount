@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.name"
               label="Name *"
@@ -26,7 +26,7 @@
               :error="!!errors.address"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.contact_no"
               label="Contact No"
@@ -43,7 +43,7 @@
               type="email"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.tax_registration_number"
               type="number"
@@ -55,7 +55,8 @@
           </div>
           <PartyRepresentative
             v-model="fields.representative"
-            :errors="errors"
+            :errors="errors.representative"
+            :value="[]"
           ></PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
@@ -72,23 +73,23 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue';
-import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue';
+import useForm from '/src/composables/useForm'
+import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   components: {
     PartyRepresentative,
   },
   setup(props, context) {
-    const endpoint = '/v1/parties/';
+    const endpoint = '/v1/parties/'
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/parties/',
       }),
       CategoryForm,
-    };
+    }
   },
-};
+}
 </script>

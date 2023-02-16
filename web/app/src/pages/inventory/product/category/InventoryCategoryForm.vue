@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               class="col-6"
               v-model="fields.name"
@@ -27,7 +27,7 @@
               type="number"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 class="col-6 q-full-width"
@@ -49,7 +49,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 class="col-6 q-full-width"
@@ -71,7 +71,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 class="col-6 q-full-width"
@@ -93,7 +93,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <q-select
                 v-model="fields.items_sales_account_type"
@@ -109,7 +109,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <q-select
                 v-model="fields.items_discount_allowed_account_type"
@@ -258,10 +258,10 @@
 </template>
 
 <script setup>
-import NAutoComplete from 'src/components/NAutoComplete.vue';
-import UnitForm from 'src/pages/inventory/unit/UnitForm.vue';
-import TaxForm from 'src/pages/tax/scheme/TaxForm.vue';
-import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue';
+import NAutoComplete from 'src/components/NAutoComplete.vue'
+import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
+import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
+import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 // const emptyField = {
 
 // }
@@ -271,16 +271,16 @@ const extraFieldTypes = [
   { value: 'Date', label: 'Date' },
   { value: 'Choices', label: 'Choices' },
   { value: 'Long', label: 'Long Text' },
-];
+]
 const account_types = [
   { value: 'dedicated', label: 'Use Dedicated Account' },
   { value: 'category', label: "Use Category's Account" },
   { value: 'global', label: 'Use Global Account' },
-];
+]
 const toggleExpenses = (type) => {
-  fields.value[type] = false;
-};
-const endpoint = '/v1/items/';
+  fields.value[type] = false
+}
+const endpoint = '/v1/items/'
 const {
   fields,
   errors,
@@ -295,49 +295,49 @@ const {
 } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
-});
+})
 
 const isExpenses = computed(
   () => fields.value.direct_expense || fields.value.indirect_expense
-);
+)
 
 watch(isExpenses, () => {
   if (isExpenses.value === true) {
-    fields.value.track_inventory = false;
-    fields.value.can_be_sold = false;
-    fields.value.fixed_asset = false;
-    fields.value.can_be_purchased = false;
+    fields.value.track_inventory = false
+    fields.value.can_be_sold = false
+    fields.value.fixed_asset = false
+    fields.value.can_be_purchased = false
   }
-});
+})
 
 const parent_account_categories = () => {
   if (this.fields.fixed_asset) {
-    return formDefaults.collections.fixed_assets_categories;
+    return formDefaults.collections.fixed_assets_categories
   }
   if (this.fields.direct_expense) {
-    return formDefaults.collections.direct_expenses_categories;
+    return formDefaults.collections.direct_expenses_categories
   }
   if (this.fields.indirect_expense) {
-    return formDefaults.collections.indirect_expenses_categories;
+    return formDefaults.collections.indirect_expenses_categories
   }
-  return [];
-};
+  return []
+}
 const addExtraFields = () => {
   if (
     fields.value.extra_fields === null ||
     fields.value.extra_fields === undefined
   ) {
-    fields.value.extra_fields = [];
+    fields.value.extra_fields = []
   }
   fields.value.extra_fields.push({
     name: null,
     type: null,
     enable_search: false,
-  });
-};
+  })
+}
 const removeExtraFields = (idx) => {
-  fields.value.extra_fields.splice(idx, 1);
-};
+  fields.value.extra_fields.splice(idx, 1)
+}
 </script>
 
 <style scoped>

@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.bank_account"
@@ -44,7 +44,7 @@
               </template>
             </q-input>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.cheque_no"
               label="Cheque Number"
@@ -61,7 +61,7 @@
               :error="!!errors.amount"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-8">
               <n-auto-complete
                 v-if="!showDrAccount"
@@ -89,7 +89,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md" v-if="showDrAccount">
+          <div class="row q-col-gutter-md" v-if="showDrAccount">
             <div class="col-8">
               <n-auto-complete
                 v-model="fields.dr_account"

@@ -2,7 +2,7 @@
   <h6>Contact Person</h6>
   <q-card class="q-pa-md">
     <div v-for="(representative, index) in modalValue" :key="index">
-      <div class="row q-col-gutter-md q-gutter-y-md">
+      <div class="row q-col-gutter-md">
         <q-input
           v-model="representative.name"
           label="Name"
@@ -16,7 +16,7 @@
           @change="updateVal"
         />
       </div>
-      <div class="row q-col-gutter-md q-gutter-y-md">
+      <div class="row q-col-gutter-md">
         <q-input
           v-model="representative.phone"
           label="Phone Number"
@@ -28,13 +28,14 @@
           label="Email"
           class="col-12 col-md-6"
           type="email"
-          :error="!!errors.representative"
-          :error-message="errors.representative"
+          :error="!!errors[0]?.email"
+          :error-message="errors[0]?.email[0]"
           @change="updateVal"
         />
       </div>
     </div>
   </q-card>
+  <!-- {{ JSON.parse(errors) }} -->
 </template>
 <script>
 export default {
@@ -52,29 +53,27 @@ export default {
     },
     form: Object,
     errors: {
-      type: [Object, String],
+      type: Object,
       default: () => {
-        return {
-          representative: null,
-        };
+        return {}
       },
     },
   },
   emits: ['update:modelValue'],
 
   setup(props, { emit }) {
-    const modalValue = ref(props.modelValueProp);
-    const endpoint = '/v1/sales-voucher/';
+    const modalValue = ref(props.modelValueProp)
+    const endpoint = '/v1/sales-voucher/'
     const updateVal = () => {
-      console.log(modalValue.value);
-      emit('update:modelValue', modalValue.value);
-    };
+      console.log(modalValue.value)
+      emit('update:modelValue', modalValue.value)
+    }
     watch(
       () => props.modelValueProp,
       (newValue) => {
-        modalValue.value = newValue;
+        modalValue.value = newValue
       }
-    );
+    )
     return {
       ...useForm(endpoint, {
         getDefaults: true,
@@ -82,7 +81,7 @@ export default {
       }),
       modalValue,
       updateVal,
-    };
+    }
   },
-};
+}
 </script>

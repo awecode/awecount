@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               class="col-6"
               v-model="fields.name"
@@ -27,7 +27,7 @@
               type="number"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               class="col-6"
               v-model="fields.cost_price"
@@ -45,7 +45,7 @@
               type="number"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 class="col-6 q-full-width"
@@ -68,7 +68,7 @@
             />
           </div>
           <q-card class="q-pa-lg">
-            <div class="row q-col-gutter-md q-gutter-y-md">
+            <div class="row q-col-gutter-md">
               <div class="col-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
@@ -81,7 +81,7 @@
               </div>
             </div>
             <!-- TODO: What is Extra field, hasPerm? ? -->
-            <div class="row q-col-gutter-md q-gutter-y-md">
+            <div class="row q-col-gutter-md">
               <div class="col-6">
                 <n-auto-complete
                   class="q-full-width"
@@ -104,7 +104,7 @@
                 />
               </div>
             </div>
-            <div class="row q-col-gutter-md q-gutter-y-md">
+            <div class="row q-col-gutter-md">
               <div class="col-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
@@ -126,7 +126,7 @@
                 />
               </div>
             </div>
-            <div class="row q-col-gutter-md q-gutter-y-md">
+            <div class="row q-col-gutter-md">
               <div class="col-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
@@ -358,9 +358,9 @@
 </template>
 
 <script setup>
-import NAutoComplete from 'src/components/NAutoComplete.vue';
-import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue';
-import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue';
+import NAutoComplete from 'src/components/NAutoComplete.vue'
+import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue'
+import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue'
 // export default {
 //   components: { NAutoComplete },
 //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -380,13 +380,13 @@ import InventoryCategoryForm from 'src/pages/inventory/product/category/Inventor
 //   },
 // };
 const toggleExpenses = (type) => {
-  fields.value[type] = false;
-};
+  fields.value[type] = false
+}
 const images = ref({
   front_image: null,
   back_image: null,
-});
-const endpoint = '/v1/items/';
+})
+const endpoint = '/v1/items/'
 const {
   fields,
   errors,
@@ -401,37 +401,37 @@ const {
 } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
-});
+})
 
 const isExpenses = computed(
   () => fields.value.direct_expense || fields.value.indirect_expense
-);
+)
 
 watch(isExpenses, () => {
   if (isExpenses.value === true) {
-    console.log('time to disable all btns');
-    fields.value.track_inventory = false;
-    fields.value.can_be_sold = false;
-    fields.value.fixed_asset = false;
-    fields.value.can_be_purchased = false;
+    console.log('time to disable all btns')
+    fields.value.track_inventory = false
+    fields.value.can_be_sold = false
+    fields.value.fixed_asset = false
+    fields.value.can_be_purchased = false
   }
-});
+})
 const onFileChange = (dct, event, attr) => {
-  const file = event;
-  let reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.fileName = file.name;
+  const file = event
+  let reader = new FileReader()
+  reader.readAsDataURL(file)
+  reader.fileName = file.name
   reader.onload = () => {
     fields.value[`${attr}`] = {
       name: reader.fileName,
       data: reader.result,
-    };
-  };
+    }
+  }
   reader.onerror = function (error) {
-    console.error('Error: ', error);
-  };
-};
-const clear = (field) => (fields.value[field] = null);
+    console.error('Error: ', error)
+  }
+}
+const clear = (field) => (fields.value[field] = null)
 // onMounted(() => {
 //   fields.value.direct_expense = false;
 //   fields.value.indirect_expense = false;

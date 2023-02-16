@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.name"
               label="Name *"
@@ -26,7 +26,7 @@
               :error="!!errors.code"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.parent"

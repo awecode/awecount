@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <!-- <q-input
               v-model="fields.name"
               label="Name *"
@@ -51,19 +51,19 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
-import ItemAdd from '../ItemAdd.vue';
+import useForm from '/src/composables/useForm'
+import ItemAdd from '../ItemAdd.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/item-opening-balance/';
+    const endpoint = '/v1/item-opening-balance/'
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/items/opening/',
       }),
       ItemAdd,
-    };
+    }
   },
-};
+}
 </script>

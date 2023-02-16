@@ -3,7 +3,8 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Journal Voucher | #{{ fields?.voucher_number || '-' }} |
+          <span
+            >Journal Voucher | #{{ fields?.voucher_number || '-' }} |
             {{ fields?.status || '-' }}
           </span>
         </div>
@@ -11,7 +12,7 @@
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6">Voucher No</div>
               <div class="col-6">{{ fields?.voucher_no || '-' }}</div>
@@ -59,18 +60,18 @@
           <div class="col-grow">Total</div>
           <div class="col-2">
             {{
-  fields?.rows?.reduce(
-            (accum, item) => accum + Number(item.dr_amount),
-  0
-            ) || 0
+              fields?.rows?.reduce(
+                (accum, item) => accum + Number(item.dr_amount),
+                0
+              ) || 0
             }}
           </div>
           <div class="col-2">
             {{
-  fields?.rows?.reduce(
-            (accum, item) => accum + Number(item.cr_amount),
-  0
-            ) || 0
+              fields?.rows?.reduce(
+                (accum, item) => accum + Number(item.cr_amount),
+                0
+              ) || 0
             }}
           </div>
         </div>
@@ -89,10 +90,22 @@
     </q-card>
     <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
-        <q-btn :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
+        <q-btn
+          :to="`/journal-voucher/${props.id}/edit/`"
+          color="orange"
+          icon="edit"
+          label="Edit"
+          class="text-h7 q-py-sm"
+        />
       </div>
       <div v-if="fields?.status == 'Approved'">
-        <q-btn @click.prevent="prompt" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
+        <q-btn
+          @click.prevent="prompt"
+          color="red"
+          icon="block"
+          label="Cancel"
+          class="text-h7 q-py-sm"
+        />
       </div>
     </div>
   </q-form>

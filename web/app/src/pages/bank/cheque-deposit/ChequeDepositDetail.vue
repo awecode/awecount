@@ -3,15 +3,17 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Cheque Deposit | {{ fields?.status || '-' }} | #{{
-            fields?.voucher_no || '-'
-          }}</span>
+          <span
+            >Cheque Deposit | {{ fields?.status || '-' }} | #{{
+              fields?.voucher_no || '-'
+            }}</span
+          >
         </div>
       </q-card-section>
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6 text-bold">Bank Account</div>
               <div class="col-6">{{ fields?.bank_account_name || '-' }}</div>
@@ -21,7 +23,7 @@
               <div class="col-6">{{ fields?.benefactor_name || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6 text-bold">Amount</div>
               <div class="col-6">{{ fields?.amount || '-' }}</div>
@@ -31,7 +33,7 @@
               <div class="col-6">{{ fields?.date || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6 text-bold">Cheque Date</div>
               <div class="col-6">{{ fields?.cheque_date || '-' }}</div>
@@ -41,7 +43,7 @@
               <div class="col-6">{{ fields?.cheque_number || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6 text-bold">Voucher Number</div>
               <div class="col-6">{{ fields?.voucher_no || '-' }}</div>
@@ -51,7 +53,7 @@
               <div class="col-6">{{ fields?.deposited_by || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6 text-bold">Clearing Date</div>
               <div class="col-6">{{ fields?.clearing_date || '-' }}</div>
@@ -76,16 +78,40 @@
     </q-card>
     <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
-        <q-btn :to="`/bank/cheque/cheque-deposit/${id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
+        <q-btn
+          :to="`/bank/cheque/cheque-deposit/${id}/edit/`"
+          color="orange"
+          icon="edit"
+          label="Edit"
+          class="text-h7 q-py-sm"
+        />
       </div>
       <div v-if="fields?.status == 'Issued'">
-        <q-btn @click.prevent="saveAsDraft" color="green" icon="done_all" label="Mark as cleared" class="text-h7 q-py-sm" />
+        <q-btn
+          @click.prevent="saveAsDraft"
+          color="green"
+          icon="done_all"
+          label="Mark as cleared"
+          class="text-h7 q-py-sm"
+        />
       </div>
       <div v-if="fields?.status != 'Cancelled'">
-        <q-btn @click.prevent="cancel" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
+        <q-btn
+          @click.prevent="cancel"
+          color="red"
+          icon="block"
+          label="Cancel"
+          class="text-h7 q-py-sm"
+        />
       </div>
       <div class="q-ml-auto" v-if="fields?.status == 'Cleared'">
-        <q-btn :to="`/journal-entries/cheque-deposit/${id}/`" color="blue" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
+        <q-btn
+          :to="`/journal-entries/cheque-deposit/${id}/`"
+          color="blue"
+          icon="library_books"
+          label="Journal Entries"
+          class="text-h7 q-py-sm"
+        />
       </div>
     </div>
   </q-form>

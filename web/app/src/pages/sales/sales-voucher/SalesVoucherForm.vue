@@ -10,8 +10,8 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
-            <div class="col-6">
+          <div class="row q-col-gutter-md">
+            <div class="col-md-6 col-12">
               <n-auto-complete
                 v-model="fields.party"
                 :options="formDefaults.collections?.parties"
@@ -21,13 +21,12 @@
               />
             </div>
             <q-input
-              v-model="fields.date"
-              class="col-6"
+              class="col-md-6 col-12"
               label="Deposit Date*"
-              :error-message="errors.date"
-              :error="!!errors.date"
+              v-model="fields.date"
+              disable
             >
-              <template v-slot:append>
+              <!-- <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy
                     cover
@@ -41,59 +40,166 @@
                     </q-date>
                   </q-popup-proxy>
                 </q-icon>
-              </template>
+              </template> -->
             </q-input>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.address"
-              class="col-6"
+              class="col-md-6 col-12"
               label="Address"
               :error-message="errors.address"
               :error="!!errors.address"
             ></q-input>
-            <div>
-              <q-input
-                v-model="fields.date"
-                class="col-6"
-                label="Deposit Date*"
-                :error-message="errors.date"
-                :error="!!errors.date"
-              ></q-input>
+            <div class="col-md-6 col-12 row q-col-gutter-md">
+              <!-- <q-input
+                v-model="fields.discount_types"
+                label="Discount*"
+                :error-message="errors.discount_types"
+                :error="!!errors.discount_types"
+              ></q-input> -->
+              <div class="col-grow">
+                <n-auto-complete
+                  v-model="fields.discount_types"
+                  label="Discount*"
+                  :error="errors?.discount_types"
+                  :options="
+                    formDefaults.collections
+                      ? options.discount_types.concat(
+                          formDefaults?.collections.discounts
+                        )
+                      : options.discount_types
+                  "
+                  :modal-component="SalesDiscountForm"
+                >
+                </n-auto-complete>
+              </div>
+              <div
+                class="col-3"
+                v-if="
+                  fields.discount_types === 'Amount' ||
+                  fields.discount_types === 'Percent'
+                "
+              >
+                <q-input
+                  v-model="fields.discount"
+                  label="Discount"
+                  :error-message="errors.discount"
+                  :error="!!errors.discount"
+                ></q-input>
+              </div>
             </div>
           </div>
+          <div class="row q-col-gutter-md">
+            <q-select
+              v-model="fields.mode"
+              label="Mode"
+              class="col-12 col-md-6"
+              :error-message="errors.bank_account"
+              :error="!!errors.bank_account"
+              :options="formDefaults.collections?.bank_accounts"
+              option-value="value"
+              option-label="id"
+              map-options
+              emit-value
+            >
+              <template v-slot:append>
+                <q-icon
+                  v-if="fields.mode !== null"
+                  class="cursor-pointer"
+                  name="clear"
+                  @click.stop.prevent="fields.mode = null" /></template
+            ></q-select>
+          </div>
         </q-card-section>
-        <div class="text-right q-pr-md q-pb-lg">
-          <q-btn
-            @click.prevent="submitForm"
-            color="primary"
-            :label="isEdit ? 'Update' : 'Create'"
-            class="q-ml-auto"
-          />
-        </div>
       </q-card>
+      <!-- <q-card-section>
+        <q-card>
+          <div class="q-pa-lg q-col-gutter-md">
+            <div class="row text-subtitle2 hr q-py-sm">
+              <div class="col-grow">Particular(s)</div>
+              <div class="col-2 text-center">Qty</div>
+              <div class="col-2 text-center">Rate</div>
+              <div class="col-2 text-center">Amnt</div>
+              <div class="col-2 text-center"></div>
+            </div>
+            <div
+              class="row q-col-gutter-md"
+              v-for="(row, index) in rows"
+              :key="index"
+            >
+              <div class="col-grow">
+                <n-auto-complete
+                  v-model="fields.row.item_id"
+                  :options="formDefaults.collections?.parties"
+                  label="Party"
+                  :error="errors?.party"
+                  :modal-component="PartyForm"
+                />
+              </div>
+              <div class="col-2">
+                <q-input
+                  v-model="fields.row.quantity"
+                  class="col-md-6 col-12"
+                  label="Address"
+                  :error-message="errors.address"
+                  :error="!!errors.address"
+                ></q-input>
+              </div>
+              <div class="col-2">asas</div>
+              <div class="col-2">asas</div>
+              <div class="col-2">asas</div>
+            </div>
+          </div>
+        </q-card>
+      </q-card-section> -->
+      <invoice-table></invoice-table>
+      <div class="text-right q-pr-md q-pb-lg">
+        <q-btn
+          @click.prevent="submitForm"
+          color="primary"
+          :label="isEdit ? 'Update' : 'Create'"
+          class="q-ml-auto"
+        />
+      </div>
     </q-card>
   </q-form>
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue';
-import PartyForm from 'src/pages/party/PartyForm.vue';
+import useForm from '/src/composables/useForm'
+import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+import PartyForm from 'src/pages/party/PartyForm.vue'
+import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
+import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
+import { discount_types, modes } from 'src/helpers/constants/invoice'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/sales-voucher/';
-    const openDatePicker = ref(false);
+    const endpoint = '/v1/sales-voucher/'
+    const openDatePicker = ref(false)
+    const rows = ref(1)
+    const options = {
+      discount_types: discount_types,
+      modes: modes,
+      // show_customer: true,
+      // challan_objs: [],
+    }
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/account/',
+    })
+    formData.fields.value.date = formData.today
     return {
-      ...useForm(endpoint, {
-        getDefaults: true,
-        successRoute: '/account/',
-      }),
+      ...formData,
       CategoryForm,
       PartyForm,
+      SalesDiscountForm,
       openDatePicker,
-    };
+      options,
+      rows,
+      InvoiceTable,
+    }
   },
-};
+}
 </script>

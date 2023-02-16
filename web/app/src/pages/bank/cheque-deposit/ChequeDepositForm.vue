@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.bank_account"
@@ -30,7 +30,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.amount"
               label="Amount *"
@@ -62,7 +62,7 @@
               </template>
             </q-input>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.cheque_date"
               class="col-6"
@@ -98,7 +98,7 @@
               :error="!!errors.cheque_number"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.voucher_no"
               label="Voucher Number"
@@ -114,7 +114,7 @@
               :error="!!errors.deposited_by"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.drawee_bank"
               label="Drawee Bank"

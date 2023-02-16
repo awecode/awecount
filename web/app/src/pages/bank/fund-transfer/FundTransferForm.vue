@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.voucher_no"
               label="Voucher No."
@@ -42,7 +42,7 @@
               </template>
             </q-input>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.from_account"
@@ -60,7 +60,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.amount"
               label="Amount *"
@@ -72,7 +72,7 @@
           <div class="text-bold text-lg text-grey-8 q-mt-xl">
             Transaction Fees
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.transaction_fee_account"

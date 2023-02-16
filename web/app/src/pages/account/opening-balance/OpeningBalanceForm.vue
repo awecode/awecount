@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-12">
               <n-auto-complete
                 v-model="fields.account"
@@ -21,7 +21,7 @@
               />
             </div>
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.opening_dr"
               type="number"

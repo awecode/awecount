@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.name"
               label="Name *"
@@ -26,7 +26,7 @@
               :error="!!errors.code"
             />
           </div>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.parent"
@@ -51,15 +51,15 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
+import useForm from '/src/composables/useForm'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/category/';
+    const endpoint = '/v1/category/'
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/category/',
-    });
+    })
     // console.log()
     // if (!formData.fields.value?.id) {
     //   formData.fields.value.id = null
@@ -67,7 +67,7 @@ export default {
     // formData.fields.value.id
     return {
       ...formData,
-    };
+    }
   },
-};
+}
 </script>

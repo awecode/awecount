@@ -10,7 +10,7 @@
       <q-separator inset />
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md q-gutter-y-md">
+          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.name"
               label="Name *"
@@ -43,17 +43,17 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm';
+import useForm from '/src/composables/useForm'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/units/';
+    const endpoint = '/v1/units/'
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/units/list/',
       }),
-    };
+    }
   },
-};
+}
 </script>
