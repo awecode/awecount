@@ -89,6 +89,7 @@
             </div>
           </div>
         </div>
+        <q-btn>Add Row</q-btn>
         {{ amountComputed }} --opt
       </div>
     </q-card>
@@ -148,12 +149,19 @@ export default {
       })
       return total
     })
+    // const addRow = () => {
+
+    // }
+    function addRow() {
+      modalValue.value.push({})
+    }
     return {
       rows,
       props,
       expandedState,
       modalValue,
       amountComputed,
+      addRow,
     }
   },
 }
