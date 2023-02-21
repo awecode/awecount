@@ -10,54 +10,49 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
-          <div class="row q-col-gutter-md no-wrap">
-            <div class="col-5">
-              <n-auto-complete v-model="modalValue[index].item_id" :options="props.itemOptions" label="Item"
-                :error="errors?.party" :modal-component="ItemAdd" class="q-full-width" />
+          <InvoiceRow
+            v-model="modalValue[index]"
+            :itemOptions="itemOptions"
+            :unitOptions="unitOptions"
+            :taxOptions="taxOptions"
+            :discountOptions="discountOptions"
+          />
+        </div>
+        <div class="q-px-lg row items-end">
+          <div class="col-grow"></div>
+          <div class="text-weight-bold text-grey-8 col-4">
+            <div class="row q-pb-md">
+              <div class="col-6 text-center">Sub Total</div>
+              <div>{{ totalDataComputed.subTotal }}</div>
             </div>
-            <div class="col-2">
-              <q-input v-model.number="modalValue[index].quantity" label="Quantity" :error-message="errors"
-                :error="!!errors" type="number"></q-input>
+            <div class="row q-pb-md" v-if="totalDataComputed.discount">
+              <div class="col-6 text-center">Discount</div>
+              <div>
+                {{ totalDataComputed.discount }}
+              </div>
             </div>
-            <div class="col-2">
-              <q-input v-model.number="modalValue[index].rate" label="Rate" :error-message="errors" :error="!!errors"
-                type="number"></q-input>
-            </div>
-            <div class="col-2">
-              <q-input label="Amount" v-model="amountComputed[index]" :disable="true"></q-input>
-            </div>
-
-            <div class="col-1 row q-gutter-x-sm justify-center items-center">
-              <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"
-                @click="() => changeExpandedState(index)"></q-icon>
-              <q-icon name="delete" size="20px" color="negative" @click="() => removeRow(index)"
-                class="cursor-pointer"></q-icon>
-            </div>
-          </div>
-          <div class="row q-col-gutter-md q-px-md" v-if="expandedState[index]">
-            <div class="col-grow">
-              <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id"
-                option-label="name" map-options />
-            </div>
-            <div class="col-2">
-              <n-auto-complete v-model="modalValue.discount_type" label="Discount*" :error="errors?.discount_types"
-                :options="discountOptions"></n-auto-complete>
-            </div>
-            <div class="col-2">
-              <q-input v-model="fields" class="col-md-6 col-12" label="Address" :error-message="errors"
-                :error="!!errors"></q-input>
+            <div class="row q-pb-md">
+              <div class="col-6 text-center">Total</div>
+              <div>
+                {{ 150 }}
+              </div>
             </div>
           </div>
         </div>
-        <div><q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn></div>
-        {{ unitOptions }} --opt
+        <div>
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
+            >Add Row</q-btn
+          >
+        </div>
       </div>
+      {{ totalDataComputed }}--dis 0
     </q-card>
   </q-card-section>
 </template>
 
 <script>
 import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
+import InvoiceRow from './InvoiceRow.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
@@ -85,7 +80,6 @@ export default {
         return {}
       },
     },
-
     modelValue: {
       type: Array,
       default: () => [
@@ -99,6 +93,8 @@ export default {
           discount: '',
           discount_type: null,
           tax_scheme_id: '',
+          taxObj: null,
+          discount_id: null,
         },
       ],
     },
@@ -112,16 +108,38 @@ export default {
       () => props.modelValueProps,
       (newValue) => {
         modalValue.value = newValue
+      },
+      {
+        deep: true,
       }
     )
     watch(
       () => modalValue,
       (newValue) => {
-        console.log('watcher invoked')
+        // console.log('watcher invoked')
         emit('update:modelValue', newValue)
       },
       { deep: true }
     )
+    const totalDataComputed = computed(() => {
+      let data = {
+        subTotal: 0,
+        discount: 0,
+      }
+      console.log(props.modelValueProps)
+      modalValue.value.forEach((item, index) => {
+        data.subTotal = item.quantity
+        if (item.discount_type === 'Percent') {
+          data.discount =
+            data.discount + amountComputed.value[index] * (item.discount / 100)
+        } else if (item.discount_type === 'Amount')
+          data.discount = data.discount + item.discount
+      })
+      return data
+    })
+    // const taxObhComputed = computed(() => {
+    //   if (tax)
+    // })
     const amountComputed = computed(() => {
       let total = []
       modalValue.value.forEach((element) => {
@@ -140,6 +158,7 @@ export default {
         discount: '',
         discount_type: null,
         tax_scheme_id: '',
+        discount_id: null,
       })
       expandedState.value.push(false)
     }
@@ -148,7 +167,7 @@ export default {
       expandedState.value.splice(index, 1)
     }
     const changeExpandedState = (index) => {
-      expandedState.value[index] = !(expandedState.value[index])
+      expandedState.value[index] = !expandedState.value[index]
     }
     return {
       rows,
@@ -159,7 +178,9 @@ export default {
       addRow,
       removeRow,
       ItemAdd,
-      changeExpandedState
+      changeExpandedState,
+      totalDataComputed,
+      InvoiceRow,
     }
   },
 }
