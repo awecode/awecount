@@ -3,15 +3,15 @@
     <q-card>
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
-          <div class="col-4">Particular(s)</div>
+          <div class="col-5">Particular(s)</div>
           <div class="col-2 text-center">Qty</div>
           <div class="col-2 text-center">Rate</div>
           <div class="col-2 text-center">Amnt</div>
-          <div class="col-2 text-center"></div>
+          <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
           <div class="row q-col-gutter-md no-wrap">
-            <div class="col-4">
+            <div class="col-5">
               <n-auto-complete v-model="modalValue[index].item_id" :options="props.itemOptions" label="Item"
                 :error="errors?.party" :modal-component="ItemAdd" class="q-full-width" />
             </div>
@@ -27,19 +27,21 @@
               <q-input label="Amount" v-model="amountComputed[index]" :disable="true"></q-input>
             </div>
 
-            <div class="col-2 row q-gutter-x-sm justify-center items-center">
+            <div class="col-1 row q-gutter-x-sm justify-center items-center">
               <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"
                 @click="() => changeExpandedState(index)"></q-icon>
-              <q-icon name="delete" size="20px" color="negative" @click="() => removeRow(index)"></q-icon>
+              <q-icon name="delete" size="20px" color="negative" @click="() => removeRow(index)"
+                class="cursor-pointer"></q-icon>
             </div>
           </div>
           <div class="row q-col-gutter-md q-px-md" v-if="expandedState[index]">
             <div class="col-grow">
-              <n-auto-complete v-model="fields" :options="props.itemOptions" label="Party" :error="errors?.party" />
+              <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id"
+                option-label="name" map-options />
             </div>
             <div class="col-2">
-              <q-input v-model="fields" class="col-md-6 col-12" label="Address" :error-message="errors"
-                :error="!!errors"></q-input>
+              <n-auto-complete v-model="modalValue.discount_type" label="Discount*" :error="errors?.discount_types"
+                :options="discountOptions"></n-auto-complete>
             </div>
             <div class="col-2">
               <q-input v-model="fields" class="col-md-6 col-12" label="Address" :error-message="errors"
@@ -47,8 +49,8 @@
             </div>
           </div>
         </div>
-        <div><q-btn @click="addRow" color="green" class="q-px-lg q-py-ms">Add Row</q-btn></div>
-        {{ expandedState }} --opt
+        <div><q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn></div>
+        {{ unitOptions }} --opt
       </div>
     </q-card>
   </q-card-section>
