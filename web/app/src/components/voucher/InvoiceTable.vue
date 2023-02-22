@@ -10,13 +10,8 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
-          <InvoiceRow
-            v-model="modalValue[index]"
-            :itemOptions="itemOptions"
-            :unitOptions="unitOptions"
-            :taxOptions="taxOptions"
-            :discountOptions="discountOptions"
-          />
+          <InvoiceRow v-model="modalValue[index]" :itemOptions="itemOptions" :unitOptions="unitOptions"
+            :taxOptions="taxOptions" :discountOptions="discountOptions" />
         </div>
         <div class="q-px-lg row items-end">
           <div class="col-grow"></div>
@@ -48,12 +43,10 @@
           </div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
-            >Add Row</q-btn
-          >
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
         </div>
       </div>
-      {{ totalDataComputed }}--totalDataComputed
+      {{ props }}--maindiscount
     </q-card>
   </q-card-section>
 </template>
@@ -61,6 +54,7 @@
 <script>
 import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 import InvoiceRow from './InvoiceRow.vue'
+import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
@@ -163,10 +157,18 @@ export default {
           } else if (data.sameScheme === item.value?.taxObj.id) {
           } else data.sameScheme = false
         }
+        const mainDiscountAmount = useCalcDiscount(
+          props.mainDiscount.discount_type,
+          data.subTotal - data.discount,
+          props.mainDiscount.discount,
+          props.discountOptions
+        ) || 0
+        console.log(mainDiscountAmount, 'mainDiscountAmount')
         if (item.value?.taxObj) {
           const rowTax =
-            (rowTotal - (rowDiscount || 0)) *
+            (rowTotal - mainDiscountAmount - (rowDiscount || 0)) *
             (item.value.taxObj.rate / 100 || 0)
+          // * (100 - props.mainDiscount)
           console.log(
             rowTax,
             data.discount,
@@ -174,20 +176,12 @@ export default {
             rowDiscount
           )
           data.totalTax = data.totalTax + rowTax
-          // data.totalTax =
-          //   data.totalTax + rowTotal * (item.value?.taxObj.rate / 100 || 0)
         }
-        // if (item.value?.taxObj.type === 'Percent') {
-        //   totalTax =
-        //     totalTax + (rowTotal * (item.value?.taxObj.value / 100) || 0)
-        // } else if (item.value?.taxObj.type === 'Amount')
-        //   totalTax = totalTax + (item.value?.taxObj.value || 0)
-        // totalTax = totalTax + rowTotal *
       })
       // tax
       if (typeof data.sameScheme === 'number' && data.taxObj) {
         data.taxName =
-          `${data.taxObj.name || ''}` + ' @ ' + `${data.taxObj.rate || ''}`
+          `${data.taxObj.name || ''}` + ' @ ' + `${data.taxObj.rate || ''}` + '%'
         data.taxRate = data.taxObj.rate
       } else {
         data.taxName = 'Tax'
@@ -198,7 +192,7 @@ export default {
         (data.discount || 0) +
         (useCalcDiscount(
           props.mainDiscount.discount_type,
-          data.subTotal,
+          data.subTotal - data.discount,
           props.mainDiscount.discount,
           props.discountOptions
         ) || 0)
