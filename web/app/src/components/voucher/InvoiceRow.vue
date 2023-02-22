@@ -78,7 +78,10 @@
             modalValue.discount_type === 'Percent'
           "
         >
-          <q-input v-model="modalValue.discount" label="Discount"></q-input>
+          <q-input
+            v-model.number="modalValue.discount"
+            label="Discount"
+          ></q-input>
         </div>
       </div>
       <!-- <div class="col-3">
@@ -116,6 +119,7 @@
         />
       </div>
     </div>
+    {{ modalValue.discount_type }}--distype
   </div>
 </template>
 

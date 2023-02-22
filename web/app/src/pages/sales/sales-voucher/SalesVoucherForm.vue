@@ -60,7 +60,7 @@
                             ></q-input> -->
               <div class="col-grow">
                 <n-auto-complete
-                  v-model="fields.discount_types"
+                  v-model="fields.discount_type"
                   label="Discount*"
                   :error="errors?.discount_types"
                   :options="
@@ -77,8 +77,8 @@
               <div
                 class="col-3"
                 v-if="
-                  fields.discount_types === 'Amount' ||
-                  fields.discount_types === 'Percent'
+                  fields.discount_type === 'Amount' ||
+                  fields.discount_type === 'Percent'
                 "
               >
                 <q-input
@@ -127,6 +127,10 @@
         "
         :taxOptions="formDefaults.collections?.tax_schemes"
         v-model="fields.rows"
+        :mainDiscount="{
+          discount_type: fields.discount_type,
+          discount: fields.discount,
+        }"
       ></invoice-table>
       <div class="text-right q-pr-md q-pb-lg">
         <q-btn
@@ -137,7 +141,7 @@
         />
       </div>
     </q-card>
-    {{ fields.rows }}--row
+    {{ fields.discount_type }}--row
   </q-form>
 </template>
 
@@ -160,6 +164,11 @@ export default {
       // show_customer: true,
       // challan_objs: [],
     }
+    // const mainDiscountComputed = computed(() => {
+    //   let obj = null
+    //   console.log(fields.value.discount_type, 'distype')
+    //   return obj
+    // })
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/',

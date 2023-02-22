@@ -23,18 +23,26 @@
           <div class="text-weight-bold text-grey-8 col-4">
             <div class="row q-pb-md">
               <div class="col-6 text-center">Sub Total</div>
-              <div>{{ totalDataComputed.subTotal }}</div>
+              <div>{{ parseFloat(totalDataComputed.subTotal) }}</div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-center">Discount</div>
               <div>
-                {{ totalDataComputed.discount }}
+                {{ parseFloat(totalDataComputed.discount) }}
+              </div>
+            </div>
+            <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
+              <div class="col-6 text-center">
+                {{ totalDataComputed.taxName }}
+              </div>
+              <div>
+                {{ parseFloat(totalDataComputed.totalTax.toFixed(2)) }}
               </div>
             </div>
             <div class="row q-pb-md">
               <div class="col-6 text-center">Total</div>
               <div>
-                {{ 150 }}
+                {{ parseFloat(totalDataComputed.total.toFixed(2)) }}
               </div>
             </div>
           </div>
@@ -45,7 +53,7 @@
           >
         </div>
       </div>
-      {{ totalDataComputed }}--dis 0
+      {{ totalDataComputed }}--totalDataComputed
     </q-card>
   </q-card-section>
 </template>
@@ -80,6 +88,13 @@ export default {
         return {}
       },
     },
+    mainDiscount: {
+      type: Object,
+      default: () => {
+        return { discount_type: null, discount: 0 }
+      },
+    },
+
     modelValue: {
       type: Array,
       default: () => [
@@ -116,7 +131,6 @@ export default {
     watch(
       () => modalValue,
       (newValue) => {
-        // console.log('watcher invoked')
         emit('update:modelValue', newValue)
       },
       { deep: true }
@@ -125,16 +139,71 @@ export default {
       let data = {
         subTotal: 0,
         discount: 0,
+        total: 0,
+        totalTax: 0,
+        sameScheme: null,
+        taxObj: null,
+        taxName: null,
+        taxRate: null,
       }
-      console.log(props.modelValueProps)
       modalValue.value.forEach((item, index) => {
-        data.subTotal = item.quantity
-        if (item.discount_type === 'Percent') {
-          data.discount =
-            data.discount + amountComputed.value[index] * (item.discount / 100)
-        } else if (item.discount_type === 'Amount')
-          data.discount = data.discount + item.discount
+        const rowTotal = (item.value?.rate || 0) * (item.value?.quantity || 0)
+        data.subTotal = data.subTotal + rowTotal
+        const rowDiscount = useCalcDiscount(
+          item.value?.discount_type,
+          rowTotal,
+          item.value?.discount,
+          props.discountOptions
+        )
+        data.discount = data.discount + rowDiscount
+        if (data.sameScheme !== false && item.value?.taxObj) {
+          if (data.sameScheme === null && item.value.taxObj) {
+            data.sameScheme = item.value.taxObj.id
+            data.taxObj = item.value.taxObj
+          } else if (data.sameScheme === item.value?.taxObj.id) {
+          } else data.sameScheme = false
+        }
+        if (item.value?.taxObj) {
+          const rowTax =
+            (rowTotal - (rowDiscount || 0)) *
+            (item.value.taxObj.rate / 100 || 0)
+          console.log(
+            rowTax,
+            data.discount,
+            item.value.taxObj.rate,
+            rowDiscount
+          )
+          data.totalTax = data.totalTax + rowTax
+          // data.totalTax =
+          //   data.totalTax + rowTotal * (item.value?.taxObj.rate / 100 || 0)
+        }
+        // if (item.value?.taxObj.type === 'Percent') {
+        //   totalTax =
+        //     totalTax + (rowTotal * (item.value?.taxObj.value / 100) || 0)
+        // } else if (item.value?.taxObj.type === 'Amount')
+        //   totalTax = totalTax + (item.value?.taxObj.value || 0)
+        // totalTax = totalTax + rowTotal *
       })
+      // tax
+      if (typeof data.sameScheme === 'number' && data.taxObj) {
+        data.taxName =
+          `${data.taxObj.name || ''}` + ' @ ' + `${data.taxObj.rate || ''}`
+        data.taxRate = data.taxObj.rate
+      } else {
+        data.taxName = 'Tax'
+        data.taxRate = null
+      }
+      // clac main discount
+      data.discount =
+        (data.discount || 0) +
+        (useCalcDiscount(
+          props.mainDiscount.discount_type,
+          data.subTotal,
+          props.mainDiscount.discount,
+          props.discountOptions
+        ) || 0)
+      // console.log(data.totalTax)
+      data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
     // const taxObhComputed = computed(() => {
@@ -181,6 +250,7 @@ export default {
       changeExpandedState,
       totalDataComputed,
       InvoiceRow,
+      useCalcDiscount,
     }
   },
 }

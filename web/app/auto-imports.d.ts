@@ -49,6 +49,7 @@ declare global {
   const unref: typeof import('vue')['unref']
   const useApi: typeof import('./src/composables/useApi.js')['default']
   const useAttrs: typeof import('vue')['useAttrs']
+  const useCalcDiscount: typeof import('./src/composables/useCalcDiscount.js')['default']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']
   const useDialogPluginComponent: typeof import('quasar')['useDialogPluginComponent']
