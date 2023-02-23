@@ -17,7 +17,11 @@
             :taxOptions="taxOptions"
             :discountOptions="discountOptions"
             :index="index"
+            :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index, modalValue)"
+            :errors="
+              !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+            "
           />
         </div>
         <div class="row q-py-sm">
@@ -59,6 +63,7 @@
         </div>
       </div>
     </q-card>
+    {{ errors }} --errors
   </q-card-section>
 </template>
 
@@ -99,13 +104,18 @@ export default {
         return { discount_type: null, discount: 0 }
       },
     },
-
+    errors: {
+      type: Array || String,
+      default: () => {
+        return null
+      },
+    },
     modelValue: {
       type: Array,
       default: () => [
         {
-          discount: '',
-          quantity: '',
+          discount: 0,
+          quantity: 1,
           rate: '',
           item_id: '',
           unit_id: '',
@@ -123,13 +133,18 @@ export default {
   setup(props, { emit }) {
     const rows = ref(1)
     const modalValue = ref(props.modelValue)
+    const rowEmpty = ref(false)
     watch(
       () => props.modelValueProps,
       (newValue) => {
         modalValue.value = newValue
-      },
-      {
-        deep: true,
+      }
+    )
+    watch(
+      () => props.errors,
+      (newValue) => {
+        if (newValue === 'This field is required.') rowEmpty.value = true
+        else rowEmpty.value = false
       }
     )
     watch(
@@ -241,6 +256,7 @@ export default {
       totalDataComputed,
       InvoiceRow,
       useCalcDiscount,
+      rowEmpty,
     }
   },
 }

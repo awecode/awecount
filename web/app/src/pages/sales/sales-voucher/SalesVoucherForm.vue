@@ -17,6 +17,8 @@
                   <q-input
                     v-model="fields.customer_name"
                     label="Customer Name"
+                    :error-message="errors.customer_name"
+                    :error="!!errors.customer_name"
                     v-if="partyMode && fields.mode !== 'Credit'"
                   >
                   </q-input>
@@ -25,8 +27,9 @@
                     v-model="fields.party"
                     :options="formDefaults.collections?.parties"
                     label="Party"
-                    :error="errors?.party"
+                    :error="!!errors.party"
                     :modal-component="PartyForm"
+                    :error-message="errors.party"
                   />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
@@ -65,7 +68,8 @@
                 <n-auto-complete
                   v-model="fields.discount_type"
                   label="Discount*"
-                  :error="errors?.discount_types"
+                  :error="errors.discount_type"
+                  :error-message="errors.discount_type"
                   :options="
                     formDefaults.collections
                       ? options.discount_types.concat(
@@ -98,8 +102,8 @@
               v-model="fields.mode"
               label="Mode"
               class="col-12 col-md-6"
-              :error-message="errors.bank_account"
-              :error="!!errors.bank_account"
+              :error-message="errors.mode"
+              :error="!!errors.mode"
               :options="
                 options.modes.concat(formDefaults.collections?.bank_accounts)
               "
@@ -136,17 +140,53 @@
           discount_type: fields.discount_type,
           discount: fields.discount,
         }"
+        :errors="!!errors.rows ? errors.rows : null"
       ></invoice-table>
-      <div class="text-right q-pr-md q-pb-lg">
+      <div class="row q-px-lg">
+        <div class="col-12 col-md-6 row">
+          <!-- <q-input
+            v-model="fields.remarks"
+            label="Remarks"
+            type="textarea"
+          ></q-input> -->
+          <q-input
+            v-model="fields.remarks"
+            label="Remarks"
+            type="textarea"
+            autogrow
+            class="col-12 col-md-10"
+            :error="!!error?.remarks"
+            :error-message="error?.remarks"
+          />
+        </div>
+        <div class="col-12 col-md-6 row justify-between">
+          <div>
+            <q-checkbox
+              label="Export?"
+              v-model="fields.is_export"
+              class="q-mt-md col-3"
+            ></q-checkbox>
+          </div>
+          <q-select
+            v-model="fields.sales_agent"
+            label="Sales Agent"
+            class="col-8"
+            :error="!!error?.sales_agent"
+            :error-message="error?.sales_agent"
+          ></q-select>
+          <!-- TODO: add sales agent form -->
+        </div>
+      </div>
+
+      <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+        <q-btn @click.prevent="submitForm" color="primary" label="Draft" />
         <q-btn
           @click.prevent="submitForm"
-          color="primary"
-          :label="isEdit ? 'Update' : 'Create'"
-          class="q-ml-auto"
+          color="green-8"
+          :label="isEdit ? 'Update' : 'Issue'"
         />
       </div>
     </q-card>
-    {{ fields }}
   </q-form>
 </template>
 
@@ -186,6 +226,7 @@ export default {
     //   console.log(this)
     // })
     formData.fields.value.date = formData.today
+    formData.fields.value.is_export = false
     return {
       ...formData,
       CategoryForm,

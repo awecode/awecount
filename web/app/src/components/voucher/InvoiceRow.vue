@@ -3,13 +3,15 @@
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5">
         <n-auto-complete
-          v-model="selectedItem"
+          v-model="modalValue.item_id"
           :options="itemOptions"
           label="Item"
-          :error="errors?.party"
+          :error="errors?.item_id || rowEmpty"
+          :error-message="errors?.item_id[0]"
           :modal-component="ItemAdd"
           class="q-full-width"
         />
+        {{ errors?.item_id[0] }}
       </div>
       <div class="col-2">
         <q-input
@@ -63,59 +65,72 @@
         </q-btn>
       </div>
     </div>
-    <div class="row q-col-gutter-md q-px-lg" v-if="expandedState">
-      <div class="col-grow">
-        <q-select
-          v-model="modalValue.unit_id"
-          :options="unitOptions"
-          label="Unit"
-          option-value="id"
-          option-label="name"
-          map-options
-        />
-      </div>
-      <div class="col-4">
-        <div class="row q-col-gutter-md">
-          <div
-            :class="
-              modalValue.discount_type === 'Amount' ||
-              modalValue.discount_type === 'Percent'
-                ? 'col-8'
-                : 'col-12'
-            "
-          >
-            <n-auto-complete
-              v-model="modalValue.discount_type"
-              label="Discount*"
-              :options="discountOptions"
+    <div v-if="expandedState">
+      <div class="row q-col-gutter-md q-px-lg">
+        <div class="col-grow">
+          <q-select
+            v-model="modalValue.unit_id"
+            :options="unitOptions"
+            label="Unit"
+            option-value="id"
+            option-label="name"
+            emit-value
+            map-options
+          />
+        </div>
+        <div class="col-4">
+          <div class="row q-col-gutter-md">
+            <div
+              :class="
+                modalValue.discount_type === 'Amount' ||
+                modalValue.discount_type === 'Percent'
+                  ? 'col-8'
+                  : 'col-12'
+              "
             >
-            </n-auto-complete>
-          </div>
-          <div
-            class="col-4"
-            v-if="
-              modalValue.discount_type === 'Amount' ||
-              modalValue.discount_type === 'Percent'
-            "
-          >
-            <q-input
-              v-model.number="modalValue.discount"
-              label="Discount"
-            ></q-input>
+              <n-auto-complete
+                v-model="modalValue.discount_type"
+                label="Discount*"
+                :options="discountOptions"
+              >
+              </n-auto-complete>
+            </div>
+            <div
+              class="col-4"
+              v-if="
+                modalValue.discount_type === 'Amount' ||
+                modalValue.discount_type === 'Percent'
+              "
+            >
+              <q-input
+                v-model.number="modalValue.discount"
+                label="Discount"
+              ></q-input>
+            </div>
           </div>
         </div>
+        <div class="col-3">
+          <q-select
+            v-model="selectedTax"
+            :options="taxOptions"
+            label="Tax"
+            option-value="id"
+            option-label="name"
+            map-options
+          />
+        </div>
       </div>
-      <div class="col-3">
-        <q-select
-          v-model="selectedTax"
-          :options="taxOptions"
-          label="Tax"
-          option-value="id"
-          option-label="name"
-          map-options
-        />
+      <div v-if="!!modalValue.itemObj">
+        <q-input
+          label="Description"
+          v-model="modalValue.description"
+          type="textarea"
+          class="q-mb-lg"
+        >
+        </q-input>
       </div>
     </div>
+    {{ errors }} -------------------err
   </div>
 </template>
 
@@ -142,6 +157,16 @@ export default {
         return {}
       },
     },
+    errors: {
+      type: Object,
+      default: () => {
+        return null
+      },
+    },
+    rowEmpty: {
+      type: Boolean,
+      default: () => false,
+    },
     taxOptions: {
       type: Object,
       default: () => {
@@ -152,11 +177,11 @@ export default {
       type: Object,
       default: () => {
         return {
-          discount: '',
-          quantity: '',
+          discount: 0,
+          quantity: 1,
           rate: '',
-          item_id: '',
-          unit_id: '',
+          item_id: null,
+          unit_id: null,
           description: '',
           discount: '',
           discount_type: null,
@@ -173,6 +198,7 @@ export default {
       default: () => null,
     },
   },
+
   emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
     const expandedState = ref(false)
@@ -182,6 +208,15 @@ export default {
       () => (modalValue.value.rate || 0) * (modalValue.value.quantity || 0)
     )
     const selectedItem = ref(null)
+    // const rowError = ref(false)
+    // watch(
+    //   () => props.modelValueProps,
+    //   (newValue) => {
+    //     if (newValue === 'This field is required.') {
+    //       rowError.value = true
+    //     }
+    //   }
+    // )
     watch(
       () => props.modelValue,
       (newValue) => {
@@ -191,7 +226,7 @@ export default {
     watch(
       () => modalValue,
       (newValue) => {
-        emit('update:modelValue', newValue)
+        emit('update:modelValue', newValue.value)
       },
       { deep: true }
     )
@@ -200,6 +235,7 @@ export default {
       const discountobject = props.itemOptions[index]
       modalValue.value.itemObj = discountobject
       modalValue.value.item_id = discountobject.id
+      modalValue.value.description = discountobject.description
     })
     watch(selectedTax, (newValue) => {
       modalValue.value.taxObj = newValue
