@@ -2,71 +2,110 @@
   <div>
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5">
-        <n-auto-complete v-model="selectedItem" :options="itemOptions" label="Item" :error="errors?.party"
-          :modal-component="ItemAdd" class="q-full-width" />
+        <n-auto-complete
+          v-model="selectedItem"
+          :options="itemOptions"
+          label="Item"
+          :error="errors?.party"
+          :modal-component="ItemAdd"
+          class="q-full-width"
+        />
       </div>
       <div class="col-2">
-        <q-input v-model.number="modalValue.quantity" label="Quantity" :error-message="errors" :error="!!errors"
-          type="number"></q-input>
+        <q-input
+          v-model.number="modalValue.quantity"
+          label="Quantity"
+          :error-message="errors"
+          :error="!!errors"
+          type="number"
+        ></q-input>
       </div>
       <div class="col-2">
-        <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors" :error="!!errors"
-          type="number"></q-input>
+        <q-input
+          v-model.number="modalValue.rate"
+          label="Rate"
+          :error-message="errors"
+          :error="!!errors"
+          type="number"
+        ></q-input>
       </div>
-      <div class="col-2 full-height row">
-        <q-input v-model="amountComputed" disable label="Amount"></q-input>
+      <div class="col-2 row justify-center items-center">
+        <span class="">{{ amountComputed }}</span>
+        <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
-      <div class="col-1 row q-gutter-x-sm justify-center items-center">
-        <q-icon name="mdi-arrow-expand" size="20px" color="green" itemObj class="cursor-pointer" title="Expand"
-          @click="() => (expandedState = !expandedState)"></q-icon>
-        <q-icon name="delete" size="20px" color="negative" @click="() => deleteRow(index)"
-          class="cursor-pointer"></q-icon>
+      <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
+        <q-btn flat class="q-pa-sm" color="transparent">
+          <q-icon
+            name="mdi-arrow-expand"
+            size="20px"
+            color="green"
+            class="cursor-pointer"
+            title="Expand"
+            @click="() => (expandedState = !expandedState)"
+          ></q-icon>
+        </q-btn>
+        <q-btn flat class="q-pa-sm" color="transparent">
+          <q-icon
+            name="delete"
+            size="20px"
+            color="negative"
+            @click="() => deleteRow(index)"
+            class="cursor-pointer"
+          ></q-icon>
+        </q-btn>
       </div>
     </div>
     <div class="row q-col-gutter-md q-px-lg" v-if="expandedState">
       <div class="col-grow">
-        <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
-          map-options />
+        <q-select
+          v-model="modalValue.unit_id"
+          :options="unitOptions"
+          label="Unit"
+          option-value="id"
+          option-label="name"
+          map-options
+        />
       </div>
-      <div class="col-md-4 row q-col-gutter-md">
-        <div class="col-grow">
-          <n-auto-complete v-model="modalValue.discount_type" label="Discount*" :options="discountOptions">
-          </n-auto-complete>
-        </div>
-        <div class="col-3" v-if="
-          modalValue.discount_type === 'Amount' ||
-          modalValue.discount_type === 'Percent'
-        ">
-          <q-input v-model.number="modalValue.discount" label="Discount"></q-input>
+      <div class="col-4">
+        <div class="row q-col-gutter-md">
+          <div
+            :class="
+              modalValue.discount_type === 'Amount' ||
+              modalValue.discount_type === 'Percent'
+                ? 'col-8'
+                : 'col-12'
+            "
+          >
+            <n-auto-complete
+              v-model="modalValue.discount_type"
+              label="Discount*"
+              :options="discountOptions"
+            >
+            </n-auto-complete>
+          </div>
+          <div
+            class="col-4"
+            v-if="
+              modalValue.discount_type === 'Amount' ||
+              modalValue.discount_type === 'Percent'
+            "
+          >
+            <q-input
+              v-model.number="modalValue.discount"
+              label="Discount"
+            ></q-input>
+          </div>
         </div>
       </div>
-      <!-- <div class="col-3">
-                            <div class="row bg-red-1">
-                              <n-auto-complete
-                                class="col-grow col-12"
-                                v-model="modalValue[index].discount_type"
-                                label="Discount*"
-                                :error="errors?.discount_types"
-                                :options="discountOptions"
-                              ></n-auto-complete>
-                              <div
-                                class="col-4"
-                                v-if="
-                                  modalValue[index].discount_type === 'Amount' ||
-                                  modalValue[index].discount_type === 'Percent'
-                                "
-                              >
-                                <q-input
-                                  class="col-12"
-                                  v-model="modalValue.discount"
-                                  label="Discount"
-                                ></q-input>
-                              </div>
-                            </div>
-                          </div> -->
       <div class="col-3">
-        <q-select v-model="selectedTax" :options="taxOptions" label="Tax" option-value="id" option-label="name"
-          map-options />
+        <q-select
+          v-model="selectedTax"
+          :options="taxOptions"
+          label="Tax"
+          option-value="id"
+          option-label="name"
+          map-options
+        />
       </div>
     </div>
   </div>
@@ -123,7 +162,7 @@ export default {
     },
     index: {
       type: Number,
-      default: () => null
+      default: () => null,
     },
   },
   emits: ['update:modelValue', 'deleteRow'],
@@ -136,9 +175,9 @@ export default {
     )
     const selectedItem = ref(null)
     watch(
-      () => props.modelValueProps,
+      () => props.modelValue,
       (newValue) => {
-        modalValue.value = newValue
+        modalValue.value = newValue.value
       }
     )
     watch(
@@ -159,7 +198,6 @@ export default {
       modalValue.value.tax_scheme_id = newValue.id
     })
     const deleteRow = (index) => {
-      debugger
       emit('deleteRow', index)
     }
     return {
@@ -169,7 +207,7 @@ export default {
       amountComputed,
       selectedItem,
       selectedTax,
-      deleteRow
+      deleteRow,
     }
   },
 }

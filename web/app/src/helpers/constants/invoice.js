@@ -11,15 +11,15 @@ export const discount_types = [
     id: 'Amount',
     name: '/-',
   },
-];
+]
 
 export const modes = [
   {
-    value: 'Credit',
+    id: 'Credit',
     name: 'Credit',
   },
   {
-    value: 'Cash',
+    id: 'Cash',
     name: 'Cash',
   },
-];
+]

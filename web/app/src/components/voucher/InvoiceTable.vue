@@ -6,45 +6,56 @@
           <div class="col-5">Particular(s)</div>
           <div class="col-2 text-center">Qty</div>
           <div class="col-2 text-center">Rate</div>
-          <div class="col-2 text-center">Amnt</div>
+          <div class="col-2 text-center">Amount</div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-for="(row, index) in modalValue" :key="index">
-          <InvoiceRow v-model="modalValue[index]" :itemOptions="itemOptions" :unitOptions="unitOptions"
-            :taxOptions="taxOptions" :discountOptions="discountOptions" :index="index"
-            @deleteRow="(index) => removeRow(index)" />
+        <div v-for="(row, index) in modalValue" :key="`invoice-row-${index}`">
+          <InvoiceRow
+            v-model="modalValue[index]"
+            :itemOptions="itemOptions"
+            :unitOptions="unitOptions"
+            :taxOptions="taxOptions"
+            :discountOptions="discountOptions"
+            :index="index"
+            @deleteRow="(index) => removeRow(index, modalValue)"
+          />
         </div>
-        <div class="q-px-lg row items-end">
-          <div class="col-grow"></div>
-          <div class="text-weight-bold text-grey-8 col-4">
+        <div class="row q-py-sm">
+          <div class="col-7 text-center"></div>
+          <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
-              <div class="col-6 text-center">Sub Total</div>
-              <div>{{ parseFloat(totalDataComputed.subTotal) }}</div>
+              <div class="col-6 text-right">Sub Total</div>
+              <div class="col-6 q-pl-md">
+                {{ parseFloat(totalDataComputed.subTotal) }}
+              </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
-              <div class="col-6 text-center">Discount</div>
-              <div>
-                {{ parseFloat(totalDataComputed.discount) }}
+              <div class="col-6 text-right">Discount</div>
+              <div class="col-6 q-pl-md">
+                {{ parseFloat(totalDataComputed.discount.toFixed(2)) }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
-              <div class="col-6 text-center">
+              <div class="col-6 text-right">
                 {{ totalDataComputed.taxName }}
               </div>
-              <div>
+              <div class="col-6 q-pl-md">
                 {{ parseFloat(totalDataComputed.totalTax.toFixed(2)) }}
               </div>
             </div>
             <div class="row q-pb-md">
-              <div class="col-6 text-center">Total</div>
-              <div>
+              <div class="col-6 text-right">Total</div>
+              <div class="col-6 q-pl-md">
                 {{ parseFloat(totalDataComputed.total.toFixed(2)) }}
               </div>
             </div>
           </div>
+          <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
+            >Add Row</q-btn
+          >
         </div>
       </div>
     </q-card>
@@ -138,6 +149,7 @@ export default {
         taxObj: null,
         taxName: null,
         taxRate: null,
+        taxableAmount: 0,
       }
       modalValue.value.forEach((item, index) => {
         const rowTotal = (item.value?.rate || 0) * (item.value?.quantity || 0)
@@ -156,23 +168,32 @@ export default {
           } else if (data.sameScheme === item.value?.taxObj.id) {
           } else data.sameScheme = false
         }
-        const mainDiscountAmount = useCalcDiscount(
-          props.mainDiscount.discount_type,
-          data.subTotal - data.discount,
-          props.mainDiscount.discount,
-          props.discountOptions
-        ) || 0
+        const mainDiscountAmount =
+          useCalcDiscount(
+            props.mainDiscount.discount_type,
+            rowTotal - rowDiscount,
+            props.mainDiscount.discount,
+            props.discountOptions
+          ) || 0
         if (item.value?.taxObj) {
+          // const rowTax =
+          //   (rowTotal - mainDiscountAmount - (rowDiscount || 0)) *
+          //   (item.value.taxObj.rate / 100 || 0)
+          // data.totalTax = data.totalTax + rowTax
           const rowTax =
-            (rowTotal - mainDiscountAmount - (rowDiscount || 0)) *
+            (rowTotal - rowDiscount - mainDiscountAmount) *
             (item.value.taxObj.rate / 100 || 0)
+          console.log(rowTotal, rowDiscount, mainDiscountAmount, 'rowtax')
           data.totalTax = data.totalTax + rowTax
         }
       })
       // tax
       if (typeof data.sameScheme === 'number' && data.taxObj) {
         data.taxName =
-          `${data.taxObj.name || ''}` + ' @ ' + `${data.taxObj.rate || ''}` + '%'
+          `${data.taxObj.name || ''}` +
+          ' @ ' +
+          `${data.taxObj.rate || ''}` +
+          '%'
         data.taxRate = data.taxObj.rate
       } else {
         data.taxName = 'Tax'
@@ -191,9 +212,6 @@ export default {
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
-    // const taxObhComputed = computed(() => {
-    //   if (tax)
-    // })
     const amountComputed = computed(() => {
       let total = []
       modalValue.value.forEach((element) => {
@@ -215,10 +233,8 @@ export default {
         discount_id: null,
       })
     }
-    const removeRow = (index) => {
-      console.log(modalValue.value)
-      debugger
-      modalValue.value.splice(index, 1)
+    const removeRow = (index, rows) => {
+      rows.splice(index, 1)
     }
     return {
       rows,
