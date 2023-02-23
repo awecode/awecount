@@ -155,7 +155,6 @@ export default {
       if (a.issued_to || a.dr_account) {
         showDrAccount.value = true
       }
-      console.log('Hi')
     })
 
     return {

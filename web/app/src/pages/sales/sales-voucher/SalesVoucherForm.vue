@@ -12,13 +12,30 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete
-                v-model="fields.party"
-                :options="formDefaults.collections?.parties"
-                label="Party"
-                :error="errors?.party"
-                :modal-component="PartyForm"
-              />
+              <div class="row">
+                <div class="col-10">
+                  <q-input
+                    v-model="fields.customer_name"
+                    label="Customer Name"
+                    v-if="partyMode && fields.mode !== 'Credit'"
+                  >
+                  </q-input>
+                  <n-auto-complete
+                    v-else
+                    v-model="fields.party"
+                    :options="formDefaults.collections?.parties"
+                    label="Party"
+                    :error="errors?.party"
+                    :modal-component="PartyForm"
+                  />
+                </div>
+                <div class="col-2 row justify-center q-py-md">
+                  <q-btn flat size="md" @click="() => switchMode(fields)">
+                    <q-icon name="mdi-account-group"></q-icon>
+                  </q-btn>
+                </div>
+              </div>
+              <div></div>
             </div>
             <q-input
               class="col-md-6 col-12"
@@ -83,9 +100,11 @@
               class="col-12 col-md-6"
               :error-message="errors.bank_account"
               :error="!!errors.bank_account"
-              :options="formDefaults.collections?.bank_accounts"
-              option-value="value"
-              option-label="id"
+              :options="
+                options.modes.concat(formDefaults.collections?.bank_accounts)
+              "
+              option-value="id"
+              option-label="name"
               map-options
               emit-value
             >
@@ -127,6 +146,7 @@
         />
       </div>
     </q-card>
+    {{ fields }}
   </q-form>
 </template>
 
@@ -142,22 +162,29 @@ export default {
   setup(props, context) {
     const endpoint = '/v1/sales-voucher/'
     const openDatePicker = ref(false)
+    const $q = useQuasar()
     const rows = ref(1)
     const options = {
       discount_types: discount_types,
       modes: modes,
-      // show_customer: true,
-      // challan_objs: [],
     }
-    // const mainDiscountComputed = computed(() => {
-    //   let obj = null
-    //   console.log(fields.value.discount_type, 'distype')
-    //   return obj
-    // })
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/',
     })
+    const partyMode = ref(false)
+    const switchMode = (fields) => {
+      if (fields.mode !== 'Credit') {
+        partyMode.value = !partyMode.value
+      } else
+        $q.notify({
+          color: 'orange-4',
+          message: 'Credit customer must be a party!',
+        })
+    }
+    // onMounted(() => {
+    //   console.log(this)
+    // })
     formData.fields.value.date = formData.today
     return {
       ...formData,
@@ -168,6 +195,8 @@ export default {
       options,
       rows,
       InvoiceTable,
+      partyMode,
+      switchMode,
     }
   },
 }

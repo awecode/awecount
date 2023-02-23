@@ -409,7 +409,6 @@ const isExpenses = computed(
 
 watch(isExpenses, () => {
   if (isExpenses.value === true) {
-    console.log('time to disable all btns')
     fields.value.track_inventory = false
     fields.value.can_be_sold = false
     fields.value.fixed_asset = false

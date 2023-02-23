@@ -176,14 +176,9 @@ export default {
             props.discountOptions
           ) || 0
         if (item.value?.taxObj) {
-          // const rowTax =
-          //   (rowTotal - mainDiscountAmount - (rowDiscount || 0)) *
-          //   (item.value.taxObj.rate / 100 || 0)
-          // data.totalTax = data.totalTax + rowTax
           const rowTax =
             (rowTotal - rowDiscount - mainDiscountAmount) *
             (item.value.taxObj.rate / 100 || 0)
-          console.log(rowTotal, rowDiscount, mainDiscountAmount, 'rowtax')
           data.totalTax = data.totalTax + rowTax
         }
       })
@@ -208,7 +203,6 @@ export default {
           props.mainDiscount.discount,
           props.discountOptions
         ) || 0)
-      // console.log(data.totalTax)
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
