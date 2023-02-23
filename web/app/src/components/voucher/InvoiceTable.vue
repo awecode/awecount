@@ -11,7 +11,8 @@
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
           <InvoiceRow v-model="modalValue[index]" :itemOptions="itemOptions" :unitOptions="unitOptions"
-            :taxOptions="taxOptions" :discountOptions="discountOptions" />
+            :taxOptions="taxOptions" :discountOptions="discountOptions" :index="index"
+            @deleteRow="(index) => removeRow(index)" />
         </div>
         <div class="q-px-lg row items-end">
           <div class="col-grow"></div>
@@ -46,7 +47,6 @@
           <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
         </div>
       </div>
-      {{ props }}--maindiscount
     </q-card>
   </q-card-section>
 </template>
@@ -111,7 +111,6 @@ export default {
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const rows = ref(1)
-    const expandedState = ref([false])
     const modalValue = ref(props.modelValue)
     watch(
       () => props.modelValueProps,
@@ -163,18 +162,10 @@ export default {
           props.mainDiscount.discount,
           props.discountOptions
         ) || 0
-        console.log(mainDiscountAmount, 'mainDiscountAmount')
         if (item.value?.taxObj) {
           const rowTax =
             (rowTotal - mainDiscountAmount - (rowDiscount || 0)) *
             (item.value.taxObj.rate / 100 || 0)
-          // * (100 - props.mainDiscount)
-          console.log(
-            rowTax,
-            data.discount,
-            item.value.taxObj.rate,
-            rowDiscount
-          )
           data.totalTax = data.totalTax + rowTax
         }
       })
@@ -223,25 +214,20 @@ export default {
         tax_scheme_id: '',
         discount_id: null,
       })
-      expandedState.value.push(false)
     }
     const removeRow = (index) => {
+      console.log(modalValue.value)
+      debugger
       modalValue.value.splice(index, 1)
-      expandedState.value.splice(index, 1)
-    }
-    const changeExpandedState = (index) => {
-      expandedState.value[index] = !expandedState.value[index]
     }
     return {
       rows,
       props,
-      expandedState,
       modalValue,
       amountComputed,
       addRow,
       removeRow,
       ItemAdd,
-      changeExpandedState,
       totalDataComputed,
       InvoiceRow,
       useCalcDiscount,

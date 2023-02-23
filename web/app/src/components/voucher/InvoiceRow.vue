@@ -2,124 +2,73 @@
   <div>
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5">
-        <n-auto-complete
-          v-model="selectedItem"
-          :options="itemOptions"
-          label="Item"
-          :error="errors?.party"
-          :modal-component="ItemAdd"
-          class="q-full-width"
-        />
+        <n-auto-complete v-model="selectedItem" :options="itemOptions" label="Item" :error="errors?.party"
+          :modal-component="ItemAdd" class="q-full-width" />
       </div>
       <div class="col-2">
-        <q-input
-          v-model.number="modalValue.quantity"
-          label="Quantity"
-          :error-message="errors"
-          :error="!!errors"
-          type="number"
-        ></q-input>
+        <q-input v-model.number="modalValue.quantity" label="Quantity" :error-message="errors" :error="!!errors"
+          type="number"></q-input>
       </div>
       <div class="col-2">
-        <q-input
-          v-model.number="modalValue.rate"
-          label="Rate"
-          :error-message="errors"
-          :error="!!errors"
-          type="number"
-        ></q-input>
+        <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors" :error="!!errors"
+          type="number"></q-input>
       </div>
       <div class="col-2 full-height row">
         <q-input v-model="amountComputed" disable label="Amount"></q-input>
       </div>
       <div class="col-1 row q-gutter-x-sm justify-center items-center">
-        <q-icon
-          name="mdi-arrow-expand"
-          size="20px"
-          color="green"
-          itemObj
-          class="cursor-pointer"
-          title="Expand"
-          @click="() => (expandedState = !expandedState)"
-        ></q-icon>
-        <q-icon
-          name="delete"
-          size="20px"
-          color="negative"
-          @click="() => removeRow(index)"
-          class="cursor-pointer"
-        ></q-icon>
+        <q-icon name="mdi-arrow-expand" size="20px" color="green" itemObj class="cursor-pointer" title="Expand"
+          @click="() => (expandedState = !expandedState)"></q-icon>
+        <q-icon name="delete" size="20px" color="negative" @click="() => deleteRow(index)"
+          class="cursor-pointer"></q-icon>
       </div>
     </div>
     <div class="row q-col-gutter-md q-px-lg" v-if="expandedState">
       <div class="col-grow">
-        <q-select
-          v-model="modalValue.unit_id"
-          :options="unitOptions"
-          label="Unit"
-          option-value="id"
-          option-label="name"
-          map-options
-        />
+        <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
+          map-options />
       </div>
       <div class="col-md-4 row q-col-gutter-md">
         <div class="col-grow">
-          <n-auto-complete
-            v-model="modalValue.discount_type"
-            label="Discount*"
-            :options="discountOptions"
-          >
+          <n-auto-complete v-model="modalValue.discount_type" label="Discount*" :options="discountOptions">
           </n-auto-complete>
         </div>
-        <div
-          class="col-3"
-          v-if="
-            modalValue.discount_type === 'Amount' ||
-            modalValue.discount_type === 'Percent'
-          "
-        >
-          <q-input
-            v-model.number="modalValue.discount"
-            label="Discount"
-          ></q-input>
+        <div class="col-3" v-if="
+          modalValue.discount_type === 'Amount' ||
+          modalValue.discount_type === 'Percent'
+        ">
+          <q-input v-model.number="modalValue.discount" label="Discount"></q-input>
         </div>
       </div>
       <!-- <div class="col-3">
-      <div class="row bg-red-1">
-        <n-auto-complete
-          class="col-grow col-12"
-          v-model="modalValue[index].discount_type"
-          label="Discount*"
-          :error="errors?.discount_types"
-          :options="discountOptions"
-        ></n-auto-complete>
-        <div
-          class="col-4"
-          v-if="
-            modalValue[index].discount_type === 'Amount' ||
-            modalValue[index].discount_type === 'Percent'
-          "
-        >
-          <q-input
-            class="col-12"
-            v-model="modalValue.discount"
-            label="Discount"
-          ></q-input>
-        </div>
-      </div>
-    </div> -->
+                            <div class="row bg-red-1">
+                              <n-auto-complete
+                                class="col-grow col-12"
+                                v-model="modalValue[index].discount_type"
+                                label="Discount*"
+                                :error="errors?.discount_types"
+                                :options="discountOptions"
+                              ></n-auto-complete>
+                              <div
+                                class="col-4"
+                                v-if="
+                                  modalValue[index].discount_type === 'Amount' ||
+                                  modalValue[index].discount_type === 'Percent'
+                                "
+                              >
+                                <q-input
+                                  class="col-12"
+                                  v-model="modalValue.discount"
+                                  label="Discount"
+                                ></q-input>
+                              </div>
+                            </div>
+                          </div> -->
       <div class="col-3">
-        <q-select
-          v-model="selectedTax"
-          :options="taxOptions"
-          label="Tax"
-          option-value="id"
-          option-label="name"
-          map-options
-        />
+        <q-select v-model="selectedTax" :options="taxOptions" label="Tax" option-value="id" option-label="name"
+          map-options />
       </div>
     </div>
-    {{ modalValue.discount_type }}--distype
   </div>
 </template>
 
@@ -172,8 +121,12 @@ export default {
         }
       },
     },
+    index: {
+      type: Number,
+      default: () => null
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
     const expandedState = ref(false)
     const modalValue = ref(props.modelValue)
@@ -205,6 +158,10 @@ export default {
       modalValue.value.taxObj = newValue
       modalValue.value.tax_scheme_id = newValue.id
     })
+    const deleteRow = (index) => {
+      debugger
+      emit('deleteRow', index)
+    }
     return {
       ItemAdd,
       expandedState,
@@ -212,6 +169,7 @@ export default {
       amountComputed,
       selectedItem,
       selectedTax,
+      deleteRow
     }
   },
 }

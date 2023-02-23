@@ -3,7 +3,6 @@ import { useLoginStore } from 'src/stores/login-info'
 import { useRouter } from 'vue-router'
 
 const useApi = async (endpoint, body, omitToken) => {
-  console.log('useApi Hit', endpoint)
   const loginStore = useLoginStore()
   const router = useRouter()
   const options = {}

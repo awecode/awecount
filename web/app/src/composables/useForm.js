@@ -35,7 +35,6 @@ export default (endpoint, config) => {
     if (isEdit.value) {
       useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
         (data) => {
-          console.log(data)
           fields.value = data
         }
       )
