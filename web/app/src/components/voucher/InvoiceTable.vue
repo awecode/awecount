@@ -10,19 +10,11 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="`invoice-row-${index}`">
-          <InvoiceRow
-            v-model="modalValue[index]"
-            :itemOptions="itemOptions"
-            :unitOptions="unitOptions"
-            :taxOptions="taxOptions"
-            :discountOptions="discountOptions"
-            :index="index"
-            :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index, modalValue)"
-            :errors="
+          <InvoiceRow v-model="modalValue[index]" :itemOptions="itemOptions" :unitOptions="unitOptions"
+            :taxOptions="taxOptions" :discountOptions="discountOptions" :index="index"
+            :rowEmpty="(rowEmpty && index === 0) || false" @deleteRow="(index) => removeRow(index, modalValue)" :errors="
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-            "
-          />
+            " />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -57,13 +49,12 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
-            >Add Row</q-btn
-          >
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
         </div>
       </div>
     </q-card>
     {{ errors }} --errors
+    {{ totalDataComputed }} --tdata
   </q-card-section>
 </template>
 
@@ -120,7 +111,6 @@ export default {
           item_id: '',
           unit_id: '',
           description: '',
-          discount: '',
           discount_type: null,
           tax_scheme_id: '',
           taxObj: null,
@@ -167,33 +157,34 @@ export default {
         taxableAmount: 0,
       }
       modalValue.value.forEach((item, index) => {
-        const rowTotal = (item.value?.rate || 0) * (item.value?.quantity || 0)
+        console.log(item, 'in loop')
+        const rowTotal = (item.rate || 0) * (item.quantity || 0)
         data.subTotal = data.subTotal + rowTotal
         const rowDiscount = useCalcDiscount(
-          item.value?.discount_type,
+          item.discount_type,
           rowTotal,
-          item.value?.discount,
+          item.discount,
           props.discountOptions
-        )
-        data.discount = data.discount + rowDiscount
-        if (data.sameScheme !== false && item.value?.taxObj) {
-          if (data.sameScheme === null && item.value.taxObj) {
-            data.sameScheme = item.value.taxObj.id
-            data.taxObj = item.value.taxObj
-          } else if (data.sameScheme === item.value?.taxObj.id) {
+        ) || 0
+        if (data.sameScheme !== false && item.taxObj) {
+          if (data.sameScheme === null && item.taxObj) {
+            data.sameScheme = item.taxObj.id
+            data.taxObj = item.taxObj
+          } else if (data.sameScheme === item.taxObj?.id) {
           } else data.sameScheme = false
         }
         const mainDiscountAmount =
           useCalcDiscount(
             props.mainDiscount.discount_type,
-            rowTotal - rowDiscount,
+            rowTotal - (rowDiscount || 0),
             props.mainDiscount.discount,
             props.discountOptions
           ) || 0
-        if (item.value?.taxObj) {
+        data.discount = data.discount + rowDiscount + mainDiscountAmount
+        if (item.taxObj) {
           const rowTax =
-            (rowTotal - rowDiscount - mainDiscountAmount) *
-            (item.value.taxObj.rate / 100 || 0)
+            (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
+            (item.taxObj.rate / 100 || 0)
           data.totalTax = data.totalTax + rowTax
         }
       })
@@ -209,15 +200,15 @@ export default {
         data.taxName = 'Tax'
         data.taxRate = null
       }
-      // clac main discount
-      data.discount =
-        (data.discount || 0) +
-        (useCalcDiscount(
-          props.mainDiscount.discount_type,
-          data.subTotal - data.discount,
-          props.mainDiscount.discount,
-          props.discountOptions
-        ) || 0)
+      // clac total discount
+      // data.discount =
+      //   (data.discount || 0) +
+      //   (useCalcDiscount(
+      //     props.mainDiscount.discount_type,
+      //     data.subTotal - data.discount,
+      //     props.mainDiscount.discount,
+      //     props.discountOptions
+      //   ) || 0)
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
@@ -230,13 +221,12 @@ export default {
     })
     const addRow = () => {
       modalValue.value.push({
-        discount: '',
         quantity: '',
         rate: '',
         item_id: '',
         unit_id: '',
         description: '',
-        discount: '',
+        discount: 0,
         discount_type: null,
         tax_scheme_id: '',
         discount_id: null,
