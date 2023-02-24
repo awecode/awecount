@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="modalValue">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5">
         <n-auto-complete v-model="modalValue.item_id" :options="itemOptions" label="Item"

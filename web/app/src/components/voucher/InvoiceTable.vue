@@ -53,8 +53,7 @@
         </div>
       </div>
     </q-card>
-    {{ errors }} --errors
-    {{ totalDataComputed }} --tdata
+    {{ modelValue }} --errors
   </q-card-section>
 </template>
 
@@ -121,7 +120,6 @@ export default {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const rows = ref(1)
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
     watch(
@@ -234,9 +232,9 @@ export default {
     }
     const removeRow = (index, rows) => {
       rows.splice(index, 1)
+      debugger
     }
     return {
-      rows,
       props,
       modalValue,
       amountComputed,
