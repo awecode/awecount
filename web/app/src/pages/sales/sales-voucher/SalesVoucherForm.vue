@@ -27,9 +27,8 @@
                     v-model="fields.party"
                     :options="formDefaults.collections?.parties"
                     label="Party"
-                    :error="!!errors.party"
+                    :error="errors?.party ? errors?.party : null"
                     :modal-component="PartyForm"
-                    :error-message="errors.party"
                   />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
@@ -227,6 +226,8 @@ export default {
     }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
+    formData.fields.value.mode = 'Credit'
+    formData.fields.value.party = ''
     return {
       ...formData,
       CategoryForm,

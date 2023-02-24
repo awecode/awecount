@@ -202,7 +202,6 @@ export default {
           ) || 0
 
         // preventing from mainDiscount amount from being added Twice
-        // data.discount = data.discount + rowDiscount + mainDiscountAmount
         if (item.taxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
@@ -221,7 +220,6 @@ export default {
         if (props.mainDiscount.discount_type === 'Amount') {
           if (index === 0) {
             data.discount = data.discount + rowDiscount + mainDiscountAmount
-            console.log(index, 'Once')
           } else {
             data.discount = data.discount + rowDiscount
           }

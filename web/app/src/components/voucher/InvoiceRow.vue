@@ -3,7 +3,7 @@
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5">
         <n-auto-complete
-          v-model="modalValue.item_id"
+          v-model="selectedItem"
           :options="itemOptions"
           label="Item"
           :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null"
@@ -118,6 +118,10 @@
             option-value="id"
             option-label="name"
             map-options
+            :error="errors?.tax_scheme_id ? true : null"
+            :error-message="
+              errors?.tax_scheme_id ? 'This field is required' : null
+            "
           />
         </div>
       </div>
@@ -207,15 +211,6 @@ export default {
       () => (modalValue.value.rate || 0) * (modalValue.value.quantity || 0)
     )
     const selectedItem = ref(null)
-    // const rowError = ref(false)
-    // watch(
-    //   () => props.modelValueProps,
-    //   (newValue) => {
-    //     if (newValue === 'This field is required.') {
-    //       rowError.value = true
-    //     }
-    //   }
-    // )
     watch(
       () => props.modelValue,
       (newValue) => {
@@ -231,10 +226,17 @@ export default {
     )
     watch(selectedItem, (newValue) => {
       const index = props.itemOptions.findIndex((item) => item.id === newValue)
-      const discountobject = props.itemOptions[index]
-      modalValue.value.itemObj = discountobject
-      modalValue.value.item_id = discountobject.id
-      modalValue.value.description = discountobject.description
+      const itemObject = props.itemOptions[index]
+      modalValue.value.itemObj = itemObject
+      modalValue.value.item_id = itemObject.id
+      modalValue.value.description = itemObject.description
+      modalValue.value.rate = itemObject.rate
+      modalValue.value.unit_id = itemObject.unit_id
+      modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+      const taxindex = props.taxOptions.findIndex(
+        (item) => item.id === itemObject.tax_scheme_id
+      )
+      selectedTax.value = props.taxOptions[taxindex]
     })
     watch(selectedTax, (newValue) => {
       modalValue.value.taxObj = newValue
@@ -243,23 +245,6 @@ export default {
     const deleteRow = (index) => {
       emit('deleteRow', index)
     }
-    // onMounted(
-    //   () =>
-    //     (modelValue.value = {
-    //       quantity: 1,
-    //       rate: '',
-    //       item_id: null,
-    //       unit_id: null,
-    //       description: '',
-    //       discount: 0,
-    //       discount_type: null,
-    //       itemObj: null,
-    //       tax_scheme_id: '',
-    //       taxObj: null,
-    //       discount_id: null,
-    //       itemObj: null,
-    //     })
-    // )
     return {
       ItemAdd,
       expandedState,
