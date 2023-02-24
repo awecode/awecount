@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from 'vue-router';
+import { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -105,6 +105,11 @@ const routes: RouteRecordRaw[] = [
           ),
       },
       //
+      {
+        path: '/credit-note/list/',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteList.vue'),
+      },
       {
         path: 'brand/list/',
         component: () =>
@@ -305,6 +310,6 @@ const routes: RouteRecordRaw[] = [
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
   },
-];
+]
 
-export default routes;
+export default routes
