@@ -89,7 +89,7 @@
                 "
               >
                 <q-input
-                  v-model="fields.discount"
+                  v-model.number="fields.discount"
                   label="Discount"
                   :error-message="errors.discount"
                   :error="!!errors.discount"
@@ -141,6 +141,7 @@
           discount: fields.discount,
         }"
         :errors="!!errors.rows ? errors.rows : null"
+        @deleteRowErr="(index) => deleteRowErr(index, errors)"
       ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -199,11 +200,10 @@ import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
+  setup(props, { emit }) {
     const endpoint = '/v1/sales-voucher/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
-    const rows = ref(1)
     const options = {
       discount_types: discount_types,
       modes: modes,
@@ -222,9 +222,9 @@ export default {
           message: 'Credit customer must be a party!',
         })
     }
-    // onMounted(() => {
-    //   console.log(this)
-    // })
+    const deleteRowErr = (index, errors) => {
+      errors.rows.splice(index, 1)
+    }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
     return {
@@ -234,10 +234,10 @@ export default {
       SalesDiscountForm,
       openDatePicker,
       options,
-      rows,
       InvoiceTable,
       partyMode,
       switchMode,
+      deleteRowErr,
     }
   },
 }

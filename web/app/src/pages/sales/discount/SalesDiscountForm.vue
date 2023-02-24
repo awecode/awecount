@@ -83,7 +83,6 @@ export default {
       { value: 'Amount', id: 'Amount' },
       { value: 'Percent', id: 'Percent' },
     ]
-    // debugger
     formData.fields.value.trade_discount = true
     // TODO: add load from saved options
     return {

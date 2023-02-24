@@ -9,12 +9,21 @@
           <div class="col-2 text-center">Amount</div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-for="(row, index) in modalValue" :key="`invoice-row-${index}`">
-          <InvoiceRow v-model="modalValue[index]" :itemOptions="itemOptions" :unitOptions="unitOptions"
-            :taxOptions="taxOptions" :discountOptions="discountOptions" :index="index"
-            :rowEmpty="(rowEmpty && index === 0) || false" @deleteRow="(index) => removeRow(index, modalValue)" :errors="
+        <div v-for="(row, index) in modalValue" :key="index">
+          <InvoiceRow
+            v-if="modalValue[index]"
+            v-model="modalValue[index]"
+            :itemOptions="itemOptions"
+            :unitOptions="unitOptions"
+            :taxOptions="taxOptions"
+            :discountOptions="discountOptions"
+            :index="index"
+            :rowEmpty="(rowEmpty && index === 0) || false"
+            @deleteRow="(index) => removeRow(index)"
+            :errors="
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-            " />
+            "
+          />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -28,6 +37,7 @@
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-right">Discount</div>
               <div class="col-6 q-pl-md">
+                <!-- {{ totalDataComputed.discount }} -->
                 {{ parseFloat(totalDataComputed.discount.toFixed(2)) }}
               </div>
             </div>
@@ -49,11 +59,12 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
+            >Add Row</q-btn
+          >
         </div>
       </div>
     </q-card>
-    {{ modelValue }} --errors
   </q-card-section>
 </template>
 
@@ -107,7 +118,7 @@ export default {
           discount: 0,
           quantity: 1,
           rate: '',
-          item_id: '',
+          item_id: null,
           unit_id: '',
           description: '',
           discount_type: null,
@@ -118,14 +129,21 @@ export default {
       ],
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'deleteRowErr'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
     watch(
-      () => props.modelValueProps,
+      () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
+      }
+    )
+    watch(
+      () => props.errors,
+      (newValue) => {
+        if (newValue === 'This field is required.') rowEmpty.value = true
+        else rowEmpty.value = false
       }
     )
     watch(
@@ -153,17 +171,21 @@ export default {
         taxName: null,
         taxRate: null,
         taxableAmount: 0,
+        addTotal: 0,
       }
+      modalValue.value.forEach((item) => {
+        data.addTotal = data.addTotal + (item.rate || 0) * (item.quantity || 0)
+      })
       modalValue.value.forEach((item, index) => {
-        console.log(item, 'in loop')
         const rowTotal = (item.rate || 0) * (item.quantity || 0)
         data.subTotal = data.subTotal + rowTotal
-        const rowDiscount = useCalcDiscount(
-          item.discount_type,
-          rowTotal,
-          item.discount,
-          props.discountOptions
-        ) || 0
+        const rowDiscount =
+          useCalcDiscount(
+            item.discount_type,
+            rowTotal,
+            item.discount,
+            props.discountOptions
+          ) || 0
         if (data.sameScheme !== false && item.taxObj) {
           if (data.sameScheme === null && item.taxObj) {
             data.sameScheme = item.taxObj.id
@@ -171,20 +193,43 @@ export default {
           } else if (data.sameScheme === item.taxObj?.id) {
           } else data.sameScheme = false
         }
-        const mainDiscountAmount =
+        let mainDiscountAmount =
           useCalcDiscount(
             props.mainDiscount.discount_type,
             rowTotal - (rowDiscount || 0),
             props.mainDiscount.discount,
             props.discountOptions
           ) || 0
-        data.discount = data.discount + rowDiscount + mainDiscountAmount
+
+        // preventing from mainDiscount amount from being added Twice
+        // data.discount = data.discount + rowDiscount + mainDiscountAmount
         if (item.taxObj) {
-          const rowTax =
-            (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-            (item.taxObj.rate / 100 || 0)
+          let rowTax = 0
+          if (props.mainDiscount.discount_type === 'Amount') {
+            rowTax =
+              (rowTotal -
+                (rowDiscount || 0) -
+                props.mainDiscount.discount * (rowTotal / data.addTotal)) *
+              (item.taxObj.rate / 100 || 0)
+          } else {
+            rowTax =
+              (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
+              (item.taxObj.rate / 100 || 0)
+          }
           data.totalTax = data.totalTax + rowTax
         }
+        if (props.mainDiscount.discount_type === 'Amount') {
+          if (index === 0) {
+            data.discount = data.discount + rowDiscount + mainDiscountAmount
+            console.log(index, 'Once')
+          } else {
+            data.discount = data.discount + rowDiscount
+          }
+        } else {
+          data.discount = data.discount + rowDiscount + mainDiscountAmount
+        }
+        console.log(rowDiscount, mainDiscountAmount, 'disssssssssssss')
+        // data.discount = data.discount + rowDiscount + mainDiscountAmount
       })
       // tax
       if (typeof data.sameScheme === 'number' && data.taxObj) {
@@ -198,6 +243,13 @@ export default {
         data.taxName = 'Tax'
         data.taxRate = null
       }
+      // if (props.mainDiscount.discount_type === 'Amount') {
+      //   modalValue.value.forEach((item, index) => {
+      //     console.log(data.subTotal, index)
+      //     // const rowTotal = (())
+      //   })
+      // }
+      // data.totalTax = data.subTotal - data.discount *
       // clac total discount
       // data.discount =
       //   (data.discount || 0) +
@@ -221,7 +273,7 @@ export default {
       modalValue.value.push({
         quantity: '',
         rate: '',
-        item_id: '',
+        item_id: null,
         unit_id: '',
         description: '',
         discount: 0,
@@ -230,9 +282,9 @@ export default {
         discount_id: null,
       })
     }
-    const removeRow = (index, rows) => {
-      rows.splice(index, 1)
-      debugger
+    const removeRow = (index) => {
+      modalValue.value.splice(index, 1)
+      if (props.errors) emit('deleteRowErr', index)
     }
     return {
       props,
