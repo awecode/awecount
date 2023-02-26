@@ -114,7 +114,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Credit Notes',
         icon: 'mdi-clipboard-arrow-down',
-        link: '/income/item/',
+        link: '/credit-note/list/',
       },
       {
         title: 'Challans',

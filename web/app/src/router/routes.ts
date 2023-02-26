@@ -111,6 +111,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/sales/credit-note/CreditNoteList.vue'),
       },
       {
+        path: '/credit-note/add/',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
+      },
+      {
         path: 'brand/list/',
         component: () =>
           import('src/pages/inventory/product/brand/BrandList.vue'),
