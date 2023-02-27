@@ -71,10 +71,10 @@
                   :error-message="errors.discount_type"
                   :options="
                     formDefaults.collections
-                      ? options.discount_types.concat(
+                      ? staticOptions.discount_types.concat(
                           formDefaults?.collections.discounts
                         )
-                      : options.discount_types
+                      : staticOptions.discount_types
                   "
                   :modal-component="SalesDiscountForm"
                 >
@@ -104,7 +104,9 @@
               :error-message="errors.mode"
               :error="!!errors.mode"
               :options="
-                options.modes.concat(formDefaults.collections?.bank_accounts)
+                staticOptions.modes.concat(
+                  formDefaults.collections?.bank_accounts
+                )
               "
               option-value="id"
               option-label="name"
@@ -130,8 +132,10 @@
         "
         :discountOptions="
           formDefaults.collections
-            ? options.discount_types.concat(formDefaults?.collections.discounts)
-            : options.discount_types
+            ? staticOptions.discount_types.concat(
+                formDefaults?.collections.discounts
+              )
+            : staticOptions.discount_types
         "
         :taxOptions="formDefaults.collections?.tax_schemes"
         v-model="fields.rows"
@@ -179,9 +183,13 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn @click.prevent="submitForm" color="primary" label="Draft" />
         <q-btn
-          @click.prevent="submitForm"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
+          color="primary"
+          label="Draft"
+        />
+        <q-btn
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
           color="green-8"
           :label="isEdit ? 'Update' : 'Issue'"
         />
@@ -203,7 +211,7 @@ export default {
     const endpoint = '/v1/sales-voucher/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
-    const options = {
+    const staticOptions = {
       discount_types: discount_types,
       modes: modes,
     }
@@ -224,6 +232,10 @@ export default {
     const deleteRowErr = (index, errors) => {
       errors.rows.splice(index, 1)
     }
+    const onSubmitClick = (status, fields, submitForm) => {
+      fields.status = status
+      submitForm()
+    }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
     formData.fields.value.mode = 'Credit'
@@ -234,11 +246,12 @@ export default {
       PartyForm,
       SalesDiscountForm,
       openDatePicker,
-      options,
+      staticOptions,
       InvoiceTable,
       partyMode,
       switchMode,
       deleteRowErr,
+      onSubmitClick,
     }
   },
 }
