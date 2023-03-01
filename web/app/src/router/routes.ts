@@ -47,6 +47,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
       },
       {
+        path: '/sales-voucher/:id/view/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
+      },
+      {
         path: '/items/opening/:id',
         component: () =>
           import(

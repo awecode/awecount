@@ -2,33 +2,13 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" />
-      <q-btn
-        color="green"
-        to="/sales-voucher/add/"
-        label="New Sales"
-        icon-right="add"
-      />
+      <q-btn color="green" to="/sales-voucher/add/" label="New Sales" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="columns"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -37,19 +17,12 @@
         </div>
       </template>
       <template v-slot:body-cell-actions="props">
+        <!-- {{ props }} -->
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/inventory-account/detail/${props.row.id}/`"
-            />
-            <q-btn
-              color="orange-6"
-              label="Edit"
-              :to="`/items/${props.row.id}/`"
-            />
+            <q-btn color="blue" label="View" :to="`/sales-voucher/${props.row.voucher_no}/view/`" />
+            <!-- <q-btn color="orange-6" label="Edit" :to="`/items/${props.row.id}/`" /> -->
           </div>
           <!-- {{ props }} -->
         </q-td>
