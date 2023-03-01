@@ -3,7 +3,14 @@
     <q-card>
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
-          <div class="col-5">Particular(s)</div>
+          <div class="col-5 row">
+            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
+              Particular(s)
+            </div>
+            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
+              Return
+            </div>
+          </div>
           <div class="col-2 text-center">Qty</div>
           <div class="col-2 text-center">Rate</div>
           <div class="col-2 text-center">Amount</div>
@@ -12,6 +19,7 @@
         <div v-for="(row, index) in modalValue" :key="index">
           <InvoiceRow
             v-if="modalValue[index]"
+            :usedIn="props.usedIn"
             v-model="modalValue[index]"
             :itemOptions="itemOptions"
             :unitOptions="unitOptions"
@@ -107,6 +115,12 @@ export default {
     },
     errors: {
       type: Array || String,
+      default: () => {
+        return null
+      },
+    },
+    usedIn: {
+      type: String,
       default: () => {
         return null
       },
@@ -226,8 +240,6 @@ export default {
         } else {
           data.discount = data.discount + rowDiscount + mainDiscountAmount
         }
-        console.log(rowDiscount, mainDiscountAmount, 'disssssssssssss')
-        // data.discount = data.discount + rowDiscount + mainDiscountAmount
       })
       // tax
       if (typeof data.sameScheme === 'number' && data.taxObj) {

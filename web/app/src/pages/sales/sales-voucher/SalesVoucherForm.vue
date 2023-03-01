@@ -159,8 +159,8 @@
             type="textarea"
             autogrow
             class="col-12 col-md-10"
-            :error="!!error?.remarks"
-            :error-message="error?.remarks"
+            :error="!!errors?.remarks"
+            :error-message="errors?.remarks"
           />
         </div>
         <div class="col-12 col-md-6 row justify-between">
@@ -175,8 +175,8 @@
             v-model="fields.sales_agent"
             label="Sales Agent"
             class="col-8"
-            :error="!!error?.sales_agent"
-            :error-message="error?.sales_agent"
+            :error="!!errors?.sales_agent"
+            :error-message="errors?.sales_agent"
           ></q-select>
           <!-- TODO: add sales agent form -->
         </div>
