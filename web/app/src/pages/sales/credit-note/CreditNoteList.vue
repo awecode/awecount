@@ -1,7 +1,12 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
+    <div class="row justify-end">
+      <q-btn
+        color="blue"
+        to="/credit-note/add/"
+        label="Exoprt Xls"
+        icon-right="download"
+      />
       <q-btn
         color="green"
         to="/credit-note/add/"
@@ -36,24 +41,15 @@
         </q-input>
       </template>
       <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
+        <q-td :props="props" class="row justify center">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <!-- <q-btn icon="visibility" color="blue" dense flat :to="`/journal-voucher/${props.row.id}/view/`" /> -->
           <q-btn
             color="blue"
             class="q-mr-md"
             label="View"
-            :to="`/journal-voucher/${props.row.id}/view/`"
+            :to="`/credit-note/${props.row.id}/view`"
           />
-          <q-btn
-            v-if="props.row.status != 'Cancelled'"
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/journal-voucher/${props.row.id}/edit/`"
-          />
-          <span v-else class="q-pa-md"></span>
           <!-- <q-btn
             icon="delete"
             color="red"
@@ -64,6 +60,23 @@
           <!-- {{ props }} -->
         </q-td>
       </template>
+      <template v-slot:body-cell-status="props">
+        <q-td :props="props">
+          <div
+            class="text-white row items-center justify-center text-subtitle1 q-py-xs"
+            :class="
+              props.row.status == 'Issued'
+                ? 'bg-blue'
+                : props.row.status == 'Cleared'
+                ? 'bg-green'
+                : 'bg-red'
+            "
+            style="width: 80px; border-radius: 30px"
+          >
+            {{ props.row.status }}
+          </div>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
@@ -72,8 +85,7 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
-    const endpoint = '/v1/journal-voucher/'
-
+    const endpoint = '/v1/credit-note/'
     return { ...useList(endpoint) }
   },
 }

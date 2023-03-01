@@ -11,7 +11,14 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12">
+            <div class="col-md-6 col-12" v-if="fields.invoices">
+              <q-input
+                v-model="fields.invoices"
+                disable
+                label="Reference Invoice(s)"
+              ></q-input>
+            </div>
+            <div v-else class="col-md-6 col-12">
               <q-btn
                 color="blue"
                 label="Add Refrence"

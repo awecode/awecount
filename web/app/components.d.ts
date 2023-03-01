@@ -9,11 +9,14 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
+    Header: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
+    ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
   }
 }
