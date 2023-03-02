@@ -52,6 +52,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
       },
       {
+        path: 'journal-entries/sales-voucher/10727/',
+        component: () =>
+          import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
+      },
+      {
         path: '/sales-voucher/:id/mv/',
         component: () =>
           import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),

@@ -26,7 +26,10 @@
 import useApi from 'src/composables/useApi'
 export default {
   setup() {
-    const fields = ref(null)
+    const fields: Fields | null = ref(null)
+    interface Fields {
+      total_amount: number
+    }
     return {
       fields,
     }
@@ -55,16 +58,4 @@ export default {
       })
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>

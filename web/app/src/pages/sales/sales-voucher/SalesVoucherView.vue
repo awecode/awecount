@@ -24,7 +24,10 @@
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
-    <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md">
+    <div
+      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md"
+      v-if="fields"
+    >
       <div>
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
           <q-btn
