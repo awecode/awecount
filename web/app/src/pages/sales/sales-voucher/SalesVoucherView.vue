@@ -1,80 +1,153 @@
 <template>
-  <q-card class="q-ma-lg">
-    <q-card-section class="bg-green text-white">
-      <div class="text-h6">
-        <span>Sales Invoice | {{ fields.status }} | #{{ fields.voucher_no }}</span>
-      </div>
-    </q-card-section>
-    <q-separator inset />
-    <q-card class="q-mx-lg q-pt-md row">
-      <div class="col-6">
-        <div class="col-12 col-md-6 row">
-          <div class="col-6">Party</div>
-          <div class="col-6">{{ fields.party_name }}</div>
+  <div>
+    <q-card class="q-ma-lg q-mb-sm">
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span
+            >Sales Invoice | {{ fields?.status }} | #{{
+              fields?.voucher_no
+            }}</span
+          >
         </div>
-        <div class="col-12 col-md-6 row">
-          <div class="col-6">Party</div>
-          <div class="col-6">{{ fields.party_name }}</div>
-        </div>
-        <div class="col-12 col-md-6 row">
-          <div class="col-6">Party</div>
-          <div class="col-6">{{ fields.party_name }}</div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6">
-        2nd
-      </div>
+      </q-card-section>
+      <q-separator inset />
+      <ViewerHeader :fields="fields" />
     </q-card>
-
-
-
-    <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-      <q-btn @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="primary" label="Draft" />
-      <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
-        :label="isEdit ? 'Update' : 'Issue'" />
+    <q-card class="q-mx-lg">
+      <q-card-section>
+        <ViewerTable :fields="fields" />
+      </q-card-section>
+    </q-card>
+    <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
+      <q-card-section>
+        <span class="text-subtitle2 text-grey-9"> Remarks: </span>
+        <span class="text-grey-9">{{ fields?.remarks }}</span>
+      </q-card-section>
+    </q-card>
+    <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md">
+      <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
+        <q-btn
+          v-if="fields?.status === 'Draft'"
+          color="orange-5"
+          label="Edit"
+          icon="edit"
+        />
+        <q-btn
+          v-if="fields?.status === 'Issued'"
+          @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+          color="green-6"
+          label="mark as paid"
+          icon="mdi-check-all"
+        />
+        <q-btn
+          color="red-5"
+          label="Cancel"
+          icon="cancel"
+          @click.prevent="() => (isDeleteOpen = true)"
+        />
+      </div>
+      <div class="row q-gutter-x-md">
+        <q-btn
+          :label="`Print Copy No. ${(fields?.print_count || 0) + 1}`"
+          icon="print"
+        />
+        <q-btn color="blue-7" label="Journal Entries" icon="books" />
+      </div>
+      <q-dialog v-model="isDeleteOpen">
+        <q-card style="min-width: min(40vw, 500px)">
+          <q-card-section class="bg-red-6">
+            <div class="text-h6 text-white">
+              <span>Confirm Cancelation?</span>
+            </div>
+          </q-card-section>
+          <q-separator inset />
+          <q-card-section class="q-ma-lg">
+            <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+            <div class="text-right q-mt-lg">
+              <q-btn
+                label="Confirm"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+              ></q-btn>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
     </div>
-  </q-card>
+  </div>
 </template>
 
-<script>
-import useApi from 'src/composables/useApi';
-import { modes } from 'src/helpers/constants/invoice';
+<script lang="ts">
+import useApi from 'src/composables/useApi'
+import { modes } from 'src/helpers/constants/invoice'
+import { Ref } from 'vue'
+
+interface Fields {
+  status: string
+  voucher_no: string
+  remarks: string
+  print_count: number
+  id: number
+}
 export default {
   setup() {
+    const fields: Ref<Fields | null> = ref(null)
+    const isDeleteOpen: Ref<boolean> = ref(false)
+    const deleteMsg: Ref<string> = ref('')
+    const submitChangeStatus = (id: number, status: string) => {
+      let endpoint = ''
+      if (status === 'Paid') {
+        endpoint = `/v1/sales-voucher/${id}//`
+      } else if (status === 'Cancelled') {
+        endpoint = `/v1/sales-voucher/${id}/cancel/`
+      }
+      useApi(endpoint, { method: 'POST' })
+        .then(() => {
+          // if (fields.value)
+          if (fields.value) {
+            fields.value.status = status
+          }
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
       options: {},
-      fields: null,
+      fields,
       dialog: false,
       partyObj: null,
-      modes: modes
-    };
+      modes: modes,
+      submitChangeStatus,
+      isDeleteOpen,
+      deleteMsg,
+    }
   },
   created() {
     const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
     console.log(endpoint)
-    useApi(endpoint, { method: 'GET' }).then((data) => {
-      // this.$set(this, 'fields', data);
-      this.fields = data
-      console.log(this.fields, 'data')
-      // if (this.fields.party) {
-      //   this.partyObj = {
-      //     name: this.fields.party_name,
-      //     address: this.fields.address,
-      //     tax_registration_number: this.fields.tax_registration_number
-      //   };
-      // }
-      // if (this.$route.query.pdf) {
-      //   this.requestDownload();
-      // }
-    }).catch((error) => {
-      if (error.response && error.response.status == 404) {
-        this.$router.replace({ name: '404' });
-      }
-    })
-  }
-};
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        // this.$set(this, 'fields', data);
+        this.fields = data
+        console.log(this.fields, 'data')
+        // if (this.fields.party) {
+        //   this.partyObj = {
+        //     name: this.fields.party_name,
+        //     address: this.fields.address,
+        //     tax_registration_number: this.fields.tax_registration_number
+        //   };
+        // }
+        // if (this.$route.query.pdf) {
+        //   this.requestDownload();
+        // }
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          this.$router.replace({ name: '404' })
+        }
+      })
+  },
+}
 // const {
 //   columns,
 //   rows,

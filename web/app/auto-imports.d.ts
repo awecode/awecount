@@ -18,6 +18,7 @@ declare global {
   const isRef: typeof import('vue')['isRef']
   const markRaw: typeof import('vue')['markRaw']
   const nextTick: typeof import('vue')['nextTick']
+  const numToText: typeof import('./src/composables/numToText')['default']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
