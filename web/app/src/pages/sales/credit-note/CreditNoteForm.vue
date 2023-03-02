@@ -263,7 +263,7 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/account/',
+      successRoute: '/credit-note/list/',
     })
     const partyMode = ref(false)
     const switchMode = (fields) => {

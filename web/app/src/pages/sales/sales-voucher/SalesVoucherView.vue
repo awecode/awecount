@@ -105,7 +105,7 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
-        endpoint = `/v1/sales-voucher/${id}//`
+        endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
         endpoint = `/v1/sales-voucher/${id}/cancel/`

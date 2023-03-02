@@ -1,26 +1,27 @@
 <template>
-  <q-card class="q-ma-lg">
-    <q-card-section class="bg-green text-white">
-      <div class="text-h6">
-        <span
-          >Sales Invoice | {{ fields?.status }} | #{{
-            fields?.voucher_no
-          }}</span
-        >
-      </div>
-    </q-card-section>
-    <q-separator inset />
-    <ViewerHeader :fields="fields" />
-  </q-card>
-  <div class="q-ma-lg text-subtitle2">
-    Ref. Invoice No.: #{{ fields?.voucher_no }}
-  </div>
-  <q-card class="q-mx-lg">
-    <q-card-section>
-      <ViewerTable :fields="fields" />
-    </q-card-section>
-  </q-card>
-  <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+  <div>
+    <q-card class="q-ma-lg">
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span
+            >Credit Note | {{ fields?.status }} | #{{
+              fields?.voucher_no
+            }}</span
+          >
+        </div>
+      </q-card-section>
+      <q-separator inset />
+      <ViewerHeader :fields="fields" />
+    </q-card>
+    <div class="q-ma-lg text-subtitle2">
+      Ref. Invoice No.: #{{ fields?.voucher_no }}
+    </div>
+    <q-card class="q-mx-lg">
+      <q-card-section>
+        <ViewerTable :fields="fields" />
+      </q-card-section>
+    </q-card>
+    <!-- <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
     <q-btn
       @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
       color="primary"
@@ -31,6 +32,64 @@
       color="green-8"
       :label="isEdit ? 'Update' : 'Issue'"
     />
+  </div> -->
+    <div
+      v-if="fields"
+      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md q-gutter-y-md"
+    >
+      <div>
+        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
+          <q-btn
+            v-if="fields?.status === 'Draft'"
+            color="orange-5"
+            label="Edit"
+            icon="edit"
+          />
+          <q-btn
+            v-if="fields?.status === 'Issued'"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            color="green-6"
+            label="mark as paid"
+            icon="mdi-check-all"
+          />
+          <q-btn
+            color="red-5"
+            label="Cancel"
+            icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)"
+          />
+        </div>
+      </div>
+      <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
+        <q-btn
+          :label="`Print Copy No ${(fields?.print_count || 0) + 1}`"
+          icon="print"
+        />
+        <q-btn color="blue-7" label="Journal Entries" icon="books" />
+      </div>
+      <div v-else class="row q-gutter-x-md">
+        <q-btn label="Print" icon="print" />
+      </div>
+      <q-dialog v-model="isDeleteOpen">
+        <q-card style="min-width: min(40vw, 500px)">
+          <q-card-section class="bg-red-6">
+            <div class="text-h6 text-white">
+              <span class="q-mx-md">Are you sure?</span>
+            </div>
+          </q-card-section>
+          <q-separator inset />
+          <q-card-section class="q-ma-md">
+            <div class="text-right q-mt-lg row justify-between q-mx-lg">
+              <q-btn
+                label="Confirm"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+              ></q-btn>
+              <q-btn label="Deny" @click="() => (isDeleteOpen = false)"></q-btn>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+    </div>
   </div>
 </template>
 
@@ -42,6 +101,30 @@ import ViewerTable from 'src/components/viewer/ViewerTable.vue'
 export default {
   setup() {
     const fields = ref(null)
+    const isDeleteOpen = ref(false)
+    const submitChangeStatus = (id, status) => {
+      let endpoint = ''
+      let body = null
+      if (status === 'Paid') {
+        endpoint = `/v1/credit-note/${id}//`
+        body = { method: 'POST' }
+      } else if (status === 'Cancelled') {
+        endpoint = `/v1/credit-note/${id}/cancel/`
+        body = { method: 'POST' }
+        debugger
+      }
+      useApi(endpoint, body)
+        .then(() => {
+          // if (fields.value)
+          if (fields.value) {
+            fields.value.status = status
+          }
+          if (status === 'Cancelled') {
+            isDeleteOpen.value = false
+          }
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -52,6 +135,8 @@ export default {
       modes: modes,
       ViewerHeader,
       ViewerTable,
+      isDeleteOpen,
+      submitChangeStatus,
     }
   },
   created() {
