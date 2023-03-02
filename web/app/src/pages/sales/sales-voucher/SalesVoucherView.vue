@@ -25,31 +25,39 @@
       </q-card-section>
     </q-card>
     <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md">
-      <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
-        <q-btn
-          v-if="fields?.status === 'Draft'"
-          color="orange-5"
-          label="Edit"
-          icon="edit"
-        />
-        <q-btn
-          v-if="fields?.status === 'Issued'"
-          @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-          color="green-6"
-          label="mark as paid"
-          icon="mdi-check-all"
-        />
-        <q-btn
-          color="red-5"
-          label="Cancel"
-          icon="cancel"
-          @click.prevent="() => (isDeleteOpen = true)"
-        />
+      <div>
+        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
+          <q-btn
+            v-if="fields?.status === 'Draft'"
+            color="orange-5"
+            label="Edit"
+            icon="edit"
+          />
+          <q-btn
+            v-if="fields?.status === 'Issued'"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            color="green-6"
+            label="mark as paid"
+            icon="mdi-check-all"
+          />
+          <q-btn
+            color="red-5"
+            label="Cancel"
+            icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)"
+          />
+        </div>
       </div>
       <div class="row q-gutter-x-md">
         <q-btn
           :label="`Print Copy No. ${(fields?.print_count || 0) + 1}`"
           icon="print"
+        />
+        <q-btn
+          color="blue-7"
+          label="Materialized View"
+          icon="mdi-table"
+          :to="`/sales-voucher/${fields?.voucher_no}/mv`"
         />
         <q-btn color="blue-7" label="Journal Entries" icon="books" />
       </div>
@@ -61,7 +69,7 @@
             </div>
           </q-card-section>
           <q-separator inset />
-          <q-card-section class="q-ma-lg">
+          <q-card-section class="q-ma-md">
             <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn
@@ -95,16 +103,23 @@ export default {
     const deleteMsg: Ref<string> = ref('')
     const submitChangeStatus = (id: number, status: string) => {
       let endpoint = ''
+      let body: null | object = null
       if (status === 'Paid') {
         endpoint = `/v1/sales-voucher/${id}//`
+        body = { method: 'POST' }
       } else if (status === 'Cancelled') {
         endpoint = `/v1/sales-voucher/${id}/cancel/`
+        body = { method: 'POST', body: { message: deleteMsg.value } }
+        debugger
       }
-      useApi(endpoint, { method: 'POST' })
+      useApi(endpoint, body)
         .then(() => {
           // if (fields.value)
           if (fields.value) {
             fields.value.status = status
+          }
+          if (status === 'Cancelled') {
+            isDeleteOpen.value = false
           }
         })
         .catch((err) => console.log('err from the api', err))
