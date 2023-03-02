@@ -50,7 +50,19 @@
       </div>
       <div class="row q-gutter-x-md">
         <q-btn
-          :label="`Print Copy No. ${(fields?.print_count || 0) + 1}`"
+          :label="`Print Copy ${
+            fields?.status !== 'Cancelled'
+              ? `# ${(fields?.print_count || 0) + 1}`
+              : ''
+          }`"
+          icon="print"
+        />
+        <q-btn
+          :label="`Print Body ${
+            fields?.status !== 'Cancelled'
+              ? `# ${(fields?.print_count || 0) + 1}`
+              : ''
+          }`"
           icon="print"
         />
         <q-btn
@@ -59,7 +71,12 @@
           icon="mdi-table"
           :to="`/sales-voucher/${fields?.voucher_no}/mv`"
         />
-        <q-btn color="blue-7" label="Journal Entries" icon="books" />
+        <q-btn
+          v-if="fields?.status !== 'Cancelled'"
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+        />
       </div>
       <q-dialog v-model="isDeleteOpen">
         <q-card style="min-width: min(40vw, 500px)">
