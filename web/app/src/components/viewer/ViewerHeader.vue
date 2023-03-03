@@ -25,11 +25,10 @@
         <div class="col-6">Date</div>
         <div class="col-6">{{ fields?.date }}</div>
       </div>
-      {{ modeComputed }}
       <div v-if="changeModes" class="col-12 col-md-6 row">
         <div class="col-6">Mode</div>
         <div class="col-6">
-          <span class="q-mr-sm">{{ fields?.mode }}</span
+          <span class="q-mr-sm">{{ modeComputed }}</span
           ><q-btn
             @click="() => (isChangeOpen = true)"
             icon="edit"

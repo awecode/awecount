@@ -42,38 +42,40 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props" class="row justify center">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <!-- <q-btn icon="visibility" color="blue" dense flat :to="`/journal-voucher/${props.row.id}/view/`" /> -->
           <q-btn
             color="blue"
             class="q-mr-md"
             label="View"
             :to="`/credit-note/${props.row.id}/view`"
           />
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
         </q-td>
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div
-            class="text-white row items-center justify-center text-subtitle1 q-py-xs"
-            :class="
-              props.row.status == 'Issued'
-                ? 'bg-blue'
-                : props.row.status == 'Cleared'
-                ? 'bg-green'
-                : 'bg-red'
-            "
-            style="width: 80px; border-radius: 30px"
-          >
-            {{ props.row.status }}
+          <div class="row align-center">
+            <div
+              class="text-white text-subtitle2 row items-center justify-center"
+              :class="
+                props.row.status == 'Issued'
+                  ? 'bg-blue'
+                  : props.row.status == 'Resolved'
+                  ? 'bg-green'
+                  : 'bg-red'
+              "
+              style="border-radius: 30px; padding: 5px 15px"
+            >
+              {{ props.row.status }}
+            </div>
+          </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-party="props">
+        <q-td :props="props">
+          <div>
+            <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
+              props.row.party
+            }}</span>
           </div>
         </q-td>
       </template>

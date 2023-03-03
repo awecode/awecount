@@ -45,13 +45,13 @@
             label="Edit"
             icon="edit"
           />
-          <q-btn
+          <!-- <q-btn
             v-if="fields?.status === 'Issued'"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
             color="green-6"
             label="mark as paid"
             icon="mdi-check-all"
-          />
+          /> -->
           <q-btn
             color="red-5"
             label="Cancel"
@@ -106,7 +106,7 @@ export default {
       let endpoint = ''
       let body = null
       if (status === 'Paid') {
-        endpoint = `/v1/credit-note/${id}//`
+        endpoint = `/v1/credit-note/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
         endpoint = `/v1/credit-note/${id}/cancel/`
