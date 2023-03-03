@@ -56,6 +56,12 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
       },
+      // TODO: reomve
+      {
+        path: '/print/',
+        component: () => import('src/pages/print/SalesVoucherPrint.vue'),
+      },
+      // TODO: reomve
       {
         path: '/sales-voucher/:id/mv/',
         component: () =>

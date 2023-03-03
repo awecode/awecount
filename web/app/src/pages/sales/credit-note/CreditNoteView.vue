@@ -62,13 +62,14 @@
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md">
         <q-btn
+          @click="onPrintclick"
           :label="`Print Copy No ${(fields?.print_count || 0) + 1}`"
           icon="print"
         />
         <q-btn color="blue-7" label="Journal Entries" icon="books" />
       </div>
       <div v-else class="row q-gutter-x-md">
-        <q-btn label="Print" icon="print" />
+        <q-btn label="Print" @click="onPrintclick" icon="print" />
       </div>
       <q-dialog v-model="isDeleteOpen">
         <q-card style="min-width: min(40vw, 500px)">
@@ -125,6 +126,15 @@ export default {
         })
         .catch((err) => console.log('err from the api', err))
     }
+    const onPrintclick = () => {
+      const endpoint = `/v1/credit-note/${fields.value.voucher_no}/log-print/`
+      useApi(endpoint, { method: 'POST' })
+        .then((data) => {
+          // if (fields.value)
+          console.log(data)
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -137,6 +147,7 @@ export default {
       ViewerTable,
       isDeleteOpen,
       submitChangeStatus,
+      onPrintclick,
     }
   },
   created() {
