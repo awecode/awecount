@@ -25,19 +25,70 @@
         <div class="col-6">Date</div>
         <div class="col-6">{{ fields?.date }}</div>
       </div>
-      <div class="col-12 col-md-6 row">
+      {{ modeComputed }}
+      <div v-if="changeModes" class="col-12 col-md-6 row">
         <div class="col-6">Mode</div>
-        <div class="col-6">{{ fields?.mode }}</div>
+        <div class="col-6">
+          <span class="q-mr-sm">{{ fields?.mode }}</span
+          ><q-btn
+            @click="() => (isChangeOpen = true)"
+            icon="edit"
+            size="sm"
+          ></q-btn>
+        </div>
+      </div>
+      <div v-else class="col-12 col-md-6 row">
+        <div class="col-6">Mode</div>
+        <div class="col-6">
+          {{ fields?.mode }}
+        </div>
       </div>
       <!-- <div class="col-12 col-md-6 row">
         <div class="col-6">Party</div>
         <div class="col-6">{{ fields?.status }}</div>
       </div> -->
     </div>
+    <q-dialog v-model="isChangeOpen">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-grey-4">
+          <div class="text-h6">
+            <span class="q-mx-md">Edit Mode</span>
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section class="q-mx-md">
+          <div class="text-right q-mt-lg row justify-between q-mx-lg">
+            <q-select
+              v-model="modesValue"
+              label="Mode"
+              class="col-12"
+              :options="
+                props.modeOptions ? modes.concat(props.modeOptions) : modes
+              "
+              option-value="id"
+              option-label="name"
+              map-options
+              emit-value
+            ></q-select>
+          </div>
+          <div class="row q-mt-lg justify-end">
+            <q-btn
+              label="update"
+              color="orange-5"
+              class="q-mt-md"
+              @click="() => submitChangeModes(fields.voucher_no)"
+            ></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-card>
 </template>
 
-<script>
+<script lang="ts">
+import { Ref } from 'vue'
+import { modes } from 'src/helpers/constants/invoice'
+
 export default {
   props: {
     fields: {
@@ -46,8 +97,41 @@ export default {
         return {}
       },
     },
+    changeModes: {
+      type: Boolean,
+      default: () => {
+        return false
+      },
+    },
+    modeOptions: {
+      type: Array,
+      default: () => {
+        return null
+      },
+    },
+    modelValue: {
+      type: [Object, String, Number],
+      default: () => null,
+    },
   },
+  emits: ['updateMode'],
   setup(props, { emit }) {
+    const modesValue: Ref<number | null> = ref(null)
+    const $q = useQuasar()
+    watch(
+      () => props.fields?.mode,
+      (newValue) => {
+        modesValue.value = newValue
+      }
+    )
+    const modeComputed: Ref<string> = computed(() => {
+      if (typeof props.fields?.mode === 'number') {
+        const index: number = props.modeOptions.findIndex(
+          (item) => item.id === props.fields?.mode
+        )
+        return props.modeOptions[index].name
+      } else return props.fields?.mode
+    })
     const discountComputed = computed(() => {
       console.log(props.fields)
       if (props.fields?.discount_obj) {
@@ -62,9 +146,30 @@ export default {
           `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
       } else return false
     })
+    const submitChangeModes = (id: number) => {
+      const endpoint = `v1/sales-voucher/${id}/update-mode/`
+      const body: object = { method: 'POST', body: { mode: modesValue.value } }
+      useApi(endpoint, body)
+        .then(() => {
+          emit('updateMode', modesValue.value)
+          isChangeOpen.value = false
+          $q.notify({
+            color: 'positive',
+            message: 'Mode Updated!',
+            icon: 'check_circle',
+          })
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
+    const isChangeOpen: Ref<boolean> = ref(false)
     return {
       props,
       discountComputed,
+      isChangeOpen,
+      modesValue,
+      modes,
+      submitChangeModes,
+      modeComputed,
     }
   },
 }

@@ -73,56 +73,56 @@ export default {
 
   setup(props, { emit }) {
     const valUpdated = (val) => {
-      emit('update:modelValue', val);
-    };
-    const modalValue = ref(props.modelValue);
-    const allOptions = ref(props.options || []);
-    const isModalOpen = ref(false);
-    const filteredOptions = ref(props.options);
+      emit('update:modelValue', val)
+    }
+    const modalValue = ref(props.modelValue)
+    const allOptions = ref(props.options || [])
+    const isModalOpen = ref(false)
+    const filteredOptions = ref(props.options)
 
     watch(
       () => props.modelValue,
       (newValue) => {
-        modalValue.value = newValue;
+        modalValue.value = newValue
       }
-    );
+    )
 
     watch(
       () => props.options,
       (newValue) => {
-        allOptions.value = newValue;
-        filteredOptions.value = newValue;
+        allOptions.value = newValue
+        filteredOptions.value = newValue
       }
-    );
+    )
 
     const filterFn = (val, update) => {
       if (val === '') {
         update(() => {
-          filteredOptions.value = allOptions.value;
-        });
-        return;
+          filteredOptions.value = allOptions.value
+        })
+        return
       }
       update(() => {
-        const needle = val.toLowerCase();
+        const needle = val.toLowerCase()
         filteredOptions.value = allOptions.value.filter(
           (v) => v.name.toLowerCase().indexOf(needle) > -1
-        );
-      });
-    };
+        )
+      })
+    }
 
     const openModal = () => {
-      isModalOpen.value = true;
-    };
+      isModalOpen.value = true
+    }
 
     const handleModalSignal = (v) => {
-      allOptions.value.push(v);
-      isModalOpen.value = false;
-      emit('update:modelValue', v.id);
-    };
+      allOptions.value.push(v)
+      isModalOpen.value = false
+      emit('update:modelValue', v.id)
+    }
 
     const closeModal = () => {
-      isModalOpen.value = false;
-    };
+      isModalOpen.value = false
+    }
 
     return {
       filteredOptions,
@@ -134,7 +134,7 @@ export default {
       handleModalSignal,
       props,
       modalValue,
-    };
+    }
   },
-};
+}
 </script>

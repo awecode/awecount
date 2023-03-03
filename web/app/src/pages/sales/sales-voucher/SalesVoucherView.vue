@@ -11,7 +11,12 @@
         </div>
       </q-card-section>
       <q-separator inset />
-      <ViewerHeader :fields="fields" />
+      <ViewerHeader
+        :fields="fields"
+        :changeModes="true"
+        @updateMode="(newValue) => updateMode(newValue)"
+        :modeOptions="modeOptions"
+      />
     </q-card>
     <q-card class="q-mx-lg">
       <q-card-section>
@@ -115,10 +120,12 @@ interface Fields {
   remarks: string
   print_count: number
   id: number
+  mode: number
 }
 export default {
   setup() {
     const fields: Ref<Fields | null> = ref(null)
+    const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const submitChangeStatus = (id: number, status: string) => {
@@ -144,6 +151,11 @@ export default {
         })
         .catch((err) => console.log('err from the api', err))
     }
+    const updateMode = (newValue: number) => {
+      if (fields.value) {
+        fields.value.mode = newValue
+      }
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -155,6 +167,8 @@ export default {
       submitChangeStatus,
       isDeleteOpen,
       deleteMsg,
+      updateMode,
+      modeOptions,
     }
   },
   created() {
@@ -162,19 +176,9 @@ export default {
     console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
-        // this.$set(this, 'fields', data);
         this.fields = data
+        this.modeOptions = data.available_bank_accounts
         console.log(this.fields, 'data')
-        // if (this.fields.party) {
-        //   this.partyObj = {
-        //     name: this.fields.party_name,
-        //     address: this.fields.address,
-        //     tax_registration_number: this.fields.tax_registration_number
-        //   };
-        // }
-        // if (this.$route.query.pdf) {
-        //   this.requestDownload();
-        // }
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {

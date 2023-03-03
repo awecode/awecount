@@ -26,10 +26,10 @@
 import useApi from 'src/composables/useApi'
 export default {
   setup() {
-    const fields: Fields | null = ref(null)
     interface Fields {
       total_amount: number
     }
+    const fields: Fields | null = ref(null)
     return {
       fields,
     }
