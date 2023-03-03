@@ -3,9 +3,9 @@
     <div class="row justify-end">
       <q-btn
         color="blue"
-        to="/credit-note/add/"
         label="Exoprt Xls"
         icon-right="download"
+        @click="onDownloadXls"
       />
       <q-btn
         color="green"
@@ -26,6 +26,7 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      rows-per-page-options
     >
       <template v-slot:top-right>
         <q-input
@@ -85,10 +86,22 @@
 
 <script>
 import useList from '/src/composables/useList'
+import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
     const endpoint = '/v1/credit-note/'
-    return { ...useList(endpoint) }
+    const onDownloadXls = () => {
+      useApi('v1/credit-note/export/')
+        .then((data) =>
+          usedownloadFile(
+            data,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Credit_Notes'
+          )
+        )
+        .catch((err) => console.log('Error Due To', err))
+    }
+    return { ...useList(endpoint), onDownloadXls }
   },
 }
 </script>

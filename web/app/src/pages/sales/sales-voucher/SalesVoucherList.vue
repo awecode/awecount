@@ -1,7 +1,12 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn color="blue" label="Export" icon-right="download" />
+      <q-btn
+        color="blue"
+        label="Export"
+        icon-right="download"
+        @click="onDownloadXls"
+      />
       <q-btn
         color="green"
         to="/sales-voucher/add/"
@@ -97,11 +102,22 @@
 
 <script>
 import useList from '/src/composables/useList'
+import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
     const endpoint = '/v1/sales-voucher/'
-
     const listData = useList(endpoint)
+    const onDownloadXls = () => {
+      useApi('v1/sales-voucher/export/')
+        .then((data) =>
+          usedownloadFile(
+            data,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Credit_Notes'
+          )
+        )
+        .catch((err) => console.log('Error Due To', err))
+    }
     const newColumn = [
       {
         name: 'voucher_no',
@@ -132,7 +148,7 @@ export default {
       { name: 'actions' },
     ]
 
-    return { ...listData, newColumn }
+    return { ...listData, newColumn, onDownloadXls }
   },
 }
 // const {
