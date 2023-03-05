@@ -1,5 +1,5 @@
 <template>
-  <JournalVoucherDetails :fields="fields" usedIn="sales_voucher" />
+  <JournalVoucherDetails :fields="fields" usedIn="credit_note" />
 </template>
 
 <script lang="ts">
@@ -32,7 +32,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `v1/sales-voucher/${this.$route.params.id}/journal-entries/`
+    const endpoint = `v1/credit-note/${this.$route.params.id}/journal-entries/`
     console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {

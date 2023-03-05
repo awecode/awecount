@@ -66,7 +66,12 @@
           :label="`Print Copy No ${(fields?.print_count || 0) + 1}`"
           icon="print"
         />
-        <q-btn color="blue-7" label="Journal Entries" icon="books" />
+        <q-btn
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+          :to="`/journal-entries/credit-note/${this.$route.params.id}/`"
+        />
       </div>
       <div v-else class="row q-gutter-x-md">
         <q-btn label="Print" @click="onPrintclick" icon="print" />
@@ -129,9 +134,10 @@ export default {
     const onPrintclick = () => {
       const endpoint = `/v1/credit-note/${fields.value.voucher_no}/log-print/`
       useApi(endpoint, { method: 'POST' })
-        .then((data) => {
-          // if (fields.value)
-          console.log(data)
+        .then(() => {
+          if (fields.value) {
+            fields.value.print_count = fields.value?.print_count + 1
+          }
         })
         .catch((err) => console.log('err from the api', err))
     }

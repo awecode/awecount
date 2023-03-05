@@ -3,7 +3,7 @@
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span>{{ title }} # {{ fields?.voucher_no || '-' }} </span>
+          <span>Journal Entries for {{ usedIn === 'sales_voucher' ? 'Sales Voucher': 'Credit Note' }} # {{ fields?.voucher_no || '-' }} </span>
         </div>
       </q-card-section>
       <q-separator inset />
@@ -16,7 +16,7 @@
             </div>
             <router-link
               class="text-decoration-none"
-              :to="`/sales-voucher/${fields?.source_id}/view`"
+              :to="`/${usedIn === 'sales_voucher' ? 'sales-voucher': 'credit-note'}/${fields?.source_id}/view`"
             >
               <div class="row items-center text-blue">Source</div>
             </router-link>
@@ -64,7 +64,7 @@
           <div class="col-3">
             {{
               fields?.transactions?.reduce(
-                (accum, item) => accum + Number(item.dr_amount),
+                (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
                 0
               ) || 0
             }}
@@ -72,7 +72,7 @@
           <div class="col-3">
             {{
               fields?.transactions?.reduce(
-                (accum, item) => accum + Number(item.cr_amount),
+                (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
                 0
               ) || 0
             }}
@@ -83,11 +83,12 @@
     <q-card class="q-mt-md">
       <q-card-section class="bg-grey-4">
         <div class="row text-bold">
+          <!-- TODO: Refactor in due time for multiple jornal entries otherWise remove -->
           <div class="col-grow">Total</div>
           <div class="col-3">
             {{
               fields?.transactions?.reduce(
-                (accum, item) => accum + Number(item.dr_amount),
+                (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
                 0
               ) || 0
             }}
@@ -95,7 +96,7 @@
           <div class="col-3">
             {{
               fields?.transactions?.reduce(
-                (accum, item) => accum + Number(item.cr_amount),
+                (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
                 0
               ) || 0
             }}
@@ -103,7 +104,7 @@
         </div>
       </q-card-section></q-card
     >
-    <q-card class="q-mt-md" v-if="fields?.narration">
+    <!-- <q-card class="q-mt-md" v-if="fields?.narration">
       <q-card-section>
         <div class="row">
           <div class="col-9 row text-grey-8">
@@ -112,7 +113,7 @@
           </div>
         </div>
       </q-card-section>
-    </q-card>
+    </q-card> -->
     <!-- <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
         <q-btn
@@ -149,6 +150,12 @@ export default {
       type: String,
       default: () => {
         return 'Journal Entries'
+      },
+    },
+    usedIn: {
+      type: String,
+      default: () => {
+        return null
       },
     },
   },

@@ -58,6 +58,7 @@
       </div>
       <div class="row q-gutter-x-md">
         <q-btn
+          @click="() => onPrintclick()"
           :label="`Print Copy ${
             fields?.status !== 'Cancelled'
               ? `# ${(fields?.print_count || 0) + 1}`
@@ -66,6 +67,7 @@
           icon="print"
         />
         <q-btn
+          @click="() => onPrintclick()"
           :label="`Print Body ${
             fields?.status !== 'Cancelled'
               ? `# ${(fields?.print_count || 0) + 1}`
@@ -80,7 +82,7 @@
           :to="`/sales-voucher/${fields?.voucher_no}/mv`"
         />
         <q-btn
-          v-if="fields?.status !== 'Cancelled'"
+          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
           color="blue-7"
           label="Journal Entries"
           icon="books"
@@ -157,6 +159,16 @@ export default {
         fields.value.mode = newValue
       }
     }
+    const onPrintclick = () => {
+      const endpoint = `/v1/sales-voucher/${fields.value.voucher_no}/log-print/`
+      useApi(endpoint, { method: 'POST' })
+        .then((data) => {
+          if (fields.value) {
+            fields.value.print_count = fields.value?.print_count + 1
+          }
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -170,6 +182,7 @@ export default {
       deleteMsg,
       updateMode,
       modeOptions,
+      onPrintclick,
     }
   },
   created() {
