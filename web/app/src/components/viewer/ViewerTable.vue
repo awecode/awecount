@@ -63,7 +63,7 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td
-        ><q-td class="text-right">{{ fields?.meta_sub_total }}</q-td>
+        ><q-td class="text-right">{{ fields?.meta_tax }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>

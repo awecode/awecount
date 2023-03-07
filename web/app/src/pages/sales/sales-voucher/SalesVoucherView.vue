@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div v-if="fields" class="sales-invoice" id="to_print">
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
-        <div class="text-h6">
+        <div class="text-h6 d-print-none">
           <span
             >Sales Invoice | {{ fields?.status }} | #{{
               fields?.voucher_no
@@ -30,7 +30,7 @@
       </q-card-section>
     </q-card>
     <div
-      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md"
+      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
       v-if="fields"
     >
       <div>
@@ -166,9 +166,31 @@ export default {
           if (fields.value) {
             fields.value.print_count = fields.value?.print_count + 1
           }
+          print()
         })
         .catch((err) => console.log('err from the api', err))
     }
+    // to print
+    const print = () => {
+      const to_print = document.getElementById('to_print')
+      let ifram = document.createElement('iframe')
+      ifram.style = 'display:none'
+      document.body.appendChild(ifram)
+      // load css
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.type = 'text/css'
+      link.href = '../../../src/assets/css/print.css'
+      const pri = ifram.contentWindow
+      pri.document.head.appendChild(link)
+      pri.document.open()
+      pri.document.write(to_print.innerHTML)
+      pri.document.close()
+      pri.focus()
+      pri.print()
+    }
+    // to print
+
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -215,20 +237,38 @@ export default {
 // } = useList(endpoint);
 </script>
 
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
+<style lang="scss">
+@media print {
+  // @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");
+  .d-print-none {
+    display: none;
+    visibility: hidden;
+    width: none;
+  }
+  // .sales-invoice {
+  //   // background-image: url("http://localhost:8080/img/invoice_bg.png");
+  //   height: 100%;
+  //   // background-position: center;
+  //   // background-repeat: no-repeat;
+  //   background-size: cover;
+  //   // height: 297mm;
+  //   width: 210mm;
+  //   padding: 0 5mm;
+  //   .v-data-table,
+  //   .v-card,
+  //   thead,
+  //   tr,
+  //   th {
+  //     background-color: transparent !important;
+  //   }
+  //   th,
+  //   td {
+  //     padding: 0.7em 0 !important;
+  //     border-bottom: none !important;
+  //   }
+  //   th {
+  //     padding-bottom: 1.5em !important;
+  //   }
+  // }
 }
 </style>

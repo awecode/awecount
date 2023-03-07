@@ -1,32 +1,63 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header elevated class="bg-white text-grey-8 q-pa-sm">
+    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none">
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
         <q-toolbar-title>Dashboard</q-toolbar-title>
         <div>
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn>79/80
-              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
-            <q-btn class="dateSwitcher bg-grey-7 text-grey-2" @click="
-              () =>
-                (activeDateFormat = activeDateFormat === 'AD' ? 'BS' : 'AD')
-            ">{{ activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
+            <q-btn
+              >79/80
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Fiscal Yaar</q-tooltip
+              ></q-btn
+            >
+            <q-btn
+              class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="
+                () =>
+                  (activeDateFormat = activeDateFormat === 'AD' ? 'BS' : 'AD')
+              "
+              >{{ activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Change Date Format</q-tooltip
+              >
             </q-btn>
-            <q-btn><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
-                :offset="[0, 10]">Help</q-tooltip></q-btn>
-            <q-btn><q-icon name="mdi-logout" /><q-tooltip :delay="1000" :offset="[0, 10]">Logout</q-tooltip></q-btn>
+            <q-btn
+              ><q-icon name="mdi-help-circle-outline"></q-icon
+              ><q-tooltip :delay="1000" :offset="[0, 10]"
+                >Help</q-tooltip
+              ></q-btn
+            >
+            <q-btn
+              ><q-icon name="mdi-logout" /><q-tooltip
+                :delay="1000"
+                :offset="[0, 10]"
+                >Logout</q-tooltip
+              ></q-btn
+            >
           </div>
         </div>
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list class="icon-grey">
+    <q-drawer
+      v-model="leftDrawerOpen"
+      show-if-above
+      bordered
+      class="d-print-none"
+    >
+      <q-list class="icon-grey d-print-none">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
             <div class="absolute-bottom bg-transparent text-black">
@@ -36,7 +67,11 @@
 
         <div class="q-mb-md"></div>
 
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+        <EssentialLink
+          v-for="link in essentialLinks"
+          :key="link.title"
+          v-bind="link"
+        />
       </q-list>
     </q-drawer>
     <q-page-container>
@@ -46,14 +81,14 @@
 </template>
 
 <script setup lang="ts">
-import { EssentialLinkProps } from 'components/EssentialLink.vue';
-import { useLoginStore } from '../stores/login-info.js';
+import { EssentialLinkProps } from 'components/EssentialLink.vue'
+import { useLoginStore } from '../stores/login-info.js'
 // import useApi from 'src/composables/useApi'
-import { ref } from 'vue';
-const store = useLoginStore();
+import { ref } from 'vue'
+const store = useLoginStore()
 // const router = useRouter()
 // const $q = useQuasar()
-const activeDateFormat: Ref<string> = ref('AD');
+const activeDateFormat: Ref<string> = ref('AD')
 
 const essentialLinks: EssentialLinkProps[] = [
   {
@@ -358,12 +393,12 @@ const essentialLinks: EssentialLinkProps[] = [
   //   icon: 'power_settings_new',
   //   link: '/login/',
   // },
-];
+]
 
-const leftDrawerOpen = ref(false);
+const leftDrawerOpen = ref(false)
 
 function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+  leftDrawerOpen.value = !leftDrawerOpen.value
 }
 // function confirmSignOut() {
 //   $q.dialog({
