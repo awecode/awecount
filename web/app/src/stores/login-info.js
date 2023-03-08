@@ -1,20 +1,21 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 
 export const useLoginStore = defineStore('loginStore', {
   state: () => ({
     username: null,
     email: null,
     token: null,
+    companyInfo: null,
   }),
   getters: {
     doubleCount: (state) => state.counter * 2,
   },
   actions: {
     reset() {
-      this.username = null;
-      this.email = null;
-      this.token = null;
+      this.username = null
+      this.email = null
+      this.token = null
     },
   },
   persist: true,
-});
+})

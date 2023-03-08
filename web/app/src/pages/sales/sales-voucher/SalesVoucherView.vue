@@ -1,5 +1,5 @@
 <template>
-  <div v-if="fields" class="sales-invoice" id="to_print">
+  <div v-if="fields" class="sales-invoice">
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
         <div class="text-h6 d-print-none">
@@ -18,7 +18,7 @@
         :modeOptions="modeOptions"
       />
     </q-card>
-    <q-card class="q-mx-lg">
+    <q-card class="q-mx-lg" id="to_print">
       <q-card-section>
         <ViewerTable :fields="fields" />
       </q-card-section>
@@ -113,6 +113,7 @@
 </template>
 
 <script lang="ts">
+import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
@@ -140,7 +141,6 @@ export default {
       } else if (status === 'Cancelled') {
         endpoint = `/v1/sales-voucher/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
-        debugger
       }
       useApi(endpoint, body)
         .then(() => {
@@ -174,8 +174,12 @@ export default {
     const print = () => {
       const to_print = document.getElementById('to_print')
       let ifram = document.createElement('iframe')
-      ifram.style = 'display:none'
+      ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
+      // Header
+      let header = document.createElement('div')
+      header.innerHTML = useGeneratePdf('salesVoucher', false, fields)
+      // document.body.appendChild(header)
       // load css
       const link = document.createElement('link')
       link.rel = 'stylesheet'
@@ -185,9 +189,10 @@ export default {
       pri.document.head.appendChild(link)
       pri.document.open()
       pri.document.write(to_print.innerHTML)
+      pri.document.body.firstElementChild.prepend(header)
       pri.document.close()
       pri.focus()
-      pri.print()
+      setTimeout(() => pri.print(), 100)
     }
     // to print
 
