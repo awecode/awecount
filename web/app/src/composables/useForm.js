@@ -30,7 +30,8 @@ export default (endpoint, config) => {
   const today = new Date().toISOString().substring(0, 10)
 
   onMounted(() => {
-    isEdit.value = !!route.params.id
+    // added is modal check
+    isEdit.value = !!route.params.id && !isModal
     id.value = route.params.id
     if (isEdit.value) {
       useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
