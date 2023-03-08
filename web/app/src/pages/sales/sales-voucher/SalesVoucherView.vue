@@ -172,7 +172,6 @@ export default {
     }
     // to print
     const print = (bodyOnly: boolean) => {
-      const to_print = document.getElementById('to_print')
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)

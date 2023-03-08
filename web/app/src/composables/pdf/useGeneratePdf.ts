@@ -1,11 +1,11 @@
-type voucherType = 'salesVoucher' | 'creditNotes'
+type VoucherType = 'salesVoucher' | 'creditNote'
 import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
 const loginStore: Record<string, string | number | object> = useLoginStore()
 const compayInfo: Record<string, string | number> = loginStore.companyInfo
 
 export default function useGeneratePdf(
-  voucherType: voucherType,
+  voucherType: VoucherType,
   onlyBody: boolean,
   invoiceInfo: object
 ): string {
@@ -32,7 +32,8 @@ export default function useGeneratePdf(
       <th style="text-align: right; font-weight: 400;">${
         row.quantity * row.rate
       }</th>
-    </tr>`
+    </tr>
+    `
       }
     )
     sameTax = isTaxSame
@@ -92,13 +93,18 @@ export default function useGeneratePdf(
       <th style="text-align: right;">Amount(${
         compayInfo.config_template === 'np' ? 'NRS' : 'N/A'
       })</th>
+
     </tr>
     ${invoiceInfo.value.rows ? tableRow(invoiceInfo.value.rows) : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: Arial, Helvetica, sans-serif;">
       <div>
-      <div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.value.total_amount)}</div>
+      ${
+        voucherType === 'creditNote'
+          ? ''
+          : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
+      <div>${numberToText(invoiceInfo.value.total_amount)}</div>`
+      }
       </div>
       <div style="border-top: 1px solid lightgrey; width: 250px; padding: 10px 0">
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
@@ -128,10 +134,21 @@ export default function useGeneratePdf(
         </div>
       </div>
   </div>
+  ${
+    voucherType === 'creditNote'
+      ? `<div style="font-weight: 600; margin-bottom: 10px; font-family: Arial, Helvetica, sans-serif;">In words: ${numberToText(
+          invoiceInfo.value.total_amount
+        )}</div> <div style="margin: 20px 0;"><span style="font-weight: 600;">Remarks:</span> ${
+          invoiceInfo.value.remarks
+        }</div>`
+      : ''
+  }
   </div>
   <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
   `
-  const body = `<div style="${onlyBody ? 'margin-top: 80px;' : ''}">
+  let body = ''
+  if (voucherType === 'salesVoucher') {
+    body = `<div style="${onlyBody ? 'margin-top: 80px;' : ''}">
   <div
     style="
       display: flex;
@@ -143,8 +160,8 @@ export default function useGeneratePdf(
   >
     <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
     <span>COPY ${invoiceInfo.value.print_count} OF ORIGINAL (PRINT COUNT:${
-    invoiceInfo.value.print_count + 1
-  })</span>
+      invoiceInfo.value.print_count + 1
+    })</span>
   </div>
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -155,8 +172,8 @@ export default function useGeneratePdf(
           : invoiceInfo.value.customer_name
       }</div>
       <div style="${invoiceInfo.value.address ? '' : 'display: none;'}">${
-    invoiceInfo.value.address
-  }</div>
+      invoiceInfo.value.address
+    }</div>
       <div style="font-weight: 600; color: grey;">Tax reg. No.</div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
@@ -196,5 +213,71 @@ ${table}
   }
 </div>
 `
+  } else if (voucherType === 'creditNote') {
+    body = `<div style="font-family: Arial, Helvetica, sans-serif; ${
+      onlyBody ? 'margin-top: 80px;' : ''
+    }
+    "
+  >
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        flex-direction: column;
+        font-family: Arial, Helvetica, sans-serif;
+      "
+    >
+      <h4 style="margin: 0; font-size: 1.4rem">Credit Note</h4>
+      <span>Copy of Original (${invoiceInfo.value.print_count + 1})</span>
+    </div>
+    <div>
+      <div style="display: flex; flex-direction: column; gap: 5px">
+        <div><span style="font-weight: 600; color: dimgray;">Credit Note No:</span>  (${
+          invoiceInfo.value.status
+        })</div>
+        <div style="${
+          invoiceInfo.value.party_name ? '' : 'display: none;'
+        }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
+      invoiceInfo.value.party_name
+    }</div>
+        <div style="${
+          invoiceInfo.value.status ? '' : 'display: none;'
+        }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
+      invoiceInfo.value.status
+    }</div>
+        <div><span style="font-weight: 600; color: dimgray;">Date:</span> 2023-03-03</div>
+        <div style="font-weight: 600">Ref. Invoice No.: #${
+          invoiceInfo.value.voucher_no
+        }</div>
+      </div>
+    </div>
+  </div>
+  <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0" />
+  ${table}
+  <div style="font-size: 14px; text-align: right">
+    <div style="margin-bottom: 5px">
+      Generated by ${loginStore.username} for Test Company Pvt. Ltd
+    </div>
+    ${
+      onlyBody
+        ? ''
+        : `
+    <div>
+      This is a computer generated invoice, produced using awecount.com - IRD
+      Approval No. 7600405
+    </div>
+    `
+    }
+  </div>
+  <style>
+    table {
+      tr {
+        border-bottom: 1px solid #ddd;
+      }
+    }
+  </style>
+`
+  }
   return html.concat(body)
 }

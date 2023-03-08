@@ -104,6 +104,7 @@ import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import ViewerHeader from 'src/components/viewer/ViewerHeader.vue'
 import ViewerTable from 'src/components/viewer/ViewerTable.vue'
+import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 export default {
   setup() {
     const fields = ref(null)
@@ -131,11 +132,24 @@ export default {
         })
         .catch((err) => console.log('err from the api', err))
     }
+    const print = (bodyOnly) => {
+      let ifram = document.createElement('iframe')
+      ifram.style = 'display:none; margin: 20px'
+      document.body.appendChild(ifram)
+      const pri = ifram.contentWindow
+      pri.document.open()
+      pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields))
+      // pri.document.body.firstElementChild.prepend()
+      pri.document.close()
+      pri.focus()
+      setTimeout(() => pri.print(), 100)
+    }
     const onPrintclick = () => {
       const endpoint = `/v1/credit-note/${fields.value.voucher_no}/log-print/`
       useApi(endpoint, { method: 'POST' })
         .then(() => {
           if (fields.value) {
+            print(false)
             fields.value.print_count = fields.value?.print_count + 1
           }
         })
