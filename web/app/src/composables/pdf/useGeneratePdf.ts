@@ -131,7 +131,7 @@ export default function useGeneratePdf(
   </div>
   <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
   `
-  const body = `<div>
+  const body = `<div style="${onlyBody ? 'margin-top: 80px;' : ''}">
   <div
     style="
       display: flex;

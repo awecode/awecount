@@ -58,7 +58,7 @@
       </div>
       <div class="row q-gutter-x-md">
         <q-btn
-          @click="() => onPrintclick()"
+          @click="() => onPrintclick(false)"
           :label="`Print Copy ${
             fields?.status !== 'Cancelled'
               ? `# ${(fields?.print_count || 0) + 1}`
@@ -67,7 +67,7 @@
           icon="print"
         />
         <q-btn
-          @click="() => onPrintclick()"
+          @click="() => onPrintclick(true)"
           :label="`Print Body ${
             fields?.status !== 'Cancelled'
               ? `# ${(fields?.print_count || 0) + 1}`
@@ -159,37 +159,28 @@ export default {
         fields.value.mode = newValue
       }
     }
-    const onPrintclick = () => {
+    const onPrintclick = (bodyOnly: boolean) => {
       const endpoint = `/v1/sales-voucher/${fields.value.voucher_no}/log-print/`
       useApi(endpoint, { method: 'POST' })
         .then((data) => {
           if (fields.value) {
             fields.value.print_count = fields.value?.print_count + 1
           }
-          print()
+          print(bodyOnly)
         })
         .catch((err) => console.log('err from the api', err))
     }
     // to print
-    const print = () => {
+    const print = (bodyOnly: boolean) => {
       const to_print = document.getElementById('to_print')
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
-      // Header
-      let header = document.createElement('div')
-      header.innerHTML = useGeneratePdf('salesVoucher', false, fields)
-      // document.body.appendChild(header)
-      // load css
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.type = 'text/css'
-      link.href = '../../../src/assets/css/print.css'
-      const pri = ifram.contentWindow
-      pri.document.head.appendChild(link)
+      const pri: Record<string, string | object | HTMLElement> =
+        ifram.contentWindow
       pri.document.open()
-      pri.document.write(to_print.innerHTML)
-      pri.document.body.firstElementChild.prepend(header)
+      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields))
+      // pri.document.body.firstElementChild.prepend()
       pri.document.close()
       pri.focus()
       setTimeout(() => pri.print(), 100)
