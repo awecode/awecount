@@ -31,7 +31,6 @@
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
             "
           /> -->
-          {{ rowEmpty }}--rowEmpty
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
               <n-auto-complete

@@ -146,6 +146,17 @@ export default {
     //     }, 100)
     //   }
     // })
+    watch(
+      () => formData.fields.value.party,
+      (newValue) => {
+        const index = formData.formDefaults.value.collections.parties.findIndex(
+          (option) => option.id === newValue
+        )
+        formData.fields.value.address =
+          formData.formDefaults.value.collections.parties[index].address
+        // const index = formDefaults.
+      }
+    )
     return {
       ...formData,
       CategoryForm,
