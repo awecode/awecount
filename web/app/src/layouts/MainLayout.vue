@@ -154,7 +154,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Challans',
         icon: 'mdi-clipboard-arrow-right',
-        link: '/retention/',
+        link: '/challan/list/',
       },
       {
         title: 'Payment Receipts',

@@ -61,16 +61,22 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/voucher/CreditNoteJournalEntries.vue'),
       },
-      // TODO: reomve
-      {
-        path: '/print/',
-        component: () => import('src/pages/print/SalesVoucherPrint.vue'),
-      },
-      // TODO: reomve
       {
         path: '/sales-voucher/:id/mv/',
         component: () =>
           import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
+      },
+      {
+        path: '/challan/list/',
+        component: () => import('src/pages/sales/challan/ChallanList.vue'),
+      },
+      {
+        path: '/challan/add/',
+        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
+      },
+      {
+        path: '/challan/:id/',
+        component: () => import('src/pages/sales/challan/ChallanList.vue'),
       },
       {
         path: '/items/opening/:id',
