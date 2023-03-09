@@ -61,7 +61,11 @@ export default function useGeneratePdf(
       "
     >
       <div style="margin-bottom: 5px;">
-        <img src="/img/awecount.png" alt="Compony Logo" style="height: 70px" />
+        <img src="${
+          compayInfo.logo_url
+        }" alt="Compony Logo" style="height: 70px; ${
+      compayInfo.logo_url ? '' : 'display: none;'
+    }"/>
       </div>
       <div style="display: flex; align-items: center">
         <img
@@ -167,7 +171,13 @@ export default function useGeneratePdf(
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
+<<<<<<< HEAD
         invoiceInfo.party ? invoiceInfo.party : invoiceInfo.customer_name
+=======
+        invoiceInfo.value.party
+          ? invoiceInfo.value.party_name
+          : invoiceInfo.value.customer_name
+>>>>>>> 60d1b9b4e530c02c12836d37c2d9b79a58bebeb6
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
