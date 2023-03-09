@@ -147,7 +147,6 @@
 <script>
 import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
       type: Object,
@@ -239,16 +238,18 @@ export default {
     watch(
       () => props.modelValue.item_id,
       (newValue) => {
-        const index = props.itemOptions.findIndex(
-          (item) => item.id === newValue
-        )
-        const itemObject = props.itemOptions[index]
-        modalValue.value.itemObj = itemObject
-        modalValue.value.item_id = itemObject.id
-        modalValue.value.description = itemObject.description
-        modalValue.value.rate = itemObject.rate
-        modalValue.value.unit_id = itemObject.unit_id
-        modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+        if (!!props.itemOptions && !!newValue) {
+          const index = props.itemOptions.findIndex(
+            (item) => item.id === newValue
+          )
+          const itemObject = props.itemOptions[index]
+          modalValue.value.itemObj = itemObject
+          modalValue.value.item_id = itemObject.id
+          modalValue.value.description = itemObject.description
+          modalValue.value.rate = itemObject.rate
+          modalValue.value.unit_id = itemObject.unit_id
+          modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+        }
       }
     )
     // watch(

@@ -82,17 +82,15 @@
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">
-        <!-- {{ props }} -->
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn
               color="blue"
               label="View"
-              :to="`/sales-voucher/${props.row.voucher_no}/view/`"
+              :to="`/sales-voucher/${props.row.id}/view/`"
             />
           </div>
-          <!-- {{ props }} -->
         </q-td>
         <!-- TODO: add modals -->
       </template>

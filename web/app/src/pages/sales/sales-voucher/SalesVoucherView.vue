@@ -3,14 +3,20 @@
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
         <div class="text-h6 d-print-none">
-          <span>Sales Invoice | {{ fields?.status }} | #{{
-            fields?.voucher_no
-          }}</span>
+          <span
+            >Sales Invoice | {{ fields?.status }} | #{{
+              fields?.voucher_no
+            }}</span
+          >
         </div>
       </q-card-section>
       <q-separator inset />
-      <ViewerHeader :fields="fields" :changeModes="true" @updateMode="(newValue) => updateMode(newValue)"
-        :modeOptions="modeOptions" />
+      <ViewerHeader
+        :fields="fields"
+        :changeModes="true"
+        @updateMode="(newValue) => updateMode(newValue)"
+        :modeOptions="modeOptions"
+      />
     </q-card>
     <q-card class="q-mx-lg" id="to_print">
       <q-card-section>
@@ -23,28 +29,69 @@
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
-    <div class="q-px-lg q-pb-lg row justify-between q-gutter-x-md d-print-none" v-if="fields">
+    <div
+      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
+      v-if="fields"
+    >
       <div>
-        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="fields?.status === 'Draft'" color="orange-5" label="Edit" icon="edit" />
-          <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6" label="mark as paid" icon="mdi-check-all" />
-          <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+        <div
+          v-if="fields?.status !== 'Cancelled'"
+          class="row q-gutter-x-md q-gutter-y-md q-mb-md"
+        >
+          <q-btn
+            v-if="fields?.status === 'Draft'"
+            color="orange-5"
+            label="Edit"
+            icon="edit"
+            :to="`/sales-voucher/${fields?.voucher_no}/`"
+          />
+          <q-btn
+            v-if="fields?.status === 'Issued'"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            color="green-6"
+            label="mark as paid"
+            icon="mdi-check-all"
+          />
+          <q-btn
+            color="red-5"
+            label="Cancel"
+            icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)"
+          />
         </div>
       </div>
-      <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-        <q-btn @click="() => onPrintclick(false)" :label="`Print Copy ${fields?.status !== 'Cancelled'
-          ? `# ${(fields?.print_count || 0) + 1}`
-          : ''
-          }`" icon="print" />
-        <q-btn @click="() => onPrintclick(true)" :label="`Print Body ${fields?.status !== 'Cancelled'
-          ? `# ${(fields?.print_count || 0) + 1}`
-          : ''
-          }`" icon="print" />
-        <q-btn color="blue-7" label="Materialized View" icon="mdi-table"
-          :to="`/sales-voucher/${fields?.voucher_no}/mv`" />
-        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries"
-          icon="books" :to="`/journal-entries/sales-voucher/${this.$route.params.id}/`" />
+      <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+        <q-btn
+          @click="() => onPrintclick(false)"
+          :label="`Print Copy ${
+            fields?.status !== 'Cancelled'
+              ? `# ${(fields?.print_count || 0) + 1}`
+              : ''
+          }`"
+          icon="print"
+        />
+        <q-btn
+          @click="() => onPrintclick(true)"
+          :label="`Print Body ${
+            fields?.status !== 'Cancelled'
+              ? `# ${(fields?.print_count || 0) + 1}`
+              : ''
+          }`"
+          icon="print"
+        />
+        <q-btn
+          color="blue-7"
+          label="Materialized View"
+          icon="mdi-table"
+          :to="`/sales-voucher/${fields?.voucher_no}/mv`"
+        />
+        <q-btn
+          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+          :to="`/journal-entries/sales-voucher/${this.$route.params.id}/`"
+        />
       </div>
       <q-dialog v-model="isDeleteOpen">
         <q-card style="min-width: min(40vw, 500px)">
@@ -57,7 +104,10 @@
           <q-card-section class="q-ma-md">
             <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
             <div class="text-right q-mt-lg">
-              <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+              <q-btn
+                label="Confirm"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+              ></q-btn>
             </div>
           </q-card-section>
         </q-card>
@@ -188,7 +238,6 @@ export default {
 
 <style lang="scss">
 @media print {
-
   // @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");
   .d-print-none {
     display: none;

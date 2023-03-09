@@ -293,8 +293,13 @@ export default {
       })
     }
     const removeRow = (index) => {
+      if (props.errors || modalValue.value[index].id)
+        emit(
+          'deleteRowErr',
+          index,
+          modalValue.value[index]?.id ? modalValue.value[index] : null
+        )
       modalValue.value.splice(index, 1)
-      if (props.errors) emit('deleteRowErr', index)
     }
     return {
       props,

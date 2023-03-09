@@ -144,7 +144,9 @@
           discount: fields.discount,
         }"
         :errors="!!errors.rows ? errors.rows : null"
-        @deleteRowErr="(index) => deleteRowErr(index, errors)"
+        @deleteRowErr="
+          (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+        "
       ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -217,7 +219,7 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/account/',
+      successRoute: '/sales-voucher/list/',
     })
     const partyMode = ref(false)
     const switchMode = (fields) => {
@@ -229,8 +231,14 @@ export default {
           message: 'Credit customer must be a party!',
         })
     }
-    const deleteRowErr = (index, errors) => {
-      errors.rows.splice(index, 1)
+    const deleteRowErr = (index, errors, deleteObj) => {
+      if (deleteObj) {
+        if (!formData.fields.value.deleted_rows) {
+          formData.fields.value.deleted_rows = []
+        }
+        formData.fields.value.deleted_rows.push(deleteObj)
+      }
+      if (!!errors.rows) errors.rows.splice(index, 1)
     }
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status

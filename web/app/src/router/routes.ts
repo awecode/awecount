@@ -57,6 +57,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/voucher/SalesVoucherJournalEntries.vue'),
       },
       {
+        path: '/sales-voucher/:id/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+      },
+      {
         path: '/journal-entries/credit-note/:id/',
         component: () =>
           import('src/pages/voucher/CreditNoteJournalEntries.vue'),
