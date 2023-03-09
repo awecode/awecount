@@ -138,7 +138,7 @@ export default {
       document.body.appendChild(ifram)
       const pri = ifram.contentWindow
       pri.document.open()
-      pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields))
+      pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields.value))
       // pri.document.body.firstElementChild.prepend()
       pri.document.close()
       pri.focus()

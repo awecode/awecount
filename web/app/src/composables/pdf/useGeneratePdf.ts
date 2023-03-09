@@ -95,7 +95,7 @@ export default function useGeneratePdf(
       })</th>
 
     </tr>
-    ${invoiceInfo.value.rows ? tableRow(invoiceInfo.value.rows) : ''}
+    ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: Arial, Helvetica, sans-serif;">
       <div>
@@ -103,33 +103,33 @@ export default function useGeneratePdf(
         voucherType === 'creditNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.value.total_amount)}</div>`
+      <div>${numberToText(invoiceInfo.total_amount)}</div>`
       }
       </div>
       <div style="border-top: 1px solid lightgrey; width: 250px; padding: 10px 0">
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            invoiceInfo.value.voucher_meta.sub_total
+            invoiceInfo.voucher_meta.sub_total
           }</span>
         </div>
         <div style="display: ${
-          invoiceInfo.value.voucher_meta.discount ? 'flex' : 'none'
+          invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 15px 0">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            invoiceInfo.value.voucher_meta.discount
+            invoiceInfo.voucher_meta.discount
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? `${invoiceInfo.value.rows[0].tax_scheme.name} ` +
-                `${invoiceInfo.value.rows[0].tax_scheme.rate} %`
+              ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
+                `${invoiceInfo.rows[0].tax_scheme.rate} %`
               : 'TAX'
-          }</span> <span>${invoiceInfo.value.meta_tax}</span>
+          }</span> <span>${invoiceInfo.meta_tax}</span>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            invoiceInfo.value.voucher_meta.grand_total
+            invoiceInfo.voucher_meta.grand_total
           }</span>
         </div>
       </div>
@@ -137,9 +137,9 @@ export default function useGeneratePdf(
   ${
     voucherType === 'creditNote'
       ? `<div style="font-weight: 600; margin-bottom: 10px; font-family: Arial, Helvetica, sans-serif;">In words: ${numberToText(
-          invoiceInfo.value.total_amount
+          invoiceInfo.total_amount
         )}</div> <div style="margin: 20px 0;"><span style="font-weight: 600;">Remarks:</span> ${
-          invoiceInfo.value.remarks
+          invoiceInfo.remarks
         }</div>`
       : ''
   }
@@ -159,32 +159,30 @@ export default function useGeneratePdf(
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
-    <span>COPY ${invoiceInfo.value.print_count} OF ORIGINAL (PRINT COUNT:${
-      invoiceInfo.value.print_count + 1
+    <span>COPY ${invoiceInfo.print_count} OF ORIGINAL (PRINT COUNT:${
+      invoiceInfo.print_count + 1
     })</span>
   </div>
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.value.party
-          ? invoiceInfo.value.party
-          : invoiceInfo.value.customer_name
+        invoiceInfo.party ? invoiceInfo.party : invoiceInfo.customer_name
       }</div>
-      <div style="${invoiceInfo.value.address ? '' : 'display: none;'}">${
-      invoiceInfo.value.address
+      <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
+      invoiceInfo.address
     }</div>
       <div style="font-weight: 600; color: grey;">Tax reg. No.</div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div>
       <span><span style="font-weight: 600; color: grey;">INV No.: </span></span> ${
-        invoiceInfo.value.voucher_no
+        invoiceInfo.voucher_no
       }
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Date: </span></span> ${
-        invoiceInfo.value.date
+        invoiceInfo.date
       }
       </div>
       <div>
@@ -192,7 +190,7 @@ export default function useGeneratePdf(
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${
-        invoiceInfo.value.mode
+        invoiceInfo.mode
       }
       </div>
     </div>
@@ -229,26 +227,26 @@ ${table}
       "
     >
       <h4 style="margin: 0; font-size: 1.4rem">Credit Note</h4>
-      <span>Copy of Original (${invoiceInfo.value.print_count + 1})</span>
+      <span>Copy of Original (${invoiceInfo.print_count + 1})</span>
     </div>
     <div>
       <div style="display: flex; flex-direction: column; gap: 5px">
         <div><span style="font-weight: 600; color: dimgray;">Credit Note No:</span>  (${
-          invoiceInfo.value.status
+          invoiceInfo.status
         })</div>
         <div style="${
-          invoiceInfo.value.party_name ? '' : 'display: none;'
+          invoiceInfo.party_name ? '' : 'display: none;'
         }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
-      invoiceInfo.value.party_name
+      invoiceInfo.party_name
     }</div>
         <div style="${
-          invoiceInfo.value.status ? '' : 'display: none;'
+          invoiceInfo.status ? '' : 'display: none;'
         }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
-      invoiceInfo.value.status
+      invoiceInfo.status
     }</div>
         <div><span style="font-weight: 600; color: dimgray;">Date:</span> 2023-03-03</div>
         <div style="font-weight: 600">Ref. Invoice No.: #${
-          invoiceInfo.value.voucher_no
+          invoiceInfo.voucher_no
         }</div>
       </div>
     </div>

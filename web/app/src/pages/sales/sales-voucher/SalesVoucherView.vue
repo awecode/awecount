@@ -178,7 +178,7 @@ export default {
       const pri: Record<string, string | object | HTMLElement> =
         ifram.contentWindow
       pri.document.open()
-      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields))
+      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value))
       // pri.document.body.firstElementChild.prepend()
       pri.document.close()
       pri.focus()
