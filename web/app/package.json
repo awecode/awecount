@@ -13,7 +13,6 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
-    "jspdf": "^2.5.1",
     "ofetch": "^1.0.0",
     "pinia": "^2.0.11",
     "pinia-plugin-persistedstate": "^3.0.2",
