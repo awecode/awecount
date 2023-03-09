@@ -132,7 +132,6 @@ export default {
       } else return props.fields?.mode
     })
     const discountComputed = computed(() => {
-      console.log(props.fields)
       if (props.fields?.discount_obj) {
         return (
           `${props.fields.discount_obj.value}` +

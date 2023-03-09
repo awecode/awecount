@@ -315,7 +315,6 @@ export default {
             if (fields.invoices) {
               fields.invoices.push(data.id)
             } else fields.invoices = [data.id]
-            console.log(data, fields)
             const removeArr = [
               'id',
               'date',
@@ -338,7 +337,6 @@ export default {
             if (data.discount_obj && data.discount_obj.id) {
               fields.discount_type = data.discount_obj.id
             }
-            console.log(fields, 'after change')
             // console.log(data)
             // fields.rows = data.rows
             // data.rows.forEach((row) => {

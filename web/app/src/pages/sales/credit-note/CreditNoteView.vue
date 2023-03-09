@@ -3,9 +3,11 @@
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Credit Note | {{ fields?.status }} | #{{
-            fields?.voucher_no
-          }}</span>
+          <span
+            >Credit Note | {{ fields?.status }} | #{{
+              fields?.voucher_no
+            }}</span
+          >
         </div>
       </q-card-section>
       <q-separator inset />
@@ -31,9 +33,20 @@
       :label="isEdit ? 'Update' : 'Issue'"
     />
   </div> -->
-    <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
-      <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
-        <q-btn v-if="fields?.status === 'Draft'" color="orange-5" label="Edit" icon="edit" />
+    <div
+      v-if="fields"
+      class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md"
+    >
+      <div
+        v-if="fields?.status !== 'Cancelled'"
+        class="row q-gutter-x-md q-mb-md"
+      >
+        <q-btn
+          v-if="fields?.status === 'Draft'"
+          color="orange-5"
+          label="Edit"
+          icon="edit"
+        />
         <!-- <q-btn
             v-if="fields?.status === 'Issued'"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
@@ -41,12 +54,28 @@
             label="mark as paid"
             icon="mdi-check-all"
           /> -->
-        <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+        <q-btn
+          color="red-5"
+          label="Cancel"
+          icon="cancel"
+          @click.prevent="() => (isDeleteOpen = true)"
+        />
       </div>
-      <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-        <q-btn @click="onPrintclick" :label="`Print Copy No ${(fields?.print_count || 0) + 1}`" icon="print" />
-        <q-btn color="blue-7" label="Journal Entries" icon="books"
-          :to="`/journal-entries/credit-note/${this.$route.params.id}/`" />
+      <div
+        v-if="fields?.status !== 'Cancelled'"
+        class="row q-gutter-x-md q-gutter-y-md q-mb-md"
+      >
+        <q-btn
+          @click="onPrintclick"
+          :label="`Print Copy No ${(fields?.print_count || 0) + 1}`"
+          icon="print"
+        />
+        <q-btn
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+          :to="`/journal-entries/credit-note/${this.$route.params.id}/`"
+        />
       </div>
       <div v-else class="row q-gutter-x-md q-mb-md">
         <q-btn label="Print" @click="onPrintclick" icon="print" />
@@ -61,7 +90,10 @@
           <q-separator inset />
           <q-card-section class="q-ma-md">
             <div class="text-right q-mt-lg row justify-between q-mx-lg">
-              <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+              <q-btn
+                label="Confirm"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+              ></q-btn>
               <q-btn label="Deny" @click="() => (isDeleteOpen = false)"></q-btn>
             </div>
           </q-card-section>

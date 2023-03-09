@@ -91,7 +91,6 @@
           :label="isEdit ? 'Update' : 'Create'"
         />
       </div>
-      {{ fields.deleted_rows }} --fields.value.deleted_rows
     </q-card>
   </q-form>
 </template>

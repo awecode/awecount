@@ -281,7 +281,6 @@ export default {
       emit('deleteRow', index)
     }
     onMounted(() => {
-      console.log(props.usedIn, 'usedin')
       if (props.usedIn === 'creditNote') modalValue.value.is_returned = true
     })
     return {
