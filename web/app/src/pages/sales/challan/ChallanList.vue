@@ -58,20 +58,16 @@
           </div>
         </q-td>
       </template> -->
-
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
-            {{ props.row.customer_name }}
-          </div>
-          <div v-else>
+          <div v-if="props.row.party_name">
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
               props.row.party_name
             }}</span>
+          </div>
+          <div v-else class="row align-center text-subtitle2 text-grey-8">
+            {{ props.row.customer_name }}
           </div>
         </q-td>
       </template>
@@ -81,9 +77,9 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn
-              color="blue"
-              label="View"
-              :to="`/sales-voucher/${props.row.voucher_no}/view/`"
+              color="orange"
+              label="Edit"
+              :to="`/challan/${props.row.voucher_no}/`"
             />
           </div>
           <!-- {{ props }} -->
@@ -99,37 +95,24 @@ export default {
   setup() {
     const endpoint = '/v1/challan/'
     const listData = useList(endpoint)
-    // const newColumn = [
-    //   {
-    //     name: 'voucher_no',
-    //     label: 'Voucher no',
-    //     align: 'left',
-    //     field: 'voucher_no',
-    //   },
-    //   {
-    //     name: 'party_name',
-    //     label: 'Party name',
-    //     align: 'left',
-    //     field: 'party_name',
-    //   },
-    //   { name: 'date', label: 'Date', align: 'left', field: 'date' },
-    //   { name: 'status', label: 'Status', align: 'left', field: 'status' },
-    //   {
-    //     name: 'total_amount',
-    //     label: 'Total amount',
-    //     align: 'left',
-    //     field: 'total_amount',
-    //   },
-    //   {
-    //     name: 'payment_receipts',
-    //     label: 'Payment receipts',
-    //     align: 'left',
-    //     field: 'payment_receipts',
-    //   },
-    //   { name: 'actions' },
-    // ]
+    const newColumn = [
+      {
+        name: 'voucher_no',
+        label: 'Voucher no',
+        align: 'left',
+        field: 'voucher_no',
+      },
+      {
+        name: 'party_name',
+        label: 'Party name',
+        align: 'left',
+        field: 'party_name',
+      },
+      { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      { name: 'actions' },
+    ]
 
-    return { ...listData }
+    return { ...listData, newColumn }
   },
 }
 // const {

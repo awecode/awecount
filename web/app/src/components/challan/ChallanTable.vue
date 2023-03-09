@@ -31,6 +31,7 @@
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
             "
           /> -->
+          {{ rowEmpty }}--rowEmpty
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
               <n-auto-complete
@@ -41,7 +42,7 @@
                   !!errors?.[index]
                     ? errors[index].item_id
                       ? errors[index].item_id[0]
-                      : false
+                      : rowEmpty || false
                     : false
                 "
                 :modal-component="ItemAdd"

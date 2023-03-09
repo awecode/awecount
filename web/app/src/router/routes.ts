@@ -76,7 +76,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/challan/:id/',
-        component: () => import('src/pages/sales/challan/ChallanList.vue'),
+        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
       },
       {
         path: '/items/opening/:id',

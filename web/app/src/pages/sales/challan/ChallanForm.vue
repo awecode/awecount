@@ -19,7 +19,7 @@
                     label="Customer Name"
                     :error-message="errors.customer_name"
                     :error="!!errors.customer_name"
-                    v-if="partyMode"
+                    v-if="!partyMode || !!fields.customer_name"
                   >
                   </q-input>
                   <n-auto-complete
@@ -32,7 +32,11 @@
                   />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
-                  <q-btn flat size="md" @click="() => (partyMode = !partyMode)">
+                  <q-btn
+                    flat
+                    size="md"
+                    @click="() => switchPartyMode(fields, isEdit)"
+                  >
                     <q-icon name="mdi-account-group"></q-icon>
                   </q-btn>
                 </div>
@@ -108,7 +112,7 @@ export default {
       getDefaults: true,
       successRoute: '/challan/list/',
     })
-    const partyMode = ref(false)
+    const partyMode = ref(true)
     const deleteRowErr = (index, errors) => {
       errors.rows.splice(index, 1)
     }
@@ -116,8 +120,32 @@ export default {
       fields.status = status
       submitForm()
     }
+    const switchPartyMode = (fields, isEdit) => {
+      if (isEdit && !!fields.customer_name) {
+        fields.customer_name = null
+        partyMode.value = true
+      } else {
+        if (partyMode.value) {
+          fields.party_name = null
+          fields.party = null
+        } else {
+          fields.customer_name = null
+        }
+        partyMode.value = !partyMode.value
+      }
+    }
     formData.fields.value.date = formData.today
     formData.fields.value.party = ''
+    // onMounted(() => {
+    //   if (formData.isEdit.value) {
+    //     console.log(formData.fields.value)
+    //     setTimeout(() => {
+    //       if (!!formData.fields.value.customer_name) {
+    //         partyMode.value = false
+    //       }
+    //     }, 100)
+    //   }
+    // })
     return {
       ...formData,
       CategoryForm,
@@ -128,7 +156,9 @@ export default {
       deleteRowErr,
       onSubmitClick,
       ChallanTable,
+      switchPartyMode,
     }
   },
+  // onmounted: () => console.log('mounted'),
 }
 </script>
