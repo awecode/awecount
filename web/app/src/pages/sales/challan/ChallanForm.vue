@@ -70,8 +70,8 @@
         "
         v-model="fields.rows"
         :errors="!!errors.rows ? errors.rows : null"
-        @deleteRowErr="(index) => deleteRowErr(index, errors)"
-        :disableExpand="true"
+        @deleteRow="(index, deleteObj) => deleteRow(index, errors, deleteObj)"
+        :isEdit="isEdit"
       ></ChallanTable>
       <div class="q-px-md">
         <q-input
@@ -86,11 +86,12 @@
       </div>
       <div class="q-ma-md row q-pb-lg">
         <q-btn
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
           color="green-8"
           :label="isEdit ? 'Update' : 'Create'"
         />
       </div>
+      {{ fields.deleted_rows }} --fields.value.deleted_rows
     </q-card>
   </q-form>
 </template>
@@ -113,8 +114,17 @@ export default {
       successRoute: '/challan/list/',
     })
     const partyMode = ref(true)
-    const deleteRowErr = (index, errors) => {
-      errors.rows.splice(index, 1)
+    const deleteRow = (index, errors, deleteObj) => {
+      if (deleteObj) {
+        if (!formData.fields.value.deleted_rows) {
+          formData.fields.value.deleted_rows = []
+        }
+        formData.fields.value.deleted_rows.push(deleteObj)
+      }
+      if (errors.rows) {
+        errors.rows.splice(index, 1)
+      }
+      console.log(deleteObj)
     }
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status
@@ -149,12 +159,15 @@ export default {
     watch(
       () => formData.fields.value.party,
       (newValue) => {
-        const index = formData.formDefaults.value.collections.parties.findIndex(
-          (option) => option.id === newValue
-        )
-        formData.fields.value.address =
-          formData.formDefaults.value.collections.parties[index].address
-        // const index = formDefaults.
+        if (newValue) {
+          const index =
+            formData.formDefaults.value.collections.parties.findIndex(
+              (option) => option.id === newValue
+            )
+          formData.fields.value.address =
+            formData.formDefaults.value.collections.parties[index].address
+          // const index = formDefaults.
+        }
       }
     )
     return {
@@ -164,7 +177,7 @@ export default {
       SalesDiscountForm,
       openDatePicker,
       partyMode,
-      deleteRowErr,
+      deleteRow,
       onSubmitClick,
       ChallanTable,
       switchPartyMode,

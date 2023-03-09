@@ -31,6 +31,7 @@
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
             "
           /> -->
+          {{ row }}
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
               <n-auto-complete
@@ -166,8 +167,12 @@ export default {
         },
       ],
     },
+    isEdit: {
+      type: Boolean,
+      default: () => false,
+    },
   },
-  emits: ['update:modelValue', 'deleteRowErr'],
+  emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
@@ -200,8 +205,14 @@ export default {
       })
     }
     const removeRow = (index) => {
+      debugger
+      if (props.errors || props.isEdit)
+        emit(
+          'deleteRow',
+          index,
+          modalValue.value[index]?.id ? modalValue.value[index] : null
+        )
       modalValue.value.splice(index, 1)
-      if (props.errors) emit('deleteRowErr', index)
     }
     return {
       props,
