@@ -183,7 +183,7 @@
           discount: fields.discount,
         }"
         :errors="!!errors.rows ? errors.rows : null"
-        @deleteRowErr="(index) => deleteRowErr(index, errors)"
+        @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
         :usedIn="'creditNote'"
       ></invoice-table>
       <div class="row q-px-lg">
@@ -275,8 +275,15 @@ export default {
           message: 'Credit customer must be a party!',
         })
     }
-    const deleteRowErr = (index, errors) => {
-      errors.rows.splice(index, 1)
+    const deleteRowErr = (index, errors, deleteObj) => {
+      if (deleteObj) {
+        if (!formData.fields.value.deleted_rows) {
+          formData.fields.value.deleted_rows = []
+        }
+        formData.fields.value.deleted_rows.push(deleteObj)
+      }
+      if (!!errors.rows) errors.rows.splice(index, 1)
+      // errors.rows.splice(index, 1)
     }
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status

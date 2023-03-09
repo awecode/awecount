@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Sales Invoice | Draft</span>
-          <span v-else>Update Account</span>
+          <span v-else>Update Sale Invoice | Draft</span>
         </div>
       </q-card-section>
       <q-separator inset />
@@ -248,6 +248,28 @@ export default {
     formData.fields.value.is_export = false
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
+
+    // watch(
+    //   () => formData.fields.value.party,
+    //   (newValue) => {
+    //     console.log(newValue)
+    //     if (!!newValue && !!formData.formDefaults.value.collections) {
+    //       const index =
+    //         formData.formDefaults.value.collections.parties.findIndex(
+    //           (option) => option.id === newValue
+    //         )
+    //       formData.fields.value.address =
+    //         formData.formDefaults.value.collections.parties[index].address
+    //       // const index = formDefaults.
+    //     }
+    //   }
+    // )
+    // onMounted(() => {
+    //   if (formData.isEdit) {
+    //     formData.fields.value.address = formData.fields.value.address
+    //   }
+    // })
+
     return {
       ...formData,
       CategoryForm,
