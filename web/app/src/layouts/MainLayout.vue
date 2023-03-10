@@ -159,7 +159,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Payment Receipts',
         icon: 'mdi-receipt',
-        link: '/party/',
+        link: '/payment-receipt/list/',
       },
       {
         title: 'Sales Discounts',

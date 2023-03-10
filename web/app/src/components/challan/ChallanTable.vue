@@ -204,7 +204,6 @@ export default {
       })
     }
     const removeRow = (index) => {
-      debugger
       if (props.errors || props.isEdit)
         emit(
           'deleteRow',

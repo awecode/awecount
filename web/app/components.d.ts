@@ -10,7 +10,6 @@ declare module '@vue/runtime-core' {
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
-    Header: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']
@@ -19,7 +18,6 @@ declare module '@vue/runtime-core' {
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SalesVoucherPrint: typeof import('./src/components/print/SalesVoucherPrint.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
   }

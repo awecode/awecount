@@ -72,6 +72,16 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
       },
       {
+        path: '/payment-receipt/list/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptList.vue'),
+      },
+      {
+        path: '/payment-receipt/add/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+      },
+      {
         path: '/challan/list/',
         component: () => import('src/pages/sales/challan/ChallanList.vue'),
       },
@@ -184,11 +194,11 @@ const routes: RouteRecordRaw[] = [
         path: 'bank/account/:id/edit/',
         component: () => import('src/pages/bank/account/AccountForm.vue'),
       },
-      {
-        path: 'bank/account/:id/view/',
-        component: () => import('src/pages/bank/account/AccountDetail.vue'),
-        props: true,
-      },
+      // {
+      //   path: 'bank/account/:id/view/',
+      //   component: () => import('src/pages/bank/account/AccountDetail.vue'),
+      //   props: true,
+      // },
       {
         path: 'bank',
         component: () => import('src/pages/bank/account/AccountList.vue'),
@@ -219,11 +229,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
         props: true,
       },
-      {
-        path: 'journal-entries/:slug/:id/',
-        component: () => import('src/pages/journal-entry/[slugUrl].vue'),
-        props: true,
-      },
+      // {
+      //   path: 'journal-entries/:slug/:id/',
+      //   component: () => import('src/pages/journal-entry/[slugUrl].vue'),
+      //   props: true,
+      // },
       {
         path: 'bank/cheque/cheque-deposit/add/',
         component: () =>

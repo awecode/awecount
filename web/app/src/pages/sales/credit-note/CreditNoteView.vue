@@ -122,7 +122,6 @@ export default {
       } else if (status === 'Cancelled') {
         endpoint = `/v1/credit-note/${id}/cancel/`
         body = { method: 'POST' }
-        debugger
       }
       useApi(endpoint, body)
         .then(() => {

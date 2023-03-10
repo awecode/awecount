@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <q-form class="q-pa-lg">
     <q-card class="q-pa-xs"
       ><q-card-section>
@@ -185,4 +185,6 @@ export default {
     }
   },
 }
-</script>
+</script> -->
+
+<template>Journal voucher</template>

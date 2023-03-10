@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <q-form class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
@@ -165,4 +165,8 @@ export default {
     }
   },
 }
-</script>
+</script> -->
+
+<template>
+  <div>Cheque Issue Form</div>
+</template>
