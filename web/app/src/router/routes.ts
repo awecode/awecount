@@ -82,6 +82,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
       },
       {
+        path: '/payment-receipt/:id/view/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptView.vue'),
+      },
+      {
         path: '/challan/list/',
         component: () => import('src/pages/sales/challan/ChallanList.vue'),
       },

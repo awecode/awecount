@@ -221,31 +221,6 @@ export default {
         const url = `/v1/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
         useApi(url)
           .then((data) => {
-            // if (fields.invoices) {
-            //   fields.invoices.push(data.id)
-            // } else fields.invoices = [data.id]
-            // const removeArr = [
-            //   'id',
-            //   'date',
-            //   'voucher_meta',
-            //   'print_count',
-            //   'issue_datetime',
-            //   'is_export',
-            //   'status',
-            //   'due_date',
-            //   'date',
-            //   'remarks',
-            // ]
-            // removeArr.forEach((item) => {
-            //   delete data[item]
-            // })
-            // for (const key in data) {
-            //   fields[key] = data[key]
-            //   // if (key === )
-            // }
-            // if (data.discount_obj && data.discount_obj.id) {
-            //   fields.discount_type = data.discount_obj.id
-            // }
             if (!fields.party_id) {
               fields.party_id = data.party_id
               fields.party_name = data.party_name
@@ -277,7 +252,6 @@ export default {
                 position: 'top-right',
               })
             }
-            // addInoviceModal.value = false
           })
           .catch((err) => {
             if (err.status === 404) {
@@ -288,7 +262,6 @@ export default {
                 position: 'top-right',
               })
             }
-            // addRefrence.value = false
           })
       } else {
         $q.notify({

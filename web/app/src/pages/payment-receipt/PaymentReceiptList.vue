@@ -97,7 +97,7 @@
             <q-btn
               color="blue"
               label="View"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/payment-receipt/${props.row.id}/view`"
             />
           </div>
         </q-td>
