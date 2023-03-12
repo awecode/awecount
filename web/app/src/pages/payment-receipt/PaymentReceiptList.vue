@@ -75,6 +75,21 @@
           </div>
         </q-td>
       </template>
+      <template v-slot:body-cell-invoices="props">
+        <q-td :props="props">
+          <div class="row align-center text-subtitle2 text-grey-8">
+            <span v-for="invoice in props.row.invoices" :key="invoice.id">
+              <router-link
+                class="text-blue"
+                style="text-decoration: none"
+                :to="`/sales-voucher/${invoice.id}/view`"
+              >
+                #{{ invoice.id }}
+              </router-link></span
+            >
+          </div>
+        </q-td>
+      </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
@@ -97,7 +112,7 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
-    const endpoint = '/v1/sales-voucher/'
+    const endpoint = '/v1/payment-receipt/'
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export/')
@@ -111,33 +126,39 @@ export default {
         .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
-      {
-        name: 'voucher_no',
-        label: 'Voucher no',
-        align: 'left',
-        field: 'voucher_no',
-      },
+      { name: 'date', label: 'Date', align: 'left', field: 'date' },
       {
         name: 'party_name',
-        label: 'Party name',
+        label: 'Party',
         align: 'left',
         field: 'party_name',
       },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
       {
-        name: 'total_amount',
-        label: 'Total amount',
+        name: 'mode',
+        label: 'Mode',
         align: 'left',
-        field: 'total_amount',
+        field: 'mode',
       },
       {
-        name: 'payment_receipts',
-        label: 'Payment receipts',
+        name: 'amount',
+        label: 'Amount',
         align: 'left',
-        field: 'payment_receipts',
+        field: 'amount',
       },
-      { name: 'actions' },
+      {
+        name: 'tds_amount',
+        label: 'TDS',
+        align: 'left',
+        field: 'tds_amount',
+      },
+      {
+        name: 'invoices',
+        label: 'Invoice(s)',
+        align: 'left',
+        field: 'invoices',
+      },
+      { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
     return { ...listData, newColumn, onDownloadXls }

@@ -14,7 +14,14 @@
           <div class="row">
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <span style="flex-grow: 1"
-                ><q-input label="For Invoice(s)" disabled="true"> </q-input
+                ><q-input
+                  v-model="referenceInvoicesComputed"
+                  label="For Invoice(s)"
+                  disable
+                  :error-message="errors.invoices"
+                  :error="!!errors.invoices"
+                >
+                </q-input
               ></span>
               <span
                 class="row items-center"
@@ -27,12 +34,13 @@
                 </q-btn
               ></span>
             </div>
-            <!-- <q-input
+            <q-input
               class="col-md-6 col-12"
-              label="Deposit Date*"
-              v-model="fields.date"
+              label="Party"
+              v-model="fields.party_name"
+              disable
             >
-            </q-input> -->
+            </q-input>
           </div>
           <div class="row q-col-gutter-md">
             <q-input
@@ -127,7 +135,7 @@
       </q-card>
       <div class="q-ma-md row q-pb-lg">
         <q-btn
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
           color="green-8"
           :label="isEdit ? 'Update' : 'Create'"
         />
@@ -142,11 +150,36 @@
         </q-card-section>
         <q-separator inset />
         <q-card-section class="q-mb-md">
-          <div class="text-right q-mt-lg row justify-between q-mx-md">
-            <q-input label="Invoice No.*" class="col-12"> </q-input>
+          <div class="q-mt-lg q-mx-md">
+            <q-input
+              v-model="invoiceFormData.invoice_no"
+              label="Invoice No.*"
+              class="col-12"
+            >
+            </q-input>
+            <div class="q-mx-0 q-my-md">
+              <q-checkbox
+                v-model="invoiceFormData.tax_deducted_at_source"
+                label="Tax Deducted at Source?"
+              />
+            </div>
+            <q-select
+              label="Fiscal Year"
+              v-model="invoiceFormData.fiscal_year"
+              :options="formDefaults.options?.fiscal_years"
+              option-value="id"
+              option-label="name"
+              map-options
+              emit-value
+            ></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn label="update" color="orange-5" class="q-mt-md"></q-btn>
+            <q-btn
+              label="Add"
+              color="green"
+              class="q-mt-md"
+              @click="() => fetchInvoice(fields)"
+            ></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -160,13 +193,15 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const endpoint = '/v1/payment-receipt/'
+    const $q = useQuasar()
     const openDatePicker = ref(false)
     const addInoviceModal = ref(false)
     const invoiceFormData = ref({
       fiscal_year: null,
       invoice_no: null,
+      tax_deducted_at_source: true,
     })
-    // const $q = useQuasar()
+    const invoice_nos = ref([])
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/payment-receipt/list/',
@@ -175,43 +210,111 @@ export default {
       fields.status = status
       submitForm()
     }
-    // const switchPartyMode = (fields, isEdit) => {
-    //   if (isEdit && !!fields.customer_name) {
-    //     fields.customer_name = null
-    //     partyMode.value = true
-    //   } else {
-    //     if (partyMode.value) {
-    //       fields.party_name = null
-    //       fields.party = null
-    //     } else {
-    //       fields.customer_name = null
-    //     }
-    //     partyMode.value = !partyMode.value
-    //   }
-    // }
+    const referenceInvoicesComputed = computed(
+      () => invoice_nos.value.join(',') || '-'
+    )
+    const fetchInvoice = async (fields) => {
+      if (
+        invoiceFormData.value.invoice_no &&
+        invoiceFormData.value.fiscal_year
+      ) {
+        const url = `/v1/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
+        useApi(url)
+          .then((data) => {
+            // if (fields.invoices) {
+            //   fields.invoices.push(data.id)
+            // } else fields.invoices = [data.id]
+            // const removeArr = [
+            //   'id',
+            //   'date',
+            //   'voucher_meta',
+            //   'print_count',
+            //   'issue_datetime',
+            //   'is_export',
+            //   'status',
+            //   'due_date',
+            //   'date',
+            //   'remarks',
+            // ]
+            // removeArr.forEach((item) => {
+            //   delete data[item]
+            // })
+            // for (const key in data) {
+            //   fields[key] = data[key]
+            //   // if (key === )
+            // }
+            // if (data.discount_obj && data.discount_obj.id) {
+            //   fields.discount_type = data.discount_obj.id
+            // }
+            if (!fields.party_id) {
+              fields.party_id = data.party_id
+              fields.party_name = data.party_name
+            }
+            if (fields.invoices.includes(data.id)) {
+              $q.notify({
+                color: 'red-6',
+                message: 'The invoice has already been added!',
+                icon: 'report_problem',
+                position: 'top-right',
+              })
+            } else if (fields.party_id === data.party_id) {
+              fields.invoice_nos.push(data.voucher_no)
+              fields.invoices.push(data.id)
+              let invoice_tds = 0
+              if (invoiceFormData.value.tax_deducted_at_source) {
+                invoice_tds = data.taxable * 0.015
+              }
+              fields.tds_amount += invoice_tds
+              fields.amount =
+                (fields.amount || 0) + data.amount - (invoice_tds || 0)
+              addInoviceModal.value = false
+            } else {
+              $q.notify({
+                color: 'red-6',
+                message:
+                  'A single payment receipt can be issued to a single party only!',
+                icon: 'report_problem',
+                position: 'top-right',
+              })
+            }
+            // addInoviceModal.value = false
+          })
+          .catch((err) => {
+            if (err.status === 404) {
+              $q.notify({
+                color: 'red-6',
+                message: 'Invoice not found!',
+                icon: 'report_problem',
+                position: 'top-right',
+              })
+            }
+            // addRefrence.value = false
+          })
+      } else {
+        $q.notify({
+          color: 'red-6',
+          message: 'Please fill in the form completely!',
+          icon: 'report_problem',
+          position: 'top-right',
+        })
+      }
+    }
     formData.fields.value.date = formData.today
+    formData.fields.value.cheque_date = formData.today
     formData.fields.value.mode = 'Cheque'
-    // watch(
-    //   () => formData.fields.value.party,
-    //   (newValue) => {
-    //     if (newValue) {
-    //       const index =
-    //         formData.formDefaults.value.collections.parties.findIndex(
-    //           (option) => option.id === newValue
-    //         )
-    //       formData.fields.value.address =
-    //         formData.formDefaults.value.collections.parties[index].address
-    //       // const index = formDefaults.
-    //     }
-    //   }
-    // )
+    formData.fields.value.invoices = []
+    formData.fields.value.invoice_nos = invoice_nos
+    formData.fields.value.tds_amount = 0
+    formData.fields.value.cleared = false
     return {
       ...formData,
       onSubmitClick,
       addInoviceModal,
       invoiceFormData,
+      fetchInvoice,
+      referenceInvoicesComputed,
+      invoice_nos,
     }
   },
-  // onmounted: () => console.log('mounted'),
 }
 </script>
