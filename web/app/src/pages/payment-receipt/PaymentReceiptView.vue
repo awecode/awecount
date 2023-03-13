@@ -203,25 +203,26 @@
       class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
       v-if="fields"
     >
-      <div class="row q-gutter-x-sm">
+      <div class="row q-gutter-x-sm q-mb-md">
         <q-btn
-          @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
           color="orange-7"
           label="Edit"
           icon="edit"
+          :to="`/payment-receipt/${fields.id}/`"
         />
         <span
           v-if="fields.status !== 'Cancelled'"
           class="row q-gutter-x-sm q-ml-none"
         >
           <q-btn
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            v-if="fields.status !== 'Cleared'"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
             color="green"
             label="mark as cleared"
             icon="mdi-check-all"
           />
           <q-btn
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            @click.prevent="() => (isDeleteOpen = true)"
             color="red"
             label="cancel"
             icon="cancel"
@@ -230,11 +231,18 @@
       </div>
       <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
         <q-btn
+          v-if="fields.mode === 'Cheque'"
+          color="blue-7"
+          label="View Cheque deposit"
+          icon="mdi-checkbook"
+          :to="`/bank/cheque/cheque-deposit/${fields?.id}/view/`"
+        />
+        <q-btn
           v-if="fields.status === 'Cleared'"
           color="blue-7"
           label="Journal Entries"
-          icon="mdi-table"
-          :to="`/sales-voucher/${fields?.voucher_no}/mv`"
+          icon="books"
+          :to="`/journal-entries/payment-receipt/${fields?.id}/`"
         />
       </div>
       <q-dialog v-model="isDeleteOpen">
@@ -245,13 +253,19 @@
             </div>
           </q-card-section>
           <q-separator inset />
-          <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
-            <div class="text-right q-mt-lg">
-              <q-btn
-                label="Confirm"
-                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
-              ></q-btn>
+          <q-card-section>
+            <div class="q-mb-lg text-grey-8">
+              <strong>Are you sure?</strong>
+            </div>
+            <div class="q-mx-xl text-blue">
+              <div class="row justify-center">
+                <q-btn
+                  class="q-mr-md"
+                  label="Yes"
+                  @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+                ></q-btn>
+                <q-btn label="No" @click="() => (isDeleteOpen = false)"></q-btn>
+              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -284,11 +298,11 @@ export default {
     const submitChangeStatus = (id: number, status: string) => {
       let endpoint = ''
       let body: null | object = null
-      if (status === 'Paid') {
-        endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
+      if (status === 'Cleared') {
+        endpoint = `/v1/payment-receipt/${id}/mark_as_cleared/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/sales-voucher/${id}/cancel/`
+        endpoint = `/v1/payment-receipt/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)

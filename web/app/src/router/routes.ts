@@ -51,11 +51,13 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
       },
+      // journal entries
       {
         path: '/journal-entries/sales-voucher/:id/',
         component: () =>
           import('src/pages/voucher/SalesVoucherJournalEntries.vue'),
       },
+      // journal entries
       {
         path: '/sales-voucher/:id/',
         component: () =>
@@ -82,9 +84,19 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
       },
       {
+        path: '/payment-receipt/:id/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+      },
+      {
         path: '/payment-receipt/:id/view/',
         component: () =>
           import('src/pages/payment-receipt/PaymentReceiptView.vue'),
+      },
+      {
+        path: '/journal-entries/payment-receipt/:id/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),
       },
       {
         path: '/challan/list/',

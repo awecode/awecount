@@ -11,8 +11,8 @@
 
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row">
-            <div class="col-md-6 col-12 row q-col-gutter-md">
+          <div class="row q-col-gutter-md">
+            <div class="col-md-6 col-12 row no-wrap">
               <span style="flex-grow: 1"
                 ><q-input
                   v-model="referenceInvoicesComputed"
@@ -24,7 +24,7 @@
                 </q-input
               ></span>
               <span
-                class="row items-center"
+                class="row items-center q-ml-sm"
                 style="flex-grow: 0; flex-shrink: 0"
                 ><q-btn
                   icon="add"

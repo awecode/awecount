@@ -13,7 +13,7 @@
       <q-separator inset />
       <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
         <q-card-section>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Bank Account</div>
               <div class="col-6">{{ fields?.bank_account_name || '-' }}</div>
@@ -23,7 +23,7 @@
               <div class="col-6">{{ fields?.benefactor_name || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Amount</div>
               <div class="col-6">{{ fields?.amount || '-' }}</div>
@@ -33,7 +33,7 @@
               <div class="col-6">{{ fields?.date || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Cheque Date</div>
               <div class="col-6">{{ fields?.cheque_date || '-' }}</div>
@@ -43,7 +43,7 @@
               <div class="col-6">{{ fields?.cheque_number || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Voucher Number</div>
               <div class="col-6">{{ fields?.voucher_no || '-' }}</div>
@@ -53,7 +53,7 @@
               <div class="col-6">{{ fields?.deposited_by || '-' }}</div>
             </div>
           </div>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Clearing Date</div>
               <div class="col-6">{{ fields?.clearing_date || '-' }}</div>
@@ -76,7 +76,7 @@
         </div>
       </q-card-section>
     </q-card>
-    <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
+    <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs" v-if="fields">
       <div>
         <q-btn
           :to="`/bank/cheque/cheque-deposit/${id}/edit/`"
@@ -86,27 +86,27 @@
           class="text-h7 q-py-sm"
         />
       </div>
-      <div v-if="fields?.status == 'Issued'">
+      <div v-if="fields?.status === 'Issued'">
         <q-btn
-          @click.prevent="saveAsDraft"
+          @click.prevent="onClearedClick"
           color="green"
           icon="done_all"
           label="Mark as cleared"
           class="text-h7 q-py-sm"
         />
       </div>
-      <div v-if="fields?.status != 'Cancelled'">
+      <div v-if="fields?.status !== 'Cancelled'">
         <q-btn
-          @click.prevent="cancel"
+          @click.prevent="() => (isDeleteOpen = true)"
           color="red"
           icon="block"
           label="Cancel"
           class="text-h7 q-py-sm"
         />
       </div>
-      <div class="q-ml-auto" v-if="fields?.status == 'Cleared'">
+      <div class="q-ml-auto" v-if="fields?.status === 'Cleared'">
         <q-btn
-          :to="`/journal-entries/cheque-deposit/${id}/`"
+          :to="`/journal-entries/payment-receipt/${fields.id}/`"
           color="blue"
           icon="library_books"
           label="Journal Entries"
@@ -114,6 +114,27 @@
         />
       </div>
     </div>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-red-6">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancelation?</span>
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-lg text-grey-8">
+            <strong>Are you sure?</strong>
+          </div>
+          <div class="q-mx-xl text-blue">
+            <div class="row justify-center">
+              <q-btn class="q-mr-md" label="Yes" @click="cancel"></q-btn>
+              <q-btn label="No" @click="() => (isDeleteOpen = false)"></q-btn>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -122,15 +143,15 @@ import useApi from 'src/composables/useApi'
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
-
+const isDeleteOpen = ref(false)
 const getData = () =>
-  useApi(`/v1/cheque-deposit/${props.id}/details/`).then((data) => {
+  useApi(`/v1/cheque-deposits/${props.id}/details/`).then((data) => {
     fields.value = data
   })
 getData()
 
-const saveAsDraft = () => {
-  useApi(`/v1/cheque-deposit/${props.id}/mark_as_cleared/`, {
+const onClearedClick = () => {
+  useApi(`/v1/cheque-deposits/${props.id}/mark_as_cleared/`, {
     method: 'POST',
     body: {},
   })
@@ -152,14 +173,18 @@ const saveAsDraft = () => {
 }
 
 const cancel = () => {
-  useApi(`/v1/cheque-deposit/${props.id}/cancel/`, { method: 'POST', body: {} })
+  useApi(`/v1/cheque-deposits/${props.id}/cancel/`, {
+    method: 'POST',
+    body: {},
+  })
     .then(() => {
-      getData()
       $q.notify({
         color: 'positive',
         message: 'Success',
         icon: 'check_circle',
       })
+      fields.value.status = 'Cancelled'
+      isDeleteOpen.value = false
     })
     .catch(() => {
       $q.notify({
