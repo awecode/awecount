@@ -25,7 +25,12 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn">
+            <q-icon name="mdi-filter-variant"></q-icon>
+            <q-menu>
+              <ListFilter />
+            </q-menu>
+          </q-btn>
         </div>
       </template>
 
@@ -65,6 +70,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import ListFilter from '/src/components/sales/row/ListFilter.vue'
 export default {
   setup() {
     const endpoint = '/v1/sales-row/'
@@ -121,7 +127,7 @@ export default {
       },
     ]
 
-    return { ...listData, newColumn }
+    return { ...listData, newColumn, ListFilter }
   },
 }
 </script>

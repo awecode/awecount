@@ -13,6 +13,7 @@ declare module '@vue/runtime-core' {
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']
+    ListFilter: typeof import('./src/components/sales/row/ListFilter.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
