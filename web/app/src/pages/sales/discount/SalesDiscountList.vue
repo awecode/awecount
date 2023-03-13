@@ -3,8 +3,8 @@
     <div class="row q-gutter-x-md justify-end">
       <q-btn
         color="green"
-        to="/payment-receipt/add/"
-        label="New Receipt"
+        to="/sales-discount/add/"
+        label="New sales discount"
         icon-right="add"
       />
     </div>
@@ -75,31 +75,28 @@
           </div>
         </q-td>
       </template>
-      <template v-slot:body-cell-invoices="props">
+      <template v-slot:body-cell-trade_discount="props">
         <q-td :props="props">
-          <div class="row align-center text-subtitle2 text-grey-8">
-            <span v-for="invoice in props.row.invoices" :key="invoice.id">
-              <router-link
-                class="text-blue"
-                style="text-decoration: none"
-                :to="`/sales-voucher/${invoice.id}/view`"
-              >
-                #{{ invoice.id }}
-              </router-link></span
-            >
+          <div
+            class="row align-center text-subtitle2 text-grey-8 justify-center"
+          >
+            <q-checkbox
+              disable
+              v-model="props.row.trade_discount"
+              color="grey"
+            ></q-checkbox>
+            <!-- {{ props.row.trade_discount }} -->
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/payment-receipt/${props.row.id}/view`"
-            />
-          </div>
+          <q-btn
+            color="orange-6"
+            label="Edit"
+            :to="`/sales-discount/${props.row.id}/`"
+          />
         </q-td>
       </template>
     </q-table>
@@ -108,59 +105,39 @@
 
 <script>
 import useList from '/src/composables/useList'
-import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
-    const endpoint = '/v1/payment-receipt/'
+    const endpoint = '/v1/sales-discount/'
     const listData = useList(endpoint)
-    const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
-        .then((data) =>
-          usedownloadFile(
-            data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Credit_Notes'
-          )
-        )
-        .catch((err) => console.log('Error Due To', err))
-    }
     const newColumn = [
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
       {
-        name: 'party_name',
-        label: 'Party',
+        name: 'name',
+        label: 'Name',
         align: 'left',
-        field: 'party_name',
+        field: 'name',
       },
-      { name: 'status', label: 'Status', align: 'left', field: 'status' },
+      { name: 'type', label: 'Type', align: 'left', field: 'type' },
       {
-        name: 'mode',
-        label: 'Mode',
+        name: 'value',
+        label: 'Value',
         align: 'left',
-        field: 'mode',
-      },
-      {
-        name: 'amount',
-        label: 'Amount',
-        align: 'left',
-        field: 'amount',
+        field: 'value',
       },
       {
-        name: 'tds_amount',
-        label: 'TDS',
-        align: 'left',
-        field: 'tds_amount',
+        name: 'trade_discount',
+        label: 'Trade Discount',
+        align: 'center',
+        field: 'trade_discount',
       },
       {
-        name: 'invoices',
-        label: 'Invoice(s)',
-        align: 'left',
-        field: 'invoices',
+        name: 'actions',
+        label: 'Actions',
+        align: 'right',
+        field: 'actions',
       },
-      { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
-    return { ...listData, newColumn, onDownloadXls }
+    return { ...listData, newColumn }
   },
 }
 // const {

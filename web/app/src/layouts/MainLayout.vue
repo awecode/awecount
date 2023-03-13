@@ -164,7 +164,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Discounts',
         icon: 'mdi-sale',
-        link: '/income/item/',
+        link: '/sales-discount/list/',
       },
       {
         title: 'Sales Reoprt',

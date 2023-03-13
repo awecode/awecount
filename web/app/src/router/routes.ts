@@ -94,6 +94,21 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/payment-receipt/PaymentReceiptView.vue'),
       },
       {
+        path: '/sales-discount/list/',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountList.vue'),
+      },
+      {
+        path: '/sales-discount/add/',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+      },
+      {
+        path: '/sales-discount/:id/',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+      },
+      {
         path: '/journal-entries/payment-receipt/:id/',
         component: () =>
           import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),

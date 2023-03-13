@@ -77,14 +77,13 @@ export default {
     const endpoint = '/v1/sales-discount/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/sales-discount/',
+      successRoute: '/sales-discount/list/',
     })
     const type = [
       { value: 'Amount', id: 'Amount' },
       { value: 'Percent', id: 'Percent' },
     ]
     formData.fields.value.trade_discount = true
-    // TODO: add load from saved options
     return {
       CategoryForm,
       ...formData,
