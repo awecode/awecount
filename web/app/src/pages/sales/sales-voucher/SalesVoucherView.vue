@@ -164,9 +164,9 @@ export default {
       }
     }
     const onPrintclick = (bodyOnly: boolean) => {
-      const endpoint = `/v1/sales-voucher/${fields.value.voucher_no}/log-print/`
+      const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
       useApi(endpoint, { method: 'POST' })
-        .then((data) => {
+        .then(() => {
           if (fields.value) {
             fields.value.print_count = fields.value?.print_count + 1
           }

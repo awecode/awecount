@@ -171,9 +171,7 @@ export default function useGeneratePdf(
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.value.party
-          ? invoiceInfo.value.party_name
-          : invoiceInfo.value.customer_name
+        invoiceInfo.party ? invoiceInfo.party_name : invoiceInfo.customer_name
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address

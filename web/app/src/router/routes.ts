@@ -109,6 +109,10 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/sales/discount/SalesDiscountForm.vue'),
       },
       {
+        path: '/sales-row/list/',
+        component: () => import('src/pages/sales/row/SalesRowList.vue'),
+      },
+      {
         path: '/journal-entries/payment-receipt/:id/',
         component: () =>
           import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),

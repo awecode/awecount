@@ -169,7 +169,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Reoprt',
         icon: 'mdi-format-list-bulleted',
-        link: '/retention/',
+        link: '/sales-row/list/',
       },
       {
         title: 'Sales Book',
