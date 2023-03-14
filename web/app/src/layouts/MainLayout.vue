@@ -174,7 +174,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Book',
         icon: 'mdi-book',
-        link: '/retention/',
+        link: '/sales-book/list/',
       },
     ],
   },

@@ -153,7 +153,7 @@
       </template>
     </q-table>
     <!-- {{ aggregate }} -->
-    <q-card class="q-mt-md">
+    <q-card class="q-mt-md" v-if="aggregate">
       <q-card-section>
         <div>
           <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">

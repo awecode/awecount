@@ -113,6 +113,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/sales/row/SalesRowList.vue'),
       },
       {
+        path: '/sales-book/list/',
+        component: () => import('src/pages/sales/book/SalesBookList.vue'),
+      },
+      {
         path: '/journal-entries/payment-receipt/:id/',
         component: () =>
           import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),
