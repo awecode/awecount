@@ -43,7 +43,6 @@
                   v-model="fields.discount_type"
                   label="Discount*"
                   :error="errors.discount_type"
-                  :error-message="errors.discount_type"
                   :options="
                     formDefaults.collections
                       ? staticOptions.discount_types.concat(
@@ -151,18 +150,11 @@
         <div class="col-12 col-md-6 row justify-between">
           <div>
             <q-checkbox
-              label="Export?"
-              v-model="fields.is_export"
+              label="Import?"
+              v-model="fields.is_import"
               class="q-mt-md col-3"
             ></q-checkbox>
           </div>
-          <q-select
-            v-model="fields.sales_agent"
-            label="Sales Agent"
-            class="col-8"
-            :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"
-          ></q-select>
           <!-- TODO: add sales agent form -->
         </div>
       </div>
@@ -202,18 +194,8 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/sales-voucher/list/',
+      successRoute: '/purchase-voucher/list/',
     })
-    const partyMode = ref(false)
-    const switchMode = (fields) => {
-      if (fields.mode !== 'Credit') {
-        partyMode.value = !partyMode.value
-      } else
-        $q.notify({
-          color: 'orange-4',
-          message: 'Credit customer must be a party!',
-        })
-    }
     const deleteRowErr = (index, errors, deleteObj) => {
       if (deleteObj) {
         if (!formData.fields.value.deleted_rows) {
@@ -228,7 +210,7 @@ export default {
       submitForm()
     }
     formData.fields.value.date = formData.today
-    formData.fields.value.is_export = false
+    formData.fields.value.is_import = false
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
 
@@ -261,8 +243,6 @@ export default {
       openDatePicker,
       staticOptions,
       InvoiceTable,
-      partyMode,
-      switchMode,
       deleteRowErr,
       onSubmitClick,
     }

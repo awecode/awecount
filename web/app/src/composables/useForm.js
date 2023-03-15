@@ -104,6 +104,9 @@ export default (endpoint, config) => {
         let message
         if (data.status == 400) {
           message = 'Error!'
+          if (data.data?.detail) {
+            message = `${data.data.detail}`
+          }
           processErrors(data.response._data)
         }
         if (data.status == 404) {
