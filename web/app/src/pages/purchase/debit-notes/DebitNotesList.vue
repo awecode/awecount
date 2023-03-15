@@ -9,8 +9,8 @@
       />
       <q-btn
         color="green"
-        to="/purchase-voucher/add/"
-        label="New Purchase"
+        to="/debit-note/add/"
+        label="New Debit Note"
         icon-right="add"
       />
     </div>
@@ -99,7 +99,7 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
-    const endpoint = '/v1/purchase-vouchers/'
+    const endpoint = '/v1/debit-note/'
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export/')

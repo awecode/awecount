@@ -190,7 +190,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Debit Notes',
         icon: 'mdi-clipboard-arrow-up',
-        link: '/income/item/',
+        link: '/debit-note/list/',
       },
       {
         title: 'Purchase Discounts',

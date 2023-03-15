@@ -144,6 +144,16 @@ const routes: RouteRecordRaw[] = [
           ),
       },
       {
+        path: '/debit-note/list/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesList.vue'),
+      },
+      {
+        path: '/debit-note/add/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
+      },
+      {
         path: '/journal-entries/payment-receipt/:id/',
         component: () =>
           import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),
