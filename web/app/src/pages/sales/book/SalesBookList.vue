@@ -24,11 +24,12 @@
               <q-btn label="Filter" color="green"></q-btn>
             </div>
           </div>
-          <div class="row items-end">
+          <div class="row items-end" v-if="aggregate">
             <q-btn
               label="Export Xls"
               color="blue"
               icon-right="download"
+              @click="onDownloadXls"
             ></q-btn>
           </div>
         </div>
@@ -137,6 +138,7 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const route = useRoute()
     const endpoint = '/v1/sales-book/'
     const listData = useList(endpoint)
     const newColumn = [
@@ -206,9 +208,23 @@ export default {
         field: 'meta_tax',
       },
     ]
+    const onDownloadXls = () => {
+      const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
+      debugger
+      useApi('v1/sales-book/export/' + downloadEndpoint)
+        .then((data) =>
+          usedownloadFile(
+            data,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Sales Book'
+          )
+        )
+        .catch((err) => console.log('Error Due To', err))
+    }
     return {
       ...listData,
       newColumn,
+      onDownloadXls,
     }
   },
 }
