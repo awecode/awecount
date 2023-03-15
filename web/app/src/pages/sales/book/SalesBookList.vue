@@ -13,24 +13,36 @@
       rows-per-page-options
     >
       <template v-slot:top>
-        <div class="row q-col-gutter-md">
-          <q-input label="From Date"> </q-input>
-          <q-input label="To Date"> </q-input>
+        <div
+          class="row q-col-gutter-md full-width"
+          style="justify-content: space-between"
+        >
+          <div class="row q-col-gutter-md">
+            <q-input label="From Date"> </q-input>
+            <q-input label="To Date"> </q-input>
+            <div class="row items-end">
+              <q-btn label="Filter" color="green"></q-btn>
+            </div>
+          </div>
           <div class="row items-end">
-            <q-btn label="Filter" color="green"></q-btn>
+            <q-btn
+              label="Export Xls"
+              color="blue"
+              icon-right="download"
+            ></q-btn>
           </div>
         </div>
       </template>
 
-      <template v-slot:body-cell-voucher_id="props">
+      <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
           <div class="row align-center">
             <router-link
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
-              :to="`/sales-voucher/${props.row.voucher_id}/view`"
+              :to="`/sales-voucher/${props.row.voucher_no}/view`"
             >
-              {{ props.row.voucher_id }}
+              {{ props.row.voucher_no }}
             </router-link>
           </div>
         </q-td>
@@ -39,13 +51,35 @@
         <q-tr>
           <q-th colspan="4" style="text-align: center">Invoice</q-th>
           <q-th rowspan="2" style="text-align: center">Total Sales</q-th>
-          <q-th rowspan="2" style="text-align: center">Non Taxable Sales</q-th>
-          <q-th colspan="3" style="text-align: center">After Order</q-th>
-          <q-th colspan="3" style="text-align: center">Order</q-th>
+          <q-th
+            rowspan="2"
+            style="text-align: center"
+            :style="{ 'white-space': 'normal' }"
+            >Non Taxable Sales</q-th
+          >
+          <q-th
+            rowspan="2"
+            style="text-align: center"
+            :style="{ 'white-space': 'normal' }"
+            >Export Sales</q-th
+          >
+          <q-th rowspan="2" style="text-align: center">Discount</q-th>
+          <q-th rowspan="1" colspan="2" style="text-align: center"
+            >Taxable Sales</q-th
+          >
         </q-tr>
         <q-tr>
-          <q-th v-for="header in props.cols" :key="header.name"
-            ><span v-if="header.hide !== true">{{ header.label }}</span></q-th
+          <q-th
+            v-for="header in props.cols"
+            :key="header.name"
+            :style="
+              header.remove === true
+                ? {
+                    display: 'none',
+                  }
+                : ''
+            "
+            ><span>{{ header.label }}</span></q-th
           >
           <!-- <q-th :props="props" key="SalesCount">Biil No.</q-th>
           <q-th :props="props" key="DailySales">Buyers's Name</q-th>
@@ -101,7 +135,6 @@
 
 <script lang="ts">
 import useList from '/src/composables/useList'
-import { Ref } from 'vue'
 export default {
   setup() {
     const endpoint = '/v1/sales-book/'
@@ -111,7 +144,7 @@ export default {
         name: 'date',
         label: 'Date',
         align: 'left',
-        field: 'voucher__date',
+        field: 'date',
       },
       {
         name: 'voucher_no',
@@ -133,29 +166,44 @@ export default {
       },
       {
         name: 'total_sales',
-        hide: true,
+        remove: true,
         label: 'Total Sales',
         align: 'left',
         field: (row) => row.voucher_meta.grand_total,
       },
       {
         name: 'non_taxable_sales',
-        hide: true,
+        remove: true,
         label: 'Non Taxable Sales',
         align: 'left',
         field: (row) => row.voucher_meta.non_taxable,
       },
       {
-        name: 'tax_amount',
-        label: 'Tax',
+        name: 'export_sales',
+        remove: true,
+        label: 'Non Taxable Sales',
         align: 'left',
-        field: 'tax_amount',
+        field: '',
+      },
+      // TODO: add export sales
+      {
+        name: 'discount',
+        label: 'Discount',
+        align: 'left',
+        field: 'meta_discount',
+        remove: true,
       },
       {
-        name: 'net_amount',
+        name: 'amount',
         label: 'Amount',
         align: 'left',
-        field: 'net_amount',
+        field: 'meta_taxable',
+      },
+      {
+        name: 'tax',
+        label: 'Tax',
+        align: 'left',
+        field: 'meta_tax',
       },
     ]
     return {
