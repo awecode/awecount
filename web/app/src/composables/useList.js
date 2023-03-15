@@ -167,7 +167,7 @@ export default (endpoint, predefinedColumns = null) => {
   )
 
   const onFilterUpdate = () => {
-    debugger
+    // debugger
     let url = route.path
     let cleanedFilters = Object.fromEntries(
       Object.entries(filters.value).map(([k, v]) => {

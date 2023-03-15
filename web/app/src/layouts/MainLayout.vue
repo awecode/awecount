@@ -185,7 +185,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Purchases/Expenses',
         icon: 'shopping_cart',
-        link: '/income/',
+        link: '/purchase-voucher/list/',
       },
       {
         title: 'Debit Notes',
