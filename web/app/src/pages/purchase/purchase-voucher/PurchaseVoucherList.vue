@@ -67,16 +67,10 @@
 
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
-            {{ props.row.customer_name }}
-          </div>
-          <div v-else>
+          <div>
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
+              props.row.party
             }}</span>
           </div>
         </q-td>
@@ -84,11 +78,13 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md">
+          <div class="row q-gutter-x-md items-center">
             <q-btn
               color="blue"
               label="View"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/purchase-voucher/${props.row.id}/view`"
+              class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px"
             />
           </div>
         </q-td>
@@ -119,34 +115,34 @@ export default {
     const newColumn = [
       {
         name: 'voucher_no',
-        label: 'Voucher no',
+        label: 'Bill No.',
         align: 'left',
         field: 'voucher_no',
       },
       {
         name: 'party_name',
-        label: 'Party name',
+        label: 'Party',
         align: 'left',
         field: 'party_name',
       },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
+      { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      {
+        name: 'mode',
+        label: 'Mode',
+        align: 'left',
+        field: 'mode',
+      },
       {
         name: 'total_amount',
         label: 'Total amount',
         align: 'left',
         field: 'total_amount',
       },
-      {
-        name: 'payment_receipts',
-        label: 'Payment receipts',
-        align: 'left',
-        field: 'payment_receipts',
-      },
       { name: 'actions' },
     ]
 
-    return { ...listData, onDownloadXls }
+    return { ...listData, onDownloadXls, newColumn }
   },
 }
 // const {

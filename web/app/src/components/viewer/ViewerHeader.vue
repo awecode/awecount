@@ -1,6 +1,6 @@
 <template>
   <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2">
-    <div class="col-12 col-md-6 q-gutter-y-lg">
+    <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
       <div class="col-12 col-md-6 row">
         <div class="col-6">Party</div>
         <div class="col-6">{{ fields?.party_name }}</div>
@@ -62,7 +62,9 @@
               label="Mode"
               class="col-12"
               :options="
-                props.modeOptions ? modes.concat(props.modeOptions) : modes
+                props.modeOptions.length > 0
+                  ? modes.concat(props.modeOptions)
+                  : modes
               "
               option-value="id"
               option-label="name"
@@ -105,7 +107,7 @@ export default {
     modeOptions: {
       type: Array,
       default: () => {
-        return null
+        return []
       },
     },
     modelValue: {
@@ -139,9 +141,11 @@ export default {
           `${props.fields.discount_obj.type === 'Amount' ? '-/' : '%'}`
         )
       } else if (props.fields?.discount) {
-        ;`${props.fields.discount}` +
+        return (
+          `${props.fields.discount}` +
           ' ' +
           `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
+        )
       } else return false
     })
     const submitChangeModes = (id: number) => {

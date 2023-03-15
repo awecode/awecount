@@ -127,6 +127,16 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
       },
       {
+        path: '/purchase-voucher/:id/view/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherView.vue'),
+      },
+      {
+        path: '/purchase-voucher/:id/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+      },
+      {
         path: '/journal-entries/payment-receipt/:id/',
         component: () =>
           import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),

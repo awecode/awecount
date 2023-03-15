@@ -75,7 +75,7 @@
       <q-tr class="text-subtitle2">
         <td></td>
         <td>
-          <span> {{ numberToText(fields?.total_amount) }} </span>
+          <span>In Words: {{ numberToText(fields?.total_amount) }} </span>
         </td>
       </q-tr>
     </tbody>
@@ -94,65 +94,6 @@ export default {
     },
   },
   setup(props) {
-    // const columns = [
-    //   {
-    //     name: 'index',
-    //     // label for header
-    //     label: 'SN',
-
-    //     // row Object property to determine value for this column
-    //     field: 'index',
-    //     // OR field: row => row.some.nested.prop,
-
-    //     // (optional) if we use visible-columns, this col will always be visible
-    //     required: true,
-
-    //     // (optional) alignment
-    //     align: 'left',
-    //   },
-    //   {
-    //     name: 'Particular',
-    //     label: 'Particular',
-    //     field: 'item_name',
-    //     headerStyle: 'width: 400px; text-align: left',
-    //     style: 'width: 400px; text-align: left',
-    //   },
-    //   {
-    //     name: 'quantity',
-    //     label: 'Qty',
-    //     field: 'quantity',
-    //     headerStyle: 'text-align: left',
-    //     style: 'text-align: left',
-    //   },
-    //   {
-    //     name: 'rate',
-    //     label: 'Rate',
-    //     field: 'rate',
-    //     headerStyle: 'text-align: left',
-    //     style: 'text-align: left',
-    //   },
-    //   {
-    //     name: 'discount',
-    //     label: 'Discount',
-    //     field: 'discount',
-    //     headerStyle: 'text-align: left',
-    //     style: 'text-align: left',
-    //   },
-    //   {
-    //     name: 'Tax',
-    //     label: 'Tax',
-    //     field: 'Tax',
-    //     headerStyle: 'text-align: left',
-    //     style: 'text-align: left',
-    //   },
-    //   {
-    //     name: 'Amount',
-    //     label: 'Amount',
-    //     field: 'Amount',
-    //     headerStyle: 'text-align: left',
-    //     style: 'text-align: left',
-    //   },
-    // ]
     return {
       props,
       // columns,
