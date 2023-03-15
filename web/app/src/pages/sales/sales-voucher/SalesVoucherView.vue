@@ -90,7 +90,7 @@
           color="blue-7"
           label="Journal Entries"
           icon="books"
-          :to="`/journal-entries/sales-voucher/${this.$route.params.id}/`"
+          :to="`/journal-entries/purchase-voucher/${fields.id}/`"
         />
       </div>
       <q-dialog v-model="isDeleteOpen">

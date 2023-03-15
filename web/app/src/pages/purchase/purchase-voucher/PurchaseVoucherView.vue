@@ -84,6 +84,15 @@
           />
         </div>
       </div>
+      <div>
+        <q-btn
+          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+          :to="`/purchase-voucher/journal-entries/${fields?.id}/`"
+        />
+      </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
       <q-card style="min-width: min(40vw, 500px)">
