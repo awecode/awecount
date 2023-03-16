@@ -1,6 +1,57 @@
 <template>
   <div class="q-pa-md">
-    <q-table
+    <div>
+      <!-- <q-card
+        ><div
+          class="row full-width q-mt-xs q-px-lg q-py-md"
+          style="justify-content: space-between; padding-top: 0"
+        >
+          <div class="row q-col-gutter-md">
+            <q-input label="From Date"> </q-input>
+            <q-input label="To Date"> </q-input>
+            <div class="row items-end">
+              <q-btn label="Filter" color="green"></q-btn>
+            </div>
+          </div>
+          <div class="row items-end" v-if="aggregate">
+            <q-btn
+              label="Export Xls"
+              color="blue"
+              icon-right="download"
+              @click="onDownloadXls"
+            ></q-btn>
+          </div></div
+      ></q-card>
+    </div>
+    <q-card class="q-mt-md">
+      <q-card-section>
+        <table class="full-width">
+          <tr>
+            <th colspan="4">Invoice</th>
+            <th rowspan="2">Total Purchases</th>
+            <th rowspan="2">Non Taxable Purchases</th>
+            <th rowspan="2">Import Purchases</th>
+            <th rowspan="2">Discount</th>
+            <th colspan="2">Taxable Purchases</th>
+          </tr>
+          <tr>
+            <th>Date</th>
+            <th>Bill No.</th>
+            <th>Seller's Name</th>
+            <th>Tax No.</th>
+            <th>Amount</th>
+            <th>Tax</th>
+          </tr>
+          <tr v-for="row in rows" :key="row.id">
+            <td>{{ row.date }}</td>
+            <td>
+              <router-link :to="'/'">{{ row.voucher_no }}</router-link>
+            </td>
+          </tr>
+        </table>
+      </q-card-section>
+    </q-card> -->
+    <!-- <q-table
       title="Income Items"
       :rows="rows"
       :columns="newColumn"
@@ -75,29 +126,18 @@
             :key="header.name"
             :style="
               header.remove === true
-                ? {
+                ? {results
                     display: 'none',
                   }
                 : ''
             "
             ><span>{{ header.label }}</span></q-th
           >
-          <!-- <q-th :props="props" key="SalesCount">Biil No.</q-th>
-          <q-th :props="props" key="DailySales">Buyers's Name</q-th>
-          <q-th :props="props" key="BeforeOrderQty">Stock</q-th>
-          <q-th :props="props" key="BeforeOrderDays">Days</q-th>
-          <q-th :props="props" key="BeforeOrderDate">Date</q-th>
-          <q-th :props="props" key="AfterOrderQty">Stock</q-th>
-          <q-th :props="props" key="AfterOrderDays">Days</q-th>
-          <q-th :props="props" key="AfterOrderDate">Date</q-th>
-          <q-th :props="props" key="Price">Price</q-th>
-          <q-th :props="props" key="Discount">Discount</q-th>
-          <q-th :props="props" key="Total">Total</q-th> -->
         </q-tr>
       </template>
-    </q-table>
+    </q-table> -->
     <!-- {{ aggregate }} -->
-    <q-card class="q-mt-md" v-if="aggregate">
+    <!-- <q-card class="q-mt-md" v-if="aggregate">
       <q-card-section>
         <div>
           <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
@@ -118,19 +158,9 @@
               <div class="text-weight-bold">{{ value }}</div>
             </div>
           </div>
-          <!-- <div class="row">
-            <div class="col-6">
-              <span class="text-weight-medium text-grey-9"
-                >Total Sales Invoice(s) Issued</span
-              >
-            </div>
-            <div class="col-6">
-              <span class="text-weight-bold"> 15 </span>
-            </div>
-          </div> -->
         </div>
       </q-card-section>
-    </q-card>
+    </q-card> -->
   </div>
 </template>
 
@@ -230,7 +260,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped lang="scss">
 .search-bar {
   display: flex;
   width: 100%;
@@ -245,5 +275,20 @@ export default {
   width: 100px;
   flex-grow: 0;
   flex-shrink: 0;
+}
+table {
+  border: none;
+  border-collapse: collapse;
+  th {
+    font-weight: 500;
+    color: rgb(82, 82, 82);
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    border-bottom: 1px solid grey;
+    border-collapse: collapse;
+    padding: 5px;
+  }
 }
 </style>
