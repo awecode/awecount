@@ -77,7 +77,6 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center">
             <q-btn
               color="blue"
@@ -88,7 +87,6 @@
             />
           </div>
         </q-td>
-        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>

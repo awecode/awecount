@@ -1,4 +1,4 @@
-type VoucherType = 'salesVoucher' | 'creditNote'
+type VoucherType = 'salesVoucher' | 'creditNote' | 'debitNote'
 import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
 const loginStore: Record<string, string | number | object> = useLoginStore()
@@ -104,7 +104,7 @@ export default function useGeneratePdf(
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: Arial, Helvetica, sans-serif;">
       <div>
       ${
-        voucherType === 'creditNote'
+        voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
       <div>${numberToText(invoiceInfo.total_amount)}</div>`
@@ -139,7 +139,7 @@ export default function useGeneratePdf(
       </div>
   </div>
   ${
-    voucherType === 'creditNote'
+    voucherType === 'creditNote' || voucherType === 'debitNote'
       ? `<div style="font-weight: 600; margin-bottom: 10px; font-family: Arial, Helvetica, sans-serif;">In words: ${numberToText(
           invoiceInfo.total_amount
         )}</div> <div style="margin: 20px 0;"><span style="font-weight: 600;">Remarks:</span> ${
@@ -215,7 +215,7 @@ ${table}
   }
 </div>
 `
-  } else if (voucherType === 'creditNote') {
+  } else if (voucherType === 'creditNote' || 'debitNote') {
     body = `<div style="font-family: Arial, Helvetica, sans-serif; ${
       onlyBody ? 'margin-top: 80px;' : ''
     }
@@ -230,28 +230,46 @@ ${table}
         font-family: Arial, Helvetica, sans-serif;
       "
     >
-      <h4 style="margin: 0; font-size: 1.4rem">Credit Note</h4>
+      <h4 style="margin: 0; font-size: 1.4rem">${
+        voucherType === 'creditNote' ? 'Credit Note' : 'Debit Note'
+      }</h4>
       <span>Copy of Original (${invoiceInfo.print_count + 1})</span>
     </div>
     <div>
       <div style="display: flex; flex-direction: column; gap: 5px">
-        <div><span style="font-weight: 600; color: dimgray;">Credit Note No:</span>  (${
-          invoiceInfo.status
-        })</div>
+        <div><span style="font-weight: 600; color: dimgray;">${
+          voucherType === 'creditNote' ? 'Credit Note No:' : 'Debit Note No:'
+        }</span>  (${invoiceInfo.id})</div>
         <div style="${
           invoiceInfo.party_name ? '' : 'display: none;'
         }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
       invoiceInfo.party_name
-    }</div>
+    }
+    </div>
+    <div style="${
+      invoiceInfo.address ? '' : 'display: none;'
+    }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
+      invoiceInfo.address
+    }
+</div>
         <div style="${
-          invoiceInfo.status ? '' : 'display: none;'
+          invoiceInfo.customer_name ? '' : 'display: none;'
         }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
-      invoiceInfo.status
+      invoiceInfo.customer_name
     }</div>
-        <div><span style="font-weight: 600; color: dimgray;">Date:</span> 2023-03-03</div>
-        <div style="font-weight: 600">Ref. Invoice No.: #${
-          invoiceInfo.voucher_no
+        <div><span style="font-weight: 600; color: dimgray;">Date:</span> ${
+          invoiceInfo.date
         }</div>
+        <div style="${
+          voucherType === 'debitNote' ? 'display: none;' : ''
+        }" style="font-weight: 600">Ref. Invoice No.: #${
+      invoiceInfo.voucher_no
+    }</div>
+    <div style="${
+      voucherType === 'debitNote' ? '' : 'display: none;'
+    }"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${
+      invoiceInfo.tax_registration_number || '-'
+    }</div>
       </div>
     </div>
   </div>
