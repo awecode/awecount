@@ -25,18 +25,27 @@
                 @click="() => (addRefrence = true)"
               />
               <q-dialog v-model="addRefrence">
-                <q-card style="min-width: max(30vw, 500px)">
+                <q-card style="min-width: min(60vw, 400px)">
                   <q-card-section class="bg-grey-4">
                     <div class="text-h6">
                       <span>Add Reference Invoice(s)</span>
                     </div>
                   </q-card-section>
-                  <q-separator inset />
-                  <q-card-section class="q-ma-lg">
+                  <q-card-section class="q-mx-lg">
                     <q-input
                       v-model="referenceFormData.invoice_no"
                       label="Invoice No.*"
                     ></q-input>
+                    <q-select
+                      class="q-mt-md"
+                      label="Party*"
+                      v-model="referenceFormData.party"
+                      :options="partyChoices"
+                      option-value="id"
+                      option-label="name"
+                      map-options
+                      emit-value
+                    ></q-select>
                     <q-select
                       class="q-mt-md"
                       label="Fiscal Year"
@@ -100,7 +109,6 @@
                   v-model="fields.discount_type"
                   label="Discount*"
                   :error="errors.discount_type"
-                  :error-message="errors.discount_type"
                   :options="
                     formDefaults.collections
                       ? staticOptions.discount_types.concat(
@@ -248,10 +256,11 @@ import { discount_types, modes } from 'src/helpers/constants/invoice'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/credit-note/'
+    const endpoint = '/v1/debit-note/'
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
+    const partyChoices = ref(null)
     const referenceFormData = ref({
       invoice_no: null,
       fiscal_year: null,
@@ -263,7 +272,7 @@ export default {
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/credit-note/list/',
+      successRoute: '/debit-note/list/',
     })
     const partyMode = ref(false)
     const switchMode = (fields) => {
@@ -295,10 +304,11 @@ export default {
         console.log('dis type', newValue)
       }
     )
-    const fetchInvoice = async (fields) => {
+    const fetchInvoice = (fields) => {
       if (
         referenceFormData.value.invoice_no &&
-        referenceFormData.value.fiscal_year
+        referenceFormData.value.fiscal_year &&
+        referenceFormData.value.party
       ) {
         const url = 'v1/sales-voucher/by-voucher-no/'
         // try {
@@ -426,7 +436,17 @@ export default {
       fetchInvoice,
       referenceFormData,
       discountField,
+      partyChoices,
     }
+  },
+  created() {
+    useApi('/v1/parties/choices/')
+      .then((res) => {
+        this.partyChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
   },
 }
 </script>

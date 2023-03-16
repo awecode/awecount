@@ -25,14 +25,14 @@
                 @click="() => (addRefrence = true)"
               />
               <q-dialog v-model="addRefrence">
-                <q-card style="min-width: max(30vw, 500px)">
+                <q-card style="min-width: min(60vw, 400px)">
                   <q-card-section class="bg-grey-4">
                     <div class="text-h6">
                       <span>Add Reference Invoice(s)</span>
                     </div>
                   </q-card-section>
                   <q-separator inset />
-                  <q-card-section class="q-ma-lg">
+                  <q-card-section class="q-mx-lg">
                     <q-input
                       v-model="referenceFormData.invoice_no"
                       label="Invoice No.*"
