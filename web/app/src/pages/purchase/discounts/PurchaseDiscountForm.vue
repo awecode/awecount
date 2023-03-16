@@ -1,0 +1,94 @@
+<template>
+  <q-form class="q-pa-lg">
+    <q-card>
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span v-if="isEdit"> Update {{ fields.name }}</span>
+          <span v-else>New Purchase Discount</span>
+        </div>
+      </q-card-section>
+      <q-separator inset />
+      <q-card class="q-mx-lg q-pt-md">
+        <q-card-section>
+          <div class="row q-col-gutter-md">
+            <q-input
+              v-model="fields.name"
+              label="Name *"
+              class="col-12 col-md-6"
+              :error-message="errors.name"
+              :error="!!errors.name"
+            />
+          </div>
+          <div class="row q-col-gutter-md">
+            <q-select
+              v-model="fields.type"
+              label="Type *"
+              class="col-12 col-md-6"
+              :error-message="errors.type"
+              :error="!!errors.type"
+              :options="type"
+              option-value="value"
+              option-label="id"
+              map-options
+              emit-value
+            >
+              <template v-slot:append>
+                <q-icon
+                  v-if="fields.type !== null"
+                  class="cursor-pointer"
+                  name="clear"
+                  @click.stop.prevent="fields.type = null" /></template
+            ></q-select>
+            <q-input
+              v-model="fields.value"
+              label="Value *"
+              class="col-12 col-md-6"
+              :error-message="errors.value"
+              :error="!!errors.value"
+            />
+          </div>
+          <q-checkbox
+            class="q-mt-sm"
+            v-model="fields.trade_discount"
+            label="Is Trade Discount?"
+            :error-message="errors.trade_discount"
+            :error="!!errors.trade_discount"
+          />
+        </q-card-section>
+        <div class="text-right q-pr-md q-pb-lg">
+          <q-btn
+            @click.prevent="submitForm"
+            color="primary"
+            :label="isEdit ? 'Update' : 'Create'"
+            class="q-ml-auto"
+          />
+        </div>
+      </q-card>
+    </q-card>
+  </q-form>
+</template>
+
+<script>
+import useForm from '/src/composables/useForm'
+import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+export default {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setup(props, context) {
+    const endpoint = '/v1/purchase-discount/'
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/purchase-discount/list/',
+    })
+    const type = [
+      { value: 'Amount', id: 'Amount' },
+      { value: 'Percent', id: 'Percent' },
+    ]
+    formData.fields.value.trade_discount = true
+    return {
+      CategoryForm,
+      ...formData,
+      type,
+    }
+  },
+}
+</script>

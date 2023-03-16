@@ -214,27 +214,6 @@ export default {
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
 
-    // watch(
-    //   () => formData.fields.value.party,
-    //   (newValue) => {
-    //     console.log(newValue)
-    //     if (!!newValue && !!formData.formDefaults.value.collections) {
-    //       const index =
-    //         formData.formDefaults.value.collections.parties.findIndex(
-    //           (option) => option.id === newValue
-    //         )
-    //       formData.fields.value.address =
-    //         formData.formDefaults.value.collections.parties[index].address
-    //       // const index = formDefaults.
-    //     }
-    //   }
-    // )
-    // onMounted(() => {
-    //   if (formData.isEdit) {
-    //     formData.fields.value.address = formData.fields.value.address
-    //   }
-    // })
-
     return {
       ...formData,
       CategoryForm,

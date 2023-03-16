@@ -195,7 +195,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Purchase Discounts',
         icon: 'mdi-sale',
-        link: '/retention/',
+        link: '/purchase-discount/list/',
       },
       {
         title: 'Purchase Book',

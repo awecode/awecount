@@ -158,6 +158,21 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
       },
+      {
+        path: '/purchase-discount/list/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountList.vue'),
+      },
+      {
+        path: '/purchase-discount/add/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+      },
+      {
+        path: '/purchase-discount/:id/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+      },
       // {
       //   path: '/debit-note/:id/',
       //   component: () =>
