@@ -26,7 +26,7 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
-      rows-per-page-options
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top-right>
         <q-input

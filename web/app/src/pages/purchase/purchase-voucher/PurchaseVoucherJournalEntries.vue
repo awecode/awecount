@@ -5,6 +5,7 @@
 <script lang="ts">
 import useApi from 'src/composables/useApi'
 import JournalVoucherDetails from 'src/components/voucher/JournalVoucherDetails.vue'
+import { Ref } from 'vue'
 
 // const getData = () =>
 //   useApi(`/v1/journal-voucher/${$this.route.params.id}/`).then((data) => {
@@ -25,7 +26,7 @@ export default {
       narration: string
       id: number
     }
-    const fields: Fields | null = ref(null)
+    const fields: Ref<Fields | null> = ref(null)
     return {
       fields,
       JournalVoucherDetails,
@@ -42,7 +43,7 @@ export default {
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
-          // router.push('404')
+          // router.push('/404')
         }
       })
   },
