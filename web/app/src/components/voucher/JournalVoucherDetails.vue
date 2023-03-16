@@ -3,7 +3,7 @@
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span>Journal Entries for {{ usedIn === 'sales_voucher' ? 'Sales Voucher': 'Credit Note' }} # {{ fields?.voucher_no || '-' }} </span>
+          <span>Journal Entries for {{ usedIn === 'sales_voucher' ? 'Sales Voucher': (usedIn === 'debit_note' ?  'Debit Note' :  'Credit Note')}} # {{ fields?.voucher_no || '-' }} </span>
         </div>
       </q-card-section>
       <q-separator inset />
@@ -16,7 +16,7 @@
             </div>
             <router-link
               class="text-decoration-none"
-              :to="`/${usedIn === 'sales_voucher' ? 'sales-voucher': 'credit-note'}/${fields?.source_id}/view`"
+              :to="`/${usedIn === 'sales_voucher' ? 'sales-voucher': (usedIn === 'debit_note' ? 'debit-note' : 'credit-note')}/${fields?.source_id}/view`"
             >
               <div class="row items-center text-blue">Source</div>
             </router-link>

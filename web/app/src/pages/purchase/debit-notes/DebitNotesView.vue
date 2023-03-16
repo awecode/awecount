@@ -115,12 +115,13 @@
           icon="print"
           @click="onPrintclick"
         />
+        <q-btn v-else label="Print" icon="print" @click="onPrintclick" />
         <q-btn
-          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          v-if="fields?.status === 'Issued' || fields?.status === 'Paid'"
           color="blue-7"
           label="Journal Entries"
           icon="books"
-          :to="`/purchase-voucher/journal-entries/${fields?.id}/`"
+          :to="`/journal-entries/debit-note/${fields?.id}/`"
         />
       </div>
     </div>
