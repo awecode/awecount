@@ -57,18 +57,18 @@
       class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
       v-if="fields"
     >
-      <div>
+      <div class="row">
+        <q-btn
+          class="q-mb-md q-mr-md"
+          color="orange-5"
+          label="Edit"
+          icon="edit"
+          :to="`/purchase-voucher/${fields?.id}/`"
+        />
         <div
           v-if="fields?.status !== 'Cancelled'"
           class="row q-gutter-x-md q-gutter-y-md q-mb-md"
         >
-          <q-btn
-            v-if="fields?.status === 'Draft'"
-            color="orange-5"
-            label="Edit"
-            icon="edit"
-            :to="`/purchase-voucher/${fields?.id}/`"
-          />
           <q-btn
             v-if="fields?.status === 'Issued'"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"

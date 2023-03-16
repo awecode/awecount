@@ -195,51 +195,28 @@
         :usedIn="'creditNote'"
       ></invoice-table>
       <div class="row q-px-lg">
-        <div class="col-12 col-md-6 row">
-          <!-- <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-          ></q-input> -->
-          <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-            autogrow
-            class="col-12 col-md-10"
-            :error="!!errors?.remarks"
-            :error-message="errors?.remarks"
-          />
-        </div>
-        <div class="col-12 col-md-6 row justify-between">
-          <div>
-            <q-checkbox
-              label="Export?"
-              v-model="fields.is_export"
-              class="q-mt-md col-3"
-            ></q-checkbox>
-          </div>
-          <q-select
-            v-model="fields.sales_agent"
-            label="Sales Agent"
-            class="col-8"
-            :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"
-          ></q-select>
-          <!-- TODO: add sales agent form -->
-        </div>
+        <q-input
+          v-model="fields.remarks"
+          label="Remarks"
+          type="textarea"
+          autogrow
+          class="col-12"
+          :error="!!errors?.remarks"
+          :error-message="errors?.remarks"
+        />
       </div>
-
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
           color="primary"
           label="Draft"
+          :disable="fields.invoices ? false : true"
         />
         <q-btn
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
           color="green-8"
           :label="isEdit ? 'Update' : 'Issue'"
+          :disable="fields.invoices ? false : true"
         />
       </div>
     </q-card>
@@ -310,7 +287,7 @@ export default {
         referenceFormData.value.fiscal_year &&
         referenceFormData.value.party
       ) {
-        const url = 'v1/sales-voucher/by-voucher-no/'
+        const url = 'v1/purchase-vouchers/by-voucher-no/'
         // try {
         //   const response =
         // } catch (error) {
@@ -326,7 +303,7 @@ export default {
         // }
         useApi(
           url +
-            `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
+            `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}&party=${referenceFormData.value.party}`
         )
           .then((data) => {
             if (fields.invoices) {
@@ -366,7 +343,6 @@ export default {
             addRefrence.value = false
           })
           .catch((err) => {
-            console.log('elol', err)
             if (err.status === 404) {
               $q.notify({
                 color: 'red-6',

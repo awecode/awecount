@@ -356,7 +356,6 @@ export default {
             addRefrence.value = false
           })
           .catch((err) => {
-            console.log('elol', err)
             if (err.status === 404) {
               $q.notify({
                 color: 'red-6',

@@ -24,7 +24,7 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
-      rows-per-page-options
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top>
         <div class="search-bar">
@@ -82,7 +82,7 @@
             <q-btn
               color="blue"
               label="View"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/debit-note/${props.row.id}/view/`"
               class="q-py-none q-px-md font-size-sm"
               style="font-size: 12px"
             />
@@ -115,7 +115,7 @@ export default {
     const newColumn = [
       {
         name: 'voucher_no',
-        label: 'Bill No.',
+        label: 'Note No.',
         align: 'left',
         field: 'voucher_no',
       },
@@ -127,19 +127,7 @@ export default {
       },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
       { name: 'date', label: 'Date', align: 'left', field: 'date' },
-      {
-        name: 'mode',
-        label: 'Mode',
-        align: 'left',
-        field: 'mode',
-      },
-      {
-        name: 'total_amount',
-        label: 'Total amount',
-        align: 'left',
-        field: 'total_amount',
-      },
-      { name: 'actions' },
+      { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
     return { ...listData, onDownloadXls, newColumn }
