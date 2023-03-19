@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Account</span>
-          <span v-else>Update Account</span>
+          <span v-else>Update {{ fields.name }}</span>
         </div>
       </q-card-section>
       <q-separator inset />
@@ -30,7 +30,7 @@
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.parent"
-                :options="formDefaults.collections?.account"
+                :options="accountChoices"
                 label="Parent"
                 :error="errors?.parent"
               />
@@ -38,7 +38,7 @@
             <div class="col-6">
               <n-auto-complete
                 v-model="fields.category"
-                :options="formDefaults.collections?.category"
+                :options="categoryChoices"
                 label="Category *"
                 :modal-component="CategoryForm"
                 :error="errors?.category"
@@ -73,6 +73,22 @@ export default {
       }),
       CategoryForm,
     }
+  },
+  created() {
+    useApi('/v1/accounts/choices/')
+      .then((res) => {
+        this.accountChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
+    useApi('/v1/categories/choices/')
+      .then((res) => {
+        this.categoryChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
   },
 }
 </script>
