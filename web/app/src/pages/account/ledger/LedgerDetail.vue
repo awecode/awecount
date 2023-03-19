@@ -117,6 +117,7 @@
         @request="onRequest"
         class="q-mt-lg"
         :binary-state-sort="true"
+        :rows-per-page-options="[]"
       >
         <template v-slot:body-cell-accounts="props">
           <q-td :props="props">
@@ -131,52 +132,52 @@
 </template>
 
 <script setup>
-import useApi from 'src/composables/useApi';
-const fields = ref(null);
-const route = useRoute();
+import useApi from 'src/composables/useApi'
+const fields = ref(null)
+const route = useRoute()
 
 watch(route, () => {
-  endpoint.value = `/v1/account/${route.params.id}/transactions/`;
-  getData();
-});
+  endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
+  getData()
+})
 
-const startDate = ref(null);
-const endDate = ref(null);
+const startDate = ref(null)
+const endDate = ref(null)
 const resetDate = () => {
-  startDate.value = null;
-  endDate.value = null;
-  endpoint.value = `/v1/account/${route.params.id}/transactions/`;
-};
+  startDate.value = null
+  endDate.value = null
+  endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
+}
 const filter = () => {
-  endpoint.value = `/v1/account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`;
-  getData();
-};
+  endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
+  getData()
+}
 
-const endpoint = ref(`/v1/account/${route.params.id}/transactions/`);
+const endpoint = ref(`/v1/accounts/${route.params.id}/transactions/`)
 
 const getData = () =>
   useApi(endpoint.value).then((data) => {
-    fields.value = data;
-  });
-getData();
+    fields.value = data
+  })
+getData()
 
 watch(fields, () => {
-  loadData();
-});
+  loadData()
+})
 
-const pagination = ref();
-const loading = ref(false);
-const initiallyLoaded = ref(false);
-const rows = ref([]);
-const columnList = ref([]);
+const pagination = ref()
+const loading = ref(false)
+const initiallyLoaded = ref(false)
+const rows = ref([])
+const columnList = ref([])
 
 function loadData() {
-  loading.value = true;
+  loading.value = true
   const field = fields.value.transactions.results.value
     ? Object.keys(fields.value?.transactions?.results[0])?.filter(
         (f) => f !== 'id'
       )
-    : null;
+    : null
 
   columnList.value = field?.map((f) => {
     return {
@@ -186,18 +187,18 @@ function loadData() {
         f.replace(/_/g, ' ').slice(1),
       align: 'left',
       field: f,
-    };
-  });
+    }
+  })
 
-  rows.value = fields.value?.transactions?.results;
-  initiallyLoaded.value = true;
+  rows.value = fields.value?.transactions?.results
+  initiallyLoaded.value = true
   pagination.value = {
     page: fields.value?.transactions?.pagination?.page,
     rowsPerPage: fields.value?.transactions?.pagination?.size,
     rowsNumber: fields.value?.transactions?.pagination?.count,
-  };
+  }
 
-  loading.value = false;
+  loading.value = false
 }
 
 function onRequest(prop) {
@@ -209,8 +210,8 @@ function onRequest(prop) {
     startDate.value && endDate.value
       ? '&page=' + prop.pagination.page
       : 'page=' + prop.pagination.page
-  }`;
-  getData();
+  }`
+  getData()
 }
 </script>
 

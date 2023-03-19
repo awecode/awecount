@@ -65,7 +65,7 @@ import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/account/'
+    const endpoint = '/v1/accounts/'
     return {
       ...useForm(endpoint, {
         getDefaults: true,

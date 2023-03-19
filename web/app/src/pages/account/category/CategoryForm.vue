@@ -55,7 +55,7 @@ import useForm from '/src/composables/useForm'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/category/'
+    const endpoint = '/v1/categories/'
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/category/',
