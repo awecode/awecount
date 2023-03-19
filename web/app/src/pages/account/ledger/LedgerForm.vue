@@ -66,12 +66,16 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/accounts/'
+    const categoryChoices = ref(null)
+    const accountChoices = ref(null)
     return {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/account/',
       }),
       CategoryForm,
+      categoryChoices,
+      accountChoices,
     }
   },
   created() {
