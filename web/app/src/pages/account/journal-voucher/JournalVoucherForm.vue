@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <q-form class="q-pa-lg">
     <q-card class="q-pa-xs"
       ><q-card-section>
@@ -47,28 +47,30 @@
         <q-card class="q-mt-xs">
           <q-card-section class="q-pt-md">
             <div class="row q-col-gutter-md q-py-sm">
-              <div class="q-mr-md">SN</div>
-              <div class="col-3">Type</div>
-              <div class="col-3">Account</div>
-              <div class="col-2">Dr Amount</div>
-              <div class="col-2">Cr Amount</div>
-              <div class="col-1"></div>
+              <div class="text-center">SN</div>
+              <div class="row q-col-gutter-md" style="flex-grow: 1">
+                <div class="col-2">Type</div>
+                <div class="col-4">Account</div>
+                <div class="col-2">Dr Amount</div>
+                <div class="col-2">Cr Amount</div>
+                <div class="col-2"></div>
+              </div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
               <VoucherRow
                 :voucher="voucher"
                 :index="index"
                 :options="formDefaults.collections?.accounts"
-                :errors="errors"
+                :errors="errors?.rows ? errors.rows : null"
                 @updateVoucher="updateVoucher"
-                @deleteVoucher="deleteVoucher"
+                @deleteVoucher="(index) => deleteVoucher(index, errors)"
               />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
-              <div class="col-3"></div>
-              <div class="col-3">Total</div>
-              <div class="col-2">
+              <div class="col-2"></div>
+              <div class="col-3" style="text-align: right">Total</div>
+              <div class="col-2" style="text-align: right">
                 {{
                   fields.rows.reduce(
                     (accum, item) => accum + Number(item.dr_amount),
@@ -76,7 +78,7 @@
                   )
                 }}
               </div>
-              <div class="col-2">
+              <div class="col-2" style="text-align: right">
                 {{
                   fields.rows.reduce(
                     (accum, item) => accum + Number(item.cr_amount),
@@ -84,7 +86,7 @@
                   )
                 }}
               </div>
-              <div class="col-1"></div>
+              <div class="col-2"></div>
             </div>
             <q-btn
               @click.prevent="addNewVoucher"
@@ -113,14 +115,14 @@
       <q-btn
         v-if="fields.status != 'Approved' || !fields?.id"
         @click.prevent=";(fields.status = 'Unapproved'), submitForm()"
-        color="amber"
+        color="orange-7"
         icon="fa-solid fa-pen-to-square"
         label="Save Draft"
         class="q-mr-md q-py-sm"
       />
       <q-btn
         @click.prevent=";(fields.status = 'Approved'), submitForm()"
-        color="green"
+        color="green-8"
         icon="fa-solid fa-floppy-disk"
         :label="isEdit ? 'Update' : 'Save'"
       />
@@ -139,7 +141,10 @@ export default {
     const updateVoucher = (e, i) => {
       formData.fields.value.rows[i] = e
     }
-    const deleteVoucher = (i) => {
+    const deleteVoucher = (i, errors) => {
+      if (errors.rows) {
+        errors.rows.splice(i, 1)
+      }
       formData.fields.value.rows.splice(i, 1)
     }
     const addNewVoucher = () => {
@@ -175,16 +180,22 @@ export default {
 
     formData.fields.value.voucher_no =
       formData.formDefaults.value?.fields?.voucher_no
-
+    const amountComputed = computed(() => {
+      const amount = { dr: 0, cr: 0 }
+      console.log(formData.fields)
+      formData.fields.value.rows.forEach((item) => {
+        console.log(item)
+      })
+      return fields
+    })
     return {
       ...formData,
       VoucherRow,
       updateVoucher,
       deleteVoucher,
       addNewVoucher,
+      amountComputed,
     }
   },
 }
-</script> -->
-
-<template>Journal voucher</template>
+</script>
