@@ -14,13 +14,14 @@
     <q-table
       title="Accounts"
       :rows="rows"
-      :columns="columns"
+      :columns="newColumn"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top-right>
         <q-input
@@ -40,30 +41,25 @@
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
           <q-btn
             color="blue"
-            class="q-mr-md"
+            class="q-py-none q-px-md font-size-sm q-mr-md"
+            style="font-size: 12px"
             label="View"
             :to="`/account/${props.row.id}/view/`"
           />
           <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
+            label="Edit"
+            color="orange-6"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
             :to="`/account/${props.row.id}/edit/`"
           />
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
         <q-td :props="props">
           <router-link
+            style="font-weight: 500; text-decoration: none"
+            class="text-blue"
             :to="`/account/category/${props.row.category.id}/edit/`"
             >{{ props.row.category.name }}</router-link
           >
@@ -80,72 +76,48 @@ export default {
     const endpoint = '/v1/accounts/'
     const newColumn = [
       {
-        name: 'date',
-        label: 'Date',
+        name: 'code',
+        label: 'Code',
         align: 'left',
-        field: 'date',
+        field: 'code',
       },
       {
-        name: 'voucher_no',
-        label: 'Bill No',
+        name: 'name',
+        label: 'Name',
         align: 'left',
-        field: 'voucher_no',
+        field: 'name',
       },
       {
-        name: 'sellers_name',
-        label: "Seller's Name",
+        name: 'category',
+        label: 'Category',
         align: 'left',
-        field: 'sellers_name',
+        field: 'category',
       },
       {
-        name: 'sellers_pan',
-        label: 'Tax No.',
+        name: 'dr',
+        label: 'Dr',
         align: 'left',
-        field: 'sellers_pan',
+        field: 'dr',
       },
       {
-        name: 'total_sales',
-        remove: true,
-        label: 'Total Purchases',
+        name: 'cr',
+        label: 'Cr',
         align: 'left',
-        field: (row) => row.voucher_meta.grand_total,
+        field: 'cr',
       },
       {
-        name: 'non_taxable_sales',
-        remove: true,
-        label: 'Non Taxable Sales',
+        name: 'balance',
+        label: 'Balance',
         align: 'left',
-        field: (row) => row.voucher_meta.non_taxable,
+        field: 'computed_balance',
       },
       {
-        name: 'import_purchases',
-        remove: true,
-        label: 'Import Purchases',
-        align: 'left',
-        field: '',
-      },
-      // TODO: add export sales
-      {
-        name: 'discount',
-        label: 'Discount',
-        align: 'left',
-        field: (row) => row.voucher_meta.discount,
-        remove: true,
-      },
-      {
-        name: 'amount',
-        label: 'Amount',
-        align: 'left',
-        field: (row) => row.voucher_meta.taxable,
-      },
-      {
-        name: 'tax',
-        label: 'Tax',
-        align: 'left',
-        field: (row) => row.voucher_meta.tax,
+        name: 'actions',
+        label: 'Actions',
+        align: 'center',
       },
     ]
-    return { ...useList(endpoint) }
+    return { ...useList(endpoint), newColumn }
   },
 }
 </script>
