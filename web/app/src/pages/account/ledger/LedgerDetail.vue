@@ -233,10 +233,16 @@ function loadData() {
       field: 'voucher_no',
     },
     {
-      name: 'source_type',
-      label: 'Voucher No.',
+      name: 'dr',
+      label: 'Dr.',
       align: 'left',
-      field: 'source_type',
+      field: 'dr_amount',
+    },
+    {
+      name: 'cr',
+      label: 'Cr.',
+      align: 'left',
+      field: 'cr_amount',
     },
   ]
 
@@ -247,7 +253,6 @@ function loadData() {
     rowsPerPage: fields.value?.transactions?.pagination?.size,
     rowsNumber: fields.value?.transactions?.pagination?.count,
   }
-
   loading.value = false
 }
 
