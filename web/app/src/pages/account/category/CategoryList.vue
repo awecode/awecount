@@ -13,13 +13,14 @@
     <q-table
       title="Income Items"
       :rows="rows"
-      :columns="columns"
+      :columns="newColumns"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top>
         <div class="search-bar">
@@ -40,12 +41,19 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <q-btn
+          <!-- <q-btn
             icon="edit"
             color="amber"
             dense
             flat
             :to="`/income/item/${props.row.id}/edit/`"
+          /> -->
+          <q-btn
+            color="orange-7"
+            label="Edit"
+            :to="`/income/item/${props.row.id}/edit/`"
+            class="q-py-none q-px-md font-size-sm q-mr-sm"
+            style="font-size: 12px"
           />
           <q-btn
             icon="delete"
@@ -53,8 +61,24 @@
             dense
             flat
             @click="confirmDeletion(props.row.id)"
+            title="Delete"
           />
           <!-- {{ props }} -->
+        </q-td>
+        <!-- TODO: add modals -->
+      </template>
+      <template v-slot:body-cell-default="props">
+        <q-td :props="props">
+          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
+          <!-- <q-btn
+            icon="edit"
+            color="amber"
+            dense
+            flat
+            :to="`/income/item/${props.row.id}/edit/`"
+          /> -->
+          <q-checkbox v-model="props.row.default" color="grey" disable>
+          </q-checkbox>
         </q-td>
         <!-- TODO: add modals -->
       </template>
@@ -63,8 +87,8 @@
 </template>
 
 <script setup>
-import useList from '/src/composables/useList';
-const endpoint = '/v1/items';
+import useList from '/src/composables/useList'
+const endpoint = '/v1/categories/'
 // console.log(useList(endpoint))
 // export default {
 //   setup() {
@@ -72,6 +96,22 @@ const endpoint = '/v1/items';
 //     return { ...useList(endpoint) }
 //   },
 // }
+const newColumns = [
+  {
+    name: 'code',
+    label: 'Code.',
+    align: 'left',
+    field: 'code',
+  },
+  {
+    name: 'name',
+    label: 'Name',
+    align: 'left',
+    field: 'name',
+  },
+  { name: 'default', label: 'Default', align: 'center', field: 'default' },
+  { name: 'actions', label: 'Actions', align: 'center' },
+]
 const {
   columns,
   rows,
@@ -83,7 +123,7 @@ const {
   onRequest,
   confirmDeletion,
   initiallyLoaded,
-} = useList(endpoint);
+} = useList(endpoint)
 </script>
 
 <style>
