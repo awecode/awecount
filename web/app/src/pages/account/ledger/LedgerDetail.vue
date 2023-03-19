@@ -119,11 +119,29 @@
         :binary-state-sort="true"
         :rows-per-page-options="[]"
       >
-        <template v-slot:body-cell-accounts="props">
+        <template v-slot:body-cell-against="props">
           <q-td :props="props">
-            <router-link :to="`/account/${props.row.accounts[0].id}/view/`">{{
-              props.row.accounts[0].name
-            }}</router-link>
+            <div v-for="account in props.row.accounts" :key="account.id">
+              <router-link
+                v-if="account.id !== fields.id"
+                :to="`/account/${account.id}/view/`"
+                style="font-weight: 500; text-decoration: none"
+                class="text-blue"
+                :title="`${account.name}`"
+              >
+                {{ account.name }}
+              </router-link>
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-voucher_no="props">
+          <q-td :props="props">
+            <router-link
+              :to="getVoucherUrl(props.row)"
+              style="font-weight: 500; text-decoration: none"
+              class="text-blue"
+              >{{ props.row.voucher_no }}</router-link
+            >
           </q-td>
         </template>
       </q-table>
@@ -173,22 +191,54 @@ const columnList = ref([])
 
 function loadData() {
   loading.value = true
-  const field = fields.value.transactions.results.value
-    ? Object.keys(fields.value?.transactions?.results[0])?.filter(
-        (f) => f !== 'id'
-      )
-    : null
-
-  columnList.value = field?.map((f) => {
-    return {
-      name: f,
-      label:
-        f.replace(/_/g, ' ').charAt(0).toUpperCase() +
-        f.replace(/_/g, ' ').slice(1),
+  // const field = fields.value.transactions.results.value
+  //   ? Object.keys(fields.value?.transactions?.results[0])?.filter((f) => {
+  //       console.log('loop')
+  //       f !== 'id'
+  //     })
+  //   : null
+  // console.log(field)
+  // columnList.value = field?.map((f) => {
+  //   return {
+  //     name: f,
+  //     label: 'Name',
+  //     align: 'left',
+  //     field: f,
+  //   }
+  // })
+  console.log('loadData')
+  columnList.value = [
+    {
+      name: 'date',
+      label: 'Date',
       align: 'left',
-      field: f,
-    }
-  })
+      field: 'date',
+    },
+    {
+      name: 'source_type',
+      label: 'Voucher Type',
+      align: 'left',
+      field: 'source_type',
+    },
+    {
+      name: 'against',
+      label: 'Against',
+      align: 'left',
+      field: 'accounts',
+    },
+    {
+      name: 'voucher_no',
+      label: 'Voucher No.',
+      align: 'left',
+      field: 'voucher_no',
+    },
+    {
+      name: 'source_type',
+      label: 'Voucher No.',
+      align: 'left',
+      field: 'source_type',
+    },
+  ]
 
   rows.value = fields.value?.transactions?.results
   initiallyLoaded.value = true
@@ -212,6 +262,30 @@ function onRequest(prop) {
       : 'page=' + prop.pagination.page
   }`
   getData()
+}
+function getVoucherUrl(row) {
+  const source_type = row.source_type
+  if (source_type === 'Sales Voucher')
+    return `/sales-voucher/${row.source_id}/view/`
+  if (source_type === 'Purchase Voucher')
+    return `/purchase-voucher/${row.source_id}/view`
+  if (source_type === 'Journal Voucher')
+    return `/journal-voucher/${row.source_id}/view`
+  if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
+  if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
+  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
+  // TODO: add missing links
+  if (source_type === 'Cheque Deposit')
+    return `/bank/cheque/cheque-deposit/${row.source_id}/view/`
+  if (source_type === 'Payment Receipt')
+    return `/payment-receipt/${row.source_id}/view/`
+  if (source_type === 'Cheque Issue')
+    return `/bank/cheque/cheque-issue/${row.source_id}/edit/`
+  if (source_type === 'Challan') return `/challan/${row.source_id}/`
+  if (source_type === 'Account Opening Balance')
+    return `/account/opening-balance/${row.source_id}/edit/`
+  if (source_type === 'Item') return `/items/opening/${row.source_id}`
+  console.error(source_type + ' not handled!')
 }
 </script>
 
