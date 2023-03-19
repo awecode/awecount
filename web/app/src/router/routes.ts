@@ -173,6 +173,11 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
       },
+      {
+        path: '/purchase-book/list/',
+        component: () =>
+          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
+      },
       // {
       //   path: '/debit-note/:id/',
       //   component: () =>

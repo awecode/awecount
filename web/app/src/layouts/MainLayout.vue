@@ -200,7 +200,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Purchase Book',
         icon: 'book',
-        link: '/party/',
+        link: '/purchase-book/list/',
       },
     ],
   },
