@@ -4,8 +4,8 @@
       <div></div>
       <q-btn
         color="green"
-        to="/items/add/"
-        label="Add Income Item"
+        to="/account/category/add/"
+        label="New Category"
         class="q-ml-lg"
         icon-right="add"
       />
@@ -40,28 +40,12 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <!-- <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/income/item/${props.row.id}/edit/`"
-          /> -->
           <q-btn
             color="orange-7"
             label="Edit"
             :to="`/income/item/${props.row.id}/edit/`"
-            class="q-py-none q-px-md font-size-sm q-mr-sm"
+            class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-          />
-          <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-            title="Delete"
           />
           <!-- {{ props }} -->
         </q-td>
@@ -69,14 +53,6 @@
       </template>
       <template v-slot:body-cell-default="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <!-- <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/income/item/${props.row.id}/edit/`"
-          /> -->
           <q-checkbox v-model="props.row.default" color="grey" disable>
           </q-checkbox>
         </q-td>
