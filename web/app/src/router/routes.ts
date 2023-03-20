@@ -460,6 +460,14 @@ const routes: RouteRecordRaw[] = [
         path: '/report/category-tree/',
         component: () => import('src/pages/report/CategoryTree.vue'),
       },
+      {
+        path: '/report/tax-summary/',
+        component: () => import('src/pages/report/TaxSummary.vue'),
+      },
+      {
+        path: '/report/collection-report/',
+        component: () => import('src/pages/report/CollectionReport.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),

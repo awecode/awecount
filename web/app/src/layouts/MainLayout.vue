@@ -247,12 +247,12 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Periodic Tax Summary',
         icon: 'mdi-currency-usd-off',
-        link: '/account/category/',
+        link: '/report/tax-summary/',
       },
       {
         title: 'Collection Report',
         icon: 'mdi-receipt',
-        link: '/retention/',
+        link: '/report/collection-report/',
       },
       {
         title: 'Trial Balance',

@@ -18,7 +18,7 @@ declare module '@vue/runtime-core' {
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']
-    PlanNode: typeof import('./src/components/report/PlanNode.vue')['default']
+    PlanNode: typeof import('./src/components/report/PlainNode.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
