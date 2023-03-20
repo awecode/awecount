@@ -14,13 +14,14 @@
     <q-table
       title="Accounts"
       :rows="rows"
-      :columns="columns"
+      :columns="newColumns"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top-right>
         <q-input
@@ -37,31 +38,41 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <!-- <q-btn icon="visibility" color="blue" dense flat :to="`/journal-voucher/${props.row.id}/view/`" /> -->
-          <q-btn
-            color="blue"
-            class="q-mr-md"
-            label="View"
-            :to="`/journal-voucher/${props.row.id}/view/`"
-          />
-          <q-btn
-            v-if="props.row.status != 'Cancelled'"
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/journal-voucher/${props.row.id}/edit/`"
-          />
-          <span v-else class="q-pa-md"></span>
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
+          <div class="row q-gutter-sm justify-center">
+            <q-btn
+              color="blue"
+              label="View"
+              :to="`/journal-voucher/${props.row.id}/view/`"
+              class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px"
+            />
+            <q-btn
+              v-if="props.row.status != 'Cancelled'"
+              color="orange-7"
+              label="Edit"
+              :to="`/journal-voucher/${props.row.id}/edit/`"
+              class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px"
+            />
+          </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-status="props">
+        <q-td :props="props">
+          <div class="row q-gutter-sm justify-center">
+            <span
+              class="text-white text-weight-medium"
+              :class="
+                props.row.status === 'Unapproved'
+                  ? 'bg-orange-4'
+                  : props.row.status === 'Approved'
+                  ? 'bg-green-4'
+                  : 'bg-red-4'
+              "
+              style="border-radius: 2rem; padding: 5px 10px"
+              >{{ props.row.status }}</span
+            >
+          </div>
         </q-td>
       </template>
     </q-table>
@@ -73,7 +84,29 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/journal-voucher/'
-    return { ...useList(endpoint) }
+    const newColumns = [
+      {
+        name: 'voucher_no',
+        label: 'Voucher No.',
+        align: 'left',
+        field: 'voucher_no',
+      },
+      {
+        name: 'date',
+        label: 'Date',
+        align: 'left',
+        field: 'date',
+      },
+      { name: 'status', label: 'Status', align: 'center', field: 'status' },
+      {
+        name: 'narration',
+        label: 'Narration',
+        align: 'left',
+        field: 'narration',
+      },
+      { name: 'actions', label: 'Actions', align: 'center' },
+    ]
+    return { ...useList(endpoint), newColumns }
   },
 }
 </script>

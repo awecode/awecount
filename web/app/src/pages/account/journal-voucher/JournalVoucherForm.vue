@@ -181,7 +181,6 @@ export default {
       formData.formDefaults.value?.fields?.voucher_no
     const amountComputed = computed(() => {
       let amount = { dr: 0, cr: 0 }
-      console.log('this', this)
       formData.fields.value.rows.forEach((item) => {
         if (item.type === 'Dr') {
           amount.dr = amount.dr + Number(item.dr_amount)
@@ -192,10 +191,7 @@ export default {
       return amount
     })
     const checkAddVoucher = () => {
-      console.log('outside')
-      if (amountComputed.value.dr !== amountComputed.value.cr) {
-        addNewVoucher()
-      }
+      if (amountComputed.value.dr !== amountComputed.value.cr) addNewVoucher()
     }
     return {
       ...formData,
