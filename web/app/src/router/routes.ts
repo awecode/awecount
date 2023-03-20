@@ -451,12 +451,15 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
       },
+      // egov Port
       {
         path: '/report/trial-balance/',
         component: () => import('src/pages/report/TrialBalance.vue'),
       },
-      // egov Port
-
+      {
+        path: '/report/category-tree/',
+        component: () => import('src/pages/report/CategoryTree.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),

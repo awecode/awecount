@@ -242,7 +242,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Categories Tree',
         icon: 'mdi-file-tree',
-        link: '/income/',
+        link: '/report/category-tree/',
       },
       {
         title: 'Periodic Tax Summary',
