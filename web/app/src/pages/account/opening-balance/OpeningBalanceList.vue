@@ -14,13 +14,14 @@
     <q-table
       title="Opening Balances"
       :rows="rows"
-      :columns="columns"
+      :columns="newColumn"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top-right>
         <q-input
@@ -37,22 +38,13 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
+            label="Edit"
+            color="orange-6"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
             :to="`/account/opening-balance/${props.row.id}/edit/`"
           />
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
         </q-td>
       </template>
     </q-table>
@@ -64,7 +56,32 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/account-opening-balance/'
-    return { ...useList(endpoint) }
+    const newColumn = [
+      {
+        name: 'name',
+        label: 'Name',
+        align: 'left',
+        field: 'name',
+      },
+      {
+        name: 'opening_dr',
+        label: 'Opening Dr',
+        align: 'left',
+        field: 'opening_dr',
+      },
+      {
+        name: 'opening_cr',
+        label: 'Opening Cr',
+        align: 'left',
+        field: 'opening_cr',
+      },
+      {
+        name: 'actions',
+        label: 'Actions',
+        align: 'center',
+      },
+    ]
+    return { ...useList(endpoint), newColumn }
   },
 }
 </script>

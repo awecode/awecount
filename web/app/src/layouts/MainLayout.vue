@@ -223,12 +223,11 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-shuffle',
         link: '/journal-voucher/',
       },
-      // {
-      //   title: 'All Accounts',
-      //   icon: 'mdi-notebook-multiple',
-      //   link: '/party/',
-      // },
-      // // TODO: Same as Ledger
+      {
+        title: 'All Accounts',
+        icon: 'mdi-notebook-multiple',
+        link: '/account/',
+      },
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
