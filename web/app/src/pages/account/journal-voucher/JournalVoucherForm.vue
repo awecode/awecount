@@ -62,8 +62,8 @@
                 :index="index"
                 :options="formDefaults.collections?.accounts"
                 :errors="errors?.rows ? errors.rows : null"
-                @updateVoucher="updateVoucher"
                 @deleteVoucher="(index) => deleteVoucher(index, errors)"
+                @checkAddVoucher="checkAddVoucher"
               />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
@@ -71,20 +71,10 @@
               <div class="col-2"></div>
               <div class="col-3" style="text-align: right">Total</div>
               <div class="col-2" style="text-align: right">
-                {{
-                  fields.rows.reduce(
-                    (accum, item) => accum + Number(item.dr_amount),
-                    0
-                  )
-                }}
+                {{ amountComputed.dr }}
               </div>
               <div class="col-2" style="text-align: right">
-                {{
-                  fields.rows.reduce(
-                    (accum, item) => accum + Number(item.cr_amount),
-                    0
-                  )
-                }}
+                {{ amountComputed.cr }}
               </div>
               <div class="col-2"></div>
             </div>
@@ -127,6 +117,7 @@
         :label="isEdit ? 'Update' : 'Save'"
       />
     </div>
+    <!-- {{ amountComputed }} --amountComputed -->
   </q-form>
 </template>
 
@@ -148,13 +139,21 @@ export default {
       formData.fields.value.rows.splice(i, 1)
     }
     const addNewVoucher = () => {
-      formData.fields.value.rows.push({
+      const newRow = {
         type: 'Dr',
         account_id: null,
         dr_amount: null,
         cr_amount: null,
         description: null,
-      })
+      }
+      if (amountComputed.value.dr - amountComputed.value.cr > 0) {
+        newRow.type = 'Cr'
+        newRow.cr_amount = amountComputed.value.dr - amountComputed.value.cr
+      } else if (amountComputed.value.cr - amountComputed.value.dr > 0) {
+        newRow.type = 'Dr'
+        newRow.dr_amount = amountComputed.value.cr - amountComputed.value.dr
+      }
+      formData.fields.value.rows.push(newRow)
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
@@ -181,13 +180,23 @@ export default {
     formData.fields.value.voucher_no =
       formData.formDefaults.value?.fields?.voucher_no
     const amountComputed = computed(() => {
-      const amount = { dr: 0, cr: 0 }
-      console.log(formData.fields)
+      let amount = { dr: 0, cr: 0 }
+      console.log('this', this)
       formData.fields.value.rows.forEach((item) => {
-        console.log(item)
+        if (item.type === 'Dr') {
+          amount.dr = amount.dr + Number(item.dr_amount)
+        } else if (item.type === 'Cr') {
+          amount.cr = amount.cr + Number(item.cr_amount)
+        }
       })
-      return fields
+      return amount
     })
+    const checkAddVoucher = () => {
+      console.log('outside')
+      if (amountComputed.value.dr !== amountComputed.value.cr) {
+        addNewVoucher()
+      }
+    }
     return {
       ...formData,
       VoucherRow,
@@ -195,6 +204,7 @@ export default {
       deleteVoucher,
       addNewVoucher,
       amountComputed,
+      checkAddVoucher,
     }
   },
 }

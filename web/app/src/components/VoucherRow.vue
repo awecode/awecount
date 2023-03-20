@@ -42,6 +42,7 @@
             :disable="voucher.type == 'Cr' || voucher.type == null"
             :error-message="props.errors?.mismatch"
             :error="!!props.errors?.mismatch"
+            @focusout="focusOut"
           />
         </div>
         <div class="col-2">
@@ -106,17 +107,17 @@
 <script setup>
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 const props = defineProps(['voucher', 'index', 'options', 'errors'])
-const emit = defineEmits(['updateVoucher', 'deleteVoucher'])
+const emit = defineEmits(['deleteVoucher', 'checkAddVoucher'])
 const voucher = ref(props.voucher)
 const openDescription = ref(false)
 watch(
   () => props.voucher,
   (newValue) => (voucher.value = newValue)
 )
-watch(voucher.value, (a) => {
-  a.type == 'Dr' ? (a.cr_amount = null) : (a.dr_amount = null)
-  emit('updateVoucher', a, props.index)
-})
+// watch(voucher.value, (a) => {
+//   a.type == 'Dr' ? (a.cr_amount = null) : (a.dr_amount = null)
+//   emit('updateVoucher', a, props.index)
+// })
 
 // const errors = ref(props?.errors)
 // watch(() => props.errors, (a) => {
@@ -127,5 +128,8 @@ watch(voucher.value, (a) => {
 
 const deleteVoucher = () => {
   emit('deleteVoucher', props.index)
+}
+const focusOut = () => {
+  emit('checkAddVoucher', props.index)
 }
 </script>
