@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span
-            >Journal Voucher | #{{ fields?.voucher_number || '-' }} |
+            >Journal Voucher | #{{ fields?.voucher_no || '-' }} |
             {{ fields?.status || '-' }}
           </span>
         </div>
@@ -44,9 +44,12 @@
             <div class="col-2">{{ index + 1 }}</div>
             <div class="col-2">{{ row.type }}</div>
             <div class="col-grow">
-              <router-link :to="`/ledger/${row.account_id}/`">{{
-                row.account_name
-              }}</router-link>
+              <router-link
+                class="text-blue text-weight-medium"
+                style="text-decoration: none"
+                :to="`/account/${row.account_id}/view/`"
+                >{{ row.account_name }}</router-link
+              >
             </div>
             <div class="col-2">{{ row.dr_amount || 0 }}</div>
             <div class="col-2">{{ row.cr_amount || 0 }}</div>
