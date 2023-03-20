@@ -16,6 +16,7 @@ declare module '@vue/runtime-core' {
     JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
+    PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
