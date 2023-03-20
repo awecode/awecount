@@ -41,7 +41,12 @@
               </q-icon>
             </template>
           </q-input>
-          <q-btn v-if="reportData" color="red" icon="close"></q-btn>
+          <q-btn
+            v-if="fields.start_date || fields.end_date"
+            color="red"
+            icon="close"
+            @click="fields = { start_date: null, end_date: null }"
+          ></q-btn>
           <q-btn
             :disable="!fields.start_date && !fields.end_date ? true : false"
             color="green"
@@ -119,7 +124,6 @@
 import { Ref } from 'vue'
 export default {
   setup() {
-    const route = useRoute()
     const reportData: Ref<Record<string, string | object> | null> = ref(null)
     const fields: Ref<Record<string, Date | null>> = ref({
       start_date: null,
