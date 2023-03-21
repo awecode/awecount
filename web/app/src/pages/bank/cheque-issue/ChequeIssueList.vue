@@ -59,10 +59,8 @@
               :class="
                 props.row.status == 'Issued'
                   ? 'bg-blue'
-                  : props.row.status == 'Paid'
+                  : props.row.status == 'Cleared'
                   ? 'bg-green'
-                  : props.row.status == 'Draft'
-                  ? 'bg-orange'
                   : 'bg-red'
               "
               style="border-radius: 30px; padding: 5px 15px"

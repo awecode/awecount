@@ -14,13 +14,14 @@
     <q-table
       title="Cheque Deposits"
       :rows="rows"
-      :columns="columns"
+      :columns="newColumn"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top-right>
         <q-input
@@ -37,46 +38,32 @@
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div
-            class="rounded-borders text-white row items-center justify-center text-subtitle2 q-py-sm"
-            :class="
-              props.row.status == 'Issued'
-                ? 'bg-blue'
-                : props.row.status == 'Cleared'
-                ? 'bg-green'
-                : 'bg-red'
-            "
-            style="width: 100px"
-          >
-            {{ props.row.status }}
+          <div class="row align-center justify-center">
+            <div
+              class="text-white text-subtitle2 row items-center justify-center"
+              :class="
+                props.row.status == 'Issued'
+                  ? 'bg-blue'
+                  : props.row.status == 'Cleared'
+                  ? 'bg-green'
+                  : 'bg-red'
+              "
+              style="border-radius: 30px; padding: 5px 15px"
+            >
+              {{ props.row.status }}
+            </div>
           </div>
         </q-td>
       </template>
-
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <q-btn
-            color="blue"
             label="View"
+            color="blue"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
             :to="`/bank/cheque/cheque-deposit/${props.row.id}/view/`"
           />
-
-          <!-- <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/bank/cheque/cheque-deposit/${props.row.id}/edit/`"
-          /> -->
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
         </q-td>
       </template>
     </q-table>
@@ -87,8 +74,39 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
-    const endpoint = '/v1/cheque-deposit/'
-    return { ...useList(endpoint) }
+    const endpoint = '/v1/cheque-deposits/'
+    const newColumn = [
+      {
+        name: 'bank_account',
+        label: 'Bank Account',
+        align: 'left',
+        field: 'bank_account',
+      },
+      {
+        name: 'benefactor_name',
+        label: 'Benefactor',
+        align: 'left',
+        field: 'benefactor_name',
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        align: 'center',
+        field: 'status',
+      },
+      {
+        name: 'date',
+        label: 'Date',
+        align: 'left',
+        field: 'date',
+      },
+      {
+        name: 'actions',
+        label: 'Actions',
+        align: 'center',
+      },
+    ]
+    return { ...useList(endpoint), newColumn }
   },
 }
 </script>

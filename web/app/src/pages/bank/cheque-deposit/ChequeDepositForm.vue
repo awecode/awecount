@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <q-form class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
@@ -11,7 +11,7 @@
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <n-auto-complete
                 v-model="fields.bank_account"
                 :options="formDefaults.collections?.bank_accounts"
@@ -20,7 +20,7 @@
                 :error="errors?.bank_account"
               />
             </div>
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <n-auto-complete
                 v-model="fields.benefactor"
                 :options="formDefaults.collections?.benefactors"
@@ -34,13 +34,13 @@
             <q-input
               v-model="fields.amount"
               label="Amount *"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.amount"
               :error="!!errors.amount"
             />
             <q-input
               v-model="fields.date"
-              class="col-6"
+              class="col-md-6 col-12"
               label="Deposit Date*"
               :error-message="errors.date"
               :error="!!errors.date"
@@ -65,7 +65,7 @@
           <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.cheque_date"
-              class="col-6"
+              class="col-md-6 col-12"
               label="Cheque Date"
               :error-message="errors.cheque_date"
               :error="!!errors.cheque_date"
@@ -102,14 +102,14 @@
             <q-input
               v-model="fields.voucher_no"
               label="Voucher Number"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.voucher_no"
               :error="!!errors.voucher_no"
             />
             <q-input
               v-model="fields.deposited_by"
               label="Deposited By"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.deposited_by"
               :error="!!errors.deposited_by"
             />
@@ -118,7 +118,7 @@
             <q-input
               v-model="fields.drawee_bank"
               label="Drawee Bank"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.drawee_bank"
               :error="!!errors.drawee_bank"
             />
@@ -130,7 +130,7 @@
       <q-btn
         v-if="fields.status == 'Draft' || !fields.status"
         @click.prevent=";(fields.status = 'Draft'), submitForm()"
-        color="amber"
+        color="amber-7"
         icon="fa-solid fa-pen-to-square"
         label="Save Draft"
         class="q-mr-md q-py-sm"
@@ -144,7 +144,7 @@
             : (fields.status = 'Issued'),
             submitForm()
         "
-        color="green"
+        color="green-6"
         icon="fa-solid fa-floppy-disk"
         :label="isEdit ? 'Update' : 'Issue'"
       />
@@ -159,7 +159,7 @@ import BenefactorForm from '/src/components/BenefactorForm.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/cheque-deposit/'
+    const endpoint = '/v1/cheque-deposits/'
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/bank/cheque-deposit/',
@@ -176,6 +176,4 @@ export default {
     }
   },
 }
-</script> -->
-
-<template>Cheque Deposit form</template>
+</script>
