@@ -281,7 +281,7 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/bank/cheque-issue/',
       },
       {
-        title: 'Collection Deposits',
+        title: 'Cheque Deposits',
         icon: 'mdi-ballot',
         link: '/bank/cheque-deposit/',
       },

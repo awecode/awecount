@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <q-form class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
@@ -12,7 +12,7 @@
         <q-card-section>
           <q-card class="q-pa-lg">
             <div class="row q-col-gutter-md">
-              <div class="col-6">
+              <div class="col-md-6 col-12">
                 <n-auto-complete
                   v-model="fields.bank_account"
                   :options="formDefaults.collections?.bank_accounts"
@@ -21,7 +21,7 @@
                   :error="errors?.bank_account"
                 />
               </div>
-              <div class="col-6">
+              <div class="col-md-6 col-12">
                 <n-auto-complete
                   v-model="fields.benefactor"
                   :options="formDefaults.collections?.benefactors"
@@ -35,13 +35,13 @@
               <q-input
                 v-model="fields.amount"
                 label="Amount *"
-                class="col-6"
+                class="col-md-6 col-12"
                 :error-message="errors.amount"
                 :error="!!errors.amount"
               />
               <q-input
                 v-model="fields.date"
-                class="col-6"
+                class="col-md-6 col-12"
                 label="Deposit Date *"
                 :error-message="errors.date"
                 :error="!!errors.date"
@@ -67,14 +67,14 @@
               <q-input
                 v-model="fields.voucher_no"
                 label="Voucher Number"
-                class="col-6"
+                class="col-md-6 col-12"
                 :error-message="errors.voucher_no"
                 :error="!!errors.voucher_no"
               />
               <q-input
                 v-model="fields.deposited_by"
                 label="Deposited By"
-                class="col-6"
+                class="col-md-6 col-12"
                 :error-message="errors.deposited_by"
                 :error="!!errors.deposited_by"
               />
@@ -129,7 +129,7 @@ import BenefactorForm from '/src/components/BenefactorForm.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/bank-cash-deposit/'
+    const endpoint = '/v1/bank-cash-deposits/'
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/bank/cash-deposit/',
@@ -144,6 +144,4 @@ export default {
     }
   },
 }
-</script> -->
-
-<template>Cheque Deposit form</template>
+</script>
