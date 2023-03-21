@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <q-form class="q-pa-lg">
     <q-card>
       <q-card-section class="bg-green text-white">
@@ -11,7 +11,7 @@
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-6">
+            <div class="col-md-6 col-12">
               <n-auto-complete
                 v-model="fields.bank_account"
                 :options="formDefaults.collections?.bank_accounts"
@@ -22,7 +22,7 @@
             </div>
             <q-input
               v-model="fields.date"
-              class="col-6"
+              class="col-md-6 col-12"
               label="Date *"
               :error-message="errors.date"
               :error="!!errors.date"
@@ -48,7 +48,7 @@
             <q-input
               v-model="fields.cheque_no"
               label="Cheque Number"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.cheque_no"
               :error="!!errors.cheque_no"
               :disable="isEdit"
@@ -56,7 +56,7 @@
             <q-input
               v-model="fields.amount"
               label="Amount *"
-              class="col-6"
+              class="col-md-6 col-12"
               :error-message="errors.amount"
               :error="!!errors.amount"
             />
@@ -165,8 +165,4 @@ export default {
     }
   },
 }
-</script> -->
-
-<template>
-  <div>Cheque Issue Form</div>
-</template>
+</script>
