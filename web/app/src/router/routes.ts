@@ -443,6 +443,18 @@ const routes: RouteRecordRaw[] = [
         path: '/report/collection-report/',
         component: () => import('src/pages/report/CollectionReport.vue'),
       },
+      {
+        path: '/taxes/list/',
+        component: () => import('src/pages/tax/scheme/TaxList.vue'),
+      },
+      {
+        path: '/taxes/add/',
+        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
+      },
+      {
+        path: '/taxes/account/:id/',
+        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),

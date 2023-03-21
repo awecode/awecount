@@ -305,7 +305,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Tax Schemes',
         icon: 'mdi-file-percent',
-        link: '/account/',
+        link: '/taxes/list/',
       },
       {
         title: 'Tax Payments',

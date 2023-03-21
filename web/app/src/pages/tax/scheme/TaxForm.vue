@@ -73,11 +73,13 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/tax_scheme/'
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/taxes/list/',
+    })
+    formData.fields.value.recoverable = false
     return {
-      ...useForm(endpoint, {
-        getDefaults: true,
-        successRoute: '/brand/',
-      }),
+      ...formData,
     }
   },
 }
