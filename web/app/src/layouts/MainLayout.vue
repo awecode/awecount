@@ -283,17 +283,17 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Collection Deposits',
         icon: 'mdi-ballot',
-        link: 'bank/cheque-deposit/',
+        link: '/bank/cheque-deposit/',
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
-        link: 'bank/cash-deposit/',
+        link: '/bank/cash-deposit/',
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
-        link: 'bank/fund-transfer/',
+        link: '/bank/fund-transfer/',
       },
     ],
   },
