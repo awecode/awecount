@@ -341,11 +341,13 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
         props: true,
       },
-      // {
-      //   path: 'journal-entries/:slug/:id/',
-      //   component: () => import('src/pages/journal-entry/[slugUrl].vue'),
-      //   props: true,
-      // },
+      // journal
+      {
+        path: 'journal-entries/:slug/:id/',
+        component: () => import('src/pages/journal-entry/[slugUrl].vue'),
+        props: true,
+      },
+      // journal
       {
         path: 'bank/cheque/cheque-deposit/add/',
         component: () =>
