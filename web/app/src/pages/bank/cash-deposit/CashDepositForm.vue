@@ -110,7 +110,7 @@
           />
           <q-btn
             v-if="fields?.status && fields?.status != 'Cancelled'"
-            :to="`/journal-entries/bank-cash-deposit/${id}/`"
+            :to="`/journal-entries/bank-cash-deposits/${id}/`"
             color="blue"
             icon="library_books"
             label="Journal Entries"
