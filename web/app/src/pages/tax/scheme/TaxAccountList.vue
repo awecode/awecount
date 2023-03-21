@@ -39,7 +39,7 @@
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <router-link
-            :to="'/'"
+            :to="`/taxes/${props.row.id}/`"
             style="text-decoration: none"
             class="text-blue"
           >

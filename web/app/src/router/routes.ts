@@ -445,10 +445,14 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: '/taxes/list/',
-        component: () => import('src/pages/tax/scheme/TaxList.vue'),
+        component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
       },
       {
         path: '/taxes/add/',
+        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
+      },
+      {
+        path: '/taxes/:id/',
         component: () => import('src/pages/tax/scheme/TaxForm.vue'),
       },
       {
