@@ -310,7 +310,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Tax Payments',
         icon: 'mdi-cash-marker',
-        link: '/journal-voucher/',
+        link: '/tax-payment/list/',
       },
       {
         title: 'Periodic Summary',
