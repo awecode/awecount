@@ -14,13 +14,13 @@
             <q-input
               v-model="fields.voucher_no"
               label="Voucher No."
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.voucher_no"
               :error="!!errors.voucher_no"
             />
             <q-input
               v-model="fields.date"
-              class="col-6"
+              class="col-12 col-md-6"
               label="Date *"
               :error-message="errors.date"
               :error="!!errors.date"
@@ -43,7 +43,7 @@
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <n-auto-complete
                 v-model="fields.from_account"
                 :options="formDefaults.collections?.from_account"
@@ -51,7 +51,7 @@
                 :error="errors?.from_account"
               />
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <n-auto-complete
                 v-model="fields.to_account"
                 :options="formDefaults.collections?.to_account"
@@ -64,7 +64,7 @@
             <q-input
               v-model="fields.amount"
               label="Amount *"
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.amount"
               :error="!!errors.amount"
             />
@@ -73,7 +73,7 @@
             Transaction Fees
           </div>
           <div class="row q-col-gutter-md">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <n-auto-complete
                 v-model="fields.transaction_fee_account"
                 :options="formDefaults.collections?.transaction_fee_account"
@@ -85,7 +85,7 @@
               v-model="fields.transaction_fee"
               label="Fees Amount"
               type="number"
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.transaction_fee"
               :error="!!errors.transaction_fee"
             />
