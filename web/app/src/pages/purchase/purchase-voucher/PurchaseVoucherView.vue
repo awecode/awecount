@@ -90,7 +90,7 @@
           color="blue-7"
           label="Journal Entries"
           icon="books"
-          :to="`/purchase-voucher/journal-entries/${fields?.id}/`"
+          :to="`/journal-entries/purchase-vouchers/${fields?.id}/`"
         />
       </div>
     </div>

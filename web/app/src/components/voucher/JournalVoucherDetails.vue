@@ -3,7 +3,7 @@
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span>Journal Entries for {{ usedIn === 'sales_voucher' ? 'Sales Voucher': (usedIn === 'debit_note' ?  'Debit Note' :  'Credit Note')}} # {{ fields?.voucher_no || '-' }} </span>
+          <span>Journal Entries for <span class="text-capitalize">{{ this.$route.params.slug.replace('-', ' ') }}</span>  # {{ fields?.voucher_no || '-' }} </span>
         </div>
       </q-card-section>
       <q-separator inset />

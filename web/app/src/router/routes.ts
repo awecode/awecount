@@ -51,22 +51,10 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
       },
-      // journal entries
-      {
-        path: '/journal-entries/sales-voucher/:id/',
-        component: () =>
-          import('src/pages/voucher/SalesVoucherJournalEntries.vue'),
-      },
-      // journal entries
       {
         path: '/sales-voucher/:id/',
         component: () =>
           import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
-      },
-      {
-        path: '/journal-entries/credit-note/:id/',
-        component: () =>
-          import('src/pages/voucher/CreditNoteJournalEntries.vue'),
       },
       {
         path: '/sales-voucher/:id/mv/',
@@ -136,13 +124,13 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
       },
-      {
-        path: '/purchase-voucher/journal-entries/:id/',
-        component: () =>
-          import(
-            'src/pages/purchase/purchase-voucher/PurchaseVoucherJournalEntries.vue'
-          ),
-      },
+      // {
+      //   path: '/purchase-voucher/journal-entries/:id/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/purchase/purchase-voucher/PurchaseVoucherJournalEntries.vue'
+      //     ),
+      // },
       {
         path: '/debit-note/list/',
         component: () =>
@@ -177,21 +165,6 @@ const routes: RouteRecordRaw[] = [
         path: '/purchase-book/list/',
         component: () =>
           import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
-      },
-      // {
-      //   path: '/debit-note/:id/',
-      //   component: () =>
-      //     import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
-      // },
-      {
-        path: '/journal-entries/debit-note/:id/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesJournalEntries.vue'),
-      },
-      {
-        path: '/journal-entries/payment-receipt/:id/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentRecieptJournalEntries.vue'),
       },
       {
         path: '/challan/list/',
