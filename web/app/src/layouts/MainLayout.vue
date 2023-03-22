@@ -315,7 +315,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Periodic Summary',
         icon: 'mdi-file-chart',
-        link: '/account/category/',
+        link: '/report/tax-summary/',
       },
     ],
   },
@@ -326,7 +326,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Parties',
         icon: 'mdi-account-group',
-        link: '/income/',
+        link: '/party/list/',
       },
       {
         title: 'Customers',
