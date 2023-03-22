@@ -38,7 +38,7 @@
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center">
+          <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle2 row items-center justify-center"
               :class="
@@ -114,7 +114,7 @@ export default {
       {
         name: 'status',
         label: 'Status',
-        align: 'left',
+        align: 'center',
         field: 'status',
       },
       {

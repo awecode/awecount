@@ -88,37 +88,58 @@
             :error-message="errors.remarks"
           />
         </q-card-section>
-        <div class="q-pb-lg row justify-start q-gutter-x-md">
-          {{ fields.status }}
-          <q-btn
+        <div
+          class="q-pb-lg row justify-start q-gutter-x-md"
+          v-if="fields.status"
+        >
+          <span
             v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'"
-            @click.prevent="submitWithStatus('Draft', submitForm)"
-            color="orange-6"
-            label="Save Draft"
-            class="q-px-lg q-mb-sm"
-          />
-          <q-btn
-            v-if="fields.status === 'Draft' || fields.status === 'Paid'"
-            @click.prevent="deleteModal = true"
-            color="red-6"
-            label="Cancel"
-            icon="close"
-            class="q-px-lg q-mb-sm"
-          />
-          <q-btn
-            v-if="fields.status !== 'Paid' || fields.status !== 'Cancelled'"
-            @click.prevent="submitWithStatus('Paid', submitForm)"
-            color="green-6"
-            :label="isEdit ? 'Update' : 'Mark as paid'"
-            class="q-px-lg q-mb-sm"
-          />
-          <q-btn
-            v-if="fields.status !== 'Paid' || fields.status !== 'Cancelled'"
-            @click.prevent="submitWithStatus('Paid', submitForm)"
-            color="green-6"
-            :label="isEdit ? 'Update' : 'Mark as paid'"
-            class="q-px-lg q-mb-sm"
-          />
+            class="row q-gutter-x-md"
+          >
+            <q-btn
+              @click.prevent="submitWithStatus('Draft', submitForm)"
+              color="orange-6"
+              label="Save Draft"
+              class="q-px-lg q-mb-sm"
+            />
+            <q-btn
+              @click.prevent="submitWithStatus('Cancelled', submitForm)"
+              color="red-6"
+              label="Cancel"
+              icon="cancel"
+              class="q-px-lg q-mb-sm"
+            />
+            <q-btn
+              @click.prevent="submitWithStatus('Paid', submitForm)"
+              color="green-6"
+              :label="'Mark as paid'"
+              class="q-px-lg q-mb-sm"
+            />
+          </span>
+          <span
+            v-if="fields.status === 'Paid' || fields.status === 'Cancelled'"
+            class="row q-gutter-x-md"
+          >
+            <q-btn
+              @click.prevent="
+                submitWithStatus(
+                  fields.status === 'Cancelled' ? 'Cancelled' : 'Paid',
+                  submitForm
+                )
+              "
+              color="green-6"
+              :label="'Update'"
+              class="q-px-lg q-mb-sm"
+            />
+            <q-btn
+              v-if="fields.status !== 'Cancelled'"
+              @click.prevent="submitWithStatus('Cancelled', submitForm)"
+              color="red-6"
+              label="Cancel"
+              icon="cancel"
+              class="q-px-lg q-mb-sm"
+            />
+          </span>
         </div>
       </q-card>
     </q-card>
