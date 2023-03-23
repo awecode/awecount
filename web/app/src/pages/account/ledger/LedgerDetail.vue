@@ -108,7 +108,8 @@
           </div>
         </div>
       </div>
-      <q-table
+      <transaction-table :fields="fields"></transaction-table>
+      <!-- <q-table
         :columns="columnList"
         :rows="rows"
         :loading="loading"
@@ -144,7 +145,7 @@
             >
           </q-td>
         </template>
-      </q-table>
+      </q-table> -->
     </div>
   </div>
 </template>

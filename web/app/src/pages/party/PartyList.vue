@@ -36,27 +36,6 @@
           </template>
         </q-input>
       </template>
-      <template v-slot:body-cell-status="props">
-        <q-td :props="props">
-          <div class="row align-center justify-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Paid'
-                  ? 'bg-green'
-                  : props.row.status == 'Draft'
-                  ? 'bg-orange'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
-              {{ props.row.status }}
-            </div>
-          </div>
-        </q-td>
-      </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn
@@ -67,12 +46,11 @@
             :to="`/party/${props.row.id}/`"
           />
           <q-btn
-            :disable="props.row.status !== 'Cancelled'"
             color="blue"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            label="Journal entries"
-            :to="`/journal-entries/tax-payments/${props.row.id}/`"
+            label="Account"
+            :to="`/parties/account/${props.row.id}/`"
           />
         </q-td>
       </template>

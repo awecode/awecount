@@ -483,6 +483,10 @@ const routes: RouteRecordRaw[] = [
         path: '/party/:id/',
         component: () => import('src/pages/party/PartyForm.vue'),
       },
+      {
+        path: '/parties/account/:id',
+        component: () => import('src/pages/party/PartyAccount.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),
