@@ -516,6 +516,10 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/settings/auditlog/AuditLogDetails.vue'),
       },
+      {
+        path: '/settings/import-export/',
+        component: () => import('src/pages/settings/ImportExport.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),

@@ -39,7 +39,7 @@
           </template>
           <template v-slot:append>
             <q-icon
-              :name="showPasswordStatus ? 'fa-solid fa-eye' : 'fa-thin fa-eye'"
+              :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'"
               @click="showPasswordStatus = !showPasswordStatus"
               class="cursor-pointer"
             />

@@ -357,7 +357,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Import/Exports',
         icon: 'mdi-database-import',
-        link: '/account/category/',
+        link: '/settings/import-export/',
       },
       {
         title: 'Dashboard Widgets',
