@@ -336,7 +336,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Suppliers',
         icon: 'mdi-account',
-        link: '/retention/',
+        link: '/parties/suppliers/',
       },
       {
         title: 'Sales Agent',

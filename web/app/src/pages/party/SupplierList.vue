@@ -72,7 +72,7 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
-    const endpoint = 'v1/parties/customers/'
+    const endpoint = 'v1/parties/suppliers/'
     const listData = useList(endpoint)
     const newColumn = [
       {
