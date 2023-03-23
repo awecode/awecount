@@ -269,30 +269,8 @@ function onRequest(prop) {
   }`
   getData()
 }
-function getVoucherUrl(row) {
-  const source_type = row.source_type
-  if (source_type === 'Sales Voucher')
-    return `/sales-voucher/${row.source_id}/view/`
-  if (source_type === 'Purchase Voucher')
-    return `/purchase-voucher/${row.source_id}/view`
-  if (source_type === 'Journal Voucher')
-    return `/journal-voucher/${row.source_id}/view`
-  if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
-  if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
-  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
-  // TODO: add missing links
-  if (source_type === 'Cheque Deposit')
-    return `/bank/cheque/cheque-deposit/${row.source_id}/view/`
-  if (source_type === 'Payment Receipt')
-    return `/payment-receipt/${row.source_id}/view/`
-  if (source_type === 'Cheque Issue')
-    return `/bank/cheque/cheque-issue/${row.source_id}/edit/`
-  if (source_type === 'Challan') return `/challan/${row.source_id}/`
-  if (source_type === 'Account Opening Balance')
-    return `/account/opening-balance/${row.source_id}/edit/`
-  if (source_type === 'Item') return `/items/opening/${row.source_id}`
-  console.error(source_type + ' not handled!')
-}
+
+// TODO: Do clean up
 </script>
 
 <style>

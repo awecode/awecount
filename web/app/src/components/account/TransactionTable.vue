@@ -64,7 +64,6 @@
             </td>
           </tr>
         </tbody>
-
         <tbody v-if="fields.transactions">
           <tr
             v-if="

@@ -1,0 +1,129 @@
+<template>
+  <div class="q-pa-md">
+    <div class="row justify-between">
+      <div></div>
+      <q-btn
+        color="green"
+        to="/party/add/"
+        label="New party"
+        class="q-ml-lg"
+        icon-right="add"
+      />
+    </div>
+
+    <q-table
+      title="Accounts"
+      :rows="rows"
+      :columns="newColumn"
+      :loading="loading"
+      :filter="searchQuery"
+      v-model:pagination="pagination"
+      row-key="id"
+      @request="onRequest"
+      class="q-mt-md"
+      :rows-per-page-options="[20]"
+    >
+      <template v-slot:top-right>
+        <q-input
+          borderless
+          dense
+          debounce="500"
+          v-model="searchQuery"
+          placeholder="Search"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+      <template v-slot:body-cell-balance="props">
+        <q-td :props="props">
+          {{ (props.row.dr || 0) - (props.row.cr || 0) }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn
+            color="orange-6"
+            class="q-py-none q-px-md font-size-sm q-mr-sm"
+            style="font-size: 12px"
+            label="edit"
+            :to="`/party/${props.row.id}/`"
+          />
+          <q-btn
+            color="blue"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
+            label="Account"
+            :to="`/parties/account/${props.row.id}/`"
+          />
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>
+
+<script>
+import useList from '/src/composables/useList'
+export default {
+  setup() {
+    const endpoint = 'v1/parties/customers/'
+    const listData = useList(endpoint)
+    const newColumn = [
+      {
+        name: 'name',
+        label: 'Name',
+        align: 'left',
+        field: 'name',
+      },
+      {
+        name: 'address',
+        label: 'Address',
+        align: 'left',
+        field: 'address',
+      },
+      {
+        name: 'contact_no',
+        label: 'Contact No',
+        align: 'left',
+        field: 'contact_no',
+      },
+      {
+        name: 'email',
+        label: 'Email',
+        align: 'left',
+        field: 'email',
+      },
+      {
+        name: 'tax_registration_number',
+        label: 'Pan No.',
+        align: 'left',
+        field: 'tax_registration_number',
+      },
+      {
+        name: 'dr',
+        label: 'Dr.',
+        align: 'left',
+        field: 'dr',
+      },
+      {
+        name: 'cr',
+        label: 'Cr.',
+        align: 'left',
+        field: 'cr',
+      },
+      {
+        name: 'balance',
+        label: 'Balance',
+        align: 'left',
+      },
+      {
+        name: 'actions',
+        label: 'Actions',
+        align: 'center',
+      },
+    ]
+    return { ...listData, newColumn }
+  },
+}
+</script>
