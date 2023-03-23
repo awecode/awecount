@@ -17,6 +17,36 @@
         <tbody>
           <tr
             v-if="
+              fields.supplier_account &&
+              (fields.supplier_account.amounts.dr != null ||
+                fields.supplier_account.amounts.cr != null)
+            "
+          >
+            <td class="text-left">
+              <router-link
+                :to="`/account/${fields.supplier_account?.id}/view/`"
+                class="text-blue"
+                style="text-decoration: none"
+              >
+                Vendor (Payable)
+              </router-link>
+            </td>
+            <td class="text-left">{{ fields.supplier_account.code }}</td>
+            <td class="text-left">
+              {{ fields.supplier_account.amounts.dr || '' }}
+            </td>
+            <td class="text-left">
+              {{ fields.supplier_account.amounts.cr || '' }}
+            </td>
+            <td class="text-left">
+              {{
+                (fields.supplier_account.amounts.dr || 0) -
+                (fields.supplier_account.amounts.cr || 0)
+              }}
+            </td>
+          </tr>
+          <tr
+            v-if="
               fields.customer_account &&
               (fields.customer_account.amounts.dr != null ||
                 fields.customer_account.amounts.cr != null)
@@ -24,7 +54,7 @@
           >
             <td class="text-left">
               <router-link
-                :to="`/accounts/detail/${fields.consumer_account?.id}/`"
+                :to="`/account/${fields.customer_account?.id}/view/`"
                 class="text-blue"
                 style="text-decoration: none"
               >
@@ -33,10 +63,10 @@
             </td>
             <td class="text-left">{{ fields.customer_account.code }}</td>
             <td class="text-left">
-              {{ fields.customer_account.amounts.dr || 0 }}
+              {{ fields.customer_account.amounts.dr || '' }}
             </td>
             <td class="text-left">
-              {{ fields.customer_account.amounts.cr || 0 }}
+              {{ fields.customer_account.amounts.cr || '' }}
             </td>
             <td class="text-left">
               {{

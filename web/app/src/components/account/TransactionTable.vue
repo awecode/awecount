@@ -269,6 +269,11 @@ export default {
       if (source_type === 'Account Opening Balance')
         return `/account/opening-balance/${row.source_id}/edit/`
       if (source_type === 'Item') return `/items/opening/${row.source_id}`
+      // added
+      if (source_type === 'Fund Transfer')
+        return `/bank/fund/fund-transfer/${row.source_id}/edit/`
+      if (source_type === 'Bank Cash Deposit')
+        return `/bank/cash/cash-deposit/${row.source_id}/edit/`
       console.error(source_type + ' not handled!')
     }
     return {
