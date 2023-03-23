@@ -341,7 +341,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Agent',
         icon: 'mdi-face-agent',
-        link: '/party/',
+        link: '/sales-agent/list/',
       },
     ],
   },
