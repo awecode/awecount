@@ -19,6 +19,17 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link
+            class="text-blue"
+            style="text-decoration: none"
+            :to="`/sales-agent/${props.row.id}/`"
+          >
+            {{ props.row.name }}
+          </router-link>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

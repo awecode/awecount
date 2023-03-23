@@ -352,7 +352,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Audit Logs',
         icon: 'mdi-view-list',
-        link: '/income/',
+        link: '/audit-log/list/',
       },
       {
         title: 'Import/Exports',

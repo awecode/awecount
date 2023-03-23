@@ -503,6 +503,19 @@ const routes: RouteRecordRaw[] = [
         path: '/sales-agent/add/',
         component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
       },
+      {
+        path: '/sales-agent/:id/',
+        component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
+      },
+      {
+        path: '/audit-log/list/',
+        component: () => import('src/pages/settings/auditlog/AuditLogList.vue'),
+      },
+      {
+        path: '/audit-log/:id/',
+        component: () =>
+          import('src/pages/settings/auditlog/AuditLogDetails.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),
