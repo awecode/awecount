@@ -379,7 +379,7 @@ const essentialLinks: EssentialLinkProps[] = [
   {
     title: 'POS ',
     icon: 'mdi-cart-arrow-right',
-    link: 'pos',
+    link: '/pos',
   },
 
   // {

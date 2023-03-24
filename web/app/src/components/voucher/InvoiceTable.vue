@@ -84,9 +84,9 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     unitOptions: {

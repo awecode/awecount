@@ -3,6 +3,7 @@
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
+          <!-- TODO: solve error -->
           <n-auto-complete
             v-model="modalValue.item_id"
             :options="itemOptions"
@@ -149,9 +150,9 @@ import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 export default {
   props: {
     itemOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     unitOptions: {
@@ -161,9 +162,9 @@ export default {
       },
     },
     discountOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     errors: {
@@ -183,9 +184,9 @@ export default {
       },
     },
     taxOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     modelValue: {
