@@ -367,7 +367,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
-        link: '/party/',
+        link: '/settings/sales/',
       },
       {
         title: 'Purchase Settings',

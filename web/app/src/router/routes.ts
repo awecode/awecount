@@ -532,6 +532,10 @@ const routes: RouteRecordRaw[] = [
         path: '/dashboard-widgets/:id/',
         component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
       },
+      {
+        path: '/settings/sales/',
+        component: () => import('src/pages/settings/SalesSetting.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),
