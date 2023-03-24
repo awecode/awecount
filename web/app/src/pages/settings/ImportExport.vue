@@ -30,6 +30,7 @@
           label="download"
           icon-right="download"
           color="blue"
+          :disable="!export_file.password"
         ></q-btn>
       </q-card-section>
     </q-card>
@@ -74,7 +75,7 @@
           label="upload"
           icon-right="upload"
           color="green"
-          disable
+          :disable="!import_file.password"
         ></q-btn>
       </q-card-section>
     </q-card>
@@ -82,6 +83,8 @@
 </template>
 
 <script>
+// import usedownloadFile from 'src/composables/usedownloadFile'
+// TODO: add integration
 export default {
   setup() {
     const showPasswordStatus = ref(false)
@@ -90,14 +93,33 @@ export default {
       password: null,
       passerr: '',
     })
-    const import_file = {
+    const import_file = ref({
       password: null,
       passerr: '',
       data: null,
       loading: false,
-    }
+    })
     function downloadFile() {
-      console.log(import_file)
+      this.loading = true
+      let fileName = `awecount_export_${new Date().toLocaleString()}.zip`
+      useApi()
+        // .download(
+        //   'export/',
+        //   fileName,
+        //   {
+        //     email: this.$store.getters.user_email,
+        //     password: this.export_file.password,
+        //   },
+        //   true
+        // )
+        .then(() => {
+          this.$success('Data Exported!')
+          this.loading = false
+        })
+        .catch(() => {
+          this.$error('Export Failed!')
+          this.loading = false
+        })
     }
     return {
       showPasswordStatus,
