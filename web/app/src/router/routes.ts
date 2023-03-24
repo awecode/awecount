@@ -520,6 +520,18 @@ const routes: RouteRecordRaw[] = [
         path: '/settings/import-export/',
         component: () => import('src/pages/settings/ImportExport.vue'),
       },
+      {
+        path: '/dashboard-widgets/list/',
+        component: () => import('src/pages/settings/widgets/WidgetList.vue'),
+      },
+      {
+        path: '/dashboard-widgets/add/',
+        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
+      },
+      {
+        path: '/dashboard-widgets/:id/',
+        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
+      },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),

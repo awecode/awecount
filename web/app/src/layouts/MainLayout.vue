@@ -362,7 +362,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Dashboard Widgets',
         icon: 'mdi-widgets',
-        link: '/retention/',
+        link: '/dashboard-widgets/list/',
       },
       {
         title: 'Sales Settings',
