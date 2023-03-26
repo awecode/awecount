@@ -4,7 +4,11 @@
       <q-card>
         <q-card-section>
           <div>
-            <q-input v-model="queryParams" label="Search Items..."></q-input>
+            <q-input
+              v-model="searchTerm"
+              debounce="300"
+              label="Search Items..."
+            ></q-input>
             <q-markup-table flat bordered>
               <thead>
                 <q-tr class="text-left">
@@ -13,24 +17,23 @@
                 </q-tr>
               </thead>
               <tbody class="text-left">
-                <q-tr v-for="(row, index) in fields?.rows" :key="index">
+                <q-tr
+                  v-for="item in searchResults ||
+                  formDefaults.collections?.items.results"
+                  :key="item.id"
+                >
                   <q-td>
-                    {{ index + 1 }}
+                    {{ item.name }}
                   </q-td>
                   <q-td>
-                    {{ row.item_name }}
-                  </q-td>
-                  <q-td>
-                    {{ row.quantity }}
-                  </q-td>
-                  <q-td> {{ row.rate }} </q-td><q-td> {{ row.discount }} </q-td
-                  ><q-td class="text-right">
-                    {{ row.tax_scheme.rate }}% (<span class="text-uppercase">{{
-                      row.tax_scheme.friendly_name
-                    }}</span
-                    >) </q-td
-                  ><q-td class="text-right">
-                    {{ row.rate * row.quantity }}
+                    <span class="row items-center q-gutter-x-sm">
+                      <span class="col-5">{{ item.rate }}</span>
+                      <span class="col-5"
+                        ><q-btn @click="onAddItem(item)" size="sm q-px-xs"
+                          >+</q-btn
+                        ></span
+                      >
+                    </span>
                   </q-td>
                 </q-tr>
               </tbody>
@@ -43,7 +46,7 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12">
+            <div class="col-12">
               <div class="row">
                 <div class="col-10">
                   <q-input
@@ -57,7 +60,7 @@
                   <n-auto-complete
                     v-else
                     v-model="fields.party"
-                    :options="formDefaults.collections?.parties"
+                    :options="partyChoices"
                     label="Party"
                     :error="errors?.party ? errors?.party : null"
                     :modal-component="PartyForm"
@@ -69,24 +72,9 @@
                   </q-btn>
                 </div>
               </div>
-              <div></div>
             </div>
-            <q-input
-              class="col-md-6 col-12"
-              label="Deposit Date*"
-              v-model="fields.date"
-              disable
-            >
-            </q-input>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.address"
-              class="col-md-6 col-12"
-              label="Address"
-              :error-message="errors.address"
-              :error="!!errors.address"
-            ></q-input>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div
                 :class="
@@ -126,8 +114,6 @@
                 ></q-input>
               </div>
             </div>
-          </div>
-          <div class="row q-col-gutter-md">
             <q-select
               v-model="fields.mode"
               label="Mode"
@@ -152,11 +138,14 @@
                   @click.stop.prevent="fields.mode = null" /></template
             ></q-select>
           </div>
+          <div class="row"></div>
         </q-card-section>
       </q-card>
       <invoice-table
         :itemOptions="
-          formDefaults.collections ? formDefaults.collections.items : null
+          formDefaults.collections
+            ? formDefaults.collections.items.results
+            : null
         "
         :unitOptions="
           formDefaults.collections ? formDefaults.collections.units : null
@@ -174,52 +163,33 @@
           discount_type: fields.discount_type,
           discount: fields.discount,
         }"
+        :usedInPos="true"
         :errors="!!errors.rows ? errors.rows : null"
         @deleteRowErr="
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
       ></invoice-table>
       <div class="row q-px-lg">
-        <div class="col-12 col-md-6 row">
-          <!-- <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-          ></q-input> -->
+        <div class="col-12">
           <q-input
             v-model="fields.remarks"
             label="Remarks"
             type="textarea"
             autogrow
-            class="col-12 col-md-10"
             :error="!!errors?.remarks"
             :error-message="errors?.remarks"
           />
         </div>
-        <div class="col-12 col-md-6 row justify-between">
-          <div>
-            <q-checkbox
-              label="Export?"
-              v-model="fields.is_export"
-              class="q-mt-md col-3"
-            ></q-checkbox>
-          </div>
-          <q-select
-            v-model="fields.sales_agent"
-            label="Sales Agent"
-            class="col-8"
-            :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"
-          ></q-select>
-          <!-- TODO: add sales agent form -->
-        </div>
       </div>
 
-      <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+      <div
+        class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md"
+        v-if="fields.rows.length > 0"
+      >
         <q-btn
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-          color="primary"
-          label="Draft"
+          color="orange-6"
+          label="Save Draft"
         />
         <q-btn
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
@@ -244,15 +214,17 @@ export default {
     const endpoint = 'v1/pos/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
-    const queryParams = ref(null)
+    const searchTerm = ref(null)
+    const searchResults = ref(null)
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
     }
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/sales-voucher/list/',
+      successRoute: '/pos',
     })
+    const partyChoices = ref(false)
     const partyMode = ref(false)
     const switchMode = (fields) => {
       if (fields.mode !== 'Credit') {
@@ -280,28 +252,31 @@ export default {
     formData.fields.value.is_export = false
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
-
-    // watch(
-    //   () => formData.fields.value.party,
-    //   (newValue) => {
-    //     console.log(newValue)
-    //     if (!!newValue && !!formData.formDefaults.value.collections) {
-    //       const index =
-    //         formData.formDefaults.value.collections.parties.findIndex(
-    //           (option) => option.id === newValue
-    //         )
-    //       formData.fields.value.address =
-    //         formData.formDefaults.value.collections.parties[index].address
-    //       // const index = formDefaults.
-    //     }
-    //   }
-    // )
-    // onMounted(() => {
-    //   if (formData.isEdit) {
-    //     formData.fields.value.address = formData.fields.value.address
-    //   }
-    // })
-
+    formData.fields.value.rows = []
+    // handle Search
+    const fetchResults = () => {
+      if (searchTerm.value) {
+        useApi(`/v1/items/pos/?search=${searchTerm.value}`)
+          .then((data) => (searchResults.value = data.results))
+          .catch(() => console.log('Error Fetching Search Results'))
+      } else searchResults.value = null
+    }
+    watch(searchTerm, () => fetchResults())
+    // handle Search
+    const onAddItem = (itemInfo) => {
+      console.log(itemInfo)
+      formData.fields.value.rows.push({
+        quantity: 1,
+        rate: itemInfo.rate,
+        item_id: itemInfo.id,
+        unit_id: itemInfo.unit_id,
+        description: '',
+        discount: 0,
+        discount_type: null,
+        tax_scheme_id: itemInfo.tax_scheme_id,
+        discount_id: null,
+      })
+    }
     return {
       ...formData,
       CategoryForm,
@@ -314,8 +289,20 @@ export default {
       switchMode,
       deleteRowErr,
       onSubmitClick,
-      queryParams,
+      searchTerm,
+      searchResults,
+      onAddItem,
+      partyChoices,
     }
+  },
+  created() {
+    useApi('/v1/parties/choices/')
+      .then((res) => {
+        this.partyChoices = res
+      })
+      .catch((err) => {
+        console.log('error fetching choices due to', err)
+      })
   },
 }
 </script>

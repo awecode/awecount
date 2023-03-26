@@ -31,6 +31,7 @@
             :errors="
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
             "
+            :usedInPos="props.usedInPos"
           />
         </div>
         <div class="row q-py-sm">
@@ -67,7 +68,12 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms"
+          <q-btn
+            @click="addRow"
+            v-if="!usedInPos"
+            color="green"
+            outline
+            class="q-px-lg q-py-ms"
             >Add Row</q-btn
           >
         </div>
@@ -141,6 +147,10 @@ export default {
           discount_id: null,
         },
       ],
+    },
+    usedInPos: {
+      type: Boolean,
+      default: () => false,
     },
   },
   emits: ['update:modelValue', 'deleteRowErr'],

@@ -9,7 +9,8 @@
             :options="itemOptions"
             label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null"
-            :modal-component="ItemAdd"
+            :modal-component="usedInPos ? false : ItemAdd"
+            :disabled="usedInPos"
           />
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
@@ -182,6 +183,10 @@ export default {
       default: () => {
         return null
       },
+    },
+    usedInPos: {
+      type: Boolean,
+      default: () => false,
     },
     taxOptions: {
       type: Array,
