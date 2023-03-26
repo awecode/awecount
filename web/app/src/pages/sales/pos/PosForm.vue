@@ -52,8 +52,10 @@
                   <q-input
                     v-model="fields.customer_name"
                     label="Customer Name"
-                    :error-message="errors.customer_name"
-                    :error="!!errors.customer_name"
+                    :error-message="
+                      errors.customer_name ? errors.customer_name[0] : null
+                    "
+                    :error="!!errors?.customer_name"
                     v-if="partyMode && fields.mode !== 'Credit'"
                   >
                   </q-input>
@@ -62,7 +64,7 @@
                     v-model="fields.party"
                     :options="partyChoices"
                     label="Party"
-                    :error="errors?.party ? errors?.party : null"
+                    :error="errors?.party ? errors?.party[0] : null"
                     :modal-component="PartyForm"
                   />
                 </div>
@@ -87,7 +89,7 @@
                 <n-auto-complete
                   v-model="fields.discount_type"
                   label="Discount*"
-                  :error="errors.discount_type"
+                  :error="errors?.discount_type"
                   :options="
                     formDefaults.collections
                       ? staticOptions.discount_types.concat(
@@ -109,8 +111,8 @@
                 <q-input
                   v-model.number="fields.discount"
                   label="Discount"
-                  :error-message="errors.discount"
-                  :error="!!errors.discount"
+                  :error-message="errors?.discount ? errors.discount[0] : null"
+                  :error="!!errors?.discount"
                 ></q-input>
               </div>
             </div>
@@ -118,8 +120,8 @@
               v-model="fields.mode"
               label="Mode"
               class="col-12 col-md-6"
-              :error-message="errors.mode"
-              :error="!!errors.mode"
+              :error-message="errors?.mode ? errors.mode[0] : null"
+              :error="!!errors?.mode"
               :options="
                 staticOptions.modes.concat(
                   formDefaults.collections?.bank_accounts
@@ -164,7 +166,7 @@
           discount: fields.discount,
         }"
         :usedInPos="true"
-        :errors="!!errors.rows ? errors.rows : null"
+        :errors="!!errors?.rows ? errors.rows : null"
         @deleteRowErr="
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
@@ -177,7 +179,7 @@
             type="textarea"
             autogrow
             :error="!!errors?.remarks"
-            :error-message="errors?.remarks"
+            :error-message="errors?.remarks ? errors.remarks[0] : null"
           />
         </div>
       </div>
@@ -187,12 +189,12 @@
         v-if="fields.rows.length > 0"
       >
         <q-btn
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
+          @click.prevent="onSubmitClick('Draft', fields)"
           color="orange-6"
           label="Save Draft"
         />
         <q-btn
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+          @click.prevent="onSubmitClick('Issued', fields)"
           color="green-8"
           :label="isEdit ? 'Update' : 'Issue'"
         />
@@ -208,6 +210,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -216,6 +219,7 @@ export default {
     const $q = useQuasar()
     const searchTerm = ref(null)
     const searchResults = ref(null)
+    const $router = useRouter()
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -244,9 +248,35 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    const onSubmitClick = (status, fields, submitForm) => {
-      fields.status = status
-      submitForm()
+    function onSubmitClick(status, fields) {
+      this.fields.status = status
+      useApi('/v1/pos/', { method: 'POST', body: fields })
+        .then((data) => {
+          // debugger
+          this.errors = null
+          $q.notify({
+            color: 'green',
+            message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+            icon: 'check',
+          })
+          // if (this.fields.status === 'Issued')
+          print(data)
+          // this.$router.go()
+        })
+        .catch((err) => {
+          fields.status = null
+          if (err.status === 400) {
+            this.errors = err.data
+            $q.notify({
+              color: 'negative',
+              message: 'Error',
+              icon: 'report_problem',
+            })
+          }
+        })
+      // fields.status = status
+      // const data = await submitForm()
+      // console.log(data)
     }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
@@ -263,6 +293,12 @@ export default {
     }
     watch(searchTerm, () => fetchResults())
     // handle Search
+    // watch(
+    //   () => formData.fields.value.status,
+    //   (newValue) => {
+    //     console.log(newValue, 'newStatus')
+    //   }
+    // )
     const onAddItem = (itemInfo) => {
       console.log(itemInfo)
       formData.fields.value.rows.push({
@@ -277,6 +313,32 @@ export default {
         discount_id: null,
       })
     }
+    // const onPrintclick = (bodyOnly) => {
+    //   const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
+    //   useApi(endpoint, { method: 'POST' })
+    //     .then(() => {
+    //       if (fields.value) {
+    //         fields.value.print_count = fields.value?.print_count + 1
+    //       }
+    //       print(bodyOnly)
+    //     })
+    //     .catch((err) => console.log('err from the api', err))
+    // }
+    // to print
+    const print = (data) => {
+      let ifram = document.createElement('iframe')
+      ifram.style = 'display:none; margin: 20px'
+      document.body.appendChild(ifram)
+      const pri = ifram.contentWindow
+      pri.document.open()
+      console.log('rechaed', useGeneratePosPdf, data)
+      pri.document.write(useGeneratePosPdf(data))
+      console.log('Pri Doc', pri)
+      pri.document.close()
+      pri.focus()
+      setTimeout(() => pri.print(), 100)
+    }
+    // to print
     return {
       ...formData,
       CategoryForm,
@@ -293,6 +355,8 @@ export default {
       searchResults,
       onAddItem,
       partyChoices,
+      print,
+      $router,
     }
   },
   created() {
