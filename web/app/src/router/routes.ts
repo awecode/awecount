@@ -5,7 +5,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: 'dashboard', component: () => import('pages/IndexPage.vue') },
+      { path: 'dashboard', component: () => import('src/pages/DashBoard.vue') },
       {
         path: 'items/list/',
         component: () => import('src/pages/inventory/item/ItemList.vue'),
@@ -548,6 +548,10 @@ const routes: RouteRecordRaw[] = [
         path: '/test/',
         component: () => import('src/pages/TestPage.vue'),
       },
+      // {
+      //   path: '/dashboard/',
+      //   component: () => import('src/pages/Dashboard.vue'),
+      // },
       // {
       //   path: 'income/add/',
       //   component: () => import('src/pages/income/IncomeForm.vue'),
