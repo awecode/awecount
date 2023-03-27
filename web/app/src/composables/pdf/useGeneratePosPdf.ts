@@ -3,20 +3,21 @@ import numberToText from '../numToText'
 const loginStore: Record<string, string | number | object> = useLoginStore()
 const compayInfo: Record<string, string | number> = loginStore.companyInfo
 
-export default function useGeneratePosPdf(invoiceInfo: object): string {
-  const sameTax = null
-  debugger
+export default function useGeneratePosPdf(
+  invoiceInfo: object,
+  tax_scheme_obj: object | null,
+  partyObj: object | null
+): string {
+  let sameTax = null
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
-
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        // debugger
-        // console.log(row, 'ahvsyvas row')
         console.log('Row', row)
         if (isTaxSame !== false) {
-          if (index === 0) isTaxSame = row.tax_scheme_id
-          else {
+          if (index === 0) {
+            isTaxSame = row.tax_scheme_id
+          } else {
             if (isTaxSame !== row.tax_scheme_id) isTaxSame = false
           }
         }
@@ -35,9 +36,9 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
       }
     )
     sameTax = isTaxSame
-    return htmlRows.join('')
+    const totalValue = htmlRows.join('')
+    return totalValue
   }
-
   let html = ''
   const header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
@@ -84,7 +85,6 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
   </div>
   <hr style="margin: 20px 0" />`
   html = html.concat(header)
-  debugger
   const table = `<div>
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif;">
     <tr style="color: grey; font-weight: 500;">
@@ -101,12 +101,8 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: Arial, Helvetica, sans-serif;">
       <div>
-      ${
-        voucherType === 'creditNote' || voucherType === 'debitNote'
-          ? ''
-          : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount)}</div>`
-      }
+      <div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
+      <div>${numberToText(12)}</div>
       </div>
       <div style="border-top: 1px solid lightgrey; width: 250px; padding: 10px 0">
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
@@ -124,8 +120,7 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
-                `${invoiceInfo.rows[0].tax_scheme.rate} %`
+              ? `${tax_scheme_obj.name} ` + `${tax_scheme_obj.rate} %`
               : 'TAX'
           }</span> <span>${invoiceInfo.meta_tax}</span>
         </div>
@@ -136,21 +131,10 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
         </div>
       </div>
   </div>
-  ${
-    voucherType === 'creditNote' || voucherType === 'debitNote'
-      ? `<div style="font-weight: 600; margin-bottom: 10px; font-family: Arial, Helvetica, sans-serif;">In words: ${numberToText(
-          invoiceInfo.total_amount
-        )}</div> <div style="margin: 20px 0;"><span style="font-weight: 600;">Remarks:</span> ${
-          invoiceInfo.remarks
-        }</div>`
-      : ''
-  }
   </div>
   <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
   `
-  let body = ''
-  if (voucherType === 'salesVoucher') {
-    body = `<div style="${onlyBody ? 'margin-top: 80px;' : ''}">
+  const body = `<div>
   <div
     style="
       display: flex;
@@ -161,19 +145,19 @@ export default function useGeneratePosPdf(invoiceInfo: object): string {
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
-    <span>COPY ${invoiceInfo.print_count} OF ORIGINAL (PRINT COUNT:${
-      invoiceInfo.print_count + 1
-    })</span>
   </div>
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.party ? invoiceInfo.party_name : invoiceInfo.customer_name
+        invoiceInfo.party ? partyObj.name : invoiceInfo.customer_name
       }</div>
-      <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
-      invoiceInfo.address
-    }</div>
+      <div style="${invoiceInfo.party ? '' : 'display: none;'}">${
+    partyObj.address
+  }</div>
+  <div style="${invoiceInfo.party ? 'display: none;' : ''}">${
+    invoiceInfo.address
+  }</div>
       <div style="font-weight: 600; color: grey;">Tax reg. No.</div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
@@ -204,98 +188,10 @@ ${table}
   <div style="margin-bottom: 5px">
     Generated by ${loginStore.username} for Test Company Pvt. Ltd
   </div>
-  ${
-    onlyBody
-      ? ''
-      : `<div>
+  <div>
   This is a computer generated invoice, produced using awecount.com - IRD Approval No. 7600405
-  </div>`
-  }
+  </div>
 </div>
 `
-  } else if (voucherType === 'creditNote' || 'debitNote') {
-    body = `<div style="font-family: Arial, Helvetica, sans-serif; ${
-      onlyBody ? 'margin-top: 80px;' : ''
-    }
-    "
-  >
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        flex-direction: column;
-        font-family: Arial, Helvetica, sans-serif;
-      "
-    >
-      <h4 style="margin: 0; font-size: 1.4rem">${
-        voucherType === 'creditNote' ? 'Credit Note' : 'Debit Note'
-      }</h4>
-      <span>Copy of Original (${invoiceInfo.print_count + 1})</span>
-    </div>
-    <div>
-      <div style="display: flex; flex-direction: column; gap: 5px">
-        <div><span style="font-weight: 600; color: dimgray;">${
-          voucherType === 'creditNote' ? 'Credit Note No:' : 'Debit Note No:'
-        }</span>  (${invoiceInfo.id})</div>
-        <div style="${
-          invoiceInfo.party_name ? '' : 'display: none;'
-        }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
-      invoiceInfo.party_name
-    }
-    </div>
-    <div style="${
-      invoiceInfo.address ? '' : 'display: none;'
-    }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
-      invoiceInfo.address
-    }
-</div>
-        <div style="${
-          invoiceInfo.customer_name ? '' : 'display: none;'
-        }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
-      invoiceInfo.customer_name
-    }</div>
-        <div><span style="font-weight: 600; color: dimgray;">Date:</span> ${
-          invoiceInfo.date
-        }</div>
-        <div style="${
-          voucherType === 'debitNote' ? 'display: none;' : ''
-        }" style="font-weight: 600">Ref. Invoice No.: #${
-      invoiceInfo.voucher_no
-    }</div>
-    <div style="${
-      voucherType === 'debitNote' ? '' : 'display: none;'
-    }"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${
-      invoiceInfo.tax_registration_number || '-'
-    }</div>
-      </div>
-    </div>
-  </div>
-  <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0" />
-  ${table}
-  <div style="font-size: 14px; text-align: right">
-    <div style="margin-bottom: 5px">
-      Generated by ${loginStore.username} for Test Company Pvt. Ltd
-    </div>
-    ${
-      onlyBody
-        ? ''
-        : `
-    <div>
-      This is a computer generated invoice, produced using awecount.com - IRD
-      Approval No. 7600405
-    </div>
-    `
-    }
-  </div>
-  <style>
-    table {
-      tr {
-        border-bottom: 1px solid #ddd;
-      }
-    }
-  </style>
-`
-  }
   return html.concat(body)
 }

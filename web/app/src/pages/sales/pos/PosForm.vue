@@ -201,6 +201,7 @@
       </div>
     </q-card>
   </q-form>
+  {{ getTaxNameComputed }} --getTaxNameComputed
 </template>
 
 <script>
@@ -252,7 +253,6 @@ export default {
       this.fields.status = status
       useApi('/v1/pos/', { method: 'POST', body: fields })
         .then((data) => {
-          // debugger
           this.errors = null
           $q.notify({
             color: 'green',
@@ -313,6 +313,24 @@ export default {
         discount_id: null,
       })
     }
+    const getTaxObj = () => {
+      if (formData.fields.value.rows[0].tax_scheme_id) {
+        const index =
+          formData.formDefaults.value.collections.tax_schemes.findIndex(
+            (item) => item.id === formData.fields.value.rows[0].tax_scheme_id
+          )
+
+        return formData.formDefaults.value.collections.tax_schemes[index]
+      } else return null
+    }
+    const gePartyObj = () => {
+      if (formData.fields.value.party) {
+        const index = partyChoices.value.findIndex(
+          (item) => item.id === formData.fields.value.party
+        )
+        return partyChoices.value[index]
+      } else return null
+    }
     // const onPrintclick = (bodyOnly) => {
     //   const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
     //   useApi(endpoint, { method: 'POST' })
@@ -331,8 +349,8 @@ export default {
       document.body.appendChild(ifram)
       const pri = ifram.contentWindow
       pri.document.open()
-      console.log('rechaed', useGeneratePosPdf, data)
-      pri.document.write(useGeneratePosPdf(data))
+      console.log('rechaed', useGeneratePosPdf, gePartyObj())
+      pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj()))
       console.log('Pri Doc', pri)
       pri.document.close()
       pri.focus()
