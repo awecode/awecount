@@ -84,7 +84,8 @@ export default {
     onMounted(() => {
       // chartDiagram = new
       new Chart(chartDiagram.value, {
-        type: datacomputed.value.type,
+        type:
+          datacomputed.value.type === 'mixed' ? 'bar' : datacomputed.value.type,
         data: {
           labels: datacomputed.value.labels,
           datasets: datacomputed.value.datasets,
