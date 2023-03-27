@@ -8,8 +8,11 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     BenefactorForm: typeof import('./src/components/BenefactorForm.vue')['default']
+    BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
     ChartsView: typeof import('./src/components/charts/ChartsView.vue')['default']
+    DatePicker: typeof import('./src/components/date/DatePicker.vue')['default']
+    DateRangePicker: typeof import('./src/components/date/DateRangePicker.vue')['default']
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']

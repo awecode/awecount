@@ -101,6 +101,7 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
+import DateConverter from '/src/components/date/VikramSamvat.js'
 export default {
   setup() {
     const endpoint = '/v1/sales-voucher/'
@@ -129,7 +130,12 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      {
+        name: 'date',
+        label: 'Date',
+        align: 'left',
+        field: (data) => data.date,
+      },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
       {
         name: 'total_amount',

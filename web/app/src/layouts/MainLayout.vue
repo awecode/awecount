@@ -17,17 +17,14 @@
              -->
           <div class="row btns-Con">
             <q-btn
-              >79/80
+              >{{ store.companyInfo.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]"
                 >Fiscal Yaar</q-tooltip
               ></q-btn
             >
             <q-btn
               class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="
-                () =>
-                  (activeDateFormat = activeDateFormat === 'AD' ? 'BS' : 'AD')
-              "
+              @click="store.isCalendarInAD = !store.isCalendarInAD"
               >{{ activeDateFormat }}
               <q-tooltip :delay="1000" :offset="[0, 10]"
                 >Change Date Format</q-tooltip
@@ -88,7 +85,7 @@ import { ref } from 'vue'
 const store = useLoginStore()
 // const router = useRouter()
 // const $q = useQuasar()
-const activeDateFormat: Ref<string> = ref('AD')
+const activeDateFormat = computed(() => (store.isCalendarInAD ? 'AD' : 'BS'))
 
 const essentialLinks: EssentialLinkProps[] = [
   {
