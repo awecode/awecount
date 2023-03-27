@@ -201,7 +201,6 @@
       </div>
     </q-card>
   </q-form>
-  {{ getTaxNameComputed }} --getTaxNameComputed
 </template>
 
 <script>
@@ -259,9 +258,8 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
-          // if (this.fields.status === 'Issued')
           print(data)
-          // this.$router.go()
+          setTimeout(() => this.$router.go(), 100)
         })
         .catch((err) => {
           fields.status = null
@@ -274,9 +272,6 @@ export default {
             })
           }
         })
-      // fields.status = status
-      // const data = await submitForm()
-      // console.log(data)
     }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
@@ -293,25 +288,25 @@ export default {
     }
     watch(searchTerm, () => fetchResults())
     // handle Search
-    // watch(
-    //   () => formData.fields.value.status,
-    //   (newValue) => {
-    //     console.log(newValue, 'newStatus')
-    //   }
-    // )
     const onAddItem = (itemInfo) => {
-      console.log(itemInfo)
-      formData.fields.value.rows.push({
-        quantity: 1,
-        rate: itemInfo.rate,
-        item_id: itemInfo.id,
-        unit_id: itemInfo.unit_id,
-        description: '',
-        discount: 0,
-        discount_type: null,
-        tax_scheme_id: itemInfo.tax_scheme_id,
-        discount_id: null,
-      })
+      const index = formData.fields.value.rows.findIndex(
+        (item) => item.item_id === itemInfo.id
+      )
+      if (index >= 0) {
+        formData.fields.value.rows[index].quantity++
+      } else {
+        formData.fields.value.rows.push({
+          quantity: 1,
+          rate: itemInfo.rate,
+          item_id: itemInfo.id,
+          unit_id: itemInfo.unit_id,
+          description: '',
+          discount: 0,
+          discount_type: null,
+          tax_scheme_id: itemInfo.tax_scheme_id,
+          discount_id: null,
+        })
+      }
     }
     const getTaxObj = () => {
       if (formData.fields.value.rows[0].tax_scheme_id) {
@@ -349,9 +344,7 @@ export default {
       document.body.appendChild(ifram)
       const pri = ifram.contentWindow
       pri.document.open()
-      console.log('rechaed', useGeneratePosPdf, gePartyObj())
       pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj()))
-      console.log('Pri Doc', pri)
       pri.document.close()
       pri.focus()
       setTimeout(() => pri.print(), 100)
