@@ -30,13 +30,13 @@
             </div>
             <div class="col-6 row">
               <div class="col-6 text-bold">Deposit Date</div>
-              <div class="col-6">{{ fields?.date || '-' }}</div>
+              <div class="col-6">{{ getDate.deposit_date || '-' }}</div>
             </div>
           </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Cheque Date</div>
-              <div class="col-6">{{ fields?.cheque_date || '-' }}</div>
+              <div class="col-6">{{ getDate.cheque_date || '-' }}</div>
             </div>
             <div class="col-6 row">
               <div class="col-6 text-bold">Cheque Number</div>
@@ -56,7 +56,7 @@
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-6 row">
               <div class="col-6 text-bold">Clearing Date</div>
-              <div class="col-6">{{ fields?.clearing_date || '-' }}</div>
+              <div class="col-6">{{ getDate.clearing_date || '-' }}</div>
             </div>
             <div class="col-6 row">
               <div class="col-6 text-bold">Drawee Bank</div>
@@ -140,6 +140,26 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
+const store = useLoginStore()
+const getDate = computed(() => {
+  let dates = {
+    deposit_date: DateConverter.getRepresentation(
+      fields.value?.date,
+      store.isCalendarInAD ? 'ad' : 'bs'
+    ),
+    clearing_date: DateConverter.getRepresentation(
+      fields.value?.clearing_date,
+      store.isCalendarInAD ? 'ad' : 'bs'
+    ),
+    cheque_date: DateConverter.getRepresentation(
+      fields.value?.cheque_date,
+      store.isCalendarInAD ? 'ad' : 'bs'
+    ),
+  }
+  return dates
+})
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()

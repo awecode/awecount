@@ -20,7 +20,7 @@
             >
             <span>
               <span class="text-weight-medium text-grey-8">Miti: </span>
-              {{ fields.date }}</span
+              {{ getDate }}</span
             >
           </div>
         </div>
@@ -279,7 +279,8 @@ import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import numberToText from 'src/composables/numToText'
-
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 interface Fields {
   status: string
   voucher_no: string
@@ -291,6 +292,7 @@ interface Fields {
 }
 export default {
   setup() {
+    const store = useLoginStore()
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
@@ -317,6 +319,9 @@ export default {
         })
         .catch((err) => console.log('err from the api', err))
     }
+    const getDate = computed(() => {
+      return DateConverter.getRepresentation(fields.value?.date, 'bs')
+    })
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -330,15 +335,14 @@ export default {
       deleteMsg,
       modeOptions,
       numberToText,
+      getDate,
     }
   },
   created() {
     const endpoint = `/v1/payment-receipt/${this.$route.params.id}/details/`
-    console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data
-        console.log(this.fields)
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {

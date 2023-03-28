@@ -23,7 +23,7 @@
     <div class="col-12 col-md-6 q-gutter-y-lg">
       <div class="col-12 col-md-6 row">
         <div class="col-6">Date</div>
-        <div class="col-6">{{ fields?.date }}</div>
+        <div class="col-6">{{ dateComputed }}</div>
       </div>
       <div v-if="changeModes" class="col-12 col-md-6 row">
         <div class="col-6">Mode</div>
@@ -89,7 +89,8 @@
 <script lang="ts">
 import { Ref } from 'vue'
 import { modes } from 'src/helpers/constants/invoice'
-
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   props: {
     fields: {
@@ -119,12 +120,19 @@ export default {
   setup(props, { emit }) {
     const modesValue: Ref<number | null> = ref(null)
     const $q = useQuasar()
+    const store = useLoginStore()
     watch(
       () => props.fields?.mode,
       (newValue) => {
         modesValue.value = newValue
       }
     )
+    const dateComputed = computed(() => {
+      return DateConverter.getRepresentation(
+        props.fields?.date,
+        store.isCalendarInAD ? 'ad' : 'bs'
+      )
+    })
     const modeComputed: Ref<string> = computed(() => {
       if (typeof props.fields?.mode === 'number') {
         const index: number = props.modeOptions.findIndex(
@@ -172,6 +180,7 @@ export default {
       modes,
       submitChangeModes,
       modeComputed,
+      dateComputed,
     }
   },
 }

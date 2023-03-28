@@ -13,7 +13,7 @@
           <div class="row q-col-gutter-md q-mb-sm items-center justify-between">
             <div class="row items-center">
               <div class="text-subtitle2">Date :&nbsp;</div>
-              <div class="text-bold text-grey-9">{{ fields?.date || '-' }}</div>
+              <div class="text-bold text-grey-9">{{ getDate || '-' }}</div>
             </div>
             <!-- TODO: For sales and puchase voucher -->
             <router-link
@@ -144,6 +144,8 @@
 <script lang="ts">
 import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 // const getData = () =>
 //   useApi(`/v1/journal-voucher/${$this.route.params.id}/`).then((data) => {
 //     fields.value = data
@@ -162,9 +164,17 @@ export default {
       narration: string
       id: number
     }
+    const store = useLoginStore()
+    const getDate = computed(() => {
+      return DateConverter.getRepresentation(
+        fields.value?.date,
+        store.isCalendarInAD ? 'ad' : 'bs'
+      )
+    })
     const fields: Ref<Fields | null> = ref(null)
     return {
       fields,
+      getDate
     }
   },
   created() {

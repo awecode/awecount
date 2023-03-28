@@ -35,7 +35,7 @@
           <div class="row">
             <div class="col-6">Date</div>
             <div class="col-6" style="height: 20px">
-              {{ fields?.date }}
+              {{ getDate }}
             </div>
           </div>
           <div class="row">
@@ -43,34 +43,6 @@
             <div class="col-6">{{ fields?.mode }}</div>
           </div>
         </div>
-        <!-- <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
-          <div class="col-12 col-md-6 row">
-            <div class="col-6">Party</div>
-            <div class="col-6">{{ fields?.party_name }}</div>
-          </div>
-          <div class="col-12 col-md-6 row">
-            <div class="col-6">Status</div>
-            <div class="col-6">{{ fields?.status }}</div>
-          </div>
-        </div>
-        <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
-          <div class="col-12 col-md-6 row">
-            <div class="col-6">Date</div>
-            <div class="col-6">{{ fields?.date }}</div>
-          </div>
-          <div class="col-12 col-md-6 row">
-            <div class="col-6">Mode</div>
-            <div class="col-6">
-              {{ fields?.mode }}
-            </div>
-          </div>
-        </div>
-        <div v-if="discountComputed" class="col-12 col-md-6 q-gutter-y-lg">
-          <div class="col-12 col-md-6 row">
-            <div class="col-6">Discount</div>
-            <div class="col-6">{{ discountComputed }}</div>
-          </div>
-        </div> -->
       </q-card>
     </q-card>
     <q-card class="q-mx-lg" id="to_print">
@@ -152,6 +124,8 @@ import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 interface Fields {
   status: string
   voucher_no: string
@@ -168,6 +142,7 @@ interface Fields {
 }
 export default {
   setup() {
+    const store = useLoginStore()
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
@@ -210,6 +185,12 @@ export default {
           })
         })
     }
+    const getDate = computed(() => {
+      return DateConverter.getRepresentation(
+        fields.value?.date,
+        store.isCalendarInAD ? 'ad' : 'bs'
+      )
+    })
     const print = (bodyOnly) => {
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
@@ -263,6 +244,7 @@ export default {
       isDeleteOpen,
       deleteMsg,
       onPrintclick,
+      getDate,
     }
   },
   created() {

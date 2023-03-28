@@ -25,7 +25,7 @@
         <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
           <div class="col-12 col-md-6 row">
             <div class="col-6">Date</div>
-            <div class="col-6">{{ fields?.date }}</div>
+            <div class="col-6">{{ getDate }}</div>
           </div>
           <div class="col-12 col-md-6 row">
             <div class="col-6">Mode</div>
@@ -120,6 +120,8 @@
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 interface Fields {
   status: string
   voucher_no: string
@@ -135,6 +137,7 @@ interface Fields {
 }
 export default {
   setup() {
+    const store = useLoginStore()
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
@@ -177,6 +180,12 @@ export default {
           })
         })
     }
+    const getDate = computed(() => {
+      return DateConverter.getRepresentation(
+        fields.value?.date,
+        store.isCalendarInAD ? 'ad' : 'bs'
+      )
+    })
     const discountComputed = computed(() => {
       console.log('Computed', fields.value)
       if (fields?.value.discount_obj) {
@@ -206,16 +215,15 @@ export default {
       discountComputed,
       isDeleteOpen,
       deleteMsg,
+      getDate,
     }
   },
   created() {
     const endpoint = `/v1/purchase-vouchers/${this.$route.params.id}/details/`
-    console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data
         this.modeOptions = data.available_bank_accounts
-        console.log(this.fields, 'data')
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
