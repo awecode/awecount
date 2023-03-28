@@ -84,7 +84,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md">
+          <div class="row q-gutter-x-md justify-start">
             <q-btn
               color="blue"
               label="View"
@@ -101,9 +101,6 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
-import DateConverter from '/src/components/date/VikramSamvat.js'
-import { useLoginStore } from 'src/stores/login-info'
-const store = useLoginStore()
 export default {
   setup() {
     const endpoint = '/v1/sales-voucher/'
@@ -136,11 +133,7 @@ export default {
         name: 'date',
         label: 'Date',
         align: 'left',
-        field: (data) =>
-          DateConverter.getRepresentation(
-            data.date,
-            store.isCalendarInAD ? 'ad' : 'bs'
-          ),
+        field: 'date',
       },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
       {
@@ -155,7 +148,7 @@ export default {
         align: 'left',
         field: 'payment_receipts',
       },
-      { name: 'actions' },
+      { name: 'actions', align: 'left', label: 'Actions' },
     ]
 
     return { ...listData, newColumn, onDownloadXls }

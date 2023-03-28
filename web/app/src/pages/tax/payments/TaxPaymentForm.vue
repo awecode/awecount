@@ -18,29 +18,14 @@
               :error-message="errors.voucher_no"
               :error="!!errors.voucher_no"
             />
-            <q-input
+            <date-picker
               v-model="fields.date"
               class="col-12 col-md-6"
               label="Date"
               :error-message="errors?.date"
               :error="!!errors?.date"
             >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="fields.date" today-btn mask="YYYY-MM-DD">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup label="Close" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            </date-picker>
           </div>
           <div class="row q-col-gutter-md">
             <q-select
@@ -177,6 +162,7 @@ export default {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
     })
+    formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
     function submitWithStatus(status, submitForm) {
       this.fields.status = status

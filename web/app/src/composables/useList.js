@@ -191,14 +191,13 @@ export default (endpoint, predefinedColumns = null) => {
     router.push(url)
   }
   const rows = computed(() => {
-    const dataToProcess = unCalculatedrows.value
     if (
-      unCalculatedrows.value > 0 &&
+      unCalculatedrows.value.length > 0 &&
       !store.isCalendarInAD &&
-      dataToProcess[0].hasOwnProperty('date')
+      unCalculatedrows.value[0].hasOwnProperty('date')
     ) {
       let newData = []
-      dataToProcess.forEach((item) => {
+      unCalculatedrows.value.forEach((item) => {
         const updatedItem = { ...item }
         if (updatedItem) {
           updatedItem.date = DateConverter.getRepresentation(item.date, 'bs')

@@ -68,7 +68,7 @@
                 </q-card>
               </q-dialog>
             </div>
-            <q-input
+            <!-- <q-input
               v-model="fields.date"
               class="col-md-6 col-12"
               label="Start Date"
@@ -93,7 +93,12 @@
                   </q-popup-proxy>
                 </q-icon>
               </template>
-            </q-input>
+            </q-input> -->
+            <date-picker
+              v-model="fields.date"
+              class="col-md-6 col-12"
+              label="Start Date"
+            ></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -288,19 +293,6 @@ export default {
         referenceFormData.value.party
       ) {
         const url = 'v1/purchase-vouchers/by-voucher-no/'
-        // try {
-        //   const response =
-        // } catch (error) {
-        //   console.log(error, 'elol')
-        //   if (error.response.status === 404) {
-        //     $q.notify({
-        //       color: 'red-6',
-        //       message: 'Invoice not found!',
-        //       icon: 'report_problem',
-        //       position: 'top-right',
-        //     })
-        //   }
-        // }
         useApi(
           url +
             `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}&party=${referenceFormData.value.party}`
@@ -331,15 +323,6 @@ export default {
             if (data.discount_obj && data.discount_obj.id) {
               fields.discount_type = data.discount_obj.id
             }
-            // console.log(data)
-            // fields.rows = data.rows
-            // data.rows.forEach((row) => {
-            //   console.log(row, 'row')
-            //   // delete row['id']
-            //   // if (row.discount_obj && row.discount_obj.id) {
-            //   //   row.discount_type = row.discount_obj.id
-            //   // }
-            // })
             addRefrence.value = false
           })
           .catch((err) => {
@@ -353,34 +336,6 @@ export default {
             }
             // addRefrence.value = false
           })
-        // .then(({ data }) => {
-        //   this.fields.invoices.push(data.id)
-        //   ;[
-        //     'id',
-        //     'date',
-        //     'voucher_meta',
-        //     'print_count',
-        //     'issue_datetime',
-        //     'is_export',
-        //     'status',
-        //     'due_date',
-        //     'date',
-        //     'remarks',
-        //   ].forEach((key) => {
-        //     delete data[key]
-        //   })
-        //   data.rows.forEach((row) => {
-        //     delete row['id']
-        //     if (row.discount_obj && row.discount_obj.id) {
-        //       row.discount_type = row.discount_obj.id
-        //     }
-        //   })
-        //   this.$vue.set(this, 'fields', Object.assign({}, this.fields, data))
-        //   if (data.discount_obj && data.discount_obj.id) {
-        //     this.fields.discount_type = data.discount_obj.id
-        //   }
-        //   this.options.sales_invoice_objs.push(data)
-        // })
       } else {
         $q.notify({
           color: 'red-6',

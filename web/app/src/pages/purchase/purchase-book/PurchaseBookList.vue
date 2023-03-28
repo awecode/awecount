@@ -92,14 +92,7 @@
           <div class="row q-mb-md" v-for="(value, key) in aggregate" :key="key">
             <div class="col-6">
               <div class="text-weight-medium text-grey-9 text-capitalize">
-                {{
-                  key
-                    .replace('__', ' ')
-                    .replace('__', ' ')
-                    .replace('_', ' ')
-                    .replace('_', ' ')
-                    .replace('_', ' ')
-                }}
+                {{ key.replace(/_/g, ' ') }}
               </div>
             </div>
             <div class="col-6">

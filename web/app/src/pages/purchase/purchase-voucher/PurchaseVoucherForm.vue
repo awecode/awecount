@@ -70,12 +70,18 @@
               </div>
             </div>
             <div class="col-md-6 col-12">
-              <q-input
+              <!-- <q-input
                 v-model="fields.date"
                 label="Date"
                 :error-message="errors.date"
                 :error="!!errors.date"
-              ></q-input>
+              ></q-input> -->
+              <date-picker
+                v-model="fields.date"
+                label="Date"
+                :error-message="errors.date"
+                :error="!!errors.date"
+              ></date-picker>
             </div>
           </div>
           <div class="row q-col-gutter-md">

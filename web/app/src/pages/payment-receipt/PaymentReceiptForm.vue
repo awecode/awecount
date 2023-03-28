@@ -43,11 +43,11 @@
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
+            <DatePicker
               class="col-md-6 col-12"
               label="Deposit Date*"
               v-model="fields.date"
-            ></q-input>
+            ></DatePicker>
             <q-select
               v-model="fields.mode"
               label="Mode"

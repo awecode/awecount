@@ -3,8 +3,8 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span v-if="!isEdit">New Sales Invoice | Draft</span>
-          <span v-else>Update Account</span>
+          <span v-if="!isEdit">New Credit Note | Draft</span>
+          <span v-else>Update Credit Note | Draft</span>
         </div>
       </q-card-section>
       <q-separator inset />
@@ -59,32 +59,11 @@
                 </q-card>
               </q-dialog>
             </div>
-            <q-input
+            <date-picker
               v-model="fields.date"
               class="col-md-6 col-12"
               label="Start Date"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="fields.date" mask="YYYY-MM-DD">
-                      <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            ></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">

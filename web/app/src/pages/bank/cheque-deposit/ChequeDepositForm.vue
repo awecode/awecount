@@ -38,58 +38,22 @@
               :error-message="errors.amount"
               :error="!!errors.amount"
             />
-            <q-input
+            <date-picker
               v-model="fields.date"
               class="col-md-6 col-12"
               label="Deposit Date*"
               :error-message="errors.date"
               :error="!!errors.date"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="fields.date" today-btn mask="YYYY-MM-DD">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup label="Close" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            ></date-picker>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
+            <date-picker
               v-model="fields.cheque_date"
               class="col-md-6 col-12"
               label="Cheque Date"
               :error-message="errors.cheque_date"
               :error="!!errors.cheque_date"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date
-                      v-model="fields.cheque_date"
-                      today-btn
-                      mask="YYYY-MM-DD"
-                    >
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup label="Close" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            ></date-picker>
             <q-input
               v-model="fields.cheque_number"
               label="Cheque Number"
