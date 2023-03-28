@@ -33,7 +33,40 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(300px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mb-sm">
+                    <q-checkbox
+                      v-model="filters.can_be_sold"
+                      label="Can be Sold?"
+                    ></q-checkbox>
+                  </div>
+                  <div>
+                    <q-checkbox
+                      v-model="filters.can_be_purchased"
+                      label="Can be Purchased?"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-mx-sm">
+                    <!-- <q-select></q-select> -->
+                    <select-with-fetch
+                      endpoint="v1/inventory-categories/choices/"
+                    />
+                  </div>
+                </div>
+                <q-btn
+                  color="green"
+                  label="Filter"
+                  @click="onFilterUpdate"
+                ></q-btn>
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
       <template v-slot:body-cell-actions="props">
@@ -60,8 +93,8 @@
 </template>
 
 <script setup>
-import useList from '/src/composables/useList';
-const endpoint = '/v1/items';
+import useList from '/src/composables/useList'
+const endpoint = '/v1/items'
 // console.log(useList(endpoint))
 // export default {
 //   setup() {
@@ -72,15 +105,13 @@ const endpoint = '/v1/items';
 const {
   columns,
   rows,
-  resetFilters,
-  filters,
   loading,
   searchQuery,
   pagination,
   onRequest,
-  confirmDeletion,
-  initiallyLoaded,
-} = useList(endpoint);
+  filters,
+  onFilterUpdate,
+} = useList(endpoint)
 </script>
 
 <style>
@@ -94,9 +125,9 @@ const {
   width: 100%;
 }
 
-.filterbtn {
+/* .filterbtn {
   width: 100px;
   flex-grow: 0;
   flex-shrink: 0;
-}
+} */
 </style>
