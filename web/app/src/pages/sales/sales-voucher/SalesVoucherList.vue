@@ -102,6 +102,8 @@
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
+const store = useLoginStore()
 export default {
   setup() {
     const endpoint = '/v1/sales-voucher/'
@@ -134,7 +136,11 @@ export default {
         name: 'date',
         label: 'Date',
         align: 'left',
-        field: (data) => data.date,
+        field: (data) =>
+          DateConverter.getRepresentation(
+            data.date,
+            store.isCalendarInAD ? 'ad' : 'bs'
+          ),
       },
       { name: 'status', label: 'Status', align: 'left', field: 'status' },
       {

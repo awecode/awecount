@@ -112,7 +112,7 @@ function dateDiffInDays(a, b) {
 }
 
 const Converter = {
-  countBsDays: function(begin_bs_date, end_bs_date) {
+  countBsDays: function (begin_bs_date, end_bs_date) {
     // Returns the number of days between the two given B.S. dates.
     // begin_ad_date : A tuple in the format (year,month,day) that specify the date to start counting from.
     // end_ad_date : A tuple in the format (year,month,day) that specify the date to end counting.
@@ -155,7 +155,7 @@ const Converter = {
     return days
   },
 
-  countAdDays: function(begin_ad_date, end_ad_date) {
+  countAdDays: function (begin_ad_date, end_ad_date) {
     // Returns the number of days between the two given A.D. dates.
     // begin_ad_date : A tuple in the format (year,month,day) that specify the date to start counting from.
     // end_ad_date : A tuple in the format (year,month,day) that specify the date to end counting.
@@ -165,7 +165,7 @@ const Converter = {
     return dateDiffInDays(date_begin, date_end)
   },
 
-  addAdDays: function(ad_date, num_days) {
+  addAdDays: function (ad_date, num_days) {
     // Adds the given number of days to the given A.D. date and returns it as a tuple in the format (year,month,day)
     // ad_date : A tuple in the format (year,month,day)
     // num_days : Number of days to add to the given date
@@ -176,7 +176,7 @@ const Converter = {
     )}-${this.zeroPad(date.getDate())}`
   },
 
-  addBsDays: function(bs_date, num_days) {
+  addBsDays: function (bs_date, num_days) {
     // Adds the given number of days to the given B.S. date and returns it as a tuple in the format (year,month,day)
     // bs_date : a tuple in the format (year,month,day)
     // num_days : Number of days to add to the given date
@@ -207,12 +207,12 @@ const Converter = {
     return `${year}-${this.zeroPad(month)}-${this.zeroPad(day)}`
   },
 
-  zeroPad: function(num) {
+  zeroPad: function (num) {
     var zero = 2 - num.toString().length + 1
     return Array(+(zero > 0 && zero)).join('0') + num
   },
 
-  bs2ad: function(bs_date) {
+  bs2ad: function (bs_date) {
     // input and output in string
     if (this.isValid(bs_date)) {
       let date_delta = this.countBsDays(BS_EQIV, bs_date)
@@ -222,7 +222,7 @@ const Converter = {
     }
   },
 
-  ad2bs: function(ad_date) {
+  ad2bs: function (ad_date) {
     let dt = new Date(ad_date)
     if (dt != 'Invalid Date') {
       let date_delta = this.countAdDays(AD_EQIV, ad_date)
@@ -240,16 +240,16 @@ const Converter = {
     }
   },
 
-  getBSYear: function(ad_date) {
+  getBSYear: function (ad_date) {
     let bs_date = this.ad2bs(ad_date)
     return parseInt(bs_date.split('-')[0])
   },
 
-  getBSMonth: function(ad_date) {
+  getBSMonth: function (ad_date) {
     let bs_date = this.ad2bs(ad_date)
     return parseInt(bs_date.split('-')[1])
   },
-  isValidAD: function(date_as_str) {
+  isValidAD: function (date_as_str) {
     return (
       date_as_str.length > 7 &&
       !isNaN(Date.parse(date_as_str)) &&
@@ -259,7 +259,7 @@ const Converter = {
     )
   },
 
-  isValid: function(date_as_str) {
+  isValid: function (date_as_str) {
     // """
     // Checks if the fed date string is a valid B.S. date
     // date_as_str: String in the format 'YYYY-MM-DD'
@@ -267,7 +267,7 @@ const Converter = {
     // """
     let [year, month, day] = [null, null, null]
     try {
-      [year, month, day] = date_as_str.split('-').map((data) => parseInt(data))
+      ;[year, month, day] = date_as_str.split('-').map((data) => parseInt(data))
     } catch (e) {
       return false
     }
@@ -305,9 +305,7 @@ const Converter = {
   },
   getYears() {
     // exclude 2000
-    return Object.keys(bs)
-      .slice(1)
-      .reverse()
+    return Object.keys(bs).slice(1).reverse()
   },
 
   getMonths() {
@@ -323,7 +321,7 @@ const Converter = {
       'Poush',
       'Magh',
       'Falgun',
-      'Chaitra'
+      'Chaitra',
     ]
   },
 
@@ -335,7 +333,7 @@ const Converter = {
       'Wednesday',
       'Thursday',
       'Friday',
-      'Saturday'
+      'Saturday',
     ]
   },
 
@@ -370,7 +368,7 @@ const Converter = {
     return `${date.getFullYear()}-${this.zeroPad(
       date.getMonth() + 1
     )}-${this.zeroPad(date.getDate())}`
-  }
+  },
 }
 
 export default Converter

@@ -1,6 +1,9 @@
 import useApi from './useApi'
 import { withQuery } from 'ufo'
 import { withTrailingSlash, joinURL } from 'ufo'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
+const store = useLoginStore()
 
 const sortOnKeys = (dict) => {
   const sorted = []
@@ -44,7 +47,8 @@ export default (endpoint, predefinedColumns = null) => {
   const loading = ref(false)
   const initiallyLoaded = ref(false)
   const page = ref(pageQueryValue || 1)
-  const rows = ref([])
+  const unCalculatedrows = ref([])
+  // const rows = ref([])
   const columns = ref([])
 
   let cleanedFilterValues = Object.fromEntries(
@@ -74,7 +78,7 @@ export default (endpoint, predefinedColumns = null) => {
     }
     useApi(url)
       .then((response) => {
-        rows.value = response.results
+        unCalculatedrows.value = response.results
         initiallyLoaded.value = true
         pagination.value = {
           // sortBy: 'desc',
@@ -186,6 +190,24 @@ export default (endpoint, predefinedColumns = null) => {
     console.log(url)
     router.push(url)
   }
+  const rows = computed(() => {
+    const dataToProcess = unCalculatedrows.value
+    if (
+      unCalculatedrows.value > 0 &&
+      !store.isCalendarInAD &&
+      dataToProcess[0].hasOwnProperty('date')
+    ) {
+      let newData = []
+      dataToProcess.forEach((item) => {
+        const updatedItem = { ...item }
+        if (updatedItem) {
+          updatedItem.date = DateConverter.getRepresentation(item.date, 'bs')
+        }
+        newData.push(updatedItem)
+      })
+      return newData
+    } else return unCalculatedrows.value
+  })
 
   // watch(filters.value, () => {
   //   onFilterUpdate()
