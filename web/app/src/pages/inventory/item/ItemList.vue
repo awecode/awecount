@@ -19,6 +19,7 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
       <template v-slot:top>
         <div class="search-bar">
@@ -44,26 +45,32 @@
                     <q-checkbox
                       v-model="filters.can_be_sold"
                       label="Can be Sold?"
+                      :false-value="null"
                     ></q-checkbox>
                   </div>
                   <div>
                     <q-checkbox
                       v-model="filters.can_be_purchased"
                       label="Can be Purchased?"
+                      :false-value="null"
                     ></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <!-- <q-select></q-select> -->
-                    <select-with-fetch
+                    <SelectWithFetch
+                      v-model="filters.category"
                       endpoint="v1/inventory-categories/choices/"
+                      label="Category"
                     />
                   </div>
                 </div>
-                <q-btn
-                  color="green"
-                  label="Filter"
-                  @click="onFilterUpdate"
-                ></q-btn>
+                <div class="q-mx-md row q-gutter-md q-mb-md">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
               </div>
             </q-menu>
           </q-btn>
@@ -111,7 +118,10 @@ const {
   onRequest,
   filters,
   onFilterUpdate,
+  resetFilters,
 } = useList(endpoint)
+// filters.value.can_be_sold = false
+// filters.value.can_be_purchased = false
 </script>
 
 <style>
