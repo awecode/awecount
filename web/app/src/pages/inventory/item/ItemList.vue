@@ -78,20 +78,20 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/inventory-account/detail/${props.row.id}/`"
-            />
-            <q-btn
-              color="orange-6"
-              label="Edit"
-              :to="`/items/${props.row.id}/`"
-            />
-          </div>
-          <!-- {{ props }} -->
+          <q-btn
+            color="blue"
+            class="q-py-none q-px-md font-size-sm q-mr-md"
+            style="font-size: 12px"
+            label="View"
+            :to="`/inventory-account/detail/${props.row.id}/`"
+          />
+          <q-btn
+            color="orange-6"
+            class="q-py-none q-px-md font-size-sm q-mr-sm"
+            style="font-size: 12px"
+            label="edit"
+            :to="`/items/${props.row.id}/`"
+          />
         </q-td>
         <!-- TODO: add modals -->
       </template>

@@ -65,13 +65,6 @@
 <script setup>
 import useList from '/src/composables/useList'
 const endpoint = '/v1/categories/'
-// console.log(useList(endpoint))
-// export default {
-//   setup() {
-//     const endpoint = '/v1/category/'
-//     return { ...useList(endpoint) }
-//   },
-// }
 const newColumns = [
   {
     name: 'code',
@@ -89,7 +82,6 @@ const newColumns = [
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
 const {
-  columns,
   rows,
   resetFilters,
   filters,
@@ -97,8 +89,6 @@ const {
   searchQuery,
   pagination,
   onRequest,
-  confirmDeletion,
-  initiallyLoaded,
 } = useList(endpoint)
 </script>
 

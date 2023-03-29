@@ -10,7 +10,6 @@
       />
     </div>
     <q-table
-      title="Stock Opening Balances"
       :rows="rows"
       :columns="columns"
       :loading="loading"
@@ -19,13 +18,15 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
+      <template v-slot:top>
         <q-input
           dense
           debounce="500"
           v-model="searchQuery"
           placeholder="Search"
+          class="full-width"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -36,7 +37,8 @@
         <q-td :props="props">
           <q-btn
             color="orange-6"
-            class="q-mr-md"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
             label="EDIT"
             :to="`/items/opening/${props.row.item_id}/`"
           />
@@ -55,11 +57,11 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList';
+import useList from '/src/composables/useList'
 export default {
   setup() {
-    const endpoint = '/v1/item-opening-balance/';
-    return { ...useList(endpoint) };
+    const endpoint = '/v1/item-opening-balance/'
+    return { ...useList(endpoint) }
   },
-};
+}
 </script>
