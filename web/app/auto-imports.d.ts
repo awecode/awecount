@@ -54,6 +54,7 @@ declare global {
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']
   const useDialogPluginComponent: typeof import('quasar')['useDialogPluginComponent']
+  const useDownloadXls: typeof import('./src/composables/useDownloadXls.js')['default']
   const useForm: typeof import('./src/composables/useForm.js')['default']
   const useFormChild: typeof import('quasar')['useFormChild']
   const useGetDataAuth: typeof import('./src/composables/useGetDataAuth.js')['default']

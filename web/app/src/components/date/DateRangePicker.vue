@@ -1,52 +1,83 @@
 <template>
   <div class="row q-col-gutter-md">
     <div class="row q-col-gutter-md target">
-      <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0" label="Start Date" />
-      <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1" label="End Date" />
+      <q-input
+        :model-value="getText0"
+        :error="error0"
+        :error-message="errorMessage0"
+        @update:model-value="onInput0"
+        label="Start Date"
+      />
+      <q-input
+        :model-value="getText1"
+        :error="error1"
+        :error-message="errorMessage1"
+        @update:model-value="onInput1"
+        label="End Date"
+      />
     </div>
     <q-menu :target="'.target'" :no-focus="true">
-      <div class=" row q-pa-md ">
+      <div class="row q-pa-md">
         <div class="col-3" style="min-width: 200px">
           <div class="text-caption">Date Range</div>
           <q-list dense padding class="rounded-borders q-pr-md">
             <q-item clickable :active="activeDate == 'today'" v-ripple>
-              <q-item-section @click="getToday((last = false))">Today</q-item-section>
+              <q-item-section @click="getToday((last = false))"
+                >Today</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-              <q-item-section @click="getToday((last = true))">Yesterday</q-item-section>
+              <q-item-section @click="getToday((last = true))"
+                >Yesterday</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'last7'" v-ripple>
-              <q-item-section @click="getDays((last = 7))">Last 7 Days</q-item-section>
+              <q-item-section @click="getDays((last = 7))"
+                >Last 7 Days</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'last30'" v-ripple>
-              <q-item-section @click="getDays((last = 30))">Last 30 Days</q-item-section>
+              <q-item-section @click="getDays((last = 30))"
+                >Last 30 Days</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-              <q-item-section @click="getMonth((last = false))">This
-                Month</q-item-section>
+              <q-item-section @click="getMonth((last = false))"
+                >This Month</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-              <q-item-section @click="getMonth((last = true))">Last Month</q-item-section>
+              <q-item-section @click="getMonth((last = true))"
+                >Last Month</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-              <q-item-section @click="getYear((last = false))">This Year</q-item-section>
+              <q-item-section @click="getYear((last = false))"
+                >This Year</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-              <q-item-section @click="getYear((last = true))">Last Year</q-item-section>
+              <q-item-section @click="getYear((last = true))"
+                >Last Year</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-              <q-item-section @click="getFY((last = false))">This FY</q-item-section>
+              <q-item-section @click="getFY((last = false))"
+                >This FY</q-item-section
+              >
             </q-item>
             <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-              <q-item-section @click="getFY((last = true))">Last FY</q-item-section>
+              <q-item-section @click="getFY((last = true))"
+                >Last FY</q-item-section
+              >
             </q-item>
           </q-list>
         </div>
-        <div v-if="isCalendarInAD">
+        <div v-if="isCalendarInAD" class="row">
           <q-date class="col-6 q-mr-md" v-model="value0" mask="YYYY-MM-DD" />
           <q-date class="col-6" v-model="value1" mask="YYYY-MM-DD" />
         </div>
-        <div v-else class="row ">
+        <div v-else class="row">
           <bs-date-picker class="q-mr-md" v-model="value0"></bs-date-picker>
           <bs-date-picker v-model="value1"></bs-date-picker>
         </div>
@@ -54,12 +85,22 @@
     </q-menu>
 
     <div>
-      <q-btn v-if="value0 || value1" color="red" icon="fa-solid fa-xmark " @click="clearFilter" class="q-mt-md" />
+      <q-btn
+        v-if="value0 || value1"
+        color="red"
+        icon="fa-solid fa-xmark "
+        @click="clearFilter"
+        class="q-mt-md"
+      />
     </div>
-    <div>
-      <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
-    </div>
-
+    <!-- <div>
+      <q-btn
+        @click.prevent="filter"
+        color="primary"
+        label="FILTER"
+        class="q-mt-md"
+      />
+    </div> -->
   </div>
 </template>
 
@@ -70,10 +111,7 @@ import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 const $q = useQuasar()
 
-const props = defineProps([
-  'startDate',
-  'endDate',
-])
+const props = defineProps(['startDate', 'endDate'])
 
 const value0 = ref(props.startDate)
 const value1 = ref(props.endDate)
@@ -91,10 +129,10 @@ const isCalendarInAD = computed(() => {
 // return false
 // })
 
-const emit = defineEmits(['updateStartDate', 'updateEndDate', 'filter'])
+const emit = defineEmits(['update:startDate', 'update:endDate', 'filter'])
 const clearFilter = () => {
-  emit('updateStartDate', null)
-  emit('updateEndDate', null)
+  emit('update:startDate', null)
+  emit('update:endDate', null)
   emit('filter')
 }
 const getText0 = computed(() => {
@@ -113,26 +151,37 @@ const getText1 = computed(() => {
   )
 })
 // const updated0 = (val) => {
-//   emit('updateStartDate', val)
+//   emit('update:startDate', val)
 // }
 // const updated1 = (val) => {
-//   emit('updateEndDate', val)
+//   emit('update:endDate', val)
 // }
 
-watch(() => value0.value, (val) => {
-  emit('updateStartDate', val)
-})
-watch(() => value1.value, (val) => {
-  emit('updateEndDate', val)
-})
+watch(
+  () => value0.value,
+  (val) => {
+    emit('update:start-date', val)
+  }
+)
+watch(
+  () => value1.value,
+  (val) => {
+    emit('update:start-date', val)
+  }
+)
 
-watch(() => props.startDate, (val) => {
-  value0.value = val
-})
-watch(() => props.endDate, (val) => {
-  value1.value = val
-})
-
+watch(
+  () => props.startDate,
+  (val) => {
+    value0.value = val
+  }
+)
+watch(
+  () => props.endDate,
+  (val) => {
+    value1.value = val
+  }
+)
 
 const filter = () => {
   if (!value0.value && !value1.value) {
@@ -146,7 +195,6 @@ const filter = () => {
   emit('filter')
 }
 
-
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
   // if (!text) {
@@ -156,19 +204,19 @@ const onInput0 = (text) => {
   errorMessage0.value = null
   if (isCalendarInAD.value) {
     if (DateConverter.isValidAD(text)) {
-      emit('updateStartDate', text)
+      emit('update:startDate', text)
     } else {
       error0.value = true
       errorMessage0.value = 'Invalid AD Date'
-      // emit("updateStartDate", "");
+      // emit("update:startDate", "");
     }
   } else {
     if (DateConverter.isValid(text)) {
-      emit('updateStartDate', DateConverter.bs2ad(text))
+      emit('update:startDate', DateConverter.bs2ad(text))
     } else {
       error0.value = true
       errorMessage0.value = 'Invalid BS Date'
-      // emit("updateStartDate", "");
+      // emit("update:startDate", "");
     }
   }
 }
@@ -181,19 +229,19 @@ const onInput1 = (text) => {
   errorMessage1.value = null
   if (isCalendarInAD.value) {
     if (DateConverter.isValidAD(text)) {
-      emit('updateEndDate', text)
+      emit('update:endDate', text)
     } else {
       error1.value = true
       errorMessage1.value = 'Invalid AD Date'
-      // emit("updateEndDate", "");
+      // emit("update:endDate", "");
     }
   } else {
     if (DateConverter.isValid(text)) {
-      emit('updateEndDate', DateConverter.bs2ad(text))
+      emit('update:endDate', DateConverter.bs2ad(text))
     } else {
       error1.value = true
       errorMessage1.value = 'Invalid BS Date'
-      // emit("updateEndDate", "");
+      // emit("update:endDate", "");
     }
   }
 }
@@ -206,8 +254,8 @@ const buildDate = (year, month, day) => {
   return DateConverter.date2str(date)
 }
 const setDateRange = (value, value3) => {
-  emit('updateStartDate', value)
-  emit('updateEndDate', value3)
+  emit('update:startDate', value)
+  emit('update:endDate', value3)
   // active.value = false
 }
 const getYear = (last = false) => {
@@ -216,10 +264,7 @@ const getYear = (last = false) => {
   if (isCalendarInAD.value) {
     let year = today.getFullYear()
     year = year - (last ? 1 : 0)
-    setDateRange(
-      buildDate(year, 1, 1),
-      buildDate(year + 1, 1, 0)
-    )
+    setDateRange(buildDate(year, 1, 1), buildDate(year + 1, 1, 0))
   } else {
     const date = DateConverter.date2str(today)
     let year = DateConverter.getBSYear(date)
@@ -244,10 +289,7 @@ const getFY = (last = false) => {
     bs_year + 1,
     3
   )}`
-  setDateRange(
-    DateConverter.bs2ad(fy_start),
-    DateConverter.bs2ad(fy_end)
-  )
+  setDateRange(DateConverter.bs2ad(fy_start), DateConverter.bs2ad(fy_end))
 }
 const getMonth = (last = false) => {
   const today = new Date()
@@ -257,10 +299,7 @@ const getMonth = (last = false) => {
     let year = today.getFullYear()
     let month = today.getMonth() + 1
     month = month - (last ? 1 : 0)
-    setDateRange(
-      buildDate(year, month, 1),
-      buildDate(year, month + 1, 0)
-    )
+    setDateRange(buildDate(year, month, 1), buildDate(year, month + 1, 0))
   } else {
     let year = DateConverter.getBSYear(date)
     let month = DateConverter.getBSMonth(date)

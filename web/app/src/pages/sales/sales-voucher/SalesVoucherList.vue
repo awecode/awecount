@@ -66,6 +66,12 @@
                     />
                   </div>
                 </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
                   <q-btn
                     color="green"
@@ -75,7 +81,6 @@
                   ></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
-                {{ filters.status }} --status Filter
               </div>
             </q-menu>
           </q-btn>
@@ -146,8 +151,10 @@ export default {
   setup() {
     const endpoint = '/v1/sales-voucher/'
     const listData = useList(endpoint)
+    const route = useRoute()
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
+      const query = route.fullPath.slice(route.fullPath.indexOf('?'))
+      useApi('v1/sales-voucher/export/' + query)
         .then((data) =>
           usedownloadFile(
             data,
