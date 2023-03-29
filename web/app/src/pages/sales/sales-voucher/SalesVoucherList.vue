@@ -39,7 +39,46 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mb-sm">
+                    <q-checkbox
+                      v-model="filters.can_be_sold"
+                      label="Is Due?"
+                      :false-value="null"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      :options="[
+                        'Draft',
+                        'Issued',
+                        'Paid',
+                        'Partially Paid',
+                        'Cancelled',
+                      ]"
+                      v-model="filters.status"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+                {{ filters.status }} --status Filter
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
 
@@ -88,6 +127,8 @@
             <q-btn
               color="blue"
               label="View"
+              class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px"
               :to="`/sales-voucher/${props.row.id}/view/`"
             />
           </div>

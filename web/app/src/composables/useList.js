@@ -35,7 +35,6 @@ export default (endpoint, predefinedColumns = null) => {
     search: searchQueryValue,
     ...filterQueryValues
   } = route.query
-
   const pagination = ref({
     // sortBy: 'desc',
     // descending: false,
@@ -65,6 +64,16 @@ export default (endpoint, predefinedColumns = null) => {
       return [k, v]
     })
   )
+  // let cleanedFilterValues = Object.fromEntries(
+  //   Object.entries(filterQueryValues).map(([k, v]) => {
+  //     if (v === 'true') {
+  //       return [k, true]
+  //     } else if (v === 'false') {
+  //       return [k, false]
+  //     }
+  //     return [k, v]
+  //   })
+  // )
   const filters = ref(cleanedFilterValues)
 
   function loadData() {
@@ -171,7 +180,6 @@ export default (endpoint, predefinedColumns = null) => {
   )
 
   const onFilterUpdate = () => {
-    // debugger
     let url = route.path
     let cleanedFilters = Object.fromEntries(
       Object.entries(filters.value).map(([k, v]) => {
@@ -188,7 +196,13 @@ export default (endpoint, predefinedColumns = null) => {
     url = withQuery(url, cleanedFilters)
     url = url.replace('+', '%20')
     console.log(url)
+    // debugger
     router.push(url)
+
+    // url = withQuery(url, cleanedFilters)
+    // // url = url.replace('+', '%20')
+    // console.log(cleanedFilters)
+    // router.push({ path: route.path, query: cleanedFilters })
   }
   const rows = computed(() => {
     if (

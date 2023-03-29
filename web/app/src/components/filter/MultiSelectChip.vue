@@ -2,14 +2,15 @@
   <div class="row q-gutter-sm q-pt-md">
     <q-btn
       @click="() => onStatusClick(statuses)"
-      style="border-radius: 1rem"
-      class="q-py-sm q-px-md"
+      style="border-radius: 1rem; padding: 4px 12px"
+      size="sm"
+      class="text-subtitle2"
       v-for="(statuses, index) in options"
       :key="index"
       :class="
         modalValue.includes(statuses)
           ? 'bg-blue-1 text-blue-9'
-          : 'bg-grey-4 text-grey-9'
+          : 'bg-grey-3 text-grey-9'
       "
     >
       <!-- TODO: add animation -->
@@ -20,9 +21,7 @@
         color="blue"
         class="q-mr-xs"
       ></q-icon>
-      <span>
-        {{ statuses }}
-      </span>
+      <span style="font-size: 0.85rem"> {{ statuses }} </span>
     </q-btn>
   </div>
 </template>
