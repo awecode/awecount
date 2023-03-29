@@ -1,28 +1,31 @@
 <template>
-  <div class="row q-gutter-sm q-pt-md">
-    <q-btn
-      @click="() => onStatusClick(statuses)"
-      style="border-radius: 1rem; padding: 4px 12px"
-      size="sm"
-      class="text-subtitle2"
-      v-for="(statuses, index) in options"
-      :key="index"
-      :class="
-        modalValue.includes(statuses)
-          ? 'bg-blue-1 text-blue-9'
-          : 'bg-grey-3 text-grey-9'
-      "
-    >
-      <!-- TODO: add animation -->
-      <q-icon
-        v-if="modalValue.includes(statuses)"
-        name="check"
+  <div class="q-pt-md">
+    <div class="text-grey-8 q-pb-xs">{{ label }}</div>
+    <div class="row q-gutter-sm">
+      <q-btn
+        @click="() => onStatusClick(statuses)"
+        style="border-radius: 1rem; padding: 4px 12px"
         size="sm"
-        color="blue"
-        class="q-mr-xs"
-      ></q-icon>
-      <span style="font-size: 0.85rem"> {{ statuses }} </span>
-    </q-btn>
+        class="text-subtitle2"
+        v-for="(statuses, index) in options"
+        :key="index"
+        :class="
+          modalValue.includes(statuses)
+            ? 'bg-blue-1 text-blue-9'
+            : 'bg-grey-3 text-grey-9'
+        "
+      >
+        <!-- TODO: add animation -->
+        <q-icon
+          v-if="modalValue.includes(statuses)"
+          name="check"
+          size="sm"
+          color="blue"
+          class="q-mr-xs"
+        ></q-icon>
+        <span style="font-size: 0.85rem"> {{ statuses }} </span>
+      </q-btn>
+    </div>
   </div>
 </template>
 
@@ -40,6 +43,10 @@ export default {
       default: () => {
         return []
       },
+    },
+    label: {
+      type: String,
+      default: () => 'Statuse(s):',
     },
   },
   emits: ['update:modelValue'],

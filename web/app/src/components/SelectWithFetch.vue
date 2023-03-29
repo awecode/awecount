@@ -10,11 +10,12 @@
       option-label="name"
       map-options
       emit-value
-      class="q-mr-xs col"
+      class="col"
       @update:modelValue="valUpdated"
       :disable="props?.disabled"
       :error-message="props?.error"
       :error="!!props?.error"
+      dense
     />
   </div>
 </template>

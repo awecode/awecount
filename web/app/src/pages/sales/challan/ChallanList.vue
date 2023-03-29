@@ -9,7 +9,6 @@
       />
     </div>
     <q-table
-      title="Income Items"
       :rows="rows"
       :columns="newColumn"
       :loading="loading"
@@ -33,7 +32,38 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      :options="['Draft', 'Issued', 'Cancelled', 'Resolved']"
+                      v-model="filters.status"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
       <!--

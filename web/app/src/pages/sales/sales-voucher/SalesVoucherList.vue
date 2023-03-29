@@ -159,7 +159,7 @@ export default {
           usedownloadFile(
             data,
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Credit_Notes'
+            'Sales_voucher'
           )
         )
         .catch((err) => console.log('Error Due To', err))

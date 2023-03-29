@@ -20,7 +20,7 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top>
+      <!-- <template v-slot:top>
         <div class="search-bar">
           <q-input
             dense
@@ -34,6 +34,74 @@
             </template>
           </q-input>
           <q-btn class="filterbtn">filters</q-btn>
+        </div>
+      </template> -->
+      <template v-slot:top>
+        <div class="search-bar">
+          <q-input
+            dense
+            debounce="500"
+            v-model="searchQuery"
+            placeholder="Search"
+            class="search-bar-wrapper"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(400px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mx-md">
+                    <SelectWithFetch
+                      v-model="filters.party"
+                      endpoint="v1/inventory-categories/choices/"
+                      label="Party"
+                    />
+                  </div>
+                  <div class="q-mx-md">
+                    <SelectWithFetch
+                      v-model="filters.sales_agent"
+                      endpoint="v1/sales-agent/choices/"
+                      label="Sales Agent"
+                    />
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      :options="['Issued', 'Cleared', 'Cancelled']"
+                      v-model="filters.status"
+                    />
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      label="Mode(s):"
+                      :options="['Cheque', 'Cash', 'Bank Deposit']"
+                      v-model="filters.mode"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
 
