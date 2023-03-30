@@ -48,7 +48,7 @@ export default {
     },
     label: {
       type: String,
-      default: () => 'Statuse(s):',
+      default: () => 'Statuses:',
     },
   },
   emits: ['update:modelValue'],

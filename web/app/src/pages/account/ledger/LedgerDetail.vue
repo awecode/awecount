@@ -55,40 +55,11 @@
       <div>
         <div class="text-h5 text-bold q-py-md">Transactions</div>
         <div class="row q-col-gutter-md">
-          <q-input v-model="startDate" label="Start Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date v-model="startDate" mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <q-input v-model="endDate" label="End Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date v-model="endDate" mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
+          <DateRangePicker
+            v-model:startDate="startDate"
+            v-model:endDate="endDate"
+            :hide-btns="true"
+          />
           <div v-if="startDate != null || endDate != null">
             <q-btn
               @click.prevent="resetDate"
@@ -154,6 +125,7 @@
 import useApi from 'src/composables/useApi'
 const fields = ref(null)
 const route = useRoute()
+const $q = useQuasar()
 
 watch(route, () => {
   endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
@@ -168,8 +140,16 @@ const resetDate = () => {
   endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
 }
 const filter = () => {
-  endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
-  getData()
+  if (!startDate.value || !endDate.value) {
+    $q.notify({
+      color: 'negative',
+      message: 'Date Range not set!',
+      icon: 'report_problem',
+    })
+  } else {
+    endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
+    getData()
+  }
 }
 
 const endpoint = ref(`/v1/accounts/${route.params.id}/transactions/`)
