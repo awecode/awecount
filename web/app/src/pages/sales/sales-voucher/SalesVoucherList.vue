@@ -228,7 +228,7 @@ export default {
 }
 
 .filterbtn {
-  width: 100px;
+  width: 80px;
   flex-grow: 0;
   flex-shrink: 0;
 }

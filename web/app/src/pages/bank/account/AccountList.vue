@@ -12,7 +12,6 @@
     </div>
 
     <q-table
-      title="Accounts"
       :rows="rows"
       :columns="newColumn"
       :loading="loading"
@@ -23,19 +22,6 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn

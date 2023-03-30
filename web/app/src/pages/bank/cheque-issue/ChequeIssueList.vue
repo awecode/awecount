@@ -17,7 +17,6 @@
     </div>
 
     <q-table
-      title="Cheque Issues"
       :rows="rows"
       :columns="newColumn"
       :loading="loading"
@@ -28,18 +27,59 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
+      <template v-slot:top>
+        <div class="search-bar">
+          <q-input
+            dense
+            debounce="500"
+            v-model="searchQuery"
+            placeholder="Search"
+            class="search-bar-wrapper"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.bank_account"
+                      endpoint="v1/bank-account/choices/"
+                      label="Bank Account"
+                    />
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      v-model="filters.status"
+                      :options="['Draft', 'Issued', 'Cleared']"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
       </template>
       <template v-slot:body-cell-issued_to="props">
         <q-td :props="props">
@@ -90,6 +130,7 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/cheque-issue/'
+    const route = useRoute()
     const newColumn = [
       {
         name: 'issued_to',
@@ -128,13 +169,14 @@ export default {
       },
     ]
     const onDownloadXls = () => {
-      useApi('v1/cheque-issued/export/')
-        // TODO: url not found
+      const query = route.fullPath.slice(route.fullPath.indexOf('?'))
+      useApi('v1/cheque-issued/export/' + query)
+        //   // TODO: url not found
         .then((data) =>
           usedownloadFile(
             data,
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Cheque Issued'
+            'Sales_voucher'
           )
         )
         .catch((err) => console.log('Error Due To', err))
@@ -143,3 +185,21 @@ export default {
   },
 }
 </script>
+
+<style>
+.search-bar {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.search-bar-wrapper {
+  width: 100%;
+}
+
+.filterbtn {
+  width: 80px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+</style>

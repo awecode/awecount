@@ -23,18 +23,52 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
+      <template v-slot:top>
+        <div class="search-bar">
+          <q-input
+            dense
+            debounce="500"
+            v-model="searchQuery"
+            placeholder="Search"
+            class="search-bar-wrapper"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      v-model="filters.status"
+                      :options="['Issued', 'Cancelled']"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
@@ -122,3 +156,20 @@ export default {
   },
 }
 </script>
+<style>
+.search-bar {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.search-bar-wrapper {
+  width: 100%;
+}
+
+.filterbtn {
+  width: 80px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+</style>
