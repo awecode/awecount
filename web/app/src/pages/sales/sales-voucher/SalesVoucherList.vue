@@ -48,7 +48,7 @@
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
                     <q-checkbox
-                      v-model="filters.can_be_sold"
+                      v-model="filters.is_due"
                       label="Is Due?"
                       :false-value="null"
                     ></q-checkbox>

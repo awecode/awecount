@@ -39,13 +39,57 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-mb-sm">
+                    <q-checkbox
+                      v-model="filters.is_due"
+                      label="Is Due?"
+                      :false-value="null"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-ma-sm">
+                    <MultiSelectChip
+                      :options="[
+                        'Draft',
+                        'Issued',
+                        'Paid',
+                        'Partially Paid',
+                        'Cancelled',
+                      ]"
+                      v-model="filters.status"
+                    />
+                  </div>
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker
+                    v-model:startDate="filters.start_date"
+                    v-model:endDate="filters.end_date"
+                  />
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
 
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center">
+          <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle2 row items-center justify-center"
               :class="
@@ -101,13 +145,15 @@ export default {
   setup() {
     const endpoint = '/v1/purchase-vouchers/'
     const listData = useList(endpoint)
+    const route = useRoute()
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
+      const query = route.fullPath.slice(route.fullPath.indexOf('?'))
+      useApi('v1/purchase-vouchers/export' + query)
         .then((data) =>
           usedownloadFile(
             data,
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Credit_Notes'
+            'Purchase_voucher'
           )
         )
         .catch((err) => console.log('Error Due To', err))
@@ -125,7 +171,7 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'left', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status' },
       { name: 'date', label: 'Date', align: 'left', field: 'date' },
       {
         name: 'mode',
@@ -139,7 +185,7 @@ export default {
         align: 'left',
         field: 'total_amount',
       },
-      { name: 'actions' },
+      { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
     return { ...listData, onDownloadXls, newColumn }
