@@ -215,7 +215,6 @@ export default {
         .catch((err) => console.log('err from the api', err))
     }
     const discountComputed = computed(() => {
-      console.log('Computed', fields.value)
       if (fields.value?.discount_obj) {
         return (
           `${fields.value.discount_obj.value}` +
@@ -249,7 +248,6 @@ export default {
   },
   created() {
     const endpoint = `/v1/debit-note/${this.$route.params.id}/details/`
-    console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data

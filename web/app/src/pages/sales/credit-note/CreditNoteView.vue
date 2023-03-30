@@ -178,19 +178,7 @@ export default {
     console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
-        // this.$set(this, 'fields', data);
         this.fields = data
-        console.log(this.fields, 'data')
-        // if (this.fields.party) {
-        //   this.partyObj = {
-        //     name: this.fields.party_name,
-        //     address: this.fields.address,
-        //     tax_registration_number: this.fields.tax_registration_number
-        //   };
-        // }
-        // if (this.$route.query.pdf) {
-        //   this.requestDownload();
-        // }
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
