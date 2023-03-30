@@ -12,7 +12,6 @@
     </div>
 
     <q-table
-      title="Accounts"
       :rows="rows"
       :columns="newColumn"
       :loading="loading"
@@ -23,19 +22,6 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <router-link
@@ -71,7 +57,7 @@
             color="blue"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            label="Account"
+            label="Tax Account"
             :to="`/taxes/account/${props.row.id}/`"
           />
         </q-td>
