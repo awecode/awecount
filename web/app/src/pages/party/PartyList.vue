@@ -23,13 +23,13 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
+      <template v-slot:top>
         <q-input
-          borderless
           dense
           debounce="500"
           v-model="searchQuery"
           placeholder="Search"
+          class="full-width"
         >
           <template v-slot:append>
             <q-icon name="search" />

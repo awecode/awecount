@@ -23,9 +23,9 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
-      <template v-slot:top-right>
+      <template v-slot:top>
         <q-input
-          borderless
+          class="full-width"
           dense
           debounce="500"
           v-model="searchQuery"
