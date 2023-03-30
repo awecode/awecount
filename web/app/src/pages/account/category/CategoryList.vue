@@ -35,7 +35,32 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(300px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="filters.default"
+                      label="Is Default?"
+                      :false-value="null"
+                    ></q-checkbox>
+                  </div>
+                </div>
+                <div class="q-mx-md row q-gutter-md q-mb-md">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
         </div>
       </template>
       <template v-slot:body-cell-actions="props">
@@ -89,6 +114,7 @@ const {
   searchQuery,
   pagination,
   onRequest,
+  onFilterUpdate,
 } = useList(endpoint)
 </script>
 
@@ -104,7 +130,7 @@ const {
 }
 
 .filterbtn {
-  width: 100px;
+  width: 80px;
   flex-grow: 0;
   flex-shrink: 0;
 }

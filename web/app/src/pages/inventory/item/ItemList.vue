@@ -135,9 +135,9 @@ const {
   width: 100%;
 }
 
-/* .filterbtn {
-  width: 100px;
+.filterbtn {
+  width: 80px;
   flex-grow: 0;
   flex-shrink: 0;
-} */
+}
 </style>

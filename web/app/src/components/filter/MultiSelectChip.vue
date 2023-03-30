@@ -12,7 +12,7 @@
         :class="
           modalValue.includes(statuses)
             ? 'bg-blue-1 text-blue-9'
-            : 'bg-grey-3 text-grey-9'
+            : 'bg-grey-4 text-grey-9'
         "
       >
         <!-- TODO: add animation -->
@@ -23,7 +23,9 @@
           color="blue"
           class="q-mr-xs"
         ></q-icon>
-        <span style="font-size: 0.85rem"> {{ statuses }} </span>
+        <span style="font-size: 0.85rem; text-transform: capitalize">
+          {{ statuses }}
+        </span>
       </q-btn>
     </div>
   </div>
