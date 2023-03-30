@@ -79,8 +79,8 @@
           <q-date v-model="value0" mask="YYYY-MM-DD" />
           <q-date v-model="value1" mask="YYYY-MM-DD" />
         </div>
-        <div v-else class="row date-Con">
-          <bs-date-picker class="q-mr-md" v-model="value0"></bs-date-picker>
+        <div v-else class="row md-no-wrap q-gutter-md date-Con">
+          <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
           <bs-date-picker v-model="value1"></bs-date-picker>
         </div>
       </div>

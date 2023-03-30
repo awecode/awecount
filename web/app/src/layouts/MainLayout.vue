@@ -36,13 +36,34 @@
                 >Help</q-tooltip
               ></q-btn
             >
-            <q-btn
+            <q-btn @click="logoutDiologueOpen = true"
               ><q-icon name="mdi-logout" /><q-tooltip
                 :delay="1000"
                 :offset="[0, 10]"
                 >Logout</q-tooltip
               ></q-btn
             >
+            <q-dialog v-model="logoutDiologueOpen">
+              <q-card style="min-width: min(40vw, 500px)">
+                <q-card-section class="bg-red-6">
+                  <div class="text-h6 text-white">
+                    <span class="q-mx-md">Are you sure?</span>
+                  </div>
+                </q-card-section>
+                <q-separator inset />
+                <q-card-section class="q-ma-md">
+                  <div
+                    class="text-right text-blue-8 row justify-between q-mx-lg"
+                  >
+                    <q-btn label="Yes" @click="onLogoutClick()"></q-btn>
+                    <q-btn
+                      label="No"
+                      @click="logoutDiologueOpen = false"
+                    ></q-btn>
+                  </div>
+                </q-card-section>
+              </q-card>
+            </q-dialog>
           </div>
         </div>
         <!-- <div>ERP v{{ $q.version }}</div> -->
@@ -82,10 +103,16 @@ import { EssentialLinkProps } from 'components/EssentialLink.vue'
 import { useLoginStore } from '../stores/login-info.js'
 // import useApi from 'src/composables/useApi'
 import { ref } from 'vue'
+const router = useRouter()
 const store = useLoginStore()
 // const router = useRouter()
 // const $q = useQuasar()
 const activeDateFormat = computed(() => (store.isCalendarInAD ? 'AD' : 'BS'))
+const logoutDiologueOpen = ref(false)
+const onLogoutClick = () => {
+  store.reset()
+  router.push('/login')
+}
 
 const essentialLinks: EssentialLinkProps[] = [
   {
