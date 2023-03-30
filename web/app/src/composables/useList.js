@@ -120,9 +120,11 @@ export default (endpoint, predefinedColumns = null) => {
           })
           columns.value = columnList
         }
-        if (response.aggregate) {
-          aggregate.value = response.aggregate
-        }
+        // TODO: check With dipesh sir about removing this check
+        // if (response.aggregate) {
+        aggregate.value = response.aggregate || null
+        // }
+        // TODO: check With dipesh sir about removing this check
         loading.value = false
       })
       .catch((data) => {

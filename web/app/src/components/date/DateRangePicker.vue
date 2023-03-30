@@ -84,7 +84,15 @@
       </div>
     </q-menu>
 
-    <div>
+    <!-- <div>
+      <q-btn
+        @click.prevent="filter"
+        color="green"
+        label="FILTER"
+        class="q-mt-md"
+      />
+    </div> -->
+    <div v-if="!props.hideBtns">
       <q-btn
         v-if="value0 || value1"
         color="red"
@@ -93,14 +101,6 @@
         class="q-mt-md"
       />
     </div>
-    <!-- <div>
-      <q-btn
-        @click.prevent="filter"
-        color="primary"
-        label="FILTER"
-        class="q-mt-md"
-      />
-    </div> -->
   </div>
 </template>
 
@@ -111,7 +111,7 @@ import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 const $q = useQuasar()
 
-const props = defineProps(['startDate', 'endDate'])
+const props = defineProps(['startDate', 'endDate', 'hideBtns'])
 
 const value0 = ref(props.startDate)
 const value1 = ref(props.endDate)

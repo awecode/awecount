@@ -89,7 +89,7 @@
 
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center">
+          <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle2 row items-center justify-center"
               :class="
@@ -183,7 +183,7 @@ export default {
         align: 'left',
         field: 'date',
       },
-      { name: 'status', label: 'Status', align: 'left', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status' },
       {
         name: 'total_amount',
         label: 'Total amount',

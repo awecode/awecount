@@ -25,72 +25,55 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn">
-            <q-icon name="mdi-filter-variant"></q-icon>
+          <q-btn class="filterbtn" icon="mdi-filter-variant">
             <q-menu>
-              <div>
-                <div class="q-mx-lg q-mt-md">
-                  <h6 class="q-ma-none font-weight-bold text-grey-9">
-                    Filters
-                  </h6>
+              <div class="menu-wrapper" style="width: min(500px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
-                <hr />
-                <div class="q-ma-md">
-                  <div class="row q-col-gutter-md">
-                    <!-- TODO: add Date Range -->
-                    <q-input class="col-6 col-md-12" label="From Date">
-                    </q-input>
-                    <q-input class="col-6 col-md-12" label="To Date"> </q-input>
+                <div class="q-ma-sm">
+                  <div class="q-mx-md">
+                    <DateRangePicker
+                      v-model:startDate="filters.start_date"
+                      v-model:endDate="filters.end_date"
+                    />
                   </div>
-                  <q-select
-                    label="Sales Agent"
-                    v-model="filters.sales_agent"
-                    :options="fetchedOptions[`sales-agent`]"
-                    option-value="id"
-                    option-label="name"
-                    map-options
-                    emit-value
-                  />
-                  <q-select
-                    label="Party"
-                    v-model="filters.parties"
-                    :options="fetchedOptions.parties"
-                    option-value="id"
-                    option-label="name"
-                    map-options
-                    emit-value
-                  />
-                  <q-select
-                    label="Tax Scheme"
-                    v-model="filters.tax_scheme"
-                    :options="fetchedOptions.tax_scheme"
-                    option-value="id"
-                    option-label="name"
-                    map-options
-                    emit-value
-                  />
-                  <q-select
-                    label="Item Category"
-                    v-model="filters.item_category"
-                    :options="fetchedOptions[`inventory-categories`]"
-                    option-value="id"
-                    option-label="name"
-                    map-options
-                    emit-value
-                  />
-                  <q-select
-                    label="Items"
-                    v-model="filters.item"
-                    :options="fetchedOptions.item_choices"
-                    option-value="id"
-                    option-label="name"
-                    map-options
-                    emit-value
-                  />
-                  <div class="q-my-md">
-                    <div class="text-grey-8 text-subtitle2">
-                      <strong>Statuses :</strong>
-                    </div>
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.sales_agent"
+                      endpoint="v1/sales-agent/choices/"
+                      label="Sales Agent"
+                    />
+                  </div>
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.party"
+                      endpoint="v1/parties/choices/"
+                      label="Party"
+                    />
+                  </div>
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.tax_scheme"
+                      endpoint="v1/tax_scheme/choices/"
+                      label="Tax Scheme"
+                    />
+                  </div>
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.item_category"
+                      endpoint="v1/inventory-categories/choices/"
+                      label="Item Category"
+                    />
+                  </div>
+                  <div class="q-mx-sm">
+                    <SelectWithFetch
+                      v-model="filters.item"
+                      endpoint="v1/items/sales-choices/"
+                      label="Items"
+                    />
+                  </div>
+                  <div class="q-ma-sm">
                     <MultiSelectChip
                       :options="[
                         'Draft',
@@ -101,20 +84,16 @@
                       ]"
                       v-model="filters.status"
                     />
-                    {{ filters.status }}
-                    <div class="q-mt-md row q-gutter-x-md">
-                      <q-btn
-                        color="green"
-                        label="Filter"
-                        @click="onFilterUpdate"
-                      ></q-btn>
-                      <q-btn
-                        color="red"
-                        icon="close"
-                        @click="resetFilters"
-                      ></q-btn>
-                    </div>
                   </div>
+                </div>
+                <div class="q-mx-md row q-mb-md q-mt-lg">
+                  <q-btn
+                    color="green"
+                    label="Filter"
+                    class="q-mr-md"
+                    @click="onFilterUpdate"
+                  ></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -219,7 +198,7 @@ export default {
       },
       {
         name: 'quantity',
-        label: 'quantity',
+        label: 'Quantity',
         align: 'left',
         field: 'quantity',
       },

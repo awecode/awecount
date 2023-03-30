@@ -51,7 +51,7 @@
           </q-input>
           <q-btn class="filterbtn" icon="mdi-filter-variant">
             <q-menu>
-              <div class="menu-wrapper" style="width: min(400px, 90vw)">
+              <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
                   <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
@@ -107,7 +107,7 @@
 
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center">
+          <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle2 row items-center justify-center"
               :class="
@@ -165,6 +165,8 @@
             <q-btn
               color="blue"
               label="View"
+              class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px"
               :to="`/payment-receipt/${props.row.id}/view`"
             />
           </div>
@@ -200,7 +202,7 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'left', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status' },
       {
         name: 'mode',
         label: 'Mode',

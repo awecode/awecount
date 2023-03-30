@@ -68,14 +68,29 @@
           class="row q-col-gutter-md full-width"
           style="justify-content: space-between"
         >
-          <div class="row q-col-gutter-md">
-            <q-input label="From Date"> </q-input>
-            <q-input label="To Date"> </q-input>
-            <div class="row items-end">
-              <q-btn label="Filter" color="green"></q-btn>
+          <div class="row items-center q-gutter-x-md">
+            <DateRangePicker
+              v-model:startDate="filters.start_date"
+              v-model:endDate="filters.end_date"
+              :hideBtns="true"
+            />
+            <div class="row items-center">
+              <q-btn
+                class="q-mr-md"
+                label="Filter"
+                color="green"
+                @click="onFilterUpdate"
+              ></q-btn>
+              <q-btn
+                v-if="filters.start_date || filters.end_date"
+                class="q-mr-md"
+                icon="close"
+                color="red"
+                @click="resetFilters"
+              ></q-btn>
             </div>
           </div>
-          <div class="row items-end" v-if="aggregate">
+          <div class="row items-center" v-if="aggregate">
             <q-btn
               label="Export Xls"
               color="blue"
@@ -143,9 +158,7 @@
           <div class="row q-mb-md" v-for="(value, key) in aggregate" :key="key">
             <div class="col-6">
               <div class="text-weight-medium text-grey-9 text-capitalize">
-                {{
-                  key.replace('__', ' ').replace('__', ' ').replace('_', ' ')
-                }}
+                {{ key.replace(/_/g, ' ') }}
               </div>
             </div>
             <div class="col-6">
@@ -234,7 +247,6 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      debugger
       useApi('v1/sales-book/export/' + downloadEndpoint)
         .then((data) =>
           usedownloadFile(
@@ -253,36 +265,3 @@ export default {
   },
 }
 </script>
-
-<style scoped lang="scss">
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-// table {
-//   border: none;
-//   border-collapse: collapse;
-//   th {
-//     font-weight: 500;
-//     color: rgb(82, 82, 82);
-//     border-collapse: collapse;
-//   }
-//   th,
-//   td {
-//     border-bottom: 1px solid grey;
-//     border-collapse: collapse;
-//     padding: 5px;
-//   }
-// }
-</style>

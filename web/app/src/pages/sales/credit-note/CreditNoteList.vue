@@ -78,7 +78,8 @@
         <q-td :props="props" class="row justify center">
           <q-btn
             color="blue"
-            class="q-mr-md"
+            class="q-py-none q-px-md font-size-sm"
+            style="font-size: 12px"
             label="View"
             :to="`/credit-note/${props.row.id}/view`"
           />
