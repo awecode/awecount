@@ -245,9 +245,10 @@ export default {
       submitForm()
     }
     formData.fields.value.date = formData.today
-    formData.fields.value.is_export = false
     formData.fields.value.mode = 'Credit'
-    formData.fields.value.party = ''
+    formData.fields.value.is_export = false
+    formData.fields.value = formData.formDefaults
+    // partyMode.value = formData.formDefaults.value.options.show_customer
 
     // watch(
     //   () => formData.fields.value.party,
@@ -264,11 +265,12 @@ export default {
     //     }
     //   }
     // )
-    // onMounted(() => {
-    //   if (formData.isEdit) {
-    //     formData.fields.value.address = formData.fields.value.address
-    //   }
-    // })
+    watch(
+      () => formData,
+      (newValue) => {
+        console.log(newValue)
+      }
+    )
 
     return {
       ...formData,
