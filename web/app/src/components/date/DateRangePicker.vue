@@ -330,16 +330,21 @@ const getDays = (last = 7) => {
 
 <style>
 .date-Con {
-  width: 650px;
+  width: 640px;
 }
 @media (max-width: 1280px) {
   .date-Con {
-    width: 320px;
+    width: 300px;
   }
 }
 @media (max-width: 520px) {
   .main-con {
     width: 325px;
+  }
+}
+@media (min-width: 1280px) {
+  .main-con {
+    flex-wrap: nowrap;
   }
 }
 </style>
