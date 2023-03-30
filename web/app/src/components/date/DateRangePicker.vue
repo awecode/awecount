@@ -17,73 +17,74 @@
       />
     </div>
     <q-menu :target="'.target'" :no-focus="true">
-      <div class="row q-pa-md">
-        <div class="col-3" style="min-width: 200px">
-          <div class="text-caption">Date Range</div>
-          <q-list dense padding class="rounded-borders q-pr-md">
-            <q-item clickable :active="activeDate == 'today'" v-ripple>
-              <q-item-section @click="getToday((last = false))"
-                >Today</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-              <q-item-section @click="getToday((last = true))"
-                >Yesterday</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'last7'" v-ripple>
-              <q-item-section @click="getDays((last = 7))"
-                >Last 7 Days</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'last30'" v-ripple>
-              <q-item-section @click="getDays((last = 30))"
-                >Last 30 Days</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-              <q-item-section @click="getMonth((last = false))"
-                >This Month</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-              <q-item-section @click="getMonth((last = true))"
-                >Last Month</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-              <q-item-section @click="getYear((last = false))"
-                >This Year</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-              <q-item-section @click="getYear((last = true))"
-                >Last Year</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-              <q-item-section @click="getFY((last = false))"
-                >This FY</q-item-section
-              >
-            </q-item>
-            <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-              <q-item-section @click="getFY((last = true))"
-                >Last FY</q-item-section
-              >
-            </q-item>
-          </q-list>
+      <div class="row q-pa-md main-con">
+        <div class="row" style="min-width: 150px">
+          <div>
+            <div class="text-caption">Date Range</div>
+            <q-list dense padding class="rounded-borders q-pr-md">
+              <q-item clickable :active="activeDate == 'today'" v-ripple>
+                <q-item-section @click="getToday((last = false))"
+                  >Today</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
+                <q-item-section @click="getToday((last = true))"
+                  >Yesterday</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'last7'" v-ripple>
+                <q-item-section @click="getDays((last = 7))"
+                  >Last 7 Days</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'last30'" v-ripple>
+                <q-item-section @click="getDays((last = 30))"
+                  >Last 30 Days</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
+                <q-item-section @click="getMonth((last = false))"
+                  >This Month</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
+                <q-item-section @click="getMonth((last = true))"
+                  >Last Month</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
+                <q-item-section @click="getYear((last = false))"
+                  >This Year</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
+                <q-item-section @click="getYear((last = true))"
+                  >Last Year</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
+                <q-item-section @click="getFY((last = false))"
+                  >This FY</q-item-section
+                >
+              </q-item>
+              <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
+                <q-item-section @click="getFY((last = true))"
+                  >Last FY</q-item-section
+                >
+              </q-item>
+            </q-list>
+          </div>
         </div>
-        <div v-if="isCalendarInAD" class="row">
-          <q-date class="col-6 q-mr-md" v-model="value0" mask="YYYY-MM-DD" />
-          <q-date class="col-6" v-model="value1" mask="YYYY-MM-DD" />
+        <div v-if="isCalendarInAD" class="row md-no-wrap q-gutter-md date-Con">
+          <q-date v-model="value0" mask="YYYY-MM-DD" />
+          <q-date v-model="value1" mask="YYYY-MM-DD" />
         </div>
-        <div v-else class="row">
+        <div v-else class="row date-Con">
           <bs-date-picker class="q-mr-md" v-model="value0"></bs-date-picker>
           <bs-date-picker v-model="value1"></bs-date-picker>
         </div>
       </div>
     </q-menu>
-
     <!-- <div>
       <q-btn
         @click.prevent="filter"
@@ -326,3 +327,19 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 </script>
+
+<style>
+.date-Con {
+  width: 650px;
+}
+@media (max-width: 1280px) {
+  .date-Con {
+    width: 320px;
+  }
+}
+@media (max-width: 520px) {
+  .main-con {
+    width: 325px;
+  }
+}
+</style>
