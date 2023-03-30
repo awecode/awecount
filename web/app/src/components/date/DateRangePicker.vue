@@ -160,13 +160,13 @@ const getText1 = computed(() => {
 watch(
   () => value0.value,
   (val) => {
-    emit('update:start-date', val)
+    emit('update:startDate', val)
   }
 )
 watch(
   () => value1.value,
   (val) => {
-    emit('update:start-date', val)
+    emit('update:endDate', val)
   }
 )
 

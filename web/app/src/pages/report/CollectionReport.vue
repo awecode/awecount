@@ -2,45 +2,14 @@
   <q-card class="q-ma-md q-px-md">
     <q-card-section>
       <div>
-        <div class="row q-gutter-x-md items-end">
-          <q-input v-model="fields.start_date" label="Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date
-                    v-model="fields.start_date"
-                    today-btn
-                    mask="YYYY-MM-DD"
-                  >
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <q-input v-model="fields.end_date" label="Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date v-model="fields.end_date" today-btn mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
+        <div class="row q-gutter-x-md items-center">
+          <div class="q-mx-md">
+            <DateRangePicker
+              v-model:startDate="fields.start_date"
+              v-model:endDate="fields.end_date"
+              :hide-btns="true"
+            />
+          </div>
           <q-btn
             v-if="fields.start_date || fields.end_date"
             color="red"
