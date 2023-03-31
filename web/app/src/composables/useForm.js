@@ -45,7 +45,7 @@ export default (endpoint, config) => {
       useApi(getDefaultsFetchUrl()).then((data) => {
         // TODO: Check with Dipesh sir
         if (data.fields) {
-          fields.value = data.fields
+          // fields.value = data.fields
         }
         formDefaults.value = data
         // TODO: Check with Dipesh sir

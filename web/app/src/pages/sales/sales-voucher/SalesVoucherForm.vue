@@ -46,8 +46,6 @@
               disable
             >
             </q-input>
-          </div>
-          <div class="row q-col-gutter-md">
             <q-input
               v-model="fields.address"
               class="col-md-6 col-12"
@@ -55,6 +53,14 @@
               :error-message="errors.address"
               :error="!!errors.address"
             ></q-input>
+            <date-picker
+              v-if="formDefaults.options?.enable_due_date_in_voucher"
+              label="Due Date"
+              v-model="fields.due_date"
+              class="col-md-6 col-12"
+              :error-message="errors.due_date"
+              :error="!!errors.due_date"
+            ></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div
                 :class="
@@ -96,6 +102,7 @@
               </div>
             </div>
           </div>
+          <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <q-select
               v-model="fields.mode"
@@ -147,8 +154,8 @@
         @deleteRowErr="
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
+        :enableRowDescription="formDefaults.options?.enable_row_description"
       ></invoice-table>
-      <!-- :enableRowDescription="formDefaults.options?.enable_row_description" -->
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -200,7 +207,6 @@
     </q-card>
   </q-form>
 </template>
-
 <script>
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
@@ -245,10 +251,10 @@ export default {
       fields.status = status
       submitForm()
     }
+    formData.fields.value.due_date = formData.today
     formData.fields.value.date = formData.today
     formData.fields.value.mode = 'Credit'
     formData.fields.value.is_export = false
-    formData.fields.value = formData.formDefaults
     // partyMode.value = formData.formDefaults.value.options.show_customer
 
     // watch(
@@ -266,12 +272,12 @@ export default {
     //     }
     //   }
     // )
-    watch(
-      () => formData,
-      (newValue) => {
-        console.log(newValue)
-      }
-    )
+    // watch(
+    //   () => formData,
+    //   (newValue) => {
+    //     console.log(newValue)
+    //   }
+    // )
 
     return {
       ...formData,
