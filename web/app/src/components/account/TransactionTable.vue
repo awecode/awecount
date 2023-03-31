@@ -14,7 +14,7 @@
             <th class="text-left"></th>
           </tr>
         </thead>
-        <tbody v-if="fields.transactions">
+        <!-- <tbody v-if="fields.transactions">
           <tr
             v-if="
               fields.aggregate &&
@@ -63,9 +63,10 @@
               }}
             </td>
           </tr>
-        </tbody>
+        </tbody> -->
         <tbody v-if="fields.transactions">
           <tr
+            class="text-weight-bold"
             v-if="
               fields.aggregate &&
               fields.aggregate.total &&
@@ -75,7 +76,7 @@
             "
           >
             <td rowspan="1" colspan="3"></td>
-            <th class="text-left">Net Closing</th>
+            <td class="text-left">Net Closing</td>
             <td class="text-left">
               {{
                 fields.aggregate.total.dr_amount__sum ||
@@ -114,6 +115,7 @@
             </td>
           </tr>
           <tr
+            class="text-weight-bold"
             v-if="
               fields.aggregate &&
               fields.aggregate.total &&
@@ -123,7 +125,7 @@
             "
           >
             <td colspan="3"></td>
-            <th class="text-left">Closing</th>
+            <td class="text-left">Closing</td>
             <td class="text-left">
               {{
                 fields.aggregate.total.dr_amount__sum ||
@@ -133,8 +135,8 @@
             </td>
             <td class="text-left">
               {{
-                aggregate.total.cr_amount__sum ||
-                0 + aggregate.opening.cr_amount__sum ||
+                fields.aggregate.total.cr_amount__sum ||
+                0 + fields.aggregate.opening.cr_amount__sum ||
                 0
               }}
             </td>
@@ -154,6 +156,7 @@
             </td>
           </tr>
           <tr
+            class="text-weight-bold"
             v-if="
               fields.aggregate &&
               fields.aggregate.total &&
@@ -162,7 +165,7 @@
             "
           >
             <td colspan="3"></td>
-            <th class="text-left">Transactions</th>
+            <td class="text-left">Transactions</td>
             <td class="text-left">
               {{ fields.aggregate.total.dr_amount__sum }}
             </td>
@@ -208,6 +211,27 @@
             <td>{{ transaction.cr_amount }}</td>
             <td>
               {{ transaction.dr_amount || 0 - transaction.cr_amount || 0 }}
+            </td>
+          </tr>
+
+          <tr
+            class="text-weight-bold"
+            v-if="fields.aggregate && fields.aggregate.opening"
+          >
+            <td colspan="3"></td>
+            <td class="text-left">Opening</td>
+            <td class="text-left">
+              {{ fields.aggregate.opening.dr_amount__sum }}
+            </td>
+            <td class="text-left">
+              {{ fields.aggregate.opening.cr_amount__sum }}
+            </td>
+            <td class="text-left">
+              {{
+                fields.aggregate.opening.dr_amount__sum ||
+                0 - fields.aggregate.opening.cr_amount__sum ||
+                0
+              }}
             </td>
           </tr>
         </tbody>
@@ -274,6 +298,7 @@ export default {
         return `/bank/fund/fund-transfer/${row.source_id}/edit/`
       if (source_type === 'Bank Cash Deposit')
         return `/bank/cash/cash-deposit/${row.source_id}/edit/`
+      if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
       console.error(source_type + ' not handled!')
     }
     return {
