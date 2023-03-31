@@ -11,6 +11,58 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
+            <div
+              class="col-md-6 col-12"
+              v-if="formDefaults.options?.enable_import_challan"
+            >
+              <q-btn
+                color="blue"
+                @click="importChallanModal = true"
+                label="Import challan(s)"
+              ></q-btn>
+              <div v-if="fields.invoices">
+                <q-input
+                  dense
+                  v-model="fields.invoices"
+                  disable
+                  label="Import challan(s)"
+                ></q-input>
+              </div>
+              <q-dialog v-model="importChallanModal">
+                <q-card style="min-width: min(60vw, 400px)">
+                  <q-card-section class="bg-grey-4">
+                    <div class="text-h6">
+                      <span>Add Reference Challan(s)</span>
+                    </div>
+                  </q-card-section>
+                  <q-separator inset />
+                  <q-card-section class="q-mx-lg">
+                    <q-input
+                      v-model.number="referenceFormData.invoice_no"
+                      label="Challan No.*"
+                    ></q-input>
+                    <q-select
+                      class="q-mt-md"
+                      label="Fiscal Year"
+                      v-model="referenceFormData.fiscal_year"
+                      :options="formDefaults.options.fiscal_years"
+                      option-value="id"
+                      option-label="name"
+                      map-options
+                      emit-value
+                    ></q-select>
+                    <div class="row justify-end q-mt-lg">
+                      <q-btn
+                        color="green"
+                        label="Add"
+                        size="md"
+                        @click="() => fetchInvoice(fields)"
+                      ></q-btn>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-dialog>
+            </div>
             <div class="col-md-6 col-12">
               <div class="row">
                 <div class="col-10">
@@ -220,6 +272,11 @@ export default {
     const endpoint = '/v1/sales-voucher/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
+    const importChallanModal = ref(false)
+    const referenceFormData = ref({
+      invoice_no: null,
+      fiscal_year: null,
+    })
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -255,6 +312,97 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.mode = 'Credit'
     formData.fields.value.is_export = false
+
+    const fetchInvoice = async (fields) => {
+      if (
+        referenceFormData.value.invoice_no &&
+        referenceFormData.value.fiscal_year
+      ) {
+        if (
+          fields.invoices &&
+          fields.invoices.includes(referenceFormData.value.invoice_no)
+        ) {
+          $q.notify({
+            color: 'red-6',
+            message: 'Invoice Already Exists!',
+            icon: 'report_problem',
+            position: 'top-right',
+          })
+        } else {
+          const url = 'v1/challan/by-voucher-no/'
+          useApi(
+            url +
+              `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
+          )
+            .then((data) => {
+              const response = { ...data }
+              if (fields.invoices) {
+                fields.invoices.push(data.id)
+              } else fields.invoices = [data.id]
+              const removeArr = [
+                'id',
+                'date',
+                'voucher_meta',
+                'print_count',
+                'issue_datetime',
+                'is_export',
+                'status',
+                'due_date',
+                'rows',
+                'date',
+                'remarks',
+              ]
+              if (data.customer_name) {
+                partyMode.value = true
+                fields.mode = 'Cash'
+              }
+              if (data.party) {
+                partyMode.value = false
+                fields.mode = 'Credit'
+              }
+              removeArr.forEach((item) => {
+                delete data[item]
+              })
+              for (const key in data) {
+                fields[key] = data[key]
+                // if (key === )
+              }
+              // debugger
+              if (response.rows && response.rows.length > 0) {
+                // debugger
+                if (fields.rows) {
+                  response.rows.forEach((row) => {
+                    fields.rows.push(row)
+                  })
+                } else {
+                  fields.rows = response.rows
+                }
+              }
+              if (data.discount_obj && data.discount_obj.id) {
+                fields.discount_type = data.discount_obj.id
+              }
+              importChallanModal.value = false
+            })
+            .catch((err) => {
+              if (err.status === 404) {
+                $q.notify({
+                  color: 'red-6',
+                  message: 'Invoice not found!',
+                  icon: 'report_problem',
+                  position: 'top-right',
+                })
+              }
+            })
+        }
+      } else {
+        $q.notify({
+          color: 'red-6',
+          message: 'Please fill in the form completely!',
+          icon: 'report_problem',
+          position: 'top-right',
+        })
+      }
+    }
     // partyMode.value = formData.formDefaults.value.options.show_customer
 
     // watch(
@@ -291,6 +439,9 @@ export default {
       switchMode,
       deleteRowErr,
       onSubmitClick,
+      importChallanModal,
+      referenceFormData,
+      fetchInvoice,
     }
   },
 }
