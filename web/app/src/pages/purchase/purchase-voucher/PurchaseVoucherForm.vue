@@ -108,6 +108,14 @@
                   name="clear"
                   @click.stop.prevent="fields.mode = null" /></template
             ></q-select>
+            <date-picker
+              v-if="formDefaults.options?.enable_due_date_in_voucher"
+              label="Due Date"
+              v-model="fields.due_date"
+              class="col-md-6 col-12"
+              :error-message="errors?.due_date"
+              :error="!!errors?.due_date"
+            ></date-picker>
           </div>
         </q-card-section>
       </q-card>
@@ -135,6 +143,7 @@
         @deleteRowErr="
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
+        :enableRowDescription="formDefaults.options?.enable_row_description"
       ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -193,7 +202,6 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/purchase-vouchers/'
     const openDatePicker = ref(false)
-    const $q = useQuasar()
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -216,6 +224,7 @@ export default {
       submitForm()
     }
     formData.fields.value.date = formData.today
+    formData.fields.value.due_date = formData.today
     formData.fields.value.is_import = false
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
