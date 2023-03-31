@@ -83,7 +83,7 @@
             class="q-py-none q-px-md font-size-sm q-mr-md"
             style="font-size: 12px"
             label="View"
-            :to="`/inventory-account/detail/${props.row.id}/`"
+            :to="`/items/details/${props.row.id}/`"
           />
           <q-btn
             color="orange-6"
