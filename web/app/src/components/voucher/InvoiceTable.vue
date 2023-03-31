@@ -33,6 +33,7 @@
             "
             :usedInPos="props.usedInPos"
             :enableRowDescription="props.enableRowDescription"
+            :showRowTradeDiscount="props.showRowTradeDiscount"
           />
         </div>
         <div class="row q-py-sm">
@@ -154,6 +155,10 @@ export default {
       default: () => false,
     },
     enableRowDescription: {
+      type: Boolean,
+      default: () => false,
+    },
+    showRowTradeDiscount: {
       type: Boolean,
       default: () => false,
     },

@@ -14,7 +14,8 @@
           />
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
-          <q-checkbox v-model="modalValue.is_returned"> </q-checkbox>
+          <q-checkbox v-model="modalValue.is_returned" :false-value="null">
+          </q-checkbox>
         </div>
       </div>
       <div class="col-2">
@@ -84,13 +85,12 @@
             :error="errors?.unit_id ? true : false"
           />
         </div>
-        <div class="col-4">
+        <div class="col-5">
           <div class="row q-col-gutter-md">
             <div
               :class="
-                modalValue.discount_type === 'Amount' ||
-                modalValue.discount_type === 'Percent'
-                  ? 'col-8'
+                ['Amount', 'Percent'].includes(modalValue.discount_type)
+                  ? 'col-5'
                   : 'col-12'
               "
             >
@@ -102,7 +102,7 @@
               </n-auto-complete>
             </div>
             <div
-              class="col-4"
+              :class="showRowTradeDiscount ? 'col-3' : 'col-6'"
               v-if="
                 modalValue.discount_type === 'Amount' ||
                 modalValue.discount_type === 'Percent'
@@ -114,6 +114,19 @@
                 :error-message="errors?.discount ? errors.discount[0] : null"
                 :error="errors?.discount ? true : false"
               ></q-input>
+            </div>
+            <div
+              class="col-3 row"
+              v-if="
+                ['Amount', 'Percent'].includes(modalValue.discount_type) &&
+                showRowTradeDiscount
+              "
+            >
+              <q-checkbox
+                v-model="modalValue.trade_discount"
+                label="Trade Discount?"
+                :false-value="null"
+              ></q-checkbox>
             </div>
           </div>
         </div>
@@ -221,6 +234,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    showRowTradeDiscount: {
+      type: Boolean,
+      default: () => false,
+    },
   },
 
   emits: ['update:modelValue', 'deleteRow'],
@@ -283,7 +300,6 @@ export default {
     watch(
       () => props.errors,
       (newValue) => {
-        debugger
         if (newValue.tax_scheme_id || newValue.unit_id)
           expandedState.value = true
       }

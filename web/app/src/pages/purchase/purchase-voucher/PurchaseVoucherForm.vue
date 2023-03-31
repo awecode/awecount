@@ -30,7 +30,7 @@
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12 row" style="flex-wrap: nowrap">
+            <!-- <div class="col-md-6 col-12 row" style="flex-wrap: nowrap">
               <div
                 :class="
                   fields.discount_type === 'Amount' ||
@@ -68,6 +68,64 @@
                   :error="!!errors.discount"
                 ></q-input>
               </div>
+            </div> -->
+            <div class="col-md-6 col-12 row q-col-gutter-md">
+              <div
+                :class="
+                  ['Percent', 'Amount'].includes(fields.discount_type)
+                    ? 'col-6'
+                    : 'col-12'
+                "
+              >
+                <n-auto-complete
+                  v-model="fields.discount_type"
+                  label="Discount*"
+                  :error="errors.discount_type"
+                  :error-message="errors.discount_type"
+                  :options="
+                    formDefaults.collections
+                      ? staticOptions.discount_types.concat(
+                          formDefaults?.collections.discounts
+                        )
+                      : staticOptions.discount_types
+                  "
+                  :modal-component="SalesDiscountForm"
+                >
+                </n-auto-complete>
+              </div>
+              <div class="col-6 row">
+                <div
+                  :class="
+                    formDefaults.options?.show_trade_discount_in_voucher
+                      ? 'col-6'
+                      : 'col-12'
+                  "
+                  v-if="
+                    fields.discount_type === 'Amount' ||
+                    fields.discount_type === 'Percent'
+                  "
+                >
+                  <q-input
+                    class="col-6"
+                    v-model.number="fields.discount"
+                    label="Discount"
+                    :error-message="errors.discount"
+                    :error="!!errors.discount"
+                  ></q-input>
+                </div>
+                <div
+                  class="col-3 row"
+                  v-if="
+                    formDefaults.options?.show_trade_discount_in_voucher &&
+                    ['Percent', 'Amount'].includes(fields.discount_type)
+                  "
+                >
+                  <q-checkbox
+                    v-model="fields.trade_discount"
+                    label="Trade Discount?"
+                  ></q-checkbox>
+                </div>
+              </div>
             </div>
             <div class="col-md-6 col-12">
               <!-- <q-input
@@ -84,6 +142,7 @@
               ></date-picker>
             </div>
           </div>
+
           <div class="row q-col-gutter-md">
             <q-select
               v-model="fields.mode"
@@ -144,6 +203,7 @@
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
         :enableRowDescription="formDefaults.options?.enable_row_description"
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"
       ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
