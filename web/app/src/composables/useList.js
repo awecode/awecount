@@ -183,8 +183,12 @@ export default (endpoint, predefinedColumns = null) => {
 
   const onFilterUpdate = () => {
     let url = route.path
+    // TODO: check with dipesh sir
+    let totalFilters = { ...filters.value }
+    totalFilters.search = searchQuery.value
+    // TODO: check with dipesh sir
     let cleanedFilters = Object.fromEntries(
-      Object.entries(filters.value).map(([k, v]) => {
+      Object.entries(totalFilters).map(([k, v]) => {
         if (v === null) {
           return [k, undefined]
         }

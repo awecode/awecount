@@ -148,6 +148,7 @@
           (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
         "
       ></invoice-table>
+      <!-- :enableRowDescription="formDefaults.options?.enable_row_description" -->
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
