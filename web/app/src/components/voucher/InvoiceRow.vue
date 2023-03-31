@@ -274,6 +274,20 @@ export default {
     //     }
     //   }
     // )
+    // const expandedComputed = computed(() => {
+    //   if (expandedState) return true
+    //   else {
+    //     if ()
+    //   }
+    // })
+    watch(
+      () => props.errors,
+      (newValue) => {
+        debugger
+        if (newValue.tax_scheme_id || newValue.unit_id)
+          expandedState.value = true
+      }
+    )
     watch(
       () => props.modelValue.discount_type,
       (newValue) => {
