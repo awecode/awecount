@@ -32,6 +32,7 @@
               !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
             "
             :usedInPos="props.usedInPos"
+            :enableRowDescription="props.enableRowDescription"
           />
         </div>
         <div class="row q-py-sm">
@@ -149,6 +150,10 @@ export default {
       ],
     },
     usedInPos: {
+      type: Boolean,
+      default: () => false,
+    },
+    enableRowDescription: {
       type: Boolean,
       default: () => false,
     },

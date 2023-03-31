@@ -133,7 +133,7 @@
           />
         </div>
       </div>
-      <div v-if="!!modalValue.itemObj">
+      <div v-if="!!modalValue.itemObj && enableRowDescription">
         <q-input
           label="Description"
           v-model="modalValue.description"
@@ -216,6 +216,10 @@ export default {
     index: {
       type: Number,
       default: () => null,
+    },
+    enableRowDescription: {
+      type: Boolean,
+      default: () => false,
     },
   },
 
