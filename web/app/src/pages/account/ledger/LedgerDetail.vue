@@ -79,7 +79,63 @@
           </div>
         </div>
       </div>
-      <transaction-table :fields="fields"></transaction-table>
+      <transaction-table :fields="fields">
+        <div class="row justify-end items-center">
+          <div class="q-mr-sm">
+            <span>
+              {{ (fields.transactions?.pagination.page - 1) * 20 + 1 }} -
+              {{
+                fields.transactions?.pagination.page ===
+                fields.transactions?.pagination.pages
+                  ? fields.transactions?.pagination.count
+                  : (fields.transactions?.pagination.page - 1) * 20 +
+                    fields.transactions?.pagination.size
+              }}
+            </span>
+            <span
+              >&nbsp; of &nbsp;{{ fields.transactions?.pagination.count }}</span
+            >
+          </div>
+          <q-btn
+            icon="first_page"
+            dense
+            flat
+            round
+            :disable="fields.transactions?.pagination.page === 1"
+            @click="() => goToPage(1)"
+          ></q-btn>
+          <q-btn
+            icon="chevron_left"
+            dense
+            flat
+            round
+            :disable="fields.transactions?.pagination.page === 1"
+            @click="() => goToPage(fields.transactions?.pagination.page - 1)"
+          ></q-btn>
+          <q-btn
+            icon="chevron_right"
+            dense
+            flat
+            round
+            :disable="
+              fields.transactions?.pagination.page ===
+              fields.transactions?.pagination.pages
+            "
+            @click="() => goToPage(fields.transactions?.pagination.page + 1)"
+          ></q-btn>
+          <q-btn
+            icon="last_page"
+            dense
+            flat
+            round
+            :disable="
+              fields.transactions?.pagination.page ===
+              fields.transactions?.pagination.pages
+            "
+            @click="() => goToPage(fields.transactions?.pagination.pages)"
+          ></q-btn>
+        </div>
+      </transaction-table>
       <!-- <q-table
         :columns="columnList"
         :rows="rows"
@@ -179,7 +235,12 @@ const loading = ref(false)
 const initiallyLoaded = ref(false)
 const rows = ref([])
 // const columnList = ref([])
-
+function goToPage(pageNo) {
+  console.log(pageNo)
+  let newQuery = Object.assign({ ...route.query }, { page: pageNo })
+  router.push(withQuery(`/account/${route.params.id}/view/`, newQuery))
+  console.log(newQuery)
+}
 function loadData() {
   loading.value = true
   // const field = fields.value.transactions.results.value

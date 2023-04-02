@@ -234,6 +234,9 @@
               }}
             </td>
           </tr>
+          <tr>
+            <td colspan="7"><slot> </slot></td>
+          </tr>
         </tbody>
       </q-markup-table>
     </q-card-section>
