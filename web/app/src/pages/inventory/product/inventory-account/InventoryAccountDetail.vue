@@ -19,8 +19,8 @@
             </div>
             <div class="col-6">
               <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Dr Amount</div>
-                <div class="q-px-md">{{ fields?.amounts?.dr || '-' }}</div>
+                <div class="q-px-md text-grey-8">Current Balance</div>
+                <div class="q-px-md">{{ fields?.current_balance || '-' }}</div>
               </div>
               <hr />
             </div>
@@ -29,14 +29,14 @@
             <div class="col-6">
               <div class="row justify-between q-py-sm">
                 <div class="q-px-md text-grey-8">Category</div>
-                <div class="q-px-md">{{ fields?.category_name || '-' }}</div>
+                <div class="q-px-md">{{ fields?.category || '-' }}</div>
               </div>
               <hr />
             </div>
             <div class="col-6">
               <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Cr Amount</div>
-                <div class="q-px-md">{{ fields?.amounts?.cr || '-' }}</div>
+                <div class="q-px-md text-grey-8">Opening Balance</div>
+                <div class="q-px-md">{{ fields?.opening_balance || '-' }}</div>
               </div>
               <hr />
             </div>
@@ -45,7 +45,7 @@
             <div class="col-6">
               <div class="row justify-between q-py-sm">
                 <div class="q-px-md text-grey-8">Parent</div>
-                <div class="q-px-md">{{ fields?.parent_id || '-' }}</div>
+                <div class="q-px-md">{{ fields?.parent || '-' }}</div>
               </div>
             </div>
             <div class="col-6">
@@ -60,41 +60,11 @@
       <div>
         <div class="text-h5 text-bold q-py-md">Transactions</div>
         <div class="row q-col-gutter-md">
-          <q-input v-model="startDate" label="Start Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date v-model="startDate" mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <q-input v-model="endDate" label="End Date">
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
-                  <q-date v-model="endDate" mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <div v-if="startDate != null || endDate != null">
+          <DateRangePicker
+            v-model:startDate="startDate"
+            v-model:endDate="endDate"
+          />
+          <!-- <div v-if="startDate != null || endDate != null">
             <q-btn
               @click.prevent="resetDate"
               square
@@ -102,7 +72,7 @@
               icon="fa-solid fa-xmark"
               class="q-mt-md"
             />
-          </div>
+          </div> -->
           <div>
             <q-btn
               @click.prevent="filter"
@@ -122,6 +92,7 @@
         @request="onRequest"
         class="q-mt-lg"
         :binary-state-sort="true"
+        :rows-per-page-options="[20]"
       >
         <template v-slot:body-cell-accounts="props">
           <q-td :props="props">
@@ -144,7 +115,10 @@ const route = useRoute()
 //   endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/`
 //   getData()
 // })
-
+// const filters = ref({
+//   start_date: null,
+//   end_date: null,
+// })
 const startDate = ref(null)
 const endDate = ref(null)
 const resetDate = () => {
@@ -162,6 +136,7 @@ const endpoint = ref(`/v1/inventory-account/${route.params.id}/transactions/`)
 const getData = () =>
   useApi(endpoint.value).then((data) => {
     fields.value = data
+    loadData()
   })
 getData()
 
@@ -206,7 +181,7 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/v1/account/${route.params.id}/transactions/?${
+  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${
     startDate.value && endDate.value
       ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
       : ''
