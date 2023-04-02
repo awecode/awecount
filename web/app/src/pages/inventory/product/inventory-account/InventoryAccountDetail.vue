@@ -94,11 +94,14 @@
         :binary-state-sort="true"
         :rows-per-page-options="[20]"
       >
-        <template v-slot:body-cell-accounts="props">
+        <template v-slot:body-cell-voucher_no="props">
           <q-td :props="props">
-            <router-link :to="`/account/${props.row.accounts[0].id}/view/`">{{
-              props.row.accounts[0].name
-            }}</router-link>
+            <router-link
+              :to="getVoucherUrl(props.row)"
+              class="text-blue text-weight-medium"
+              style="text-decoration: none"
+              >{{ props.row.voucher_no }}</router-link
+            >
           </q-td>
         </template>
       </q-table>
@@ -108,24 +111,13 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
+const store = useLoginStore()
 const fields = ref(null)
 const route = useRoute()
-
-// watch(route, () => {
-//   endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/`
-//   getData()
-// })
-// const filters = ref({
-//   start_date: null,
-//   end_date: null,
-// })
 const startDate = ref(null)
 const endDate = ref(null)
-const resetDate = () => {
-  startDate.value = null
-  endDate.value = null
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/`
-}
 const filter = () => {
   endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
   getData()
@@ -140,15 +132,46 @@ const getData = () =>
   })
 getData()
 
-// watch(fields, () => {
-//   loadData()
-// })
-
 const pagination = ref()
 const loading = ref(false)
 const initiallyLoaded = ref(false)
 const rows = ref([])
-const columnList = ref([])
+const columnList = [
+  {
+    name: 'date',
+    label: 'Date',
+    align: 'left',
+    field: (row) =>
+      DateConverter.getRepresentation(
+        row.date,
+        store.isCalendarInAD ? 'ad' : 'bs'
+      ),
+  },
+  {
+    name: 'voucher_type',
+    label: 'Voucher Type',
+    align: 'left',
+    field: 'source_type',
+  },
+  {
+    name: 'voucher_no',
+    label: 'Voucher No.',
+    align: 'center',
+    field: 'voucher_no',
+  },
+  {
+    name: 'dr_amount',
+    label: 'Dr',
+    align: 'left',
+    field: 'dr_amount',
+  },
+  {
+    name: 'cr_amount',
+    label: 'Cr',
+    align: 'left',
+    field: 'cr_amount',
+  },
+]
 
 function loadData() {
   loading.value = true
@@ -158,16 +181,16 @@ function loadData() {
       )
     : null
 
-  columnList.value = field?.map((f) => {
-    return {
-      name: f,
-      label:
-        f.replace(/_/g, ' ').charAt(0).toUpperCase() +
-        f.replace(/_/g, ' ').slice(1),
-      align: 'left',
-      field: f,
-    }
-  })
+  // columnList.value = field?.map((f) => {
+  //   return {
+  //     name: f,
+  //     label:
+  //       f.replace(/_/g, ' ').charAt(0).toUpperCase() +
+  //       f.replace(/_/g, ' ').slice(1),
+  //     align: 'left',
+  //     field: f,
+  //   }
+  // })
 
   rows.value = fields.value?.transactions?.results
   initiallyLoaded.value = true
@@ -191,5 +214,35 @@ function onRequest(prop) {
       : 'page=' + prop.pagination.page
   }`
   getData()
+}
+function getVoucherUrl(row) {
+  const source_type = row.source_type
+  if (source_type === 'Sales Voucher')
+    return `/sales-voucher/${row.source_id}/view/`
+  if (source_type === 'Purchase Voucher')
+    return `/purchase-voucher/${row.source_id}/view`
+  if (source_type === 'Journal Voucher')
+    return `/journal-voucher/${row.source_id}/view`
+  if (source_type === 'Credit Note') return `/credit-note/${row.source_id}/view`
+  if (source_type === 'Debit Note') return `/debit-note/${row.source_id}/view`
+  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
+  // TODO: add missing links
+  if (source_type === 'Cheque Deposit')
+    return `/bank/cheque/cheque-deposit/${row.source_id}/view/`
+  if (source_type === 'Payment Receipt')
+    return `/payment-receipt/${row.source_id}/view/`
+  if (source_type === 'Cheque Issue')
+    return `/bank/cheque/cheque-issue/${row.source_id}/edit/`
+  if (source_type === 'Challan') return `/challan/${row.source_id}/`
+  if (source_type === 'Account Opening Balance')
+    return `/account/opening-balance/${row.source_id}/edit/`
+  if (source_type === 'Item') return `/items/opening/${row.source_id}`
+  // added
+  if (source_type === 'Fund Transfer')
+    return `/bank/fund/fund-transfer/${row.source_id}/edit/`
+  if (source_type === 'Bank Cash Deposit')
+    return `/bank/cash/cash-deposit/${row.source_id}/edit/`
+  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+  console.error(source_type + ' not handled!')
 }
 </script>
