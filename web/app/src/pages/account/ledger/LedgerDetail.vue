@@ -136,43 +136,6 @@
           ></q-btn>
         </div>
       </transaction-table>
-      <!-- <q-table
-        :columns="columnList"
-        :rows="rows"
-        :loading="loading"
-        v-model:pagination="pagination"
-        row-key="id"
-        @request="onRequest"
-        class="q-mt-lg"
-        :binary-state-sort="true"
-        :rows-per-page-options="[]"
-      >
-        <template v-slot:body-cell-against="props">
-          <q-td :props="props">
-            <div v-for="account in props.row.accounts" :key="account.id">
-              <router-link
-                v-if="account.id !== fields.id"
-                :to="`/account/${account.id}/view/`"
-                style="font-weight: 500; text-decoration: none"
-                class="text-blue"
-                :title="`${account.name}`"
-              >
-                {{ account.name }}
-              </router-link>
-            </div>
-          </q-td>
-        </template>
-        <template v-slot:body-cell-voucher_no="props">
-          <q-td :props="props">
-            <router-link
-              :to="getVoucherUrl(props.row)"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-              >{{ props.row.voucher_no }}</router-link
-            >
-          </q-td>
-        </template>
-      </q-table> -->
     </div>
   </div>
 </template>
@@ -196,13 +159,12 @@ watch(
     deep: true,
   }
 )
-
 const startDate = ref(null)
 const endDate = ref(null)
 const resetDate = () => {
   startDate.value = null
   endDate.value = null
-  endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
+  router.push(`/account/${route.params.id}/view/`)
 }
 const filter = () => {
   if (!startDate.value || !endDate.value) {
@@ -212,113 +174,24 @@ const filter = () => {
       icon: 'report_problem',
     })
   } else {
-    // endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
     router.push(
       `/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`
     )
   }
 }
-
 const endpoint = ref(
   withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query)
 )
-
 const getData = () =>
   useApi(endpoint.value).then((data) => {
     fields.value = data
   })
 getData()
 watch(endpoint, () => getData())
-
-const pagination = ref()
-const loading = ref(false)
-const initiallyLoaded = ref(false)
-const rows = ref([])
-// const columnList = ref([])
 function goToPage(pageNo) {
-  console.log(pageNo)
   let newQuery = Object.assign({ ...route.query }, { page: pageNo })
   router.push(withQuery(`/account/${route.params.id}/view/`, newQuery))
-  console.log(newQuery)
 }
-function loadData() {
-  loading.value = true
-  // const field = fields.value.transactions.results.value
-  //   ? Object.keys(fields.value?.transactions?.results[0])?.filter((f) => {
-  //       console.log('loop')
-  //       f !== 'id'
-  //     })
-  //   : null
-  // console.log(field)
-  // columnList.value = field?.map((f) => {
-  //   return {
-  //     name: f,
-  //     label: 'Name',
-  //     align: 'left',
-  //     field: f,
-  //   }
-  // })
-  // columnList.value = [
-  //   {
-  //     name: 'date',
-  //     label: 'Date',
-  //     align: 'left',
-  //     field: 'date',
-  //   },
-  //   {
-  //     name: 'source_type',
-  //     label: 'Voucher Type',
-  //     align: 'left',
-  //     field: 'source_type',
-  //   },
-  //   {
-  //     name: 'against',
-  //     label: 'Against',
-  //     align: 'left',
-  //     field: 'accounts',
-  //   },
-  //   {
-  //     name: 'voucher_no',
-  //     label: 'Voucher No.',
-  //     align: 'left',
-  //     field: 'voucher_no',
-  //   },
-  //   {
-  //     name: 'dr',
-  //     label: 'Dr.',
-  //     align: 'left',
-  //     field: 'dr_amount',
-  //   },
-  //   {
-  //     name: 'cr',
-  //     label: 'Cr.',
-  //     align: 'left',
-  //     field: 'cr_amount',
-  //   },
-  // ]
-
-  rows.value = fields.value?.transactions?.results
-  initiallyLoaded.value = true
-  pagination.value = {
-    page: fields.value?.transactions?.pagination?.page,
-    rowsPerPage: fields.value?.transactions?.pagination?.size,
-    rowsNumber: fields.value?.transactions?.pagination?.count,
-  }
-  loading.value = false
-}
-
-// function onRequest(prop) {
-//   endpoint.value = `/v1/account/${route.params.id}/transactions/?${
-//     startDate.value && endDate.value
-//       ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
-//       : ''
-//   }${
-//     startDate.value && endDate.value
-//       ? '&page=' + prop.pagination.page
-//       : 'page=' + prop.pagination.page
-//   }`
-//   getData()
-// }
 onMounted(() => {
   if (route.query.start_date) {
     startDate.value = route.query.start_date
@@ -327,8 +200,6 @@ onMounted(() => {
     endDate.value = route.query.end_date
   }
 })
-
-// TODO: Do clean up
 </script>
 
 <style>
