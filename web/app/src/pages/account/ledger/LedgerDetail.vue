@@ -123,14 +123,23 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
+import { withQuery } from 'ufo'
 const fields = ref(null)
 const route = useRoute()
+const router = useRouter()
 const $q = useQuasar()
 
-watch(route, () => {
-  endpoint.value = `/v1/accounts/${route.params.id}/transactions/`
-  getData()
-})
+watch(
+  route,
+  () => {
+    const url = `/v1/accounts/${route.params.id}/transactions/?`
+    const updatedEndpoint = withQuery(url, route.query)
+    endpoint.value = updatedEndpoint
+  },
+  {
+    deep: true,
+  }
+)
 
 const startDate = ref(null)
 const endDate = ref(null)
@@ -147,28 +156,29 @@ const filter = () => {
       icon: 'report_problem',
     })
   } else {
-    endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
-    getData()
+    // endpoint.value = `/v1/accounts/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
+    router.push(
+      `/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`
+    )
   }
 }
 
-const endpoint = ref(`/v1/accounts/${route.params.id}/transactions/`)
+const endpoint = ref(
+  withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query)
+)
 
 const getData = () =>
   useApi(endpoint.value).then((data) => {
     fields.value = data
   })
 getData()
-
-watch(fields, () => {
-  loadData()
-})
+watch(endpoint, () => getData())
 
 const pagination = ref()
 const loading = ref(false)
 const initiallyLoaded = ref(false)
 const rows = ref([])
-const columnList = ref([])
+// const columnList = ref([])
 
 function loadData() {
   loading.value = true
@@ -187,45 +197,44 @@ function loadData() {
   //     field: f,
   //   }
   // })
-  console.log('loadData')
-  columnList.value = [
-    {
-      name: 'date',
-      label: 'Date',
-      align: 'left',
-      field: 'date',
-    },
-    {
-      name: 'source_type',
-      label: 'Voucher Type',
-      align: 'left',
-      field: 'source_type',
-    },
-    {
-      name: 'against',
-      label: 'Against',
-      align: 'left',
-      field: 'accounts',
-    },
-    {
-      name: 'voucher_no',
-      label: 'Voucher No.',
-      align: 'left',
-      field: 'voucher_no',
-    },
-    {
-      name: 'dr',
-      label: 'Dr.',
-      align: 'left',
-      field: 'dr_amount',
-    },
-    {
-      name: 'cr',
-      label: 'Cr.',
-      align: 'left',
-      field: 'cr_amount',
-    },
-  ]
+  // columnList.value = [
+  //   {
+  //     name: 'date',
+  //     label: 'Date',
+  //     align: 'left',
+  //     field: 'date',
+  //   },
+  //   {
+  //     name: 'source_type',
+  //     label: 'Voucher Type',
+  //     align: 'left',
+  //     field: 'source_type',
+  //   },
+  //   {
+  //     name: 'against',
+  //     label: 'Against',
+  //     align: 'left',
+  //     field: 'accounts',
+  //   },
+  //   {
+  //     name: 'voucher_no',
+  //     label: 'Voucher No.',
+  //     align: 'left',
+  //     field: 'voucher_no',
+  //   },
+  //   {
+  //     name: 'dr',
+  //     label: 'Dr.',
+  //     align: 'left',
+  //     field: 'dr_amount',
+  //   },
+  //   {
+  //     name: 'cr',
+  //     label: 'Cr.',
+  //     align: 'left',
+  //     field: 'cr_amount',
+  //   },
+  // ]
 
   rows.value = fields.value?.transactions?.results
   initiallyLoaded.value = true
@@ -237,18 +246,26 @@ function loadData() {
   loading.value = false
 }
 
-function onRequest(prop) {
-  endpoint.value = `/v1/account/${route.params.id}/transactions/?${
-    startDate.value && endDate.value
-      ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
-      : ''
-  }${
-    startDate.value && endDate.value
-      ? '&page=' + prop.pagination.page
-      : 'page=' + prop.pagination.page
-  }`
-  getData()
-}
+// function onRequest(prop) {
+//   endpoint.value = `/v1/account/${route.params.id}/transactions/?${
+//     startDate.value && endDate.value
+//       ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
+//       : ''
+//   }${
+//     startDate.value && endDate.value
+//       ? '&page=' + prop.pagination.page
+//       : 'page=' + prop.pagination.page
+//   }`
+//   getData()
+// }
+onMounted(() => {
+  if (route.query.start_date) {
+    startDate.value = route.query.start_date
+  }
+  if (route.query.end_date) {
+    endDate.value = route.query.end_date
+  }
+})
 
 // TODO: Do clean up
 </script>
