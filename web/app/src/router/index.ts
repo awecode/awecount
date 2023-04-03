@@ -37,7 +37,6 @@ export default route(function (/* { store, ssrContext } */) {
   // Token validation
   Router.beforeEach((to, from, next) => {
     const store = useLoginStore()
-    console.log(to.path, store.token)
     if (to.path === '/') {
       if (!!store.token) {
         next('/dashboard')

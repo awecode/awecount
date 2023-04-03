@@ -48,6 +48,10 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/units/'
+    const metaData = {
+      title: 'Units | Awecount',
+    }
+    useMeta(metaData)
     return {
       ...useForm(endpoint, {
         getDefaults: true,

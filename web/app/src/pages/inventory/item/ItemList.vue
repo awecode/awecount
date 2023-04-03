@@ -101,6 +101,7 @@
 
 <script setup>
 import useList from '/src/composables/useList'
+import { useMeta } from 'quasar'
 const endpoint = '/v1/items'
 // console.log(useList(endpoint))
 // export default {
@@ -109,6 +110,10 @@ const endpoint = '/v1/items'
 //     return { ...useList(endpoint) }
 //   },
 // }
+const metaData = {
+  title: 'Items | Awecount',
+}
+useMeta(metaData)
 const {
   columns,
   rows,

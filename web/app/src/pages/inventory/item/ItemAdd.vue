@@ -293,11 +293,16 @@
 </template>
 
 <script setup>
+import { useMeta } from 'quasar'
 import NAutoComplete from 'src/components/NAutoComplete.vue'
 import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue'
 import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import AccountForm from 'src/pages/bank/account/AccountForm.vue'
+const metaData = {
+  title: 'Items | Awecount',
+}
+useMeta(metaData)
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }

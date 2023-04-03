@@ -69,8 +69,14 @@
 
 <script>
 import useApi from 'src/composables/useApi'
+import { useMeta } from 'quasar'
 export default {
   setup() {
+    const metaData = {
+      title: 'Dashboard',
+      titleTemplate: (title) => `${title} | Awecount`,
+    }
+    useMeta(metaData)
     const fields = ref(null)
     return {
       fields,
@@ -78,7 +84,6 @@ export default {
   },
   created() {
     const endpoint = '/v1/widgets/data/'
-    console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data

@@ -20,38 +20,15 @@
       row-key="id"
       @request="onRequest"
       class="q-mt-md"
+      :rows-per-page-options="[20]"
     >
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
-          <!-- <q-btn
-            color="blue"
-            class="q-mr-md"
-            label="View"
-            :to="`/account/${props.row.id}/view/`"
-          />
-          <q-btn
-            icon="edit"
-            color="amber"
-            dense
-            flat
-            :to="`/account/${props.row.id}/edit/`"
-          /> -->
-          <!-- <q-btn
-            icon="delete"
-            color="red"
-            dense
-            flat
-            @click="confirmDeletion(props.row.id)"
-          /> -->
-          <!-- {{ props }} -->
-        </q-td>
-      </template>
-      <template v-slot:body-cell-category="props">
+      <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <router-link
-            :to="`/account/category/${props.row.category.id}/edit/`"
-            >{{ props.row.category.name }}</router-link
+            class="text-blue text-weight-medium"
+            style="text-decoration: none"
+            :to="`/units/${props.row.id}/`"
+            >{{ props.row.name }}</router-link
           >
         </q-td>
       </template>
@@ -63,6 +40,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Units | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/units/'
     return { ...useList(endpoint) }
   },

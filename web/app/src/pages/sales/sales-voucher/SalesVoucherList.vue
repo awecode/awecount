@@ -147,8 +147,13 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
+// import { useMeta } from 'quasar'
 export default {
   setup() {
+    const metaData = {
+      title: 'Sales Invoices | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/sales-voucher/'
     const listData = useList(endpoint)
     const route = useRoute()

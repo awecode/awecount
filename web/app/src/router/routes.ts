@@ -271,6 +271,10 @@ const routes: RouteRecordRaw[] = [
         path: 'units/add/',
         component: () => import('src/pages/inventory/unit/UnitForm.vue'),
       },
+      {
+        path: 'units/:id/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+      },
       // egov Port
       {
         path: 'bank/account/add/',
