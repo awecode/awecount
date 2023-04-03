@@ -5,6 +5,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
+      { path: '/', component: () => import('src/pages/LandingPage.vue') },
       { path: 'dashboard', component: () => import('src/pages/DashBoard.vue') },
       {
         path: 'items/list/',
@@ -571,6 +572,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/LoginPage.vue'),
     // children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
   },
+  // {
+  //   path: '/',
+  //   component: () => import('pages/LandingPage.vue'),
+  //   // children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
+  // },
 
   // Always leave this as last one,
   // but you can also remove it
