@@ -220,7 +220,7 @@
               >
                 <q-input class="col-4" v-model="field.name" label="Name" />
                 <q-select
-                  class="col-4"
+                  class="col-3"
                   v-model="field.type"
                   :options="extraFieldTypes"
                   label="Type"
@@ -231,7 +231,7 @@
                   label="Enable Search?"
                 />
                 <!-- <q-btn icon="delete"></q-btn> -->
-                <span>
+                <span class="col-1">
                   <q-icon
                     @click="removeExtraFields(index)"
                     class="deleteIcon cursor-pointer"
@@ -281,18 +281,7 @@ const toggleExpenses = (type) => {
   fields.value[type] = false
 }
 const endpoint = '/v1/items/'
-const {
-  fields,
-  errors,
-  isEdit,
-  id,
-  formDefaults,
-  isModal,
-  today,
-  submitForm,
-  cancel,
-  cancelForm,
-} = useForm(endpoint, {
+const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
 })
@@ -338,6 +327,13 @@ const addExtraFields = () => {
 const removeExtraFields = (idx) => {
   fields.value.extra_fields.splice(idx, 1)
 }
+fields.value.track_inventory = true
+fields.value.can_be_sold = true
+fields.value.can_be_purchased = true
+fields.value.direct_expense = false
+fields.value.fixed_asset = false
+fields.value.indirect_expense = false
+fields.value.use_account_subcategory = false
 </script>
 
 <style scoped>

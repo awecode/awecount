@@ -1,5 +1,14 @@
 <template>
   <div class="q-pa-md">
+    <div class="row justify-end">
+      <q-btn
+        color="green"
+        to="/inventory-category/add/"
+        label="New Category"
+        class="q-ml-lg"
+        icon-right="add"
+      />
+    </div>
     <q-table
       :rows="rows"
       :columns="columns"
@@ -39,6 +48,10 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/inventory-account/'
+    const metaData = {
+      title: 'Inventory Category | Awecount',
+    }
+    useMeta(metaData)
     return { ...useList(endpoint) }
   },
 }
