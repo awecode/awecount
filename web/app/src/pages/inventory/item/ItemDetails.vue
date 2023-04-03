@@ -175,12 +175,13 @@
 </template>
 
 <script setup>
-const metaData = {
-  title: 'Item | Awecount',
-}
-useMeta(metaData)
-const route = useRoute()
 const data = ref({})
+useMeta(() => {
+  return {
+    title: (data.value.name || 'Item') + '| Awecount',
+  }
+})
+const route = useRoute()
 useGetDataAuth(`/v1/items/${route.params.id}/details/`, {
   method: 'GET',
 }).then((res) => (data.value = res))

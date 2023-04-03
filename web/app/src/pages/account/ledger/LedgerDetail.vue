@@ -80,7 +80,10 @@
         </div>
       </div>
       <transaction-table :fields="fields">
-        <div class="row justify-end items-center">
+        <div
+          class="row justify-end items-center"
+          v-if="fields.transactions?.pagination.pages > 0"
+        >
           <div class="q-mr-sm">
             <span>
               {{ (fields.transactions?.pagination.page - 1) * 20 + 1 }} -
@@ -151,9 +154,11 @@ const $q = useQuasar()
 watch(
   route,
   () => {
-    const url = `/v1/accounts/${route.params.id}/transactions/?`
-    const updatedEndpoint = withQuery(url, route.query)
-    endpoint.value = updatedEndpoint
+    if (route.params.id) {
+      const url = `/v1/accounts/${route.params.id}/transactions/?`
+      const updatedEndpoint = withQuery(url, route.query)
+      endpoint.value = updatedEndpoint
+    }
   },
   {
     deep: true,
