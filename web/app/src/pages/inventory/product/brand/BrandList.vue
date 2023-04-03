@@ -4,8 +4,8 @@
       <div></div>
       <q-btn
         color="green"
-        to="/units/add/"
-        label="New Unit"
+        to="/brand/add/"
+        label="New brand"
         class="q-ml-lg"
         icon-right="add"
       />
@@ -21,6 +21,16 @@
       class="q-mt-md"
       :rows-per-page-options="[20]"
     >
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link
+            class="text-blue"
+            style="text-decoration: none"
+            :to="`/brand/${props.row.id}/`"
+            >{{ props.row.name }}</router-link
+          >
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
@@ -29,6 +39,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Brands | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/brands/'
     return { ...useList(endpoint) }
   },

@@ -259,6 +259,11 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/inventory/product/brand/BrandList.vue'),
       },
       {
+        path: 'brand/:id/',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandForm.vue'),
+      },
+      {
         path: 'brand/add/',
         component: () =>
           import('src/pages/inventory/product/brand/BrandForm.vue'),

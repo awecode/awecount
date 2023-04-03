@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-table
       :rows="rows"
-      :columns="columns"
+      :columns="columnList"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
@@ -52,7 +52,38 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/inventory-account/'
-    return { ...useList(endpoint) }
+    const columnList = [
+      {
+        name: 'code',
+        label: 'Code.',
+        align: 'left',
+        field: 'code',
+      },
+      {
+        name: 'name',
+        label: 'Name',
+        align: 'left',
+        field: 'name',
+      },
+      {
+        name: 'opening_balance',
+        label: 'Opening Balance',
+        align: 'left',
+        field: 'opening_balance',
+      },
+      {
+        name: 'current_balance',
+        label: 'Current Balance',
+        align: 'left',
+        field: 'current_balance',
+      },
+      {
+        name: 'actions',
+        label: 'Actions',
+        align: 'left',
+      },
+    ]
+    return { ...useList(endpoint), columnList }
   },
 }
 </script>

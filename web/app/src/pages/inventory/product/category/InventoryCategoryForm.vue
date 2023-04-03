@@ -263,7 +263,10 @@ import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 // const emptyField = {
-
+const metaData = {
+  title: 'Inventory Category | Awecount',
+}
+useMeta(metaData)
 // }
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },

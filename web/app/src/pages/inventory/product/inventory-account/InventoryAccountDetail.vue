@@ -113,6 +113,10 @@
 import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+const metaData = {
+  title: 'Inventory Details | Awecount',
+}
+useMeta(metaData)
 const store = useLoginStore()
 const fields = ref(null)
 const route = useRoute()
