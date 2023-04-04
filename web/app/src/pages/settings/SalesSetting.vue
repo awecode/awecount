@@ -115,6 +115,10 @@ export default {
       getDefaults: true,
       successRoute: '#',
     })
+    const metaData = {
+      title: 'Sales Settings | Awecount',
+    }
+    useMeta(metaData)
     const fields = ref(null)
     const modeErrors = ref(null)
     const onUpdateClick = (fields) => {

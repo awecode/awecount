@@ -115,6 +115,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Journal Vouchers | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/journal-voucher/'
     const newColumns = [
       {

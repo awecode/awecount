@@ -150,7 +150,10 @@ const fields = ref(null)
 const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
-
+const metaData = {
+  title: 'Account Detail | Awecount',
+}
+useMeta(metaData)
 watch(
   route,
   () => {

@@ -89,9 +89,8 @@
 
 <script setup>
 import useList from '/src/composables/useList'
-import { useMeta } from 'quasar'
 const metaData = {
-  title: 'Inventory Category | Awecount',
+  title: 'Account Categories | Awecount',
 }
 useMeta(metaData)
 const endpoint = '/v1/categories/'

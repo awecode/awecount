@@ -88,7 +88,7 @@
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
             @click.prevent="submitForm"
-            color="primary"
+            color="green"
             :label="isEdit ? 'Update' : 'Create'"
             class="q-ml-auto"
           />
@@ -120,9 +120,14 @@ export default {
       getDefaults: true,
       successRoute: '/bank/cheque-issue/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Update Cheque' : 'Issue Cheque') +
+          ' | Awecount',
+      }
+    })
     formData.fields.value.date = formData.fields.value.date || formData.today
-
     const toggleDrAccount = () => {
       showDrAccount.value = !showDrAccount.value
       formData.fields.value.issued_to = null

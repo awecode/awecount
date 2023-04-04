@@ -114,7 +114,14 @@ export default {
       getDefaults: true,
       successRoute: '/bank/fund-transfer/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Update Funds Transfer'
+            : 'Add Funds Transfer') + ' | Awecount',
+      }
+    })
     formData.fields.value.date = formData.fields.value.date || formData.today
 
     return {

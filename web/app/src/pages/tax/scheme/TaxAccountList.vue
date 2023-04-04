@@ -77,6 +77,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Tax Schemes | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/tax_scheme/'
     const listData = useList(endpoint)
     const newColumn = [

@@ -143,6 +143,10 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
+    const metaData = {
+      title: 'Purchases/Expenses | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/purchase-vouchers/'
     const listData = useList(endpoint)
     const route = useRoute()

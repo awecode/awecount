@@ -256,6 +256,13 @@ export default {
       getDefaults: true,
       successRoute: '/debit-note/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Debit Notes Update' : 'Debit Notes Add') +
+          ' | Awecount',
+      }
+    })
     const partyMode = ref(false)
     const switchMode = (fields) => {
       if (fields.mode !== 'Credit') {

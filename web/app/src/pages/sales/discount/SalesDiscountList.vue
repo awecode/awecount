@@ -141,6 +141,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Sales Discounts | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/sales-discount/'
     const listData = useList(endpoint)
     const newColumn = [

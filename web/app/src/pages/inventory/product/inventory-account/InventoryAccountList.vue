@@ -83,6 +83,10 @@ export default {
         align: 'left',
       },
     ]
+    const metaData = {
+      title: 'Inventory Accounts | Awecount',
+    }
+    useMeta(metaData)
     return { ...useList(endpoint), columnList }
   },
 }

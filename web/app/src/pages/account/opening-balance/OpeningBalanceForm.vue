@@ -56,16 +56,24 @@
 <script>
 import useForm from '/src/composables/useForm'
 import LedgerForm from '/src/pages/account/ledger/LedgerForm.vue'
-
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/account-opening-balance/'
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/account/opening-balance/',
+    })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Update Account Opening Balances'
+            : 'Add Account Opening Balances') + ' | Awecount',
+      }
+    })
     return {
-      ...useForm(endpoint, {
-        getDefaults: true,
-        successRoute: '/account/opening-balance/',
-      }),
+      ...formData,
       LedgerForm,
     }
   },

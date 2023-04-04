@@ -38,6 +38,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Dashboard Widgets | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/widgets/'
     const listData = useList(endpoint)
     const newColumn = [

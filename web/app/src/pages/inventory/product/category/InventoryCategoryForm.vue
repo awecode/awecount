@@ -262,12 +262,6 @@ import NAutoComplete from 'src/components/NAutoComplete.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
-// const emptyField = {
-const metaData = {
-  title: 'Inventory Category | Awecount',
-}
-useMeta(metaData)
-// }
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },
   { value: 'Number', label: 'Number' },
@@ -288,7 +282,14 @@ const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
 })
-
+useMeta(() => {
+  return {
+    title:
+      (isEdit?.value ? 'Update ' : 'Add ') +
+      'Inventory Category' +
+      ' | Awecount',
+  }
+})
 const isExpenses = computed(
   () => fields.value.direct_expense || fields.value.indirect_expense
 )

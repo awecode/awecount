@@ -100,6 +100,10 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
+    const metaData = {
+      title: 'Purchase Discounts | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/purchase-discount/'
     const listData = useList(endpoint)
     const onDownloadXls = () => {

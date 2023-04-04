@@ -154,6 +154,10 @@ import { useLoginStore } from 'src/stores/login-info'
 
 export default {
   setup() {
+    const metaData = {
+      title: 'Journal Entries | Awecount',
+    }
+    useMeta(metaData)
     interface Fields {
       total_amount: number
       voucher_number: number

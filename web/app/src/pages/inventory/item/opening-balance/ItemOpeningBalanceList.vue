@@ -61,6 +61,10 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/item-opening-balance/'
+    const metaData = {
+      title: 'Stock Opening | Awecount',
+    }
+    useMeta(metaData)
     return { ...useList(endpoint) }
   },
 }

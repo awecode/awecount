@@ -122,6 +122,17 @@ export default {
   setup() {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/party/list/',
+    })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Party Update' : 'Party Add') +
+          ' | Awecount',
+      }
+    })
     const addRepresentetive = (fields) => {
       fields.representative.push({})
     }
@@ -140,10 +151,7 @@ export default {
         })
     }
     return {
-      ...useForm(endpoint, {
-        getDefaults: true,
-        successRoute: '/party/list/',
-      }),
+      ...formData,
       addRepresentetive,
       deleteModal,
       onDeletClick,

@@ -126,6 +126,10 @@
 import { Ref } from 'vue'
 export default {
   setup() {
+    const metaData = {
+      title: 'Periodic Tax Summary | Awecount',
+    }
+    useMeta(metaData)
     const reportData: Ref<Record<string, string | object> | null> = ref(null)
     const fields: Ref<Record<string, Date | null>> = ref({
       start_date: null,

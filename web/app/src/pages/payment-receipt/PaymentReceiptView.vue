@@ -280,7 +280,6 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import numberToText from 'src/composables/numToText'
 import DateConverter from '/src/components/date/VikramSamvat.js'
-import { useLoginStore } from 'src/stores/login-info'
 interface Fields {
   status: string
   voucher_no: string
@@ -292,7 +291,10 @@ interface Fields {
 }
 export default {
   setup() {
-    const store = useLoginStore()
+    const metaData = {
+      title: 'Payment Receipts | Awecount',
+    }
+    useMeta(metaData)
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)

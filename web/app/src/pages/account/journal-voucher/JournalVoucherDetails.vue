@@ -119,7 +119,10 @@ import useApi from 'src/composables/useApi'
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
-
+const metaData = {
+  title: 'Journal Voucher | Awecount',
+}
+useMeta(metaData)
 const getData = () =>
   useApi(`/v1/journal-voucher/${props.id}/`).then((data) => {
     fields.value = data

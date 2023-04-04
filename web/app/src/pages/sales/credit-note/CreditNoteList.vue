@@ -123,6 +123,10 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
+    const metaData = {
+      title: 'Credit Notes | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/credit-note/'
     const route = useRoute()
     const onDownloadXls = () => {

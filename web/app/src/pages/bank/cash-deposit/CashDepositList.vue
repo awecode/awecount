@@ -99,6 +99,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Cash Deposits | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/bank-cash-deposits/'
     const newColumn = [
       {

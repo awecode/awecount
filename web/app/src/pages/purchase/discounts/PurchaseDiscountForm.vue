@@ -79,6 +79,15 @@ export default {
       getDefaults: true,
       successRoute: '/purchase-discount/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Purchase Discount Update'
+            : 'Purchase Discount Add') + ' | Awecount',
+      }
+    })
+
     const type = [
       { value: 'Amount', id: 'Amount' },
       { value: 'Percent', id: 'Percent' },

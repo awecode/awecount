@@ -124,6 +124,10 @@ import { Ref } from 'vue'
 import TransactionTable from 'src/components/account/TransactionTable.vue'
 export default {
   setup() {
+    const metaData = {
+      title: 'Party Account | Awecount',
+    }
+    useMeta(metaData)
     interface Amounts {
       dr: number
       cr: number

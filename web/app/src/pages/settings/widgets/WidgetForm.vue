@@ -80,6 +80,14 @@ export default {
       getDefaults: true,
       successRoute: '/dashboard/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Dashboard Widgets Update'
+            : 'Dashboard Widgets Add') + ' | Awecount',
+      }
+    })
     formData.fields.value.display_type = 'Table'
     formData.fields.value.count = 7
     formData.fields.value.group_by = 'Day'

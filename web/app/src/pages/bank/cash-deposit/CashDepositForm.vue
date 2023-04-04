@@ -118,7 +118,14 @@ export default {
       getDefaults: true,
       successRoute: '/bank/cash-deposit/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Cash Deposit Update'
+            : 'Cash Deposit Add') + ' | Awecount',
+      }
+    })
     formData.fields.value.date = formData.fields.value.date || formData.today
 
     return {

@@ -143,7 +143,14 @@ export default {
       getDefaults: true,
       successRoute: '/journal-voucher/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Update Journal Voucher'
+            : 'Add Journal Voucher') + ' | Awecount',
+      }
+    })
     formData.fields.value.voucher_no =
       formData?.formDefaults?.value.voucher_no || null
 

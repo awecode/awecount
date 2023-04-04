@@ -98,6 +98,10 @@ export default {
       start_date: null,
       end_date: null,
     })
+    const metaData = {
+      title: 'Collection Report | Awecount',
+    }
+    useMeta(metaData)
     const fetchData = () => {
       const endpoint = `/v1/payment-receipt/collection-report/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)

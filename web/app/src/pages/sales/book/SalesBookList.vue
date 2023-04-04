@@ -178,6 +178,10 @@ export default {
     const route = useRoute()
     const endpoint = '/v1/sales-book/'
     const listData = useList(endpoint)
+    const metaData = {
+      title: 'Sales Book | Awecount',
+    }
+    useMeta(metaData)
     const newColumn = [
       {
         name: 'date',

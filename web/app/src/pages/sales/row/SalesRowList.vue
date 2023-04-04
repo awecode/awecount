@@ -176,6 +176,10 @@ export default {
   setup() {
     const endpoint = '/v1/sales-row/'
     const listData = useList(endpoint)
+    const metaData = {
+      title: 'Sales Rows | Awecount',
+    }
+    useMeta(metaData)
     const newColumn = [
       {
         name: 'voucher_id',

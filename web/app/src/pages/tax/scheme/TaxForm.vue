@@ -77,6 +77,13 @@ export default {
       getDefaults: true,
       successRoute: '/taxes/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Update Tax Scheme' : 'Add Tax Scheme') +
+          ' | Awecount',
+      }
+    })
     formData.fields.value.recoverable = false
     return {
       ...formData,

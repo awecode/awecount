@@ -111,7 +111,14 @@ export default {
       successRoute: '/bank/',
     })
     formData.fields.value.is_wallet = false
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Update Bank Account'
+            : 'Add Bank Account') + ' | Awecount',
+      }
+    })
     watch(formData.fields.value, (newVal) => {
       if (newVal.is_wallet == true) {
         formData.fields.value.account_number = null

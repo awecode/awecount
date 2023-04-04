@@ -111,6 +111,10 @@ import ViewerTable from 'src/components/viewer/ViewerTable.vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 export default {
   setup() {
+    const metaData = {
+      title: 'Credit Note | Awecount',
+    }
+    useMeta(metaData)
     const fields = ref(null)
     const isDeleteOpen = ref(false)
     const submitChangeStatus = (id, status) => {

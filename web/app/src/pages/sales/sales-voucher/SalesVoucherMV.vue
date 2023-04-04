@@ -26,17 +26,20 @@
 import useApi from 'src/composables/useApi'
 export default {
   setup() {
+    const metaData = {
+      title: 'Sales Invoices Materialized View | Awecount',
+    }
+    useMeta(metaData)
     interface Fields {
       total_amount: number
     }
-    const fields: Fields | null = ref(null)
+    const fields: Ref<Fields | null> = ref(null)
     return {
       fields,
     }
   },
   created() {
     const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
-    console.log(endpoint)
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         const removeArr: Array<string> = [
@@ -49,7 +52,6 @@ export default {
         ]
         removeArr.forEach((item) => delete data[item])
         this.fields = data
-        console.log(this.fields, 'data')
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {

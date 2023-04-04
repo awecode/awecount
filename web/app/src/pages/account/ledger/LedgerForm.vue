@@ -66,13 +66,22 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/accounts/'
+    const formData = useForm(endpoint, {
+      getDefaults: true,
+      successRoute: '/account/',
+    })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Account Update' : 'Account Add') +
+          ' | Awecount',
+      }
+    })
     const categoryChoices = ref(null)
     const accountChoices = ref(null)
+
     return {
-      ...useForm(endpoint, {
-        getDefaults: true,
-        successRoute: '/account/',
-      }),
+      ...formData,
       CategoryForm,
       categoryChoices,
       accountChoices,

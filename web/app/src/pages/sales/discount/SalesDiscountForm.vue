@@ -79,6 +79,14 @@ export default {
       getDefaults: true,
       successRoute: '/sales-discount/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Sales Discount Update'
+            : 'Sales Discount Add') + ' | Awecount',
+      }
+    })
     const type = [
       { value: 'Amount', id: 'Amount' },
       { value: 'Percent', id: 'Percent' },

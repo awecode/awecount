@@ -111,6 +111,13 @@ export default {
       getDefaults: true,
       successRoute: '/challan/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Challan Update' : 'Challan Add') +
+          ' | Awecount',
+      }
+    })
     const partyMode = ref(true)
     const deleteRow = (index, errors, deleteObj) => {
       if (deleteObj) {

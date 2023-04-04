@@ -55,6 +55,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Account Opening Balances | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/account-opening-balance/'
     const newColumn = [
       {

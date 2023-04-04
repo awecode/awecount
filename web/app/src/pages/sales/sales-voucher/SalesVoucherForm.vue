@@ -304,6 +304,14 @@ export default {
       getDefaults: true,
       successRoute: '/sales-voucher/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Sales Invoice Update'
+            : 'Sales Invoice Add') + ' | Awecount',
+      }
+    })
     const partyMode = ref(false)
     const switchMode = (fields) => {
       if (fields.mode !== 'Credit') {

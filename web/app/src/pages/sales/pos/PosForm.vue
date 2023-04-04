@@ -213,7 +213,11 @@ import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
+  setup(props) {
+    const metaData = {
+      title: 'POS | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = 'v1/pos/'
     const openDatePicker = ref(false)
     const $q = useQuasar()

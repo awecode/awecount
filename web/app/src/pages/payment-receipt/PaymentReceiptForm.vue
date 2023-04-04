@@ -194,7 +194,6 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/payment-receipt/'
     const $q = useQuasar()
-    const openDatePicker = ref(false)
     const addInoviceModal = ref(false)
     const invoiceFormData = ref({
       fiscal_year: null,
@@ -205,6 +204,14 @@ export default {
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/payment-receipt/list/',
+    })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Payment Receipts Update'
+            : 'Payment Receipts Add') + ' | Awecount',
+      }
     })
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status

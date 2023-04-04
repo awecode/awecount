@@ -132,6 +132,10 @@ interface Fields {
 }
 export default {
   setup() {
+    const metaData = {
+      title: 'Sales Invoices | Awecount',
+    }
+    useMeta(metaData)
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)

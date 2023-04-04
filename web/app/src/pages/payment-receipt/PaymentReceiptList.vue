@@ -183,6 +183,10 @@ export default {
   setup() {
     const endpoint = '/v1/payment-receipt/'
     const listData = useList(endpoint)
+    const metaData = {
+      title: 'Payment Receipts | Awecount',
+    }
+    useMeta(metaData)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export/')
         .then((data) =>

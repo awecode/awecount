@@ -109,6 +109,10 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/fund-transfer/'
+    const metaData = {
+      title: 'Fund Transfers | Awecount',
+    }
+    useMeta(metaData)
     const newColumn = [
       {
         name: 'voucher_no',

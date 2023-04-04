@@ -87,6 +87,10 @@
 // TODO: add integration
 export default {
   setup() {
+    const metaData = {
+      title: 'Import/Export  | Awecount',
+    }
+    useMeta(metaData)
     const showPasswordStatus = ref(false)
     const showPasswordStatus2 = ref(false)
     const export_file = ref({

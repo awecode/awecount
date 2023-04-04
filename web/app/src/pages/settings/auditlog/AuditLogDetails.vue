@@ -57,6 +57,14 @@ import useApi from 'src/composables/useApi'
 export default {
   setup() {
     const fields = ref(null)
+    useMeta(() => {
+      return {
+        title:
+          (fields.value?.content_type_name
+            ? fields.value.content_type_name
+            : 'Audit Logs Details') + ' | Awecount',
+      }
+    })
     return {
       fields,
     }

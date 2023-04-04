@@ -143,6 +143,10 @@ import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
+const metaData = {
+  title: 'Cheque Deposit View | Awecount',
+}
+useMeta(metaData)
 const getDate = computed(() => {
   let dates = {
     deposit_date: DateConverter.getRepresentation(

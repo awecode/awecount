@@ -60,6 +60,14 @@ export default {
       getDefaults: true,
       successRoute: '/account/category/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Account Category Update'
+            : 'Account Category Add') + ' | Awecount',
+      }
+    })
     // console.log()
     // if (!formData.fields.value?.id) {
     //   formData.fields.value.id = null

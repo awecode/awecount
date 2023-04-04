@@ -142,6 +142,10 @@ interface Fields {
 }
 export default {
   setup() {
+    const metaData = {
+      title: 'Debit Note | Awecount',
+    }
+    useMeta(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)

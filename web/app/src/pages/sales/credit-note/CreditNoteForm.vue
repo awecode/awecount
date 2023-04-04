@@ -244,6 +244,13 @@ export default {
       getDefaults: true,
       successRoute: '/credit-note/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Credit Note Update' : 'Credit Note Add') +
+          ' | Awecount',
+      }
+    })
     const partyMode = ref(false)
     const switchMode = (fields) => {
       if (fields.mode !== 'Credit') {

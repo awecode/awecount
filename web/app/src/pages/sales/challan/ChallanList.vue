@@ -127,6 +127,10 @@ export default {
   setup() {
     const endpoint = '/v1/challan/'
     const listData = useList(endpoint)
+    const metaData = {
+      title: 'Challans | Awecount',
+    }
+    useMeta(metaData)
     const newColumn = [
       {
         name: 'voucher_no',

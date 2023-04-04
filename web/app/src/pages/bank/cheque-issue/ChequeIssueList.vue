@@ -129,6 +129,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Cheque Issues | Awecount',
+    }
+    useMeta(metaData)
     const endpoint = '/v1/cheque-issue/'
     const route = useRoute()
     const newColumn = [

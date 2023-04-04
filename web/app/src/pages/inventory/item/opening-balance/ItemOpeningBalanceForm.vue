@@ -40,7 +40,7 @@
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
             @click.prevent="submitForm"
-            color="primary"
+            color="green"
             :label="isEdit ? 'Update' : 'Create'"
             class="q-ml-auto"
           />
@@ -57,6 +57,10 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/item-opening-balance/'
+    const metaData = {
+      title: 'Stock Opening | Awecount',
+    }
+    useMeta(metaData)
     return {
       ...useForm(endpoint, {
         getDefaults: true,

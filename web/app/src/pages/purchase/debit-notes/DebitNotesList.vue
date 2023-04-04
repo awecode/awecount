@@ -130,6 +130,10 @@ export default {
   setup() {
     const endpoint = '/v1/debit-note/'
     const listData = useList(endpoint)
+    const metaData = {
+      title: 'Debit Notes | Awecount',
+    }
+    useMeta(metaData)
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))

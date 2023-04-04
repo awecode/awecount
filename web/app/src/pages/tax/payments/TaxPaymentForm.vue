@@ -162,6 +162,13 @@ export default {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Tax Payment Update' : 'Tax Payment Add') +
+          ' | Awecount',
+      }
+    })
     formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
     function submitWithStatus(status, submitForm) {

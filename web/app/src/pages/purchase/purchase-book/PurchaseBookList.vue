@@ -124,6 +124,10 @@
 import useList from '/src/composables/useList'
 export default {
   setup() {
+    const metaData = {
+      title: 'Purchase Book | Awecount',
+    }
+    useMeta(metaData)
     const route = useRoute()
     const endpoint = '/v1/purchase-book/'
     const listData = useList(endpoint)

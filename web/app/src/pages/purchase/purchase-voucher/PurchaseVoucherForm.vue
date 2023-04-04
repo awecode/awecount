@@ -270,6 +270,14 @@ export default {
       getDefaults: true,
       successRoute: '/purchase-voucher/list/',
     })
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Update Purchases/Expenses'
+            : 'Add Purchases/Expenses') + ' | Awecount',
+      }
+    })
     const deleteRowErr = (index, errors, deleteObj) => {
       if (deleteObj) {
         if (!formData.fields.value.deleted_rows) {

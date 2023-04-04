@@ -115,6 +115,10 @@ import useList from '/src/composables/useList'
 export default {
   setup() {
     const endpoint = '/v1/accounts/'
+    const metaData = {
+      title: 'Accounts | Awecount',
+    }
+    useMeta(metaData)
     const newColumn = [
       {
         name: 'code',

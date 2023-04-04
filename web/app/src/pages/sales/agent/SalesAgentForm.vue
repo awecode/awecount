@@ -52,7 +52,13 @@ export default {
       getDefaults: true,
       successRoute: '/sales-agent/list/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value ? 'Sales Agent Update' : 'Sales Agent Add') +
+          ' | Awecount',
+      }
+    })
     return {
       ...formData,
     }

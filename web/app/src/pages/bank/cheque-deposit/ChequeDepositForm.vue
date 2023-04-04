@@ -128,7 +128,14 @@ export default {
       getDefaults: true,
       successRoute: '/bank/cheque-deposit/',
     })
-
+    useMeta(() => {
+      return {
+        title:
+          (formData.isEdit?.value
+            ? 'Cheque Deposit Update'
+            : 'Cheque Deposit Add') + ' | Awecount',
+      }
+    })
     formData.fields.value.cheque_date =
       formData.fields.value.cheque_date || formData.today
 
