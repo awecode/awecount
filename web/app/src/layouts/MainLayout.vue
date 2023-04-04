@@ -11,7 +11,17 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-        <q-toolbar-title>Dashboard</q-toolbar-title>
+        <q-toolbar-title>
+          <q-breadcrumbs gutter="sm">
+            <q-breadcrumbs-el
+              v-for="breadCrum in breadCrums"
+              :key="breadCrum"
+              :label="breadCrum"
+              :to="{ name: breadCrum }"
+            />
+            <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
+          </q-breadcrumbs>
+        </q-toolbar-title>
         <div>
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
@@ -102,8 +112,11 @@
 import { EssentialLinkProps } from 'components/EssentialLink.vue'
 import { useLoginStore } from '../stores/login-info.js'
 // import useApi from 'src/composables/useApi'
+import { Ref } from 'vue'
 import { ref } from 'vue'
 const router = useRouter()
+const route = useRoute()
+const breadCrums: Ref<Array<string | null>> = ref([])
 const store = useLoginStore()
 // const router = useRouter()
 // const $q = useQuasar()
@@ -423,6 +436,13 @@ const leftDrawerOpen = ref(false)
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+onMounted(() => {
+  breadCrums.value = route.meta.breadcrumb
+})
+watch(route, () => {
+  breadCrums.value = route.meta.breadcrumb
+})
 // function confirmSignOut() {
 //   $q.dialog({
 //     title: 'Sign out',

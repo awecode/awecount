@@ -2,40 +2,234 @@ import { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/items',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '/', component: () => import('src/pages/LandingPage.vue') },
-      { path: 'dashboard', component: () => import('src/pages/DashBoard.vue') },
       {
-        path: 'items/list/',
+        path: 'list/',
+        name: 'Items',
         component: () => import('src/pages/inventory/item/ItemList.vue'),
+        meta: { breadcrumb: ['Home', 'Items'] },
       },
       {
-        path: 'items/add/',
+        path: 'add/',
+        name: 'Item Create',
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Create'],
+        },
         component: () => import('src/pages/inventory/item/ItemAdd.vue'),
       },
       {
-        path: 'items/:id/',
+        path: ':id/',
         component: () => import('src/pages/inventory/item/ItemAdd.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Update'],
+        },
       },
       {
-        path: 'items/details/:id/',
+        path: 'details/:id/',
         component: () => import('src/pages/inventory/item/ItemDetails.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Opening'],
+        },
       },
       {
-        path: 'items/opening/',
+        path: 'opening/',
+        name: 'Stock Opening',
         component: () =>
           import(
             'src/pages/inventory/item/opening-balance/ItemOpeningBalanceList.vue'
           ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Opening'],
+        },
       },
       {
-        path: 'items/opening/add',
+        path: 'opening/add',
         component: () =>
           import(
             'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
           ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Opening', 'Create'],
+        },
+      },
+      {
+        path: 'opening/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Opening', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/units',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list',
+        name: 'Units',
+        component: () => import('src/pages/inventory/unit/UnitList.vue'),
+        meta: { breadcrumb: ['Home', 'Units'] },
+      },
+      // {
+      //   path: 'brand/list/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandList.vue'),
+      // },
+      // {
+      //   path: 'brand/:id/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      // {
+      //   path: 'brand/add/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      {
+        path: 'add/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+        meta: { breadcrumb: ['Home', 'Units', 'Create'] },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+        meta: { breadcrumb: ['Home', 'Units', 'Update'] },
+      },
+    ],
+  },
+  {
+    path: '/units',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list',
+        name: 'Units',
+        component: () => import('src/pages/inventory/unit/UnitList.vue'),
+        meta: { breadcrumb: ['Home', 'Units'] },
+      },
+      // {
+      //   path: 'brand/list/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandList.vue'),
+      // },
+      // {
+      //   path: 'brand/:id/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      // {
+      //   path: 'brand/add/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      {
+        path: 'add/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+        meta: { breadcrumb: ['Home', 'Units', 'Create'] },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+        meta: { breadcrumb: ['Home', 'Units', 'Update'] },
+      },
+    ],
+  },
+  {
+    path: '/brand',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Brands',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandList.vue'),
+        meta: { breadcrumb: ['Home', 'Brands'] },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandForm.vue'),
+        meta: { breadcrumb: ['Home', 'Brands', 'Update'] },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/inventory/product/brand/BrandForm.vue'),
+        meta: { breadcrumb: ['Home', 'Brands', 'Create'] },
+      },
+    ],
+  },
+  {
+    path: '/inventory-category',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Inventory Categories',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Categories'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Categories', 'Create'],
+        },
+      },
+      // {
+      //   path: 'inventory-account/list/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
+      //     ),
+      // },
+      // {
+      //   path: '/inventory-account/add/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+      //     ),
+      // },
+      // //
+      // {
+      //   path: 'inventory-account/detail/:id/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
+      //     ),
+      // },
+      // {
+      //   path: '/inventory-account/add/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+      //     ),
+      // },
+    ],
+  },
+  {
+    path: '/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '/', component: () => import('src/pages/LandingPage.vue') },
+      {
+        path: 'dashboard',
+        component: () => import('src/pages/DashBoard.vue'),
+        name: 'Home',
       },
       {
         path: '/sales-voucher/list/',
@@ -180,13 +374,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/sales/challan/ChallanForm.vue'),
       },
       {
-        path: '/items/opening/:id',
-        component: () =>
-          import(
-            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
-          ),
-      },
-      {
         path: 'book/list/',
         component: () => import('src/pages/book/BookList.vue'),
       },
@@ -253,33 +440,33 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/sales/credit-note/CreditNoteView.vue'),
       },
-      {
-        path: 'brand/list/',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandList.vue'),
-      },
-      {
-        path: 'brand/:id/',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandForm.vue'),
-      },
-      {
-        path: 'brand/add/',
-        component: () =>
-          import('src/pages/inventory/product/brand/BrandForm.vue'),
-      },
-      {
-        path: 'units/list/',
-        component: () => import('src/pages/inventory/unit/UnitList.vue'),
-      },
-      {
-        path: 'units/add/',
-        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
-      },
-      {
-        path: 'units/:id/',
-        component: () => import('src/pages/inventory/unit/UnitForm.vue'),
-      },
+      // {
+      //   path: 'brand/list/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandList.vue'),
+      // },
+      // {
+      //   path: 'brand/:id/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      // {
+      //   path: 'brand/add/',
+      //   component: () =>
+      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
+      // },
+      // {
+      //   path: 'units/list/',
+      //   component: () => import('src/pages/inventory/unit/UnitList.vue'),
+      // },
+      // {
+      //   path: 'units/add/',
+      //   component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+      // },
+      // {
+      //   path: 'units/:id/',
+      //   component: () => import('src/pages/inventory/unit/UnitForm.vue'),
+      // },
       // egov Port
       {
         path: 'bank/account/add/',
