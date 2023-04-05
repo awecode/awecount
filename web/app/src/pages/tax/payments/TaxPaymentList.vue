@@ -100,7 +100,7 @@
             :to="`/tax-payment/${props.row.id}/`"
           />
           <q-btn
-            :disable="props.row.status !== 'Cancelled'"
+            :disable="props.row.status === 'Cancelled'"
             color="blue"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"

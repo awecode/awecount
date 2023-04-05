@@ -975,16 +975,64 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/fund-transfer',
+    path: '/taxes',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
         path: 'list/',
-        name: 'Fund Transfers',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferList.vue'),
+        component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
+        name: 'Parties',
         meta: {
-          breadcrumb: ['Home', 'Fund Transfers'],
+          breadcrumb: ['Home', 'Parties'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Update'],
+        },
+      },
+      {
+        path: '/taxes/account/:id/',
+        component: () => import('src/pages/party/PartyAccount.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Account'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/tax-payment',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/tax/payments/TaxPaymentList.vue'),
+        name: 'Tax Payments',
+        meta: {
+          breadcrumb: ['Home', 'Tax Payments'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/tax/payments/TaxPaymentForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Tax Payments', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/tax/payments/TaxPaymentForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Tax Payments', 'Update'],
         },
       },
     ],
@@ -1015,34 +1063,6 @@ const routes: RouteRecordRaw[] = [
       },
       // journal
       // egov Port
-      {
-        path: '/taxes/list/',
-        component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
-      },
-      {
-        path: '/taxes/add/',
-        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
-      },
-      {
-        path: '/taxes/:id/',
-        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
-      },
-      {
-        path: '/taxes/account/:id/',
-        component: () => import('src/pages/tax/scheme/TaxForm.vue'),
-      },
-      {
-        path: '/tax-payment/list/',
-        component: () => import('src/pages/tax/payments/TaxPaymentList.vue'),
-      },
-      {
-        path: '/tax-payment/add/',
-        component: () => import('src/pages/tax/payments/TaxPaymentForm.vue'),
-      },
-      {
-        path: '/tax-payment/:id/',
-        component: () => import('src/pages/tax/payments/TaxPaymentForm.vue'),
-      },
       {
         path: '/party/list/',
         component: () => import('src/pages/party/PartyList.vue'),

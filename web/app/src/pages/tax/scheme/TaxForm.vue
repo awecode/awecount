@@ -57,7 +57,7 @@
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
             @click.prevent="submitForm"
-            color="primary"
+            color="green"
             :label="isEdit ? 'Update' : 'Create'"
             class="q-ml-auto q-px-lg"
           />

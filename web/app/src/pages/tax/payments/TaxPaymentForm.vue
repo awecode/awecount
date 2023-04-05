@@ -73,10 +73,7 @@
             :error-message="errors.remarks"
           />
         </q-card-section>
-        <div
-          class="q-pb-lg row justify-start q-gutter-x-md"
-          v-if="fields.status"
-        >
+        <div class="q-pb-lg row justify-start q-gutter-x-md">
           <span
             v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'"
             class="row q-gutter-x-md"
@@ -88,6 +85,7 @@
               class="q-px-lg q-mb-sm"
             />
             <q-btn
+              v-if="!!fields.status && isEdit"
               @click.prevent="submitWithStatus('Cancelled', submitForm)"
               color="red-6"
               label="Cancel"
@@ -171,9 +169,13 @@ export default {
     })
     formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
-    function submitWithStatus(status, submitForm) {
+    async function submitWithStatus(status, submitForm) {
+      const originalStatus = this.fields.status
       this.fields.status = status
-      submitForm()
+      await submitForm()
+      if (Object.keys(this.errors).length > 0) {
+        this.fields.status = originalStatus
+      }
     }
     const deleteModal = ref(false)
     return {
