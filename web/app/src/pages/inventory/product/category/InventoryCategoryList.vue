@@ -11,7 +11,7 @@
     </div>
     <q-table
       :rows="rows"
-      :columns="columns"
+      :columns="newColumns"
       :loading="loading"
       :filter="searchQuery"
       v-model:pagination="pagination"
@@ -31,11 +31,13 @@
           />
         </q-td>
       </template>
-      <template v-slot:body-cell-category="props">
+      <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <router-link
-            :to="`/account/category/${props.row.category.id}/edit/`"
-            >{{ props.row.category.name }}</router-link
+            class="text-blue"
+            style="text-decoration: none"
+            :to="`/inventory-category/${props.row.id}/`"
+            >{{ props.row.name }}</router-link
           >
         </q-td>
       </template>
@@ -52,7 +54,21 @@ export default {
       title: 'Inventory Category | Awecount',
     }
     useMeta(metaData)
-    return { ...useList(endpoint) }
+    const newColumns = [
+      {
+        name: 'code',
+        label: 'Code.',
+        align: 'left',
+        field: 'code',
+      },
+      {
+        name: 'name',
+        label: 'Name',
+        align: 'left',
+        field: 'name',
+      },
+    ]
+    return { ...useList(endpoint), newColumns }
   },
 }
 </script>

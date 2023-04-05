@@ -190,6 +190,16 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Inventory Categories', 'Create'],
         },
       },
+      {
+        path: ':id',
+        component: () =>
+          import(
+            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Categories', 'Update'],
+        },
+      },
       // {
       //   path: 'inventory-account/list/',
       //   component: () =>
