@@ -118,7 +118,7 @@ export default {
     const showDrAccount = ref(false)
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/bank/cheque-issue/',
+      successRoute: '/cheque-issue/list/',
     })
     useMeta(() => {
       return {

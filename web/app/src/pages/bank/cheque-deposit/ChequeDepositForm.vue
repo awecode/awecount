@@ -126,7 +126,7 @@ export default {
     const endpoint = '/v1/cheque-deposits/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/bank/cheque-deposit/',
+      successRoute: '/cheque-deposit/list/',
     })
     useMeta(() => {
       return {

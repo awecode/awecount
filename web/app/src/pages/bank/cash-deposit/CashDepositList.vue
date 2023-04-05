@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/bank/cash/cash-deposit/add/"
+        to="/cash-deposit/add/"
         label="New Cash Deposit"
         class="q-ml-lg"
         icon-right="add"
@@ -87,7 +87,7 @@
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/bank/cash/cash-deposit/${props.row.id}/edit/`"
+            :to="`/cash-deposit/${props.row.id}/`"
           />
         </q-td>
       </template>

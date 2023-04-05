@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/bank/account/add/"
+        to="/bank-accounts/add/"
         label="New Account"
         class="q-ml-lg"
         icon-right="add"
@@ -36,7 +36,7 @@
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/bank/account/${props.row.id}/edit/`"
+            :to="`/bank-accounts/${props.row.id}/`"
           />
         </q-td>
       </template>

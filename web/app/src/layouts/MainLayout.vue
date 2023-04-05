@@ -310,27 +310,27 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Accounts',
         icon: 'mdi-bank',
-        link: '/bank/',
+        link: '/bank-accounts/list/',
       },
       {
         title: 'Cheque Issues',
         icon: 'mdi-checkbook',
-        link: '/bank/cheque-issue/',
+        link: '/cheque-issue/list/',
       },
       {
         title: 'Cheque Deposits',
         icon: 'mdi-ballot',
-        link: '/bank/cheque-deposit/',
+        link: '/cheque-deposit/list/',
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
-        link: '/bank/cash-deposit/',
+        link: '/cash-deposit/list/',
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
-        link: '/bank/fund-transfer/',
+        link: '/fund-transfer/list/',
       },
     ],
   },

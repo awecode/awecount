@@ -9,7 +9,7 @@
       />
       <q-btn
         color="green"
-        to="/bank/cheque/cheque-issue/add/"
+        to="/cheque-issue/add/"
         label="New Cheque Issue"
         class="q-ml-lg"
         icon-right="add"
@@ -86,7 +86,7 @@
           <router-link
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
-            :to="`/bank/cheque/cheque-issue/${props.row.id}/edit/`"
+            :to="`/cheque-issue/${props.row.id}/`"
             >{{ props.row.issued_to }}</router-link
           >
         </q-td>
@@ -117,7 +117,7 @@
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/bank/cheque/cheque-issue/${props.row.id}/edit/`"
+            :to="`/cheque-issue/${props.row.id}/`"
           />
         </q-td>
       </template>

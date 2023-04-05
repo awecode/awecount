@@ -80,7 +80,7 @@
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
             @click.prevent="submitForm"
-            color="primary"
+            color="green"
             :label="isEdit ? 'Update' : 'Create'"
             class="q-ml-auto"
           />
@@ -116,7 +116,7 @@ export default {
     const endpoint = '/v1/bank-cash-deposits/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/bank/cash-deposit/',
+      successRoute: '/cash-deposit/list/',
     })
     useMeta(() => {
       return {

@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/bank/fund/fund-transfer/add/"
+        to="/fund-transfer/add/"
         label="New Fund Transfer"
         class="q-ml-lg"
         icon-right="add"
@@ -96,8 +96,18 @@
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/bank/fund/fund-transfer/${props.row.id}/edit/`"
+            :to="`/fund-transfer/${props.row.id}/`"
           />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <router-link
+            class="text-blue text-weight-medium"
+            style="text-decoration: none"
+            :to="`/fund-transfer/${props.row.id}/`"
+            >{{ props.row.voucher_no }}</router-link
+          >
         </q-td>
       </template>
     </q-table>

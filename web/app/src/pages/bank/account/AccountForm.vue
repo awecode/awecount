@@ -89,7 +89,7 @@
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            color="primary"
+            color="green"
             :label="isEdit ? 'Update' : 'Create'"
             class="q-ml-auto"
             @click.prevent="submitForm"
@@ -108,7 +108,7 @@ export default {
     const endpoint = '/v1/bank-account/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/bank/',
+      successRoute: '/bank-accounts/list/',
     })
     formData.fields.value.is_wallet = false
     useMeta(() => {

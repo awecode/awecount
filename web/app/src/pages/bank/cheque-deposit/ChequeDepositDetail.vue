@@ -79,7 +79,7 @@
     <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs" v-if="fields">
       <div>
         <q-btn
-          :to="`/bank/cheque/cheque-deposit/${id}/edit/`"
+          :to="`/cheque-deposit/${id}/`"
           color="orange"
           icon="edit"
           label="Edit"

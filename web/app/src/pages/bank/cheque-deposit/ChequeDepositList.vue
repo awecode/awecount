@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/bank/cheque/cheque-deposit/add/"
+        to="/cheque-deposit/add/"
         label="New Cheque Deposit"
         class="q-ml-lg"
         icon-right="add"
@@ -103,7 +103,7 @@
             color="blue"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/bank/cheque/cheque-deposit/${props.row.id}/view/`"
+            :to="`/cheque-deposit/${props.row.id}/view/`"
           />
         </q-td>
       </template>

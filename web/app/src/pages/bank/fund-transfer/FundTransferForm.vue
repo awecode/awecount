@@ -112,7 +112,7 @@ export default {
     const endpoint = '/v1/fund-transfer/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/bank/fund-transfer/',
+      successRoute: '/fund-transfer/list/',
     })
     useMeta(() => {
       return {

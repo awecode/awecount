@@ -751,6 +751,245 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/bank-accounts',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Bank Accounts',
+        component: () => import('src/pages/bank/account/AccountList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Accounts'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/bank/account/AccountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Accounts', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/bank/account/AccountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Accounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/cheque-issue',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Cheque Issues',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/cheque-issue',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Cheque Issues',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Issues', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/cheque-deposit',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Cheque Deposits',
+        component: () =>
+          import('src/pages/bank/cheque-deposit/ChequeDepositList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Deposits'],
+        },
+      },
+
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Deposits', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Deposits', 'Update'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () =>
+          import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cheque Deposits', 'View'],
+        },
+        props: true,
+      },
+    ],
+  },
+  {
+    path: '/cash-deposit',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Cash Deposits',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits', 'Add'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits', 'Create'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/cash-deposit',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Cash Deposits',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits', 'Add'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Cash Deposits', 'Create'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/fund-transfer',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Fund Transfers',
+        component: () =>
+          import('src/pages/bank/fund-transfer/FundTransferList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Fund Transfers'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Fund Transfers', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Fund Transfers', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/fund-transfer',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Fund Transfers',
+        component: () =>
+          import('src/pages/bank/fund-transfer/FundTransferList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Fund Transfers'],
+        },
+      },
+    ],
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -768,49 +1007,6 @@ const routes: RouteRecordRaw[] = [
         path: 'book/add/',
         component: () => import('src/pages/book/BookForm.vue'),
       },
-      {
-        path: 'bank/account/add/',
-        component: () => import('src/pages/bank/account/AccountForm.vue'),
-      },
-      {
-        path: 'bank/account/:id/edit/',
-        component: () => import('src/pages/bank/account/AccountForm.vue'),
-      },
-      // {
-      //   path: 'bank/account/:id/view/',
-      //   component: () => import('src/pages/bank/account/AccountDetail.vue'),
-      //   props: true,
-      // },
-      {
-        path: 'bank',
-        component: () => import('src/pages/bank/account/AccountList.vue'),
-      },
-      {
-        path: 'bank/cheque-issue/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueList.vue'),
-      },
-      {
-        path: 'bank/cheque/cheque-issue/add/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
-      },
-      {
-        path: 'bank/cheque/cheque-issue/:id/edit/',
-        component: () =>
-          import('src/pages/bank/cheque-issue/ChequeIssueForm.vue'),
-      },
-      {
-        path: 'bank/cheque-deposit/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositList.vue'),
-      },
-      {
-        path: 'bank/cheque/cheque-deposit/:id/view/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositDetail.vue'),
-        props: true,
-      },
       // journal
       {
         path: 'journal-entries/:slug/:id/',
@@ -818,46 +1014,6 @@ const routes: RouteRecordRaw[] = [
         props: true,
       },
       // journal
-      {
-        path: 'bank/cheque/cheque-deposit/add/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
-      },
-      {
-        path: 'bank/cheque/cheque-deposit/:id/edit/',
-        component: () =>
-          import('src/pages/bank/cheque-deposit/ChequeDepositForm.vue'),
-      },
-      {
-        path: 'bank/cash-deposit/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositList.vue'),
-      },
-      {
-        path: 'bank/cash/cash-deposit/add/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
-      },
-      {
-        path: 'bank/cash/cash-deposit/:id/edit/',
-        component: () =>
-          import('src/pages/bank/cash-deposit/CashDepositForm.vue'),
-      },
-      {
-        path: 'bank/fund-transfer/',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferList.vue'),
-      },
-      {
-        path: 'bank/fund/fund-transfer/add/',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
-      },
-      {
-        path: 'bank/fund/fund-transfer/:id/edit/',
-        component: () =>
-          import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
-      },
       // egov Port
       {
         path: '/taxes/list/',
