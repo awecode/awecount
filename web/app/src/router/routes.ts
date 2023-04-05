@@ -231,6 +231,219 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/sales-voucher',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Sales Invoices',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices'],
+        },
+      },
+      {
+        path: '/sales-voucher/add/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices', 'Create'],
+        },
+      },
+      {
+        path: '/sales-voucher/:id/view/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices', 'View'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices', 'Update'],
+        },
+      },
+      {
+        path: '/sales-voucher/:id/mv/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices', 'Materialized View'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/payment-receipt',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Payment Receipts',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Receipts'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Receipts', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Receipts', 'Update'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () =>
+          import('src/pages/payment-receipt/PaymentReceiptView.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Receipts', 'View'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/credit-note',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Credit Notes',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Credit Notes'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Credit Notes', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Credit Notes', 'Update'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () =>
+          import('src/pages/sales/credit-note/CreditNoteView.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Credit Notes', 'View'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/challan',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '/challan/list/',
+        name: 'Challans',
+        component: () => import('src/pages/sales/challan/ChallanList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Challans'],
+        },
+      },
+      {
+        path: '/challan/add/',
+        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Challans', 'Create'],
+        },
+      },
+      {
+        path: '/challan/:id/',
+        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Challans', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/sales-discount',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Sales Discounts',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Discounts'],
+        },
+      },
+      {
+        path: '/sales-discount/add/',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Discounts', 'Create'],
+        },
+      },
+      {
+        path: '/sales-discount/:id/',
+        component: () =>
+          import('src/pages/sales/discount/SalesDiscountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Discounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/sales-row',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/sales/row/SalesRowList.vue'),
+        name: 'Sales Rows',
+        meta: {
+          breadcrumb: ['Home', 'Sales Rows'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/sales-book',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/sales/book/SalesBookList.vue'),
+        name: 'Sales Books',
+        meta: {
+          breadcrumb: ['Home', 'Sales Books'],
+        },
+      },
+    ],
+  },
+
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -239,74 +452,6 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboard',
         component: () => import('src/pages/DashBoard.vue'),
         name: 'Home',
-      },
-      {
-        path: '/sales-voucher/list/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherList.vue'),
-      },
-      {
-        path: '/sales-voucher/add/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
-      },
-      {
-        path: '/sales-voucher/:id/view/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherView.vue'),
-      },
-      {
-        path: '/sales-voucher/:id/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherForm.vue'),
-      },
-      {
-        path: '/sales-voucher/:id/mv/',
-        component: () =>
-          import('src/pages/sales/sales-voucher/SalesVoucherMV.vue'),
-      },
-      {
-        path: '/payment-receipt/list/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptList.vue'),
-      },
-      {
-        path: '/payment-receipt/add/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
-      },
-      {
-        path: '/payment-receipt/:id/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptForm.vue'),
-      },
-      {
-        path: '/payment-receipt/:id/view/',
-        component: () =>
-          import('src/pages/payment-receipt/PaymentReceiptView.vue'),
-      },
-      {
-        path: '/sales-discount/list/',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountList.vue'),
-      },
-      {
-        path: '/sales-discount/add/',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountForm.vue'),
-      },
-      {
-        path: '/sales-discount/:id/',
-        component: () =>
-          import('src/pages/sales/discount/SalesDiscountForm.vue'),
-      },
-      {
-        path: '/sales-row/list/',
-        component: () => import('src/pages/sales/row/SalesRowList.vue'),
-      },
-      {
-        path: '/sales-book/list/',
-        component: () => import('src/pages/sales/book/SalesBookList.vue'),
       },
       {
         path: '/purchase-voucher/list/',
@@ -371,18 +516,6 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
       },
       {
-        path: '/challan/list/',
-        component: () => import('src/pages/sales/challan/ChallanList.vue'),
-      },
-      {
-        path: '/challan/add/',
-        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
-      },
-      {
-        path: '/challan/:id/',
-        component: () => import('src/pages/sales/challan/ChallanForm.vue'),
-      },
-      {
         path: 'book/list/',
         component: () => import('src/pages/book/BookList.vue'),
       },
@@ -405,22 +538,6 @@ const routes: RouteRecordRaw[] = [
       //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
       //     ),
       // },
-
-      {
-        path: '/credit-note/list/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteList.vue'),
-      },
-      {
-        path: '/credit-note/add/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteForm.vue'),
-      },
-      {
-        path: '/credit-note/:id/view/',
-        component: () =>
-          import('src/pages/sales/credit-note/CreditNoteView.vue'),
-      },
       // {
       //   path: 'brand/list/',
       //   component: () =>
