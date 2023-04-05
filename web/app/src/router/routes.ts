@@ -567,6 +567,156 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/purchase-book',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
+        name: 'Purchase Books',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Books'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/account',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('src/pages/account/ledger/LedgerList.vue'),
+        name: 'Accounts',
+        meta: {
+          breadcrumb: ['Home', 'Accounts'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/account/ledger/LedgerForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Accounts', 'Create'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () => import('src/pages/account/ledger/LedgerDetail.vue'),
+        props: true,
+        meta: {
+          breadcrumb: ['Home', 'Accounts', 'View'],
+        },
+      },
+      {
+        path: ':id/edit/',
+        component: () => import('src/pages/account/ledger/LedgerForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Accounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/account-category',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/account/category/CategoryList.vue'),
+        name: 'Account Categories',
+        meta: {
+          breadcrumb: ['Home', 'Account Categories'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/account/category/CategoryForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Account Categories', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/account/category/CategoryForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Account Categories', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/journal-voucher',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () =>
+          import('src/pages/account/journal-voucher/JournalVoucherList.vue'),
+        name: 'Journal Vouchers',
+        meta: {
+          breadcrumb: ['Home', 'Journal Vouchers'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Journal Vouchers', 'Create'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () =>
+          import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Journal Vouchers', 'View'],
+        },
+        props: true,
+      },
+      {
+        path: ':id/edit/',
+        component: () =>
+          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Journal Vouchers', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/account-opening-balance',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () =>
+          import('src/pages/account/opening-balance/OpeningBalanceList.vue'),
+        name: 'Account Opening Balances',
+        meta: {
+          breadcrumb: ['Home', 'Account Opening Balances'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Account Opening Balances', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Account Opening Balances', 'Update'],
+        },
+      },
+    ],
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -576,13 +726,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/DashBoard.vue'),
         name: 'Home',
       },
-      // {
-      //   path: '/purchase-voucher/journal-entries/:id/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/purchase/purchase-voucher/PurchaseVoucherJournalEntries.vue'
-      //     ),
-      // },
       {
         path: 'book/list/',
         component: () => import('src/pages/book/BookList.vue'),
@@ -591,49 +734,6 @@ const routes: RouteRecordRaw[] = [
         path: 'book/add/',
         component: () => import('src/pages/book/BookForm.vue'),
       },
-
-      // {
-      //   path: 'inventory-category/list/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/category/InventoryCategoryList.vue'
-      //     ),
-      // },
-      // {
-      //   path: 'inventory-category/add/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-      //     ),
-      // },
-      // {
-      //   path: 'brand/list/',
-      //   component: () =>
-      //     import('src/pages/inventory/product/brand/BrandList.vue'),
-      // },
-      // {
-      //   path: 'brand/:id/',
-      //   component: () =>
-      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
-      // },
-      // {
-      //   path: 'brand/add/',
-      //   component: () =>
-      //     import('src/pages/inventory/product/brand/BrandForm.vue'),
-      // },
-      // {
-      //   path: 'units/list/',
-      //   component: () => import('src/pages/inventory/unit/UnitList.vue'),
-      // },
-      // {
-      //   path: 'units/add/',
-      //   component: () => import('src/pages/inventory/unit/UnitForm.vue'),
-      // },
-      // {
-      //   path: 'units/:id/',
-      //   component: () => import('src/pages/inventory/unit/UnitForm.vue'),
-      // },
-      // egov Port
       {
         path: 'bank/account/add/',
         component: () => import('src/pages/bank/account/AccountForm.vue'),
@@ -723,71 +823,6 @@ const routes: RouteRecordRaw[] = [
         path: 'bank/fund/fund-transfer/:id/edit/',
         component: () =>
           import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
-      },
-      {
-        path: 'account/',
-        component: () => import('src/pages/account/ledger/LedgerList.vue'),
-      },
-      {
-        path: 'account/add/',
-        component: () => import('src/pages/account/ledger/LedgerForm.vue'),
-      },
-      {
-        path: 'account/:id/view/',
-        component: () => import('src/pages/account/ledger/LedgerDetail.vue'),
-        props: true,
-      },
-      {
-        path: 'account/:id/edit/',
-        component: () => import('src/pages/account/ledger/LedgerForm.vue'),
-      },
-      {
-        path: 'journal-voucher/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherList.vue'),
-      },
-      {
-        path: 'journal-voucher/add/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
-      },
-      {
-        path: 'journal-voucher/:id/view/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherDetails.vue'),
-        props: true,
-      },
-      {
-        path: 'journal-voucher/:id/edit/',
-        component: () =>
-          import('src/pages/account/journal-voucher/JournalVoucherForm.vue'),
-      },
-      {
-        path: 'account/category/',
-        component: () => import('src/pages/account/category/CategoryList.vue'),
-      },
-      {
-        path: 'account/category/add/',
-        component: () => import('src/pages/account/category/CategoryForm.vue'),
-      },
-      {
-        path: 'account/category/:id/edit/',
-        component: () => import('src/pages/account/category/CategoryForm.vue'),
-      },
-      {
-        path: 'account/opening-balance/',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceList.vue'),
-      },
-      {
-        path: 'account/opening-balance/add/',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
-      },
-      {
-        path: 'account/opening-balance/:id/edit/',
-        component: () =>
-          import('src/pages/account/opening-balance/OpeningBalanceForm.vue'),
       },
       // egov Port
       {

@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/account/category/add/"
+        to="/account-category/add/"
         label="New Category"
         class="q-ml-lg"
         icon-right="add"
@@ -68,7 +68,7 @@
           <q-btn
             color="orange-7"
             label="Edit"
-            :to="`/income/item/${props.row.id}/edit/`"
+            :to="`/account-category/${props.row.id}/`"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
           />

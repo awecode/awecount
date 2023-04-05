@@ -4,7 +4,7 @@
       <div></div>
       <q-btn
         color="green"
-        to="/account/opening-balance/add/"
+        to="/account-opening-balance/add/"
         label="New Opening Balance"
         class="q-ml-lg"
         icon-right="add"
@@ -43,7 +43,7 @@
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
-            :to="`/account/opening-balance/${props.row.id}/edit/`"
+            :to="`/account-opening-balance/${props.row.id}/`"
           />
         </q-td>
       </template>

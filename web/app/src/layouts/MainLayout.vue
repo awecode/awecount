@@ -253,7 +253,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
-        link: '/account/category/',
+        link: '/account-category/list',
       },
       {
         title: 'Journal Vouchers',
@@ -268,7 +268,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
-        link: '/account/opening-balance/',
+        link: '/account-opening-balance/',
       },
     ],
   },

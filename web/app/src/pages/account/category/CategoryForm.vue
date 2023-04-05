@@ -58,7 +58,7 @@ export default {
     const endpoint = '/v1/categories/'
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/account/category/',
+      successRoute: '/account-category/list/',
     })
     useMeta(() => {
       return {
