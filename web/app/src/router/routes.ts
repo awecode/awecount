@@ -717,6 +717,40 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/report',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'trial-balance/',
+        component: () => import('src/pages/report/TrialBalance.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Trial Balance'],
+        },
+      },
+      {
+        path: 'category-tree/',
+        component: () => import('src/pages/report/CategoryTree.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Category Tree'],
+        },
+      },
+      {
+        path: 'tax-summary/',
+        component: () => import('src/pages/report/TaxSummary.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Periodic Tax Summary'],
+        },
+      },
+      {
+        path: 'collection-report/',
+        component: () => import('src/pages/report/CollectionReport.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Collection Report'],
+        },
+      },
+    ],
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -825,22 +859,6 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/bank/fund-transfer/FundTransferForm.vue'),
       },
       // egov Port
-      {
-        path: '/report/trial-balance/',
-        component: () => import('src/pages/report/TrialBalance.vue'),
-      },
-      {
-        path: '/report/category-tree/',
-        component: () => import('src/pages/report/CategoryTree.vue'),
-      },
-      {
-        path: '/report/tax-summary/',
-        component: () => import('src/pages/report/TaxSummary.vue'),
-      },
-      {
-        path: '/report/collection-report/',
-        component: () => import('src/pages/report/CollectionReport.vue'),
-      },
       {
         path: '/taxes/list/',
         component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
