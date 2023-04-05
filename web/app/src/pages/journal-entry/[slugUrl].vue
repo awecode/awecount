@@ -156,6 +156,7 @@ export default {
   setup() {
     const metaData = {
       title: 'Journal Entries | Awecount',
+      breadcrumb: ['Home', `${this.$route.slug} Journal Entries`],
     }
     useMeta(metaData)
     interface Fields {

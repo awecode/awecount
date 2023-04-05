@@ -1038,6 +1038,187 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/party',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/party/PartyList.vue'),
+        name: 'Parties',
+        meta: {
+          breadcrumb: ['Home', 'Parties'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () => import('src/pages/party/PartyForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () => import('src/pages/party/PartyForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Update'],
+        },
+      },
+      {
+        path: '/parties/account/:id',
+        component: () => import('src/pages/party/PartyAccount.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Account'],
+        },
+      },
+      {
+        path: '/parties/customers/',
+        component: () => import('src/pages/party/CustomerList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Customers'],
+        },
+      },
+      {
+        path: '/parties/suppliers/',
+        component: () => import('src/pages/party/SupplierList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Parties', 'Suppliers'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/sales-agent',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/sales/agent/SalesAgentList.vue'),
+        name: 'Sales Agents',
+        meta: {
+          breadcrumb: ['Home', 'Sales Agents'],
+        },
+      },
+      {
+        path: '/sales-agent/add/',
+        component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Agents', 'Create'],
+        },
+      },
+      {
+        path: '/sales-agent/:id/',
+        component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Agents', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/audit-log',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Audit Logs',
+        component: () => import('src/pages/settings/auditlog/AuditLogList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Agents'],
+        },
+      },
+      {
+        path: '/audit-log/:id/',
+        component: () =>
+          import('src/pages/settings/auditlog/AuditLogDetails.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Agents', 'Detail'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/settings',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'import-export/',
+        component: () => import('src/pages/settings/ImportExport.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Import/Export'],
+        },
+      },
+      {
+        path: 'sales/',
+        component: () => import('src/pages/settings/SalesSetting.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Settings'],
+        },
+      },
+      {
+        path: 'purchase/',
+        component: () => import('src/pages/settings/PurchaseSetting.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchase Settings'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/dashboard-widgets',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () => import('src/pages/settings/widgets/WidgetList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Dashboard Widgets'],
+        },
+        name: 'Dashboard Widgets',
+      },
+      {
+        path: '/dashboard-widgets/add/',
+        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Dashboard Widgets', 'Create'],
+        },
+      },
+      {
+        path: '/dashboard-widgets/:id/',
+        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Dashboard Widgets', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/pos',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('src/pages/sales/pos/PosForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales Invoices', 'POS'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/journal-entries/:slug/:id/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('src/pages/journal-entry/[slugUrl].vue'),
+        props: true,
+        meta: {
+          breadcrumb: ['Home', 'Journal Entries'],
+        },
+      },
+    ],
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
@@ -1047,95 +1228,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/DashBoard.vue'),
         name: 'Home',
       },
-      {
-        path: 'book/list/',
-        component: () => import('src/pages/book/BookList.vue'),
-      },
-      {
-        path: 'book/add/',
-        component: () => import('src/pages/book/BookForm.vue'),
-      },
+      // {
+      //   path: 'book/list/',
+      //   component: () => import('src/pages/book/BookList.vue'),
+      // },
+      // {
+      //   path: 'book/add/',
+      //   component: () => import('src/pages/book/BookForm.vue'),
+      // },
       // journal
-      {
-        path: 'journal-entries/:slug/:id/',
-        component: () => import('src/pages/journal-entry/[slugUrl].vue'),
-        props: true,
-      },
+
       // journal
       // egov Port
-      {
-        path: '/party/list/',
-        component: () => import('src/pages/party/PartyList.vue'),
-      },
-      {
-        path: '/party/add/',
-        component: () => import('src/pages/party/PartyForm.vue'),
-      },
-      {
-        path: '/party/:id/',
-        component: () => import('src/pages/party/PartyForm.vue'),
-      },
-      {
-        path: '/parties/account/:id',
-        component: () => import('src/pages/party/PartyAccount.vue'),
-      },
-      {
-        path: '/parties/customers/',
-        component: () => import('src/pages/party/CustomerList.vue'),
-      },
-      {
-        path: '/parties/suppliers/',
-        component: () => import('src/pages/party/SupplierList.vue'),
-      },
-      {
-        path: '/sales-agent/list/',
-        component: () => import('src/pages/sales/agent/SalesAgentList.vue'),
-      },
-      {
-        path: '/sales-agent/add/',
-        component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
-      },
-      {
-        path: '/sales-agent/:id/',
-        component: () => import('src/pages/sales/agent/SalesAgentForm.vue'),
-      },
-      {
-        path: '/audit-log/list/',
-        component: () => import('src/pages/settings/auditlog/AuditLogList.vue'),
-      },
-      {
-        path: '/audit-log/:id/',
-        component: () =>
-          import('src/pages/settings/auditlog/AuditLogDetails.vue'),
-      },
-      {
-        path: '/settings/import-export/',
-        component: () => import('src/pages/settings/ImportExport.vue'),
-      },
-      {
-        path: '/dashboard-widgets/list/',
-        component: () => import('src/pages/settings/widgets/WidgetList.vue'),
-      },
-      {
-        path: '/dashboard-widgets/add/',
-        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
-      },
-      {
-        path: '/dashboard-widgets/:id/',
-        component: () => import('src/pages/settings/widgets/WidgetForm.vue'),
-      },
-      {
-        path: '/settings/sales/',
-        component: () => import('src/pages/settings/SalesSetting.vue'),
-      },
-      {
-        path: '/settings/purchase/',
-        component: () => import('src/pages/settings/PurchaseSetting.vue'),
-      },
-      {
-        path: '/pos/',
-        component: () => import('src/pages/sales/pos/PosForm.vue'),
-      },
       {
         path: '/test/',
         component: () => import('src/pages/TestPage.vue'),

@@ -83,7 +83,7 @@
           <q-btn
             v-else
             @click.prevent="submitForm"
-            color="primary"
+            color="green"
             label="Create"
             class="q-mr-sm q-mb-sm"
           />
