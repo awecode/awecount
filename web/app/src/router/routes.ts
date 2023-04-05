@@ -200,35 +200,34 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Inventory Categories', 'Update'],
         },
       },
-      // {
-      //   path: 'inventory-account/list/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
-      //     ),
-      // },
-      // {
-      //   path: '/inventory-account/add/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-      //     ),
-      // },
-      // //
-      // {
-      //   path: 'inventory-account/detail/:id/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
-      //     ),
-      // },
-      // {
-      //   path: '/inventory-account/add/',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-      //     ),
-      // },
+    ],
+  },
+  {
+    path: '/inventory-account',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        name: 'Inventory Accounts',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Accounts'],
+        },
+      },
+      //
+      {
+        path: 'detail/:id/',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Accounts', 'Detail'],
+        },
+      },
     ],
   },
   {
@@ -391,50 +390,22 @@ const routes: RouteRecordRaw[] = [
         path: 'book/add/',
         component: () => import('src/pages/book/BookForm.vue'),
       },
-      {
-        path: 'inventory-category/list/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryList.vue'
-          ),
-      },
-      {
-        path: 'inventory-category/add/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-          ),
-      },
-      {
-        path: 'inventory-account/list/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-account/InventoryAccountList.vue'
-          ),
-      },
-      {
-        path: '/inventory-account/add/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-          ),
-      },
-      //
-      {
-        path: 'inventory-account/detail/:id/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/inventory-account/InventoryAccountDetail.vue'
-          ),
-      },
-      {
-        path: '/inventory-account/add/',
-        component: () =>
-          import(
-            'src/pages/inventory/product/category/InventoryCategoryForm.vue'
-          ),
-      },
-      //
+
+      // {
+      //   path: 'inventory-category/list/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/category/InventoryCategoryList.vue'
+      //     ),
+      // },
+      // {
+      //   path: 'inventory-category/add/',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/category/InventoryCategoryForm.vue'
+      //     ),
+      // },
+
       {
         path: '/credit-note/list/',
         component: () =>
