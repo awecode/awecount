@@ -442,7 +442,130 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-
+  {
+    path: '/purchase-voucher',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherList.vue'),
+        name: 'Purchases/Expenses',
+        meta: {
+          breadcrumb: ['Home', 'Purchases/Expenses'],
+        },
+      },
+      {
+        path: '/purchase-voucher/add/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchases/Expenses', 'Create'],
+        },
+      },
+      {
+        path: '/purchase-voucher/:id/view/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherView.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchases/Expenses', 'View'],
+        },
+      },
+      {
+        path: '/purchase-voucher/:id/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchases/Expenses', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/debit-note',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesList.vue'),
+        name: 'Debit Notes',
+        meta: {
+          breadcrumb: ['Home', 'Debit Notes'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Debit Notes', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Debit Notes', 'Update'],
+        },
+      },
+      {
+        path: ':id/view/',
+        component: () =>
+          import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Debit Notes', 'View'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/purchase-discount',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountList.vue'),
+        name: 'Purchase Discounts',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Discounts'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchase Discounts', 'Create'],
+        },
+      },
+      {
+        path: ':id/',
+        component: () =>
+          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchase Discounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/purchase-book',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
+        name: 'Purchase Books',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Books'],
+        },
+      },
+    ],
+  },
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
@@ -453,26 +576,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/DashBoard.vue'),
         name: 'Home',
       },
-      {
-        path: '/purchase-voucher/list/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherList.vue'),
-      },
-      {
-        path: '/purchase-voucher/add/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
-      },
-      {
-        path: '/purchase-voucher/:id/view/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherView.vue'),
-      },
-      {
-        path: '/purchase-voucher/:id/',
-        component: () =>
-          import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
-      },
       // {
       //   path: '/purchase-voucher/journal-entries/:id/',
       //   component: () =>
@@ -480,41 +583,6 @@ const routes: RouteRecordRaw[] = [
       //       'src/pages/purchase/purchase-voucher/PurchaseVoucherJournalEntries.vue'
       //     ),
       // },
-      {
-        path: '/debit-note/list/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesList.vue'),
-      },
-      {
-        path: '/debit-note/add/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesForm.vue'),
-      },
-      {
-        path: '/debit-note/:id/view/',
-        component: () =>
-          import('src/pages/purchase/debit-notes/DebitNotesView.vue'),
-      },
-      {
-        path: '/purchase-discount/list/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountList.vue'),
-      },
-      {
-        path: '/purchase-discount/add/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
-      },
-      {
-        path: '/purchase-discount/:id/',
-        component: () =>
-          import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
-      },
-      {
-        path: '/purchase-book/list/',
-        component: () =>
-          import('src/pages/purchase/purchase-book/PurchaseBookList.vue'),
-      },
       {
         path: 'book/list/',
         component: () => import('src/pages/book/BookList.vue'),
