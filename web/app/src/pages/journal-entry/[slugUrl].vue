@@ -1,6 +1,6 @@
 <template>
-  {{ getDate }} --getDate
-  <q-form class="q-pa-lg" v-for="voucher in fields" :key="voucher.id">
+  {{ getAmount }} --getAmount
+  <q-form class="q-pa-lg" v-for="(voucher, index) in fields" :key="voucher.id">
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
@@ -13,7 +13,7 @@
       <div class="row justify-between q-mb-md">
           <div class="row items-center">
               <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
-              <div class="text-bold text-grey-9">{{ getDate || '-' }}</div>
+              <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
             </div>
             <router-link
               v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'"
@@ -61,10 +61,7 @@
           <div class="col-grow">Sub Total</div>
           <div class="col-3">
             {{
-              voucher?.transactions?.reduce(
-                (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
-                0
-              ) || 0
+
             }}
           </div>
           <div class="col-3">
@@ -167,17 +164,65 @@ export default {
     }
     const store = useLoginStore()
     const getDate = computed(() => {
-      const dateArray = fields?.value.map(element => {
+      if (Array.isArray(fields.value) && fields.value.length > 0) {
+        const dateArray = fields?.value.map(element => {
         return DateConverter.getRepresentation(
         element.date,
         store.isCalendarInAD ? 'ad' : 'bs'
       )
       });
+      return dateArray
+      }
+      else return null
+    })
+    const getAmount = computed(() => {
+      if (Array.isArray(fields.value) && fields.value.length > 0) {
+        let totalData = {
+          voucherTally: [],
+          totalAmount: {
+            dr: 0,
+            cr: 0
+          }
+        }
+        fields.value.transactions.forEach(element => {
+          console.log(element)
+        });
+      //   const data = fields?.value.map(element => {
+      //   const dr =  element.transactions?.reduce(
+      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
+      //           0
+      //         ) || 0
+      //         const cr = element.transactions?.reduce(
+      //           (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
+      //           0
+      //         ) || 0
+      //         return {
+      //           dr_amount: dr,
+      //           cr_amount: cr
+      //         }
+      // })
+      // const totalData = {
+      //   voucherTally: data,
+      //   totalAmount: {
+      //     total_dr: data?.reduce(
+      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
+      //           0
+      //         ) || 0,
+      //     total_cr: data?.reduce(
+      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
+      //           0
+      //         ) || 0,
+      //   }
+      // }
+      return totalData
+      }
+      else return null
     })
     const fields: Ref<Fields | null> = ref(null)
     return {
       fields,
-      getDate
+      getDate,
+      getAmount
     }
   },
   created() {
