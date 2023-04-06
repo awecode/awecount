@@ -55,7 +55,7 @@
             >
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
-                <div style="margin: 30px">
+                <div style="margin: 20px 30px 10px">
                   <div class="text-h6 text-grey-9">
                     <span>Are you sure you want to logout?</span>
                   </div>

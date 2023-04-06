@@ -1,33 +1,28 @@
 <template>
-  <!-- {{ fields }}--fields -->
-  <q-form class="q-pa-lg" v-if="fields">
+  {{ getDate }} --getDate
+  <q-form class="q-pa-lg" v-for="voucher in fields" :key="voucher.id">
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span>Journal Entries for <span class="text-capitalize">{{ this.$route.params.slug.replace('-', ' ') }}</span>  # {{ fields?.voucher_no || '-' }} </span>
+          <span>Journal Entries for <span class="text-capitalize">{{ voucher.voucher_type }}</span>  # {{ voucher?.voucher_no || '-' }} </span>
         </div>
       </q-card-section>
-      <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
-        <q-card-section>
-          <div class="row q-col-gutter-md q-mb-sm items-center justify-between">
-            <div class="row items-center">
-              <div class="text-subtitle2">Date :&nbsp;</div>
-              <div class="text-bold text-grey-9">{{ getDate || '-' }}</div>
-            </div>
-            <!-- TODO: For sales and puchase voucher -->
-            <router-link
-              v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'"
-              style="text-decoration: none;"
-              :to="`/${this.$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : this.$route.params.slug }/${fields?.source_id}/view`"
-            >
-              <div class="row items-center text-blue">Source</div>
-            </router-link>
-          </div>
-        </q-card-section>
-      </q-card>
     </q-card>
 
     <q-card class="q-mt-sm q-pa-lg">
+      <div class="row justify-between q-mb-md">
+          <div class="row items-center">
+              <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
+              <div class="text-bold text-grey-9">{{ getDate || '-' }}</div>
+            </div>
+            <router-link
+              v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'"
+              style="text-decoration: none;"
+              :to="`/${this.$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : this.$route.params.slug }/${voucher?.source_id}/view`"
+            >
+              <div class="row items-center text-blue">Source</div>
+            </router-link>
+        </div>
       <q-card-section class="">
         <!-- Head -->
         <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
@@ -37,7 +32,7 @@
         </div>
         <!-- Body -->
         <div
-          v-for="(row, index) in fields?.transactions"
+          v-for="(row, index) in voucher?.transactions"
           :key="row.id"
           class="q-my-md"
         >
@@ -66,7 +61,7 @@
           <div class="col-grow">Sub Total</div>
           <div class="col-3">
             {{
-              fields?.transactions?.reduce(
+              voucher?.transactions?.reduce(
                 (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
                 0
               ) || 0
@@ -74,7 +69,7 @@
           </div>
           <div class="col-3">
             {{
-              fields?.transactions?.reduce(
+              voucher?.transactions?.reduce(
                 (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
                 0
               ) || 0
@@ -83,14 +78,13 @@
         </div>
       </q-card-section>
     </q-card>
-    <q-card class="q-mt-md">
+    <!-- <q-card class="q-mt-md">
       <q-card-section class="bg-grey-4">
         <div class="row text-bold">
-          <!-- TODO: Refactor in due time for multiple jornal entries otherWise remove -->
           <div class="col-grow">Total</div>
           <div class="col-3">
             {{
-              fields?.transactions?.reduce(
+              voucher?.transactions?.reduce(
                 (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
                 0
               ) || 0
@@ -98,7 +92,7 @@
           </div>
           <div class="col-3">
             {{
-              fields?.transactions?.reduce(
+              voucher?.transactions?.reduce(
                 (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
                 0
               ) || 0
@@ -106,7 +100,9 @@
           </div>
         </div>
       </q-card-section></q-card
-    >
+    > -->
+
+
     <!-- <q-card class="q-mt-md" v-if="fields?.narration">
       <q-card-section>
         <div class="row">
@@ -171,10 +167,12 @@ export default {
     }
     const store = useLoginStore()
     const getDate = computed(() => {
-      return DateConverter.getRepresentation(
-        fields.value?.date,
+      const dateArray = fields?.value.map(element => {
+        return DateConverter.getRepresentation(
+        element.date,
         store.isCalendarInAD ? 'ad' : 'bs'
       )
+      });
     })
     const fields: Ref<Fields | null> = ref(null)
     return {
@@ -187,7 +185,7 @@ export default {
     const route = useRoute()
     useApi(`/v1/${route.params.slug}/${route.params.id}/journal-entries/`)
       .then((data) => {
-        this.fields = data[0]
+        this.fields = data
       })
       .catch(() => {
         $q.notify({
