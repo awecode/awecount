@@ -1219,49 +1219,28 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/',
+    path: '/dashboard',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '/', component: () => import('src/pages/LandingPage.vue') },
       {
-        path: 'dashboard',
+        path: '',
         component: () => import('src/pages/DashBoard.vue'),
         name: 'Home',
+        meta: {
+          breadcrumb: ['Dashboard'],
+        },
       },
-      // {
-      //   path: 'book/list/',
-      //   component: () => import('src/pages/book/BookList.vue'),
-      // },
-      // {
-      //   path: 'book/add/',
-      //   component: () => import('src/pages/book/BookForm.vue'),
-      // },
-      // journal
-
-      // journal
-      // egov Port
-      {
-        path: '/test/',
-        component: () => import('src/pages/TestPage.vue'),
-      },
-      // {
-      //   path: '/dashboard/',
-      //   component: () => import('src/pages/Dashboard.vue'),
-      // },
-      // {
-      //   path: 'income/add/',
-      //   component: () => import('src/pages/income/IncomeForm.vue'),
-      // },
-      // {
-      //   path: 'income/:id/edit',
-      //   component: () => import('src/pages/income/IncomeForm.vue'),
-      // },
-      // {
-      //   path: 'income/item/',
-      //   component: () => import('src/pages/income/IncomeItemList.vue'),
-      // },
     ],
   },
+  { path: '/', component: () => import('src/pages/LandingPage.vue') },
+  // {
+  //   path: 'book/list/',
+  //   component: () => import('src/pages/book/BookList.vue'),
+  // },
+  // {
+  //   path: 'book/add/',
+  //   component: () => import('src/pages/book/BookForm.vue'),
+  // },
   {
     path: '/login',
     component: () => import('pages/LoginPage.vue'),

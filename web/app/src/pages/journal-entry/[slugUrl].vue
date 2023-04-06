@@ -154,9 +154,10 @@ import { useLoginStore } from 'src/stores/login-info'
 
 export default {
   setup() {
+    const route = useRoute()
+    console.log(route)
     const metaData = {
       title: 'Journal Entries | Awecount',
-      breadcrumb: ['Home', `${this.$route.slug} Journal Entries`],
     }
     useMeta(metaData)
     interface Fields {
