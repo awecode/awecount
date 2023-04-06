@@ -1,28 +1,38 @@
 <template>
-  {{ getAmount }} --getAmount
   <q-form class="q-pa-lg" v-for="(voucher, index) in fields" :key="voucher.id">
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span>Journal Entries for <span class="text-capitalize">{{ voucher.voucher_type }}</span>  # {{ voucher?.voucher_no || '-' }} </span>
+          <span
+            >Journal Entries for
+            <span class="text-capitalize">{{ voucher.voucher_type }}</span> #
+            {{ voucher?.voucher_no || '-' }}
+          </span>
         </div>
       </q-card-section>
     </q-card>
 
     <q-card class="q-mt-sm q-pa-lg">
       <div class="row justify-between q-mb-md">
-          <div class="row items-center">
-              <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
-              <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
-            </div>
-            <router-link
-              v-if="this.$route.params.slug === 'purchase-vouchers' || this.$route.params.slug === 'sales-voucher'"
-              style="text-decoration: none;"
-              :to="`/${this.$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : this.$route.params.slug }/${voucher?.source_id}/view`"
-            >
-              <div class="row items-center text-blue">Source</div>
-            </router-link>
+        <div class="row items-center">
+          <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
+          <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
         </div>
+        <router-link
+          v-if="
+            this.$route.params.slug === 'purchase-vouchers' ||
+            this.$route.params.slug === 'sales-voucher'
+          "
+          style="text-decoration: none"
+          :to="`/${
+            this.$route.params.slug === 'purchase-vouchers'
+              ? 'purchase-voucher'
+              : this.$route.params.slug
+          }/${voucher?.source_id}/view`"
+        >
+          <div class="row items-center text-blue">Source</div>
+        </router-link>
+      </div>
       <q-card-section class="">
         <!-- Head -->
         <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
@@ -44,7 +54,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-grow">
               <router-link
-              style="text-decoration: none;"
+                style="text-decoration: none"
                 class="text-blue"
                 :to="`/ledger/${row.account.id}/`"
                 >{{ row.account.name }}</router-link
@@ -60,45 +70,14 @@
         >
           <div class="col-grow">Sub Total</div>
           <div class="col-3">
-            {{
-
-            }}
+            {{ getAmount?.voucherTally[index].dr_amount }}
           </div>
           <div class="col-3">
-            {{
-              voucher?.transactions?.reduce(
-                (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
-                0
-              ) || 0
-            }}
+            {{ getAmount?.voucherTally[index].cr_amount }}
           </div>
         </div>
       </q-card-section>
     </q-card>
-    <!-- <q-card class="q-mt-md">
-      <q-card-section class="bg-grey-4">
-        <div class="row text-bold">
-          <div class="col-grow">Total</div>
-          <div class="col-3">
-            {{
-              voucher?.transactions?.reduce(
-                (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
-                0
-              ) || 0
-            }}
-          </div>
-          <div class="col-3">
-            {{
-              voucher?.transactions?.reduce(
-                (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
-                0
-              ) || 0
-            }}
-          </div>
-        </div>
-      </q-card-section></q-card
-    > -->
-
 
     <!-- <q-card class="q-mt-md" v-if="fields?.narration">
       <q-card-section>
@@ -131,6 +110,19 @@
       </div>
     </div> -->
   </q-form>
+  <q-card class="q-mt-sm q-mx-lg q-mb-xl">
+    <q-card-section class="bg-grey-4">
+      <div class="row text-bold">
+        <div class="col-grow">Total</div>
+        <div class="col-3">
+          {{ getAmount?.totalAmount.total_dr }}
+        </div>
+        <div class="col-3">
+          {{ getAmount?.totalAmount.total_dr }}
+        </div>
+      </div>
+    </q-card-section></q-card
+  >
 </template>
 
 <script lang="ts">
@@ -165,64 +157,60 @@ export default {
     const store = useLoginStore()
     const getDate = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
-        const dateArray = fields?.value.map(element => {
-        return DateConverter.getRepresentation(
-        element.date,
-        store.isCalendarInAD ? 'ad' : 'bs'
-      )
-      });
-      return dateArray
-      }
-      else return null
+        const dateArray = fields?.value.map((element) => {
+          return DateConverter.getRepresentation(
+            element.date,
+            store.isCalendarInAD ? 'ad' : 'bs'
+          )
+        })
+        return dateArray
+      } else return null
     })
     const getAmount = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
-        let totalData = {
-          voucherTally: [],
-          totalAmount: {
-            dr: 0,
-            cr: 0
+        const data = fields?.value.map((element) => {
+          const dr =
+            element.transactions?.reduce(
+              (accum: number, item: Record<string, any>) =>
+                accum + Number(item.dr_amount),
+              0
+            ) || 0
+          const cr =
+            element.transactions?.reduce(
+              (accum: number, item: Record<string, any>) =>
+                accum + Number(item.cr_amount),
+              0
+            ) || 0
+          return {
+            dr_amount: dr,
+            cr_amount: cr,
           }
+        })
+        const totalData = {
+          voucherTally: data,
+          totalAmount: {
+            total_dr:
+              data?.reduce(
+                (accum: number, item: Record<string, any>) =>
+                  accum + Number(item.dr_amount),
+                0
+              ) || 0,
+            total_cr:
+              data?.reduce(
+                (accum: number, item: Record<string, any>) =>
+                  accum + Number(item.dr_amount),
+                0
+              ) || 0,
+          },
         }
-        fields.value.transactions.forEach(element => {
-          console.log(element)
-        });
-      //   const data = fields?.value.map(element => {
-      //   const dr =  element.transactions?.reduce(
-      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
-      //           0
-      //         ) || 0
-      //         const cr = element.transactions?.reduce(
-      //           (accum:number, item:Record<string, any>) => accum + Number(item.cr_amount),
-      //           0
-      //         ) || 0
-      //         return {
-      //           dr_amount: dr,
-      //           cr_amount: cr
-      //         }
-      // })
-      // const totalData = {
-      //   voucherTally: data,
-      //   totalAmount: {
-      //     total_dr: data?.reduce(
-      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
-      //           0
-      //         ) || 0,
-      //     total_cr: data?.reduce(
-      //           (accum:number, item:Record<string, any>) => accum + Number(item.dr_amount),
-      //           0
-      //         ) || 0,
-      //   }
-      // }
-      return totalData
-      }
-      else return null
+        return totalData
+      } else return null
     })
     const fields: Ref<Fields | null> = ref(null)
     return {
       fields,
       getDate,
-      getAmount
+      getAmount,
     }
   },
   created() {
