@@ -54,24 +54,28 @@
               ></q-btn
             >
             <q-dialog v-model="logoutDiologueOpen">
-              <q-card style="min-width: min(40vw, 500px)">
-                <q-card-section class="bg-red-6">
-                  <div class="text-h6 text-white">
-                    <span class="q-mx-md">Are you sure?</span>
+              <q-card style="min-width: min(40vw, 450px)">
+                <div style="margin: 30px">
+                  <div class="text-h6 text-grey-9">
+                    <span>Are you sure you want to logout?</span>
                   </div>
-                </q-card-section>
-                <q-separator inset />
-                <q-card-section class="q-ma-md">
-                  <div
-                    class="text-right text-blue-8 row justify-between q-mx-lg"
-                  >
-                    <q-btn label="Yes" @click="onLogoutClick()"></q-btn>
-                    <q-btn
-                      label="No"
-                      @click="logoutDiologueOpen = false"
-                    ></q-btn>
+                  <div class="q-mx-md" style="margin-top: 40px">
+                    <div
+                      class="text-right text-blue-6 row justify-end q-gutter-x-lg"
+                    >
+                      <q-btn
+                        flat
+                        label="Logout"
+                        @click="onLogoutClick()"
+                      ></q-btn>
+                      <q-btn
+                        flat
+                        label="Cancel"
+                        @click="logoutDiologueOpen = false"
+                      ></q-btn>
+                    </div>
                   </div>
-                </q-card-section>
+                </div>
               </q-card>
             </q-dialog>
           </div>
