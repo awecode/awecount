@@ -148,7 +148,8 @@ export default (endpoint, predefinedColumns = null) => {
       })
   }
 
-  loadData()
+  // loadData()
+  // NOTE: removed because was making 2 calls
 
   function onRequest(props) {
     let url = route.fullPath
