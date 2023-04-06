@@ -10,7 +10,7 @@
           >
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2">
         <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
           <div class="col-12 col-md-6 row">
@@ -101,7 +101,7 @@
             <span>Confirm Cancelation?</span>
           </div>
         </q-card-section>
-        <q-separator inset />
+
         <q-card-section class="q-ma-md">
           <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
           <div class="text-right q-mt-lg">

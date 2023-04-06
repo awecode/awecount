@@ -7,7 +7,7 @@
           <span v-else>Update Category</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">

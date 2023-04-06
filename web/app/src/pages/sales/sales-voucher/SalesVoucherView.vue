@@ -10,7 +10,7 @@
           >
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <ViewerHeader
         :fields="fields"
         :changeModes="true"
@@ -100,7 +100,7 @@
               <span>Confirm Cancelation?</span>
             </div>
           </q-card-section>
-          <q-separator inset />
+
           <q-card-section class="q-ma-md">
             <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
             <div class="text-right q-mt-lg">

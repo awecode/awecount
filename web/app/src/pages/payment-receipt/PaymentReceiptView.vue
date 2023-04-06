@@ -6,7 +6,7 @@
           <span>Payment Receipt | Issued</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <div class="q-ma-lg q-pb-lg">
         <div class="row justify-between">
           <span
@@ -252,7 +252,7 @@
               <span>Confirm Cancelation?</span>
             </div>
           </q-card-section>
-          <q-separator inset />
+
           <q-card-section>
             <div class="q-mb-lg text-grey-8">
               <strong>Are you sure?</strong>

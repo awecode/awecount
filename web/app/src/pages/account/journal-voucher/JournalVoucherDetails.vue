@@ -9,7 +9,7 @@
           </span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
         <q-card-section>
           <div class="row q-col-gutter-md q-mb-sm">

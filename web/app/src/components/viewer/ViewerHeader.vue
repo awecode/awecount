@@ -54,7 +54,6 @@
             <span class="q-mx-md">Edit Mode</span>
           </div>
         </q-card-section>
-        <q-separator inset />
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
             <q-select

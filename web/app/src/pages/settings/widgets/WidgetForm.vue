@@ -7,7 +7,7 @@
           <span v-else>Update Widget: {{ fields.widget }}</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card-section>
         <div>
           <div class="row">

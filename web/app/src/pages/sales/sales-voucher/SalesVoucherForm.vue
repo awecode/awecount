@@ -7,7 +7,7 @@
           <span v-else>Update Sale Invoice | Draft</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -35,7 +35,7 @@
                       <span>Add Reference Challan(s)</span>
                     </div>
                   </q-card-section>
-                  <q-separator inset />
+
                   <q-card-section class="q-mx-lg">
                     <q-input
                       v-model.number="referenceFormData.invoice_no"

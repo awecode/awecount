@@ -8,7 +8,7 @@
           <span v-else>Update Account</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mt-md q-ml-lg q-mr-lg q-mb-xs q-pt-md">
         <div class="q-px-sm">
           <div class="q-gutter-sm text-grey-8">

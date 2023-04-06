@@ -7,7 +7,7 @@
           <span v-else>Update Cash Deposit</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-ma-sm q-pt-md">
         <q-card-section>
           <q-card class="q-pa-lg">

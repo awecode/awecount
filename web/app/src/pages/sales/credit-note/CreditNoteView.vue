@@ -10,7 +10,7 @@
           >
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <ViewerHeader :fields="fields" />
     </q-card>
     <div class="q-ma-lg text-subtitle2">
@@ -87,7 +87,7 @@
               <span class="q-mx-md">Are you sure?</span>
             </div>
           </q-card-section>
-          <q-separator inset />
+
           <q-card-section class="q-ma-md">
             <div class="text-right q-mt-lg row justify-between q-mx-lg">
               <q-btn

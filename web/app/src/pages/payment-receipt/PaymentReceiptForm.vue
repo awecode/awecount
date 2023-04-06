@@ -7,7 +7,6 @@
           <span v-else>Update Payment Receipt</span>
         </div>
       </q-card-section>
-      <q-separator inset />
 
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
@@ -148,7 +147,7 @@
             <span class="q-mx-md">Add Invoice</span>
           </div>
         </q-card-section>
-        <q-separator inset />
+
         <q-card-section class="q-mb-md">
           <div class="q-mt-lg q-mx-md">
             <q-input

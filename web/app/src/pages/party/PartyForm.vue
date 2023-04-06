@@ -7,7 +7,7 @@
           <span v-else>Update {{ fields.name }}</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -97,7 +97,7 @@
             <span class="q-mx-md">Are you sure?</span>
           </div>
         </q-card-section>
-        <q-separator inset />
+
         <q-card-section class="q-ma-md">
           <div
             class="text-right text-blue-8 q-mt-lg row justify-between q-mx-lg"

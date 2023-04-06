@@ -6,7 +6,7 @@
           <span>Purchase Settings</span>
         </div>
       </q-card-section>
-      <q-separator inset />
+
       <q-card-section>
         <div>
           <div class="column q-gutter-y-sm q-mb-sm">
