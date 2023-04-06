@@ -76,7 +76,7 @@
               label="update"
               color="orange-5"
               class="q-mt-md"
-              @click="() => submitChangeModes(fields.voucher_no)"
+              @click="() => submitChangeModes(props.fields.id)"
             ></q-btn>
           </div>
         </q-card-section>
@@ -117,7 +117,7 @@ export default {
   },
   emits: ['updateMode'],
   setup(props, { emit }) {
-    const modesValue: Ref<number | null> = ref(null)
+    const modesValue: Ref<number | null> = ref(props.fields.mode)
     const $q = useQuasar()
     const store = useLoginStore()
     watch(

@@ -43,7 +43,7 @@
             color="orange-5"
             label="Edit"
             icon="edit"
-            :to="`/sales-voucher/${fields?.voucher_no}/`"
+            :to="`/sales-voucher/${fields?.id}/`"
           />
           <q-btn
             v-if="fields?.status === 'Issued'"
