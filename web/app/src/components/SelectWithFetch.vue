@@ -27,7 +27,7 @@ const options = ref([])
 const props = defineProps(['modelValue', 'endpoint', 'label'])
 const emit = defineEmits(['update:modelValue'])
 const modalValue = ref(props.modelValue)
-options.value = useApi(props.endpoint, { method: 'GET' })
+useApi(props.endpoint, { method: 'GET' })
   .then((data) => {
     options.value = data
   })

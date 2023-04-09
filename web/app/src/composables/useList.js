@@ -163,6 +163,7 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { search: undefined })
     }
+    console.log(url)
     router.push(url)
   }
 
