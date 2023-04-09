@@ -88,7 +88,7 @@
                   label="Unit"
                   v-model="fields.unit_id"
                   :options="formDefaults.collections?.units"
-                  :modal-component="BrandForm"
+                  :modal-component="UnitForm"
                   :error="errors.unit_id"
                 />
               </div>
@@ -298,6 +298,7 @@ import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue'
 import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import AccountForm from 'src/pages/bank/account/AccountForm.vue'
+import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
