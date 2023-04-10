@@ -2,6 +2,7 @@
   <div class="q-pt-md">
     <div class="text-grey-8 q-pb-xs">{{ label }}</div>
     <div class="row q-gutter-sm">
+      <!-- style="border-radius: 1rem; padding: 4px 12px" -->
       <q-btn
         @click="() => onStatusClick(statuses)"
         style="border-radius: 1rem; padding: 4px 12px"
@@ -16,16 +17,21 @@
         "
       >
         <!-- TODO: add animation -->
-        <q-icon
-          v-if="modalValue.includes(statuses)"
-          name="check"
-          size="sm"
-          color="blue"
-          class="q-mr-xs"
-        ></q-icon>
-        <span style="font-size: 0.85rem; text-transform: capitalize">
-          {{ statuses }}
-        </span>
+        <div class="row items-center">
+          <Transition>
+            <q-icon
+              style="height: 22px"
+              v-if="modalValue.includes(statuses)"
+              name="check"
+              size="sm"
+              color="blue"
+              class="q-mr-xs"
+            ></q-icon>
+          </Transition>
+          <span style="font-size: 0.85rem; text-transform: capitalize">
+            {{ statuses }}
+          </span>
+        </div>
       </q-btn>
     </div>
   </div>
@@ -90,3 +96,16 @@ export default {
   },
 }
 </script>
+<style>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.1s linear;
+  transition: width 0.1s linear;
+  overflow: hidden;
+}
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  width: 0;
+}
+</style>
