@@ -1,7 +1,10 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none">
+    <q-header
+      elevated
+      class="bg-white text-grey-8 q-pa-sm d-print-none print-hide"
+    >
       <q-toolbar>
         <q-btn
           flat
@@ -87,9 +90,9 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      class="d-print-none"
+      class="d-print-none print-hide"
     >
-      <q-list class="icon-grey d-print-none">
+      <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
             <div class="absolute-bottom bg-transparent text-black">
