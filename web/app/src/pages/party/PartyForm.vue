@@ -119,7 +119,7 @@ export default {
   components: {
     PartyRepresentative,
   },
-  setup() {
+  setup(props, { emit }) {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'
     const formData = useForm(endpoint, {

@@ -63,7 +63,6 @@ export default {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    console.log(props)
     const modalValue = ref(props.modelValue)
     const updateVal = () => {
       emit('update:modelValue', modalValue.value)
