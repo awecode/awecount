@@ -12,7 +12,7 @@
           @click="toggleLeftDrawer"
         />
         <q-toolbar-title>
-          <q-breadcrumbs gutter="sm">
+          <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el
               v-for="breadCrum in breadCrums"
               :key="breadCrum"
@@ -26,7 +26,7 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn
+            <q-btn class="gt-sm"
               >{{ store.companyInfo.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]"
                 >Fiscal Yaar</q-tooltip
@@ -40,7 +40,7 @@
                 >Change Date Format</q-tooltip
               >
             </q-btn>
-            <q-btn
+            <q-btn class="gt-sm"
               ><q-icon name="mdi-help-circle-outline"></q-icon
               ><q-tooltip :delay="1000" :offset="[0, 10]"
                 >Help</q-tooltip
