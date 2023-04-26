@@ -983,7 +983,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
         name: 'Parties',
         meta: {
-          breadcrumb: ['Home', 'Parties'],
+          breadcrumb: ['Home', 'Taxes'],
         },
       },
       {

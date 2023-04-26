@@ -110,8 +110,7 @@
               label="Due Date"
               v-model="fields.due_date"
               class="col-md-6 col-12"
-              :error-message="errors.due_date"
-              :error="!!errors.due_date"
+              :error="errors?.due_date ? errors?.due_date : null"
             ></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div
@@ -124,8 +123,7 @@
                 <n-auto-complete
                   v-model="fields.discount_type"
                   label="Discount*"
-                  :error="errors.discount_type"
-                  :error-message="errors.discount_type"
+                  :error="errors?.discount_type ? errors?.discount_type : null"
                   :options="
                     formDefaults.collections
                       ? staticOptions.discount_types.concat(
