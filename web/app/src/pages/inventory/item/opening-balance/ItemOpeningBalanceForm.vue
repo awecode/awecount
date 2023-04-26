@@ -7,7 +7,6 @@
           <span v-else>Update Stock Opening</span>
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -18,7 +17,7 @@
               :error-message="errors.name"
               :error="!!errors.name"
             /> -->
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <n-auto-complete
                 v-model="fields.item_id"
                 :options="formDefaults.collections?.items"
@@ -30,7 +29,7 @@
             <q-input
               v-model="fields.opening_balance"
               label="Opening Balance *"
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.opening_balance"
               :error="!!errors.opening_balance"
               type="number"
