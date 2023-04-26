@@ -981,30 +981,31 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'list/',
         component: () => import('src/pages/tax/scheme/TaxAccountList.vue'),
-        name: 'Parties',
+        name: 'Taxes',
         meta: {
           breadcrumb: ['Home', 'Taxes'],
         },
       },
       {
         path: 'add/',
+
         component: () => import('src/pages/tax/scheme/TaxForm.vue'),
         meta: {
-          breadcrumb: ['Home', 'Parties', 'Create'],
+          breadcrumb: ['Home', 'Taxes', 'Create'],
         },
       },
       {
         path: ':id/',
         component: () => import('src/pages/tax/scheme/TaxForm.vue'),
         meta: {
-          breadcrumb: ['Home', 'Parties', 'Update'],
+          breadcrumb: ['Home', 'Taxes', 'Update'],
         },
       },
       {
         path: '/taxes/account/:id/',
         component: () => import('src/pages/party/PartyAccount.vue'),
         meta: {
-          breadcrumb: ['Home', 'Parties', 'Account'],
+          breadcrumb: ['Home', 'Taxes', 'Account'],
         },
       },
     ],
