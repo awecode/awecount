@@ -93,15 +93,11 @@
           </div>
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">
-              <q-input
+              <DatePicker
                 class="col-md-6 col-12"
                 label="Cheque Date"
                 v-model="fields.cheque_date"
-                :error-message="errors.cheque_date"
-                :error="!!errors.cheque_date"
-                type="date"
-                placeholder=""
-              ></q-input>
+              ></DatePicker>
               <q-input
                 class="col-md-6 col-12"
                 label="Cheque Number"
