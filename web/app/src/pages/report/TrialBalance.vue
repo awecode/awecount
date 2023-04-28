@@ -57,9 +57,6 @@
             <td class="text-left">24</td>
             <td class="text-left">4</td>
           </tr> -->
-          {{
-            categoryTree
-          }}
           <TableNode
             v-for="category in categoryTree"
             :key="category.id"
@@ -68,7 +65,6 @@
         </tbody>
       </q-markup-table>
     </div>
-    <div v-if="categoryTree">{{ categoryTree }}-- category-tree</div>
   </div>
 </template>
 
@@ -93,27 +89,6 @@ export default {
     })
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
-    const newColumn = [
-      {
-        name: 'name',
-        label: 'Name',
-        align: 'left',
-        field: 'voucher_no',
-      },
-      {
-        name: 'opening',
-        label: 'Opening',
-        align: 'left',
-        field: 'party_name',
-      },
-      {
-        name: 'transactions',
-        label: 'Transactions',
-        align: 'center',
-        field: 'party_name',
-      },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
-    ]
     const fetchData = () => {
       const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
@@ -164,7 +139,7 @@ export default {
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { onDownloadXls, newColumn, fields, fetchData, total }
+    return { onDownloadXls, fields, fetchData, total, categoryTree }
   },
   created() {
     const endpoint = '/v1/category-tree/'
@@ -173,7 +148,6 @@ export default {
         // categoryTree.value = data
         this.categoryTree = data
         console.log(this.categoryTree)
-        debugger
       })
       .catch((error) => {
         console.log('err fetching data', error)

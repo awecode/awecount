@@ -3,7 +3,7 @@
     <td>Hiome</td>
     <td>loajsga</td>
   </tr>
-  {{}}
+  {{ props.item }} --props
 </template>
 
 <script setup>
