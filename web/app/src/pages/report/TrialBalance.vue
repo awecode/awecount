@@ -8,93 +8,71 @@
         @click="onDownloadXls"
       />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
-      <template v-slot:top>
-        <div class="top-bar">
-          <!-- <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input> -->
-          <q-btn class="filterbtn" icon="settings" title="Config"></q-btn>
+    <div class="q-px-md">
+      <div class="flex items-center q-gutter-md">
+        <div class="q-mx-md">
+          <DateRangePicker
+            v-model:startDate="fields.start_date"
+            v-model:endDate="fields.end_date"
+            :hide-btns="true"
+          />
         </div>
-      </template>
-      <!--
-      <template v-slot:body-cell-status="props">
-        <q-td :props="props">
-          <div class="row align-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Paid'
-                  ? 'bg-green'
-                  : props.row.status == 'Draft'
-                  ? 'bg-orange'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
-              {{ props.row.status }}
-            </div>
-          </div>
-        </q-td>
-      </template> -->
-      <template v-slot:body-cell-party_name="props">
-        <q-td :props="props">
-          <div v-if="props.row.party_name">
-            <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
-            }}</span>
-          </div>
-          <div v-else class="row align-center text-subtitle2 text-grey-8">
-            {{ props.row.customer_name }}
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <!-- {{ props }} -->
-        <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md">
-            <q-btn
-              color="orange"
-              label="Edit"
-              :to="`/challan/${props.row.voucher_no}/`"
-            />
-          </div>
-          <!-- {{ props }} -->
-        </q-td>
-      </template>
-    </q-table>
+        <q-btn
+          v-if="fields.start_date || fields.end_date"
+          color="red"
+          icon="close"
+          @click="fields = { start_date: null, end_date: null }"
+        ></q-btn>
+        <q-btn
+          :disable="!fields.start_date && !fields.end_date ? true : false"
+          color="green"
+          label="fetch"
+          @click="fetchData"
+        ></q-btn>
+        <q-btn class="filterbtn" icon="settings" title="Config"></q-btn>
+      </div>
+    </div>
+    <div>
+      <q-markup-table>
+        <thead>
+          <tr>
+            <th class="text-left">Name</th>
+            <th class="text-left">Opening</th>
+            <th class="text-center" colspan="2">Transactions</th>
+            <th class="text-left">Closing</th>
+          </tr>
+          <tr>
+            <th class="text-left"></th>
+            <th class="text-left">Balance</th>
+            <th class="text-left">Dr</th>
+            <th class="text-left">Cr</th>
+            <th class="text-left">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left">Frozen Yogurt</td>
+            <td class="text-left">159</td>
+            <td class="text-left">6</td>
+            <td class="text-left">24</td>
+            <td class="text-left">4</td>
+          </tr>
+        </tbody>
+      </q-markup-table>
+    </div>
   </div>
 </template>
 
 <script>
-import useList from '/src/composables/useList'
 export default {
   setup() {
-    const endpoint = '/v1/trial-balance/'
-    const listData = useList(endpoint)
+    const reportData = ref(null)
+    const fields = ref({
+      start_date: null,
+      end_date: null,
+    })
+    // const endpoint = '/v1/trial-balance/'
+    // const listData = useList(endpoint)
     const newColumn = [
       {
         name: 'name',
@@ -116,7 +94,13 @@ export default {
       },
       { name: 'date', label: 'Date', align: 'left', field: 'date' },
     ]
-
+    const fetchData = () => {
+      const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      useApi(endpoint)
+        .then((data) => (reportData.value = data))
+        .catch((err) => console.log(err))
+      // TODO: add 404 error routing
+    }
     // functions
     const onDownloadXls = () => {
       // TODO: add download xls link
@@ -130,21 +114,9 @@ export default {
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { ...listData, onDownloadXls, newColumn }
+    return { onDownloadXls, newColumn, fields, fetchData }
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>
 
 <style>

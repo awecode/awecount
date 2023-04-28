@@ -124,8 +124,7 @@
                 <n-auto-complete
                   v-model="fields.discount_type"
                   label="Discount*"
-                  :error="errors.discount_type"
-                  :error-message="errors.discount_type"
+                  :error="errors?.discount_type ? errors?.discount_type : null"
                   :options="
                     formDefaults.collections
                       ? staticOptions.discount_types.concat(

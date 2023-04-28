@@ -110,9 +110,9 @@ export default {
       },
     },
     taxOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     mainDiscount: {
