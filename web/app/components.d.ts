@@ -28,6 +28,7 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectWithFetch: typeof import('./src/components/SelectWithFetch.vue')['default']
+    TableNode: typeof import('./src/components/report/TableNode.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']

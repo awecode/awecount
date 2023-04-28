@@ -50,16 +50,25 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <!-- <tr>
             <td class="text-left">Frozen Yogurt</td>
             <td class="text-left">159</td>
             <td class="text-left">6</td>
             <td class="text-left">24</td>
             <td class="text-left">4</td>
-          </tr>
+          </tr> -->
+          {{
+            categoryTree
+          }}
+          <TableNode
+            v-for="category in categoryTree"
+            :key="category.id"
+            :item="category"
+          ></TableNode>
         </tbody>
       </q-markup-table>
     </div>
+    <div v-if="categoryTree">{{ categoryTree }}-- category-tree</div>
   </div>
 </template>
 
@@ -67,6 +76,17 @@
 export default {
   setup() {
     const reportData = ref(null)
+    const categoryTree = ref(null)
+    const category_accounts = ref({})
+    const accounts = ref({})
+    const total = ref({
+      transaction_dr: 0,
+      transaction_cr: 0,
+      opening_dr: 0,
+      opening_cr: 0,
+      closing_dr: 0,
+      closing_cr: 0,
+    })
     const fields = ref({
       start_date: null,
       end_date: null,
@@ -97,7 +117,37 @@ export default {
     const fetchData = () => {
       const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
-        .then((data) => (reportData.value = data))
+        .then((data) => {
+          let localAccounts = {}
+          data.forEach((obj) => {
+            const acc = {
+              account_id: obj.id,
+              name: obj.name,
+              category_id: obj.category_id,
+              opening_dr: obj.od || 0,
+              opening_cr: obj.oc || 0,
+              closing_dr: obj.cd || 0,
+              closing_cr: obj.cc || 0,
+              transaction_dr: (obj.cd || 0) - (obj.od || 0),
+              transaction_cr: (obj.cc || 0) - (obj.oc || 0),
+            }
+            total.transaction_dr += acc.transaction_dr
+            total.transaction_cr += acc.transaction_cr
+            total.opening_dr += acc.opening_dr
+            total.opening_cr += acc.opening_cr
+            total.closing_dr += acc.closing_dr
+            total.closing_cr += acc.closing_cr
+            localAccounts[obj.id] = acc
+
+            // Create this.category_accounts[obj.category_id] if doesn't exist
+            !(obj.category_id in category_accounts) &&
+              (category_accounts[obj.category_id] = [])
+            category_accounts[obj.category_id].push(obj.id)
+          })
+          // TODO make unreactive
+          accounts.value = localAccounts
+          debugger
+        })
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
@@ -114,7 +164,20 @@ export default {
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { onDownloadXls, newColumn, fields, fetchData }
+    return { onDownloadXls, newColumn, fields, fetchData, total }
+  },
+  created() {
+    const endpoint = '/v1/category-tree/'
+    useApi(endpoint, { method: 'GET' })
+      .then((data) => {
+        // categoryTree.value = data
+        this.categoryTree = data
+        console.log(this.categoryTree)
+        debugger
+      })
+      .catch((error) => {
+        console.log('err fetching data', error)
+      })
   },
 }
 </script>

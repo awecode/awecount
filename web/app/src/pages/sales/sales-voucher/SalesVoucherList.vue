@@ -15,7 +15,6 @@
       />
     </div>
     <q-table
-      title="Income Items"
       :rows="rows"
       :columns="newColumn"
       :loading="loading"
@@ -147,6 +146,8 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
+import MultiSelectChip from 'src/components/filter/MultiSelectChip.vue'
+import DateRangePicker from 'src/components/date/DateRangePicker.vue'
 // import { useMeta } from 'quasar'
 export default {
   setup() {
@@ -207,18 +208,6 @@ export default {
     return { ...listData, newColumn, onDownloadXls }
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>
 
 <style>
