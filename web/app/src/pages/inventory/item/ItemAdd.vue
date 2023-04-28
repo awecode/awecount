@@ -12,7 +12,7 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <q-input
-              class="col-6"
+              class="col-12 col-md-6"
               v-model="fields.name"
               label="Name *"
               :error-message="errors.name"
@@ -21,7 +21,7 @@
             <q-input
               v-model="fields.code"
               label="Code *"
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.code"
               :error="!!errors.code"
               type="number"
@@ -29,7 +29,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <q-input
-              class="col-6"
+              class="col-12 col-md-6"
               v-model="fields.cost_price"
               label="Cost Price"
               type="number"
@@ -39,16 +39,16 @@
             <q-input
               v-model="fields.selling_price"
               label="Selling Price"
-              class="col-6"
+              class="col-12 col-md-6"
               :error-message="errors.selling_price"
               :error="!!errors.selling_price"
               type="number"
             />
           </div>
           <div class="row q-col-gutter-md">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <n-auto-complete
-                class="col-6 q-full-width"
+                class="q-full-width"
                 label="Brand"
                 v-model="fields.brand"
                 :options="formDefaults.collections?.brands"
@@ -69,9 +69,9 @@
           </div>
           <q-card class="q-pa-lg">
             <div class="row q-col-gutter-md">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
-                  class="col-6 q-full-width"
+                  class="q-full-width"
                   label="Category"
                   v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories"
@@ -82,7 +82,7 @@
             </div>
             <!-- TODO: What is Extra field, hasPerm? ? -->
             <div class="row q-col-gutter-md">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="q-full-width"
                   label="Unit"
@@ -93,7 +93,7 @@
                 />
               </div>
               <!-- {{ fields.unit_id }}--uit id -->
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="q-full-width"
                   label="Tax Scheme"
@@ -105,7 +105,7 @@
               </div>
             </div>
             <div class="row q-col-gutter-md">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
                   label="Sales Account"
@@ -115,7 +115,7 @@
                   :error="errors.sales_account"
                 />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
                   label="Purchase Account"
@@ -127,7 +127,7 @@
               </div>
             </div>
             <div class="row q-col-gutter-md">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
                   label="Discount Allowed Account"
@@ -137,7 +137,7 @@
                   :error="errors.discount_allowed_account"
                 />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <n-auto-complete
                   class="col-6 q-full-width"
                   label="Discount Received Account"
@@ -149,58 +149,68 @@
               </div>
             </div>
             <div class="row q-gutter-y-lg q-mt-lg">
-              <q-checkbox
-                class="col-4"
-                v-model="fields.track_inventory"
-                label="Track Inventory"
-                :error-message="errors.track_inventory"
-                :error="!!errors.track_inventory"
-              />
-              <q-checkbox
-                class="col-4"
-                v-model="fields.can_be_sold"
-                label="Can be sold?"
-                :error-message="errors.can_be_sold"
-                :error="!!errors.can_be_sold"
-                :disable="fields.direct_expense || fields.indirect_expense"
-              />
-              <q-checkbox
-                class="col-4"
-                v-model="fields.can_be_purchased"
-                label="Can be purchased?"
-                :error-message="errors.can_be_purchased"
-                :error="!!errors.can_be_purchased"
-                :disable="fields.direct_expense || fields.indirect_expense"
-              />
-              <q-checkbox
-                class="col-4"
-                v-model="fields.fixed_asset"
-                label="Fixed Assets"
-                :error-message="errors.fixed_asset"
-                :error="!!errors.fixed_asset"
-                :disable="fields.direct_expense || fields.indirect_expense"
-              />
-              <q-checkbox
-                class="col-4"
-                v-model="fields.direct_expense"
-                label="Direct Expenses"
-                :error-message="errors.direct_expense"
-                :error="!!errors.direct_expense"
-                @click="toggleExpenses('indirect_expense')"
-              />
-              <q-checkbox
-                class="col-4"
-                v-model="fields.indirect_expense"
-                label="Indirect Expense?"
-                :error-message="errors.indirect_expense"
-                :error="!!errors.indirect_expense"
-                @click="toggleExpenses('direct_expense')"
-              />
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  v-model="fields.track_inventory"
+                  label="Track Inventory"
+                  :error-message="errors.track_inventory"
+                  :error="!!errors.track_inventory"
+                />
+              </div>
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  v-model="fields.can_be_sold"
+                  label="Can be sold?"
+                  :error-message="errors.can_be_sold"
+                  :error="!!errors.can_be_sold"
+                  :disable="fields.direct_expense || fields.indirect_expense"
+                />
+              </div>
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  class="col-4"
+                  v-model="fields.can_be_purchased"
+                  label="Can be purchased?"
+                  :error-message="errors.can_be_purchased"
+                  :error="!!errors.can_be_purchased"
+                  :disable="fields.direct_expense || fields.indirect_expense"
+                />
+              </div>
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  class="col-4"
+                  v-model="fields.fixed_asset"
+                  label="Fixed Assets"
+                  :error-message="errors.fixed_asset"
+                  :error="!!errors.fixed_asset"
+                  :disable="fields.direct_expense || fields.indirect_expense"
+                />
+              </div>
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  class="col-4"
+                  v-model="fields.direct_expense"
+                  label="Direct Expenses"
+                  :error-message="errors.direct_expense"
+                  :error="!!errors.direct_expense"
+                  @click="toggleExpenses('indirect_expense')"
+                />
+              </div>
+              <div class="col-md-6 col-12 col-lg-4">
+                <q-checkbox
+                  class="col-4"
+                  v-model="fields.indirect_expense"
+                  label="Indirect Expense?"
+                  :error-message="errors.indirect_expense"
+                  :error="!!errors.indirect_expense"
+                  @click="toggleExpenses('direct_expense')"
+                />
+              </div>
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
             <div
-              class="col-5 row q-col-gutter-md items-end"
+              class="col-sm-5 col-12 row q-col-gutter-md items-end"
               v-if="
                 typeof fields.front_image === 'string' && fields.front_image
               "
@@ -225,10 +235,10 @@
                 >
               </div>
             </div>
-            <div v-else class="col-5">
+            <div v-else class="col-sm-5 col-12">
               <q-file
                 v-model="images.front_image"
-                class="col-5 q-full-width"
+                class="q-full-width"
                 :error-messages="errors.front_image"
                 label="Front Image"
                 @update:model-value="
@@ -241,7 +251,7 @@
               </q-file>
             </div>
             <div
-              class="col-5 row q-col-gutter-md items-end"
+              class="col-sm-5 col-12 row q-col-gutter-md items-end"
               v-if="typeof fields.back_image === 'string' && fields.back_image"
             >
               <div>Back Image</div>
@@ -264,10 +274,10 @@
                 >
               </div>
             </div>
-            <div v-else class="col-5">
+            <div v-else class="col-sm-5 col-12">
               <q-file
                 v-model="fields.back_image"
-                class="col-5 q-full-width"
+                class="q-full-width"
                 :error-messages="errors.back_image"
                 label="Back Image"
                 @update:model-value="onFileChange(fields, $event, 'back_image')"

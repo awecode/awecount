@@ -11,6 +11,7 @@
           v-model="representative.name"
           label="Name"
           class="col-12 col-md-6"
+          :error="rowErrorComp"
           @change="updateVal"
         />
         <q-input
@@ -32,8 +33,6 @@
           label="Email"
           class="col-12 col-md-6"
           type="email"
-          :error="!!errors[0]?.email"
-          :error-message="errors[0]?.email[0]"
           @change="updateVal"
         />
       </div>
@@ -48,15 +47,15 @@ export default {
       type: Array,
       default: () => [
         {
-          name: '',
-          position: '',
-          phone: '',
-          email: '',
+          name: null,
+          position: null,
+          phone: null,
+          email: null,
         },
       ],
     },
     errors: {
-      type: Object,
+      type: [Object, String],
       default: () => {
         return {}
       },
@@ -64,11 +63,14 @@ export default {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    console.log(props)
     const modalValue = ref(props.modelValue)
     const updateVal = () => {
       emit('update:modelValue', modalValue.value)
     }
+    const rowErrorComp = computed(() => {
+      if (typeof props.errors === 'string') return true
+      else return false
+    })
     watch(
       () => props.modelValue,
       (newValue) => (modalValue.value = newValue)
@@ -76,6 +78,7 @@ export default {
     return {
       modalValue,
       updateVal,
+      rowErrorComp,
     }
   },
 }

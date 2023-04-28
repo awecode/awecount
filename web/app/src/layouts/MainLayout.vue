@@ -1,7 +1,10 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none">
+    <q-header
+      elevated
+      class="bg-white text-grey-8 q-pa-sm d-print-none print-hide"
+    >
       <q-toolbar>
         <q-btn
           flat
@@ -12,7 +15,7 @@
           @click="toggleLeftDrawer"
         />
         <q-toolbar-title>
-          <q-breadcrumbs gutter="sm">
+          <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el
               v-for="breadCrum in breadCrums"
               :key="breadCrum"
@@ -26,7 +29,7 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn
+            <q-btn class="gt-sm"
               >{{ store.companyInfo.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]"
                 >Fiscal Yaar</q-tooltip
@@ -40,7 +43,7 @@
                 >Change Date Format</q-tooltip
               >
             </q-btn>
-            <q-btn
+            <q-btn class="gt-sm"
               ><q-icon name="mdi-help-circle-outline"></q-icon
               ><q-tooltip :delay="1000" :offset="[0, 10]"
                 >Help</q-tooltip
@@ -87,9 +90,9 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      class="d-print-none"
+      class="d-print-none print-hide"
     >
-      <q-list class="icon-grey d-print-none">
+      <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
             <div class="absolute-bottom bg-transparent text-black">

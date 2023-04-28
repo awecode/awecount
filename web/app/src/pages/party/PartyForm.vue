@@ -55,7 +55,7 @@
           </div>
           <PartyRepresentative
             v-model="fields.representative"
-            :errors="errors.representative"
+            :errors="errors?.representative"
           ></PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg row">
@@ -119,7 +119,7 @@ export default {
   components: {
     PartyRepresentative,
   },
-  setup() {
+  setup(props, { emit }) {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'
     const formData = useForm(endpoint, {

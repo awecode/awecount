@@ -110,8 +110,7 @@
               label="Due Date"
               v-model="fields.due_date"
               class="col-md-6 col-12"
-              :error-message="errors.due_date"
-              :error="!!errors.due_date"
+              :error="errors?.due_date ? errors?.due_date : null"
             ></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div
