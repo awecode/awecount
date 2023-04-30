@@ -57,14 +57,16 @@
             <td class="text-left">24</td>
             <td class="text-left">4</td>
           </tr> -->
-          <TableNode
-            v-for="category in categoryTree"
-            :key="category.id"
-            :item="category"
-            :root="true"
-            :accounts="accounts"
-            :category_accounts="category_accounts"
-          ></TableNode>
+          <template v-if="true">
+            <TableNode
+              v-for="category in categoryTree"
+              :key="category.id"
+              :item="category"
+              :root="true"
+              :accounts="accounts"
+              :category_accounts="category_accounts"
+            ></TableNode>
+          </template>
         </tbody>
       </q-markup-table>
     </div>
@@ -78,6 +80,7 @@ export default {
     const categoryTree = ref(null)
     const category_accounts = ref({})
     const accounts = ref({})
+    const showData = ref(false)
     const total = ref({
       transaction_dr: 0,
       transaction_cr: 0,
@@ -93,6 +96,7 @@ export default {
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
+      showData.value = false
       const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
@@ -128,6 +132,7 @@ export default {
           accounts.value = localAccounts
           console.log('category_accounts', category_accounts)
           console.log('accounts', accounts.value)
+          showData.value = true
         })
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
@@ -153,6 +158,7 @@ export default {
       categoryTree,
       accounts,
       category_accounts,
+      showData,
     }
   },
   created() {
