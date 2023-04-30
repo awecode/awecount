@@ -61,17 +61,20 @@
             v-for="category in categoryTree"
             :key="category.id"
             :item="category"
+            :root="true"
+            :accounts="accounts"
+            :category_accounts="category_accounts"
           ></TableNode>
         </tbody>
       </q-markup-table>
     </div>
   </div>
+  {{ category_accounts }} --category_accounts
 </template>
 
 <script>
 export default {
   setup() {
-    const reportData = ref(null)
     const categoryTree = ref(null)
     const category_accounts = ref({})
     const accounts = ref({})
@@ -93,6 +96,8 @@ export default {
       const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
+          category_accounts.value = {}
+          accounts.value = {}
           let localAccounts = {}
           data.forEach((obj) => {
             const acc = {
@@ -115,13 +120,14 @@ export default {
             localAccounts[obj.id] = acc
 
             // Create this.category_accounts[obj.category_id] if doesn't exist
-            !(obj.category_id in category_accounts) &&
-              (category_accounts[obj.category_id] = [])
-            category_accounts[obj.category_id].push(obj.id)
+            !(obj.category_id in category_accounts.value) &&
+              (category_accounts.value[obj.category_id] = [])
+            category_accounts.value[obj.category_id].push(obj.id)
           })
           // TODO make unreactive
           accounts.value = localAccounts
-          debugger
+          console.log('category_accounts', category_accounts)
+          console.log('accounts', accounts.value)
         })
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
@@ -139,7 +145,15 @@ export default {
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { onDownloadXls, fields, fetchData, total, categoryTree }
+    return {
+      onDownloadXls,
+      fields,
+      fetchData,
+      total,
+      categoryTree,
+      accounts,
+      category_accounts,
+    }
   },
   created() {
     const endpoint = '/v1/category-tree/'
