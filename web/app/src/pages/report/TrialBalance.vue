@@ -98,6 +98,7 @@ export default {
     const fetchData = () => {
       showData.value = false
       const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      
       useApi(endpoint)
         .then((data) => {
           category_accounts.value = {}
@@ -130,8 +131,6 @@ export default {
           })
           // TODO make unreactive
           accounts.value = localAccounts
-          console.log('category_accounts', category_accounts)
-          console.log('accounts', accounts.value)
           showData.value = true
         })
         .catch((err) => console.log(err))
@@ -165,9 +164,7 @@ export default {
     const endpoint = '/v1/category-tree/'
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
-        // categoryTree.value = data
         this.categoryTree = data
-        console.log(this.categoryTree)
       })
       .catch((error) => {
         console.log('err fetching data', error)
@@ -175,21 +172,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>

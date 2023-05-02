@@ -12,30 +12,58 @@
         >{{ item.name }}</span
       >
     </td>
-    <td>
-      <span v-if="showTotalObject.opening_cr"
-        >{{ showTotalObject.opening_cr }} cr</span
-      >
-      <span v-else-if="showTotalObject.opening_dr"
-        >{{ showTotalObject.opening_dr }} dr</span
-      >
-      <span v-else>0</span>
-    </td>
-    <td></td>
-    <td></td>
-    <td>
-      <span v-if="showTotalObject.closing_cr"
-        >{{ showTotalObject.closing_cr }} cr</span
-      >
-      <span v-else-if="showTotalObject.closing_dr"
-        >{{ showTotalObject.closing_dr }} dr</span
-      >
-      <span v-else>0</span>
-    </td>
-    {{
-      propagateTotalObject
-    }}
-    --totalobj
+    <template v-if="newTotalObj">
+      <td>
+        <span v-if="newTotalObj.opening_cr"
+          >{{ newTotalObj.opening_cr }} cr</span
+        >
+        <span v-else-if="newTotalObj.opening_dr"
+          >{{ newTotalObj.opening_dr }} dr</span
+        >
+        <span v-else>0</span>
+      </td>
+      <td>
+        {{ newTotalObj.transaction_dr }}
+      </td>
+      <td>
+        {{ newTotalObj.transaction_cr }}
+      </td>
+      <td>
+        <span v-if="newTotalObj.closing_cr"
+          >{{ newTotalObj.closing_cr }} cr</span
+        >
+        <span v-else-if="newTotalObj.closing_dr"
+          >{{ newTotalObj.closing_dr }} dr</span
+        >
+        <span v-else>0</span>
+      </td>
+    </template>
+    <template v-else>
+      <td>
+        <span v-if="showTotalObject.opening_cr"
+          >{{ showTotalObject.opening_cr }} cr</span
+        >
+        <span v-else-if="showTotalObject.opening_dr"
+          >{{ showTotalObject.opening_dr }} dr</span
+        >
+        <span v-else>0</span>
+      </td>
+      <td>
+        {{ showTotalObject.transaction_dr }}
+      </td>
+      <td>
+        {{ showTotalObject.transaction_cr }}
+      </td>
+      <td>
+        <span v-if="showTotalObject.closing_cr"
+          >{{ showTotalObject.closing_cr }} cr</span
+        >
+        <span v-else-if="showTotalObject.closing_dr"
+          >{{ showTotalObject.closing_dr }} dr</span
+        >
+        <span v-else>0</span>
+      </td>
+    </template>
   </tr>
   <template v-if="activeObjectArray && activeObjectArray.length">
     <tr v-for="activeObject in activeObjectArray" :key="activeObject.id">
@@ -72,9 +100,10 @@
   </template>
   <template v-if="item.children && item.children.length">
     <TableNode
-      v-for="child in item.children"
+      v-for="(child, index) in item.children"
       :key="child.id"
       :item="child"
+      :index="index"
       :level="props.level + 1"
       :accounts="props.accounts"
       :category_accounts="props.category_accounts"
@@ -112,11 +141,15 @@ export default {
         return {}
       },
     },
+    index: {
+      type: [Number, null],
+      default: null,
+    },
   },
   emits: ['updateTotal'],
 
   setup(props, { emit }) {
-    const propagateTotalObject = ref({})
+    const itemProps = ref({ ...props.item })
     const showTotalObject = ref({
       closing_cr: 0,
       closing_dr: 0,
@@ -125,7 +158,14 @@ export default {
       transaction_cr: 0,
       transaction_dr: 0,
     })
-
+    const newTotalObj = ref({
+      closing_cr: 0,
+      closing_dr: 0,
+      opening_cr: 0,
+      opening_dr: 0,
+      transaction_cr: 0,
+      transaction_dr: 0,
+    })
     const activeObjectArray = computed(() => {
       const activeArray = []
       showTotalObject.value = {
@@ -152,93 +192,53 @@ export default {
             showTotalObject.value[item] =
               showTotalObject.value[item] + currentObj[item]
           })
-          emit('updateTotal', showTotalObject.value)
+          emit('updateTotal', showTotalObject.value, props.index)
         })
       }
       return activeArray
     })
     const activeObject = null
-    // TODO: remove
-    // watch(
-    //   () => activeObjectArray.value,
-    //   () => {
-    //     // console.log('activeObjectArray updated', activeObjectArray.value)
-    //     activeObjectArray.value.forEach((currentObj) => {
-    //       console.log('currentObj', currentObj)
-    //       ;[
-    //         'closing_cr',
-    //         'closing_dr',
-    //         'opening_cr',
-    //         'opening_dr',
-    //         'transaction_cr',
-    //         'transaction_dr',
-    //       ].forEach((item) => {
-    //         showTotalObject.value[item] =
-    //           showTotalObject.value[item] + currentObj[item]
-    //       })
-    //     })
-    //     emit('updateTotal', showTotalObject.value)
-    //   }
-    // )
-    // to calculate Totals
-    // watch(
-    //   () => activeObjectArray,
-    //   () => {
-    //     console.log('value mutated')
-    //     // if (activeObjectArray.value && activeObjectArray.value.length) {
-    //     //   console.log('abloyt to emit')
-    //     //   activeObjectArray.value.forEach((obj) => {
-    //     //     ;[
-    //     //       'closing_cr',
-    //     //       'closing_dr',
-    //     //       'opening_cr',
-    //     //       'opening_dr',
-    //     //       'transaction_cr',
-    //     //       'transaction_dr',
-    //     //     ].forEach((item) => {
-    //     //       totalObject.value[item] = totalObject.value[item] + obj[item]
-    //     //     })
-    //     //   })
-    //     //   emit('updateTotal', totalObject.value)
-    //     // }
-    //   },
-    //   {
-    //     deep: true,
-    //   }
-    // )
-    // to calculate Totals
-    const onUpdateTotal = (total) => {
-      console.log('total updated', total)
-      const loppArr = [
-        ('closing_cr',
-        'closing_dr',
-        'opening_cr',
-        'opening_dr',
-        'transaction_cr',
-        'transaction_dr'),
-      ]
-      // propagateTotalObject.value = {
-      //   closing_cr: 0,
-      //   closing_dr: 0,
-      //   opening_cr: 0,
-      //   opening_dr: 0,
-      //   transaction_cr: 0,
-      //   transaction_dr: 0,
-      // }
-      loppArr.forEach((item) => {
-        propagateTotalObject.value[item] =
-          propagateTotalObject.value[item] + total[item]
-      })
-      emit('updateTotal', propagateTotalObject.value)
+    const onUpdateTotal = (total, index) => {
+      itemProps.value.children[index].total = total
     }
+    watch(
+      itemProps,
+      (newValue) => {
+        const computedTotal = {
+          closing_cr: 0,
+          closing_dr: 0,
+          opening_cr: 0,
+          opening_dr: 0,
+          transaction_cr: 0,
+          transaction_dr: 0,
+        }
+        newValue.children.forEach((item) => {
+          if (item.total) {
+            ;[
+              'closing_cr',
+              'closing_dr',
+              'opening_cr',
+              'opening_dr',
+              'transaction_cr',
+              'transaction_dr',
+            ].forEach((field) => {
+              computedTotal[field] += item.total[field] || 0
+            })
+          }
+        })
+        newTotalObj.value = computedTotal
+        emit('updateTotal', computedTotal, props.index)
+      },
+      { deep: true }
+    )
     return {
       props,
+      itemProps,
       activeObject,
-      // TODO: remove
       activeObjectArray,
-      propagateTotalObject,
       onUpdateTotal,
       showTotalObject,
+      newTotalObj,
     }
   },
 }
