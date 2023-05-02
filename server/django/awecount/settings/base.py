@@ -94,7 +94,7 @@ MEDIA_URL = '/media/'
 AUTH_USER_MODEL = 'users.User'
 
 SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_TYPES': ('JWT', 'Token'),
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
 

@@ -27,6 +27,24 @@ CORS_ORIGIN_WHITELIST = (
     'http://localhost:8080',
     'http://localhost:8081',
     'http://127.0.0.1:8080',
+    'http://127.0.0.1:9000',
+    'http://localhost:9000',
+)
+
+CSRF_TRUSTED_ORIGINS = (
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:9000',
+    'http://localhost:9000',
+)
+
+CORS_ALLOWED_ORIGINS = (
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:9000',
+    'http://localhost:9000',
 )
 
 BASE_URL = 'http://localhost:8080/'
