@@ -97,8 +97,8 @@ export default {
     // const listData = useList(endpoint)
     const fetchData = () => {
       showData.value = false
-      const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
-      
+      const endpoint = `/v1/test/data/`
+      // const endpoint = `/v1/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
           category_accounts.value = {}
@@ -161,7 +161,7 @@ export default {
     }
   },
   created() {
-    const endpoint = '/v1/category-tree/'
+    const endpoint = '/v1/test/category-tree/'
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.categoryTree = data

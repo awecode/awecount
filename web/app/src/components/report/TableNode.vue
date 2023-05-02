@@ -29,13 +29,7 @@
         {{ newTotalObj.transaction_cr }}
       </td>
       <td>
-        <span v-if="newTotalObj.closing_cr"
-          >{{ newTotalObj.closing_cr }} cr</span
-        >
-        <span v-else-if="newTotalObj.closing_dr"
-          >{{ newTotalObj.closing_dr }} dr</span
-        >
-        <span v-else>0</span>
+        <span>{{ calculateNet(newTotalObj, 'closing') }}</span>
       </td>
     </template>
     <template v-else>
@@ -85,8 +79,8 @@
         <span v-else>0</span>
       </td>
       <td v-else></td>
-      <td>{{ activeObject.closing_cr || 0 - activeObject.opening_cr || 0 }}</td>
-      <td>{{ activeObject.closing_dr || 0 - activeObject.opening_dr || 0 }}</td>
+      <td>{{ activeObject.transaction_cr }}</td>
+      <td>{{ activeObject.transaction_dr }}</td>
       <td>
         <span v-if="activeObject.closing_cr"
           >{{ activeObject.closing_cr }} cr</span
@@ -201,6 +195,20 @@ export default {
     const onUpdateTotal = (total, index) => {
       itemProps.value.children[index].total = total
     }
+    const calculateNet = (obj, type) => {
+      console.log('net', type)
+      const net = parseFloat(
+        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
+      )
+      console.log('net', net)
+      if (net === 0) {
+        return 0
+      } else if (net > 0) {
+        return `${net}` + ' cr'
+      } else {
+        return `${net}` + ' dr'
+      }
+    }
     watch(
       itemProps,
       (newValue) => {
@@ -239,6 +247,7 @@ export default {
       onUpdateTotal,
       showTotalObject,
       newTotalObj,
+      calculateNet,
     }
   },
 }
