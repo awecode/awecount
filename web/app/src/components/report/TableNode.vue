@@ -1,5 +1,15 @@
 <template>
-  <tr v-if="!props.config.hide_categories">
+  <!-- {{
+    !(props.config.hide_zero_transactions && !checkZeroTrans()) &&
+    !props.config.hide_categories
+  }} -->
+  <!-- <ClientOnly v-if="true">ashahs</ClientOnly> -->
+  <tr
+    v-if="
+      !(props.config.hide_zero_transactions && !checkZeroTrans()) &&
+      !props.config.hide_categories
+    "
+  >
     <td>
       <span
         v-for="num in level"
@@ -132,35 +142,44 @@
       !props.config.hide_accounts
     "
   >
-    <tr v-for="activeObject in activeObjectArray" :key="activeObject.id">
-      <td>
-        <span v-if="!props.config.hide_categories">
-          <span
-            v-for="num in level + 1"
-            :key="num"
-            style="width: 20px; display: inline-block"
-          ></span></span
-        ><span class="text-blue-6">{{ activeObject.name }}</span>
-      </td>
-      <template v-if="props.config.show_opening_closing_dr_cr">
-        <td>{{ activeObject.opening_dr }}</td>
-        <td>{{ activeObject.opening_cr }}</td>
-        <td>{{ calculateNet(activeObject, 'opening') }}</td>
-      </template>
-      <td v-else>
-        {{ calculateNet(activeObject, 'opening') }}
-      </td>
-      <td>{{ parseFloat(activeObject.transaction_dr.toFixed(2)) }}</td>
-      <td>{{ parseFloat(activeObject.transaction_cr.toFixed(2)) }}</td>
-      <template v-if="props.config.show_opening_closing_dr_cr">
-        <td>{{ activeObject.closing_dr }}</td>
-        <td>{{ activeObject.closing_cr }}</td>
-        <td>{{ calculateNet(activeObject, 'closing') }}</td>
-      </template>
-      <td v-else>
-        {{ calculateNet(activeObject, 'closing') }}
-      </td>
-    </tr>
+    <template v-for="activeObject in activeObjectArray" :key="activeObject.id">
+      <tr
+        v-if="
+          !(
+            props.config.hide_zero_transactions &&
+            !(activeObject.transaction_dr || activeObject.transaction_cr)
+          )
+        "
+      >
+        <td>
+          <span v-if="!props.config.hide_categories">
+            <span
+              v-for="num in level + 1"
+              :key="num"
+              style="width: 20px; display: inline-block"
+            ></span></span
+          ><span class="text-blue-6">{{ activeObject.name }}</span>
+        </td>
+        <template v-if="props.config.show_opening_closing_dr_cr">
+          <td>{{ activeObject.opening_dr }}</td>
+          <td>{{ activeObject.opening_cr }}</td>
+          <td>{{ calculateNet(activeObject, 'opening') }}</td>
+        </template>
+        <td v-else>
+          {{ calculateNet(activeObject, 'opening') }}
+        </td>
+        <td>{{ parseFloat(activeObject.transaction_dr.toFixed(2)) }}</td>
+        <td>{{ parseFloat(activeObject.transaction_cr.toFixed(2)) }}</td>
+        <template v-if="props.config.show_opening_closing_dr_cr">
+          <td>{{ activeObject.closing_dr }}</td>
+          <td>{{ activeObject.closing_cr }}</td>
+          <td>{{ calculateNet(activeObject, 'closing') }}</td>
+        </template>
+        <td v-else>
+          {{ calculateNet(activeObject, 'closing') }}
+        </td>
+      </tr>
+    </template>
   </template>
   <template v-if="item.children && item.children.length">
     <TableNode

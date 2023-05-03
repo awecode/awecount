@@ -127,10 +127,15 @@
               :accounts="accounts"
               :category_accounts="category_accounts"
               :config="config"
+              @updateTotal="onUpdateTotal"
             ></TableNode>
           </template>
+          <tr>
+            <td><span class="text-weight-medium">Total</span></td>
+          </tr>
         </tbody>
       </q-markup-table>
+      {{ total }}
     </div>
   </div>
 </template>
@@ -161,6 +166,10 @@ export default {
       start_date: null,
       end_date: null,
     })
+    const onUpdateTotal = (total) => {
+      console.log('total', total)
+      // total.value = total
+    }
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
@@ -172,6 +181,14 @@ export default {
           category_accounts.value = {}
           accounts.value = {}
           let localAccounts = {}
+          const tallyTotal = {
+            transaction_dr: 0,
+            transaction_cr: 0,
+            opening_dr: 0,
+            opening_cr: 0,
+            closing_dr: 0,
+            closing_cr: 0,
+          }
           data.forEach((obj) => {
             const acc = {
               account_id: obj.id,
@@ -184,12 +201,12 @@ export default {
               transaction_dr: (obj.cd || 0) - (obj.od || 0),
               transaction_cr: (obj.cc || 0) - (obj.oc || 0),
             }
-            total.transaction_dr += acc.transaction_dr
-            total.transaction_cr += acc.transaction_cr
-            total.opening_dr += acc.opening_dr
-            total.opening_cr += acc.opening_cr
-            total.closing_dr += acc.closing_dr
-            total.closing_cr += acc.closing_cr
+            tallyTotal.transaction_dr += acc.transaction_dr
+            tallyTotal.transaction_cr += acc.transaction_cr
+            tallyTotal.opening_dr += acc.opening_dr
+            tallyTotal.opening_cr += acc.opening_cr
+            tallyTotal.closing_dr += acc.closing_dr
+            tallyTotal.closing_cr += acc.closing_cr
             localAccounts[obj.id] = acc
 
             // Create this.category_accounts[obj.category_id] if doesn't exist
@@ -200,7 +217,7 @@ export default {
           // TODO make unreactive
           accounts.value = localAccounts
           showData.value = true
-          console.log(localAccounts)
+          total.value = tallyTotal
         })
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
@@ -228,6 +245,7 @@ export default {
       category_accounts,
       showData,
       config,
+      onUpdateTotal,
     }
   },
   created() {
