@@ -1,132 +1,130 @@
 <template>
-  <template>
-    <tr v-if="!props.config.hide_categories">
-      <td>
-        <span
-          v-for="num in level"
-          :key="num"
-          style="width: 20px; display: inline-block"
-        ></span
-        ><span
-          class="text-blue-6"
-          :class="props.root ? 'text-weight-bold' : ''"
-          >{{ item.name }}</span
-        >
-      </td>
-      <template v-if="newTotalObj">
-        <template v-if="props.config.show_opening_closing_dr_cr">
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              newTotalObj.opening_dr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              newTotalObj.opening_cr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              calculateNet(newTotalObj, 'opening')
-            }}</span>
-          </td>
-        </template>
-        <td v-else>
+  <tr v-if="!props.config.hide_categories">
+    <td>
+      <span
+        v-for="num in level"
+        :key="num"
+        style="width: 20px; display: inline-block"
+      ></span
+      ><span
+        class="text-blue-6"
+        :class="props.root ? 'text-weight-bold' : ''"
+        >{{ item.name }}</span
+      >
+    </td>
+    <template v-if="newTotalObj">
+      <template v-if="props.config.show_opening_closing_dr_cr">
+        <td>
+          <span v-if="!props.config.hide_sums">{{
+            newTotalObj.opening_dr
+          }}</span>
+        </td>
+        <td>
+          <span v-if="!props.config.hide_sums">{{
+            newTotalObj.opening_cr
+          }}</span>
+        </td>
+        <td>
           <span v-if="!props.config.hide_sums">{{
             calculateNet(newTotalObj, 'opening')
           }}</span>
         </td>
+      </template>
+      <td v-else>
+        <span v-if="!props.config.hide_sums">{{
+          calculateNet(newTotalObj, 'opening')
+        }}</span>
+      </td>
+      <td>
+        <span v-if="!props.config.hide_sums">
+          {{ parseFloat(newTotalObj.transaction_dr.toFixed(2)) }}
+        </span>
+      </td>
+      <td>
+        <span v-if="!props.config.hide_sums">
+          {{ parseFloat(newTotalObj.transaction_cr.toFixed(2)) }}
+        </span>
+      </td>
+      <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
-          <span v-if="!props.config.hide_sums">
-            {{ parseFloat(newTotalObj.transaction_dr.toFixed(2)) }}
-          </span>
+          <span v-if="!props.config.hide_sums">{{
+            parseFloat(newTotalObj.closing_dr.toFixed(2))
+          }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">
-            {{ parseFloat(newTotalObj.transaction_cr.toFixed(2)) }}
-          </span>
+          <span v-if="!props.config.hide_sums">{{
+            parseFloat(newTotalObj.closing_cr.toFixed(2))
+          }}</span>
         </td>
-        <template v-if="props.config.show_opening_closing_dr_cr">
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              parseFloat(newTotalObj.closing_dr.toFixed(2))
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              parseFloat(newTotalObj.closing_cr.toFixed(2))
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              calculateNet(newTotalObj, 'closing')
-            }}</span>
-          </td>
-        </template>
-        <td v-else>
-          <span v-if="!props.config.hide_sums">
-            {{ calculateNet(newTotalObj, 'closing') }}</span
-          >
+        <td>
+          <span v-if="!props.config.hide_sums">{{
+            calculateNet(newTotalObj, 'closing')
+          }}</span>
         </td>
       </template>
-      <template v-else>
-        <template v-if="props.config.show_opening_closing_dr_cr">
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              showTotalObject.opening_dr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              showTotalObject.opening_cr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              calculateNet(showTotalObject, 'opening')
-            }}</span>
-          </td>
-        </template>
-        <td v-else>
+      <td v-else>
+        <span v-if="!props.config.hide_sums">
+          {{ calculateNet(newTotalObj, 'closing') }}</span
+        >
+      </td>
+    </template>
+    <template v-else>
+      <template v-if="props.config.show_opening_closing_dr_cr">
+        <td>
+          <span v-if="!props.config.hide_sums">{{
+            showTotalObject.opening_dr
+          }}</span>
+        </td>
+        <td>
+          <span v-if="!props.config.hide_sums">{{
+            showTotalObject.opening_cr
+          }}</span>
+        </td>
+        <td>
           <span v-if="!props.config.hide_sums">{{
             calculateNet(showTotalObject, 'opening')
           }}</span>
         </td>
+      </template>
+      <td v-else>
+        <span v-if="!props.config.hide_sums">{{
+          calculateNet(showTotalObject, 'opening')
+        }}</span>
+      </td>
+      <td>
+        <span v-if="!props.config.hide_sums">{{
+          parseFloat(showTotalObject.transaction_dr.toFixed(2))
+        }}</span>
+      </td>
+      <td>
+        <span v-if="!props.config.hide_sums">{{
+          parseFloat(showTotalObject.transaction_cr.toFixed(2))
+        }}</span>
+      </td>
+      <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
           <span v-if="!props.config.hide_sums">{{
-            parseFloat(showTotalObject.transaction_dr.toFixed(2))
+            showTotalObject.closing_dr
           }}</span>
         </td>
         <td>
           <span v-if="!props.config.hide_sums">{{
-            parseFloat(showTotalObject.transaction_cr.toFixed(2))
+            showTotalObject.closing_cr
           }}</span>
         </td>
-        <template v-if="props.config.show_opening_closing_dr_cr">
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              showTotalObject.closing_dr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              showTotalObject.closing_cr
-            }}</span>
-          </td>
-          <td>
-            <span v-if="!props.config.hide_sums">{{
-              calculateNet(showTotalObject, 'closing')
-            }}</span>
-          </td>
-        </template>
-        <td v-else>
+        <td>
           <span v-if="!props.config.hide_sums">{{
             calculateNet(showTotalObject, 'closing')
           }}</span>
         </td>
       </template>
-    </tr>
-  </template>
+      <td v-else>
+        <span v-if="!props.config.hide_sums">{{
+          calculateNet(showTotalObject, 'closing')
+        }}</span>
+      </td>
+    </template>
+  </tr>
   <template
     v-if="
       activeObjectArray &&
@@ -280,6 +278,19 @@ export default {
         return `${net * -1}` + ' dr'
       }
     }
+    // check zero trans status
+    const checkZeroTrans = () => {
+      if (newTotalObj.value) {
+        return !!(
+          newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
+        )
+      } else if (showTotalObject.value) {
+        return !!(
+          showTotalObject.value.transaction_cr ||
+          showTotalObject.value.transaction_dr
+        )
+      } else return true
+    }
     watch(
       [itemProps],
       (newValue) => {
@@ -318,6 +329,7 @@ export default {
       showTotalObject,
       newTotalObj,
       calculateNet,
+      checkZeroTrans,
     }
   },
 }
