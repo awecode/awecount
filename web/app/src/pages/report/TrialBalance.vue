@@ -29,7 +29,47 @@
           label="fetch"
           @click="fetchData"
         ></q-btn>
-        <q-btn class="filterbtn" icon="settings" title="Config"></q-btn>
+        <q-btn class="filterbtn" icon="settings" title="Config">
+          <q-menu>
+            <div class="menu-wrapper" style="width: min(300px, 90vw)">
+              <div style="border-bottom: 1px solid lightgrey">
+                <h6 class="q-ma-md text-grey-9">Config</h6>
+              </div>
+              <div class="q-ma-sm">
+                <div class="q-pb-sm">
+                  <q-checkbox
+                    v-model="config.hide_accounts"
+                    label="Hide Accounts?"
+                  ></q-checkbox>
+                </div>
+                <div class="q-pb-sm">
+                  <q-checkbox
+                    v-model="config.hide_categories"
+                    label="Hide Categories?"
+                  ></q-checkbox>
+                </div>
+                <div class="q-pb-sm">
+                  <q-checkbox
+                    v-model="config.hide_sums"
+                    label="Hide Sums?"
+                  ></q-checkbox>
+                </div>
+                <div class="q-pb-sm">
+                  <q-checkbox
+                    v-model="config.show_opening_closing_dr_cr"
+                    label="Show Opening Closing Dr/Cr?"
+                  ></q-checkbox>
+                </div>
+                <div class="q-pb-sm">
+                  <q-checkbox
+                    v-model="config.hide_zero_transactions"
+                    label="Hide accounts without transactions?"
+                  ></q-checkbox>
+                </div>
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
       </div>
     </div>
     <div>
@@ -37,16 +77,37 @@
         <thead>
           <tr>
             <th class="text-left">Name</th>
-            <th class="text-left">Opening</th>
-            <th class="text-center" colspan="2">Transactions</th>
-            <th class="text-left">Closing</th>
+            <th
+              class="text-left"
+              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
+            >
+              Opening
+            </th>
+            <th class="text-left" colspan="2">Transactions</th>
+            <th
+              class="text-left"
+              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
+            >
+              Closing
+            </th>
           </tr>
           <tr>
             <th class="text-left"></th>
-            <th class="text-left">Balance</th>
+            <template v-if="config.show_opening_closing_dr_cr">
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
+            </template>
+            <th v-else class="text-left">Balance</th>
+            <!-- <th class="text-left">Balance</th> -->
             <th class="text-left">Dr</th>
             <th class="text-left">Cr</th>
-            <th class="text-left">Balance</th>
+            <template v-if="config.show_opening_closing_dr_cr">
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
+            </template>
+            <th v-else class="text-left">Balance</th>
           </tr>
         </thead>
         <tbody>
@@ -65,13 +126,13 @@
               :root="true"
               :accounts="accounts"
               :category_accounts="category_accounts"
+              :config="config"
             ></TableNode>
           </template>
         </tbody>
       </q-markup-table>
     </div>
   </div>
-  {{ category_accounts }} --category_accounts
 </template>
 
 <script>
@@ -79,6 +140,13 @@ export default {
   setup() {
     const categoryTree = ref(null)
     const category_accounts = ref({})
+    const config = ref({
+      hide_accounts: false,
+      hide_categories: false,
+      hide_sums: false,
+      show_opening_closing_dr_cr: false,
+      hide_zero_transactions: false,
+    })
     const accounts = ref({})
     const showData = ref(false)
     const total = ref({
@@ -132,6 +200,7 @@ export default {
           // TODO make unreactive
           accounts.value = localAccounts
           showData.value = true
+          console.log(localAccounts)
         })
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
@@ -158,6 +227,7 @@ export default {
       accounts,
       category_accounts,
       showData,
+      config,
     }
   },
   created() {
