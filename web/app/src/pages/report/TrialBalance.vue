@@ -127,34 +127,42 @@
             ></TableNode>
           </template>
           <tr>
-            <th><span class="text-weight-medium">Total</span></th>
+            <td><span class="text-weight-medium">Total</span></td>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">{{ total.opening_dr }}</th>
-              <th class="text-left">{{ total.opening_cr }}</th>
-              <th class="text-left">{{ calculateNet(total, 'opening') }}</th>
+              <td class="text-left text-weight-medium">
+                {{ total.opening_dr }}
+              </td>
+              <td class="text-left text-weight-medium">
+                {{ total.opening_cr }}
+              </td>
+              <td class="text-left text-weight-medium">
+                {{ calculateNet(total, 'opening') }}
+              </td>
             </template>
-            <th v-else class="text-left">
+            <td v-else class="text-left text-weight-medium">
               {{ calculateNet(total, 'opening') }}
-            </th>
+            </td>
             <!-- <th class="text-left">Balance</th> -->
-            <th class="text-left">
+            <td class="text-left text-weight-medium">
               {{ parseFloat(total.transaction_dr.toFixed(2)) }}
-            </th>
-            <th class="text-left">
+            </td>
+            <td class="text-left text-weight-medium">
               {{ parseFloat(total.transaction_cr.toFixed(2)) }}
-            </th>
+            </td>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">
+              <td class="text-left text-weight-medium">
                 {{ parseFloat(total.closing_dr.toFixed(2)) }}
-              </th>
-              <th class="text-left">
+              </td>
+              <td class="text-left text-weight-medium">
                 {{ parseFloat(total.closing_cr.toFixed(2)) }}
-              </th>
-              <th class="text-left">{{ calculateNet(total, 'closing') }}</th>
+              </td>
+              <td class="text-left text-weight-medium">
+                {{ calculateNet(total, 'closing') }}
+              </td>
             </template>
-            <th v-else class="text-left">
+            <td v-else class="text-left text-weight-medium">
               {{ calculateNet(total, 'closing') }}
-            </th>
+            </td>
           </tr>
         </tbody>
       </q-markup-table>
