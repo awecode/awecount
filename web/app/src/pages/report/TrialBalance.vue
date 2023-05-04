@@ -111,14 +111,7 @@
           </tr>
         </thead>
         <tbody>
-          <!-- <tr>
-            <td class="text-left">Frozen Yogurt</td>
-            <td class="text-left">159</td>
-            <td class="text-left">6</td>
-            <td class="text-left">24</td>
-            <td class="text-left">4</td>
-          </tr> -->
-          <template v-if="true">
+          <template v-if="showData">
             <TableNode
               v-for="category in categoryTree"
               :key="category.id"
@@ -127,15 +120,40 @@
               :accounts="accounts"
               :category_accounts="category_accounts"
               :config="config"
-              @updateTotal="onUpdateTotal"
             ></TableNode>
           </template>
           <tr>
-            <td><span class="text-weight-medium">Total</span></td>
+            <th><span class="text-weight-medium">Total</span></th>
+            <template v-if="config.show_opening_closing_dr_cr">
+              <th class="text-left">{{ total.opening_dr }}</th>
+              <th class="text-left">{{ total.opening_cr }}</th>
+              <th class="text-left">{{ calculateNet(total, 'opening') }}</th>
+            </template>
+            <th v-else class="text-left">
+              {{ calculateNet(total, 'opening') }}
+            </th>
+            <!-- <th class="text-left">Balance</th> -->
+            <th class="text-left">
+              {{ parseFloat(total.transaction_dr.toFixed(2)) }}
+            </th>
+            <th class="text-left">
+              {{ parseFloat(total.transaction_cr.toFixed(2)) }}
+            </th>
+            <template v-if="config.show_opening_closing_dr_cr">
+              <th class="text-left">
+                {{ parseFloat(total.closing_dr.toFixed(2)) }}
+              </th>
+              <th class="text-left">
+                {{ parseFloat(total.closing_cr.toFixed(2)) }}
+              </th>
+              <th class="text-left">{{ calculateNet(total, 'closing') }}</th>
+            </template>
+            <th v-else class="text-left">
+              {{ calculateNet(total, 'closing') }}
+            </th>
           </tr>
         </tbody>
       </q-markup-table>
-      {{ total }}
     </div>
   </div>
 </template>
@@ -166,9 +184,17 @@ export default {
       start_date: null,
       end_date: null,
     })
-    const onUpdateTotal = (total) => {
-      console.log('total', total)
-      // total.value = total
+    const calculateNet = (obj, type) => {
+      const net = parseFloat(
+        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
+      )
+      if (net === 0) {
+        return 0
+      } else if (net > 0) {
+        return `${net}` + ' cr'
+      } else {
+        return `${net * -1}` + ' dr'
+      }
     }
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
@@ -245,7 +271,7 @@ export default {
       category_accounts,
       showData,
       config,
-      onUpdateTotal,
+      calculateNet,
     }
   },
   created() {

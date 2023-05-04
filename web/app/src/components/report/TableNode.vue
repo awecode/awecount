@@ -1,9 +1,4 @@
 <template>
-  <!-- {{
-    !(props.config.hide_zero_transactions && !checkZeroTrans()) &&
-    !props.config.hide_categories
-  }} -->
-  <!-- <ClientOnly v-if="true">ashahs</ClientOnly> -->
   <tr
     v-if="
       !(props.config.hide_zero_transactions && !checkZeroTrans()) &&
@@ -248,25 +243,19 @@ export default {
       'transaction_cr',
       'transaction_dr',
     ]
-    const showTotalObject = ref({
+    const totalObjectFormat = {
       closing_cr: 0,
       closing_dr: 0,
       opening_cr: 0,
       opening_dr: 0,
       transaction_cr: 0,
       transaction_dr: 0,
-    })
+    }
+    const showTotalObject = ref(totalObjectFormat)
     const newTotalObj = ref(null)
     const activeObjectArray = computed(() => {
       const activeArray = []
-      showTotalObject.value = {
-        closing_cr: 0,
-        closing_dr: 0,
-        opening_cr: 0,
-        opening_dr: 0,
-        transaction_cr: 0,
-        transaction_dr: 0,
-      }
+      showTotalObject.value = totalObjectFormat
       const accountArray = props.category_accounts[props.item.id]
       if (accountArray) {
         accountArray.forEach((item) => {
