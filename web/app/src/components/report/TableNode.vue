@@ -11,10 +11,13 @@
         :key="num"
         style="width: 20px; display: inline-block"
       ></span
-      ><span
+      ><RouterLink
+        style="text-decoration: none"
+        target="_blank"
+        :to="`/account/?has_balance=true&category=${item.id}`"
         class="text-blue-6"
         :class="props.root ? 'text-weight-bold' : ''"
-        >{{ item.name }}</span
+        >{{ item.name }}</RouterLink
       >
     </td>
     <template v-if="newTotalObj">
@@ -153,9 +156,13 @@
               :key="num"
               style="width: 20px; display: inline-block"
             ></span></span
-          ><span class="text-blue-7 text-italic text-weight-regular">{{
-            activeObject.name
-          }}</span>
+          ><RouterLink
+            target="_blank"
+            style="text-decoration: none"
+            :to="`/account/${activeObject.account_id}/view/`"
+            class="text-blue-7 text-italic text-weight-regular"
+            >{{ activeObject.name }}</RouterLink
+          >
         </td>
         <template v-if="props.config.show_opening_closing_dr_cr">
           <td>{{ activeObject.opening_dr }}</td>
