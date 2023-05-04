@@ -1,75 +1,79 @@
 <template>
   <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="green"
-        label="Export Xls"
-        icon-right="download"
-        @click="onDownloadXls"
-      />
-    </div>
-    <div class="q-px-md">
-      <div class="flex items-center q-gutter-md">
-        <div class="q-mx-md">
-          <DateRangePicker
-            v-model:startDate="fields.start_date"
-            v-model:endDate="fields.end_date"
-            :hide-btns="true"
+    <div class="q-px-md q-pb-md">
+      <div
+        class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs"
+      >
+        <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
+          <div>
+            <DateRangePicker
+              v-model:startDate="fields.start_date"
+              v-model:endDate="fields.end_date"
+              :hide-btns="true"
+            />
+          </div>
+          <q-btn
+            v-if="fields.start_date || fields.end_date"
+            color="red"
+            icon="close"
+            @click="fields = { start_date: null, end_date: null }"
+          ></q-btn>
+          <q-btn
+            :disable="!fields.start_date && !fields.end_date ? true : false"
+            color="green"
+            label="fetch"
+            @click="fetchData"
+          ></q-btn>
+        </div>
+        <div class="flex q-gutter-x-md q-gutter-y-xs">
+          <q-btn class="filterbtn" icon="settings" title="Config">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(300px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Config</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="config.hide_accounts"
+                      label="Hide Accounts?"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="config.hide_categories"
+                      label="Hide Categories?"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="config.hide_sums"
+                      label="Hide Sums?"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="config.show_opening_closing_dr_cr"
+                      label="Show Opening Closing Dr/Cr?"
+                    ></q-checkbox>
+                  </div>
+                  <div class="q-pb-sm">
+                    <q-checkbox
+                      v-model="config.hide_zero_transactions"
+                      label="Hide accounts without transactions?"
+                    ></q-checkbox>
+                  </div>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+          <q-btn
+            color="green"
+            label="Export Xls"
+            icon-right="download"
+            @click="onDownloadXls"
           />
         </div>
-        <q-btn
-          v-if="fields.start_date || fields.end_date"
-          color="red"
-          icon="close"
-          @click="fields = { start_date: null, end_date: null }"
-        ></q-btn>
-        <q-btn
-          :disable="!fields.start_date && !fields.end_date ? true : false"
-          color="green"
-          label="fetch"
-          @click="fetchData"
-        ></q-btn>
-        <q-btn class="filterbtn" icon="settings" title="Config">
-          <q-menu>
-            <div class="menu-wrapper" style="width: min(300px, 90vw)">
-              <div style="border-bottom: 1px solid lightgrey">
-                <h6 class="q-ma-md text-grey-9">Config</h6>
-              </div>
-              <div class="q-ma-sm">
-                <div class="q-pb-sm">
-                  <q-checkbox
-                    v-model="config.hide_accounts"
-                    label="Hide Accounts?"
-                  ></q-checkbox>
-                </div>
-                <div class="q-pb-sm">
-                  <q-checkbox
-                    v-model="config.hide_categories"
-                    label="Hide Categories?"
-                  ></q-checkbox>
-                </div>
-                <div class="q-pb-sm">
-                  <q-checkbox
-                    v-model="config.hide_sums"
-                    label="Hide Sums?"
-                  ></q-checkbox>
-                </div>
-                <div class="q-pb-sm">
-                  <q-checkbox
-                    v-model="config.show_opening_closing_dr_cr"
-                    label="Show Opening Closing Dr/Cr?"
-                  ></q-checkbox>
-                </div>
-                <div class="q-pb-sm">
-                  <q-checkbox
-                    v-model="config.hide_zero_transactions"
-                    label="Hide accounts without transactions?"
-                  ></q-checkbox>
-                </div>
-              </div>
-            </div>
-          </q-menu>
-        </q-btn>
       </div>
     </div>
     <div>

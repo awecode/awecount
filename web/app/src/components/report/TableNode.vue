@@ -153,7 +153,9 @@
               :key="num"
               style="width: 20px; display: inline-block"
             ></span></span
-          ><span class="text-blue-6">{{ activeObject.name }}</span>
+          ><span class="text-blue-7 text-italic text-weight-regular">{{
+            activeObject.name
+          }}</span>
         </td>
         <template v-if="props.config.show_opening_closing_dr_cr">
           <td>{{ activeObject.opening_dr }}</td>
