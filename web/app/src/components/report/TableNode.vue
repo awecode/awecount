@@ -5,22 +5,22 @@
       !props.config.hide_categories
     "
   >
-    <td>
-      <span
-        v-for="num in level"
-        :key="num"
-        style="width: 20px; display: inline-block"
-      ></span
-      ><RouterLink
-        style="text-decoration: none"
-        target="_blank"
-        :to="`/account/?has_balance=true&category=${item.id}`"
-        class="text-blue-6"
-        :class="props.root ? 'text-weight-bold' : ''"
-        >{{ item.name }}</RouterLink
-      >
-    </td>
     <template v-if="newTotalObj">
+      <td>
+        <span
+          v-for="num in level"
+          :key="num"
+          style="width: 20px; display: inline-block"
+        ></span
+        ><RouterLink
+          style="text-decoration: none"
+          target="_blank"
+          :to="`/account/?has_balance=true&category=${item.id}`"
+          class="text-blue-6"
+          :class="props.root ? 'text-weight-bold' : ''"
+          >{{ item.name }}</RouterLink
+        >
+      </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
           <span v-if="!props.config.hide_sums">{{
@@ -76,7 +76,31 @@
         >
       </td>
     </template>
-    <template v-else>
+    <template
+      v-else-if="
+        !!(
+          showTotalObject.opening_cr ||
+          showTotalObject.opening_dr ||
+          showTotalObject.closing_cr ||
+          showTotalObject.closing_dr
+        )
+      "
+    >
+      <td>
+        <span
+          v-for="num in level"
+          :key="num"
+          style="width: 20px; display: inline-block"
+        ></span
+        ><RouterLink
+          style="text-decoration: none"
+          target="_blank"
+          :to="`/account/?has_balance=true&category=${item.id}`"
+          class="text-blue-6"
+          :class="props.root ? 'text-weight-bold' : ''"
+          >{{ item.name }}</RouterLink
+        >
+      </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
           <span v-if="!props.config.hide_sums">{{
