@@ -7,11 +7,8 @@
   >
     <template v-if="newTotalObj">
       <td>
-        <span
-          v-for="num in level"
-          :key="num"
-          style="width: 20px; display: inline-block"
-        ></span
+        <span v-for="num in level" :key="num"
+          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
         ><RouterLink
           style="text-decoration: none"
           target="_blank"
@@ -87,11 +84,8 @@
       "
     >
       <td>
-        <span
-          v-for="num in level"
-          :key="num"
-          style="width: 20px; display: inline-block"
-        ></span
+        <span v-for="num in level" :key="num"
+          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
         ><RouterLink
           style="text-decoration: none"
           target="_blank"
@@ -175,11 +169,9 @@
       >
         <td>
           <span v-if="!props.config.hide_categories">
-            <span
-              v-for="num in level + 1"
-              :key="num"
-              style="width: 20px; display: inline-block"
-            ></span></span
+            <span v-for="num in level + 1" :key="num"
+              >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
+            ></span
           ><RouterLink
             target="_blank"
             style="text-decoration: none"

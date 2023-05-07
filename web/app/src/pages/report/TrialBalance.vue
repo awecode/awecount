@@ -77,10 +77,10 @@
       </div>
     </div>
     <div>
-      <q-markup-table>
+      <q-markup-table id="tableRef">
         <thead>
           <tr>
-            <th class="text-left">Name</th>
+            <th class="text-left"><strong>Name</strong></th>
             <th
               class="text-left"
               :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
@@ -171,8 +171,10 @@
 </template>
 
 <script>
+import { writeFileXLSX, utils } from 'xlsx'
 export default {
   setup() {
+    const tableRef = ref(null)
     const categoryTree = ref(null)
     const category_accounts = ref({})
     const config = ref({
@@ -208,6 +210,7 @@ export default {
         return `${net * -1}` + ' dr'
       }
     }
+
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
@@ -263,17 +266,32 @@ export default {
     // functions
     const onDownloadXls = () => {
       // TODO: add download xls link
-      useApi('v1/sales-voucher/export/')
-        .then((data) =>
-          usedownloadFile(
-            data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Credit_Notes'
-          )
-        )
-        .catch((err) => console.log('Error Due To', err))
+      // const wb = utils.table_to_book(tableRef.value)
+      // const elt = tableRef.value
+      const elt = document.getElementById('tableRef').children[0]
+      const baseUrl = window.location.origin
+      replaceHrefAttribute(elt, baseUrl)
+      const wb = utils.table_to_book(elt, {
+        sheet: 'sheet1',
+        blankrows: false,
+      })
+      writeFileXLSX(wb, 'TrialBalance.xls')
+    }
+    const replaceHrefAttribute = (element, baseUrl) => {
+      if (!element || !element.childNodes) {
+        return
+      }
+      for (var i = 0; i < element.childNodes.length; i++) {
+        var child = element.childNodes[i]
+        if (child.tagName === 'A') {
+          const link = child.getAttribute('href')
+          child.setAttribute('href', baseUrl + `${link}`)
+        }
+        replaceHrefAttribute(child, baseUrl)
+      }
     }
     return {
+      replaceHrefAttribute,
       onDownloadXls,
       fields,
       fetchData,
@@ -298,3 +316,11 @@ export default {
   },
 }
 </script>
+
+<!-- <style scoped>
+.q-table thead tr,
+.q-table tbody td {
+  height: 20px !important;
+  background-color: black !important;
+}
+</style> -->
