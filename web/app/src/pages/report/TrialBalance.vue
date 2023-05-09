@@ -1,29 +1,15 @@
 <template>
   <div class="q-pa-md">
     <div class="q-px-md q-pb-md">
-      <div
-        class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs"
-      >
+      <div class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs">
         <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
           <div>
-            <DateRangePicker
-              v-model:startDate="fields.start_date"
-              v-model:endDate="fields.end_date"
-              :hide-btns="true"
-            />
+            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
           </div>
-          <q-btn
-            v-if="fields.start_date || fields.end_date"
-            color="red"
-            icon="close"
-            @click="fields = { start_date: null, end_date: null }"
-          ></q-btn>
-          <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
-            color="green"
-            label="fetch"
-            @click="fetchData"
-          ></q-btn>
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
+            @click="fields = { start_date: null, end_date: null }"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
+            @click="fetchData"></q-btn>
         </div>
         <div class="flex q-gutter-x-md q-gutter-y-xs">
           <q-btn class="filterbtn" icon="settings" title="Config">
@@ -34,45 +20,27 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_accounts"
-                      label="Hide Accounts?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_categories"
-                      label="Hide Categories?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_sums"
-                      label="Hide Sums?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.show_opening_closing_dr_cr"
-                      label="Show Opening Closing Dr/Cr?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.show_opening_closing_dr_cr"
+                      label="Show Opening Closing Dr/Cr?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_zero_transactions"
-                      label="Hide accounts without transactions?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_zero_transactions"
+                      label="Hide accounts without transactions?"></q-checkbox>
                   </div>
                 </div>
               </div>
             </q-menu>
           </q-btn>
-          <q-btn
-            color="green"
-            label="Export Xls"
-            icon-right="download"
-            @click="onDownloadXls"
-          />
+          <q-btn color="green" label="Export Xls" icon-right="download" @click="onDownloadXls" />
         </div>
       </div>
     </div>
@@ -81,17 +49,11 @@
         <thead>
           <tr>
             <th class="text-left"><strong>Name</strong></th>
-            <th
-              class="text-left"
-              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
-            >
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
               Opening
             </th>
             <th class="text-left" colspan="2">Transactions</th>
-            <th
-              class="text-left"
-              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
-            >
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
               Closing
             </th>
           </tr>
@@ -116,15 +78,8 @@
         </thead>
         <tbody>
           <template v-if="showData">
-            <TableNode
-              v-for="category in categoryTree"
-              :key="category.id"
-              :item="category"
-              :root="true"
-              :accounts="accounts"
-              :category_accounts="category_accounts"
-              :config="config"
-            ></TableNode>
+            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true"
+              :accounts="accounts" :category_accounts="category_accounts" :config="config"></TableNode>
           </template>
           <tr>
             <td><span class="text-weight-medium">Total</span></td>
@@ -271,11 +226,33 @@ export default {
       const elt = document.getElementById('tableRef').children[0]
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)
-      const wb = utils.table_to_book(elt, {
+      // adding styles
+      // const wb = utils.table_to_sheet(elt);
+
+      // Working
+      // const wb = utils.table_to_book(elt, {
+      //   sheet: 'sheet1',
+      //   blankrows: false,
+      //   cellStyles: true
+      // })
+      // writeFileXLSX(wb, 'TrialBalance.xls', {
+      //   cellStyles: true
+      // })
+      // Working
+      const wb = utils.table_to_sheet(elt, {
+        reverse: true,
         sheet: 'sheet1',
-        blankrows: false,
+        blankrows: true
       })
-      writeFileXLSX(wb, 'TrialBalance.xls')
+      const jsonData = utils.sheet_to_json(wb)
+      const worksheet = utils.json_to_sheet(jsonData)
+      const workbook = utils.book_new();
+      debugger
+      utils.book_append_sheet(workbook, worksheet, "TrialBalance");
+      writeFileXLSX(workbook, 'TrialBalance.xls', {
+        cellStyles: true
+      })
+      // debugger
     }
     const replaceHrefAttribute = (element, baseUrl) => {
       if (!element || !element.childNodes) {
