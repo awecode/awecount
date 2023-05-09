@@ -11,7 +11,7 @@
           <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
             @click="fetchData"></q-btn>
         </div>
-        <div class="flex q-gutter-x-md q-gutter-y-xs">
+        <div class="flex q-gutter-x-md q-gutter-y-xs" v-if="showData">
           <q-btn class="filterbtn" icon="settings" title="Config">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
@@ -129,7 +129,6 @@
 import { writeFileXLSX, utils } from 'xlsx'
 export default {
   setup() {
-    const tableRef = ref(null)
     const categoryTree = ref(null)
     const category_accounts = ref({})
     const config = ref({
