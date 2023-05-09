@@ -1,22 +1,12 @@
 <template>
-  <tr
-    v-if="
-      !(props.config.hide_zero_transactions && !checkZeroTrans()) &&
-      !props.config.hide_categories
-    "
-  >
-    <template v-if="newTotalObj">
+  <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
+    !props.config.hide_categories
+    ">
+    <tr v-if="newTotalObj">
       <td>
-        <span v-for="num in level" :key="num"
-          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
-        ><RouterLink
-          style="text-decoration: none"
-          target="_blank"
-          :to="`/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6"
-          :class="props.root ? 'text-weight-bold' : ''"
-          >{{ item.name }}</RouterLink
-        >
+        <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
+          class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
@@ -69,31 +59,20 @@
       </template>
       <td v-else>
         <span v-if="!props.config.hide_sums">
-          {{ calculateNet(newTotalObj, 'closing') }}</span
-        >
+          {{ calculateNet(newTotalObj, 'closing') }}</span>
       </td>
-    </template>
-    <template
-      v-else-if="
-        !!(
-          showTotalObject.opening_cr ||
-          showTotalObject.opening_dr ||
-          showTotalObject.closing_cr ||
-          showTotalObject.closing_dr
-        )
-      "
-    >
+    </tr>
+    <tr v-else-if="!!(
+      showTotalObject.opening_cr ||
+      showTotalObject.opening_dr ||
+      showTotalObject.closing_cr ||
+      showTotalObject.closing_dr
+    )
+      ">
       <td>
-        <span v-for="num in level" :key="num"
-          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
-        ><RouterLink
-          style="text-decoration: none"
-          target="_blank"
-          :to="`/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6"
-          :class="props.root ? 'text-weight-bold' : ''"
-          >{{ item.name }}</RouterLink
-        >
+        <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
+          class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
@@ -149,36 +128,23 @@
           calculateNet(showTotalObject, 'closing')
         }}</span>
       </td>
-    </template>
-  </tr>
-  <template
-    v-if="
-      activeObjectArray &&
+    </tr>
+  </template>
+  <template v-if="activeObjectArray &&
       activeObjectArray.length &&
       !props.config.hide_accounts
-    "
-  >
+      ">
     <template v-for="activeObject in activeObjectArray" :key="activeObject.id">
-      <tr
-        v-if="
-          !(
-            props.config.hide_zero_transactions &&
-            !(activeObject.transaction_dr || activeObject.transaction_cr)
-          )
-        "
-      >
+      <tr v-if="!(
+        props.config.hide_zero_transactions &&
+        !(activeObject.transaction_dr || activeObject.transaction_cr)
+      )
+        ">
         <td>
           <span v-if="!props.config.hide_categories">
-            <span v-for="num in level + 1" :key="num"
-              >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
-            ></span
-          ><RouterLink
-            target="_blank"
-            style="text-decoration: none"
-            :to="`/account/${activeObject.account_id}/view/`"
-            class="text-blue-7 text-italic text-weight-regular"
-            >{{ activeObject.name }}</RouterLink
-          >
+            <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+          <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${activeObject.account_id}/view/`"
+            class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
         </td>
         <template v-if="props.config.show_opening_closing_dr_cr">
           <td>{{ activeObject.opening_dr }}</td>
@@ -202,17 +168,9 @@
     </template>
   </template>
   <template v-if="item.children && item.children.length">
-    <TableNode
-      v-for="(child, index) in item.children"
-      :key="child.id"
-      :item="child"
-      :index="index"
-      :level="props.level + 1"
-      :accounts="props.accounts"
-      :category_accounts="props.category_accounts"
-      @updateTotal="onUpdateTotal"
-      :config="props.config"
-    ></TableNode>
+    <TableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index"
+      :level="props.level + 1" :accounts="props.accounts" :category_accounts="props.category_accounts"
+      @updateTotal="onUpdateTotal" :config="props.config"></TableNode>
   </template>
 </template>
 

@@ -221,38 +221,13 @@ export default {
     // functions
     const onDownloadXls = () => {
       // TODO: add download xls link
-      // const wb = utils.table_to_book(tableRef.value)
-      // const elt = tableRef.value
       const elt = document.getElementById('tableRef').children[0]
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)
-      // adding styles
-      // const wb = utils.table_to_sheet(elt);
-
-      // Working
-      // const wb = utils.table_to_book(elt, {
-      //   sheet: 'sheet1',
-      //   blankrows: false,
-      //   cellStyles: true
-      // })
-      // writeFileXLSX(wb, 'TrialBalance.xls', {
-      //   cellStyles: true
-      // })
-      // Working
-      const wb = utils.table_to_sheet(elt, {
-        reverse: true,
+      const wb = utils.table_to_book(elt, {
         sheet: 'sheet1',
-        blankrows: true
       })
-      const jsonData = utils.sheet_to_json(wb)
-      const worksheet = utils.json_to_sheet(jsonData)
-      const workbook = utils.book_new();
-      debugger
-      utils.book_append_sheet(workbook, worksheet, "TrialBalance");
-      writeFileXLSX(workbook, 'TrialBalance.xls', {
-        cellStyles: true
-      })
-      // debugger
+      writeFileXLSX(wb, 'TrialBalance.xls')
     }
     const replaceHrefAttribute = (element, baseUrl) => {
       if (!element || !element.childNodes) {
