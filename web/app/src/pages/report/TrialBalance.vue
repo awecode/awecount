@@ -1,31 +1,17 @@
 <template>
   <div class="q-pa-md">
     <div class="q-px-md q-pb-md">
-      <div
-        class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs"
-      >
+      <div class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs">
         <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
           <div>
-            <DateRangePicker
-              v-model:startDate="fields.start_date"
-              v-model:endDate="fields.end_date"
-              :hide-btns="true"
-            />
+            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
           </div>
-          <q-btn
-            v-if="fields.start_date || fields.end_date"
-            color="red"
-            icon="close"
-            @click="fields = { start_date: null, end_date: null }"
-          ></q-btn>
-          <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
-            color="green"
-            label="fetch"
-            @click="fetchData"
-          ></q-btn>
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
+            @click="fields = { start_date: null, end_date: null }"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
+            @click="fetchData"></q-btn>
         </div>
-        <div class="flex q-gutter-x-md q-gutter-y-xs">
+        <div class="flex q-gutter-x-md q-gutter-y-xs" v-if="showData">
           <q-btn class="filterbtn" icon="settings" title="Config">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
@@ -34,64 +20,40 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_accounts"
-                      label="Hide Accounts?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_categories"
-                      label="Hide Categories?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_sums"
-                      label="Hide Sums?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.show_opening_closing_dr_cr"
-                      label="Show Opening Closing Dr/Cr?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.show_opening_closing_dr_cr"
+                      label="Show Opening Closing Dr/Cr?"></q-checkbox>
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_zero_transactions"
-                      label="Hide accounts without transactions?"
-                    ></q-checkbox>
+                    <q-checkbox v-model="config.hide_zero_transactions"
+                      label="Hide accounts without transactions?"></q-checkbox>
                   </div>
                 </div>
               </div>
             </q-menu>
           </q-btn>
-          <q-btn
-            color="green"
-            label="Export Xls"
-            icon-right="download"
-            @click="onDownloadXls"
-          />
+          <q-btn color="green" label="Export Xls" icon-right="download" @click="onDownloadXls" />
         </div>
       </div>
     </div>
     <div>
-      <q-markup-table>
+      <q-markup-table id="tableRef">
         <thead>
           <tr>
-            <th class="text-left">Name</th>
-            <th
-              class="text-left"
-              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
-            >
+            <th class="text-left"><strong>Name</strong></th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
               Opening
             </th>
             <th class="text-left" colspan="2">Transactions</th>
-            <th
-              class="text-left"
-              :colspan="config.show_opening_closing_dr_cr ? '3' : '1'"
-            >
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
               Closing
             </th>
           </tr>
@@ -116,15 +78,8 @@
         </thead>
         <tbody>
           <template v-if="showData">
-            <TableNode
-              v-for="category in categoryTree"
-              :key="category.id"
-              :item="category"
-              :root="true"
-              :accounts="accounts"
-              :category_accounts="category_accounts"
-              :config="config"
-            ></TableNode>
+            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true"
+              :accounts="accounts" :category_accounts="category_accounts" :config="config"></TableNode>
           </template>
           <tr>
             <td><span class="text-weight-medium">Total</span></td>
@@ -171,6 +126,7 @@
 </template>
 
 <script>
+import { writeFileXLSX, utils } from 'xlsx'
 export default {
   setup() {
     const categoryTree = ref(null)
@@ -208,6 +164,7 @@ export default {
         return `${net * -1}` + ' dr'
       }
     }
+
     // const endpoint = '/v1/trial-balance/'
     // const listData = useList(endpoint)
     const fetchData = () => {
@@ -263,17 +220,29 @@ export default {
     // functions
     const onDownloadXls = () => {
       // TODO: add download xls link
-      useApi('v1/sales-voucher/export/')
-        .then((data) =>
-          usedownloadFile(
-            data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Credit_Notes'
-          )
-        )
-        .catch((err) => console.log('Error Due To', err))
+      const elt = document.getElementById('tableRef').children[0]
+      const baseUrl = window.location.origin
+      replaceHrefAttribute(elt, baseUrl)
+      const wb = utils.table_to_book(elt, {
+        sheet: 'sheet1',
+      })
+      writeFileXLSX(wb, 'TrialBalance.xls')
+    }
+    const replaceHrefAttribute = (element, baseUrl) => {
+      if (!element || !element.childNodes) {
+        return
+      }
+      for (var i = 0; i < element.childNodes.length; i++) {
+        var child = element.childNodes[i]
+        if (child.tagName === 'A') {
+          const link = child.getAttribute('href')
+          child.setAttribute('href', baseUrl + `${link}`)
+        }
+        replaceHrefAttribute(child, baseUrl)
+      }
     }
     return {
+      replaceHrefAttribute,
       onDownloadXls,
       fields,
       fetchData,
@@ -298,3 +267,11 @@ export default {
   },
 }
 </script>
+
+<!-- <style scoped>
+.q-table thead tr,
+.q-table tbody td {
+  height: 20px !important;
+  background-color: black !important;
+}
+</style> -->
