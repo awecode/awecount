@@ -1,10 +1,21 @@
 <template>
+  <!-- {{ props.expandAccountsProps }}--expandAccountsProps -->
+  <!-- {{ expandStatus }} --expandstatus -->
   <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
     !props.config.hide_categories
     ">
-    <tr v-if="newTotalObj">
+    <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
+      <!-- <td>{{ expandStatus }}--expandStatus</td> -->
       <td>
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span style="display: inline-block; width: 40px; margin-left: -5px;">
+          <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
+            @click="expandStatus = !expandStatus">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
+              <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+            </svg>
+          </q-btn>
+        </span>
         <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
           class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
       </td>
@@ -68,9 +79,18 @@
       showTotalObject.closing_cr ||
       showTotalObject.closing_dr
     )
-      ">
+      " :class="expandAccountsProps ? '' : 'hidden'">
       <td>
+        <!-- {{ expandAccountsProps && expandStatus }} -->
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span style="display: inline-block; width: 40px; margin-left: -5px;">
+          <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
+            @click="expandStatus = !expandStatus">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
+              <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+            </svg>
+          </q-btn>
+        </span>
         <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
           class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
       </td>
@@ -139,9 +159,12 @@
         props.config.hide_zero_transactions &&
         !(activeObject.transaction_dr || activeObject.transaction_cr)
       )
-        ">
+        " :class="expandAccountsProps && expandStatus ? '' : 'hidden'">
         <td>
           <span v-if="!props.config.hide_categories">
+            <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
+            <!-- <span class="expand-btn" style="display: inline-block;">
+            </span> -->
             <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
           <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${activeObject.account_id}/view/`"
             class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
@@ -170,7 +193,8 @@
   <template v-if="item.children && item.children.length">
     <TableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index"
       :level="props.level + 1" :accounts="props.accounts" :category_accounts="props.category_accounts"
-      @updateTotal="onUpdateTotal" :config="props.config"></TableNode>
+      @updateTotal="onUpdateTotal" :config="props.config" :expandAccountsProps="expandAccountsProps && expandStatus">
+    </TableNode>
   </template>
 </template>
 
@@ -213,10 +237,15 @@ export default {
         return {}
       },
     },
+    expandAccountsProps: {
+      type: Boolean,
+      default: () => true
+    }
   },
   emits: ['updateTotal'],
 
   setup(props, { emit }) {
+    const expandStatus = ref(true)
     const itemProps = ref({ ...props.item })
     const fieldsArray = [
       'closing_cr',
@@ -321,7 +350,27 @@ export default {
       newTotalObj,
       calculateNet,
       checkZeroTrans,
+      expandStatus,
     }
   },
 }
 </script>
+
+
+<style lang="scss">
+.expand-btn {
+  position: relative;
+  width: 35px;
+
+  svg {
+    transition: all 0.2s ease-in;
+  }
+
+  &.expanded {
+    svg {
+      transform: rotate(-90deg);
+    }
+  }
+
+}
+</style>
