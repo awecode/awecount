@@ -6,7 +6,7 @@
       <td>
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
-          <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
+          <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
             @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
@@ -78,11 +78,9 @@
     )
       " :class="expandAccountsProps ? '' : 'hidden'">
       <td>
-        <!-- {{ expandAccountsProps && expandStatus }} -->
-        <!-- {{ item.id }}--item.id -->
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
-          <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
+          <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
             @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
@@ -161,8 +159,6 @@
         <td>
           <span v-if="!props.config.hide_categories">
             <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-            <!-- <span class="expand-btn" style="display: inline-block;">
-            </span> -->
             <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
           <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${activeObject.account_id}/view/`"
             class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
@@ -370,15 +366,19 @@ export default {
 
 <style lang="scss">
 .expand-btn {
-  position: relative;
-  width: 35px;
+  width: 20px;
 
   svg {
+    padding: 5px;
+    // width: 20px;
+    // width: 100%;
+    translate: 0.5px 1px;
     transition: all 0.2s ease-in;
   }
 
   &.expanded {
     svg {
+      translate: 1px 1px;
       transform: rotate(-90deg);
     }
   }

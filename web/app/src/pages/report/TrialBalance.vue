@@ -65,7 +65,6 @@
               <th class="text-left">Balance</th>
             </template>
             <th v-else class="text-left">Balance</th>
-            <!-- <th class="text-left">Balance</th> -->
             <th class="text-left">Dr</th>
             <th class="text-left">Cr</th>
             <template v-if="config.show_opening_closing_dr_cr">
@@ -97,7 +96,6 @@
             <td v-else class="text-left text-weight-medium">
               {{ calculateNet(total, 'opening') }}
             </td>
-            <!-- <th class="text-left">Balance</th> -->
             <td class="text-left text-weight-medium">
               {{ parseFloat(total.transaction_dr.toFixed(2)) }}
             </td>
@@ -126,7 +124,7 @@
 </template>
 
 <script>
-import { writeFileXLSX, utils } from 'xlsx'
+import { utils, writeFile } from 'xlsx'
 export default {
   setup() {
     const categoryTree = ref(null)
@@ -218,15 +216,76 @@ export default {
       // TODO: add 404 error routing
     }
     // functions
+    // const onDownloadXls = () => {
+    //   // TODO: add download xls link
+    //   const elt = document.getElementById('tableRef').children[0]
+    //   const baseUrl = window.location.origin
+    //   replaceHrefAttribute(elt, baseUrl)
+    //   const wb = utils.table_to_book(elt, {
+    //     sheet: 'sheet1',
+    //   })
+    //   writeFileXLSX(wb, 'TrialBalance.xls')
+    // }
     const onDownloadXls = () => {
       // TODO: add download xls link
+      // const wb = utils.table_to_book(tableRef.value)
+      // const elt = tableRef.value
       const elt = document.getElementById('tableRef').children[0]
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)
-      const wb = utils.table_to_book(elt, {
-        sheet: 'sheet1',
+      // adding styles
+      const worksheet = utils.table_to_sheet(elt)
+      // const range = utils.decode_range(worksheet['!ref']);
+      // for (let row = range.s.r; row <= range.e.r; row++) {
+      //   for (let col = range.s.c; col <= range.e.c; col++) {
+      //     const cellAddress = utils.encode_cell({ r: row, c: col })
+      //     if (worksheet[cellAddress]) {
+      //       const td = elt.rows[row].cells[col]
+      //       if (td instanceof HTMLElement) {
+      //         // const computedStyle = getComputedStyle(td)
+      //         // debugger
+      //         worksheet[cellAddress].v = 'ashvahsvghasvgavsgv'
+      //         worksheet[cellAddress].s = { font: { bold: true, color: { rgb: "FF0000" } } }
+      //       }
+      //     }
+      //   }
+      //   // adding styles
+      //   // const wb = utils.table_to_book(elt, {
+      //   //   sheet: 'sheet1',
+      //   //   blankrows: false,
+      //   // })
+      // }
+      for (const i in worksheet) {
+        console.log(i)
+        if (typeof (worksheet[i]) != "object") continue;
+        let cell = utils.decode_cell(i);
+        worksheet[i].s = { // styling for all cells
+          font: {
+            bold: true
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+            wrapText: '1', // any truthy value here
+          },
+          border: {
+            right: {
+              style: "thin",
+              color: "000000"
+            },
+            left: {
+              style: "bold",
+              color: "000000"
+            },
+          }
+        };
+        worksheet[i].v = 'Just some value'
+      }
+      const workbook = utils.book_new();
+      utils.book_append_sheet(workbook, worksheet, 'Sheet1')
+      writeFile(workbook, 'TrialBalance.xls', {
+        cellStyles: true
       })
-      writeFileXLSX(wb, 'TrialBalance.xls')
     }
     const replaceHrefAttribute = (element, baseUrl) => {
       if (!element || !element.childNodes) {
