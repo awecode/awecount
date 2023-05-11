@@ -1,16 +1,13 @@
 <template>
-  <!-- {{ props.expandAccountsProps }}--expandAccountsProps -->
-  <!-- {{ expandStatus }} --expandstatus -->
   <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
     !props.config.hide_categories
     ">
     <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
-      <!-- <td>{{ expandStatus }}--expandStatus</td> -->
       <td>
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
           <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
-            @click="expandStatus = !expandStatus">
+            @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
             </svg>
@@ -82,10 +79,11 @@
       " :class="expandAccountsProps ? '' : 'hidden'">
       <td>
         <!-- {{ expandAccountsProps && expandStatus }} -->
+        <!-- {{ item.id }}--item.id -->
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
           <q-btn class="expand-btn" dense flat :class="expandStatus ? 'expanded' : ''"
-            @click="expandStatus = !expandStatus">
+            @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
             </svg>
@@ -199,6 +197,7 @@
 </template>
 
 <script>
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   props: {
     item: {
@@ -245,7 +244,8 @@ export default {
   emits: ['updateTotal'],
 
   setup(props, { emit }) {
-    const expandStatus = ref(true)
+    const loginStore = useLoginStore()
+    // const expandStatus = ref(true)
     const itemProps = ref({ ...props.item })
     const fieldsArray = [
       'closing_cr',
@@ -337,6 +337,15 @@ export default {
       },
       { deep: true }
     )
+    const changeExpandStatus = (id) => {
+      const index = loginStore.trialBalanceCollapseId.indexOf(id)
+      if (index >= 0) loginStore.trialBalanceCollapseId.splice(index, 1)
+      else loginStore.trialBalanceCollapseId.push(id)
+    }
+    const expandStatus = computed(() => {
+      const newTotalObjStatus = props.item.id && loginStore.trialBalanceCollapseId.includes(props.item.id)
+      return !newTotalObjStatus
+    })
     // watch([newTotalObj, showTotalObject], () => {
 
     // })
@@ -351,6 +360,8 @@ export default {
       calculateNet,
       checkZeroTrans,
       expandStatus,
+      changeExpandStatus,
+      loginStore
     }
   },
 }
