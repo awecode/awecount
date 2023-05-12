@@ -124,7 +124,8 @@
 </template>
 
 <script>
-import { utils, writeFile } from 'xlsx'
+// import { utils, writeFile } from 'xlsx'
+import XLSX from "xlsx-js-style"
 export default {
   setup() {
     const categoryTree = ref(null)
@@ -234,7 +235,7 @@ export default {
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)
       // adding styles
-      const worksheet = utils.table_to_sheet(elt)
+      const worksheet = XLSX.utils.table_to_sheet(elt)
       // const range = utils.decode_range(worksheet['!ref']);
       // for (let row = range.s.r; row <= range.e.r; row++) {
       //   for (let col = range.s.c; col <= range.e.c; col++) {
@@ -255,37 +256,87 @@ export default {
       //   //   blankrows: false,
       //   // })
       // }
-      for (const i in worksheet) {
-        console.log(i)
-        if (typeof (worksheet[i]) != "object") continue;
-        let cell = utils.decode_cell(i);
-        worksheet[i].s = { // styling for all cells
-          font: {
-            bold: true
-          },
-          alignment: {
-            vertical: "center",
-            horizontal: "center",
-            wrapText: '1', // any truthy value here
-          },
-          border: {
-            right: {
-              style: "thin",
-              color: "000000"
-            },
-            left: {
-              style: "bold",
-              color: "000000"
-            },
-          }
-        };
-        worksheet[i].v = 'Just some value'
+      // for (const i in worksheet) {
+      //   console.log(i)
+      //   if (typeof (worksheet[i]) != "object") continue;
+      //   let cell = XLSX.utils.decode_cell(i);
+      //   worksheet[i].s = { // styling for all cells
+      //     font: {
+      //       bold: true
+      //     },
+      //     alignment: {
+      //       vertical: "center",
+      //       horizontal: "center",
+      //       wrapText: '1', // any truthy value here
+      //     },
+      //     border: {
+      //       right: {
+      //         style: "thin",
+      //         color: "000000"
+      //       },
+      //       left: {
+      //         style: "bold",
+      //         color: "000000"
+      //       },
+      //     }
+      //   }
+      // }
+      worksheet["!merges"] = [
+        { s: { c: 1, r: 0 }, e: { c: 3, r: 0 } },
+        { s: { c: 4, r: 0 }, e: { c: 6, r: 0 } },
+      ]
+      const range = XLSX.utils.decode_range(worksheet["!ref"] ?? "")
+      const rowCount = range.e.r;
+      const columnCount = range.e.c;
+      for (let row = 0; row <= rowCount; row++) {
+        for (let col = 0; col <= columnCount; col++) {
+          const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+          // Add center alignment to every cell
+          // console.log(cellRef)
+          // if (worksheet[cellRef]?.s) {
+          //   if (row === 0 || row === 1 || col === 0) {
+          //     // Format headers and names
+          //     // debugger
+
+          //     worksheet[cellRef].s = {
+          //       alignment: { horizontal: "center", vertical: 'center' },
+          //       font: { bold: true }
+          //     };
+          //   }
+          // }
+          worksheet[cellRef] = { ...worksheet[cellRef], s: { font: { bold: true } } }
+        }
       }
-      const workbook = utils.book_new();
-      utils.book_append_sheet(workbook, worksheet, 'Sheet1')
-      writeFile(workbook, 'TrialBalance.xls', {
-        cellStyles: true
-      })
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, "sheet_name_here");
+      const excelBuffer = XLSX.write(workbook, {
+        type: "buffer",
+        cellStyles: true,
+      });
+      // Convert buffer to Blob
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      // Create a download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = 'output.xlsx';
+
+      // Trigger the download
+      downloadLink.click();
+
+      // Clean up
+      URL.revokeObjectURL(downloadLink.href);
+
+      // const workbook2 = XLSX.read(excelBuffer, { type: 'buffer', cellStyles: true, });
+      // XLSX.writeFileXLSX(workbook, 'output.xlsx')
+
+      // fs.writeFileSync("fundraising_data.xlsx", excelBuffer);
+
+      // const workbook = XLSX.utils.book_new();
+      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
+      // XLSX.writeFile(workbook, 'TrialBalance.xls', {
+      //   cellStyles: true
+      // })
     }
     const replaceHrefAttribute = (element, baseUrl) => {
       if (!element || !element.childNodes) {

@@ -14,16 +14,17 @@
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
     "chart.js": "^4.2.1",
+    "fs": "^0.0.1-security",
     "nvm": "^0.0.4",
     "ofetch": "^1.0.0",
     "pinia": "^2.0.11",
     "pinia-plugin-persistedstate": "^3.0.2",
     "quasar": "^2.6.0",
-    "sheetjs-style": "^0.15.8",
     "unplugin-auto-import": "^0.13.0",
     "unplugin-vue-components": "^0.23.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0",
+    "xlsx-js-style": "^1.2.0",
     "yarn": "^1.22.19"
   },
   "devDependencies": {
