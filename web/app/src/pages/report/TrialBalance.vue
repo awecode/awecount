@@ -229,82 +229,29 @@ export default {
     // }
     const onDownloadXls = () => {
       // TODO: add download xls link
-      // const wb = utils.table_to_book(tableRef.value)
-      // const elt = tableRef.value
       const elt = document.getElementById('tableRef').children[0]
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)
       // adding styles
       const worksheet = XLSX.utils.table_to_sheet(elt)
-      // const range = utils.decode_range(worksheet['!ref']);
-      // for (let row = range.s.r; row <= range.e.r; row++) {
-      //   for (let col = range.s.c; col <= range.e.c; col++) {
-      //     const cellAddress = utils.encode_cell({ r: row, c: col })
-      //     if (worksheet[cellAddress]) {
-      //       const td = elt.rows[row].cells[col]
-      //       if (td instanceof HTMLElement) {
-      //         // const computedStyle = getComputedStyle(td)
-      //         // debugger
-      //         worksheet[cellAddress].v = 'ashvahsvghasvgavsgv'
-      //         worksheet[cellAddress].s = { font: { bold: true, color: { rgb: "FF0000" } } }
-      //       }
-      //     }
-      //   }
-      //   // adding styles
-      //   // const wb = utils.table_to_book(elt, {
-      //   //   sheet: 'sheet1',
-      //   //   blankrows: false,
-      //   // })
-      // }
-      // for (const i in worksheet) {
-      //   console.log(i)
-      //   if (typeof (worksheet[i]) != "object") continue;
-      //   let cell = XLSX.utils.decode_cell(i);
-      //   worksheet[i].s = { // styling for all cells
-      //     font: {
-      //       bold: true
-      //     },
-      //     alignment: {
-      //       vertical: "center",
-      //       horizontal: "center",
-      //       wrapText: '1', // any truthy value here
-      //     },
-      //     border: {
-      //       right: {
-      //         style: "thin",
-      //         color: "000000"
-      //       },
-      //       left: {
-      //         style: "bold",
-      //         color: "000000"
-      //       },
-      //     }
-      //   }
-      // }
-      worksheet["!merges"] = [
-        { s: { c: 1, r: 0 }, e: { c: 3, r: 0 } },
-        { s: { c: 4, r: 0 }, e: { c: 6, r: 0 } },
-      ]
-      const range = XLSX.utils.decode_range(worksheet["!ref"] ?? "")
-      const rowCount = range.e.r;
-      const columnCount = range.e.c;
-      for (let row = 0; row <= rowCount; row++) {
-        for (let col = 0; col <= columnCount; col++) {
-          const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-          // Add center alignment to every cell
-          // console.log(cellRef)
-          // if (worksheet[cellRef]?.s) {
-          //   if (row === 0 || row === 1 || col === 0) {
-          //     // Format headers and names
-          //     // debugger
-
-          //     worksheet[cellRef].s = {
-          //       alignment: { horizontal: "center", vertical: 'center' },
-          //       font: { bold: true }
-          //     };
-          //   }
-          // }
-          worksheet[cellRef] = { ...worksheet[cellRef], s: { font: { bold: true } } }
+      for (const i in worksheet) {
+        if (typeof (worksheet[i]) != "object") continue;
+        let cell = XLSX.utils.decode_cell(i);
+        console.log(cell.c)
+        worksheet[i].s = {
+          font: { name: "Courier", sz: 12 }
+        }
+        if (cell.c == 0 || cell.r == 0 || cell.r == 1) { // first column
+          worksheet[i].s.font.bold = true
+          if (cell.r != 1 && cell.r != 0 && cell.r != worksheet[`!rows`].length) {
+            worksheet[i].s.font.color = { rgb: "1976d2" }
+          }
+        }
+        if (cell.r == worksheet[`!rows`].length) {
+          worksheet[i].s.font.bold = true
+        }
+        if (cell.r == (worksheet[`!rows`].length - 1)) {
+          worksheet[i].s.border = { top: { style: 'thin', color: { rgb: "000000" } } }
         }
       }
       const workbook = XLSX.utils.book_new()
@@ -313,31 +260,10 @@ export default {
         type: "buffer",
         cellStyles: true,
       });
-      // Convert buffer to Blob
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-      // Create a download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = 'output.xlsx';
-
-      // Trigger the download
-      downloadLink.click();
-
-      // Clean up
-      URL.revokeObjectURL(downloadLink.href);
-
-      // const workbook2 = XLSX.read(excelBuffer, { type: 'buffer', cellStyles: true, });
-      // XLSX.writeFileXLSX(workbook, 'output.xlsx')
-
-      // fs.writeFileSync("fundraising_data.xlsx", excelBuffer);
-
-      // const workbook = XLSX.utils.book_new();
-      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
-      // XLSX.writeFile(workbook, 'TrialBalance.xls', {
-      //   cellStyles: true
-      // })
+      // download Excel
+      XLSX.writeFileXLSX(workbook, 'TrialBalance.xls')
     }
+    // to replace link '/' with base url
     const replaceHrefAttribute = (element, baseUrl) => {
       if (!element || !element.childNodes) {
         return
