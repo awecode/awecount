@@ -235,29 +235,31 @@ export default {
       // adding styles
       const worksheet = XLSX.utils.table_to_sheet(elt)
       for (const i in worksheet) {
-        if (typeof (worksheet[i]) != "object") continue;
-        let cell = XLSX.utils.decode_cell(i);
-        console.log(cell.c)
+        if (typeof (worksheet[i]) != 'object') continue
+        let cell = XLSX.utils.decode_cell(i)
         worksheet[i].s = {
-          font: { name: "Courier", sz: 12 }
+          font: { name: 'Courier', sz: 12 }
         }
-        if (cell.c == 0 || cell.r == 0 || cell.r == 1) { // first column
+        if (cell.c == 0 || cell.r == 0 || cell.r == 1) { // first clumn || first and sec row
           worksheet[i].s.font.bold = true
-          if (cell.r != 1 && cell.r != 0 && cell.r != worksheet[`!rows`].length) {
-            worksheet[i].s.font.color = { rgb: "1976d2" }
+          // worksheet[i].s.font.color = { rgb: '1976d2' }
+          // debugger
+          if (cell.r != 0 && cell.r != 1) {
+            worksheet[i].s.font.color = { rgb: '1976d2' }
           }
         }
+        // debugger
         if (cell.r == worksheet[`!rows`].length) {
-          worksheet[i].s.font.bold = true
+          // worksheet[i].s.font.bold = true
         }
         if (cell.r == (worksheet[`!rows`].length - 1)) {
-          worksheet[i].s.border = { top: { style: 'thin', color: { rgb: "000000" } } }
+          worksheet[i].s.border = { top: { style: 'thin', color: { rgb: '000000' } } }
         }
       }
       const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, "sheet_name_here");
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
       const excelBuffer = XLSX.write(workbook, {
-        type: "buffer",
+        type: 'buffer',
         cellStyles: true,
       });
       // download Excel
@@ -265,9 +267,7 @@ export default {
     }
     // to replace link '/' with base url
     const replaceHrefAttribute = (element, baseUrl) => {
-      if (!element || !element.childNodes) {
-        return
-      }
+      if (!element || !element.childNodes) return
       for (var i = 0; i < element.childNodes.length; i++) {
         var child = element.childNodes[i]
         if (child.tagName === 'A') {
