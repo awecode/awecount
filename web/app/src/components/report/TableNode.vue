@@ -3,7 +3,7 @@
     !props.config.hide_categories
     ">
     <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
-      <td>
+      <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
           <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
@@ -14,7 +14,7 @@
           </q-btn>
         </span>
         <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
+          class="text-blue-6">{{ item.name }}</RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
@@ -77,7 +77,7 @@
       showTotalObject.closing_dr
     )
       " :class="expandAccountsProps ? '' : 'hidden'">
-      <td>
+      <td class="text-blue-6">
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="display: inline-block; width: 40px; margin-left: -5px;">
           <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
@@ -88,7 +88,7 @@
           </q-btn>
         </span>
         <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">{{ item.name }}</RouterLink>
+          class="text-blue-6">{{ item.name }}</RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
@@ -156,7 +156,7 @@
         !(activeObject.transaction_dr || activeObject.transaction_cr)
       )
         " :class="expandAccountsProps && expandStatus ? '' : 'hidden'">
-        <td>
+        <td class="text-blue-6 text-italic">
           <span v-if="!props.config.hide_categories">
             <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
             <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>

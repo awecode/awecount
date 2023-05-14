@@ -81,7 +81,7 @@
               :accounts="accounts" :category_accounts="category_accounts" :config="config"></TableNode>
           </template>
           <tr>
-            <td><span class="text-weight-medium">Total</span></td>
+            <td class="text-weight-medium"><span>Total</span></td>
             <template v-if="config.show_opening_closing_dr_cr">
               <td class="text-left text-weight-medium">
                 {{ total.opening_dr }}
@@ -240,22 +240,25 @@ export default {
         worksheet[i].s = {
           font: { name: 'Courier', sz: 12 }
         }
-        if (cell.c == 0 || cell.r == 0 || cell.r == 1) { // first clumn || first and sec row
+        if (cell.r == 0) { // first row
           worksheet[i].s.font.bold = true
-          // worksheet[i].s.font.color = { rgb: '1976d2' }
-          // debugger
-          if (cell.r != 0 && cell.r != 1) {
-            worksheet[i].s.font.color = { rgb: '1976d2' }
-          }
         }
-        // debugger
-        if (cell.r == worksheet[`!rows`].length) {
-          // worksheet[i].s.font.bold = true
+        if (cell.c == 0) { // first row
+          const td = elt.rows[cell.r].cells[cell.c]
+          worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
+          //get color and apply to excel
+          const hexCode = getComputedStyle(td).color
+          const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
+          const numsArray = hexArray.map((e) => Number(e))
+          const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
+          worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
-        if (cell.r == (worksheet[`!rows`].length - 1)) {
-          worksheet[i].s.border = { top: { style: 'thin', color: { rgb: '000000' } } }
+        if (cell.r > -1) {
+          const td = elt.rows[cell.r].cells[cell.c]
+          if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
         }
       }
+      worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
       const workbook = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
       const excelBuffer = XLSX.write(workbook, {
