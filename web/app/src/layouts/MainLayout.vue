@@ -1,27 +1,13 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header
-      elevated
-      class="bg-white text-grey-8 q-pa-sm d-print-none print-hide"
-    >
+    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el
-              v-for="breadCrum in breadCrums"
-              :key="breadCrum"
-              :label="breadCrum"
-              :to="{ name: breadCrum }"
-            />
+            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
+              :to="{ name: breadCrum }" />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
@@ -29,33 +15,16 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn class="gt-sm"
-              >{{ store.companyInfo.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]"
-                >Fiscal Yaar</q-tooltip
-              ></q-btn
-            >
-            <q-btn
-              class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="store.isCalendarInAD = !store.isCalendarInAD"
-              >{{ activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]"
-                >Change Date Format</q-tooltip
-              >
+            <q-btn class="gt-sm">{{ store.companyInfo.current_fiscal_year }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
+            <q-btn class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">{{
+              activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
-            <q-btn class="gt-sm"
-              ><q-icon name="mdi-help-circle-outline"></q-icon
-              ><q-tooltip :delay="1000" :offset="[0, 10]"
-                >Help</q-tooltip
-              ></q-btn
-            >
-            <q-btn @click="logoutDiologueOpen = true"
-              ><q-icon name="mdi-logout" /><q-tooltip
-                :delay="1000"
-                :offset="[0, 10]"
-                >Logout</q-tooltip
-              ></q-btn
-            >
+            <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
+                :offset="[0, 10]">Help</q-tooltip></q-btn>
+            <q-btn @click="logoutDiologueOpen = true"><q-icon name="mdi-logout" /><q-tooltip :delay="1000"
+                :offset="[0, 10]">Logout</q-tooltip></q-btn>
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
@@ -63,19 +32,9 @@
                     <span>Are you sure you want to logout?</span>
                   </div>
                   <div class="q-mx-md" style="margin-top: 40px">
-                    <div
-                      class="text-right text-blue-6 row justify-end q-gutter-x-lg"
-                    >
-                      <q-btn
-                        flat
-                        label="Logout"
-                        @click="onLogoutClick()"
-                      ></q-btn>
-                      <q-btn
-                        flat
-                        label="Cancel"
-                        @click="logoutDiologueOpen = false"
-                      ></q-btn>
+                    <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
+                      <q-btn flat label="Logout" @click="onLogoutClick()"></q-btn>
+                      <q-btn flat label="Cancel" @click="logoutDiologueOpen = false"></q-btn>
                     </div>
                   </div>
                 </div>
@@ -86,12 +45,7 @@
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      class="d-print-none print-hide"
-    >
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="d-print-none print-hide">
       <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
@@ -102,11 +56,7 @@
 
         <div class="q-mb-md"></div>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
     <q-page-container>
@@ -307,6 +257,11 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
         link: '/income/item/',
+      },
+      {
+        title: 'Balance Sheet',
+        icon: 'mdi-clipboard-text',
+        link: '/report/balance-sheet/',
       },
     ],
   },

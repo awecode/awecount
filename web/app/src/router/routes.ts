@@ -748,6 +748,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Collection Report'],
         },
       },
+      {
+        path: 'balance-sheet/',
+        component: () => import('src/pages/report/BalanceSheet.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Balance Sheet'],
+        },
+      },
     ],
   },
   {

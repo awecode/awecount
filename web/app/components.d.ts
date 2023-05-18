@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    BalanceSheetTableNode: typeof import('./src/components/report/BalanceSheetTableNode.vue')['default']
     BenefactorForm: typeof import('./src/components/BenefactorForm.vue')['default']
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
