@@ -2,69 +2,79 @@
     <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
         !props.config.hide_categories
         ">
-        <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
-            <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
-                <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span style="display: inline-block; width: 40px; margin-left: -5px;">
-                    <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
-                        @click="changeExpandStatus(item.id)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-                            class="text-grey-7">
-                            <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
-                        </svg>
-                    </q-btn>
-                </span>
-                <RouterLink style="text-decoration: none" target="_blank"
-                    :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}</RouterLink>
-            </td>
-            <td>
-                {{ calculateNet(newTotalObj) }}
-            </td>
-        </tr>
-        <tr v-else-if="!!(
-            showTotalObject.opening_cr ||
-            showTotalObject.opening_dr ||
-            showTotalObject.closing_cr ||
-            showTotalObject.closing_dr
-        )
-            " :class="expandAccountsProps ? '' : 'hidden'">
-            <td class="text-blue-6">
-                <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span style="display: inline-block; width: 40px; margin-left: -5px;">
-                    <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
-                        @click="changeExpandStatus(item.id)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-                            class="text-grey-7">
-                            <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
-                        </svg>
-                    </q-btn>
-                </span>
-                <RouterLink style="text-decoration: none" target="_blank"
-                    :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}</RouterLink>
-            </td>
-            <td>{{ calculateNet(showTotalObject) }}</td>
-        </tr>
-    </template>
-    <template v-if="activeObjectArray &&
-        activeObjectArray.length &&
-        !props.config.hide_accounts
-        ">
-        <template v-for="activeObject in activeObjectArray" :key="activeObject.id">
-            <tr v-if="!(
-                props.config.hide_zero_transactions &&
-                !(activeObject.transaction_dr || activeObject.transaction_cr)
-            )
-                " :class="expandAccountsProps && expandStatus ? '' : 'hidden'">
-                <td class="text-blue-6 text-italic">
-                    <span v-if="!props.config.hide_categories">
-                        <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-                        <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
-                    <RouterLink target="_blank" style="text-decoration: none"
-                        :to="`/account/${activeObject.account_id}/view/`"
-                        class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
+        <!-- <template v-for="(newTotalObj, index) in newTotalObjArray" :key="index">
+            <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
+                <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
+                    <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
+                        <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
+                            @click="changeExpandStatus(item.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                class="text-grey-7">
+                                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+                            </svg>
+                        </q-btn>
+                    </span>
+                    <RouterLink style="text-decoration: none" target="_blank"
+                        :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                    </RouterLink>
                 </td>
-                <td>{{ calculateNet(activeObject) }}</td>
+                <td>
+                    {{ calculateNet(newTotalObj) }}
+                </td>
             </tr>
+        </template> -->
+        <template v-for="(showTotalObjPeriod, index) in showTotalObject" :key="index">
+            <tr v-if="!!(
+                showTotalObjPeriod.opening_cr ||
+                showTotalObjPeriod.opening_dr ||
+                showTotalObjPeriod.closing_cr ||
+                showTotalObjPeriod.closing_dr
+            )
+                " :class="expandAccountsProps ? '' : 'hidden'">
+                <td class="text-blue-6">
+                    <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
+                        <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
+                            @click="changeExpandStatus(item.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                class="text-grey-7">
+                                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+                            </svg>
+                        </q-btn>
+                    </span>
+                    <RouterLink style="text-decoration: none" target="_blank"
+                        :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                    </RouterLink>
+                </td>
+                <td>{{ calculateNet(showTotalObjPeriod) }}</td>
+            </tr>
+        </template>
+    </template>
+    <!-- {{ activeObjectArray }}--active -->
+    <template v-for="(periodArray, index) in activeObjectArray" :key="index">
+        <template v-if="periodArray &&
+            periodArray.length &&
+            !props.config.hide_accounts
+            ">
+            <template v-for="activeObject in periodArray" :key="activeObject.id">
+                <tr v-if="!(
+                    props.config.hide_zero_transactions &&
+                    !(activeObject.transaction_dr || activeObject.transaction_cr)
+                )
+                    " :class="expandAccountsProps && expandStatus ? '' : 'hidden'">
+                    <td class="text-blue-6 text-italic">
+                        <span v-if="!props.config.hide_categories">
+                            <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
+                            <span v-for="num in props.level + 1"
+                                :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+                        <RouterLink target="_blank" style="text-decoration: none"
+                            :to="`/account/${activeObject.account_id}/view/`"
+                            class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
+                    </td>
+                    <td>{{ calculateNet(activeObject) }}</td>
+                </tr>
+            </template>
         </template>
     </template>
     <template v-if="item.children && item.children.length">
@@ -147,23 +157,26 @@ export default {
             transaction_cr: 0,
             transaction_dr: 0,
         }
-        const showTotalObject = ref(totalObjectFormat)
-        const newTotalObj = ref(null)
+        const showTotalObject = ref([])
+        const newTotalObjArray = ref([])
         const activeObjectArray = computed(() => {
             const activeArray = []
-            showTotalObject.value = totalObjectFormat
-            const accountArray = props.category_accounts[props.item.id]
-            if (accountArray) {
-                accountArray.forEach((item) => {
-                    const currentObj = props.accounts[item]
-                    activeArray.push(currentObj)
-                    fieldsArray.forEach((item) => {
-                        showTotalObject.value[item] =
-                            showTotalObject.value[item] + currentObj[item]
+            props.accounts.forEach((item, index) => {
+                const currentActiveArray = []
+                showTotalObject.value[index] = totalObjectFormat
+                const accountArray = props.category_accounts[index][props.item.id]
+                if (accountArray) {
+                    accountArray.forEach((item) => {
+                        const currentObj = props.accounts[index][item]
+                        currentActiveArray.push(currentObj)
+                        fieldsArray.forEach((item) => {
+                            showTotalObject.value[index][item] += currentObj[item]
+                        })
+                        activeArray[index] = currentActiveArray
                     })
                     emit('updateTotal', showTotalObject.value, props.index)
-                })
-            }
+                }
+            })
             return activeArray
         })
         const activeObject = null
@@ -192,40 +205,45 @@ export default {
             // }
         }
         // check zero trans status
-        const checkZeroTrans = () => {
-            if (newTotalObj.value) {
-                return !!(
-                    newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
-                )
-            } else if (showTotalObject.value) {
-                return !!(
-                    showTotalObject.value.transaction_cr ||
-                    showTotalObject.value.transaction_dr
-                )
-            } else return true
-        }
+        // const checkZeroTrans = () => {
+        //     if (newTotalObj.value) {
+        //         return !!(
+        //             newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
+        //         )
+        //     } else if (showTotalObject.value) {
+        //         return !!(
+        //             showTotalObject.value.transaction_cr ||
+        //             showTotalObject.value.transaction_dr
+        //         )
+        //     } else return true
+        // }
         watch(
-            [itemProps],
+            itemProps,
             (newValue) => {
-                const computedTotal = {
-                    closing_cr: 0,
-                    closing_dr: 0,
-                    opening_cr: 0,
-                    opening_dr: 0,
-                    transaction_cr: 0,
-                    transaction_dr: 0,
-                }
-                newValue[0].children.forEach((item) => {
-                    if (item.total) {
-                        fieldsArray.forEach((field) => {
-                            computedTotal[field] += item.total[field] || 0
+                console.log(itemProps.value)
+                const computedTotal = []
+                newValue.children.forEach((item, index) => {
+                    if (index === 0) computedTotal[index] = totalObjectFormat
+                    // debugger
+                    if (item?.total) {
+                        item.total.forEach((obj, index) => {
+                            if (obj) {
+                                // console.log('item.total', item.total)
+                                // debugger
+                                fieldsArray.forEach((field) => {
+                                    computedTotal[index][field] += obj[field] || 0
+                                })
+                            }
+                        })
+                        item.total.forEach((obj, index) => {
+                            fieldsArray.forEach((field) => {
+                                computedTotal[index][field] = computedTotal[index][field] || 0 + showTotalObject.value[index][field] || 0
+                            })
                         })
                     }
                 })
-                fieldsArray.forEach((field) => {
-                    computedTotal[field] += showTotalObject.value[field] || 0
-                })
-                newTotalObj.value = computedTotal
+                console.log('computedTotal', computedTotal)
+                newTotalObjArray.value = computedTotal
                 emit('updateTotal', computedTotal, props.index)
             },
             { deep: true }
@@ -248,9 +266,9 @@ export default {
             activeObjectArray,
             onUpdateTotal,
             showTotalObject,
-            newTotalObj,
+            newTotalObjArray,
             calculateNet,
-            checkZeroTrans,
+            // checkZeroTrans,
             expandStatus,
             changeExpandStatus,
             loginStore

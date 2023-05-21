@@ -99,7 +99,7 @@
 export default {
     setup() {
         const categoryTree = ref(null)
-        const category_accounts = ref({})
+        const category_accounts = ref([])
         const config = ref({
             hide_accounts: false,
             hide_categories: false,
@@ -107,7 +107,7 @@ export default {
             show_opening_closing_dr_cr: false,
             hide_zero_transactions: false,
         })
-        const accounts = ref({})
+        const accounts = ref([])
         const showData = ref(false)
         const total = ref({
             transaction_dr: 0,
@@ -143,15 +143,16 @@ export default {
             showData.value = false
             // const endpoint = `/v1/test/data/`
             const endpoint = `/v1/trial-balance/?start_date=${start_date}&end_date=${end_date}`
+            let data = null
             try {
-                const data = await useApi(endpoint)
+                data = await useApi(endpoint)
             }
             catch (error) {
                 console.log(error)
             }
-            category_accounts.value = {}
-            accounts.value = {}
+            // accounts.value = {}
             let localAccounts = {}
+            category_accounts.value[index] = []
             data.forEach((obj) => {
                 const acc = {
                     account_id: obj.id,
@@ -165,13 +166,13 @@ export default {
                     transaction_cr: (obj.cc || 0) - (obj.oc || 0),
                 }
                 localAccounts[obj.id] = acc
-
                 // Create this.category_accounts[obj.category_id] if doesn't exist
-                !(obj.category_id in category_accounts.value) &&
-                    (category_accounts.value[obj.category_id] = [])
-                category_accounts.value[obj.category_id].push(obj.id)
+                !(obj.category_id in category_accounts.value[index]) &&
+                    (category_accounts.value[index][obj.category_id] = [])
+                category_accounts.value[index][obj.category_id].push(obj.id)
             })
-            accounts.value = localAccounts
+            // debugger
+            accounts.value[index] = localAccounts
             showData.value = true
         }
         // const onDownloadXls = () => {
@@ -228,7 +229,7 @@ export default {
         //     }
         // }
         const onAddColumn = () => {
-            const data = fetchData(secondfields.value.start_date, secondfields.value.end_date)
+            const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, 0)
             // console.log('do something')
         }
         return {
