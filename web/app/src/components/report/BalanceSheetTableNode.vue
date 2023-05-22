@@ -2,6 +2,13 @@
     <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
         !props.config.hide_categories
         ">
+        <template v-for="(newobj, index) in newTotalObjArray" :key="index">
+            {{ itemProps.name }}
+            <hr>
+            {{ newobj }}
+            <hr>
+            {{ itemProps }}
+        </template>
         <!-- <template v-for="(newTotalObj, index) in newTotalObjArray" :key="index">
             <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
                 <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
@@ -176,6 +183,7 @@ export default {
                     })
                     emit('updateTotal', showTotalObject.value, props.index)
                 }
+                // debugger
             })
             return activeArray
         })
@@ -220,29 +228,22 @@ export default {
         watch(
             itemProps,
             (newValue) => {
-                console.log(itemProps.value)
-                const computedTotal = []
-                newValue.children.forEach((item, index) => {
-                    if (index === 0) computedTotal[index] = totalObjectFormat
-                    // debugger
-                    if (item?.total) {
-                        item.total.forEach((obj, index) => {
-                            if (obj) {
-                                // console.log('item.total', item.total)
-                                // debugger
+                let computedTotal = []
+                newValue.children.forEach((child, childIndex) => {
+                    if (child.total && child.total.length > 0) {
+                        child.total.forEach((totalObj, totalIndex) => {
+                            if (totalObj) {
+                                // console.log(computedTotal)
+                                computedTotal = [totalObjectFormat]
                                 fieldsArray.forEach((field) => {
-                                    computedTotal[index][field] += obj[field] || 0
+                                    computedTotal[totalIndex][field] = computedTotal[totalIndex][field] + totalObj[field]
                                 })
                             }
                         })
-                        item.total.forEach((obj, index) => {
-                            fieldsArray.forEach((field) => {
-                                computedTotal[index][field] = computedTotal[index][field] || 0 + showTotalObject.value[index][field] || 0
-                            })
-                        })
                     }
+                    else computedTotal = []
                 })
-                console.log('computedTotal', computedTotal)
+                // if (itemProps.value.name === 'Liabilities') debugger
                 newTotalObjArray.value = computedTotal
                 emit('updateTotal', computedTotal, props.index)
             },
