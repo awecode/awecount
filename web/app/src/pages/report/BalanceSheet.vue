@@ -143,13 +143,347 @@ export default {
             showData.value = false
             // const endpoint = `/v1/test/data/`
             const endpoint = `/v1/trial-balance/?start_date=${start_date}&end_date=${end_date}`
-            let data = null
-            try {
-                data = await useApi(endpoint)
-            }
-            catch (error) {
-                console.log(error)
-            }
+            let data = [
+                {
+                    "id": 7785,
+                    "name": "TDS Receivables",
+                    "category_id": 497,
+                    "od": null,
+                    "oc": null,
+                    "cd": 22.95,
+                    "cc": null
+                },
+                {
+                    "id": 7786,
+                    "name": "Cash",
+                    "category_id": 498,
+                    "od": 10000,
+                    "oc": 5000,
+                    "cd": 17401.5,
+                    "cc": 5045.2
+                },
+                {
+                    "id": 7799,
+                    "name": "Opening Balance Difference",
+                    "category_id": 490,
+                    "od": 1,
+                    "oc": 11000,
+                    "cd": 1,
+                    "cc": 11000
+                },
+                {
+                    "id": 11251,
+                    "name": "Pencils (Purchase)",
+                    "category_id": 518,
+                    "od": null,
+                    "oc": null,
+                    "cd": 100000,
+                    "cc": 100000
+                },
+                {
+                    "id": 11253,
+                    "name": "Discount Allowed - banner",
+                    "category_id": 529,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 2
+                },
+                {
+                    "id": 11254,
+                    "name": "banner (Purchase)",
+                    "category_id": 518,
+                    "od": 4000,
+                    "oc": null,
+                    "cd": 4000,
+                    "cc": null
+                },
+                {
+                    "id": 11256,
+                    "name": "abcd (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 920.95,
+                    "cc": 139.95
+                },
+                {
+                    "id": 11257,
+                    "name": "abcd (Payable)",
+                    "category_id": 505,
+                    "od": 20000,
+                    "oc": null,
+                    "cd": 20000,
+                    "cc": null
+                },
+                {
+                    "id": 11258,
+                    "name": "tds Receivable",
+                    "category_id": 497,
+                    "od": null,
+                    "oc": null,
+                    "cd": 5020,
+                    "cc": 5000
+                },
+                {
+                    "id": 11261,
+                    "name": "Discount Received - name",
+                    "category_id": 517,
+                    "od": null,
+                    "oc": null,
+                    "cd": 10,
+                    "cc": null
+                },
+                {
+                    "id": 11262,
+                    "name": "Furniture",
+                    "category_id": 493,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 10
+                },
+                {
+                    "id": 11263,
+                    "name": "abcd",
+                    "category_id": 491,
+                    "od": null,
+                    "oc": 1,
+                    "cd": 2,
+                    "cc": 1
+                },
+                {
+                    "id": 11264,
+                    "name": "bank",
+                    "category_id": 485,
+                    "od": 1000,
+                    "oc": null,
+                    "cd": 1000,
+                    "cc": null
+                },
+                {
+                    "id": 11265,
+                    "name": "cash",
+                    "category_id": 485,
+                    "od": 2000,
+                    "oc": null,
+                    "cd": 2000,
+                    "cc": null
+                },
+                {
+                    "id": 11266,
+                    "name": "name",
+                    "category_id": 491,
+                    "od": null,
+                    "oc": 2000,
+                    "cd": null,
+                    "cc": 2000
+                },
+                {
+                    "id": 11267,
+                    "name": "Stationary",
+                    "category_id": 485,
+                    "od": 5000,
+                    "oc": null,
+                    "cd": 5000,
+                    "cc": null
+                },
+                {
+                    "id": 11268,
+                    "name": "SCB (09000198765457)",
+                    "category_id": 500,
+                    "od": null,
+                    "oc": 30000,
+                    "cd": 23,
+                    "cc": 31245
+                },
+                {
+                    "id": 11269,
+                    "name": "NMB (09099998888)",
+                    "category_id": 500,
+                    "od": null,
+                    "oc": null,
+                    "cd": 6935.225,
+                    "cc": 10000
+                },
+                {
+                    "id": 11270,
+                    "name": "edusanjal (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 123
+                },
+                {
+                    "id": 11276,
+                    "name": "txt",
+                    "category_id": 485,
+                    "od": null,
+                    "oc": 4000,
+                    "cd": null,
+                    "cc": 4000
+                },
+                {
+                    "id": 16731,
+                    "name": "TAX Payable",
+                    "category_id": 512,
+                    "od": null,
+                    "oc": null,
+                    "cd": 1250.2,
+                    "cc": 1103.7
+                },
+                {
+                    "id": 16736,
+                    "name": "Cotton Masks (Sales)",
+                    "category_id": 513,
+                    "od": null,
+                    "oc": null,
+                    "cd": 40,
+                    "cc": 540
+                },
+                {
+                    "id": 16737,
+                    "name": "Discount Allowed - Cotton Masks",
+                    "category_id": 517,
+                    "od": null,
+                    "oc": null,
+                    "cd": 50,
+                    "cc": null
+                },
+                {
+                    "id": 16740,
+                    "name": "Siddhartha Industries (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 2170.278,
+                    "cc": 5000
+                },
+                {
+                    "id": 16741,
+                    "name": "Siddhartha Industries (Payable)",
+                    "category_id": 505,
+                    "od": null,
+                    "oc": null,
+                    "cd": 10000,
+                    "cc": 5420
+                },
+                {
+                    "id": 16742,
+                    "name": "Helmet - Red (Sales)",
+                    "category_id": 513,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 8000
+                },
+                {
+                    "id": 16744,
+                    "name": "Helmet - Red (Purchase)",
+                    "category_id": 518,
+                    "od": null,
+                    "oc": null,
+                    "cd": 400,
+                    "cc": null
+                },
+                {
+                    "id": 16746,
+                    "name": "NIBL",
+                    "category_id": 500,
+                    "od": null,
+                    "oc": null,
+                    "cd": 5000,
+                    "cc": null
+                },
+                {
+                    "id": 18028,
+                    "name": "asd",
+                    "category_id": 500,
+                    "od": null,
+                    "oc": null,
+                    "cd": 16.725,
+                    "cc": 23
+                },
+                {
+                    "id": 18135,
+                    "name": "Value Added Tax Payable",
+                    "category_id": 512,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 409.578
+                },
+                {
+                    "id": 18136,
+                    "name": "Pencils (Sales)",
+                    "category_id": 513,
+                    "od": null,
+                    "oc": null,
+                    "cd": null,
+                    "cc": 3345
+                },
+                {
+                    "id": 18137,
+                    "name": "Discount Allowed - Pencils",
+                    "category_id": 517,
+                    "od": null,
+                    "oc": null,
+                    "cd": 194.4,
+                    "cc": null
+                },
+                {
+                    "id": 18139,
+                    "name": "Rohan (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 1711.95,
+                    "cc": 1711.95
+                },
+                {
+                    "id": 18140,
+                    "name": "Rohan (Payable)",
+                    "category_id": 505,
+                    "od": null,
+                    "oc": null,
+                    "cd": 105000,
+                    "cc": 105000
+                },
+                {
+                    "id": 18229,
+                    "name": "ashuja (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 920.95,
+                    "cc": null
+                },
+                {
+                    "id": 18255,
+                    "name": "ABC (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 16.95,
+                    "cc": null
+                },
+                {
+                    "id": 18261,
+                    "name": "asmalsm (Receivable)",
+                    "category_id": 502,
+                    "od": null,
+                    "oc": null,
+                    "cd": 11.3,
+                    "cc": null
+                }
+            ]
+            // try {
+            //     data = await useApi(endpoint)
+            // }
+            // catch (error) {
+            //     console.log(error)
+            // }
             // accounts.value = {}
             let localAccounts = {}
             category_accounts.value[index] = []
@@ -172,6 +506,7 @@ export default {
                 category_accounts.value[index][obj.category_id].push(obj.id)
             })
             // debugger
+            console.log('localAccounts', localAccounts)
             accounts.value[index] = localAccounts
             showData.value = true
         }
@@ -248,13 +583,158 @@ export default {
     },
     created() {
         const endpoint = '/v1/category-tree/'
-        useApi(endpoint, { method: 'GET' })
-            .then((data) => {
-                this.categoryTree = data
-            })
-            .catch((error) => {
-                console.log('err fetching data', error)
-            })
+        this.categoryTree = [
+            {
+                "id": 485,
+                "name": "Assets",
+                "children": [
+                    {
+                        "id": 491,
+                        "name": "Other Receivables",
+                        "children": []
+                    },
+                    {
+                        "id": 492,
+                        "name": "Deferred Assets",
+                        "children": []
+                    },
+                    {
+                        "id": 493,
+                        "name": "Fixed Assets",
+                        "children": []
+                    },
+                    {
+                        "id": 497,
+                        "name": "Tax Receivables",
+                        "children": []
+                    },
+                    {
+                        "id": 498,
+                        "name": "Cash Accounts",
+                        "children": []
+                    },
+                    {
+                        "id": 500,
+                        "name": "Bank Accounts",
+                        "children": []
+                    },
+                    {
+                        "id": 501,
+                        "name": "Account Receivables",
+                        "children": [
+                            {
+                                "id": 502,
+                                "name": "Customers",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 486,
+                "name": "Liabilities",
+                "children": [
+                    {
+                        "id": 504,
+                        "name": "Account Payables",
+                        "children": [
+                            {
+                                "id": 505,
+                                "name": "Suppliers",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": 506,
+                        "name": "Other Payables",
+                        "children": []
+                    },
+                    {
+                        "id": 512,
+                        "name": "Duties & Taxes",
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "id": 487,
+                "name": "Income",
+                "children": [
+                    {
+                        "id": 513,
+                        "name": "Sales",
+                        "children": []
+                    },
+                    {
+                        "id": 514,
+                        "name": "Direct Income",
+                        "children": []
+                    },
+                    {
+                        "id": 516,
+                        "name": "Indirect Income",
+                        "children": [
+                            {
+                                "id": 517,
+                                "name": "Discount Income",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 488,
+                "name": "Expenses",
+                "children": [
+                    {
+                        "id": 518,
+                        "name": "Purchase",
+                        "children": []
+                    },
+                    {
+                        "id": 519,
+                        "name": "Direct Expenses",
+                        "children": []
+                    },
+                    {
+                        "id": 521,
+                        "name": "Indirect Expenses",
+                        "children": [
+                            {
+                                "id": 528,
+                                "name": "Fuel and Transport",
+                                "children": []
+                            },
+                            {
+                                "id": 529,
+                                "name": "Discount Expenses",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 489,
+                "name": "Equity",
+                "children": []
+            },
+            {
+                "id": 490,
+                "name": "Opening Balance Difference",
+                "children": []
+            }
+        ]
+        // useApi(endpoint, { method: 'GET' })
+        //     .then((data) => {
+        //         this.categoryTree = data
+        //     })
+        //     .catch((error) => {
+        //         console.log('err fetching data', error)
+        //     })
     },
 }
 </script>
