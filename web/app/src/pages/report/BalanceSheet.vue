@@ -174,6 +174,7 @@ export default {
             })
             // debugger
             console.log('localAccounts', localAccounts)
+            console.log('index', index)
             accounts.value[index] = localAccounts
             showData.value = true
         }
@@ -231,7 +232,9 @@ export default {
         //     }
         // }
         const onAddColumn = () => {
-            const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, 0)
+            const addIndex = accounts.value.length ? accounts.value.length - 1 : 0
+            const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
+            console.log('accounts.value', accounts.value)
             // console.log('do something')
         }
         return {
