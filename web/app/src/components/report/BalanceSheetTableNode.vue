@@ -5,7 +5,7 @@
         <!-- <template v-for="(newobj, index) in newTotalObjArray" :key="index">
             {{ newobj }}
         </template> -->
-        <template v-if="newTotalObjArray && newTotalObjArray.length > 0">
+        <!-- <template v-if="newTotalObjArray && newTotalObjArray.length > 0">
             <template v-for="(newTotalObj, index) in newTotalObjArray" :key="index">
                 <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
                     <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
@@ -28,8 +28,32 @@
                     </td>
                 </tr>
             </template>
+        </template> -->
+        <template v-if="newTotalObjArray && newTotalObjArray.length > 0">
+            <tr :class="expandAccountsProps ? '' : 'hidden'">
+                <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
+                    <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
+                        <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
+                            @click="changeExpandStatus(item.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                class="text-grey-7">
+                                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+                            </svg>
+                        </q-btn>
+                    </span>
+                    <RouterLink style="text-decoration: none" target="_blank"
+                        :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                    </RouterLink>
+                </td>
+                <template v-for="(newTotalObj, index) in newTotalObjArray" :key="index">
+                    <td>
+                        {{ calculateNet(newTotalObj) }}
+                    </td>
+                </template>
+            </tr>
         </template>
-        <template v-else>
+        <!-- <template v-if="!(newTotalObjArray && newTotalObjArray.length > 0)">
             <template v-for="(showTotalObjPeriod, index) in showTotalObject" :key="index">
                 <tr v-if="!!(
                     showTotalObjPeriod.opening_cr ||
@@ -56,6 +80,28 @@
                     <td>{{ calculateNet(showTotalObjPeriod) }}</td>
                 </tr>
             </template>
+        </template> -->
+        <template v-if="!(newTotalObjArray && newTotalObjArray.length > 0)">
+            <tr :class="expandAccountsProps ? '' : 'hidden'">
+                <td class="text-blue-6">
+                    <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
+                        <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
+                            @click="changeExpandStatus(item.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                class="text-grey-7">
+                                <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
+                            </svg>
+                        </q-btn>
+                    </span>
+                    <RouterLink style="text-decoration: none" target="_blank"
+                        :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
+                    </RouterLink>
+                </td>
+                <template v-for="(showTotalObjPeriod, index) in showTotalObject" :key="index">
+                    <td>{{ calculateNet(showTotalObjPeriod) }}</td>
+                </template>
+            </tr>
         </template>
     </template>
     <!-- {{ activeObjectArray }}--active -->
@@ -169,14 +215,17 @@ export default {
         const activeObjectArray = computed(() => {
             const activeArray = []
             props.accounts.forEach((item, index) => {
+                // year looping
                 const currentActiveArray = []
-                showTotalObject.value[index] = totalObjectFormat
+                showTotalObject.value[index] = { ...totalObjectFormat }
                 const accountArray = props.category_accounts[index][props.item.id]
                 if (accountArray) {
+                    // looping through accounts
                     accountArray.forEach((item) => {
                         const currentObj = props.accounts[index][item]
                         currentActiveArray.push(currentObj)
                         fieldsArray.forEach((item) => {
+                            // looping through each field
                             showTotalObject.value[index][item] += currentObj[item]
                         })
                         activeArray[index] = currentActiveArray
@@ -200,7 +249,7 @@ export default {
                 netAmount = obj.closing_cr - obj.closing_dr
             }
             if (netAmount > 0) return netAmount
-            return `(${parseFloat(netAmount.toFixed(2)) * -1})`
+            return `(${(netAmount.toFixed(2)) * -1})`
             // const net = parseFloat(
             //     (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
             // )

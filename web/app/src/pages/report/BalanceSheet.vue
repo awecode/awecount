@@ -50,7 +50,8 @@
                 <thead>
                     <tr>
                         <th class="text-left" style="width: 400px;"><strong>Name</strong></th>
-                        <th class="text-left" style="width: 400px;">Amount</th>
+                        <th class="text-left" style="width: 400px;" v-for="account in (accounts.length || 1)"
+                            :key="account">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,7 +151,6 @@ export default {
             catch (error) {
                 console.log(error)
             }
-            console.log('data', data)
             // accounts.value = {}
             let localAccounts = {}
             category_accounts.value[index] = []
@@ -173,8 +173,6 @@ export default {
                 category_accounts.value[index][obj.category_id].push(obj.id)
             })
             // debugger
-            console.log('localAccounts', localAccounts)
-            console.log('index', index)
             accounts.value[index] = localAccounts
             showData.value = true
         }
@@ -232,10 +230,8 @@ export default {
         //     }
         // }
         const onAddColumn = () => {
-            const addIndex = accounts.value.length ? accounts.value.length - 1 : 0
+            const addIndex = accounts.value.length ? accounts.value.length : 0
             const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
-            console.log('accounts.value', accounts.value)
-            // console.log('do something')
         }
         return {
             fields,
