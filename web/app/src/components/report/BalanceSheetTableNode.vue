@@ -208,7 +208,6 @@ export default {
 
     setup(props, { emit }) {
         const loginStore = useLoginStore()
-        // const expandStatus = ref(true)
         const itemProps = ref({ ...props.item })
         const fieldsArray = [
             'closing_cr',
@@ -240,8 +239,6 @@ export default {
                     accountArray.forEach((item) => {
                         // looping through accounts
                         const currentObj = props.accounts[index][item]
-                        // console.log(currentObj, 'ahvshvas', item)
-                        // currentActiveArray.push(accountsObj)
                         const currentData = {
                             closing_cr: currentObj.closing_cr,
                             closing_dr: currentObj.closing_dr,
@@ -263,22 +260,18 @@ export default {
                                 ]
                             }
                             activeObj[currentObj.account_id] = accountsObj
-                            // currentActiveObj[currentObj.account_id] = { ...accountsObj }
                         }
                         fieldsArray.forEach((item) => {
                             // looping through each field
                             showTotalObject.value[index][item] += currentObj[item]
                         })
-                        // activeArray[index] = currentActiveArray
                     })
-                    console.log('about to emit')
                     emit('updateTotal', showTotalObject.value, props.index)
                 }
                 // debugger
             })
             return activeObj
         })
-        // const activeObject = null
         const onUpdateTotal = (total, index) => {
             itemProps.value.children[index].total = total
         }
@@ -292,55 +285,18 @@ export default {
             }
             if (netAmount >= 0) return parseFloat(netAmount.toFixed(2))
             return `(${parseFloat(netAmount.toFixed(2)) * -1})`
-            // const net = parseFloat(
-            //     (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
-            // )
-            // if (net === 0) {
-            //     return 0
-            // } else if (net > 0) {
-            //     return `${net}` + ' cr'
-            // } else {
-            //     return `${net * -1}` + ' dr'
-            // }
         }
         // check zero trans status
         const checkZeroTrans = (array) => {
             let has_transaction = array.some((obj) => {
                 return (obj.transaction_cr || obj.transaction_dr || obj.closing_cr || obj.closing_dr)
-                // else return false
             })
             return has_transaction
-            // if (newTotalObj.value) {
-            //     return !!(
-            //         newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
-            //     )
-            // } else if (showTotalObject.value) {
-            //     return !!(
-            //         showTotalObject.value.transaction_cr ||
-            //         showTotalObject.value.transaction_dr
-            //     )
-            // } else return true
         }
         watch(
             itemProps,
             (newValue) => {
-                // let computedTotal = []
-                // newValue.children.forEach((child, childIndex) => {
-                //     if (child.total && child.total.length > 0) {
-                //         child.total.forEach((totalObj, totalIndex) => {
-                //             if (totalObj) {
-                //                 // console.log(computedTotal)
-                //                 computedTotal = [totalObjectFormat]
-                //                 fieldsArray.forEach((field) => {
-                //                     computedTotal[totalIndex][field] = computedTotal[totalIndex][field] + totalObj[field]
-                //                 })
-                //             }
-                //         })
-                //     }
-                //     else computedTotal = []
-                // })
                 let computedTotal = []
-                // console.log(computedTotal)
                 newValue.children.forEach((child, childIndex) => {
                     if (child.total && child.total.length > 0) {
                         child.total.forEach((totalObj, totalIndex) => {
@@ -350,7 +306,6 @@ export default {
                                     computedTotal[totalIndex][field] =
                                         computedTotal[totalIndex][field] + totalObj[field]
                                 })
-                                // console.log(computedTotal)
                             }
                         })
                     }
@@ -363,7 +318,6 @@ export default {
                         })
                     })
                 }
-                // if (itemProps.value.name === 'Liabilities') debugger
                 newTotalObjArray.value = computedTotal
                 emit('updateTotal', computedTotal, props.index)
             },
@@ -378,19 +332,6 @@ export default {
             const newTotalObjStatus = props.item.id && loginStore.trialBalanceCollapseId.includes(props.item.id)
             return !newTotalObjStatus
         })
-
-        // watch(newTotalObjArray, () => {
-        //     console.log('newTotalObjArray changed', newTotalObjArray.value)
-        // })
-        // manually making props data reactive
-        // watch([props.accounts, props.category_accounts], (newValue) => {
-        //     console.log('itemprops changed')
-        //     // itemProps.value = newValue
-        // }, {
-        //     deep: true
-        // })
-        // watch([newTotalObj, showTotalObject], () => {
-        // })
         return {
             props,
             itemProps,

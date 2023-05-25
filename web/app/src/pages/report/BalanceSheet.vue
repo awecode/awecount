@@ -240,12 +240,8 @@ export default {
             const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
         }
         const onRemoveColumn = (index) => {
-            console.log('index', index)
             accounts.value.splice(index, 1)
             category_accounts.value.splice(index, 1)
-            console.log('accounts.value', accounts.value, 'category_accounts.value', category_accounts.value)
-            // const addIndex = accounts.value.length ? accounts.value.length : 0
-            // const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
         }
         return {
             fields,
