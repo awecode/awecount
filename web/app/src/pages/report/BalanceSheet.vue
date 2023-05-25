@@ -49,9 +49,15 @@
             <q-markup-table id="tableRef">
                 <thead>
                     <tr>
-                        <th class="text-left" style="width: 400px;"><strong>Name</strong></th>
-                        <th class="text-left" style="width: 400px;" v-for="account in (accounts.length || 1)"
-                            :key="account">Amount</th>
+                        <th class="text-left" style="width: 400px;"><strong class="q-ml-lg">Name</strong></th>
+                        <th class="text-left" style="width: 400px;" v-for="(account, index) in (accounts.length || 1)"
+                            :key="index">
+                            <div class="flex items-center">
+                                <span class="q-mr-md">Amount</span> <q-btn v-if="accounts.length > 0"
+                                    @click="onRemoveColumn(index)" dense flat color="red-5" icon="delete" size="sm"
+                                    title="Delete Column"></q-btn>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,14 +72,14 @@
                             :category_accounts="category_accounts" :config="config">
                         </BalanceSheetTableNode>
                     </template>
-                    <tr>
+                    <tr v-if="!showData">
                         <td class="text-weight-medium"><span>Total</span></td>
-                        <td>ahsvhasv</td>
+                        <td>0</td>
                     </tr>
                 </tbody>
             </q-markup-table>
             <div>
-                <q-btn color="green" icon="add" class="m-none q-pa-sm">
+                <q-btn color="green" icon="add" class="m-none q-pa-sm" title="Add Column">
                     <q-menu>
                         <div class="menu-wrapper" style="width: min(300px, 90vw)">
                             <div style="border-bottom: 1px solid lightgrey">
@@ -233,6 +239,14 @@ export default {
             const addIndex = accounts.value.length ? accounts.value.length : 0
             const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
         }
+        const onRemoveColumn = (index) => {
+            console.log('index', index)
+            accounts.value.splice(index, 1)
+            category_accounts.value.splice(index, 1)
+            console.log('accounts.value', accounts.value, 'category_accounts.value', category_accounts.value)
+            // const addIndex = accounts.value.length ? accounts.value.length : 0
+            // const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
+        }
         return {
             fields,
             fetchData,
@@ -244,7 +258,8 @@ export default {
             config,
             calculateNet,
             secondfields,
-            onAddColumn
+            onAddColumn,
+            onRemoveColumn
         }
     },
     created() {

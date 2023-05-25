@@ -1,5 +1,5 @@
 <template>
-    <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) &&
+    <template v-if="!(props.config.hide_zero_transactions) &&
         !props.config.hide_categories
         ">
         <!-- <template v-for="(newobj, index) in newTotalObjArray" :key="index">
@@ -81,7 +81,7 @@
                 </tr>
             </template>
         </template> -->
-        <template v-if="!(newTotalObjArray && newTotalObjArray.length > 0)">
+        <template v-if="!(newTotalObjArray && newTotalObjArray.length > 0) && checkZeroTrans(showTotalObject)">
             <tr :class="expandAccountsProps ? '' : 'hidden'">
                 <td class="text-blue-6">
                     <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -104,9 +104,24 @@
             </tr>
         </template>
     </template>
-    <!-- {{ activeObjectArray }}--active -->
-    <template v-for="(periodArray, index) in activeObjectArray" :key="index">
-        <template v-if="periodArray &&
+    <template v-for="(activeObject, key) in activeObjectComputed" :key="key">
+        <tr v-if="!props.config.hide_accounts && expandAccountsProps && expandStatus">
+            <!-- {{ showTotalObject.length }} -->
+            <!-- :class="expandAccountsProps && expandStatus ? '' : 'hidden'" -->
+            <td class="text-blue-6 text-italic">
+                <span v-if="!props.config.hide_categories">
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
+                    <span v-for="num in props.level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+                <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${activeObject.account_id}/view/`"
+                    class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
+            </td>
+            <template v-for="(num, index) in props.accounts.length" :key="index">
+                <td v-if="activeObject.data[index]">{{ calculateNet(activeObject.data[index]) }}</td>
+                <td v-else>0</td>
+            </template>
+            <!-- <td v-for="(periodData, index) in activeObject.data" :key="index"></td> -->
+        </tr>
+        <!-- <template v-if="periodArray &&
             periodArray.length &&
             !props.config.hide_accounts
             ">
@@ -128,7 +143,7 @@
                     <td>{{ calculateNet(activeObject) }}</td>
                 </tr>
             </template>
-        </template>
+        </template> -->
     </template>
     <template v-if="item.children && item.children.length">
         <BalanceSheetTableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index"
@@ -212,31 +227,57 @@ export default {
         }
         const showTotalObject = ref([])
         const newTotalObjArray = ref([])
-        const activeObjectArray = computed(() => {
-            const activeArray = []
+        const activeObjectComputed = computed(() => {
+            const activeObj = {}
             props.accounts.forEach((item, index) => {
                 // year looping
-                const currentActiveArray = []
+                console.log('updated', index)
+                const currentActiveObj = {}
                 showTotalObject.value[index] = { ...totalObjectFormat }
                 const accountArray = props.category_accounts[index][props.item.id]
                 if (accountArray) {
-                    // looping through accounts
                     accountArray.forEach((item) => {
+                        // looping through accounts
                         const currentObj = props.accounts[index][item]
-                        currentActiveArray.push(currentObj)
+                        // console.log(currentObj, 'ahvshvas', item)
+                        // currentActiveArray.push(accountsObj)
+                        const currentData = {
+                            closing_cr: currentObj.closing_cr,
+                            closing_dr: currentObj.closing_dr,
+                            opening_cr: currentObj.opening_cr,
+                            opening_dr: currentObj.opening_dr,
+                            transaction_cr: currentObj.transaction_cr,
+                            transaction_dr: currentObj.transaction_dr,
+                        }
+                        if (activeObj[currentObj.account_id]) {
+                            activeObj[currentObj.account_id].data[index] = currentData
+                        }
+                        else {
+                            const accountsObj = {
+                                account_id: currentObj.account_id,
+                                name: currentObj.name,
+                                category_id: currentObj.category_id,
+                                data: [
+                                    { ...currentData }
+                                ]
+                            }
+                            activeObj[currentObj.account_id] = accountsObj
+                            // currentActiveObj[currentObj.account_id] = { ...accountsObj }
+                        }
                         fieldsArray.forEach((item) => {
                             // looping through each field
                             showTotalObject.value[index][item] += currentObj[item]
                         })
-                        activeArray[index] = currentActiveArray
+                        // activeArray[index] = currentActiveArray
+
                     })
                     emit('updateTotal', showTotalObject.value, props.index)
                 }
                 // debugger
             })
-            return activeArray
+            return activeObj
         })
-        const activeObject = null
+        // const activeObject = null
         const onUpdateTotal = (total, index) => {
             itemProps.value.children[index].total = total
         }
@@ -248,8 +289,8 @@ export default {
             else {
                 netAmount = obj.closing_cr - obj.closing_dr
             }
-            if (netAmount > 0) return netAmount
-            return `(${(netAmount.toFixed(2)) * -1})`
+            if (netAmount >= 0) return parseFloat(netAmount.toFixed(2))
+            return `(${parseFloat(netAmount.toFixed(2)) * -1})`
             // const net = parseFloat(
             //     (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
             // )
@@ -262,18 +303,23 @@ export default {
             // }
         }
         // check zero trans status
-        // const checkZeroTrans = () => {
-        //     if (newTotalObj.value) {
-        //         return !!(
-        //             newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
-        //         )
-        //     } else if (showTotalObject.value) {
-        //         return !!(
-        //             showTotalObject.value.transaction_cr ||
-        //             showTotalObject.value.transaction_dr
-        //         )
-        //     } else return true
-        // }
+        const checkZeroTrans = (array) => {
+            let has_transaction = array.some((obj) => {
+                return (obj.transaction_cr || obj.transaction_dr || obj.closing_cr || obj.closing_dr)
+                // else return false
+            })
+            return has_transaction
+            // if (newTotalObj.value) {
+            //     return !!(
+            //         newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
+            //     )
+            // } else if (showTotalObject.value) {
+            //     return !!(
+            //         showTotalObject.value.transaction_cr ||
+            //         showTotalObject.value.transaction_dr
+            //     )
+            // } else return true
+        }
         watch(
             itemProps,
             (newValue) => {
@@ -331,18 +377,25 @@ export default {
             const newTotalObjStatus = props.item.id && loginStore.trialBalanceCollapseId.includes(props.item.id)
             return !newTotalObjStatus
         })
+
+        // manually making props data reactive
+        // watch([props.accounts, props.category_accounts], (newValue) => {
+        //     console.log('itemprops changed')
+        //     // itemProps.value = newValue
+        // }, {
+        //     deep: true
+        // })
         // watch([newTotalObj, showTotalObject], () => {
         // })
         return {
             props,
             itemProps,
-            activeObject,
-            activeObjectArray,
+            activeObjectComputed,
             onUpdateTotal,
             showTotalObject,
             newTotalObjArray,
             calculateNet,
-            // checkZeroTrans,
+            checkZeroTrans,
             expandStatus,
             changeExpandStatus,
             loginStore
