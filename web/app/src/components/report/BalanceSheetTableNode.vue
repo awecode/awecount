@@ -31,6 +31,7 @@
         </template> -->
         <template v-if="newTotalObjArray && newTotalObjArray.length > 0">
             <tr :class="expandAccountsProps ? '' : 'hidden'">
+                <!-- {{ itemProps }} -->
                 <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
                     <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <span style="display: inline-block; width: 40px; margin-left: -5px;">
@@ -229,9 +230,9 @@ export default {
         const newTotalObjArray = ref([])
         const activeObjectComputed = computed(() => {
             const activeObj = {}
+            showTotalObject.value = []
             props.accounts.forEach((item, index) => {
                 // year looping
-                console.log('updated', index)
                 const currentActiveObj = {}
                 showTotalObject.value[index] = { ...totalObjectFormat }
                 const accountArray = props.category_accounts[index][props.item.id]
@@ -269,8 +270,8 @@ export default {
                             showTotalObject.value[index][item] += currentObj[item]
                         })
                         // activeArray[index] = currentActiveArray
-
                     })
+                    console.log('about to emit')
                     emit('updateTotal', showTotalObject.value, props.index)
                 }
                 // debugger
@@ -378,6 +379,9 @@ export default {
             return !newTotalObjStatus
         })
 
+        // watch(newTotalObjArray, () => {
+        //     console.log('newTotalObjArray changed', newTotalObjArray.value)
+        // })
         // manually making props data reactive
         // watch([props.accounts, props.category_accounts], (newValue) => {
         //     console.log('itemprops changed')
