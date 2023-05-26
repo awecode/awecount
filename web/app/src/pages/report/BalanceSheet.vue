@@ -47,6 +47,18 @@
             <div class="col-grow" style="max-width: calc(100% - 50px);">
                 <q-markup-table id="tableRef">
                     <thead>
+                        <tr class="bg-grey-2" v-if="showData">
+                            <th class="text-weight-medium text-caption text-left"><span class="q-pl-lg">Time Period</span>
+                            </th>
+                            <th v-for="(timeperoid, index) in timePeriodArray" :key="index">
+                                <!-- {{ timeperoid }} -->
+                                <div class="text-weight-medium text-caption text-left">
+                                    <div style="margin-bottom: -5px;">{{ timeperoid.start_date }}&nbsp;</div>
+                                    <div>{{ timeperoid.end_date }}</div>
+                                </div>
+                            </th>
+                            <!-- <td v-for=""></td> -->
+                        </tr>
                         <tr>
                             <th class="text-left" style="width: 400px;"><strong
                                     :class="showData ? 'q-ml-lg' : ''">Name</strong>
@@ -55,8 +67,13 @@
                                 :key="index">
                                 <div class="flex items-center">
                                     <span class="q-mr-md">Amount</span> <q-btn v-if="accounts.length > 0"
-                                        @click="onRemoveColumn(index)" dense flat color="red-5" icon="delete" size="sm"
-                                        title="Delete Column"></q-btn>
+                                        @click="onRemoveColumn(index)" dense flat color="red-5" size="sm"
+                                        title="Delete Column">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
+                                        </svg>
+                                    </q-btn>
                                 </div>
                             </th>
                         </tr>
@@ -241,6 +258,7 @@ export default {
         const onAddColumn = () => {
             const addIndex = accounts.value.length ? accounts.value.length : 0
             const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
+            timePeriodArray.value.push(secondfields.value)
         }
         const onRemoveColumn = (index) => {
             accounts.value.splice(index, 1)
@@ -259,7 +277,8 @@ export default {
             secondfields,
             onAddColumn,
             onRemoveColumn,
-            onDownloadXls
+            onDownloadXls,
+            timePeriodArray
         }
     },
     created() {
