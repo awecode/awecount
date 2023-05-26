@@ -48,7 +48,7 @@
                     </RouterLink>
                 </td>
                 <template v-for="(newTotalObj, index) in newTotalObjArray" :key="index">
-                    <td>
+                    <td :class="props.root ? 'text-weight-bold' : ''">
                         {{ calculateNet(newTotalObj) }}
                     </td>
                 </template>

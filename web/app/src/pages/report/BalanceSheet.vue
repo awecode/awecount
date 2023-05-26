@@ -1,17 +1,15 @@
 <template>
     <div class="q-pa-md">
         <div class="q-px-md q-pb-md">
-            <div class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs">
-                <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
+            <div class="flex items-center justify-end q-gutter-x-md q-gutter-y-xs">
+                <!-- <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
                     <div>
-                        <!-- <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date"
-                            :hide-btns="true" /> -->
                     </div>
                     <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
                         @click="fields = { start_date: null, end_date: null }"></q-btn>
                     <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
                         @click="onAddColumn"></q-btn>
-                </div>
+                </div> -->
                 <div class="flex q-gutter-x-md q-gutter-y-xs" v-if="showData">
                     <q-btn class="filterbtn" icon="settings" title="Config">
                         <q-menu>
@@ -23,7 +21,7 @@
                                     <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                                     </div>
-                                    <div class="q-pb-sm">
+                                    <!-- <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
                                     </div>
                                     <div class="q-pb-sm">
@@ -36,7 +34,7 @@
                                     <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_zero_transactions"
                                             label="Hide accounts without transactions?"></q-checkbox>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </q-menu>
@@ -45,40 +43,44 @@
                 </div>
             </div>
         </div>
-        <div class="flex q-gutter-x-sm">
-            <q-markup-table id="tableRef">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="width: 400px;"><strong class="q-ml-lg">Name</strong></th>
-                        <th class="text-left" style="width: 400px;" v-for="(account, index) in (accounts.length || 1)"
-                            :key="index">
-                            <div class="flex items-center">
-                                <span class="q-mr-md">Amount</span> <q-btn v-if="accounts.length > 0"
-                                    @click="onRemoveColumn(index)" dense flat color="red-5" icon="delete" size="sm"
-                                    title="Delete Column"></q-btn>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-if="showData">
-                        <BalanceSheetTableNode :item="categoryTree[0]" :root="true" :accounts="accounts" :isAsset=true
-                            :category_accounts="category_accounts" :config="config">
-                        </BalanceSheetTableNode>
-                        <BalanceSheetTableNode :item="categoryTree[1]" :root="true" :accounts="accounts"
-                            :category_accounts="category_accounts" :config="config">
-                        </BalanceSheetTableNode>
-                        <BalanceSheetTableNode :item="categoryTree[4]" :root="true" :accounts="accounts"
-                            :category_accounts="category_accounts" :config="config">
-                        </BalanceSheetTableNode>
-                    </template>
-                    <tr v-if="!showData">
-                        <td class="text-weight-medium"><span>Total</span></td>
-                        <td>0</td>
-                    </tr>
-                </tbody>
-            </q-markup-table>
-            <div>
+        <div class="flex q-gutter-x-sm flex no-wrap">
+            <div class="col-grow" style="max-width: calc(100% - 50px);">
+                <q-markup-table id="tableRef">
+                    <thead>
+                        <tr>
+                            <th class="text-left" style="width: 400px;"><strong
+                                    :class="showData ? 'q-ml-lg' : ''">Name</strong>
+                            </th>
+                            <th class="text-left" style="width: 400px;" v-for="(account, index) in (accounts.length || 1)"
+                                :key="index">
+                                <div class="flex items-center">
+                                    <span class="q-mr-md">Amount</span> <q-btn v-if="accounts.length > 0"
+                                        @click="onRemoveColumn(index)" dense flat color="red-5" icon="delete" size="sm"
+                                        title="Delete Column"></q-btn>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="showData">
+                            <BalanceSheetTableNode :item="categoryTree[0]" :root="true" :accounts="accounts" :isAsset=true
+                                :category_accounts="category_accounts" :config="config">
+                            </BalanceSheetTableNode>
+                            <BalanceSheetTableNode :item="categoryTree[1]" :root="true" :accounts="accounts"
+                                :category_accounts="category_accounts" :config="config">
+                            </BalanceSheetTableNode>
+                            <BalanceSheetTableNode :item="categoryTree[4]" :root="true" :accounts="accounts"
+                                :category_accounts="category_accounts" :config="config">
+                            </BalanceSheetTableNode>
+                        </template>
+                        <tr v-if="!showData">
+                            <td class="text-weight-medium"><span>Total</span></td>
+                            <td>0</td>
+                        </tr>
+                    </tbody>
+                </q-markup-table>
+            </div>
+            <div style="width: 30px;">
                 <q-btn color="green" icon="add" class="m-none q-pa-sm" title="Add Column">
                     <q-menu>
                         <div class="menu-wrapper" style="width: min(300px, 90vw)">
@@ -102,7 +104,7 @@
   
 <script>
 // import { utils, writeFile } from 'xlsx'
-// import XLSX from "xlsx-js-style"
+import XLSX from "xlsx-js-style"
 export default {
     setup() {
         const categoryTree = ref(null)
@@ -128,6 +130,7 @@ export default {
             start_date: null,
             end_date: null,
         })
+        const timePeriodArray = ref([])
         const calculateNet = (obj, type) => {
             const net = parseFloat(
                 (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2)
@@ -182,59 +185,59 @@ export default {
             accounts.value[index] = localAccounts
             showData.value = true
         }
-        // const onDownloadXls = () => {
-        //     // TODO: add download xls link
-        //     const elt = document.getElementById('tableRef').children[0]
-        //     const baseUrl = window.location.origin
-        //     replaceHrefAttribute(elt, baseUrl)
-        //     // adding styles
-        //     const worksheet = XLSX.utils.table_to_sheet(elt)
-        //     for (const i in worksheet) {
-        //         if (typeof (worksheet[i]) != 'object') continue
-        //         let cell = XLSX.utils.decode_cell(i)
-        //         worksheet[i].s = {
-        //             font: { name: 'Courier', sz: 12 }
-        //         }
-        //         if (cell.r == 0) { // first row
-        //             worksheet[i].s.font.bold = true
-        //         }
-        //         if (cell.c == 0) { // first row
-        //             const td = elt.rows[cell.r].cells[cell.c]
-        //             worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
-        //             //get color and apply to excel
-        //             const hexCode = getComputedStyle(td).color
-        //             const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-        //             const numsArray = hexArray.map((e) => Number(e))
-        //             const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
-        //             worksheet[i].s.font.color = { rgb: `${rgbValue}` }
-        //         }
-        //         if (cell.r > -1) {
-        //             const td = elt.rows[cell.r].cells[cell.c]
-        //             if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
-        //         }
-        //     }
-        //     worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
-        //     const workbook = XLSX.utils.book_new()
-        //     XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
-        //     const excelBuffer = XLSX.write(workbook, {
-        //         type: 'buffer',
-        //         cellStyles: true,
-        //     });
-        //     // download Excel
-        //     XLSX.writeFileXLSX(workbook, 'TrialBalance.xls')
-        // }
-        // // to replace link '/' with base url
-        // const replaceHrefAttribute = (element, baseUrl) => {
-        //     if (!element || !element.childNodes) return
-        //     for (var i = 0; i < element.childNodes.length; i++) {
-        //         var child = element.childNodes[i]
-        //         if (child.tagName === 'A') {
-        //             const link = child.getAttribute('href')
-        //             child.setAttribute('href', baseUrl + `${link}`)
-        //         }
-        //         replaceHrefAttribute(child, baseUrl)
-        //     }
-        // }
+        const onDownloadXls = () => {
+            // TODO: add download xls link
+            const elt = document.getElementById('tableRef').children[0]
+            const baseUrl = window.location.origin
+            replaceHrefAttribute(elt, baseUrl)
+            // adding styles
+            const worksheet = XLSX.utils.table_to_sheet(elt)
+            for (const i in worksheet) {
+                if (typeof (worksheet[i]) != 'object') continue
+                let cell = XLSX.utils.decode_cell(i)
+                worksheet[i].s = {
+                    font: { name: 'Courier', sz: 12 }
+                }
+                if (cell.r == 0) { // first row
+                    worksheet[i].s.font.bold = true
+                }
+                if (cell.c == 0) { // first row
+                    const td = elt.rows[cell.r].cells[cell.c]
+                    worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
+                    //get color and apply to excel
+                    const hexCode = getComputedStyle(td).color
+                    const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
+                    const numsArray = hexArray.map((e) => Number(e))
+                    const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
+                    worksheet[i].s.font.color = { rgb: `${rgbValue}` }
+                }
+                if (cell.r > -1) {
+                    const td = elt.rows[cell.r].cells[cell.c]
+                    if (td instanceof HTMLElement) worksheet[i].s.font.bold = Number(getComputedStyle(td).fontWeight) >= 500
+                }
+            }
+            worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
+            const workbook = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
+            const excelBuffer = XLSX.write(workbook, {
+                type: 'buffer',
+                cellStyles: true,
+            });
+            // download Excel
+            XLSX.writeFileXLSX(workbook, 'TrialBalance.xls')
+        }
+        // to replace link '/' with base url
+        const replaceHrefAttribute = (element, baseUrl) => {
+            if (!element || !element.childNodes) return
+            for (var i = 0; i < element.childNodes.length; i++) {
+                var child = element.childNodes[i]
+                if (child.tagName === 'A') {
+                    const link = child.getAttribute('href')
+                    child.setAttribute('href', baseUrl + `${link}`)
+                }
+                replaceHrefAttribute(child, baseUrl)
+            }
+        }
         const onAddColumn = () => {
             const addIndex = accounts.value.length ? accounts.value.length : 0
             const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
@@ -255,7 +258,8 @@ export default {
             calculateNet,
             secondfields,
             onAddColumn,
-            onRemoveColumn
+            onRemoveColumn,
+            onDownloadXls
         }
     },
     created() {
