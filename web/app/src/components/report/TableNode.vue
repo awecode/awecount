@@ -155,7 +155,7 @@
         props.config.hide_zero_transactions &&
         !(activeObject.transaction_dr || activeObject.transaction_cr)
       )
-        " :class="expandAccountsProps && expandStatus ? '' : 'hidden'">
+        " :class="(props.config.hide_categories) ? '' : (expandAccountsProps && expandStatus ? '' : 'hidden')">
         <td class="text-blue-6 text-italic">
           <span v-if="!props.config.hide_categories">
             <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>

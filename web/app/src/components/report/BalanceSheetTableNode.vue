@@ -32,7 +32,8 @@
                 <!-- {{ itemProps }} -->
                 <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
                     <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;"
+                        v-if="!props.config.hide_categories">
                         <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''"
                             @click="changeExpandStatus(item.id)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
@@ -41,6 +42,7 @@
                             </svg>
                         </q-btn>
                     </span>
+                    <span style="display: inline-block; width: 40px; margin-left: -5px;" v-else></span>
                     <RouterLink style="text-decoration: none" target="_blank"
                         :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}
                     </RouterLink>
@@ -105,9 +107,9 @@
         </template>
     </template>
     <template v-for="(activeObject, key) in activeObjectComputed" :key="key">
-        <tr v-if="!props.config.hide_accounts && expandAccountsProps && expandStatus">
+        <tr v-if="!props.config.hide_accounts"
+            :class="(props.config.hide_categories) ? '' : (expandAccountsProps && expandStatus ? '' : 'hidden')">
             <!-- {{ showTotalObject.length }} -->
-            <!-- :class="expandAccountsProps && expandStatus ? '' : 'hidden'" -->
             <td class="text-blue-6 text-italic">
                 <span v-if="!props.config.hide_categories">
                     <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
