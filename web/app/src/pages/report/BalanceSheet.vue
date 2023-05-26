@@ -21,10 +21,10 @@
                                     <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                                     </div>
-                                    <!-- <div class="q-pb-sm">
+                                    <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
                                     </div>
-                                    <div class="q-pb-sm">
+                                    <!-- <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                                     </div>
                                     <div class="q-pb-sm">

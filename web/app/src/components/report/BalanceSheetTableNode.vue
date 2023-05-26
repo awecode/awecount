@@ -1,7 +1,5 @@
 <template>
-    <template v-if="!(props.config.hide_zero_transactions) &&
-        !props.config.hide_categories
-        ">
+    <template v-if="!(props.config.hide_zero_transactions)">
         <!-- <template v-for="(newobj, index) in newTotalObjArray" :key="index">
             {{ newobj }}
         </template> -->
@@ -30,7 +28,7 @@
             </template>
         </template> -->
         <template v-if="newTotalObjArray && newTotalObjArray.length > 0">
-            <tr :class="expandAccountsProps ? '' : 'hidden'">
+            <tr :class="expandAccountsProps && (!props.config.hide_categories || props.root) ? '' : 'hidden'">
                 <!-- {{ itemProps }} -->
                 <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
                     <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -82,7 +80,8 @@
                 </tr>
             </template>
         </template> -->
-        <template v-if="!(newTotalObjArray && newTotalObjArray.length > 0) && checkZeroTrans(showTotalObject)">
+        <template
+            v-if="!(newTotalObjArray && newTotalObjArray.length > 0) && checkZeroTrans(showTotalObject) && !props.config.hide_categories">
             <tr :class="expandAccountsProps ? '' : 'hidden'">
                 <td class="text-blue-6">
                     <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -113,6 +112,8 @@
                 <span v-if="!props.config.hide_categories">
                     <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
                     <span v-for="num in props.level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+                <span
+                    v-else><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
                 <RouterLink target="_blank" style="text-decoration: none" :to="`/account/${activeObject.account_id}/view/`"
                     class="text-blue-7 text-italic text-weight-regular">{{ activeObject.name }}</RouterLink>
             </td>
