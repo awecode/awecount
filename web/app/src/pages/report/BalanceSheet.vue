@@ -52,9 +52,18 @@
                             </th>
                             <th v-for="(timeperoid, index) in timePeriodArray" :key="index">
                                 <!-- {{ timeperoid }} -->
-                                <div class="text-weight-medium text-caption text-left">
-                                    <div style="margin-bottom: -5px;">{{ timeperoid.start_date }}&nbsp;</div>
-                                    <div>{{ timeperoid.end_date }}</div>
+                                <div class="flex">
+                                    <div class="text-weight-medium text-caption text-left">
+                                        <div style="margin-bottom: -5px;">{{ timeperoid.start_date }}&nbsp;</div>
+                                        <div>{{ timeperoid.end_date }}</div>
+                                    </div>
+                                    <q-btn v-if="accounts.length > 0" @click="onRemoveColumn(index)" dense flat
+                                        color="red-5" size="sm" title="Delete Column" class="q-ml-md">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
+                                        </svg>
+                                    </q-btn>
                                 </div>
                             </th>
                             <!-- <td v-for=""></td> -->
@@ -66,14 +75,7 @@
                             <th class="text-left" style="width: 400px;" v-for="(account, index) in (accounts.length || 1)"
                                 :key="index">
                                 <div class="flex items-center">
-                                    <span class="q-mr-md">Amount</span> <q-btn v-if="accounts.length > 0"
-                                        @click="onRemoveColumn(index)" dense flat color="red-5" size="sm"
-                                        title="Delete Column">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24">
-                                            <path fill="currentColor"
-                                                d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z" />
-                                        </svg>
-                                    </q-btn>
+                                    <span class="q-mr-md text-weight-bold">Amount</span>
                                 </div>
                             </th>
                         </tr>
@@ -121,7 +123,6 @@
   
 <script>
 // import { utils, writeFile } from 'xlsx'
-import XLSX from "xlsx-js-style"
 export default {
     setup() {
         const categoryTree = ref(null)
@@ -202,8 +203,9 @@ export default {
             accounts.value[index] = localAccounts
             showData.value = true
         }
-        const onDownloadXls = () => {
+        const onDownloadXls = async () => {
             // TODO: add download xls link
+            const XLSX = await import("xlsx-js-style")
             const elt = document.getElementById('tableRef').children[0]
             const baseUrl = window.location.origin
             replaceHrefAttribute(elt, baseUrl)
