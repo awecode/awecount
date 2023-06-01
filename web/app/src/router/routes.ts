@@ -749,10 +749,24 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'income-statement/',
+        component: () => import('src/pages/report/IncomeStatement.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Income Statement'],
+        },
+      },
+      {
         path: 'balance-sheet/',
         component: () => import('src/pages/report/BalanceSheet.vue'),
         meta: {
           breadcrumb: ['Home', 'Balance Sheet'],
+        },
+      },
+      {
+        path: 'ratio-analysis/',
+        component: () => import('src/pages/report/RatioAnalysis.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Ratio Analysis'],
         },
       },
     ],

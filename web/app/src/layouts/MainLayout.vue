@@ -259,9 +259,19 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/income/item/',
       },
       {
+        title: 'Income Statement',
+        icon: 'mdi-chart-gantt',
+        link: '/report/income-statement/',
+      },
+      {
         title: 'Balance Sheet',
         icon: 'mdi-clipboard-text',
         link: '/report/balance-sheet/',
+      },
+      {
+        title: 'Ratio Analysis',
+        icon: 'mdi-chart-arc',
+        link: '/report/ratio-analysis/',
       },
     ],
   },

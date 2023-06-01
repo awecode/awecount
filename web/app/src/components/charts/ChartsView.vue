@@ -1,10 +1,6 @@
 <template>
   <div>
-    <canvas
-      id="chartDiagram"
-      ref="chartDiagram"
-      style="max-height: 300px; width: 100%"
-    ></canvas>
+    <canvas id="chartDiagram" ref="chartDiagram" style="max-height: 300px; width: 100%"></canvas>
   </div>
 </template>
 
@@ -53,9 +49,9 @@ export default {
     })
     const multiplyArray = (arr, n) => {
       let newArr = []
-      ;[...Array(n)].forEach(() => {
-        newArr = newArr.concat(arr)
-      })
+        ;[...Array(n)].forEach(() => {
+          newArr = newArr.concat(arr)
+        })
       return newArr
     }
     const datacomputed = computed(() => {

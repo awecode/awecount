@@ -23,6 +23,7 @@ declare module '@vue/runtime-core' {
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
+    PieChart: typeof import('./src/components/report/PieChart.vue')['default']
     PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']
     PlanNode: typeof import('./src/components/report/PlainNode.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
