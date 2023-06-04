@@ -1,6 +1,6 @@
 FROM python:3.11.2-slim-buster
 
-RUN apt-get update && apt-get install -y libmagic-dev libpq-dev libffi-dev freetype-dev musl-dev postgresql-dev
+RUN apt-get update && apt-get install -y libmagic-dev libpq-dev libffi-dev musl-dev 
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
