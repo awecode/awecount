@@ -3,3 +3,4 @@
 *.log
 awecount/settings/env.py
 .~lock.*
+env/
