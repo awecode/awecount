@@ -11,82 +11,45 @@
         <div>
           <div class="column q-gutter-y-sm q-mb-sm">
             <div>
-              <q-checkbox
-                v-model="fields.show_party_by_default"
-                label="Show party by default?"
-              >
+              <q-checkbox v-model="fields.show_party_by_default" label="Show party by default?">
               </q-checkbox>
             </div>
             <div>
-              <q-checkbox
-                v-model="fields.show_trade_discount_in_voucher"
-                label="Show trade discount in voucher?"
-              >
+              <q-checkbox v-model="fields.show_trade_discount_in_voucher" label="Show trade discount in voucher?">
               </q-checkbox>
             </div>
             <div>
-              <q-checkbox
-                v-model="fields.is_trade_discount_in_voucher"
-                label="Is trade discount in voucher?"
-              >
+              <q-checkbox v-model="fields.is_trade_discount_in_voucher" label="Is trade discount in voucher?">
               </q-checkbox>
             </div>
             <div>
-              <q-checkbox
-                v-model="fields.show_trade_discount_in_row"
-                label="Show trade discount in row?"
-              >
+              <q-checkbox v-model="fields.show_trade_discount_in_row" label="Show trade discount in row?">
               </q-checkbox>
             </div>
           </div>
           <div class="row q-ml-sm">
-            <q-select
-              class="col-12 col-sm-6"
-              label="Mode"
-              v-model.number="fields.mode"
-              :options="
-                formDefaults.collections.bank_accounts
-                  ? formDefaults.collections.bank_accounts.concat(modes)
-                  : modes
-              "
-              option-value="id"
-              option-label="name"
-              map-options
-              emit-value
-              :error="!!modeErrors"
-              :error-message="modeErrors"
-            >
+            <q-select class="col-12 col-sm-6" label="Mode" v-model.number="fields.mode" :options="formDefaults.collections.bank_accounts
+                ? formDefaults.collections.bank_accounts.concat(modes)
+                : modes
+              " option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
+              :error-message="modeErrors">
               <!-- TODO: the id of modes in field comes as string must be chnaged to number -->
               <template v-slot:append>
-                <q-icon
-                  v-if="fields.mode"
-                  name="close"
-                  @click.stop.prevent="fields.mode = null"
-                  class="cursor-pointer"
-                />
+                <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
               </template>
             </q-select>
           </div>
           <div class="column q-gutter-y-sm q-mb-sm">
             <div>
-              <q-checkbox
-                v-model="fields.enable_row_description"
-                label="Enable Item Description in row?"
-              >
+              <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?">
               </q-checkbox>
             </div>
             <div>
-              <q-checkbox
-                v-model="fields.enable_due_date_in_voucher"
-                label="Enable Due date in voucher?"
-              >
+              <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?">
               </q-checkbox>
             </div>
             <div>
-              <q-checkbox
-                v-model="fields.enable_import_challan"
-                label="Enable Challans Import?"
-              >
+              <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?">
               </q-checkbox>
             </div>
           </div>
@@ -94,11 +57,7 @@
         <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn
-          @click.prevent="() => onUpdateClick(fields)"
-          color="orange-7"
-          label="Update"
-        />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="orange-7" label="Update" />
       </div>
     </q-card>
   </q-form>
@@ -138,7 +97,6 @@ export default {
         .catch((err) => {
           if (err.status === 400) {
             if (err.data.mode) {
-              debugger
               modeErrors.value = err.data.mode[0]
               $q.notify({
                 color: 'red-6',
