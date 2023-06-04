@@ -1,6 +1,6 @@
 FROM python:3.11.2-slim-buster
 
-RUN apt-get update && apt-get install -y libmagic-dev
+RUN apt-get update && apt-get install -y libmagic-dev && app-get install -y libpq-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
