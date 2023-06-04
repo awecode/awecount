@@ -1,6 +1,6 @@
 FROM python:3.11.2-slim-buster
 
-RUN apt-get update && apt-get install -y libmagic-dev && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libmagic-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
@@ -11,6 +11,7 @@ COPY . .
 
 RUN apt-get update \
   && apt-get -y install gcc \
+  && apt-get install libpq-dev \
   && apt-get clean \
   && pip install --upgrade pip \
   && pip install -r requirements/frozen.txt
