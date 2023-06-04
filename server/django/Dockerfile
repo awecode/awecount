@@ -1,6 +1,6 @@
 FROM python:3.11.2-slim-buster
 
-RUN apt-get update && apt-get install -y libmagic-dev libpq-dev libffi-dev musl-dev libfreetype6-dev
+RUN apt-get update && apt-get install -y libmagic-dev libpq-dev libffi-dev musl-dev libfreetype6-dev python3-dev graphviz libgraphviz-dev pkg-config
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
