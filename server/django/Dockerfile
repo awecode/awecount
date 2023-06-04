@@ -11,7 +11,7 @@ COPY . .
 
 RUN apt-get update \
   && apt-get -y install gcc \
-  # && apt-get install libpq-dev \
+  && apt-get -y install libpq-dev \
   && apt-get clean \
   && pip install --upgrade pip \
   && pip install -r requirements/frozen.txt
