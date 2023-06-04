@@ -15,6 +15,8 @@ from apps.aggregator import api as aggregator
 
 from apps.aggregator import views as aggregator_views
 
+from test_app.api import TestView
+
 router = DefaultRouter()
 
 # TODO fix singular/plural
@@ -67,6 +69,8 @@ router.register('tax-payments', tax.TaxPaymentViewSet, basename='tax-payment')
 router.register('log-entries', aggregator.LogEntryViewSet, basename='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, basename='widget')
 
+router.register('test', TestView, basename='test')
+
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -90,6 +94,7 @@ urlpatterns = [
                   path('v1/export/', aggregator_views.export_data, name='export_data'),
                   path('v1/export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
                   path('v1/import/', aggregator_views.import_data, name='import_data'),
+                #   path('test/', TestView.as_view())
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
