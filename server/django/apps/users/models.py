@@ -69,8 +69,8 @@ class Company(models.Model):
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Company, self).save(*args, **kwargs)
-        if created:
-            company_creation.send(sender=None, company=self)
+        # if created:
+        #     company_creation.send(sender=None, company=self)
 
 
 class UserManager(BaseUserManager):
