@@ -69,6 +69,7 @@ module.exports = configure(function (ctx) {
           ? 'http://localhost:8000'
           : 'https://awecount-backend-production.up.railway.app/',
       },
+
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
