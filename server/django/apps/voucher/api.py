@@ -66,7 +66,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('discounts', SalesDiscount, SalesDiscountMinSerializer),
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
-        ('items', Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
+        ('items', Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)), ItemSalesSerializer),
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
