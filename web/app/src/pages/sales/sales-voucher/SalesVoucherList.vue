@@ -1,39 +1,14 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="blue"
-        label="Export"
-        icon-right="download"
-        @click="onDownloadXls"
-      />
-      <q-btn
-        color="green"
-        to="/sales-voucher/add/"
-        label="New Sales"
-        icon-right="add"
-      />
+      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" />
+      <q-btn color="green" to="/sales-voucher/add/" label="New Sales" icon-right="add" />
     </div>
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -46,38 +21,23 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
-                    <q-checkbox
-                      v-model="filters.is_due"
-                      label="Is Due?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="[
+                      'Draft',
+                      'Issued',
+                      'Paid',
+                      'Partially Paid',
+                      'Cancelled',
+                    ]" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker
-                    v-model:startDate="filters.start_date"
-                    v-model:endDate="filters.end_date"
-                  />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -89,19 +49,14 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Paid'
-                  ? 'bg-green'
-                  : props.row.status == 'Draft'
+            <div class="text-white text-subtitle2 row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue'
+              : props.row.status == 'Paid'
+                ? 'bg-green'
+                : props.row.status == 'Draft'
                   ? 'bg-orange'
                   : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
+              " style="border-radius: 30px; padding: 5px 15px">
               {{ props.row.status }}
             </div>
           </div>
@@ -110,10 +65,7 @@
 
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
+          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
             {{ props.row.customer_name }}
           </div>
           <div v-else>
@@ -126,18 +78,34 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md justify-start">
-            <q-btn
-              color="blue"
-              label="View"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-              :to="`/sales-voucher/${props.row.id}/view/`"
-            />
+            <q-btn color="blue" label="View" class="q-py-none q-px-md font-size-sm" style="font-size: 12px"
+              :to="`/sales-voucher/${props.row.id}/view/`" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
+      </template>
+      <template v-slot:body-cell-payment_receipts="props">
+        <q-td :props="props">
+          <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
+            <router-link :to="`/payment-receipt/${id}/view/`" style="font-weight: 500; text-decoration: none"
+              class="text-blue">
+              #{{ id }}
+            </router-link>
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-receipt_amount="props">
+        <td>
+          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
+          {{ props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0) }}
+        </td>
+      </template>
+      <template v-slot:body-cell-tds="props">
+        <td>
+          <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
+          {{ props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0) }}
+        </td>
       </template>
     </q-table>
   </div>
@@ -198,9 +166,18 @@ export default {
       },
       {
         name: 'payment_receipts',
-        label: 'Payment receipts',
+        label: 'Receipt(s)',
         align: 'left',
-        field: 'payment_receipts',
+      },
+      {
+        name: 'receipt_amount',
+        label: 'Receipt Amount',
+        align: 'left',
+      },
+      {
+        name: 'tds',
+        label: 'TDS',
+        align: 'left',
       },
       { name: 'actions', align: 'left', label: 'Actions' },
     ]
