@@ -63,11 +63,12 @@ module.exports = configure(function (ctx) {
       // publicPath: '/',
       // analyze: true,
       // env: {},
-      env: {
-        BASE_URL: ctx.dev
-          ? 'http://localhost:8000'
-          : 'https://awecount-backend-production.up.railway.app/',
-      },
+      env: require('dotenv').config().parsed,
+      // env: {
+      //   BASE_URL: ctx.dev
+      //     ? 'http://localhost:8000'
+      //     : 'https://awecount-backend-production.up.railway.app/',
+      // },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
