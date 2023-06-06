@@ -10,7 +10,7 @@
 
 const { configure } = require('quasar/wrappers')
 
-module.exports = configure(function (/* ctx */) {
+module.exports = configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -63,6 +63,11 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       // env: {},
+      env: {
+        BASE_URL: ctx.dev
+          ? 'http://localhost:8000'
+          : 'https://awecount-backend-production.up.railway.app/',
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,

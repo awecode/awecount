@@ -11,7 +11,7 @@ import { ofetch } from 'ofetch'
 // for each client)
 
 const api = ofetch.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: process.env.BASE_URL,
 })
 
 export default boot(({ app }) => {
