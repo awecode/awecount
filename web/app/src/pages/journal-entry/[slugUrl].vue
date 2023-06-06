@@ -3,8 +3,7 @@
     <q-card>
       <q-card-section class="bg-grey-4 text-black">
         <div class="text-h6">
-          <span
-            >Journal Entries for
+          <span>Journal Entries for
             <span class="text-capitalize">{{ voucher.voucher_type }}</span> #
             {{ voucher?.voucher_no || '-' }}
           </span>
@@ -18,18 +17,12 @@
           <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
           <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
         </div>
-        <router-link
-          v-if="
-            this.$route.params.slug === 'purchase-vouchers' ||
-            this.$route.params.slug === 'sales-voucher'
-          "
-          style="text-decoration: none"
-          :to="`/${
-            this.$route.params.slug === 'purchase-vouchers'
-              ? 'purchase-voucher'
-              : this.$route.params.slug
-          }/${voucher?.source_id}/view`"
-        >
+        <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
+          this.$route.params.slug === 'sales-voucher'
+          " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
+      ? 'purchase-voucher'
+      : this.$route.params.slug
+    }/${voucher?.source_id}/view`">
           <div class="row items-center text-blue">Source</div>
         </router-link>
       </div>
@@ -41,33 +34,18 @@
           <div class="col-3">CR.</div>
         </div>
         <!-- Body -->
-        <div
-          v-for="(row, index) in voucher?.transactions"
-          :key="row.id"
-          class="q-my-md"
-        >
-          <hr
-            v-if="index !== 0"
-            class="q-mb-md bg-grey-4 no-border"
-            style="height: 2px"
-          />
+        <div v-for="(row, index) in voucher?.transactions" :key="row.id" class="q-my-md">
+          <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
           <div class="row q-col-gutter-md">
             <div class="col-grow">
-              <router-link
-                style="text-decoration: none"
-                class="text-blue"
-                :to="`/ledger/${row.account.id}/`"
-                >{{ row.account.name }}</router-link
-              >
+              <router-link style="text-decoration: none" class="text-blue" :to="`/ledger/${row.account.id}/`">{{
+                row.account.name }}</router-link>
             </div>
             <div class="col-3">{{ row.dr_amount }}</div>
             <div class="col-3">{{ row.cr_amount }}</div>
           </div>
         </div>
-        <div
-          class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
-          style="margin-left: -20px; margin-right: -20px"
-        >
+        <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
           <div class="col-grow">Sub Total</div>
           <div class="col-3">
             {{ getAmount?.voucherTally[index].dr_amount }}
@@ -121,8 +99,7 @@
           {{ getAmount?.totalAmount.total_dr }}
         </div>
       </div>
-    </q-card-section></q-card
-  >
+    </q-card-section></q-card>
 </template>
 
 <script lang="ts">

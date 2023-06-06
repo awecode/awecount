@@ -135,6 +135,7 @@ export default {
                 position: 'top-right',
               })
             } else if (fields.party_id === data.party_id) {
+              if (!fields.invoice_nos) fields.invoice_nos = []
               fields.invoice_nos.push(data.voucher_no)
               fields.invoices.push(data.id)
               let invoice_tds = 0
