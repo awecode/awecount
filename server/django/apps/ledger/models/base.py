@@ -414,7 +414,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         if not matches:
             if arg[1] is None:
                 raise ValidationError('Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
-            transaction = Transaction(account=arg[1])
+            transaction = Transaction(account=arg[1], company_id=arg[-1])
             if arg[0] == 'dr':
                 transaction.dr_amount = val
                 transaction.cr_amount = None

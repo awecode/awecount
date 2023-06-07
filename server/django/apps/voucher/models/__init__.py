@@ -176,6 +176,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             self.status = 'Paid'
         else:
             raise ValueError('No such mode!')
+        
 
         self.save()
 
@@ -209,24 +210,25 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(['dr', row.item.discount_allowed_account, row_discount])
+                entries.append(['dr', row.item.discount_allowed_account, row_discount, voucher_meta['company_id']])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
                 if row_tax_amount:
-                    entries.append(['cr', row.tax_scheme.payable, row_tax_amount])
+                    entries.append(['cr', row.tax_scheme.payable, row_tax_amount, voucher_meta['company_id']])
                     row_total += row_tax_amount
 
-            entries.append(['cr', row.item.sales_account, sales_value])
+            entries.append(['cr', row.item.sales_account, sales_value, voucher_meta['company_id']])
 
             # Handle wallet commissions
             if self.mode == 'Bank Deposit' and self.bank_account.is_wallet:
                 commission = row_total * self.bank_account.transaction_commission_percent / 100
                 entries.append(['dr', dr_acc, row_total - commission])
                 if commission:
-                    entries.append(['dr', self.bank_account.commission_account, commission])
+                    entries.append(['dr', self.bank_account.commission_account, commission, voucher_meta['company_id']])
             else:
-                entries.append(['dr', dr_acc, row_total])
+                entries.append(['dr', dr_acc, row_total, voucher_meta['company_id']])
+            
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
