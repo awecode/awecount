@@ -1,4 +1,6 @@
+from functools import reduce
 from django.db.models import Q
+from apps.ledger.models.base import Transaction
 from django_filters import rest_framework as filters
 
 from apps.ledger.models import Category, Account
@@ -31,3 +33,23 @@ class CategoryFilterSet(filters.FilterSet):
     class Meta:
         model = Category
         fields = ('default',)
+
+
+class IexactInFilter(filters.BaseCSVFilter):
+    def filter(self, qs, value):
+        if value:
+            q_list = map(lambda n: Q(
+                **{self.field_name + '__iexact': n}), value)
+            q_list = reduce(lambda a, b: a | b, q_list)
+            qs = qs.filter(q_list)
+        return qs
+
+
+class TransactionFilterSet(filters.FilterSet):
+    account = IexactInFilter(field_name='account__name')
+    source = IexactInFilter(field_name='journal_entry__content_type__model')
+    category = IexactInFilter(field_name='account__category__name')
+
+    class Meta:
+        model = Transaction
+        fields = []

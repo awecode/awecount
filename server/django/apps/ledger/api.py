@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
-from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
+from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
 from apps.tax.models import TaxScheme
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
@@ -284,8 +284,9 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
     from django.contrib.contenttypes.models import ContentType
     company_id_attr = 'journal_entry__company_id'
     serializer_class = TransactionEntrySerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['account']
+    filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
+    filterset_class = TransactionFilterSet
+    # search_fields = ['journal_entry__source__get_voucher_no']
     journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
     # transaction_account = Transaction.objects.values_list('account', flat=True).distinct()
     # collections = [
@@ -294,7 +295,8 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
     # ]
     collections = [
         ('accounts', Account),
-        ('transaction_types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer)
+        ('transaction_types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer),
+        ('categories', Category)
     ]
 
     def get_queryset(self, company_id=None):
