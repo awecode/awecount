@@ -1,5 +1,4 @@
 <template>
-    {{ timePeriodArray }}
     <div class="q-pa-md">
         <div class="q-px-md q-pb-md">
             <div class="flex items-center justify-end q-gutter-x-md q-gutter-y-xs">
