@@ -43,12 +43,18 @@ class IexactInFilter(filters.BaseCSVFilter):
             q_list = reduce(lambda a, b: a | b, q_list)
             qs = qs.filter(q_list)
         return qs
+    
+class NumberFilter(filters.Filter):
+    def filter(self, qs, value):
+        if value:
+            return qs.filter(**{f"{self.field_name}__exact": value})
+        return qs
 
 
 class TransactionFilterSet(filters.FilterSet):
-    account = IexactInFilter(field_name='account__name')
-    source = IexactInFilter(field_name='journal_entry__content_type__model')
-    category = IexactInFilter(field_name='account__category__name')
+    account = NumberFilter(field_name='account_id')
+    source = NumberFilter(field_name='journal_entry__content_type_id')
+    category = NumberFilter(field_name='account__category_id')
 
     class Meta:
         model = Transaction
