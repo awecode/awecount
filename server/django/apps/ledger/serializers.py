@@ -346,19 +346,20 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
     dr_amount = RoundedField()
     cr_amount = RoundedField()
+    account_name = serializers.StringRelatedField(source='account')
 
     # voucher_no is too expensive on DB -
     voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
 
-    accounts = serializers.SerializerMethodField()
+    # accounts = serializers.SerializerMethodField()
 
-    def get_accounts(self, obj):
-        # TODO Optimize
-        accounts = []
-        for transaction in obj.journal_entry.transactions.all():
-            accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
-        return accounts
-        # return obj.journal_entry.transactions.values('account_id', 'account__name')
+    # def get_accounts(self, obj):
+    #     # TODO Optimize
+    #     accounts = []
+    #     for transaction in obj.journal_entry.transactions.all():
+    #         accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
+    #     return accounts
+    #     # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
         v_type = obj.journal_entry.content_type.name
@@ -373,7 +374,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no', 'accounts')
+            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'account_name', 'source_id', 'voucher_no')
         
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
