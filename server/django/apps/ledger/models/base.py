@@ -478,6 +478,7 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         # the following code lies outside if,else block, inside for loop
         transaction.account.save()
         # new transactions if any are saved into db by following code
+        import ipdb; ipdb.set_trace()
         try:
             journal_entry.transactions.add(transaction, bulk=False)
         except TypeError:  # for Django <1.9

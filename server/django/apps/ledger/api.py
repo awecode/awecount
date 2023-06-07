@@ -314,26 +314,37 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         filters['accounts'] = accounts
         return Response(filters)
 
-    @action(['get'], detail=False, url_path='grouped')
-    def group_transaction(self, request):
+    @action(['get'], detail=False, url_path='aggregate')
+    def aggregate(self, request):
         from django.db.models.functions import ExtractYear
         from django.db.models import Sum, Func, CharField, Value
-        from apps.ledger.models import GetSourceType
 
         model_map = {
             'purchasevoucherrow': 'Purchase Voucher Row',
             'incomerow': 'Income Row',
             'income': 'Income'
         }
+
+        # params = request.body()
         group_by = request.GET.get('group_by')
         qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
-        if group_by == 'Year':
-            # qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__name').annotate(
-            #     total_debit=Sum('dr_amount'),
-            #     total_credit=Sum('cr_amount'),
-            # ).order_by('-year')
+        if group_by == 'acc':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__name').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'cat':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__category__name').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'type':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'journal_entry__content_type__model').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
 
-            qq = qs.annotate(model_name=F('journal_entry__content_type__model')).values('model_name')
+            # qq = qs.annotate(model_name=F('journal_entry__content_type__model')).values('model_name')
 
             # qq = qs\
             #     .annotate(year=ExtractYear('journal_entry__date'),\
@@ -356,4 +367,4 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
                 return self.get_paginated_response(page)
             return Response(qq)
 
-        return Response(qs.values('account__name', 'journal_entry__date', 'dr_amount', 'cr_amount'))
+        return Response('FO')
