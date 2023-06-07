@@ -364,6 +364,10 @@ class Transaction(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='transactions')
+
+    def get_amount(self):
+        return self.dr_amount - self.cr_amount
 
     def get_balance(self):
         return zero_for_none(self.current_dr) - zero_for_none(self.current_cr)

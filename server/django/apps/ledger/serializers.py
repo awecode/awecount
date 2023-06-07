@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
@@ -337,3 +338,50 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccountOpeningBalance
         fields = ('id', 'account', 'opening_dr', 'opening_cr')
+
+
+class TransactionEntrySerializer(serializers.ModelSerializer):
+    date = serializers.ReadOnlyField(source='journal_entry.date')
+    source_type = serializers.SerializerMethodField()
+    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+    dr_amount = RoundedField()
+    cr_amount = RoundedField()
+
+    # voucher_no is too expensive on DB -
+    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
+
+    accounts = serializers.SerializerMethodField()
+
+    def get_accounts(self, obj):
+        # TODO Optimize
+        accounts = []
+        for transaction in obj.journal_entry.transactions.all():
+            accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
+        return accounts
+        # return obj.journal_entry.transactions.values('account_id', 'account__name')
+
+    def get_source_type(self, obj):
+        v_type = obj.journal_entry.content_type.name
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return v_type.strip().title()
+    
+    class Meta:
+        model = Transaction
+        fields = (
+            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no', 'accounts')
+        
+
+class ContentTypeListSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    class Meta:
+        model = ContentType
+        fields = ('id', 'name', 'model')
+
+    def get_name(self, obj):
+        return obj.name.capitalize()
+        

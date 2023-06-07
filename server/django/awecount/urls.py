@@ -26,6 +26,7 @@ router.register('accounts', ledger.AccountViewSet, basename='accounts')
 
 router.register('inventory-account', item.InventoryAccountViewSet, basename='inventory-account')
 router.register('account-opening-balance', ledger.AccountOpeningBalanceViewSet, basename='account-opening-balance')
+router.register('transaction', ledger.TransactionViewSet, basename='transaction')
 
 # item
 router.register('items', item.ItemViewSet, basename='item')

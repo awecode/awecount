@@ -7,21 +7,23 @@ from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.mixins import DestroyModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.tax.models import TaxScheme
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
-from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
+from .serializers import ContentTypeListSerializer, PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, TransactionEntrySerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -276,3 +278,80 @@ class CustomerClosingView(APIView):
                                                                          'id',
                                                                          'last_invoice_date')
         return Response({'balances': balances, 'last_invoice_dates': last_invoice_dates})
+
+
+class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
+    from django.contrib.contenttypes.models import ContentType
+    company_id_attr = 'journal_entry__company_id'
+    serializer_class = TransactionEntrySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['account']
+    journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
+    # transaction_account = Transaction.objects.values_list('account', flat=True).distinct()
+    # collections = [
+    #     ('accounts', Account.objects.filter(id__in=transaction_account)),
+    #     ('types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer),
+    # ]
+    collections = [
+        ('accounts', Account),
+        ('transaction_types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer)
+    ]
+
+    def get_queryset(self, company_id=None):
+        qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        if start_date and end_date:
+            qs = qs.filter(journal_entry__date__range=[start_date, end_date])
+        return qs
+
+    @action(['get'], detail=False, url_path='filters')
+    def filters(self, request):
+        filters = {}
+        accounts = Account.objects.values('id', 'name')
+        filters['accounts'] = accounts
+        return Response(filters)
+
+    @action(['get'], detail=False, url_path='grouped')
+    def group_transaction(self, request):
+        from django.db.models.functions import ExtractYear
+        from django.db.models import Sum, Func, CharField, Value
+        from apps.ledger.models import GetSourceType
+
+        model_map = {
+            'purchasevoucherrow': 'Purchase Voucher Row',
+            'incomerow': 'Income Row',
+            'income': 'Income'
+        }
+        group_by = request.GET.get('group_by')
+        qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
+        if group_by == 'Year':
+            # qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__name').annotate(
+            #     total_debit=Sum('dr_amount'),
+            #     total_credit=Sum('cr_amount'),
+            # ).order_by('-year')
+
+            qq = qs.annotate(model_name=F('journal_entry__content_type__model')).values('model_name')
+
+            # qq = qs\
+            #     .annotate(year=ExtractYear('journal_entry__date'),\
+            #               source_type = Case(
+            #                 When(journal_entry__content_type__model__icontains='row', then='journal_entry__content_type__model'),
+            #                 When(journal_entry__content_type__model__icontains='particular', then=Value('Particular')),
+            #                 When(journal_entry__content_type__model__icontains='account', then=Value('Opening Balance')),
+            #                 default= Value('Other')
+                            
+            #               ))\
+            #     .values('year', 'account__name', 'source_type')\
+            #     .annotate(
+            #         total_debit=Sum('dr_amount'),
+            #         total_credit=Sum('cr_amount'),
+            #     )\
+            #     .order_by('-year')
+            
+            page = self.paginate_queryset(qq)
+            if page is not None:
+                return self.get_paginated_response(page)
+            return Response(qq)
+
+        return Response(qs.values('account__name', 'journal_entry__date', 'dr_amount', 'cr_amount'))
