@@ -1,4 +1,5 @@
 <template>
+    {{ timePeriodArray }}
     <div class="q-pa-md">
         <div class="q-px-md q-pb-md">
             <div class="flex items-center justify-end q-gutter-x-md q-gutter-y-xs">
@@ -107,11 +108,11 @@
                                 <h6 class="q-ma-md text-grey-9">Add Column</h6>
                             </div>
                             <div class="q-mx-md row q-gutter-md q-mt-xs q-mb-md">
-                                <DateRangePicker v-model:startDate="secondfields.start_date"
-                                    v-model:endDate="secondfields.end_date" :hide-btns="true" />
+                                <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date"
+                                    :hide-btns="true" />
                                 <q-btn color="green" label="Filter" @click="onAddColumn"></q-btn>
                                 <q-btn color="red" icon="close"
-                                    @click="secondfields = { start_date: null, end_date: null }"></q-btn>
+                                    @click="fields = { start_date: null, end_date: null }"></q-btn>
                             </div>
                         </div>
                     </q-menu>
@@ -161,10 +162,10 @@ export default {
                 return `${net * -1}` + ' dr'
             }
         }
-        const secondfields = ref({
-            start_date: null,
-            end_date: null,
-        })
+        // const secondfields = ref({
+        //     start_date: null,
+        //     end_date: null,
+        // })
         // const endpoint = '/v1/trial-balance/'
         // const listData = useList(endpoint)
         const fetchData = async (start_date, end_date, index) => {
@@ -259,12 +260,21 @@ export default {
         }
         const onAddColumn = () => {
             const addIndex = accounts.value.length ? accounts.value.length : 0
-            const data = fetchData(secondfields.value.start_date, secondfields.value.end_date, addIndex)
-            timePeriodArray.value.push(secondfields.value)
+            const data = fetchData(fields.value.start_date, fields.value.end_date, addIndex)
+            timePeriodArray.value.push({ ...fields.value })
         }
         const onRemoveColumn = (index) => {
-            accounts.value.splice(index, 1)
-            category_accounts.value.splice(index, 1)
+            if (accounts.value.length === 1) {
+                category_accounts.value = []
+                accounts.value = []
+                showData.value = false
+                timePeriodArray.value = []
+            }
+            else {
+                accounts.value.splice(index, 1)
+                category_accounts.value.splice(index, 1)
+                timePeriodArray.value.splice(index, 1)
+            }
         }
         return {
             fields,
@@ -276,7 +286,6 @@ export default {
             showData,
             config,
             calculateNet,
-            secondfields,
             onAddColumn,
             onRemoveColumn,
             onDownloadXls,
