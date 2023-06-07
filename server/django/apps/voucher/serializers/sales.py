@@ -258,7 +258,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             instance.challans.add(*challans)
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
-        instance.synchronize()
+        # TODO: synchronize with CBMS
+        # instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
@@ -505,7 +506,8 @@ class ChallanCreateSerializer(StatusReversionMixin,
         for index, row in enumerate(rows_data):
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
-        instance.synchronize()
+        # TODO: Sync with CBMS
+        # instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
