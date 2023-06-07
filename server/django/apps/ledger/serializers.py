@@ -374,7 +374,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'account_name', 'source_id', 'voucher_no')
+            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'account_name', 'source_id', 'voucher_no', 'journal_entry')
         
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
