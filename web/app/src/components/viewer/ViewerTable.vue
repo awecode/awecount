@@ -34,13 +34,13 @@
         <q-td>
           {{ row.quantity }}
         </q-td>
-        <q-td> {{ row.rate }} </q-td><q-td> {{ row.discount }} </q-td
-        ><q-td class="text-right">
+        <q-td> {{ row.rate }} </q-td>
+        <q-td> {{ row?.discount }} {{ row.discount ? row.discount_type == 'Amount' ? '-/' : '%' : '' }} </q-td>
+        <!-- <q-td> {{ row.discount }} </q-td> -->
+        <q-td class="text-right">
           {{ row.tax_scheme.rate }}% (<span class="text-uppercase">{{
             row.tax_scheme.friendly_name
-          }}</span
-          >) </q-td
-        ><q-td class="text-right">
+          }}</span>) </q-td><q-td class="text-right">
           {{ row.rate * row.quantity }}
         </q-td>
       </q-tr>
@@ -48,29 +48,29 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Sub Total </q-td
-        ><q-td class="text-right">{{ fields?.meta_sub_total }}</q-td>
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Sub Total </q-td><q-td class="text-right">{{
+          fields?.meta_sub_total }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Discount </q-td
-        ><q-td class="text-right">{{ fields?.meta_discount }}</q-td>
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Discount </q-td><q-td class="text-right">{{
+          fields?.meta_discount }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td
-        ><q-td class="text-right">{{ fields?.meta_tax }}</q-td>
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td><q-td class="text-right">{{ fields?.meta_tax
+        }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Total </q-td
-        ><q-td class="text-right">{{ fields?.total_amount }}</q-td>
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Total </q-td><q-td class="text-right">{{
+          fields?.total_amount }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <td></td>
