@@ -46,6 +46,7 @@ MODULES = [
     *gdp('PaymentReceipt'),
     *gdp('TransactionCharge'),
     *gdp('AccountOpeningBalance'),
+    *gdp('Transaction')
 ]
 
 MODULES.sort()
