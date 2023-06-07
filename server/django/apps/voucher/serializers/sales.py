@@ -257,6 +257,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             instance.challans.clear()
             instance.challans.add(*challans)
         meta = instance.generate_meta(update_row_data=True)
+        meta['company_id'] = request.company_id
         instance.apply_transactions(voucher_meta=meta)
         # TODO: synchronize with CBMS
         # instance.synchronize()
