@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.db.models import Q, Sum, Case, When, F, Max
 from django.db.models.functions import Coalesce
+from django.contrib.contenttypes.models import ContentType
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
@@ -281,18 +282,12 @@ class CustomerClosingView(APIView):
 
 
 class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
-    from django.contrib.contenttypes.models import ContentType
     company_id_attr = 'journal_entry__company_id'
     serializer_class = TransactionEntrySerializer
-    filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
+    # filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
     # search_fields = ['journal_entry__source__get_voucher_no']
     journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
-    # transaction_account = Transaction.objects.values_list('account', flat=True).distinct()
-    # collections = [
-    #     ('accounts', Account.objects.filter(id__in=transaction_account)),
-    #     ('types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer),
-    # ]
     collections = [
         ('accounts', Account),
         ('transaction_types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer),
@@ -329,46 +324,27 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             'income': 'Income'
         }
 
-        # params = request.body()
         group_by = request.GET.get('group_by')
-        qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
-        if group_by == 'acc':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__name').annotate(
-                total_debit=Sum('dr_amount'),
-                total_credit=Sum('cr_amount'),
-            ).order_by('-year')
-        if group_by == 'cat':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'account__category__name').annotate(
-                total_debit=Sum('dr_amount'),
-                total_credit=Sum('cr_amount'),
-            ).order_by('-year')
-        if group_by == 'type':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date')).values('year', 'journal_entry__content_type__model').annotate(
-                total_debit=Sum('dr_amount'),
-                total_credit=Sum('cr_amount'),
-            ).order_by('-year')
-
-            # qq = qs.annotate(model_name=F('journal_entry__content_type__model')).values('model_name')
-
-            # qq = qs\
-            #     .annotate(year=ExtractYear('journal_entry__date'),\
-            #               source_type = Case(
-            #                 When(journal_entry__content_type__model__icontains='row', then='journal_entry__content_type__model'),
-            #                 When(journal_entry__content_type__model__icontains='particular', then=Value('Particular')),
-            #                 When(journal_entry__content_type__model__icontains='account', then=Value('Opening Balance')),
-            #                 default= Value('Other')
-
-            #               ))\
-            #     .values('year', 'account__name', 'source_type')\
-            #     .annotate(
-            #         total_debit=Sum('dr_amount'),
-            #         total_credit=Sum('cr_amount'),
-            #     )\
-            #     .order_by('-year')
+        qs = self.get_queryset()
+        if group_by:
+            if group_by == 'acc':
+                qq = qs.annotate(account_name=F('account__name')).values('account_name').annotate(
+                    total_debit=Sum('dr_amount'),
+                    total_credit=Sum('cr_amount'),
+                )
+            if group_by == 'cat':
+                qq = qs.annotate(year=ExtractYear('journal_entry__date'), category_name=F('account__category__name')).values('year', 'category_name').annotate(
+                    total_debit=Sum('dr_amount'),
+                    total_credit=Sum('cr_amount'),
+                ).order_by('-year')
+            if group_by == 'type':
+                qq = qs.annotate(year=ExtractYear('journal_entry__date'), source=F('journal_entry__content_type__model')).values('year', 'source').annotate(
+                    total_debit=Sum('dr_amount'),
+                    total_credit=Sum('cr_amount'),
+                ).order_by('-year')
 
             page = self.paginate_queryset(qq)
             if page is not None:
                 return self.get_paginated_response(page)
             return Response(qq)
-
         return Response('FO')
