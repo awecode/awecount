@@ -20,8 +20,8 @@
         <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
           this.$route.params.slug === 'sales-voucher'
           " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
-      ? 'purchase-voucher'
-      : this.$route.params.slug
+    ? 'purchase-voucher'
+    : this.$route.params.slug
     }/${voucher?.source_id}/view`">
           <div class="row items-center text-blue">Source</div>
         </router-link>
@@ -116,7 +116,6 @@ import { useLoginStore } from 'src/stores/login-info'
 export default {
   setup() {
     const route = useRoute()
-    console.log(route)
     const metaData = {
       title: 'Journal Entries | Awecount',
     }

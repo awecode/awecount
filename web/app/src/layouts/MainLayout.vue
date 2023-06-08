@@ -273,6 +273,11 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-chart-arc',
         link: '/report/ratio-analysis/',
       },
+      {
+        title: 'Transactions',
+        icon: 'mdi-reorder-horizontal',
+        link: '/report/transactions/',
+      },
     ],
   },
   {

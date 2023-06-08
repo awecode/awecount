@@ -13,7 +13,6 @@ export default function useGeneratePosPdf(
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        console.log('Row', row)
         if (isTaxSame !== false) {
           if (index === 0) {
             isTaxSame = row.tax_scheme_id

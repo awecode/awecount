@@ -16,6 +16,7 @@ declare module '@vue/runtime-core' {
     DateRangePicker: typeof import('./src/components/date/DateRangePicker.vue')['default']
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
+    FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']

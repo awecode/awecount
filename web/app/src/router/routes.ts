@@ -769,6 +769,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Ratio Analysis'],
         },
       },
+      {
+        path: 'transactions/',
+        component: () => import('src/pages/report/TransactionsList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Transactions'],
+        },
+      },
     ],
   },
   {

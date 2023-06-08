@@ -163,7 +163,6 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { search: undefined })
     }
-    console.log(url)
     router.push(url)
   }
 
@@ -203,7 +202,6 @@ export default (endpoint, predefinedColumns = null) => {
     // TODO withQuery isn't preserving the order
     url = withQuery(url, cleanedFilters)
     url = url.replace('+', '%20')
-    console.log(url)
     // debugger
     router.push(url)
 
