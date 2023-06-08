@@ -104,8 +104,8 @@ class TaxPayment(models.Model):
 
     def apply_transactions(self):
         entries = [
-            ['dr', self.tax_scheme.payable, self.amount],
-            ['cr', self.cr_account, self.amount]
+            ['dr', self.tax_scheme.payable, self.amount, self.company_id],
+            ['cr', self.cr_account, self.amount, self.company_id]
         ]
         set_ledger_transactions(self, self.date, *entries, clear=True)
 

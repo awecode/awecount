@@ -60,6 +60,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         meta = instance.generate_meta(update_row_data=True)
+        meta['company_id'] = request.company_id
         instance.apply_transactions(voucher_meta=meta)
         return instance
 

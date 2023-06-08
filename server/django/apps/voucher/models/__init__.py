@@ -427,17 +427,17 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
             item = row.item
             if row_discount > 0:
-                entries.append(['cr', item.discount_received_account, row_discount])
+                entries.append(['cr', item.discount_received_account, row_discount, voucher_meta['company_id']])
 
             if row.tax_scheme:
                 row_tax_amount = row.tax_scheme.rate * row_total / 100
                 if row_tax_amount:
-                    entries.append(['dr', row.tax_scheme.receivable, row_tax_amount])
+                    entries.append(['dr', row.tax_scheme.receivable, row_tax_amount, voucher_meta['company_id']])
                     row_total += row_tax_amount
 
-            entries.append(['dr', item.dr_account, purchase_value])
+            entries.append(['dr', item.dr_account, purchase_value, voucher_meta['company_id']])
 
-            entries.append(['cr', cr_acc, row_total])
+            entries.append(['cr', cr_acc, row_total, voucher_meta['company_id']])
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()
