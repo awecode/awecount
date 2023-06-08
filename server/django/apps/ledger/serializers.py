@@ -385,4 +385,8 @@ class ContentTypeListSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.name.capitalize()
+    
+
+class ParamSerializer(serializers.Serializer):
+    account = serializers.ListField(child=serializers.IntegerField())
         

@@ -47,7 +47,8 @@ class IexactInFilter(filters.BaseCSVFilter):
 class NumberFilter(filters.Filter):
     def filter(self, qs, value):
         if value:
-            return qs.filter(**{f"{self.field_name}__exact": value})
+            values = value.split(',')
+            return qs.filter(**{f"{self.field_name}__in": values})
         return qs
 
 

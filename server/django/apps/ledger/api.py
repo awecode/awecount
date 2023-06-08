@@ -285,7 +285,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
     company_id_attr = 'journal_entry__company_id'
     serializer_class = TransactionEntrySerializer
     filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
-    filterset_class = TransactionFilterSet
+    # filterset_class = TransactionFilterSet
     # search_fields = ['journal_entry__source__get_voucher_no']
     journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
     # transaction_account = Transaction.objects.values_list('account', flat=True).distinct()
@@ -303,16 +303,18 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
+        accounts = list(filter(None, self.request.GET.getlist('account')))
+        categories = list(filter(None, self.request.GET.getlist('category')))
+        sources = list(filter(None, self.request.GET.getlist('source')))
         if start_date and end_date:
             qs = qs.filter(journal_entry__date__range=[start_date, end_date])
+        if accounts:
+            qs = qs.filter(account_id__in=accounts)
+        if categories:
+            qs = qs.filter(account__category_id__in=categories)
+        if sources:
+            qs = qs.filter(journal_entry__content_type_id__in=sources)
         return qs
-
-    @action(['get'], detail=False, url_path='filters')
-    def filters(self, request):
-        filters = {}
-        accounts = Account.objects.values('id', 'name')
-        filters['accounts'] = accounts
-        return Response(filters)
 
     @action(['get'], detail=False, url_path='aggregate')
     def aggregate(self, request):
