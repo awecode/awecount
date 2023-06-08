@@ -300,12 +300,14 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
     ]
 
     def get_queryset(self, company_id=None):
-        qs = super().get_queryset().select_related('account', 'journal_entry__content_type')
+        qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         accounts = list(filter(None, self.request.GET.getlist('account')))
         categories = list(filter(None, self.request.GET.getlist('category')))
         sources = list(filter(None, self.request.GET.getlist('source')))
+
+        # TODO Optimize this query
         if start_date and end_date:
             qs = qs.filter(journal_entry__date__range=[start_date, end_date])
         if accounts:
@@ -355,7 +357,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             #                 When(journal_entry__content_type__model__icontains='particular', then=Value('Particular')),
             #                 When(journal_entry__content_type__model__icontains='account', then=Value('Opening Balance')),
             #                 default= Value('Other')
-                            
+
             #               ))\
             #     .values('year', 'account__name', 'source_type')\
             #     .annotate(
@@ -363,7 +365,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             #         total_credit=Sum('cr_amount'),
             #     )\
             #     .order_by('-year')
-            
+
             page = self.paginate_queryset(qq)
             if page is not None:
                 return self.get_paginated_response(page)
