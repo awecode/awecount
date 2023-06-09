@@ -326,17 +326,17 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         from django.db.models import Sum
 
         if group_by == 'acc':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), account_name=F('account__name')).values('year', 'account_name').annotate(
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'cat':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), category_name=F('account__category__name')).values('year', 'category_name').annotate(
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'type':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), source=F('journal_entry__content_type__model')).values('year', 'source').annotate(
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
