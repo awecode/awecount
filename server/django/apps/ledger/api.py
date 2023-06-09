@@ -21,7 +21,7 @@ from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
-from .serializers import ContentTypeListSerializer, PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
+from .serializers import AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
     AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, TransactionEntrySerializer
@@ -294,6 +294,11 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         ('categories', Category)
     ]
 
+    def get_serializer_class(self):
+        if self.request.GET.get('group_by'):
+            return AggregatorSerializer
+        return super().get_serializer_class()
+
     def get_queryset(self, company_id=None):
         qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
@@ -301,6 +306,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         accounts = list(filter(None, self.request.GET.getlist('account')))
         categories = list(filter(None, self.request.GET.getlist('category')))
         sources = list(filter(None, self.request.GET.getlist('source')))
+        group_by = self.request.GET.get('group_by')
 
         # TODO Optimize this query
         if start_date and end_date:
@@ -311,40 +317,27 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             qs = qs.filter(account__category_id__in=categories)
         if sources:
             qs = qs.filter(journal_entry__content_type_id__in=sources)
+        if group_by:
+            qs = self.aggregate(qs, group_by)
         return qs
 
-    @action(['get'], detail=False, url_path='aggregate')
-    def aggregate(self, request):
+    def aggregate(self, qs, group_by):
         from django.db.models.functions import ExtractYear
-        from django.db.models import Sum, Func, CharField, Value
+        from django.db.models import Sum
 
-        model_map = {
-            'purchasevoucherrow': 'Purchase Voucher Row',
-            'incomerow': 'Income Row',
-            'income': 'Income'
-        }
-
-        group_by = request.GET.get('group_by')
-        qs = self.get_queryset()
-        if group_by:
-            if group_by == 'acc':
-                qq = qs.annotate(account_name=F('account__name')).values('account_name').annotate(
-                    total_debit=Sum('dr_amount'),
-                    total_credit=Sum('cr_amount'),
-                )
-            if group_by == 'cat':
-                qq = qs.annotate(year=ExtractYear('journal_entry__date'), category_name=F('account__category__name')).values('year', 'category_name').annotate(
-                    total_debit=Sum('dr_amount'),
-                    total_credit=Sum('cr_amount'),
-                ).order_by('-year')
-            if group_by == 'type':
-                qq = qs.annotate(year=ExtractYear('journal_entry__date'), source=F('journal_entry__content_type__model')).values('year', 'source').annotate(
-                    total_debit=Sum('dr_amount'),
-                    total_credit=Sum('cr_amount'),
-                ).order_by('-year')
-
-            page = self.paginate_queryset(qq)
-            if page is not None:
-                return self.get_paginated_response(page)
-            return Response(qq)
-        return Response('FO')
+        if group_by == 'acc':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), account_name=F('account__name')).values('year', 'account_name').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'cat':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), category_name=F('account__category__name')).values('year', 'category_name').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'type':
+            qq = qs.annotate(year=ExtractYear('journal_entry__date'), source=F('journal_entry__content_type__model')).values('year', 'source').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        return qq
