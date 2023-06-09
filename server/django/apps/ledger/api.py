@@ -295,7 +295,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
     ]
 
     def get_serializer_class(self):
-        if self.request.GET.get('group_by'):
+        if self.request.GET.get('group'):
             return AggregatorSerializer
         return super().get_serializer_class()
 
@@ -306,7 +306,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         accounts = list(filter(None, self.request.GET.getlist('account')))
         categories = list(filter(None, self.request.GET.getlist('category')))
         sources = list(filter(None, self.request.GET.getlist('source')))
-        group_by = self.request.GET.get('group_by')
+        group_by = self.request.GET.get('group')
 
         # TODO Optimize this query
         if start_date and end_date:
