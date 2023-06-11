@@ -168,7 +168,7 @@
   <template v-if="sameTransactionsData">
     <div class="q-ma-md flex justify-end">
       <q-btn @click="seprateTransactions = !seprateTransactions"
-        :label="seprateTransactions ? 'Merge Transactions' : 'Sperate Transactions'" color="green"></q-btn>
+        :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green"></q-btn>
     </div>
   </template>
 </template>
