@@ -27,7 +27,7 @@
         </div>
         <div>
             <q-select v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
-                :options="options" map-options emit-value>
+                :options="options" map-options emit-value use-input>
                 <!-- <template v-slot:append>
                                             <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                                                 @click.stop.prevent="fields.mode = null" /></template> -->
