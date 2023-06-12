@@ -13,8 +13,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.aggregator.views import qs_to_xls
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
+from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
@@ -299,7 +301,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             return AggregatorSerializer
         return super().get_serializer_class()
 
-    def get_queryset(self, company_id=None):
+    def get_queryset(self):
         qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
@@ -326,18 +328,32 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         from django.db.models import Sum
 
         if group_by == 'acc':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'cat':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'type':
-            qq = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
-        return qq
+        return qs
+
+    @action(detail=False)
+    def export(self, request):
+        queryset = self.get_queryset()
+        if not request.GET.get('group'):
+            params = [
+                ('Transactions', queryset, TransactionResource)
+            ]
+            return qs_to_xls(params)
+        else:
+            params = [
+                ('Transactions', queryset, TransactionGroupResource)
+            ]
+            return qs_to_xls(params)
