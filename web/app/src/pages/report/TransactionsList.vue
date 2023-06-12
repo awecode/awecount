@@ -107,18 +107,18 @@ export default {
         const endpoint = '/v1/transaction/'
         const listData = useList(endpoint)
         const route = useRoute()
-        // const onDownloadXls = () => {
-        //     const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-        //     useApi('v1/sales-voucher/export/' + query)
-        //         .then((data) =>
-        //             usedownloadFile(
-        //                 data,
-        //                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        //                 'Sales_voucher'
-        //             )
-        //         )
-        //         .catch((err) => console.log('Error Due To', err))
-        // }
+        const onDownloadXls = () => {
+            const query = route.fullPath.slice(route.fullPath.indexOf('?'))
+            useApi('v1/transaction/export/' + query)
+                .then((data) =>
+                    usedownloadFile(
+                        data,
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'Sales_voucher'
+                    )
+                )
+                .catch((err) => console.log('Error Due To', err))
+        }
         const newColumn = [
             {
                 name: 'voucher_no',
@@ -222,7 +222,7 @@ export default {
         //     }
         //     else return null
         // })
-        return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption }
+        return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls }
     },
     created() {
         const endpoint = '/v1/transaction/create-defaults/'
