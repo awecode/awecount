@@ -37,24 +37,26 @@
           <!-- Body -->
           <!-- {{ sameTransactionsData }} -->
           <div v-for="(row, key, index) in sameTransactionsData" :key="key" class="q-my-md">
-            <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
-            <div class="row q-col-gutter-md">
-              <div class="col-grow">
-                <router-link style="text-decoration: none" class="text-blue" :to="`/ledger/${row.account.id}/`">{{
-                  row.account.name }}</router-link>
+            <template v-if="row.dr_amount || row.cr_amount">
+              <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
+              <div class="row q-col-gutter-md">
+                <div class="col-grow">
+                  <router-link style="text-decoration: none" class="text-blue" :to="`/ledger/${row.account.id}/`">{{
+                    row.account.name }}</router-link>
+                </div>
+                <div class="col-3">{{ row.dr_amount || null }}</div>
+                <div class="col-3">{{ row.cr_amount || null }}</div>
               </div>
-              <div class="col-3">{{ row.dr_amount || null }}</div>
-              <div class="col-3">{{ row.cr_amount || null }}</div>
-            </div>
+            </template>
           </div>
           <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
             style="margin-left: -20px; margin-right: -20px">
             <div class="col-grow">Total</div>
             <div class="col-3">
-              {{ getAmount?.totalAmount.total_dr }}
+              {{ sameTransactionsData.total_dr }}
             </div>
             <div class="col-3">
-              {{ getAmount?.totalAmount.total_cr }}
+              {{ sameTransactionsData.total_dr }}
             </div>
           </div>
         </q-card-section>
@@ -262,7 +264,10 @@ export default {
         })
         let newTransactionObj
         if (status) {
-          newTransactionObj = {}
+          newTransactionObj = {
+            total_dr: 0,
+            total_cr: 0
+          }
           const fieldsConst = JSON.parse(JSON.stringify(fields.value))
           fieldsConst.forEach((parent) => {
             parent.transactions.forEach(transaction => {
@@ -274,15 +279,17 @@ export default {
                   if (netAmount >= 0) {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = netAmount
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
+                    newTransactionObj.total_cr += netAmount
                   }
                   else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
                     newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
+                    newTransactionObj.total_dr += (netAmount * -1)
                   }
                 }
               }
               else newTransactionObj[`${transaction.account.id}`] = transaction
-            });
+            })
           })
         }
         return newTransactionObj || false
