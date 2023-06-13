@@ -280,13 +280,15 @@ export default {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = netAmount
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
                     newTransactionObj.total_cr += netAmount
-                    newTransactionObj.total_dr -= transaction.dr_amount
+                    if (netAmount !== 0) {
+                      newTransactionObj.total_dr -= transaction.dr_amount || 0
+                    }
                   }
                   else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
                     newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
                     newTransactionObj.total_dr += (netAmount * -1)
-                    newTransactionObj.total_cr -= transaction.cr_amount
+                    newTransactionObj.total_cr -= transaction.cr_amount || 0
                   }
                 }
                 else {
