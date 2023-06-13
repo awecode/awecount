@@ -1,6 +1,6 @@
 from import_export.fields import Field
 
-from apps.product.models import Transaction
+from apps.ledger.models.base import Transaction
 from awecount.libs.resources import PrettyNameModelResource
 
 
