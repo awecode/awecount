@@ -272,22 +272,24 @@ export default {
           fieldsConst.forEach((parent) => {
             parent.transactions.forEach(transaction => {
               if (newTransactionObj[`${transaction.account.id}`]) {
+                newTransactionObj[`${transaction.account.id}`].cr_amount += transaction.cr_amount
+                newTransactionObj[`${transaction.account.id}`].dr_amount += transaction.dr_amount
                 if (newTransactionObj[`${transaction.account.id}`].cr_amount && newTransactionObj[`${transaction.account.id}`].dr_amount) {
                   const netAmount = newTransactionObj[`${transaction.account.id}`].cr_amount - newTransactionObj[`${transaction.account.id}`].dr_amount
                   if (netAmount >= 0) {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = netAmount
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
                     newTransactionObj.total_cr += netAmount
+                    newTransactionObj.total_dr -= transaction.dr_amount
                   }
                   else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
                     newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
                     newTransactionObj.total_dr += (netAmount * -1)
+                    newTransactionObj.total_cr -= transaction.cr_amount
                   }
                 }
                 else {
-                  newTransactionObj[`${transaction.account.id}`].cr_amount += transaction.cr_amount
-                  newTransactionObj[`${transaction.account.id}`].dr_amount += transaction.dr_amount
                   newTransactionObj.total_cr += transaction.cr_amount
                   newTransactionObj.total_dr += transaction.dr_amount
                 }
