@@ -27,7 +27,7 @@
         </div>
         <div>
             <q-select v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
-                :options="options" map-options emit-value use-input>
+                :options="options" map-options emit-value>
                 <!-- <template v-slot:append>
                                             <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                                                 @click.stop.prevent="fields.mode = null" /></template> -->
@@ -93,7 +93,6 @@ export default {
         const removeOption = (id) => {
             if (typeof modalValue.value === 'string') modalValue.value = []
             else {
-                // debugger
                 const index: number = modalValue.value.findIndex(
                     (item) => item === id
                 )
