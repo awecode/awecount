@@ -110,9 +110,7 @@ export default {
         watch(
             () => modalValueSelect,
             (newValue) => {
-                // console.log(newValue.value)
                 if (!modalValue.value.includes(newValue.value)) {
-                    // debugger
                     if (typeof modalValue.value === 'string') modalValue.value = [`${modalValue.value}`]
                     modalValue.value.push(newValue.value)
                 }
@@ -124,7 +122,6 @@ export default {
             (newValue: Array<string>) => {
                 if (typeof newValue === 'string') {
                     modalValue.value = [`${newValue}`]
-                    debugger
                 }
                 else modalValue.value = newValue
             },
