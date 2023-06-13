@@ -390,3 +390,9 @@ class ContentTypeListSerializer(serializers.ModelSerializer):
 class ParamSerializer(serializers.Serializer):
     account = serializers.ListField(child=serializers.IntegerField())
         
+
+class AggregatorSerializer(serializers.Serializer):
+    label = serializers.CharField(required=False)
+    year = serializers.CharField(required=False)
+    total_debit = RoundedField()
+    total_credit = RoundedField()
