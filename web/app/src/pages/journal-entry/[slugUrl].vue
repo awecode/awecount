@@ -56,7 +56,7 @@
               {{ sameTransactionsData.total_dr }}
             </div>
             <div class="col-3">
-              {{ sameTransactionsData.total_dr }}
+              {{ sameTransactionsData.total_cr }}
             </div>
           </div>
         </q-card-section>
