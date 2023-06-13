@@ -199,24 +199,19 @@ export default {
         }
       }
     )
-    // watch(
-    //   () => props.modelValue.tax_scheme_id,
-    //   (newValue) => {
-    //     console.log('runninn')
-    //     const taxindex = props.taxOptions.findIndex(
-    //       (item) => item.id === newValue
-    //     )
-    //     if (taxindex > -1) {
-    //       selectedTax.value = props.taxOptions[taxindex]
-    //     }
-    //   }
-    // )
-    // const expandedComputed = computed(() => {
-    //   if (expandedState) return true
-    //   else {
-    //     if ()
-    //   }
-    // })
+    watch(
+      () => props.modelValue.tax_scheme_id,
+      (newValue) => {
+        console.log('runninn')
+        const taxindex = props.taxOptions.findIndex(
+          (item) => item.id === newValue
+        )
+        if (taxindex > -1) {
+          selectedTax.value = props.taxOptions[taxindex]
+          modalValue.value.taxObj = props.taxOptions[taxindex]
+        }
+      }
+    )
     watch(
       () => props.errors,
       (newValue) => {

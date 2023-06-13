@@ -17,24 +17,12 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
-          <InvoiceRow
-            v-if="modalValue[index]"
-            :usedIn="props.usedIn"
-            v-model="modalValue[index]"
-            :itemOptions="itemOptions"
-            :unitOptions="unitOptions"
-            :taxOptions="taxOptions"
-            :discountOptions="discountOptions"
-            :index="index"
-            :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)"
-            :errors="
-              !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-            "
-            :usedInPos="props.usedInPos"
-            :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount"
-          />
+          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
+            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
+            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
+            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
+            :showRowTradeDiscount="props.showRowTradeDiscount" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -70,14 +58,7 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn
-            @click="addRow"
-            v-if="!usedInPos"
-            color="green"
-            outline
-            class="q-px-lg q-py-ms"
-            >Add Row</q-btn
-          >
+          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
         </div>
       </div>
     </q-card>
@@ -236,6 +217,24 @@ export default {
           ) || 0
 
         // preventing from mainDiscount amount from being added Twice
+        console.log('obj', item)
+        // checking if tax is selected manually
+        // if (item.tax_scheme_id) {
+        //   let rowTax = 0
+        //   if (props.mainDiscount.discount_type === 'Amount') {
+        //     rowTax =
+        //       (rowTotal -
+        //         (rowDiscount || 0) -
+        //         props.mainDiscount.discount * (rowTotal / data.addTotal)) *
+        //       (item.taxObj.rate / 100 || 0)
+        //   } else {
+        //     rowTax =
+        //       (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
+        //       (item.taxObj.rate / 100 || 0)
+        //   }
+        //   data.totalTax = data.totalTax + rowTax
+        // }
+        // checking if tax is selected coming automaticaly with item
         if (item.taxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
