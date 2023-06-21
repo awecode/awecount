@@ -163,7 +163,7 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/sales-discount/list/',
       },
       {
-        title: 'Sales Reoprt',
+        title: 'Sales Report',
         icon: 'mdi-format-list-bulleted',
         link: '/sales-row/list/',
       },
