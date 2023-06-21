@@ -3,11 +3,9 @@
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
         <div class="text-h6 d-print-none">
-          <span
-            >Purchase Invoice | {{ fields?.status }} | #{{
-              fields?.voucher_no
-            }}</span
-          >
+          <span>Purchase Invoice | {{ fields?.status }} | #{{
+            fields?.voucher_no
+          }}</span>
         </div>
       </q-card-section>
 
@@ -53,45 +51,19 @@
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
-    <div
-      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
-      v-if="fields"
-    >
+    <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
       <div class="row">
-        <q-btn
-          class="q-mb-md q-mr-md"
-          color="orange-5"
-          label="Edit"
-          icon="edit"
-          :to="`/purchase-voucher/${fields?.id}/`"
-        />
-        <div
-          v-if="fields?.status !== 'Cancelled'"
-          class="row q-gutter-x-md q-gutter-y-md q-mb-md"
-        >
-          <q-btn
-            v-if="fields?.status === 'Issued'"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6"
-            label="mark as paid"
-            icon="mdi-check-all"
-          />
-          <q-btn
-            color="red-5"
-            label="Cancel"
-            icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)"
-          />
+        <q-btn class="q-mb-md q-mr-md" color="orange-5" label="Edit" icon="edit"
+          :to="`/purchase-voucher/${fields?.id}/`" />
+        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+          <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+            color="green-6" label="mark as paid" icon="mdi-check-all" />
+          <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
       <div>
-        <q-btn
-          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          color="blue-7"
-          label="Journal Entries"
-          icon="books"
-          :to="`/journal-entries/purchase-vouchers/${fields?.id}/`"
-        />
+        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries"
+          icon="books" :to="`/journal-entries/purchase-vouchers/${fields?.id}/`" />
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
@@ -105,10 +77,7 @@
         <q-card-section class="q-ma-md">
           <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
           <div class="text-right q-mt-lg">
-            <q-btn
-              label="Confirm"
-              @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
-            ></q-btn>
+            <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -191,7 +160,6 @@ export default {
       )
     })
     const discountComputed = computed(() => {
-      console.log('Computed', fields.value)
       if (fields?.value.discount_obj) {
         return (
           `${fields.value.discount_obj.value}` +

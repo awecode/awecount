@@ -3,30 +3,16 @@
     <div class="text-grey-8 q-pb-xs">{{ label }}</div>
     <div class="row q-gutter-sm">
       <!-- style="border-radius: 1rem; padding: 4px 12px" -->
-      <q-btn
-        @click="() => onStatusClick(statuses)"
-        style="border-radius: 1rem; padding: 4px 12px"
-        size="sm"
-        class="text-subtitle2"
-        v-for="(statuses, index) in options"
-        :key="index"
-        :class="
-          modalValue.includes(statuses)
-            ? 'bg-blue-1 text-blue-9'
-            : 'bg-grey-4 text-grey-9'
-        "
-      >
+      <q-btn @click="() => onStatusClick(statuses)" style="border-radius: 1rem; padding: 4px 12px" size="sm"
+        class="text-subtitle2" v-for="(statuses, index) in options" :key="index" :class="modalValue.includes(statuses)
+          ? 'bg-blue-1 text-blue-9'
+          : 'bg-grey-4 text-grey-9'
+          ">
         <!-- TODO: add animation -->
         <div class="row items-center">
           <Transition>
-            <q-icon
-              style="height: 22px"
-              v-if="modalValue.includes(statuses)"
-              name="check"
-              size="sm"
-              color="blue"
-              class="q-mr-xs"
-            ></q-icon>
+            <q-icon style="height: 22px" v-if="modalValue.includes(statuses)" name="check" size="sm" color="blue"
+              class="q-mr-xs"></q-icon>
           </Transition>
           <span style="font-size: 0.85rem; text-transform: capitalize">
             {{ statuses }}
@@ -70,7 +56,6 @@ export default {
       } else {
         modalValue.value.push(status)
       }
-      console.log(modalValue.value)
     }
     watch(
       () => modalValue,
@@ -103,6 +88,7 @@ export default {
   transition: width 0.1s linear;
   overflow: hidden;
 }
+
 .v-enter-from,
 .v-leave-to {
   opacity: 0;

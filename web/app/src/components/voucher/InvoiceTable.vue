@@ -217,7 +217,7 @@ export default {
           ) || 0
 
         // preventing from mainDiscount amount from being added Twice
-        console.log('obj', item)
+        
         // checking if tax is selected manually
         // if (item.tax_scheme_id) {
         //   let rowTax = 0

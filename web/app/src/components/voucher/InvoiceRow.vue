@@ -202,7 +202,6 @@ export default {
     watch(
       () => props.modelValue.tax_scheme_id,
       (newValue) => {
-        console.log('runninn')
         const taxindex = props.taxOptions.findIndex(
           (item) => item.id === newValue
         )
