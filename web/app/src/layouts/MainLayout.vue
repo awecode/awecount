@@ -1,7 +1,7 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" class="container-padding-left">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide">
+    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md">
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
@@ -45,7 +45,8 @@
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered class="d-print-none print-hide">
+    <q-drawer drawer persistent overlay show-if-above :mini="miniState" @mouseover="miniState = false"
+      @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
       <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
@@ -71,6 +72,7 @@ import { useLoginStore } from '../stores/login-info.js'
 // import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
 import { ref } from 'vue'
+const miniState: Ref<boolean> = ref(false)
 const router = useRouter()
 const route = useRoute()
 const breadCrums: Ref<Array<string | null>> = ref([])
@@ -464,5 +466,11 @@ watch(route, () => {
 
 .btns-Con {
   column-gap: 15px;
+}
+
+@media (min-width: 1000px) {
+  .container-padding-left {
+    padding-left: 60px;
+  }
 }
 </style>
