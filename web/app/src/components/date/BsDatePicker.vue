@@ -229,7 +229,7 @@ watch(() => props.modelValue, (newVal) => {
 })
 
 watch(() => bsDate.value, (newVal) => {
-  let modVal = DateConverter.bs2ad(newVal)
+  let modVal = DateConverter.bs2ad(newVal, true)
   emit('update:modelValue', modVal)
 })
 
@@ -243,6 +243,9 @@ const incMonth = () => {
     year.value = year.value + 1
   } else {
     month.value = month.value + 1
+    // if (!day.value) {
+    //   day.value - 1
+    // }
   }
 }
 

@@ -212,13 +212,26 @@ const Converter = {
     return Array(+(zero > 0 && zero)).join('0') + num
   },
 
-  bs2ad: function (bs_date) {
+  bs2ad: function (bs_date, roundOff) {
     // input and output in string
     if (this.isValid(bs_date)) {
       let date_delta = this.countBsDays(BS_EQIV, bs_date)
       return this.addAdDays(AD_EQIV, date_delta)
     } else {
-      throw 'Invalid BS Date'
+      if (roundOff) {
+        let dateArray = bs_date.split('-')
+        let day = Number(bs_date.split('-')[2])
+        let dateString = bs_date
+        do {
+          day -= 1
+          dateArray[2] = dateArray[2] - 1
+          dateString = dateArray.join('-')
+        } while (day > 28 && !this.isValid(dateString))
+        if (this.isValid(dateString)) {
+          let date_delta = this.countBsDays(BS_EQIV, dateString)
+          return this.addAdDays(AD_EQIV, date_delta)
+        } else throw 'Invalid BS Date'
+      } else throw 'Invalid BS Date'
     }
   },
 
