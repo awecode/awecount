@@ -8,6 +8,7 @@ export const useLoginStore = defineStore('loginStore', {
     companyInfo: null,
     isCalendarInAD: true,
     trialBalanceCollapseId: [],
+    userInfo: null,
   }),
   getters: {
     doubleCount: (state) => state.counter * 2,

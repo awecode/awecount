@@ -3,52 +3,34 @@
     <div class="full-width q-px-md">
       <q-form class="text-sm" @submit="onLoginSubmit">
         <!-- <q-input label="Email" class="q-mb-lg" :hide-bottom-space="true"></q-input> -->
-        <q-input
-          v-model="username"
-          label="Email"
-          input-class="text-body1"
-          :error="Boolean(errorMessage?.email ? true : false)"
-          :error-message="
-            errorMessage
-              ? errorMessage.email
-                ? errorMessage.email[0]
-                : null
+        <q-input v-model="username" label="Email" input-class="text-body1"
+          :error="Boolean(errorMessage?.email ? true : false)" :error-message="errorMessage
+            ? errorMessage.email
+              ? errorMessage.email[0]
               : null
-          "
-        >
+            : null
+            ">
           <template v-slot:before>
             <q-icon name="fa-solid fa-envelope" />
           </template>
         </q-input>
-        <q-input
-          v-model="password"
-          :type="showPasswordStatus ? 'text' : 'password'"
-          label="Passowrd"
-          input-class="text-body1"
-          :error="Boolean(errorMessage?.password ? true : false)"
-          :error-message="
-            errorMessage
-              ? errorMessage.password
-                ? errorMessage.password[0]
-                : null
+        <q-input v-model="password" :type="showPasswordStatus ? 'text' : 'password'" label="Passowrd"
+          input-class="text-body1" :error="Boolean(errorMessage?.password ? true : false)" :error-message="errorMessage
+            ? errorMessage.password
+              ? errorMessage.password[0]
               : null
-          "
-        >
+            : null
+            ">
           <template v-slot:before>
             <q-icon name="fa-solid fa-lock" />
           </template>
           <template v-slot:append>
-            <q-icon
-              :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'"
-              @click="showPasswordStatus = !showPasswordStatus"
-              class="cursor-pointer"
-            />
+            <q-icon :name="showPasswordStatus ? 'mdi-eye' : 'mdi-eye-off'"
+              @click="showPasswordStatus = !showPasswordStatus" class="cursor-pointer" />
           </template>
         </q-input>
         <div class="text-center q-mt-xl">
-          <q-btn type="submit" class="bg-blue full-width text-white q-px-lg"
-            >Login</q-btn
-          >
+          <q-btn type="submit" class="bg-blue full-width text-white q-px-lg">Login</q-btn>
         </div>
       </q-form>
     </div>
@@ -84,6 +66,7 @@ const onLoginSubmit = async () => {
       loginStore.username = data.user.full_name
       loginStore.email = data.user.email
       loginStore.companyInfo = data.company
+      loginStore.userInfo = data.user
       router.push('/')
     })
     .catch((err) => {
