@@ -1,35 +1,13 @@
 <template>
   <div class="q-pa-md">
-    <div class="row">
-      <q-btn
-        color="green"
-        to="/items/add/"
-        label="Add Item"
-        class="q-ml-auto"
-        icon-right="add"
-      />
+    <div class="row" v-if="checkPermissions('ItemCreate')">
+      <q-btn color="green" to="/items/add/" label="Add Item" class="q-ml-auto" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="columns"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -42,33 +20,19 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
-                    <q-checkbox
-                      v-model="filters.can_be_sold"
-                      label="Can be Sold?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.can_be_sold" label="Can be Sold?" :false-value="null"></q-checkbox>
                   </div>
                   <div>
-                    <q-checkbox
-                      v-model="filters.can_be_purchased"
-                      label="Can be Purchased?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.can_be_purchased" label="Can be Purchased?"
+                      :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.category"
-                      endpoint="v1/inventory-categories/choices/"
-                      label="Category"
-                    />
+                    <SelectWithFetch v-model="filters.category" endpoint="v1/inventory-categories/choices/"
+                      label="Category" />
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -78,20 +42,10 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            color="blue"
-            class="q-py-none q-px-md font-size-sm q-mr-md"
-            style="font-size: 12px"
-            label="View"
-            :to="`/items/details/${props.row.id}/`"
-          />
-          <q-btn
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm q-mr-sm"
-            style="font-size: 12px"
-            label="edit"
-            :to="`/items/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md"
+            style="font-size: 12px" label="View" :to="`/items/details/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm"
+            style="font-size: 12px" label="edit" :to="`/items/${props.row.id}/`" />
         </q-td>
         <!-- TODO: add modals -->
       </template>
@@ -102,6 +56,7 @@
 <script setup>
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
+import checkPermissions from 'src/composables/checkPermissions'
 const endpoint = '/v1/items'
 // console.log(useList(endpoint))
 // export default {
