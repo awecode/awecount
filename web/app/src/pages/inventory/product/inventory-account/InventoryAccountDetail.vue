@@ -78,8 +78,10 @@
         @request="onRequest" class="q-mt-lg" :binary-state-sort="true" :rows-per-page-options="[20]">
         <template v-slot:body-cell-voucher_no="props">
           <q-td :props="props">
-            <router-link :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium"
-              style="text-decoration: none">{{ props.row.voucher_no }}</router-link>
+            <router-link v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])"
+              :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium" style="text-decoration: none">{{
+                props.row.voucher_no }}</router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
           </q-td>
         </template>
       </q-table>
@@ -226,5 +228,20 @@ function getVoucherUrl(row) {
     return `/bank/cash/cash-deposit/${row.source_id}/edit/`
   if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
   console.error(source_type + ' not handled!')
+}
+const getPermissionsWithSourceType = {
+  'Sales Voucher': 'SalesView',
+  'Purchase Voucher': 'PurchaseVoucherView',
+  'Journal Voucher': 'JournalVoucherView',
+  'Credit Note': 'CreditNoteView',
+  'Debit Note': 'DebitNoteView',
+  'Cheque Deposit': 'ChequeDepositView',
+  'Payment Receipt': 'PaymentReceiptView',
+  'Cheque Issue': 'ChequeIssueModify',
+  'Challan': 'ChallanModify',
+  'Account Opening Balance': 'AccountOpeningBalanceModify',
+  'Fund Transfer': 'FundTransferModify',
+  'Bank Cash Deposit': 'BankCashDepositModify',
+  'Tax Payment': 'TaxPaymentModify'
 }
 </script>
