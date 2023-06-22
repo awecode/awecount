@@ -11,31 +11,19 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.name"
-              label="Name *"
-              class="col-12"
-              :error-message="errors.name"
-              :error="!!errors.name"
-            />
+            <q-input v-model="fields.name" label="Name *" class="col-12" :error-message="errors.name"
+              :error="!!errors.name" />
           </div>
           <div>
-            <q-input
-              v-model="fields.short_name"
-              label="Short Name"
-              class="col-12"
-              :error-message="errors.short_name"
-              :error="!!errors.short_name"
-            />
+            <q-input v-model="fields.short_name" label="Short Name" class="col-12" :error-message="errors.short_name"
+              :error="!!errors.short_name" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn
-            @click.prevent="submitForm"
-            color="green"
-            :label="isEdit ? 'Update' : 'Create'"
-            class="q-ml-auto"
-          />
+          <q-btn v-if="checkPermissions('UnitCreate') && isEdit" @click.prevent="submitForm" color="green" label="Update"
+            class="q-ml-auto" />
+          <q-btn v-else-if="checkPermissions('UnitModify')" @click.prevent="submitForm" color="green" label="Create"
+            class="q-ml-auto" />
         </div>
       </q-card>
     </q-card>
@@ -44,6 +32,7 @@
 
 <script>
 import useForm from '/src/composables/useForm'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -56,7 +45,7 @@ export default {
       ...useForm(endpoint, {
         getDefaults: true,
         successRoute: '/units/list/',
-      }),
+      }), checkPermissions
     }
   },
 }
