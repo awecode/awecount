@@ -9,7 +9,7 @@
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('UnitView')" class="text-blue text-weight-medium"
+          <router-link v-if="checkPermissions('UnitModify')" class="text-blue text-weight-medium"
             style="text-decoration: none" :to="`/units/${props.row.id}/`">{{ props.row.name }}</router-link>
           <span v-else>{{ props.row.name }}</span>
         </q-td>
