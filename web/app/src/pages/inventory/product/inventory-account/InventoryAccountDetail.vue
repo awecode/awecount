@@ -2,9 +2,8 @@
   <div class="q-py-lg q-pl-lg q-mr-xl">
     <div class="row justify-between text-h4 text-bold">
       {{ fields?.name || '-' }}
-      <q-btn :to="`/items/details/${route.params.id}/`" color="orange-6"
-        >View Item</q-btn
-      >
+      <q-btn v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${route.params.id}/`"
+        color="orange-6">View Item</q-btn>
     </div>
     <div>
       <q-card class="q-mt-md">
@@ -60,10 +59,7 @@
       <div>
         <div class="text-h5 text-bold q-py-md">Transactions</div>
         <div class="row q-col-gutter-md">
-          <DateRangePicker
-            v-model:startDate="startDate"
-            v-model:endDate="endDate"
-          />
+          <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
           <!-- <div v-if="startDate != null || endDate != null">
             <q-btn
               @click.prevent="resetDate"
@@ -74,34 +70,16 @@
             />
           </div> -->
           <div>
-            <q-btn
-              @click.prevent="filter"
-              color="primary"
-              label="FILTER"
-              class="q-mt-md"
-            />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
           </div>
         </div>
       </div>
-      <q-table
-        :columns="columnList"
-        :rows="rows"
-        :loading="loading"
-        v-model:pagination="pagination"
-        row-key="id"
-        @request="onRequest"
-        class="q-mt-lg"
-        :binary-state-sort="true"
-        :rows-per-page-options="[20]"
-      >
+      <q-table :columns="columnList" :rows="rows" :loading="loading" v-model:pagination="pagination" row-key="id"
+        @request="onRequest" class="q-mt-lg" :binary-state-sort="true" :rows-per-page-options="[20]">
         <template v-slot:body-cell-voucher_no="props">
           <q-td :props="props">
-            <router-link
-              :to="getVoucherUrl(props.row)"
-              class="text-blue text-weight-medium"
-              style="text-decoration: none"
-              >{{ props.row.voucher_no }}</router-link
-            >
+            <router-link :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium"
+              style="text-decoration: none">{{ props.row.voucher_no }}</router-link>
           </q-td>
         </template>
       </q-table>
@@ -113,6 +91,7 @@
 import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+import checkPermissions from 'src/composables/checkPermissions';
 const metaData = {
   title: 'Inventory Accounts Details | Awecount',
 }
@@ -181,8 +160,8 @@ function loadData() {
   loading.value = true
   const field = fields.value.transactions.results.value
     ? Object.keys(fields.value?.transactions?.results[0])?.filter(
-        (f) => f !== 'id'
-      )
+      (f) => f !== 'id'
+    )
     : null
 
   // columnList.value = field?.map((f) => {
@@ -208,17 +187,16 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${
-    startDate.value && endDate.value
-      ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
-      : ''
-  }${
-    startDate.value && endDate.value
+  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value
+    ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
+    : ''
+    }${startDate.value && endDate.value
       ? '&page=' + prop.pagination.page
       : 'page=' + prop.pagination.page
-  }`
+    }`
   getData()
 }
+// TODO: add permissions
 function getVoucherUrl(row) {
   const source_type = row.source_type
   if (source_type === 'Sales Voucher')
