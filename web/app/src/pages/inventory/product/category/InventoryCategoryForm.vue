@@ -137,7 +137,7 @@
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" @click.prevent="submitForm" color="primary"
             label="Update" class="q-ml-auto q-px-xl" />
-          <q-btn v-else-if="checkPermissions('InventoryCategoryCreate')" @click.prevent="submitForm" color="primary"
+          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" @click.prevent="submitForm" color="primary"
             label="Create" class="q-ml-auto q-px-xl" />
         </div>
       </q-card>

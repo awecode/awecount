@@ -22,7 +22,7 @@
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('UnitCreate') && isEdit" @click.prevent="submitForm" color="green" label="Update"
             class="q-ml-auto" />
-          <q-btn v-else-if="checkPermissions('UnitModify')" @click.prevent="submitForm" color="green" label="Create"
+          <q-btn v-if="checkPermissions('UnitModify') && !isEdit" @click.prevent="submitForm" color="green" label="Create"
             class="q-ml-auto" />
         </div>
       </q-card>

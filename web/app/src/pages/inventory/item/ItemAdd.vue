@@ -149,8 +149,8 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('ItemCreate')" @click.prevent="submitForm" color="primary" label="Create"
-            class="q-ml-auto q-px-xl" />
+          <q-btn v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm" color="primary"
+            label="Create" class="q-ml-auto q-px-xl" />
           <q-btn v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm" color="primary"
             label="Update" class="q-ml-auto q-px-xl" />
         </div>
