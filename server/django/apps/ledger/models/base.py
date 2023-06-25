@@ -359,6 +359,13 @@ class JournalEntry(models.Model):
         verbose_name_plural = u'Journal Entries'
 
 
+TRANSACTION_TYPES = (
+    ('Regular', 'Regular'),
+    ('Opening', 'Opening'),
+    ('Closing', 'Closing'),
+)
+
+
 class Transaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='transactions')
     dr_amount = models.FloatField(null=True, blank=True)
@@ -366,6 +373,7 @@ class Transaction(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
+    type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
 
     def get_balance(self):
         return zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
@@ -829,7 +837,7 @@ CLOSING_STATUSES = (
 class AccountClosing(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='account_closings')
     fiscal_period = models.ForeignKey(FiscalYear, on_delete=models.PROTECT)
-    status = models.CharField(choices=CLOSING_STATUSES, max_length=50)
+    status = models.CharField(choices=CLOSING_STATUSES, max_length=50, blank=True, null=True)
 
     def __str__(self):
         return '{}-{}'.format(str(self.company), str(self.fiscal_period))
