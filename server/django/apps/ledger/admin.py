@@ -123,9 +123,26 @@ def run_account_closing(modeladmin, request, queryset):
     instance.save()
 
 
+def undo_account_closing(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.warning(request, 'Please select exactly one account closing instance.')
+        return
+    instance: AccountClosing = queryset.first()
+    if instance.status != 'Closed':
+        messages.warning(request, 'This is not closed.')
+        return
+
+    journal_entry = instance.journal_entry
+    instance.journal_entry = None
+    instance.status = 'Pending'
+    instance.save()
+    journal_entry.delete()
+
+
 @admin.register(AccountClosing)
 class AccountClosingAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status')
     list_filter = ('status',)
     search_fields = ('company__name', 'fiscal_year')
-    actions = (run_account_closing,)
+    actions = (run_account_closing, undo_account_closing)
+    readonly_fields = ('status', 'journal_entry',)

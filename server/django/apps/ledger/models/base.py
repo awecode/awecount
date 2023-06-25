@@ -831,7 +831,8 @@ class AccountClosing(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='account_closings')
     fiscal_period = models.ForeignKey(FiscalYear, on_delete=models.PROTECT)
     status = models.CharField(choices=CLOSING_STATUSES, max_length=50, default=CLOSING_STATUSES[0][0])
-    journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.PROTECT)
+    journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.SET_NULL,
+                                      blank=True, null=True)
 
     def __str__(self):
         return '{}-{}'.format(str(self.company), str(self.fiscal_period))
