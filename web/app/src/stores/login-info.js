@@ -18,6 +18,10 @@ export const useLoginStore = defineStore('loginStore', {
       this.username = null
       this.email = null
       this.token = null
+      this.companyInfo = null
+      this.isCalendarInAD = true
+      this.trialBalanceCollapseId = []
+      this.userInfo = null
     },
   },
   persist: true,
