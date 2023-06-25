@@ -121,6 +121,7 @@ def run_account_closing(modeladmin, request, queryset):
     instance.journal_entry = journal_entry
     instance.status = 'Closed'
     instance.save()
+    messages.success(request, 'Closed all income and expense accounts.')
 
 
 def undo_account_closing(modeladmin, request, queryset):
@@ -137,6 +138,7 @@ def undo_account_closing(modeladmin, request, queryset):
     instance.status = 'Pending'
     instance.save()
     journal_entry.delete()
+    messages.success(request, 'Reverted account closing.')
 
 
 @admin.register(AccountClosing)
