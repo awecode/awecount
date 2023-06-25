@@ -137,6 +137,15 @@ class Account(models.Model):
             return zero_for_none(transactions[0].current_dr) - zero_for_none(transactions[0].current_cr)
         return self.opening_dr - self.opening_cr
 
+    def get_day_closing(self, until_date=None):
+        if not until_date:
+            until_date = datetime.date.today()
+        res = Transaction.objects.filter(account=self, journal_entry__date__lte=until_date).aggregate(
+            dr=Sum('dr_amount'),
+            cr=Sum('cr_amount'))
+        import ipdb
+        ipdb.set_trace()
+
     def add_category(self, category):
         category_instance = Category.objects.get(name=category, company=self.company, default=True)
         self.category = category_instance
@@ -339,11 +348,19 @@ class Node(object):
         return self.name
 
 
+TRANSACTION_TYPES = (
+    ('Regular', 'Regular'),
+    ('Opening', 'Opening'),
+    ('Closing', 'Closing'),
+)
+
+
 class JournalEntry(models.Model):
     date = models.DateField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='journal_entries')
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
+    type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
@@ -357,13 +374,6 @@ class JournalEntry(models.Model):
 
     class Meta:
         verbose_name_plural = u'Journal Entries'
-
-
-TRANSACTION_TYPES = (
-    ('Regular', 'Regular'),
-    ('Opening', 'Opening'),
-    ('Closing', 'Closing'),
-)
 
 
 class Transaction(models.Model):
