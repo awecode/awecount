@@ -551,7 +551,8 @@ def handle_company_creation(sender, **kwargs):
 
     # Account.objects.create(name='Paid in Capital', category=equity, code='Q-PC', company=company, default=True)
     # Account.objects.create(name='Retained Earnings', category=equity, code='Q-RE', company=company, default=True)
-    # Account.objects.create(name='Profit and Loss Account', category=equity, code='Q-PL', company=company, default=True)
+    Account.objects.create(name='Profit and Loss Account', category=root['Equity'], code='Q-PL', company=company,
+                           default=True)
     Account.objects.create(name='Opening Balance Equity', category=root['Equity'], code='Q-OBE', company=company,
                            default=True)
     Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company,
