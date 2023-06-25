@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
 
+from dateutil.utils import today
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -110,41 +111,21 @@ class Account(models.Model):
             val = zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
             return float(round(decimalize(val), 2))
 
-    def get_day_opening_dr(self, before_date=None):
-        if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return transactions[0].current_dr
-        return self.current_dr
-
-    def get_day_opening_cr(self, before_date=None):
-        if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return transactions[0].current_cr
-        return self.current_cr
-
     def get_day_opening(self, before_date=None):
         if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return zero_for_none(transactions[0].current_dr) - zero_for_none(transactions[0].current_cr)
-        return self.opening_dr - self.opening_cr
+            before_date = today()
+        tr = Transaction.objects.filter(account=self, journal_entry__date__lte=before_date).aggregate(
+            dr=Sum('dr_amount'),
+            cr=Sum('cr_amount'))
+        return (tr.get('dr') or 0) - (tr.get('cr') or 0)
 
     def get_day_closing(self, until_date=None):
         if not until_date:
-            until_date = datetime.date.today()
-        res = Transaction.objects.filter(account=self, journal_entry__date__lte=until_date).aggregate(
+            until_date = today()
+        tr = Transaction.objects.filter(account=self, journal_entry__date__lte=until_date).aggregate(
             dr=Sum('dr_amount'),
             cr=Sum('cr_amount'))
-        import ipdb
-        ipdb.set_trace()
+        return (tr.get('dr') or 0) - (tr.get('cr') or 0)
 
     def add_category(self, category):
         category_instance = Category.objects.get(name=category, company=self.company, default=True)
@@ -517,19 +498,19 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         raise RuntimeError(error_msg)
 
 
-@receiver(pre_delete, sender=Transaction)
-def _transaction_delete(sender, instance, **kwargs):
-    transaction = instance
-    if transaction.dr_amount:
-        transaction.account.current_dr -= transaction.dr_amount
-
-    if transaction.cr_amount:
-        transaction.account.current_cr -= transaction.cr_amount
-
-    alter(transaction.account, transaction.journal_entry.date, float(zero_for_none(transaction.dr_amount)) * -1,
-          float(zero_for_none(transaction.cr_amount)) * -1)
-
-    transaction.account.save()
+# @receiver(pre_delete, sender=Transaction)
+# def _transaction_delete(sender, instance, **kwargs):
+#     transaction = instance
+#     if transaction.dr_amount:
+#         transaction.account.current_dr -= transaction.dr_amount
+#
+#     if transaction.cr_amount:
+#         transaction.account.current_cr -= transaction.cr_amount
+#
+#     alter(transaction.account, transaction.journal_entry.date, float(zero_for_none(transaction.dr_amount)) * -1,
+#           float(zero_for_none(transaction.cr_amount)) * -1)
+#
+#     transaction.account.save()
 
 
 def delete_rows(rows, model):
@@ -841,14 +822,16 @@ class AccountOpeningBalance(models.Model):
 
 
 CLOSING_STATUSES = (
-    ('CLOSED', 'CLOSED'),
+    ('Pending', 'Pending'),
+    ('Closed', 'Closed'),
 )
 
 
 class AccountClosing(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='account_closings')
     fiscal_period = models.ForeignKey(FiscalYear, on_delete=models.PROTECT)
-    status = models.CharField(choices=CLOSING_STATUSES, max_length=50, blank=True, null=True)
+    status = models.CharField(choices=CLOSING_STATUSES, max_length=50, default=CLOSING_STATUSES[0][0])
+    journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{}-{}'.format(str(self.company), str(self.fiscal_period))

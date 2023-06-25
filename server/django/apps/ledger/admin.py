@@ -84,6 +84,9 @@ def run_account_closing(modeladmin, request, queryset):
         messages.warning(request, 'Please select exactly one account closing instance.')
         return
     instance: AccountClosing = queryset.first()
+    if instance.status == 'Closed':
+        messages.warning(request, 'Already closed.')
+        return
     company = instance.company
     date = instance.fiscal_period.end
 
@@ -101,13 +104,23 @@ def run_account_closing(modeladmin, request, queryset):
 
     for income_account in income_accounts:
         amount = income_account.get_day_closing(until_date=date)
+        # Amount is usually negative for Income
+        amount = -1 * amount
+        # TODO What if amount is positive?
         transaction = Transaction(account=income_account, dr_amount=amount, type='Closing', journal_entry_id=jeid)
         transactions.append(transaction)
 
     for expense_account in expenses_accounts:
         amount = expense_account.get_day_closing(until_date=date)
+        # Amount is usually positive for Expense
+        # TODO What if amount is negative?
         transaction = Transaction(account=expense_account, cr_amount=amount, type='Closing', journal_entry_id=jeid)
         transactions.append(transaction)
+
+    Transaction.objects.bulk_create(transactions)
+    instance.journal_entry = journal_entry
+    instance.status = 'Closed'
+    instance.save()
 
 
 @admin.register(AccountClosing)
