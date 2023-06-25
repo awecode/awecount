@@ -15,4 +15,4 @@ django-ses
 requests
 django-import-export
 django-auditlog
-openpyxl
+openpyxl==3.0.10

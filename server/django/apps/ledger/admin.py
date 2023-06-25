@@ -2,7 +2,7 @@ from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
 from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, \
-    TransactionCharge, AccountOpeningBalance
+    TransactionCharge, AccountOpeningBalance, AccountClosing
 
 
 class PartyAdmin(admin.ModelAdmin):
@@ -75,3 +75,10 @@ class AccountOpeningBalanceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)
+
+
+@admin.register(AccountClosing)
+class AccountClosingAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'status')
+    list_filter = ('status',)
+    search_fields = ('company__name', 'fiscal_year')

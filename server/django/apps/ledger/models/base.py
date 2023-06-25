@@ -239,12 +239,14 @@ class Party(models.Model):
 
     def can_be_deleted(self):
         # Allow party to be deleted only if no transactions exist
-        return Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+        return Party.objects.filter(supplier_account__transactions__isnull=True,
+                                    customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists()
 
     def delete(self, *args, **kwargs):
         # Allow party to be deleted only if no transactions exist
-        if not Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+        if not Party.objects.filter(supplier_account__transactions__isnull=True,
+                                    customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists():
             raise BadOperation('This party has transactions and therefore can not be deleted.')
         try:
@@ -409,7 +411,8 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         all_accounts.append(arg[1])
         if not matches:
             if arg[1] is None:
-                raise ValidationError('Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
+                raise ValidationError(
+                    'Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
             transaction = Transaction(account=arg[1])
             if arg[0] == 'dr':
                 transaction.dr_amount = val
@@ -543,7 +546,8 @@ def handle_company_creation(sender, **kwargs):
     # Account.objects.create(name='Profit and Loss Account', category=equity, code='Q-PL', company=company, default=True)
     Account.objects.create(name='Opening Balance Equity', category=root['Equity'], code='Q-OBE', company=company,
                            default=True)
-    Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company, default=True)
+    Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company,
+                           default=True)
     Account.objects.create(name='Drawing Capital', category=root['Equity'], code='Q-DC', company=company, default=True)
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
@@ -556,9 +560,11 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Category.objects.create(name='Deposits Made', code='A-D', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Employee', code='A-E', parent=root['Assets'], company=company, default=True)
-    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'], company=company,
+    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'],
+                                              company=company,
                                               default=True)
-    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables, code='A-TR-TDS')
+    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables,
+                           code='A-TR-TDS')
 
     cash_account = Category.objects.create(name='Cash Accounts', code='A-C', parent=root['Assets'], company=company,
                                            default=True)
@@ -613,8 +619,10 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Account.objects.create(name='Provision for Accumulated Depreciation', category=root['Liabilities'], code='L-DEP',
                            company=company, default=True)
-    Account.objects.create(name='Audit Fee Payable', category=root['Liabilities'], code='L-AFP', company=company, default=True)
-    Account.objects.create(name='Other Payables', category=root['Liabilities'], code='L-OP', company=company, default=True)
+    Account.objects.create(name='Audit Fee Payable', category=root['Liabilities'], code='L-AFP', company=company,
+                           default=True)
+    Account.objects.create(name='Other Payables', category=root['Liabilities'], code='L-OP', company=company,
+                           default=True)
     duties_and_taxes = Category.objects.create(name='Duties & Taxes', code='L-T', parent=root['Liabilities'],
                                                company=company,
                                                default=True)
@@ -659,13 +667,17 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=root['Expenses'],
                                                 company=company, default=True)
-    Account.objects.create(name='Bank Charges', category=indirect_expenses, code='E-I-BC', company=company, default=True)
+    Account.objects.create(name='Bank Charges', category=indirect_expenses, code='E-I-BC', company=company,
+                           default=True)
     Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
                            default=True)
     Category.objects.create(name='Pay Head', code='E-I-P', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company,
+                            default=True)
+    Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company,
+                            default=True)
+    Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company,
+                            default=True)
     Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company,
                             default=True)
     Category.objects.create(name='Repair and Maintenance', code='E-I-RM', parent=indirect_expenses, company=company,
@@ -781,7 +793,8 @@ class AccountOpeningBalance(models.Model):
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
-        opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference', default=True)
+        opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference',
+                                                         default=True)
         dr_entries = [
         ]
         cr_entries = [
@@ -806,3 +819,17 @@ class AccountOpeningBalance(models.Model):
 
     class Meta:
         unique_together = ('company', 'fiscal_year', 'account')
+
+
+CLOSING_STATUSES = (
+    ('CLOSED', 'CLOSED'),
+)
+
+
+class AccountClosing(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='account_closings')
+    fiscal_period = models.ForeignKey(FiscalYear, on_delete=models.PROTECT)
+    status = models.CharField(choices=CLOSING_STATUSES, max_length=50)
+
+    def __str__(self):
+        return '{}-{}'.format(str(self.company), str(self.fiscal_period))
