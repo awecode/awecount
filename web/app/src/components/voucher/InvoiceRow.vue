@@ -169,6 +169,17 @@ export default {
       () => (modalValue.value.rate || 0) * (modalValue.value.quantity || 0)
     )
     const selectedItem = ref(null)
+
+    const updateTaxObj = () => {
+      const taxindex = props.taxOptions.findIndex(
+        (item) => item.id === props.modelValue.tax_scheme_id
+      )
+      if (taxindex > -1) {
+        selectedTax.value = props.taxOptions[taxindex]
+        modalValue.value.taxObj = props.taxOptions[taxindex]
+      }
+    }
+
     watch(
       () => props.modelValue,
       (newValue) => {
@@ -200,16 +211,10 @@ export default {
       }
     )
     watch(
-      () => props.modelValue.tax_scheme_id,
-      (newValue) => {
-        const taxindex = props.taxOptions.findIndex(
-          (item) => item.id === newValue
-        )
-        if (taxindex > -1) {
-          selectedTax.value = props.taxOptions[taxindex]
-          modalValue.value.taxObj = props.taxOptions[taxindex]
-        }
-      }
+      () => props.modelValue.tax_scheme_id, updateTaxObj
+    )
+    watch(
+      () => props.taxOptions, updateTaxObj
     )
     watch(
       () => props.errors,
