@@ -2,7 +2,8 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" />
-      <q-btn color="green" to="/sales-voucher/add/" label="New Sales" icon-right="add" />
+      <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales"
+        icon-right="add" />
     </div>
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -45,18 +46,17 @@
           </q-btn>
         </div>
       </template>
-
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div class="text-white text-subtitle2 row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue'
+            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue-2 text-blue-10'
               : props.row.status == 'Paid'
-                ? 'bg-green'
+                ? 'bg-green-2 text-green-10'
                 : props.row.status == 'Draft'
-                  ? 'bg-orange'
-                  : 'bg-red'
-              " style="border-radius: 30px; padding: 5px 15px">
+                  ? 'bg-orange-2 text-orange-10'
+                  : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
@@ -79,8 +79,8 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
-            <q-btn color="blue" label="View" class="q-py-none q-px-md font-size-sm" style="font-size: 12px"
-              :to="`/sales-voucher/${props.row.id}/view/`" />
+            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View" class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px" :to="`/sales-voucher/${props.row.id}/view/`" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
@@ -88,10 +88,11 @@
       <template v-slot:body-cell-payment_receipts="props">
         <q-td :props="props">
           <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
-            <router-link :to="`/payment-receipt/${id}/view/`" style="font-weight: 500; text-decoration: none"
-              class="text-blue">
+            <router-link v-if="checkPermissions('PaymentReceiptView')" :to="`/payment-receipt/${id}/view/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
               #{{ id }}
             </router-link>
+            <span v-else>#{{ id }}</span>
           </span>
         </q-td>
       </template>
@@ -116,6 +117,7 @@ import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 import MultiSelectChip from 'src/components/filter/MultiSelectChip.vue'
 import DateRangePicker from 'src/components/date/DateRangePicker.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 // import { useMeta } from 'quasar'
 export default {
   setup() {
@@ -182,7 +184,7 @@ export default {
       { name: 'actions', align: 'left', label: 'Actions' },
     ]
 
-    return { ...listData, newColumn, onDownloadXls }
+    return { ...listData, newColumn, onDownloadXls, checkPermissions }
   },
 }
 </script>

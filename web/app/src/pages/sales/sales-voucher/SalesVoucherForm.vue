@@ -139,9 +139,12 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="primary" label="Draft" />
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'" />
+        <q-btn v-if="!isEdit && checkPermissions('SalesCreate')"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" />
+        <q-btn v-if="isEdit && checkPermissions('SalesModify')"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft" />
+        <q-btn v-if="checkPermissions('SalesCreate')" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+          color="green" :label="'Issue'" />
       </div>
     </q-card>
   </q-form>
@@ -153,6 +156,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -337,6 +341,7 @@ export default {
       importChallanModal,
       referenceFormData,
       fetchInvoice,
+      checkPermissions
     }
   },
 }
