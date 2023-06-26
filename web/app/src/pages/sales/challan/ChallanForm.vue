@@ -14,81 +14,41 @@
             <div class="col-md-6 col-12">
               <div class="row">
                 <div class="col-10">
-                  <q-input
-                    v-model="fields.customer_name"
-                    label="Customer Name"
-                    :error-message="errors.customer_name"
-                    :error="!!errors.customer_name"
-                    v-if="!partyMode || !!fields.customer_name"
-                  >
+                  <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name"
+                    :error="!!errors.customer_name" v-if="!partyMode || !!fields.customer_name">
                   </q-input>
-                  <n-auto-complete
-                    v-else
-                    v-model="fields.party"
-                    :options="formDefaults.collections?.parties"
-                    label="Party"
-                    :error="errors?.party ? errors?.party : null"
-                    :modal-component="PartyForm"
-                  />
+                  <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
+                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="PartyForm" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
-                  <q-btn
-                    flat
-                    size="md"
-                    @click="() => switchPartyMode(fields, isEdit)"
-                  >
+                  <q-btn flat size="md" @click="() => switchPartyMode(fields, isEdit)">
                     <q-icon name="mdi-account-group"></q-icon>
                   </q-btn>
                 </div>
               </div>
               <div></div>
             </div>
-            <DatePicker
-              class="col-md-6 col-12"
-              label="Deposit Date*"
-              v-model="fields.date"
-            />
+            <DatePicker class="col-md-6 col-12" label="Deposit Date*" v-model="fields.date" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.address"
-              class="col-md-6 col-12"
-              label="Address"
-              :error-message="errors.address"
-              :error="!!errors.address"
-            ></q-input>
+            <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
+              :error="!!errors.address"></q-input>
           </div>
         </q-card-section>
       </q-card>
-      <ChallanTable
-        :itemOptions="
-          formDefaults.collections ? formDefaults.collections.items : null
-        "
-        :unitOptions="
-          formDefaults.collections ? formDefaults.collections.units : null
-        "
-        v-model="fields.rows"
-        :errors="!!errors.rows ? errors.rows : null"
-        @deleteRow="(index, deleteObj) => deleteRow(index, errors, deleteObj)"
-        :isEdit="isEdit"
-      ></ChallanTable>
+      <ChallanTable :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+        " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
+    " v-model="fields.rows" :errors="!!errors.rows ? errors.rows : null"
+        @deleteRow="(index, deleteObj) => deleteRow(index, errors, deleteObj)" :isEdit="isEdit"></ChallanTable>
       <div class="q-px-md">
-        <q-input
-          v-model="fields.remarks"
-          label="Remarks"
-          type="textarea"
-          autogrow
-          class="col-12 col-md-10"
-          :error="!!errors?.remarks"
-          :error-message="errors?.remarks"
-        />
+        <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
+          :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
-      <div class="q-ma-md row q-pb-lg">
-        <q-btn
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-          color="green-8"
-          :label="isEdit ? 'Update' : 'Create'"
-        />
+      <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-sm">
+        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="() => submitForm()" color="green-8"
+          label="Create" />
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit" @click.prevent="() => submitForm()" color="green-8"
+          label="Update" />
       </div>
     </q-card>
   </q-form>
@@ -100,6 +60,7 @@ import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import ChallanTable from 'src/components/challan/ChallanTable.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -131,10 +92,10 @@ export default {
       }
       console.log(deleteObj)
     }
-    const onSubmitClick = (status, fields, submitForm) => {
-      fields.status = status
-      submitForm()
-    }
+    // const onSubmitClick = (status, fields, submitForm) => {
+    //   fields.status = status
+    //   submitForm()
+    // }
     const switchPartyMode = (fields, isEdit) => {
       if (isEdit && !!fields.customer_name) {
         fields.customer_name = null
@@ -166,11 +127,13 @@ export default {
       (newValue) => {
         if (newValue) {
           const index =
-            formData.formDefaults.value.collections.parties.findIndex(
+            formData.formDefaults.value.collections?.parties.findIndex(
               (option) => option.id === newValue
             )
-          formData.fields.value.address =
-            formData.formDefaults.value.collections.parties[index].address
+          if (index > -1) {
+            formData.fields.value.address =
+              formData.formDefaults.value.collections.parties[index].address
+          }
           // const index = formDefaults.
         }
       }
@@ -183,9 +146,10 @@ export default {
       openDatePicker,
       partyMode,
       deleteRow,
-      onSubmitClick,
+      // onSubmitClick,
       ChallanTable,
       switchPartyMode,
+      checkPermissions
     }
   },
   // onmounted: () => console.log('mounted'),

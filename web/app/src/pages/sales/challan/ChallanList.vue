@@ -1,33 +1,13 @@
 <template>
   <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="green"
-        to="/challan/add/"
-        label="New Challan"
-        icon-right="add"
-      />
+    <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('ChallanCreate')">
+      <q-btn color="green" to="/challan/add/" label="New Challan" icon-right="add" />
     </div>
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -40,25 +20,14 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="['Draft', 'Issued', 'Cancelled', 'Resolved']"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="['Draft', 'Issued', 'Cancelled', 'Resolved']" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker
-                    v-model:startDate="filters.start_date"
-                    v-model:endDate="filters.end_date"
-                  />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -106,13 +75,8 @@
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
-            <q-btn
-              color="orange"
-              label="Edit"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-              :to="`/challan/${props.row.voucher_no}/`"
-            />
+            <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
+              class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/challan/${props.row.voucher_no}/`" />
           </div>
           <!-- {{ props }} -->
         </q-td>
@@ -123,6 +87,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const endpoint = '/v1/challan/'
@@ -148,7 +113,7 @@ export default {
       { name: 'actions' },
     ]
 
-    return { ...listData, newColumn }
+    return { ...listData, newColumn, checkPermissions }
   },
 }
 // const {
