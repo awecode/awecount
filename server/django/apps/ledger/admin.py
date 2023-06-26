@@ -1,8 +1,10 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.contenttypes.models import ContentType
+from django.utils.timezone import now
 from mptt.admin import MPTTModelAdmin
 
 from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, \
-    TransactionCharge, AccountOpeningBalance
+    TransactionCharge, AccountOpeningBalance, AccountClosing
 
 
 class PartyAdmin(admin.ModelAdmin):
@@ -75,3 +77,74 @@ class AccountOpeningBalanceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)
+
+
+def run_account_closing(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.warning(request, 'Please select exactly one account closing instance.')
+        return
+    instance: AccountClosing = queryset.first()
+    if instance.status == 'Closed':
+        messages.warning(request, 'Already closed.')
+        return
+    company = instance.company
+    date = instance.fiscal_period.end
+
+    income_category = Category.objects.get(name='Income', company=company, default=True, parent__isnull=True)
+    income_accounts = Account.objects.filter(category__in=income_category.get_descendants(include_self=True))
+
+    expenses_category = Category.objects.get(name='Expenses', company=company, default=True, parent__isnull=True)
+    expenses_accounts = Account.objects.filter(category__in=expenses_category.get_descendants(include_self=True))
+
+    journal_entry = JournalEntry.objects.create(date=date, content_type=ContentType.objects.get_for_model(instance),
+                                                object_id=instance.id, type='Closing')
+    jeid = journal_entry.id
+
+    transactions = []
+
+    for income_account in income_accounts:
+        amount = income_account.get_day_closing(until_date=date)
+        # Amount is usually negative for Income
+        amount = -1 * amount
+        # TODO What if amount is positive?
+        transaction = Transaction(account=income_account, dr_amount=amount, type='Closing', journal_entry_id=jeid)
+        transactions.append(transaction)
+
+    for expense_account in expenses_accounts:
+        amount = expense_account.get_day_closing(until_date=date)
+        # Amount is usually positive for Expense
+        # TODO What if amount is negative?
+        transaction = Transaction(account=expense_account, cr_amount=amount, type='Closing', journal_entry_id=jeid)
+        transactions.append(transaction)
+
+    Transaction.objects.bulk_create(transactions)
+    instance.journal_entry = journal_entry
+    instance.status = 'Closed'
+    instance.save()
+    messages.success(request, 'Closed all income and expense accounts.')
+
+
+def undo_account_closing(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.warning(request, 'Please select exactly one account closing instance.')
+        return
+    instance: AccountClosing = queryset.first()
+    if instance.status != 'Closed':
+        messages.warning(request, 'This is not closed.')
+        return
+
+    journal_entry = instance.journal_entry
+    instance.journal_entry = None
+    instance.status = 'Pending'
+    instance.save()
+    journal_entry.delete()
+    messages.success(request, 'Reverted account closing.')
+
+
+@admin.register(AccountClosing)
+class AccountClosingAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'status')
+    list_filter = ('status',)
+    search_fields = ('company__name', 'fiscal_year')
+    actions = (run_account_closing, undo_account_closing)
+    readonly_fields = ('status', 'journal_entry',)

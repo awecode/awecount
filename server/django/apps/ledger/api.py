@@ -179,6 +179,7 @@ class TrialBalanceView(APIView):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         if start_date and end_date:
+            # TODO Only use Transactions whose journal_entry.type=='Regular'
             qq = Account.objects.filter(company=request.company).annotate(
                 od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
                 oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),

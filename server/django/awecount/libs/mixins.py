@@ -36,6 +36,7 @@ class ShortNameChoiceMixin(object):
         return super().get_serializer_class()
 
 
+# TODO Security Check
 class DeleteRows(object):
     def update(self, request, *args, **kwargs):
         params = request.data
@@ -57,7 +58,8 @@ class TransactionsViewMixin(object):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-journal_entry__date', '-pk') \
+        transactions = Transaction.objects.filter(account_id__in=account_ids, journal_entry__type='Regular').order_by(
+            '-journal_entry__date', '-pk') \
             .select_related('journal_entry__content_type').prefetch_related(
             Prefetch('journal_entry__transactions', Transaction.objects.select_related('account')))
 
@@ -71,7 +73,8 @@ class TransactionsViewMixin(object):
                 transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
             aggregate['total'] = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
             aggregate['opening'] = Transaction.objects.select_related('journal_entry__content_type').filter(
-                account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'), Sum('cr_amount'))
+                account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'),
+                                                                                           Sum('cr_amount'))
 
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
