@@ -28,12 +28,8 @@
       <div v-if="changeModes" class="col-12 col-md-6 row">
         <div class="col-6">Mode</div>
         <div class="col-6">
-          <span class="q-mr-sm">{{ modeComputed }}</span
-          ><q-btn
-            @click="() => (isChangeOpen = true)"
-            icon="edit"
-            size="sm"
-          ></q-btn>
+          <span class="q-mr-sm">{{ modeComputed }}</span><q-btn @click="() => (isChangeOpen = true)" icon="edit"
+            size="sm"></q-btn>
         </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
@@ -56,28 +52,14 @@
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select
-              v-model="modesValue"
-              label="Mode"
-              class="col-12"
-              :options="
-                props.modeOptions.length > 0
-                  ? modes.concat(props.modeOptions)
-                  : modes
-              "
-              option-value="id"
-              option-label="name"
-              map-options
-              emit-value
-            ></q-select>
+            <q-select v-model="modesValue" label="Mode" class="col-12" :options="props.modeOptions.length > 0
+              ? modes.concat(props.modeOptions)
+              : modes
+              " option-value="id" option-label="name" map-options emit-value></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn
-              label="update"
-              color="orange-5"
-              class="q-mt-md"
-              @click="() => submitChangeModes(props.fields.id)"
-            ></q-btn>
+            <q-btn label="update" color="orange-5" class="q-mt-md"
+              @click="() => submitChangeModes(props.fields.id)"></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -117,7 +99,7 @@ export default {
   },
   emits: ['updateMode'],
   setup(props, { emit }) {
-    const modesValue: Ref<number | null> = ref(props.fields.mode)
+    const modesValue: Ref<number | null> = ref(props.fields?.mode)
     const $q = useQuasar()
     const store = useLoginStore()
     watch(

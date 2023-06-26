@@ -8,7 +8,6 @@
           }}</span>
         </div>
       </q-card-section>
-
       <ViewerHeader :fields="fields" />
     </q-card>
     <div class="q-ma-lg text-subtitle2">
@@ -33,7 +32,9 @@
   </div> -->
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
-        <q-btn v-if="fields?.status === 'Draft'" color="orange-5" label="Edit" icon="edit" />
+        <!-- {{ fields }} -->
+        <q-btn v-if="checkPermissions('CreditNoteModify') && fields?.status === 'Draft'" color="orange-5" label="Edit"
+          icon="edit" :to="`/credit-note/${fields.id}/`" />
         <!-- <q-btn
             v-if="fields?.status === 'Issued'"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
@@ -41,7 +42,8 @@
             label="mark as paid"
             icon="mdi-check-all"
           /> -->
-        <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+        <q-btn v-if="checkPermissions('CreditNoteModify')" color="red-5" label="Cancel" icon="cancel"
+          @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
         <q-btn @click="onPrintclick" :label="`Print Copy No ${(fields?.print_count || 0) + 1}`" icon="print" />
@@ -58,7 +60,6 @@
               <span class="q-mx-md">Are you sure?</span>
             </div>
           </q-card-section>
-
           <q-card-section class="q-ma-md">
             <div class="text-right q-mt-lg row justify-between q-mx-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
@@ -77,6 +78,7 @@ import { modes } from 'src/helpers/constants/invoice'
 import ViewerHeader from 'src/components/viewer/ViewerHeader.vue'
 import ViewerTable from 'src/components/viewer/ViewerTable.vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -143,6 +145,7 @@ export default {
       isDeleteOpen,
       submitChangeStatus,
       onPrintclick,
+      checkPermissions
     }
   },
   created() {
