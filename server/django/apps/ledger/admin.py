@@ -107,14 +107,16 @@ def run_account_closing(modeladmin, request, queryset):
         # Amount is usually negative for Income
         amount = -1 * amount
         # TODO What if amount is positive?
-        transaction = Transaction(account=income_account, dr_amount=amount, type='Closing', journal_entry_id=jeid)
+        transaction = Transaction(account=income_account, dr_amount=amount, type='Closing', journal_entry_id=jeid,
+                                  company_id=company.id)
         transactions.append(transaction)
 
     for expense_account in expenses_accounts:
         amount = expense_account.get_day_closing(until_date=date)
         # Amount is usually positive for Expense
         # TODO What if amount is negative?
-        transaction = Transaction(account=expense_account, cr_amount=amount, type='Closing', journal_entry_id=jeid)
+        transaction = Transaction(account=expense_account, cr_amount=amount, type='Closing', journal_entry_id=jeid,
+                                  company_id=company.id)
         transactions.append(transaction)
 
     Transaction.objects.bulk_create(transactions)
