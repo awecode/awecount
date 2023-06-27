@@ -1,102 +1,19 @@
 <template>
   <div class="q-pa-md">
-    <!-- <div>
-      <q-card
-        ><div
-          class="row full-width q-mt-xs q-px-lg q-py-md"
-          style="justify-content: space-between; padding-top: 0"
-        >
-          <div class="row q-col-gutter-md">
-            <q-input label="From Date"> </q-input>
-            <q-input label="To Date"> </q-input>
-            <div class="row items-end">
-              <q-btn label="Filter" color="green"></q-btn>
-            </div>
-          </div>
-          <div class="row items-end" v-if="aggregate">
-            <q-btn
-              label="Export Xls"
-              color="blue"
-              icon-right="download"
-              @click="onDownloadXls"
-            ></q-btn>
-          </div></div
-      ></q-card>
-    </div>
-    <q-card class="q-mt-md">
-      <q-card-section>
-        <table class="full-width">
-          <tr>
-            <th colspan="4">Invoice</th>
-            <th rowspan="2">Total Purchases</th>
-            <th rowspan="2">Non Taxable Purchases</th>
-            <th rowspan="2">Import Purchases</th>
-            <th rowspan="2">Discount</th>
-            <th colspan="2">Taxable Purchases</th>
-          </tr>
-          <tr>
-            <th>Date</th>
-            <th>Bill No.</th>
-            <th>Seller's Name</th>
-            <th>Tax No.</th>
-            <th>Amount</th>
-            <th>Tax</th>
-          </tr>
-          <tr v-for="row in rows" :key="row.id">
-            <td>{{ row.date }}</td>
-            <td>
-              <router-link :to="'/'">{{ row.voucher_no }}</router-link>
-            </td>
-          </tr>
-        </table>
-      </q-card-section>
-    </q-card> -->
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
-        <div
-          class="row q-col-gutter-md full-width"
-          style="justify-content: space-between"
-        >
+        <div class="row q-col-gutter-md full-width" style="justify-content: space-between">
           <div class="row items-center q-gutter-x-md">
-            <DateRangePicker
-              v-model:startDate="filters.start_date"
-              v-model:endDate="filters.end_date"
-              :hideBtns="true"
-            />
+            <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" :hideBtns="true" />
             <div class="row items-center">
-              <q-btn
-                class="q-mr-md"
-                label="Filter"
-                color="green"
-                @click="onFilterUpdate"
-              ></q-btn>
-              <q-btn
-                v-if="filters.start_date || filters.end_date"
-                class="q-mr-md"
-                icon="close"
-                color="red"
-                @click="resetFilters"
-              ></q-btn>
+              <q-btn class="q-mr-md" label="Filter" color="green" @click="onFilterUpdate"></q-btn>
+              <q-btn v-if="filters.start_date || filters.end_date" class="q-mr-md" icon="close" color="red"
+                @click="resetFilters"></q-btn>
             </div>
           </div>
           <div class="row items-center" v-if="aggregate">
-            <q-btn
-              label="Export Xls"
-              color="blue"
-              icon-right="download"
-              @click="onDownloadXls"
-            ></q-btn>
+            <q-btn label="Export Xls" color="blue" icon-right="download" @click="onDownloadXls"></q-btn>
           </div>
         </div>
       </template>
@@ -104,13 +21,11 @@
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-              :to="`/sales-voucher/${props.row.voucher_no}/view`"
-            >
+            <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
+              class="text-blue" :to="`/sales-voucher/${props.row.voucher_no}/view`">
               {{ props.row.voucher_no }}
             </router-link>
+            <span v-else> {{ props.row.voucher_no }}</span>
           </div>
         </q-td>
       </template>
@@ -118,30 +33,14 @@
         <q-tr>
           <q-th colspan="4" style="text-align: center">Invoice</q-th>
           <q-th rowspan="2" style="text-align: center">Total Sales</q-th>
-          <q-th
-            rowspan="2"
-            style="text-align: center"
-            :style="{ 'white-space': 'normal' }"
-            >Non Taxable Sales</q-th
-          >
-          <q-th
-            rowspan="2"
-            style="text-align: center"
-            :style="{ 'white-space': 'normal' }"
-            >Export Sales</q-th
-          >
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Non Taxable Sales</q-th>
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Export Sales</q-th>
           <q-th rowspan="2" style="text-align: center">Discount</q-th>
-          <q-th rowspan="1" colspan="2" style="text-align: center"
-            >Taxable Sales</q-th
-          >
+          <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Sales</q-th>
         </q-tr>
         <q-tr>
-          <q-th
-            v-for="header in props.cols"
-            :key="header.name"
-            :style="header.remove === true ? { display: 'none' } : ''"
-            ><span>{{ header.label }}</span></q-th
-          >
+          <q-th v-for="header in props.cols" :key="header.name"
+            :style="header.remove === true ? { display: 'none' } : ''"><span>{{ header.label }}</span></q-th>
         </q-tr>
       </template>
     </q-table>
@@ -173,6 +72,7 @@
 
 <script lang="ts">
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const route = useRoute()
@@ -265,6 +165,7 @@ export default {
       ...listData,
       newColumn,
       onDownloadXls,
+      checkPermissions
     }
   },
 }

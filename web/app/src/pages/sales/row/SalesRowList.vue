@@ -1,26 +1,10 @@
 <template>
   <div class="q-pa-md">
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -33,66 +17,37 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <DateRangePicker
-                      v-model:startDate="filters.start_date"
-                      v-model:endDate="filters.end_date"
-                    />
+                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.sales_agent"
-                      endpoint="v1/sales-agent/choices/"
-                      label="Sales Agent"
-                    />
+                    <SelectWithFetch v-model="filters.sales_agent" endpoint="v1/sales-agent/choices/"
+                      label="Sales Agent" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.party"
-                      endpoint="v1/parties/choices/"
-                      label="Party"
-                    />
+                    <SelectWithFetch v-model="filters.party" endpoint="v1/parties/choices/" label="Party" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.tax_scheme"
-                      endpoint="v1/tax_scheme/choices/"
-                      label="Tax Scheme"
-                    />
+                    <SelectWithFetch v-model="filters.tax_scheme" endpoint="v1/tax_scheme/choices/" label="Tax Scheme" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.item_category"
-                      endpoint="v1/inventory-categories/choices/"
-                      label="Item Category"
-                    />
+                    <SelectWithFetch v-model="filters.item_category" endpoint="v1/inventory-categories/choices/"
+                      label="Item Category" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.item"
-                      endpoint="v1/items/sales-choices/"
-                      label="Items"
-                    />
+                    <SelectWithFetch v-model="filters.item" endpoint="v1/items/sales-choices/" label="Items" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="[
+                      'Draft',
+                      'Issued',
+                      'Paid',
+                      'Partially Paid',
+                      'Cancelled',
+                    ]" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -104,22 +59,17 @@
       <template v-slot:body-cell-voucher_id="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-              :to="`/sales-voucher/${props.row.voucher_id}/view`"
-            >
+            <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
+              class="text-blue" :to="`/sales-voucher/${props.row.voucher_id}/view`">
               {{ props.row.voucher_id }}
             </router-link>
+            <span v-else>{{ props.row.voucher_id }}</span>
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
+          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
             {{ props.row.customer_name }}
           </div>
           <div v-else>
@@ -170,6 +120,7 @@
 <script lang="ts">
 import useList from '/src/composables/useList'
 import MultiSelectChip from '/src/components/filter/MultiSelectChip.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 // import ListFilter from '/src/components/sales/row/ListFilter.vue'
 import { Ref } from 'vue'
 export default {
@@ -250,6 +201,7 @@ export default {
       usedOptions,
       fetchedOptions,
       MultiSelectChip,
+      checkPermissions
     }
   },
   created() {

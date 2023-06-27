@@ -226,9 +226,9 @@
       </q-card>
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md" v-if="fields">
         <div class="row q-gutter-x-sm q-mb-md print-hide">
-          <q-btn v-if="checkPermissions('PaymentReceiptModify')" color="orange-7" label="Edit" icon="edit"
-            :to="`/payment-receipt/${fields.id}/`" />
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
+            <q-btn v-if="checkPermissions('PaymentReceiptModify')" color="orange-7" label="Edit" icon="edit"
+              :to="`/payment-receipt/${fields.id}/`" />
             <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
               icon="mdi-check-all" />
@@ -238,7 +238,7 @@
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end print-hide">
           <q-btn v-if="fields.mode === 'Cheque'" color="blue-7" label="View Cheque deposit" icon="mdi-checkbook"
-            :to="`/bank/cheque/cheque-deposit/${fields?.id}/view/`" />
+            :to="`/cheque-deposit/${fields?.id}/view/`" />
           <q-btn v-if="fields.status === 'Cleared'" color="blue-7" label="Journal Entries" icon="books"
             :to="`/journal-entries/payment-receipt/${fields?.id}/`" />
         </div>
