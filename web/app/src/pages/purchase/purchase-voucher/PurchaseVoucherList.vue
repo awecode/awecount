@@ -1,40 +1,15 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="blue"
-        label="Export XLS"
-        icon-right="download"
-        @click="onDownloadXls"
-      />
-      <q-btn
-        color="green"
-        to="/purchase-voucher/add/"
-        label="New Purchase"
-        icon-right="add"
-      />
+      <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
+      <q-btn v-if="checkPermissions('PurchaseVoucherCreate')" color="green" to="/purchase-voucher/add/"
+        label="New Purchase" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -47,38 +22,23 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
-                    <q-checkbox
-                      v-model="filters.is_due"
-                      label="Is Due?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="[
+                      'Draft',
+                      'Issued',
+                      'Paid',
+                      'Partially Paid',
+                      'Cancelled',
+                    ]" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker
-                    v-model:startDate="filters.start_date"
-                    v-model:endDate="filters.end_date"
-                  />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -90,19 +50,14 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Paid'
-                  ? 'bg-green'
-                  : props.row.status == 'Draft'
-                  ? 'bg-orange'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
+            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue-2 text-blue-10'
+              : props.row.status == 'Paid'
+                ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft'
+                  ? 'bg-orange-2 text-orange-10'
+                  : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
@@ -123,13 +78,8 @@
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/purchase-voucher/${props.row.id}/view`"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-            />
+            <q-btn color="blue" label="View" :to="`/purchase-voucher/${props.row.id}/view`"
+              class="q-py-none q-px-md font-size-sm" style="font-size: 12px" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
@@ -141,6 +91,7 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -192,7 +143,7 @@ export default {
       { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
-    return { ...listData, onDownloadXls, newColumn }
+    return { ...listData, onDownloadXls, newColumn, checkPermissions }
   },
 }
 </script>

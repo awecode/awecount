@@ -52,14 +52,12 @@
       </q-card-section>
     </q-card>
     <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
-      <div class="row">
-        <q-btn class="q-mb-md q-mr-md" color="orange-5" label="Edit" icon="edit"
-          :to="`/purchase-voucher/${fields?.id}/`" />
-        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6" label="mark as paid" icon="mdi-check-all" />
-          <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
-        </div>
+      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('PurchaseVoucherModify')"
+        class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+        <q-btn color="orange-5" label="Edit" icon="edit" :to="`/purchase-voucher/${fields?.id}/`" />
+        <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+          color="green-6" label="mark as paid" icon="mdi-check-all" />
+        <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div>
         <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries"
@@ -91,6 +89,7 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -188,6 +187,7 @@ export default {
       isDeleteOpen,
       deleteMsg,
       getDate,
+      checkPermissions
     }
   },
   created() {

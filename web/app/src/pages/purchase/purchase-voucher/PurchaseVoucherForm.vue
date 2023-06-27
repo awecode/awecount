@@ -12,21 +12,11 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete
-                v-model="fields.party"
-                :options="formDefaults.collections?.parties"
-                label="Party"
-                :error="errors?.party ? errors?.party : null"
-                :modal-component="PartyForm"
-              />
+              <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
+                :error="errors?.party ? errors?.party : null" :modal-component="PartyForm" />
             </div>
-            <q-input
-              class="col-md-6 col-12"
-              label="Bill No.*"
-              v-model="fields.voucher_no"
-              :error-message="errors.voucher_no"
-              :error="!!errors.voucher_no"
-            >
+            <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
+              :error-message="errors.voucher_no" :error="!!errors.voucher_no">
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
@@ -70,60 +60,33 @@
               </div>
             </div> -->
             <div class="col-md-6 col-12 row q-col-gutter-md">
-              <div
-                :class="
-                  ['Percent', 'Amount'].includes(fields.discount_type)
-                    ? 'col-6'
-                    : 'col-12'
-                "
-              >
-                <n-auto-complete
-                  v-model="fields.discount_type"
-                  label="Discount*"
-                  :error="errors.discount_type"
-                  :error-message="errors.discount_type"
-                  :options="
-                    formDefaults.collections
-                      ? staticOptions.discount_types.concat(
-                          formDefaults?.collections.discounts
-                        )
-                      : staticOptions.discount_types
-                  "
-                  :modal-component="SalesDiscountForm"
-                >
+              <div :class="['Percent', 'Amount'].includes(fields.discount_type)
+                ? 'col-6'
+                : 'col-12'
+                ">
+                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount_type"
+                  :error-message="errors.discount_type" :options="formDefaults.collections
+                    ? staticOptions.discount_types.concat(
+                      formDefaults?.collections.discounts
+                    )
+                    : staticOptions.discount_types
+                    " :modal-component="SalesDiscountForm">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
-                <div
-                  :class="
-                    formDefaults.options?.show_trade_discount_in_voucher
-                      ? 'col-6'
-                      : 'col-12'
-                  "
-                  v-if="
-                    fields.discount_type === 'Amount' ||
-                    fields.discount_type === 'Percent'
-                  "
-                >
-                  <q-input
-                    class="col-6"
-                    v-model.number="fields.discount"
-                    label="Discount"
-                    :error-message="errors.discount"
-                    :error="!!errors.discount"
-                  ></q-input>
+                <div :class="formDefaults.options?.show_trade_discount_in_voucher
+                  ? 'col-6'
+                  : 'col-12'
+                  " v-if="fields.discount_type === 'Amount' ||
+    fields.discount_type === 'Percent'
+    ">
+                  <q-input class="col-6" v-model.number="fields.discount" label="Discount"
+                    :error-message="errors.discount" :error="!!errors.discount"></q-input>
                 </div>
-                <div
-                  class="col-3 row"
-                  v-if="
-                    formDefaults.options?.show_trade_discount_in_voucher &&
-                    ['Percent', 'Amount'].includes(fields.discount_type)
-                  "
-                >
-                  <q-checkbox
-                    v-model="fields.trade_discount"
-                    label="Trade Discount?"
-                  ></q-checkbox>
+                <div class="col-3 row" v-if="formDefaults.options?.show_trade_discount_in_voucher &&
+                  ['Percent', 'Amount'].includes(fields.discount_type)
+                  ">
+                  <q-checkbox v-model="fields.trade_discount" label="Trade Discount?"></q-checkbox>
                 </div>
               </div>
             </div>
@@ -134,77 +97,39 @@
                 :error-message="errors.date"
                 :error="!!errors.date"
               ></q-input> -->
-              <date-picker
-                v-model="fields.date"
-                label="Date"
-                :error-message="errors.date"
-                :error="!!errors.date"
-              ></date-picker>
+              <date-picker v-model="fields.date" label="Date" :error-message="errors.date"
+                :error="!!errors.date"></date-picker>
             </div>
           </div>
 
           <div class="row q-col-gutter-md">
-            <q-select
-              v-model="fields.mode"
-              label="Mode"
-              class="col-12 col-md-6"
-              :error-message="errors.mode"
-              :error="!!errors.mode"
-              :options="
-                staticOptions.modes.concat(
-                  formDefaults.collections?.bank_accounts
-                )
-              "
-              option-value="id"
-              option-label="name"
-              map-options
-              emit-value
-            >
+            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode"
+              :error="!!errors.mode" :options="staticOptions.modes.concat(
+                formDefaults.collections?.bank_accounts
+              )
+                " option-value="id" option-label="name" map-options emit-value>
               <template v-slot:append>
-                <q-icon
-                  v-if="fields.mode !== null"
-                  class="cursor-pointer"
-                  name="clear"
-                  @click.stop.prevent="fields.mode = null" /></template
-            ></q-select>
-            <date-picker
-              v-if="formDefaults.options?.enable_due_date_in_voucher"
-              label="Due Date"
-              v-model="fields.due_date"
-              class="col-md-6 col-12"
-              :error-message="errors?.due_date"
-              :error="!!errors?.due_date"
-            ></date-picker>
+                <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                  @click.stop.prevent="fields.mode = null" /></template></q-select>
+            <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
+              v-model="fields.due_date" class="col-md-6 col-12" :error-message="errors?.due_date"
+              :error="!!errors?.due_date"></date-picker>
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table
-        :itemOptions="
-          formDefaults.collections ? formDefaults.collections.items : null
-        "
-        :unitOptions="
-          formDefaults.collections ? formDefaults.collections.units : null
-        "
-        :discountOptions="
-          formDefaults.collections
-            ? staticOptions.discount_types.concat(
-                formDefaults?.collections.discounts
-              )
-            : staticOptions.discount_types
-        "
-        :taxOptions="formDefaults.collections?.tax_schemes"
-        v-model="fields.rows"
-        :mainDiscount="{
-          discount_type: fields.discount_type,
-          discount: fields.discount,
-        }"
-        :errors="!!errors.rows ? errors.rows : null"
-        @deleteRowErr="
-          (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-        "
-        :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"
-      ></invoice-table>
+      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+        " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
+    " :discountOptions="formDefaults.collections
+    ? staticOptions.discount_types.concat(
+      formDefaults?.collections.discounts
+    )
+    : staticOptions.discount_types
+    " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    discount_type: fields.discount_type,
+    discount: fields.discount,
+  }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+  " :enableRowDescription="formDefaults.options?.enable_row_description"
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -212,39 +137,26 @@
             label="Remarks"
             type="textarea"
           ></q-input> -->
-          <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-            autogrow
-            class="col-12 col-md-10"
-            :error="!!errors?.remarks"
-            :error-message="errors?.remarks"
-          />
+          <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
+            :error="!!errors?.remarks" :error-message="errors?.remarks" />
         </div>
         <div class="col-12 col-md-6 row justify-between">
           <div>
-            <q-checkbox
-              label="Import?"
-              v-model="fields.is_import"
-              class="q-mt-md col-3"
-            ></q-checkbox>
+            <q-checkbox label="Import?" v-model="fields.is_import" class="q-mt-md col-3"></q-checkbox>
           </div>
           <!-- TODO: add sales agent form -->
         </div>
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-          color="primary"
-          label="Draft"
-        />
-        <q-btn
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'"
-        />
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft" />
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit"
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>
   </q-form>
@@ -257,6 +169,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -307,6 +220,7 @@ export default {
       InvoiceTable,
       deleteRowErr,
       onSubmitClick,
+      checkPermissions
     }
   },
 }
