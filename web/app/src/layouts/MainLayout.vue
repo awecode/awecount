@@ -15,7 +15,7 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn class="gt-sm">{{ store.companyInfo.current_fiscal_year }}
+            <q-btn class="gt-sm">{{ store.companyInfo?.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
             <q-btn class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">{{
               activeDateFormat }}
