@@ -1,5 +1,5 @@
 <template>
-  <div class="fullscreen bg-blue text-white text-center q-pa-md flex flex-center">
+  <div class="text-red-4 text-center q-pa-md flex flex-center">
     <div>
       <div style="font-size: 30vh">
         404
@@ -8,20 +8,7 @@
       <div class="text-h2" style="opacity:.4">
         Oops. Nothing here...
       </div>
-
-      <q-btn
-        class="q-mt-xl"
-        color="white"
-        text-color="blue"
-        unelevated
-        to="/"
-        label="Go Home"
-        no-caps
-      />
+      <q-btn class="q-mt-xl" text-color="blue" outline to="/" label="Go Home" no-caps />
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-
-</script>

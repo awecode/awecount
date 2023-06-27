@@ -1261,6 +1261,22 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/NoPermission',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('src/pages/NoPermission.vue'),
+        name: 'NoPermission',
+        meta: {
+          breadcrumb: ['Home'],
+        },
+      },
+    ],
+    // children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
+  },
+
   { path: '/', component: () => import('src/pages/LandingPage.vue') },
   // {
   //   path: 'book/list/',
@@ -1275,6 +1291,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/LoginPage.vue'),
     // children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
   },
+
   // {
   //   path: '/',
   //   component: () => import('pages/LandingPage.vue'),
@@ -1285,7 +1302,17 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/ErrorNotFound.vue'),
+        name: 'ErrorNotFound',
+        meta: {
+          breadcrumb: ['Home'],
+        },
+      },
+    ],
   },
 ]
 

@@ -44,7 +44,14 @@ export default route(function (/* { store, ssrContext } */) {
     } else if (to.path !== '/login' && store.token === null) {
       next('/login')
     } else {
-      next()
+      // Should check if back btn is pressed from Nopermission page
+      // TODO: Not handled when jumping from one no permission page to another
+      if (
+        to.fullPath === window.history.state.current &&
+        from.name === 'NoPermission'
+      ) {
+        next(window.history.state.back)
+      } else next()
     }
   })
   return Router
