@@ -201,7 +201,7 @@
               </div>
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">Amount</span>
-                <span>Rs. {{ fields.amount }}</span>
+                <span>Rs. {{ Math.round(fields.amount * 100) / 100 }}</span>
               </div>
             </div>
             <div class="row q-gutter-y-md">
@@ -212,7 +212,7 @@
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">
                   TDS Amount</span>
-                <span>{{ fields.tds_amount }}</span>
+                <span>{{ Math.round(fields.tds_amount * 100) / 100 }}</span>
               </div>
             </div>
           </div>
@@ -226,11 +226,14 @@
       </q-card>
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md" v-if="fields">
         <div class="row q-gutter-x-sm q-mb-md print-hide">
-          <q-btn color="orange-7" label="Edit" icon="edit" :to="`/payment-receipt/${fields.id}/`" />
+          <q-btn v-if="checkPermissions('PaymentReceiptModify')" color="orange-7" label="Edit" icon="edit"
+            :to="`/payment-receipt/${fields.id}/`" />
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
-            <q-btn v-if="fields.status !== 'Cleared'" @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
-              color="green" label="mark as cleared" icon="mdi-check-all" />
-            <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" label="cancel" icon="cancel" />
+            <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
+              @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
+              icon="mdi-check-all" />
+            <q-btn v-if="checkPermissions('PaymentReceiptModify')" @click.prevent="() => (isDeleteOpen = true)"
+              color="red" label="cancel" icon="cancel" />
           </span>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end print-hide">
