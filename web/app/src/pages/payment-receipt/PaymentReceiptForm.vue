@@ -50,12 +50,15 @@
           </div>
           <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
             :error="!!errors?.remarks" :error-message="errors?.remarks" />
+
+          <div class="q-mt-lg row q-pb-lg flex justify-end">
+            <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit"
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Create" />
+            <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit"
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Update" />
+          </div>
         </q-card-section>
       </q-card>
-      <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
-          :label="isEdit ? 'Update' : 'Create'" />
-      </div>
     </q-card>
     <q-dialog v-model="addInoviceModal">
       <q-card style="min-width: min(40vw, 500px)">
@@ -87,6 +90,7 @@
 
 <script>
 import useForm from '/src/composables/useForm'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -196,6 +200,7 @@ export default {
       addInoviceModal,
       invoiceFormData,
       fetchInvoice,
+      checkPermissions
     }
   },
 }

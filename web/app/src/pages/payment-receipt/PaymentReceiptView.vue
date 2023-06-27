@@ -80,7 +80,7 @@
               </span>
               {{ fields.party_name }}, {{ fields.party_address }}</span>
             <span><span class="text-weight-medium text-grey-8">Amount: </span> NRS
-              {{ fields.amount }}</span>
+              {{ Math.round(fields.amount * 100) / 100 }}</span>
             <span><span class="text-weight-medium text-grey-8">In words: </span>
               {{ numberToText(fields.amount) }}</span>
           </div>
@@ -192,8 +192,10 @@
                 <span class="text-weight-medium col-6">Invoice #</span>
                 <span>
                   <span class="col-6" v-for="invoice in fields.invoices" :key="invoice.id">
-                    <router-link class="text-blue q-mr-sm" style="text-decoration: none"
-                      :to="`/sales-voucher/${invoice.id}/view`">#{{ invoice.id }}</router-link>
+                    <router-link v-if="checkPermissions('SalesView')" class="text-blue q-mr-sm"
+                      style="text-decoration: none" :to="`/sales-voucher/${invoice.id}/view`">#{{ invoice.id
+                      }}</router-link>
+                    <span v-else>#{{ invoice.id }}</span>
                   </span>
                 </span>
               </div>
@@ -277,6 +279,7 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import numberToText from 'src/composables/numToText'
 import DateConverter from 'src/components/date/VikramSamvat.js'
+import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -285,6 +288,7 @@ interface Fields {
   id: number
   mode: string
   amount: number
+  date: Date
 }
 export default {
   setup() {
@@ -337,6 +341,7 @@ export default {
       numberToText,
       getDate,
       loginStore,
+      checkPermissions
     }
   },
   created() {
