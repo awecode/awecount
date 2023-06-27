@@ -4,7 +4,12 @@
             <div class="text-h3" style="opacity:.4">
                 You Don't Have Permission.
             </div>
-            <q-btn class="q-mt-xl" text-color="blue" outline to="/" label="Go Back" no-caps @click="router.go(-1)" />
+            <q-btn class="q-mt-xl" text-color="blue" outline label="Go Back" no-caps @click="router.go(-1)" />
         </div>
     </div>
-</template>  
+</template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+const router = useRouter()
+</script>
