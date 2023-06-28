@@ -1,36 +1,15 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
-      <q-btn
-        color="green"
-        to="/journal-voucher/add/"
-        label="New Journal Voucher"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('JournalVoucherCreate')" color="green" to="/journal-voucher/add/"
+        label="New Journal Voucher" class="q-ml-lg" icon-right="add" />
     </div>
 
-    <q-table
-      :rows="rows"
-      :columns="newColumns"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -43,24 +22,14 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      :options="['Cancelled', 'Approved', 'Unapproved']"
-                      v-model="filters.status"
-                    />
+                    <MultiSelectChip :options="['Cancelled', 'Approved', 'Unapproved']" v-model="filters.status" />
                   </div>
                   <div class="q-mx-md">
-                    <DateRangePicker
-                      v-model:startDate="filters.start_date"
-                      v-model:endDate="filters.end_date"
-                    />
+                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -71,39 +40,23 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-sm justify-center">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/journal-voucher/${props.row.id}/view/`"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-            />
-            <q-btn
-              v-if="props.row.status != 'Cancelled'"
-              color="orange-7"
-              label="Edit"
-              :to="`/journal-voucher/${props.row.id}/edit/`"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-            />
+            <q-btn color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`"
+              class="q-py-none q-px-md font-size-sm" style="font-size: 12px" />
+            <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')" color="orange-7"
+              label="Edit" :to="`/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row q-gutter-sm justify-center">
-            <span
-              class="text-white text-weight-medium"
-              :class="
-                props.row.status === 'Unapproved'
-                  ? 'bg-orange-4'
-                  : props.row.status === 'Approved'
-                  ? 'bg-green-4'
-                  : 'bg-red-4'
-              "
-              style="border-radius: 2rem; padding: 5px 10px"
-              >{{ props.row.status }}</span
-            >
+            <span class="text-white text-subtitle" :class="props.row.status === 'Unapproved'
+              ? 'bg-orange-2 text-orange-10'
+              : props.row.status === 'Approved'
+                ? 'bg-green-2 text-green-10'
+                : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">{{ props.row.status }}</span>
           </div>
         </q-td>
       </template>
@@ -113,6 +66,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -142,7 +96,7 @@ export default {
       },
       { name: 'actions', label: 'Actions', align: 'center' },
     ]
-    return { ...useList(endpoint), newColumns }
+    return { ...useList(endpoint), newColumns, checkPermissions }
   },
 }
 </script>

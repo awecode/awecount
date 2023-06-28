@@ -1,7 +1,6 @@
 <template>
   <q-form class="q-pa-lg">
-    <q-card class="q-pa-xs"
-      ><q-card-section>
+    <q-card class="q-pa-xs"><q-card-section>
         <q-card>
           <q-card-section class="bg-green text-white">
             <div class="text-h6">
@@ -11,20 +10,10 @@
           </q-card-section>
           <q-card class="q-pt-md">
             <div class="row q-col-gutter-md q-px-md q-pb-md">
-              <q-input
-                v-model="fields.voucher_no"
-                label="Voucher No."
-                class="col-6"
-                :error-message="errors?.voucher_no"
-                :error="!!errors?.voucher_no"
-              />
-              <DatePicker
-                v-model="fields.date"
-                class="col-6"
-                label="Date"
-                :error-message="errors?.date"
-                :error="!!errors?.date"
-              ></DatePicker>
+              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no"
+                :error="!!errors?.voucher_no" />
+              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date"
+                :error="!!errors?.date"></DatePicker>
             </div>
           </q-card>
         </q-card>
@@ -41,14 +30,9 @@
               </div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow
-                :voucher="voucher"
-                :index="index"
-                :options="formDefaults.collections?.accounts"
-                :errors="errors?.rows ? errors.rows : null"
-                @deleteVoucher="(index) => deleteVoucher(index, errors)"
-                @checkAddVoucher="checkAddVoucher"
-              />
+              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts"
+                :errors="errors?.rows ? errors.rows : null" @deleteVoucher="(index) => deleteVoucher(index, errors)"
+                @checkAddVoucher="checkAddVoucher" />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
@@ -62,45 +46,30 @@
               </div>
               <div class="col-2"></div>
             </div>
-            <q-btn
-              @click.prevent="addNewVoucher"
-              outline
-              style="color: green"
-              label="ADD NEW ROW"
-              class="q-mt-lg"
-            />
+            <q-btn @click.prevent="addNewVoucher" outline style="color: green" label="ADD NEW ROW" class="q-mt-lg" />
           </q-card-section>
         </q-card>
       </q-card-section>
 
       <div class="row">
-        <q-input
-          v-model="fields.narration"
-          type="textarea"
-          autogrow
-          label="Narration *"
-          class="col-12 q-pa-md q-mb-md"
-          :error-message="errors?.narration"
-          :error="!!errors?.narration"
-        />
+        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md"
+          :error-message="errors?.narration" :error="!!errors?.narration" />
+      </div>
+      <div class="row q-ma-md justify-end">
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          @click.prevent="; (fields.status = 'Unapproved'), submitForm()" color="orange-7"
+          icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
+          @click.prevent="; (fields.status = 'Unapproved'), submitForm()" color="orange-7"
+          icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" />
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          @click.prevent="; (fields.status = 'Approved'), submitForm()" color="green-8" icon="fa-solid fa-floppy-disk"
+          :label="isEdit ? 'Update' : 'Save'" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit"
+          @click.prevent="; (fields.status = 'Approved'), submitForm()" color="green-8" icon="fa-solid fa-floppy-disk"
+          :label="isEdit ? 'Update' : 'Save'" />
       </div>
     </q-card>
-    <div class="row q-mt-md">
-      <q-btn
-        v-if="fields.status != 'Approved' || !fields?.id"
-        @click.prevent=";(fields.status = 'Unapproved'), submitForm()"
-        color="orange-7"
-        icon="fa-solid fa-pen-to-square"
-        label="Save Draft"
-        class="q-mr-md q-py-sm"
-      />
-      <q-btn
-        @click.prevent=";(fields.status = 'Approved'), submitForm()"
-        color="green-8"
-        icon="fa-solid fa-floppy-disk"
-        :label="isEdit ? 'Update' : 'Save'"
-      />
-    </div>
     <!-- {{ amountComputed }} --amountComputed -->
   </q-form>
 </template>
@@ -108,6 +77,7 @@
 <script>
 import useForm from '/src/composables/useForm'
 import VoucherRow from '/src/components/VoucherRow.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -192,6 +162,7 @@ export default {
       addNewVoucher,
       amountComputed,
       checkAddVoucher,
+      checkPermissions
     }
   },
 }

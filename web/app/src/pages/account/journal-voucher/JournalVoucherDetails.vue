@@ -3,8 +3,7 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span
-            >Journal Voucher | #{{ fields?.voucher_no || '-' }} |
+          <span>Journal Voucher | #{{ fields?.voucher_no || '-' }} |
             {{ fields?.status || '-' }}
           </span>
         </div>
@@ -44,12 +43,8 @@
             <div class="col-2">{{ index + 1 }}</div>
             <div class="col-2">{{ row.type }}</div>
             <div class="col-grow">
-              <router-link
-                class="text-blue text-weight-medium"
-                style="text-decoration: none"
-                :to="`/account/${row.account_id}/view/`"
-                >{{ row.account_name }}</router-link
-              >
+              <router-link class="text-blue text-weight-medium" style="text-decoration: none"
+                :to="`/account/${row.account_id}/view/`">{{ row.account_name }}</router-link>
             </div>
             <div class="col-2">{{ row.dr_amount || 0 }}</div>
             <div class="col-2">{{ row.cr_amount || 0 }}</div>
@@ -93,22 +88,11 @@
     </q-card>
     <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
-        <q-btn
-          :to="`/journal-voucher/${props.id}/edit/`"
-          color="orange"
-          icon="edit"
-          label="Edit"
-          class="text-h7 q-py-sm"
-        />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'"
+          :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
-      <div v-if="fields?.status == 'Approved'">
-        <q-btn
-          @click.prevent="prompt"
-          color="red"
-          icon="block"
-          label="Cancel"
-          class="text-h7 q-py-sm"
-        />
+      <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherDelete')">
+        <q-btn @click.prevent="prompt" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
       </div>
     </div>
   </q-form>
@@ -116,6 +100,7 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
+import checkPermissions from 'src/composables/checkPermissions'
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
