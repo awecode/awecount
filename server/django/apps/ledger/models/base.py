@@ -364,7 +364,7 @@ class Transaction(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='transactions')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='transactions', null=True)
     type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
 
     def get_amount(self):
