@@ -1,36 +1,13 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
-      <q-btn
-        color="green"
-        to="/account-opening-balance/add/"
-        label="New Opening Balance"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('AccountOpeningBalanceCreate')" color="green" to="/account-opening-balance/add/"
+        label="New Opening Balance" class="q-ml-lg" icon-right="add" />
     </div>
-
-    <q-table
-      title="Opening Balances"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Opening Balances" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
-        <q-input
-          dense
-          debounce="500"
-          v-model="searchQuery"
-          placeholder="Search"
-          class="full-width"
-        >
+        <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -38,13 +15,9 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            label="Edit"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm"
-            style="font-size: 12px"
-            :to="`/account-opening-balance/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('AccountOpeningBalanceModify')" label="Edit" color="orange-6"
+            class="q-py-none q-px-md font-size-sm" style="font-size: 12px"
+            :to="`/account-opening-balance/${props.row.id}/`" />
         </q-td>
       </template>
     </q-table>
@@ -53,6 +26,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -85,7 +59,7 @@ export default {
         align: 'center',
       },
     ]
-    return { ...useList(endpoint), newColumn }
+    return { ...useList(endpoint), newColumn, checkPermissions }
   },
 }
 </script>
