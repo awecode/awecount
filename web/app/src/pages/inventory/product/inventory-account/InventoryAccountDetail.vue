@@ -220,7 +220,7 @@ function getVoucherUrl(row) {
   if (source_type === 'Challan') return `/challan/${row.source_id}/`
   if (source_type === 'Account Opening Balance')
     return `/account/opening-balance/${row.source_id}/edit/`
-  if (source_type === 'Item') return `/items/opening/${row.source_id}`
+  if (source_type === 'Item') return `/items/details/${row.source_id}/`
   // added
   if (source_type === 'Fund Transfer')
     return `/bank/fund/fund-transfer/${row.source_id}/edit/`
@@ -242,6 +242,7 @@ const getPermissionsWithSourceType = {
   'Account Opening Balance': 'AccountOpeningBalanceModify',
   'Fund Transfer': 'FundTransferModify',
   'Bank Cash Deposit': 'BankCashDepositModify',
-  'Tax Payment': 'TaxPaymentModify'
+  'Tax Payment': 'TaxPaymentModify',
+  'Item': 'ItemView'
 }
 </script>

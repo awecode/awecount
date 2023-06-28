@@ -64,11 +64,12 @@
             </template>
             <template v-slot:body-cell-type="props">
                 <q-td :props="props">
-                    <RouterLink style="text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)"
-                        class="text-blue-6">{{
+                    <RouterLink v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])" style="
+                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
                             props.row.source_type
                         }}
                     </RouterLink>
+                    <span v-else> {{ props.row.source_type }}</span>
                 </q-td>
             </template>
         </q-table>
@@ -82,6 +83,7 @@
 import useList from '/src/composables/useList'
 // import usedownloadFile from 'src/composables/usedownloadFile'
 import DateRangePicker from 'src/components/date/DateRangePicker.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 // import { useMeta } from 'quasar'
 export default {
     setup() {
@@ -205,8 +207,8 @@ export default {
                 return `/bank/cheque/cheque-issue/${row.source_id}/edit/`
             if (source_type === 'Challan') return `/challan/${row.source_id}/`
             if (source_type === 'Account Opening Balance')
-                return `/account/opening-balance/${row.source_id}/edit/`
-            if (source_type === 'Item') return `/items/opening/${row.source_id}`
+                return `/account-opening-balance/${row.source_id}/`
+            if (source_type === 'Item') return `/items/details/${row.source_id}/`
             // added
             if (source_type === 'Fund Transfer')
                 return `/bank/fund/fund-transfer/${row.source_id}/edit/`
@@ -215,6 +217,22 @@ export default {
             if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
             console.error(source_type + ' not handled!')
         }
+        const getPermissionsWithSourceType = {
+            'Sales Voucher': 'SalesView',
+            'Purchase Voucher': 'PurchaseVoucherView',
+            'Journal Voucher': 'JournalVoucherView',
+            'Credit Note': 'CreditNoteView',
+            'Debit Note': 'DebitNoteView',
+            'Cheque Deposit': 'ChequeDepositView',
+            'Payment Receipt': 'PaymentReceiptView',
+            'Cheque Issue': 'ChequeIssueModify',
+            'Challan': 'ChallanModify',
+            'Account Opening Balance': 'AccountOpeningBalanceModify',
+            'Fund Transfer': 'FundTransferModify',
+            'Bank Cash Deposit': 'BankCashDepositModify',
+            'Tax Payment': 'TaxPaymentModify',
+            'Item': 'ItemView'
+        }
         // const chartData = computed(() => {
         //     if (listData.rows.value[0]?.label) {
         //         console.log(listData.rows.value)
@@ -222,7 +240,7 @@ export default {
         //     }
         //     else return null
         // })
-        return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls }
+        return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
     },
     created() {
         const endpoint = '/v1/transaction/create-defaults/'
