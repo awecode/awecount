@@ -118,8 +118,11 @@
         <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12"
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
-      <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="primary" label="Draft"
+      <div v-if="checkPermissions('DebitNoteCreate')" class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+        <q-btn v-if="!isEdit" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8"
+          label="Draft" :disable="fields.invoices ? false : true" />
+        <q-btn v-if="isEdit && fields.status === 'Draft'"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
           :disable="fields.invoices ? false : true" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
           :label="isEdit ? 'Update' : 'Issue'" :disable="fields.invoices ? false : true" />
@@ -135,6 +138,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -275,6 +279,7 @@ export default {
       referenceFormData,
       discountField,
       partyChoices,
+      checkPermissions
     }
   },
   created() {

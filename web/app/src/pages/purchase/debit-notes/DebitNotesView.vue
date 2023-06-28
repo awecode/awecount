@@ -3,16 +3,11 @@
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
         <div class="text-h6 d-print-none">
-          <span
-            >Debit Note | {{ fields?.status }} | #{{ fields?.voucher_no }}</span
-          >
+          <span>Debit Note | {{ fields?.status }} | #{{ fields?.voucher_no }}</span>
         </div>
       </q-card-section>
 
-      <q-card
-        class="q-mx-lg q-pa-lg row text-grey-8 text-body2 row"
-        style="padding-bottom: 0"
-      >
+      <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2 row" style="padding-bottom: 0">
         <div class="col-12 col-md-6 column q-gutter-y-lg q-mb-lg">
           <div class="row">
             <div class="col-6">Party</div>
@@ -56,45 +51,22 @@
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
-    <div
-      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
-      v-if="fields"
-    >
+    <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
       <div class="row">
-        <div
-          v-if="fields?.status !== 'Cancelled'"
-          class="row q-gutter-x-md q-gutter-y-md q-mb-md"
-        >
-          <q-btn
-            v-if="fields?.status === 'Issued'"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6"
-            label="mark as paid"
-            icon="mdi-check-all"
-          />
-          <q-btn
-            color="red-5"
-            label="Cancel"
-            icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)"
-          />
+        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+          <q-btn v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            icon="mdi-check-all" />
+          <q-btn v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
       <div class="row q-mb-md q-gutter-x-md">
-        <q-btn
-          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print Copy No. ${fields.print_count}`"
-          icon="print"
-          @click="onPrintclick"
-        />
+        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          :label="`Print Copy No. ${fields.print_count}`" icon="print" @click="onPrintclick" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick" />
-        <q-btn
-          v-if="fields?.status === 'Issued' || fields?.status === 'Paid'"
-          color="blue-7"
-          label="Journal Entries"
-          icon="books"
-          :to="`/journal-entries/debit-note/${fields?.id}/`"
-        />
+        <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Paid'" color="blue-7" label="Journal Entries"
+          icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
@@ -108,10 +80,7 @@
         <q-card-section class="q-ma-md">
           <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
           <div class="text-right q-mt-lg">
-            <q-btn
-              label="Confirm"
-              @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
-            ></q-btn>
+            <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -126,6 +95,7 @@ import { Ref } from 'vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -181,11 +151,15 @@ export default {
             }
           }
         })
-        .catch(() => {
+        .catch((err) => {
           // TODO: Properly Parse Error and show
+          let message = null
+          if (err.status === 500 && err.data.detail) {
+            message = err.data.detail
+          }
           $q.notify({
             color: 'red-6',
-            message: 'Something Went Wrong!',
+            message: message || 'Something Went Wrong!',
           })
         })
     }
@@ -248,6 +222,7 @@ export default {
       deleteMsg,
       onPrintclick,
       getDate,
+      checkPermissions
     }
   },
   created() {

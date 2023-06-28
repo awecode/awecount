@@ -42,7 +42,7 @@
             label="mark as paid"
             icon="mdi-check-all"
           /> -->
-        <q-btn v-if="checkPermissions('CreditNoteModify')" color="red-5" label="Cancel" icon="cancel"
+        <q-btn v-if="checkPermissions('CreditNoteCancel')" color="red-5" label="Cancel" icon="cancel"
           @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">

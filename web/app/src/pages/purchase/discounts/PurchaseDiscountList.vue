@@ -1,34 +1,14 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="green"
-        to="/purchase-discount/add/"
-        label="New Purchase Discount"
-        icon-right="add"
-      />
+      <q-btn v-if="checkPermissions('PurchaseDiscountCreate')" color="green" to="/purchase-discount/add/"
+        label="New Purchase Discount" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -41,26 +21,15 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      v-model="filters.type"
-                      :options="['Percent', 'Amount']"
-                    />
+                    <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
                   </div>
                   <div class="q-mt-md">
-                    <q-checkbox
-                      v-model="filters.trade_discount"
-                      label="Is Trade Discount?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?"
+                      :false-value="null"></q-checkbox>
                   </div>
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -72,13 +41,9 @@
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center">
-            <q-btn
-              color="orange-7"
-              label="Edit"
-              :to="`/purchase-discount/${props.row.id}/`"
-              class="q-py-none q-px-md font-size-sm"
-              style="font-size: 12px"
-            />
+            <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit"
+              :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm"
+              style="font-size: 12px" />
           </div>
         </q-td>
       </template>
@@ -98,6 +63,7 @@
 <script>
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -135,7 +101,7 @@ export default {
       { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
-    return { ...listData, onDownloadXls, newColumn }
+    return { ...listData, onDownloadXls, newColumn, checkPermissions }
   },
 }
 </script>

@@ -26,22 +26,26 @@
     <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
       <div>
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="fields?.status === 'Draft'" color="orange-5" label="Edit" icon="edit"
-            :to="`/sales-voucher/${fields?.id}/`" />
-          <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6" label="mark as paid" icon="mdi-check-all" />
-          <q-btn color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+          <q-btn v-if="fields?.status === 'Draft' && checkPermissions('SalesModify')" color="orange-5" label="Edit"
+            icon="edit" :to="`/sales-voucher/${fields?.id}/`" />
+          <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            icon="mdi-check-all" />
+          <q-btn v-if="checkPermissions('SalesCancel')" color="red-5" label="Cancel" icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
       <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
         <q-btn @click="() => onPrintclick(false)" :label="`Print Copy ${fields?.status !== 'Cancelled'
           ? `# ${(fields?.print_count || 0) + 1}`
           : ''
-          }`" icon="print" />
+          }`
+          " icon="print" />
         <q-btn @click="() => onPrintclick(true)" :label="`Print Body ${fields?.status !== 'Cancelled'
           ? `# ${(fields?.print_count || 0) + 1}`
           : ''
-          }`" icon="print" />
+          }`
+          " icon="print" />
         <q-btn color="blue-7" label="Materialized View" icon="mdi-table"
           :to="`/sales-voucher/${fields?.voucher_no}/mv`" />
         <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries"
@@ -72,6 +76,7 @@ import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
 
 interface Fields {
   status: string
@@ -159,6 +164,7 @@ export default {
       updateMode,
       modeOptions,
       onPrintclick,
+      checkPermissions
     }
   },
   created() {

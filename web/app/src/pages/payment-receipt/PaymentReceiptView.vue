@@ -55,13 +55,13 @@
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div style="text-align: center">Payment Receipt | Issued</div>
+      <div style="text-align: center">Payment Receipt | {{ fields?.status }}</div>
     </div>
     <div v-if="fields" class="sales-invoice">
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white print-hide">
           <div class="text-h6">
-            <span>Payment Receipt | Issued</span>
+            <span>Payment Receipt | {{ fields?.status }}</span>
           </div>
         </q-card-section>
         <div class="q-pa-lg q-pb-lg">
@@ -232,7 +232,7 @@
             <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
               icon="mdi-check-all" />
-            <q-btn v-if="checkPermissions('PaymentReceiptModify')" @click.prevent="() => (isDeleteOpen = true)"
+            <q-btn v-if="checkPermissions('PaymentReceiptDelete')" @click.prevent="() => (isDeleteOpen = true)"
               color="red" label="cancel" icon="cancel" />
           </span>
         </div>
