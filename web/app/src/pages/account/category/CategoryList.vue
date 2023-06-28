@@ -1,36 +1,14 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
-      <q-btn
-        color="green"
-        to="/account-category/add/"
-        label="New Category"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('CategoryCreate')" color="green" to="/account-category/add/" label="New Category"
+        class="q-ml-lg" icon-right="add" />
     </div>
-    <q-table
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumns"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Income Items" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -43,19 +21,11 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="filters.default"
-                      label="Is Default?"
-                      :false-value="null"
-                    ></q-checkbox>
+                    <q-checkbox v-model="filters.default" label="Is Default?" :false-value="null"></q-checkbox>
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -65,13 +35,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            color="orange-7"
-            label="Edit"
-            :to="`/account-category/${props.row.id}/`"
-            class="q-py-none q-px-md font-size-sm"
-            style="font-size: 12px"
-          />
+          <q-btn v-if="checkPermissions('CategoryModify')" color="orange-7" label="Edit"
+            :to="`/account-category/${props.row.id}/`" class="q-py-none q-px-md font-size-sm" style="font-size: 12px" />
           <!-- {{ props }} -->
         </q-td>
         <!-- TODO: add modals -->
@@ -89,6 +54,7 @@
 
 <script setup>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions';
 const metaData = {
   title: 'Account Categories | Awecount',
 }

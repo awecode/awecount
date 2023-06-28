@@ -11,39 +11,23 @@
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.name"
-              label="Name *"
-              class="col-6"
-              :error-message="errors.name || errors.detail"
-              :error="!!errors.name || !!errors.detail"
-            />
-            <q-input
-              v-model="fields.code"
-              label="Code"
-              class="col-6"
-              :error-message="errors.code"
-              :error="!!errors.code"
-            />
+            <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name || errors.detail"
+              :error="!!errors.name || !!errors.detail" />
+            <q-input v-model="fields.code" label="Code" class="col-6" :error-message="errors.code"
+              :error="!!errors.code" />
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-6">
-              <n-auto-complete
-                v-model="fields.parent"
-                :options="formDefaults.collections?.categories"
-                label="Parent"
-                :error="errors?.parent"
-              />
+              <n-auto-complete v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent"
+                :error="errors?.parent" />
             </div>
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn
-            @click.prevent="submitForm"
-            color="primary"
-            :label="isEdit ? 'Update' : 'Create'"
-            class="q-ml-auto"
-          />
+          <q-btn v-if="checkPermissions('CategoryModify') && !isEdit" @click.prevent="submitForm" color="green"
+            label="Create" class="q-ml-auto" />
+          <q-btn v-if="checkPermissions('CategoryModify') && isEdit" @click.prevent="submitForm" color="green"
+            label="Update" class="q-ml-auto" />
         </div>
       </q-card>
     </q-card>
@@ -52,6 +36,7 @@
 
 <script>
 import useForm from '/src/composables/useForm'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -75,6 +60,7 @@ export default {
     // formData.fields.value.id
     return {
       ...formData,
+      checkPermissions
     }
   },
 }
