@@ -1,33 +1,18 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        color="green"
-        to="/sales-agent/add/"
-        label="Sales Agent"
-        icon-right="add"
-      />
+      <q-btn v-if="checkPermissions('SalesAgentCreate')" color="green" to="/sales-agent/add/" label="Sales Agent"
+        icon-right="add" />
     </div>
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link
-            class="text-blue"
-            style="text-decoration: none"
-            :to="`/sales-agent/${props.row.id}/`"
-          >
+          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue" style="text-decoration: none"
+            :to="`/sales-agent/${props.row.id}/`">
             {{ props.row.name }}
           </router-link>
+          <span v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>
@@ -36,6 +21,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -59,7 +45,7 @@ export default {
       },
     ]
 
-    return { ...listData, newColumn }
+    return { ...listData, newColumn, checkPermissions }
   },
 }
 </script>
