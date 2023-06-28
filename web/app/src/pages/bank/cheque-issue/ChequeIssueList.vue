@@ -1,41 +1,16 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-guuter-x-sm justify-end">
-      <q-btn
-        color="blue"
-        label="Export"
-        icon-right="download"
-        @click="onDownloadXls"
-      />
-      <q-btn
-        color="green"
-        to="/cheque-issue/add/"
-        label="New Cheque Issue"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" />
+      <q-btn v-if="checkPermissions('ChequeIssueCreate')" color="green" to="/cheque-issue/add/" label="New Cheque Issue"
+        class="q-ml-lg" icon-right="add" />
     </div>
 
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -48,32 +23,18 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.bank_account"
-                      endpoint="v1/bank-account/choices/"
-                      label="Bank Account"
-                    />
+                    <SelectWithFetch v-model="filters.bank_account" endpoint="v1/bank-account/choices/"
+                      label="Bank Account" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      v-model="filters.status"
-                      :options="['Draft', 'Issued', 'Cleared']"
-                    />
+                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cleared', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker
-                    v-model:startDate="filters.start_date"
-                    v-model:endDate="filters.end_date"
-                  />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -83,28 +44,21 @@
       </template>
       <template v-slot:body-cell-issued_to="props">
         <q-td :props="props">
-          <router-link
-            style="font-weight: 500; text-decoration: none"
-            class="text-blue"
-            :to="`/cheque-issue/${props.row.id}/`"
-            >{{ props.row.issued_to }}</router-link
-          >
+          <router-link v-if="checkPermissions('ChequeIssueModify')" style="font-weight: 500; text-decoration: none"
+            class="text-blue" :to="`/cheque-issue/${props.row.id}/`">{{ props.row.issued_to || props.row.party_name
+            }}</router-link>
+          <span v-else>{{ props.row.issued_to || props.row.party_name }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Cleared'
-                  ? 'bg-green'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
+            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue-2 text-blue-10'
+              : props.row.status == 'Cleared'
+                ? 'bg-green-2 text-green-10'
+                : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
@@ -112,13 +66,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            label="Edit"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm"
-            style="font-size: 12px"
-            :to="`/cheque-issue/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('ChequeIssueModify')" label="Edit" color="orange-6"
+            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/cheque-issue/${props.row.id}/`" />
         </q-td>
       </template>
     </q-table>
@@ -127,6 +76,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -185,7 +135,7 @@ export default {
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { ...useList(endpoint), newColumn, onDownloadXls }
+    return { ...useList(endpoint), newColumn, onDownloadXls, checkPermissions }
   },
 }
 </script>

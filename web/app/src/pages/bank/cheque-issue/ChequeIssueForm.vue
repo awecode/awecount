@@ -45,7 +45,10 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn @click.prevent="submitForm" color="green" :label="isEdit ? 'Update' : 'Create'" class="q-ml-auto" />
+          <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
+            label="Create" class="q-ml-auto" />
+          <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green"
+            label="Update" class="q-ml-auto" />
           <q-btn v-if="fields?.status == 'Issued'" @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'"
             class="q-ml-md" />
         </div>
@@ -57,6 +60,7 @@
 <script>
 import useForm from '/src/composables/useForm'
 import BenefactorForm from '/src/components/BenefactorForm.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 // const $q = useQuasar()
 
 export default {
@@ -97,6 +101,7 @@ export default {
       showDrAccount,
       BenefactorForm,
       toggleDrAccount,
+      checkPermissions
     }
   },
 }
