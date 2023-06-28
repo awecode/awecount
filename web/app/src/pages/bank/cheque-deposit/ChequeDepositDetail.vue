@@ -3,11 +3,9 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span
-            >Cheque Deposit | {{ fields?.status || '-' }} | #{{
-              fields?.voucher_no || '-'
-            }}</span
-          >
+          <span>Cheque Deposit | {{ fields?.status || '-' }} | #{{
+            fields?.voucher_no || '-'
+          }}</span>
         </div>
       </q-card-section>
 
@@ -77,41 +75,20 @@
       </q-card-section>
     </q-card>
     <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs" v-if="fields">
-      <div>
-        <q-btn
-          :to="`/cheque-deposit/${id}/`"
-          color="orange"
-          icon="edit"
-          label="Edit"
-          class="text-h7 q-py-sm"
-        />
+      <div v-if="checkPermissions('ChequeDepositModify')">
+        <q-btn :to="`/cheque-deposit/${id}/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
-      <div v-if="fields?.status === 'Issued'">
-        <q-btn
-          @click.prevent="onClearedClick"
-          color="green"
-          icon="done_all"
-          label="Mark as cleared"
-          class="text-h7 q-py-sm"
-        />
+      <div v-if="fields?.status === 'Issued' && checkPermissions('ChequeDepositModify')">
+        <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared"
+          class="text-h7 q-py-sm" />
       </div>
-      <div v-if="fields?.status !== 'Cancelled'">
-        <q-btn
-          @click.prevent="() => (isDeleteOpen = true)"
-          color="red"
-          icon="block"
-          label="Cancel"
-          class="text-h7 q-py-sm"
-        />
+      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositDelete')">
+        <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" icon="block" label="Cancel"
+          class="text-h7 q-py-sm" />
       </div>
       <div class="q-ml-auto" v-if="fields?.status === 'Cleared'">
-        <q-btn
-          :to="`/journal-entries/payment-receipt/${fields.id}/`"
-          color="blue"
-          icon="library_books"
-          label="Journal Entries"
-          class="text-h7 q-py-sm"
-        />
+        <q-btn :to="`/journal-entries/payment-receipt/${fields.id}/`" color="blue" icon="library_books"
+          label="Journal Entries" class="text-h7 q-py-sm" />
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
@@ -142,6 +119,7 @@
 import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+import checkPermissions from 'src/composables/checkPermissions';
 const store = useLoginStore()
 const metaData = {
   title: 'Cheque Deposit View | Awecount',

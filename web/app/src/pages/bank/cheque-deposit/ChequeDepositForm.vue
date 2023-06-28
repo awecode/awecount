@@ -12,106 +12,62 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete
-                v-model="fields.bank_account"
-                :options="formDefaults.collections?.bank_accounts"
-                label="Bank Account *"
-                :modal-component="CreateAccount"
-                :error="errors?.bank_account"
-              />
+              <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
+                label="Bank Account *" :modal-component="CreateAccount" :error="errors?.bank_account" />
             </div>
             <div class="col-md-6 col-12">
-              <n-auto-complete
-                v-model="fields.benefactor"
-                :options="formDefaults.collections?.benefactors"
-                label="Benefactor *"
-                :modal-component="BenefactorForm"
-                :error="errors?.benefactor"
-              />
+              <n-auto-complete v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
+                label="Benefactor *" :modal-component="BenefactorForm" :error="errors?.benefactor" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.amount"
-              label="Amount *"
-              class="col-md-6 col-12"
-              :error-message="errors.amount"
-              :error="!!errors.amount"
-            />
-            <date-picker
-              v-model="fields.date"
-              class="col-md-6 col-12"
-              label="Deposit Date*"
-              :error-message="errors.date"
-              :error="!!errors.date"
-            ></date-picker>
+            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
+              :error="!!errors.amount" />
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date*" :error-message="errors.date"
+              :error="!!errors.date"></date-picker>
           </div>
           <div class="row q-col-gutter-md">
-            <date-picker
-              v-model="fields.cheque_date"
-              class="col-md-6 col-12"
-              label="Cheque Date"
-              :error-message="errors.cheque_date"
-              :error="!!errors.cheque_date"
-            ></date-picker>
-            <q-input
-              v-model="fields.cheque_number"
-              label="Cheque Number"
-              class="col-6"
-              :error-message="errors.cheque_number"
-              :error="!!errors.cheque_number"
-            />
+            <date-picker v-model="fields.cheque_date" class="col-md-6 col-12" label="Cheque Date"
+              :error-message="errors.cheque_date" :error="!!errors.cheque_date"></date-picker>
+            <q-input v-model="fields.cheque_number" label="Cheque Number" class="col-6"
+              :error-message="errors.cheque_number" :error="!!errors.cheque_number" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.voucher_no"
-              label="Voucher Number"
-              class="col-md-6 col-12"
-              :error-message="errors.voucher_no"
-              :error="!!errors.voucher_no"
-            />
-            <q-input
-              v-model="fields.deposited_by"
-              label="Deposited By"
-              class="col-md-6 col-12"
-              :error-message="errors.deposited_by"
-              :error="!!errors.deposited_by"
-            />
+            <q-input v-model="fields.voucher_no" label="Voucher Number" class="col-md-6 col-12"
+              :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
+            <q-input v-model="fields.deposited_by" label="Deposited By" class="col-md-6 col-12"
+              :error-message="errors.deposited_by" :error="!!errors.deposited_by" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.drawee_bank"
-              label="Drawee Bank"
-              class="col-md-6 col-12"
-              :error-message="errors.drawee_bank"
-              :error="!!errors.drawee_bank"
-            />
+            <q-input v-model="fields.drawee_bank" label="Drawee Bank" class="col-md-6 col-12"
+              :error-message="errors.drawee_bank" :error="!!errors.drawee_bank" />
           </div>
         </q-card-section>
       </q-card>
     </q-card>
-    <div class="row q-mt-md">
-      <q-btn
-        v-if="fields.status == 'Draft' || !fields.status"
-        @click.prevent=";(fields.status = 'Draft'), submitForm()"
-        color="amber-7"
-        icon="fa-solid fa-pen-to-square"
-        label="Save Draft"
-        class="q-mr-md q-py-sm"
-      />
-      <q-btn
-        @click.prevent="
-          fields.status
-            ? fields.status == 'Draft'
-              ? (fields.status = 'Issued')
-              : ''
-            : (fields.status = 'Issued'),
-            submitForm()
-        "
-        color="green-6"
-        icon="fa-solid fa-floppy-disk"
-        :label="isEdit ? 'Update' : 'Issue'"
-      />
+    <div class="row q-mt-md justify-end">
+      <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
+        @click.prevent="; (fields.status = 'Draft'), submitForm()" color="orange" icon="fa-solid fa-pen-to-square"
+        label="Draft" class="q-mr-md q-py-sm" />
+      <q-btn v-if="checkPermissions('ChequeDepositCreate') && isEdit && fields?.status === 'Draft'"
+        @click.prevent="; (fields.status = 'Draft'), submitForm()" color="orange" icon="fa-solid fa-pen-to-square"
+        label="Save Draft" class="q-mr-md q-py-sm" />
+      <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="
+        fields.status
+          ? fields.status == 'Draft'
+            ? (fields.status = 'Issued')
+            : ''
+          : (fields.status = 'Issued'),
+        submitForm()
+        " color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" />
+      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="
+        fields.status
+          ? fields.status == 'Draft'
+            ? (fields.status = 'Issued')
+            : ''
+          : (fields.status = 'Issued'),
+        submitForm()
+        " color="green-6" icon="fa-solid fa-floppy-disk" label="Update" />
     </div>
   </q-form>
 </template>
@@ -120,6 +76,7 @@
 import CreateAccount from '../account/AccountForm.vue'
 import useForm from '/src/composables/useForm'
 import BenefactorForm from '/src/components/BenefactorForm.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -144,6 +101,7 @@ export default {
       ...formData,
       CreateAccount,
       BenefactorForm,
+      checkPermissions
     }
   },
 }
