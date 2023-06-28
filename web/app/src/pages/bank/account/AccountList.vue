@@ -1,43 +1,17 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
-      <q-btn
-        color="green"
-        to="/bank-accounts/add/"
-        label="New Account"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('BankAccountCreate')" color="green" to="/bank-accounts/add/" label="New Account"
+        class="q-ml-lg" icon-right="add" />
     </div>
-
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            color="blue"
-            class="q-py-none q-px-md font-size-sm q-mr-md"
-            style="font-size: 12px"
-            label="Account"
-            :to="`/account/${props.row.id}/view/`"
-          />
-          <q-btn
-            label="Edit"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm"
-            style="font-size: 12px"
-            :to="`/bank-accounts/${props.row.id}/`"
-          />
+          <q-btn color="blue" class="q-py-none q-px-md font-size-sm q-mr-md" style="font-size: 12px" label="Account"
+            :to="`/account/${props.row.id}/view/`" />
+          <q-btn v-if="checkPermissions('BankAccountModify')" label="Edit" color="orange-6"
+            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/bank-accounts/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-bankwallet_name="props">
@@ -53,6 +27,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -86,7 +61,7 @@ export default {
         align: 'center',
       },
     ]
-    return { ...listData, newColumn }
+    return { ...listData, newColumn, checkPermissions }
   },
 }
 </script>
