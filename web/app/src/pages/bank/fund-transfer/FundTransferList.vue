@@ -1,37 +1,15 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-between">
-      <div></div>
-      <q-btn
-        color="green"
-        to="/fund-transfer/add/"
-        label="New Fund Transfer"
-        class="q-ml-lg"
-        icon-right="add"
-      />
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('FundTransferCreate')" color="green" to="/fund-transfer/add/"
+        label="New Fund Transfer" class="q-ml-lg" icon-right="add" />
     </div>
 
-    <q-table
-      title="Fund Transfer"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      v-model:pagination="pagination"
-      row-key="id"
-      @request="onRequest"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table title="Fund Transfer" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
+      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -44,25 +22,14 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      v-model="filters.status"
-                      :options="['Issued', 'Cancelled']"
-                    />
+                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker
-                    v-model:startDate="filters.start_date"
-                    v-model:endDate="filters.end_date"
-                  />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="q-mr-md"
-                    @click="onFilterUpdate"
-                  ></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
@@ -73,17 +40,12 @@
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Cleared'
-                  ? 'bg-green'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
+            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue-2 text-blue-10'
+              : props.row.status == 'Cleared'
+                ? 'bg-green-2 text-green-10'
+                : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
@@ -91,23 +53,15 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            label="Edit"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm"
-            style="font-size: 12px"
-            :to="`/fund-transfer/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('FundTransferModify')" label="Edit" color="orange-6"
+            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/fund-transfer/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link
-            class="text-blue text-weight-medium"
-            style="text-decoration: none"
-            :to="`/fund-transfer/${props.row.id}/`"
-            >{{ props.row.voucher_no }}</router-link
-          >
+          <router-link v-if="checkPermissions('FundTransferModify')" class="text-blue text-weight-medium"
+            style="text-decoration: none" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no }}</router-link>
+          <span v-else> {{ props.row.voucher_no }}</span>
         </q-td>
       </template>
     </q-table>
@@ -116,6 +70,7 @@
 
 <script>
 import useList from '/src/composables/useList'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const endpoint = '/v1/fund-transfer/'
@@ -166,7 +121,7 @@ export default {
         align: 'center',
       },
     ]
-    return { ...useList(endpoint), newColumn }
+    return { ...useList(endpoint), newColumn, checkPermissions }
   },
 }
 </script>
