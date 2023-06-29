@@ -56,8 +56,9 @@
           </q-img> -->
 
         <div class="q-mb-md"></div>
-
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+        <template v-for="link in essentialLinks" :key="link.title">
+          <EssentialLink v-if="!link.hide" v-bind="link" />
+        </template>
       </q-list>
     </q-drawer>
     <q-page-container>
@@ -101,41 +102,45 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'All Items',
         icon: 'mdi-view-headline',
         link: '/items/list/',
-        hide: checkPermissions('ItemView')
+        hide: !checkPermissions('ItemView')
       },
       {
         title: 'Units',
         icon: 'mdi-scale-balance',
         link: '/units/list/',
-        hide: checkPermissions('UnitView')
+        hide: !checkPermissions('UnitView')
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
         link: '/inventory-category/list/',
+        hide: !checkPermissions('CategoryView')
       },
       {
         title: 'Brands',
         icon: 'mdi-domain',
         link: '/brand/list/',
+        hide: !checkPermissions('BrandView')
       },
       {
         title: 'Inventory Ledger',
         icon: 'inventory',
         link: '/inventory-account/list/',
+        hide: !checkPermissions('InventoryAccountView')
       },
       {
         title: 'Opening Stock',
         icon: 'edit_note',
         link: '/items/opening/',
+        hide: !checkPermissions('AccountOpeningBalanceView')
       },
     ],
   },
-  {
-    title: 'Books',
-    icon: 'mdi-library',
-    link: '/book/list/',
-  },
+  // {
+  //   title: 'Books',
+  //   icon: 'mdi-library',
+  //   link: '/book/list/',
+  // },
   {
     title: 'Sales',
     icon: 'mdi-point-of-sale',
@@ -144,36 +149,44 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Sales invoices',
         icon: 'mdi-point-of-sale',
         link: '/sales-voucher/list/',
+        hide: !checkPermissions('SalesView')
+
       },
       {
         title: 'Credit Notes',
         icon: 'mdi-clipboard-arrow-down',
         link: '/credit-note/list/',
+        hide: !checkPermissions('CreditNoteView')
       },
       {
         title: 'Challans',
         icon: 'mdi-clipboard-arrow-right',
         link: '/challan/list/',
+        hide: !checkPermissions('ChallanView')
       },
       {
         title: 'Payment Receipts',
         icon: 'mdi-receipt',
         link: '/payment-receipt/list/',
+        hide: !checkPermissions('PaymentReceiptView')
       },
       {
         title: 'Sales Discounts',
         icon: 'mdi-sale',
         link: '/sales-discount/list/',
+        hide: !checkPermissions('SalesDiscountView')
       },
       {
         title: 'Sales Report',
         icon: 'mdi-format-list-bulleted',
         link: '/sales-row/list/',
+        hide: !checkPermissions('SalesView')
       },
       {
         title: 'Sales Book',
         icon: 'mdi-book',
         link: '/sales-book/list/',
+        hide: !checkPermissions('SalesView')
       },
     ],
   },
@@ -185,21 +198,25 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Purchases/Expenses',
         icon: 'shopping_cart',
         link: '/purchase-voucher/list/',
+        hide: !checkPermissions('PurchaseVoucherView')
       },
       {
         title: 'Debit Notes',
         icon: 'mdi-clipboard-arrow-up',
         link: '/debit-note/list/',
+        hide: !checkPermissions('DebitNoteView')
       },
       {
         title: 'Purchase Discounts',
         icon: 'mdi-sale',
         link: '/purchase-discount/list/',
+        hide: !checkPermissions('PurchaseDiscountView')
       },
       {
         title: 'Purchase Book',
         icon: 'book',
         link: '/purchase-book/list/',
+        hide: !checkPermissions('PurchaseVoucherView')
       },
     ],
   },
@@ -211,26 +228,31 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Ledger',
         icon: 'mdi-notebook-multiple',
         link: '/account/',
+        hide: !checkPermissions('AccountView')
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
         link: '/account-category/list',
+        hide: !checkPermissions('CategoryView')
       },
       {
         title: 'Journal Vouchers',
         icon: 'mdi-shuffle',
         link: '/journal-voucher/',
+        hide: !checkPermissions('JournalVoucherView')
       },
       {
         title: 'All Accounts',
         icon: 'mdi-notebook-multiple',
         link: '/account/',
+        hide: !checkPermissions('AccountView')
       },
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
         link: '/account-opening-balance/',
+        hide: !checkPermissions('AccountOpeningBalanceView')
       },
     ],
   },
@@ -242,11 +264,13 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Categories Tree',
         icon: 'mdi-file-tree',
         link: '/report/category-tree/',
+        hide: !checkPermissions('CategoryView')
       },
       {
         title: 'Periodic Tax Summary',
         icon: 'mdi-currency-usd-off',
         link: '/report/tax-summary/',
+        hide: !checkPermissions('TaxPaymentView')
       },
       {
         title: 'Collection Report',
@@ -263,25 +287,26 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-shuffle',
         link: '/income/item/',
       },
-      {
-        title: 'Income Statement',
-        icon: 'mdi-chart-gantt',
-        link: '/report/income-statement/',
-      },
+      // {
+      //   title: 'Income Statement',
+      //   icon: 'mdi-chart-gantt',
+      //   link: '/report/income-statement/',
+      // },
       {
         title: 'Balance Sheet',
         icon: 'mdi-clipboard-text',
         link: '/report/balance-sheet/',
       },
-      {
-        title: 'Ratio Analysis',
-        icon: 'mdi-chart-arc',
-        link: '/report/ratio-analysis/',
-      },
+      // {
+      //   title: 'Ratio Analysis',
+      //   icon: 'mdi-chart-arc',
+      //   link: '/report/ratio-analysis/',
+      // },
       {
         title: 'Transactions',
         icon: 'mdi-reorder-horizontal',
         link: '/report/transactions/',
+        hide: !checkPermissions('TransactionView')
       },
     ],
   },
@@ -293,26 +318,31 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Accounts',
         icon: 'mdi-bank',
         link: '/bank-accounts/list/',
+        hide: !checkPermissions('BankAccountView')
       },
       {
         title: 'Cheque Issues',
         icon: 'mdi-checkbook',
         link: '/cheque-issue/list/',
+        hide: !checkPermissions('ChequeIssueView')
       },
       {
         title: 'Cheque Deposits',
         icon: 'mdi-ballot',
         link: '/cheque-deposit/list/',
+        hide: !checkPermissions('ChequeDepositView')
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
         link: '/cash-deposit/list/',
+        hide: !checkPermissions('BankCashDepositView')
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
         link: '/fund-transfer/list/',
+        hide: !checkPermissions('FundTransferView')
       },
     ],
   },
@@ -325,16 +355,19 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Tax Schemes',
         icon: 'mdi-file-percent',
         link: '/taxes/list/',
+        hide: !checkPermissions('TaxSchemeView')
       },
       {
         title: 'Tax Payments',
         icon: 'mdi-cash-marker',
         link: '/tax-payment/list/',
+        hide: !checkPermissions('TaxPaymentView')
       },
       {
         title: 'Periodic Summary',
         icon: 'mdi-file-chart',
         link: '/report/tax-summary/',
+        hide: !checkPermissions('TaxPaymentView')
       },
     ],
   },
@@ -346,21 +379,25 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Parties',
         icon: 'mdi-account-group',
         link: '/party/list/',
+        hide: !checkPermissions('PartyView')
       },
       {
         title: 'Customers',
         icon: 'mdi-domain',
         link: '/parties/customers/',
+        hide: !checkPermissions('PartyView')
       },
       {
         title: 'Suppliers',
         icon: 'mdi-account',
         link: '/parties/suppliers/',
+        hide: !checkPermissions('PartyView')
       },
       {
         title: 'Sales Agent',
         icon: 'mdi-face-agent',
         link: '/sales-agent/list/',
+        hide: !checkPermissions('SalesAgentView')
       },
     ],
   },
@@ -372,6 +409,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Audit Logs',
         icon: 'mdi-view-list',
         link: '/audit-log/list/',
+        hide: !checkPermissions('LogEntryView')
       },
       {
         title: 'Import/Exports',
@@ -382,16 +420,19 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Dashboard Widgets',
         icon: 'mdi-widgets',
         link: '/dashboard-widgets/list/',
+        hide: !checkPermissions('WidgetView')
       },
       {
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
         link: '/settings/sales/',
+        hide: !checkPermissions('SalesSettingView')
       },
       {
         title: 'Purchase Settings',
         icon: 'mdi-shopping',
         link: '/settings/purchase/',
+        hide: !checkPermissions('PurchaseSettingView')
       },
     ],
   },
@@ -399,6 +440,7 @@ const essentialLinks: EssentialLinkProps[] = [
     title: 'POS ',
     icon: 'mdi-cart-arrow-right',
     link: '/pos',
+    hide: !checkPermissions('SalesCreate') && !checkPermissions('SalesView')
   },
 
   // {
