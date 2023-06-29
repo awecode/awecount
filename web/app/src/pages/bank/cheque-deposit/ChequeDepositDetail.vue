@@ -147,7 +147,7 @@ const fields = ref(null)
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
 const getData = () =>
-  useApi(`/v1/cheque-deposits/${props.id}/details/`).then((data) => {
+  useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })
 getData()

@@ -1262,7 +1262,7 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/NoPermission',
+    path: '/no-permission',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {

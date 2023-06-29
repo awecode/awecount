@@ -349,7 +349,7 @@ export default {
   },
   created() {
     const endpoint = `/v1/payment-receipt/${this.$route.params.id}/details/`
-    useApi(endpoint, { method: 'GET' })
+    useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
       })

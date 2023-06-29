@@ -138,7 +138,7 @@ export default (endpoint, predefinedColumns = null) => {
         }
         if (data.status == 403) {
           message = data.data.detail
-          router.push('/NoPermission')
+          router.push('/no-permission')
         }
         if (data.status == 500) {
           message = 'Server Error! Please contact us with the problem.'

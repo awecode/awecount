@@ -42,6 +42,7 @@
 
 <script>
 import useForm from '/src/composables/useForm'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const endpoint = 'v1/widgets/'
@@ -64,6 +65,7 @@ export default {
 
     return {
       ...formData,
+      checkPermissions
     }
   },
 }

@@ -194,7 +194,7 @@ export default {
   },
   created() {
     const endpoint = `/v1/purchase-vouchers/${this.$route.params.id}/details/`
-    useApi(endpoint, { method: 'GET' })
+    useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
         this.modeOptions = data.available_bank_accounts
