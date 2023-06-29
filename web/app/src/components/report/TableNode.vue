@@ -40,23 +40,23 @@
       </td>
       <td>
         <span v-if="!props.config.hide_sums">
-          {{ parseFloat(newTotalObj.transaction_dr.toFixed(2)) }}
+          {{ Math.round(newTotalObj.transaction_dr * 100) / 100 }}
         </span>
       </td>
       <td>
         <span v-if="!props.config.hide_sums">
-          {{ parseFloat(newTotalObj.transaction_cr.toFixed(2)) }}
+          {{ Math.round(newTotalObj.transaction_cr * 100) / 100 }}
         </span>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
           <span v-if="!props.config.hide_sums">{{
-            parseFloat(newTotalObj.closing_dr.toFixed(2))
+            Math.round(newTotalObj.closing_dr * 100) / 100
           }}</span>
         </td>
         <td>
           <span v-if="!props.config.hide_sums">{{
-            parseFloat(newTotalObj.closing_cr.toFixed(2))
+            Math.round(newTotalObj.closing_cr * 100) / 100
           }}</span>
         </td>
         <td>
@@ -114,12 +114,12 @@
       </td>
       <td>
         <span v-if="!props.config.hide_sums">{{
-          parseFloat(showTotalObject.transaction_dr.toFixed(2))
+          Math.round(showTotalObject.transaction_dr * 100) / 100
         }}</span>
       </td>
       <td>
         <span v-if="!props.config.hide_sums">{{
-          parseFloat(showTotalObject.transaction_cr.toFixed(2))
+          Math.round(showTotalObject.transaction_cr * 100) / 100
         }}</span>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
@@ -171,8 +171,8 @@
         <td v-else>
           {{ calculateNet(activeObject, 'opening') }}
         </td>
-        <td>{{ parseFloat(activeObject.transaction_dr.toFixed(2)) }}</td>
-        <td>{{ parseFloat(activeObject.transaction_cr.toFixed(2)) }}</td>
+        <td>{{ Math.round(activeObject.transaction_dr * 100) / 100 }}</td>
+        <td>{{ Math.round(activeObject.transaction_cr * 100) / 100 }}</td>
         <template v-if="props.config.show_opening_closing_dr_cr">
           <td>{{ activeObject.closing_dr }}</td>
           <td>{{ activeObject.closing_cr }}</td>

@@ -37,7 +37,7 @@
               <div class="col-6 text-right">Discount</div>
               <div class="col-6 q-pl-md">
                 <!-- {{ totalDataComputed.discount }} -->
-                {{ parseFloat(totalDataComputed.discount.toFixed(2)) }}
+                {{ Math.round(totalDataComputed.discount * 100) / 100 }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
@@ -45,13 +45,13 @@
                 {{ totalDataComputed.taxName }}
               </div>
               <div class="col-6 q-pl-md">
-                {{ parseFloat(totalDataComputed.totalTax.toFixed(2)) }}
+                {{ Math.round(totalDataComputed.totalTax * 100) / 100 }}
               </div>
             </div>
             <div class="row q-pb-md">
               <div class="col-6 text-right">Total</div>
               <div class="col-6 q-pl-md">
-                {{ parseFloat(totalDataComputed.total.toFixed(2)) }}
+                {{ Math.round(totalDataComputed.total * 100) / 100 }}
               </div>
             </div>
           </div>

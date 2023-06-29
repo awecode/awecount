@@ -99,13 +99,15 @@
       <template v-slot:body-cell-receipt_amount="props">
         <td>
           <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0) }}
+          {{ Math.round((props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0)) * 100) / 100
+          }}
         </td>
       </template>
       <template v-slot:body-cell-tds="props">
         <td>
           <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0) }}
+          {{ Math.round((props.row.payment_receipts.reduce((a, b) => (a.tds_amount || 0) + (b.tds_amount || 0), 0)) * 100)
+            / 100 }}
         </td>
       </template>
     </q-table>
