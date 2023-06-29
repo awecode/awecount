@@ -49,7 +49,7 @@
             label="Create" class="q-ml-auto" />
           <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('ChequeIssueDelete')" @click.prevent="cancelForm"
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
             icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
         </div>
       </q-card>

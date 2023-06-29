@@ -45,7 +45,7 @@
             label="Create" class="q-ml-auto" />
           <q-btn v-if="checkPermissions('BankCashDepositModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" />
-          <q-btn v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositDelete')"
+          <q-btn v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
             @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           <q-btn v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
             :to="`/journal-entries/bank-cash-deposits/${id}/`" color="blue" icon="library_books" label="Journal Entries"

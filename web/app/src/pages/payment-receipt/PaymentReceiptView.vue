@@ -232,7 +232,7 @@
             <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
               icon="mdi-check-all" />
-            <q-btn v-if="checkPermissions('PaymentReceiptDelete')" @click.prevent="() => (isDeleteOpen = true)"
+            <q-btn v-if="checkPermissions('PaymentReceiptCancel')" @click.prevent="() => (isDeleteOpen = true)"
               color="red" label="cancel" icon="cancel" />
           </span>
         </div>

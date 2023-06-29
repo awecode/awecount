@@ -45,9 +45,9 @@
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-sm">
-        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="() => submitForm()" color="green-8"
+        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="() => submitForm()" color="green"
           label="Create" />
-        <q-btn v-if="checkPermissions('ChallanModify') && isEdit" @click.prevent="() => submitForm()" color="green-8"
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit" @click.prevent="() => submitForm()" color="green"
           label="Update" />
       </div>
     </q-card>

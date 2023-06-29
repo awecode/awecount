@@ -82,7 +82,7 @@
         <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared"
           class="text-h7 q-py-sm" />
       </div>
-      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositDelete')">
+      <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositCancel')">
         <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" icon="block" label="Cancel"
           class="text-h7 q-py-sm" />
       </div>

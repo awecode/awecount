@@ -1,6 +1,9 @@
 <template>
   <q-expansion-item v-if="children" :icon="icon || 'menu_open'" :label="title">
-    <EssentialLink v-for="child in children" :key="child.title" :level="level + 1" v-bind="child" :style="`padding-left:${level * 2 + 3}em !important`" />
+    <template v-for="child in children" :key="child.title">
+      <EssentialLink v-if="!child.hide" :level="level + 1" v-bind="child"
+        :style="`padding-left:${level * 2 + 3}em !important`" />
+    </template>
   </q-expansion-item>
   <!-- <q-item v-else clickable :to="link" :style="style"> -->
   <q-item v-else clickable :to="link">
@@ -25,6 +28,7 @@ export interface EssentialLinkProps {
   icon?: string
   children?: EssentialLinkProps[]
   level?: number
+  hide?: boolean
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(defineProps<EssentialLinkProps>(), {

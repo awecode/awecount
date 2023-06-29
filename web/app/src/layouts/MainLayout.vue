@@ -69,6 +69,7 @@
 <script setup lang="ts">
 import { EssentialLinkProps } from 'components/EssentialLink.vue'
 import { useLoginStore } from '../stores/login-info.js'
+import checkPermissions from 'src/composables/checkPermissions'
 // import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
 import { ref } from 'vue'
@@ -100,11 +101,13 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'All Items',
         icon: 'mdi-view-headline',
         link: '/items/list/',
+        hide: checkPermissions('ItemView')
       },
       {
         title: 'Units',
         icon: 'mdi-scale-balance',
         link: '/units/list/',
+        hide: checkPermissions('UnitView')
       },
       {
         title: 'Categories',

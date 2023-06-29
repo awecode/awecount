@@ -47,7 +47,7 @@
             label="Create" class="q-ml-auto" />
           <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferDelete')" @click.prevent="cancelForm"
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="cancelForm"
             icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"
             icon="library_books" label="Journal Entries" class="text-h7 q-py-sm q-ml-md" />

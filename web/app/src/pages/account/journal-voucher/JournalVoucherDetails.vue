@@ -91,7 +91,7 @@
         <q-btn v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'"
           :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
-      <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherDelete')">
+      <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherCancel')">
         <q-btn @click.prevent="prompt" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
       </div>
     </div>
