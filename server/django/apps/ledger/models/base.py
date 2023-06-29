@@ -701,7 +701,6 @@ def handle_company_creation(sender, **kwargs):
 
 
 def get_account(request_or_company, name):
-    import ipdb; ipdb.set_trace()
     if not request_or_company.__class__.__name__ == 'Company':
         company = request_or_company.company
     else:

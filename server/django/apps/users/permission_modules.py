@@ -28,7 +28,7 @@ MODULES = [
     *gdp('DebitNote'), 'DebitNoteIssuedModify', 'DebitNoteCancel',
     *gdp('SalesDiscount'),
     *gdp('PurchaseDiscount'),
-    *gdp('JournalVoucher'), 'JournalVoucherCancel'
+    *gdp('JournalVoucher'), 'JournalVoucherCancel',
     *gdp('Challan'),
     *gdp('InvoiceDesign'),
     # Bank
