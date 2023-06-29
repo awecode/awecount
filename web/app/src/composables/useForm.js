@@ -41,14 +41,16 @@ export default (endpoint, config) => {
       )
     }
     if (config.getDefaults) {
-      useApi(getDefaultsFetchUrl()).then((data) => {
-        // TODO: Check with Dipesh sir
-        if (data.fields) {
-          fields.value = Object.assign(fields.value, data.fields)
+      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
+        (data) => {
+          // TODO: Check with Dipesh sir
+          if (data.fields) {
+            fields.value = Object.assign(fields.value, data.fields)
+          }
+          formDefaults.value = data
+          // TODO: Check with Dipesh sir
         }
-        formDefaults.value = data
-        // TODO: Check with Dipesh sir
-      })
+      )
     }
   })
   const getDefaultsFetchUrl = () => {
