@@ -63,9 +63,11 @@
 </template>
 
 <script>
+import { route } from 'quasar/wrappers'
 import useForm from '/src/composables/useForm'
 import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useRouter } from 'vue-router'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   components: {
@@ -74,6 +76,7 @@ export default {
   setup(props, { emit }) {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'
+    const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/party/list/',
@@ -91,7 +94,9 @@ export default {
     const deleteModal = ref(false)
     function onDeletClick(fields) {
       useApi(`/v1/parties/${fields.id}/`, { method: 'DELETE' })
-        .then((data) => console.log(data))
+        .then(() => {
+          router.push('/party/list/')
+        })
         .catch((err) => {
           if (err.status === 400) {
             $q.notify({
