@@ -15,19 +15,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-if="
-              fields.supplier_account &&
-              (fields.supplier_account.amounts.dr != null ||
-                fields.supplier_account.amounts.cr != null)
-            "
-          >
+          <tr v-if="fields.supplier_account &&
+            (fields.supplier_account.amounts.dr != null ||
+              fields.supplier_account.amounts.cr != null)
+            ">
             <td class="text-left">
-              <router-link
-                :to="`/account/${fields.supplier_account?.id}/view/`"
-                class="text-blue"
-                style="text-decoration: none"
-              >
+              <router-link :to="`/account/${fields.supplier_account?.id}/view/`" class="text-blue"
+                style="text-decoration: none">
                 Vendor (Payable)
               </router-link>
             </td>
@@ -45,19 +39,13 @@
               }}
             </td>
           </tr>
-          <tr
-            v-if="
-              fields.customer_account &&
+          <tr v-if="fields.customer_account &&
               (fields.customer_account.amounts.dr != null ||
                 fields.customer_account.amounts.cr != null)
-            "
-          >
+              ">
             <td class="text-left">
-              <router-link
-                :to="`/account/${fields.customer_account?.id}/view/`"
-                class="text-blue"
-                style="text-decoration: none"
-              >
+              <router-link :to="`/account/${fields.customer_account?.id}/view/`" class="text-blue"
+                style="text-decoration: none">
                 Customer (Receivable)
               </router-link>
             </td>
@@ -105,12 +93,14 @@
     </q-card>
     <q-card class="q-mt-md q-pa-md">
       <h5 class="q-ma-none">Transactions</h5>
-      <div class="q-mt-sm row items-end q-gutter-x-md q-gutter-y-sm">
-        <q-input label="Start Date"></q-input>
-        <q-input label="End Date"></q-input>
+      <div class="row items-center q-mx-sm">
+        <DateRangePicker v-model:startDate="dateRef.start_date" v-model:endDate="dateRef.end_date" :hide-btns="true"
+          class="q-mr-md" />
         <span class="row items-end q-gutter-y-sm">
-          <q-btn color="red" icon="close" class="q-mr-sm"></q-btn>
-          <q-btn label="filter" color="blue"></q-btn>
+          <q-btn v-if="dateRef.start_date && dateRef.end_date" @click="resetDate" color="red" icon="close"
+            class="q-mr-sm"></q-btn>
+          <q-btn @click="fetchData" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter"
+            color="blue"></q-btn>
         </span>
       </div>
       <TransactionTable v-if="fields.transactions" :fields="fields" />
@@ -122,12 +112,16 @@
 import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
 import TransactionTable from 'src/components/account/TransactionTable.vue'
+import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 export default {
   setup() {
     const metaData = {
       title: 'Party Account | Awecount',
     }
     useMeta(metaData)
+    const router = useRouter()
+    const route = useRoute()
     interface Amounts {
       dr: number
       cr: number
@@ -138,42 +132,89 @@ export default {
       supplier_account: Record<string, string | number | Amounts> | null
     }
     const fields: Ref<null | Fields> = ref(null)
-    function journalQueryFilter() {
-      const { start_date, end_date } = this.filters
-      if (!(start_date && end_date)) {
-        this.$error('Date Range not set.')
-        return
-      }
-      const start_date_object = new Date(start_date)
-      const end_date_object = new Date(end_date)
-      if (start_date_object > end_date_object) {
-        this.$error('Start Date greater than end date')
-        return
-      }
-      const queryParam = { start_date: start_date, end_date: end_date }
-      this.$router.replace({ query: queryParam }).catch(() => {
-        console.log('err')
-      })
-
-      this.$http
-        .get(this.getEndPoint(), {
-          params: this.filters,
-        })
-        .then(({ data }) => {
-          this.fields = Object.assign({}, this.fields, data)
-        })
+    interface DateRef {
+      start_date: string | null,
+      end_date: string | null
     }
+    const dateRef: Ref<DateRef> = ref({
+      start_date: null,
+      end_date: null
+    })
+    // function journalQueryFilter() {
+    //   const { start_date, end_date } = this.filters
+    //   if (!(start_date && end_date)) {
+    //     this.$error('Date Range not set.')
+    //     return
+    //   }
+    //   const start_date_object = new Date(start_date)
+    //   const end_date_object = new Date(end_date)
+    //   if (start_date_object > end_date_object) {
+    //     this.$error('Start Date greater than end date')
+    //     return
+    //   }
+    //   const queryParam = { start_date: start_date, end_date: end_date }
+    //   this.$router.replace({ query: queryParam }).catch(() => {
+    //     console.log('err')
+    //   })
+
+    //   this.$http
+    //     .get(this.getEndPoint(), {
+    //       params: this.filters,
+    //     })
+    //     .then(({ data }) => {
+    //       this.fields = Object.assign({}, this.fields, data)
+    //     })
+    // }
     // function getEndPoint() {
     //   return `parties/${this.$route.params.pk}/transactions/`
     // }
+    function fetchData() {
+      // debugger
+      if (dateRef.value.start_date && dateRef.value.end_date) {
+        router.push(`/parties/account/${route.params.id}/` + `?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
+        const endpoint = `/v1/parties/${route.params.id}/transactions/${`?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`}`
+        useApi(endpoint, { method: 'GET' })
+          .then((data) => {
+            fields.value = data
+          })
+          .catch((error) => {
+            if (error.response && error.response.status == 404) {
+              router.replace({ name: '404' })
+            }
+          })
+      }
+    }
+    const resetDate = () => {
+      dateRef.value = { start_date: null, end_date: null }
+      const endpoint = `/v1/parties/${route.params.id}/transactions/`
+      router.push(`/parties/account/${route.params.id}/`)
+      useApi(endpoint, { method: 'GET' })
+        .then((data) => {
+          fields.value = data
+        })
+        .catch((error) => {
+          if (error.response && error.response.status == 404) {
+            router.replace({ name: '404' })
+          }
+        })
+    }
     return {
       fields,
-      journalQueryFilter,
+      // journalQueryFilter,
       TransactionTable,
+      fetchData,
+      dateRef,
+      resetDate
     }
   },
   created() {
-    const endpoint = `/v1/parties/${this.$route.params.id}/transactions/`
+    const endpoint = `/v1/parties/${this.$route.params.id}/transactions/${this.$route.query.start_date || this.$route.query.end_date ? `?start_date=${this.$route.query.start_date}&end_date=${this.$route.query.end_date}` : ''}`
+    if (this.$route.query.start_date && this.$route.query.end_date) {
+      this.dateRef = {
+        start_date: this.$route.query.start_date,
+        end_date: this.$route.query.end_date
+      }
+    }
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data
