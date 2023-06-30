@@ -168,7 +168,7 @@
               }}
             </td>
           </tr>
-          <tr v-for="(transaction, index) in fields.transactions.results" :key="index">
+          <tr v-for="(transaction, index) in       fields.transactions.results      " :key="index">
             <td>{{ transaction.date }}</td>
             <td>{{ transaction.source_type }}</td>
             <td>
@@ -180,8 +180,10 @@
               </div>
             </td>
             <td>
-              <router-link class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
-                transaction.voucher_no }}</router-link>
+              <router-link v-if="checkPermissions(getPermissionsWithSourceType[transaction.source_type])"
+                class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
+                  transaction.voucher_no }}</router-link>
+              <span v-else> {{ transaction.voucher_no }} </span>
             </td>
             <td>{{ transaction.dr_amount }}</td>
             <td>{{ transaction.cr_amount }}</td>
@@ -220,6 +222,7 @@
 
 <script lang="ts">
 import { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   props: {
     fields: {
@@ -279,9 +282,27 @@ export default {
       if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
       console.error(source_type + ' not handled!')
     }
+    const getPermissionsWithSourceType = {
+      'Sales Voucher': 'SalesView',
+      'Purchase Voucher': 'PurchaseVoucherView',
+      'Journal Voucher': 'JournalVoucherView',
+      'Credit Note': 'CreditNoteView',
+      'Debit Note': 'DebitNoteView',
+      'Cheque Deposit': 'ChequeDepositView',
+      'Payment Receipt': 'PaymentReceiptView',
+      'Cheque Issue': 'ChequeIssueModify',
+      'Challan': 'ChallanModify',
+      'Account Opening Balance': 'AccountOpeningBalanceModify',
+      'Fund Transfer': 'FundTransferModify',
+      'Bank Cash Deposit': 'BankCashDepositModify',
+      'Tax Payment': 'TaxPaymentModify',
+      'Item': 'ItemView'
+    }
     return {
       props,
       getVoucherUrl,
+      checkPermissions,
+      getPermissionsWithSourceType
     }
   },
 }
