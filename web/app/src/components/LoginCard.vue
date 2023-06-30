@@ -14,7 +14,7 @@
             <q-icon name="fa-solid fa-envelope" />
           </template>
         </q-input>
-        <q-input v-model="password" :type="showPasswordStatus ? 'text' : 'password'" label="Passowrd"
+        <q-input v-model="password" :type="showPasswordStatus ? 'text' : 'password'" label="Password"
           input-class="text-body1" :error="Boolean(errorMessage?.password ? true : false)" :error-message="errorMessage
             ? errorMessage.password
               ? errorMessage.password[0]

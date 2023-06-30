@@ -146,7 +146,7 @@ const essentialLinks: EssentialLinkProps[] = [
     icon: 'mdi-point-of-sale',
     children: [
       {
-        title: 'Sales invoices',
+        title: 'Sales Invoices',
         icon: 'mdi-point-of-sale',
         link: '/sales-voucher/list/',
         hide: !checkPermissions('SalesView')
