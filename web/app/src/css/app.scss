@@ -3,3 +3,28 @@
 .hr {
   border-bottom: 2px solid lightgrey;
 }
+
+@media print {
+  .q-page-container {
+    padding-left: 0 !important;
+  }
+
+  header,
+  footer {
+    display: none;
+  }
+  body {
+    overflow: auto;
+    height: auto;
+  }
+  .scroll-y {
+    height: auto;
+    overflow: visible;
+  }
+  aside {
+    display: none !important;
+  }
+  .q-btn {
+    display: none;
+  }
+}
