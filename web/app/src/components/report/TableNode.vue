@@ -87,8 +87,8 @@
             </svg>
           </q-btn>
         </span>
-        <RouterLink style="text-decoration: none" target="_blank" :to="`/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6">{{ item.name }}</RouterLink>
+        <RouterLink :class="props.root ? 'text-weight-bold' : ''" style="text-decoration: none" target="_blank"
+          :to="`/account/?has_balance=true&category=${item.id}`" class="text-blue-6">{{ item.name }}</RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
