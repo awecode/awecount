@@ -207,8 +207,8 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.due_date = formData.today
     formData.fields.value.is_import = false
-    formData.fields.value.mode = 'Credit'
-    formData.fields.value.party = ''
+    // formData.fields.value.mode = 'Credit'
+    // formData.fields.value.party = ''
 
     return {
       ...formData,

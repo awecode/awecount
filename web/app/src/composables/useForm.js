@@ -45,7 +45,7 @@ export default (endpoint, config) => {
         (data) => {
           // TODO: Check with Dipesh sir
           if (data.fields) {
-            fields.value = Object.assign(fields.value, data.fields)
+            if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
           formDefaults.value = data
           // TODO: Check with Dipesh sir
