@@ -124,7 +124,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/cheque-issued/export/' + query)
+      useApi('v1/cheque-issue/export' + query)
         //   // TODO: url not found
         .then((data) =>
           usedownloadFile(

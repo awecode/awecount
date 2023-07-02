@@ -34,8 +34,9 @@
           <div class="row col-6 q-col-gutter-md q-mt-xs">
             <q-input v-if="!fields.is_wallet" v-model="fields.next_cheque_no" label="Next Cheque No *" class="col-6"
               :error-message="errors.next_cheque_no" :error="!!errors.next_cheque_no" />
-            <q-input v-else v-model="fields.transaction_commission_percent" label="Transaction Commission %" class="col-6"
-              :error-message="errors.transaction_commission_percent" :error="!!errors.transaction_commission_percent" />
+            <q-input v-else v-model.number="fields.transaction_commission_percent" label="Transaction Commission %"
+              class="col-6" :error-message="errors.transaction_commission_percent"
+              :error="!!errors.transaction_commission_percent" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
