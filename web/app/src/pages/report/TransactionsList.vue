@@ -29,7 +29,7 @@
                                     <div>
                                         <h5 class="text-subtitle2 text-grey-8">Group By:</h5>
                                         <div>
-                                            <q-select v-model="filters.group" :label="`Transaction Type`" option-value="id"
+                                            <q-select v-model="filters.group" :label="`Group By`" option-value="id"
                                                 option-label="name" :options="groupByOption" map-options emit-value>
                                                 <template v-slot:append>
                                                     <q-icon v-if="filters.group !== null" class="cursor-pointer"
