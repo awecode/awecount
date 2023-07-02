@@ -670,7 +670,10 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=root['Expenses'],
                                                 company=company, default=True)
-    Account.objects.create(name='Bank Charges', category=indirect_expenses, code='E-I-BC', company=company,
+    
+    bank_charges = Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses, company=company,
+                                            default=True)
+    Account.objects.create(name='Bank Charges', category=bank_charges, code='E-I-BC-BC', company=company,
                            default=True)
     Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
                            default=True)
