@@ -14,13 +14,6 @@
             class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/bank-accounts/${props.row.id}/`" />
         </q-td>
       </template>
-      <template v-slot:body-cell-bankwallet_name="props">
-        <q-td :props="props">
-          {{
-            props.row.is_wallet ? props.row.wallet_name : props.row.bank_name
-          }}
-        </q-td>
-      </template>
     </q-table>
   </div>
 </template>
