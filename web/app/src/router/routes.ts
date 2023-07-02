@@ -776,6 +776,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Transactions'],
         },
       },
+      {
+        path: 'stock-trial-balance/',
+        component: () => import('src/pages/report/StockTrialBalance.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Stock Trial Balance'],
+        },
+      },
     ],
   },
   {

@@ -8,6 +8,7 @@ export const useLoginStore = defineStore('loginStore', {
     companyInfo: null,
     isCalendarInAD: true,
     trialBalanceCollapseId: [],
+    stockTrialBalanceCollapseId: [],
     userInfo: null,
   }),
   getters: {
@@ -21,6 +22,7 @@ export const useLoginStore = defineStore('loginStore', {
       this.companyInfo = null
       this.isCalendarInAD = true
       this.trialBalanceCollapseId = []
+      this.stockTrialBalanceCollapseId = []
       this.userInfo = null
     },
   },

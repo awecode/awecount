@@ -285,7 +285,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
-        link: '/income/item/',
+        link: '/report/stock-trial-balance/',
       },
       // {
       //   title: 'Income Statement',
