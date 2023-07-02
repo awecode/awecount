@@ -8,11 +8,13 @@ from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, FundTransferFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit, FundTransferTemplate
+from apps.bank.resources import ChequeIssueResource
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
     BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer, FundTransferTemplateSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
+from apps.aggregator.views import qs_to_xls
 from awecount.libs.CustomViewSet import CRULViewSet
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -100,6 +102,14 @@ class ChequeIssueViewSet(CRULViewSet):
         if self.action == 'list':
             qs = qs.select_related('party')
         return qs.order_by('-pk')
+    
+    @action(detail=False)
+    def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        params = [
+            ('Invoices', queryset, ChequeIssueResource),
+        ]
+        return qs_to_xls(params)
 
 
 class FundTransferViewSet(CRULViewSet):
