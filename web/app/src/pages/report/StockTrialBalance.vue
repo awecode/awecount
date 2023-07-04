@@ -445,44 +445,44 @@ export default {
         }
     },
     created() {
-        // const endpoint = '/v1/inventory-categories/trial-balance/'
-        // useApi(endpoint, { method: 'GET' })
-        //     .then((data) => {
-        //         this.categoryTree = data
-        //     })
-        //     .catch((error) => {
-        //         console.log('err fetching data', error)
-        //     })
-        this.categoryTree = [
-            {
-                "name": "name",
-                "id": 121,
-                "can_be_sold": true,
-                "can_be_purchased": true,
-                "fixed_asset": false
-            },
-            {
-                "name": "Safety",
-                "id": 150,
-                "can_be_sold": true,
-                "can_be_purchased": true,
-                "fixed_asset": false
-            },
-            {
-                "name": "Pencils",
-                "id": 155,
-                "can_be_sold": true,
-                "can_be_purchased": true,
-                "fixed_asset": false
-            },
-            {
-                "name": "asas",
-                "id": 156,
-                "can_be_sold": true,
-                "can_be_purchased": true,
-                "fixed_asset": false
-            }
-        ]
+        const endpoint = '/v1/inventory-categories/trial-balance/'
+        useApi(endpoint, { method: 'GET' })
+            .then((data) => {
+                this.categoryTree = data
+            })
+            .catch((error) => {
+                console.log('err fetching data', error)
+            })
+        // this.categoryTree = [
+        //     {
+        //         "name": "name",
+        //         "id": 121,
+        //         "can_be_sold": true,
+        //         "can_be_purchased": true,
+        //         "fixed_asset": false
+        //     },
+        //     {
+        //         "name": "Safety",
+        //         "id": 150,
+        //         "can_be_sold": true,
+        //         "can_be_purchased": true,
+        //         "fixed_asset": false
+        //     },
+        //     {
+        //         "name": "Pencils",
+        //         "id": 155,
+        //         "can_be_sold": true,
+        //         "can_be_purchased": true,
+        //         "fixed_asset": false
+        //     },
+        //     {
+        //         "name": "asas",
+        //         "id": 156,
+        //         "can_be_sold": true,
+        //         "can_be_purchased": true,
+        //         "fixed_asset": false
+        //     }
+        // ]
     },
 }
 </script>

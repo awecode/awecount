@@ -135,9 +135,9 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" @click.prevent="submitForm" color="primary"
+          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto q-px-xl" />
-          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" @click.prevent="submitForm" color="primary"
+          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto q-px-xl" />
         </div>
       </q-card>
@@ -166,10 +166,10 @@ const account_types = [
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
-const endpoint = '/v1/items/'
+const endpoint = '/v1/inventory-categories/'
 const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
   getDefaults: true,
-  successRoute: '/items/list/',
+  successRoute: '/inventory-category/list/',
 })
 useMeta(() => {
   return {

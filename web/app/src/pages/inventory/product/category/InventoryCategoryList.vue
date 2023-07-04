@@ -28,7 +28,7 @@ import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
-    const endpoint = '/v1/inventory-account/'
+    const endpoint = '/v1/inventory-categories/'
     const metaData = {
       title: 'Inventory Category | Awecount',
     }
