@@ -11,8 +11,8 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12" v-if="fields.invoices">
-              <q-input v-model="fields.invoices" disable label="Reference Invoice(s)"></q-input>
+            <div class="col-md-6 col-12" v-if="fields.voucher_no">
+              <q-input v-model="fields.voucher_no" disable label="Reference Invoice(s)"></q-input>
             </div>
             <div v-else class="col-md-6 col-12">
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
@@ -110,7 +110,7 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('CreditNoteCreate')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="primary" label="Draft" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
           :label="isEdit ? 'Update' : 'Issue'" />
       </div>
@@ -208,8 +208,11 @@ export default {
         )
           .then((data) => {
             if (fields.invoices) {
-              fields.invoices.push(data.voucher_no)
-            } else fields.invoices = [data.voucher_no]
+              fields.invoices.push(data.id)
+            } else fields.invoices = [data.id]
+            if (fields.voucher_no) {
+              fields.voucher_no.push(data.voucher_no)
+            } else fields.voucher_no = [data.voucher_no]
             const removeArr = [
               'id',
               'date',
