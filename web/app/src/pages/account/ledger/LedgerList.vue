@@ -53,7 +53,7 @@
       <template v-slot:body-cell-category="props">
         <q-td :props="props">
           <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none"
-            class="text-blue" :to="`account-category/${props.row.category.id}/`">{{ props.row.category.name
+            class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{ props.row.category.name
             }}</router-link>
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
