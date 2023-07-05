@@ -59,9 +59,9 @@ export default (endpoint, predefinedColumns = null) => {
         return [k, false]
       } else if (k === 'status' && typeof v === 'string') {
         // TODO: added as an temproary solution need to confirm with dipesh sir
-        return [k, [`${v}`]]
+        return [k, isNaN(v) ? v : parseFloat(v)]
       }
-      return [k, v]
+      return [k, isNaN(v) ? v : parseFloat(v)]
     })
   )
   // let cleanedFilterValues = Object.fromEntries(
