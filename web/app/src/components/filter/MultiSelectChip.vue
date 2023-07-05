@@ -48,38 +48,46 @@ export default {
   setup(props, { emit }) {
     const modalValue: Ref<Array<string>> = ref(props.modelValue)
     const onStatusClick = (status: string) => {
-      const index: number = modalValue.value.findIndex(
-        (item) => item === status
-      )
-      if (index >= 0) {
-        modalValue.value.splice(index, 1)
-      } else {
-        modalValue.value.push(status)
+      if (typeof modalValue.value === 'string') {
+        if (modalValue.value === status) {
+          modalValue.value = []
+        } else {
+          modalValue.value = [status, modalValue.value]
+        }
       }
-    }
-    watch(
-      () => modalValue,
-      (newValue) => {
-        emit('update:modelValue', newValue)
-      },
-      { deep: true }
-    )
-    watch(
-      () => props.modelValue,
-      (newValue: Array<string>) => {
-        // if (typeof newValue === 'string') {
-        //   console.log('string', newValue)
-        // }
-        modalValue.value = newValue
-      },
-      { deep: true }
-    )
-    return {
-      modalValue,
-      onStatusClick,
-    }
-  },
-}
+      else {
+        const index: number = modalValue.value.findIndex(
+          (item) => item === status
+        )
+        if (index >= 0) {
+          modalValue.value.splice(index, 1)
+        } else {
+          modalValue.value.push(status)
+        }
+      }
+      watch(
+        () => modalValue,
+        (newValue) => {
+          emit('update:modelValue', newValue)
+        },
+        { deep: true }
+      )
+      watch(
+        () => props.modelValue,
+        (newValue: Array<string>) => {
+          // if (typeof newValue === 'string') {
+          //   console.log('string', newValue)
+          // }
+          modalValue.value = newValue
+        },
+        { deep: true }
+      )
+      return {
+        modalValue,
+        onStatusClick,
+      }
+    },
+  }
 </script>
 <style>
 .v-enter-active,

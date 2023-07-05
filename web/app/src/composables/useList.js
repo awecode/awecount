@@ -204,6 +204,8 @@ export default (endpoint, predefinedColumns = null) => {
     cleanedFilters.page = undefined
     cleanedFilters = sortOnKeys(cleanedFilters)
     // TODO withQuery isn't preserving the order
+    // debugger
+    console.log(cleanedFilters)
     url = withQuery(url, cleanedFilters)
     url = url.replace('+', '%20')
     // debugger
