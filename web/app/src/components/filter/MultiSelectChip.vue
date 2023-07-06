@@ -65,29 +65,30 @@ export default {
           modalValue.value.push(status)
         }
       }
-      watch(
-        () => modalValue,
-        (newValue) => {
-          emit('update:modelValue', newValue)
-        },
-        { deep: true }
-      )
-      watch(
-        () => props.modelValue,
-        (newValue: Array<string>) => {
-          // if (typeof newValue === 'string') {
-          //   console.log('string', newValue)
-          // }
-          modalValue.value = newValue
-        },
-        { deep: true }
-      )
-      return {
-        modalValue,
-        onStatusClick,
-      }
-    },
-  }
+    }
+    watch(
+      () => modalValue,
+      (newValue) => {
+        emit('update:modelValue', newValue)
+      },
+      { deep: true }
+    )
+    watch(
+      () => props.modelValue,
+      (newValue: Array<string>) => {
+        // if (typeof newValue === 'string') {
+        //   console.log('string', newValue)
+        // }
+        modalValue.value = newValue
+      },
+      { deep: true }
+    )
+    return {
+      modalValue,
+      onStatusClick,
+    }
+  },
+}
 </script>
 <style>
 .v-enter-active,
