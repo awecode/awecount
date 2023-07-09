@@ -103,7 +103,7 @@
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link style="text-decoration: none" class="text-blue" :to="`/ledger/${row.account.id}/`">{{
+                <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
                   row.account.name }}</router-link>
               </div>
               <div class="col-3">{{ row.dr_amount || null }}</div>
