@@ -99,7 +99,7 @@ class ChequeIssueViewSet(CRULViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.action == 'list':
+        if self.action in ['list', 'export']:
             qs = qs.select_related('party')
         return qs.order_by('-pk')
     

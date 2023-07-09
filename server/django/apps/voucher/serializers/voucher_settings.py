@@ -27,13 +27,38 @@ class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
         fields = ('options',)
 
 
-class PurchaseSettingSerializer(serializers.ModelSerializer):
+class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
         exclude = ('company',)
 
 
-class SalesSettingsSerializer(serializers.ModelSerializer):
+class PurchaseSettingSerializer(serializers.ModelSerializer):
+    mode = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PurchaseSetting
+        exclude = ('company',)
+
+    def get_mode(self, obj):
+        if not obj.mode in ['Cash', 'Credit']:
+            return int(obj.mode)
+        return obj.mode
+
+
+class SalesSettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
         exclude = ('company',)
+
+
+class SalesSettingsSerializer(serializers.ModelSerializer):
+    mode = serializers.SerializerMethodField()
+    class Meta:
+        model = SalesSetting
+        exclude = ('company',)
+
+    def get_mode(self, obj):
+        if not obj.mode in ['Cash', 'Credit']:
+            return int(obj.mode)
+        return obj.mode
