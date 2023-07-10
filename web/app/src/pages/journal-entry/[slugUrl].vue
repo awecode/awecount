@@ -279,30 +279,27 @@ export default {
                   if (netAmount >= 0) {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = netAmount
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
-                    newTransactionObj.total_cr += netAmount
-                    if (netAmount !== 0) {
-                      newTransactionObj.total_dr -= transaction.dr_amount || 0
-                    }
                   }
                   else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
                     newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
-                    newTransactionObj.total_dr += (netAmount * -1)
-                    newTransactionObj.total_cr -= transaction.cr_amount || 0
                   }
-                }
-                else {
-                  newTransactionObj.total_cr += transaction.cr_amount
-                  newTransactionObj.total_dr += transaction.dr_amount
                 }
               }
               else {
                 newTransactionObj[`${transaction.account.id}`] = transaction
-                newTransactionObj.total_cr += transaction.cr_amount
-                newTransactionObj.total_dr += transaction.dr_amount
               }
             })
           })
+          // calculate net amount
+          newTransactionObj.total_cr = 0
+          newTransactionObj.total_dr = 0
+          for (const [key, value] of Object.entries(newTransactionObj)) {
+            if (!['total_cr', 'total_dr'].includes(key)) {
+              newTransactionObj.total_cr += value.cr_amount || 0
+              newTransactionObj.total_dr += value.dr_amount || 0
+            }
+          }
         }
         return newTransactionObj || false
       }
