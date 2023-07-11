@@ -11,7 +11,6 @@
             <th class="text-left">Voucher No.</th>
             <th class="text-left">Dr</th>
             <th class="text-left">Cr</th>
-            <th class="text-left"></th>
           </tr>
         </thead>
         <!-- <tbody v-if="fields.transactions">
@@ -71,7 +70,7 @@
             (fields.aggregate.total.dr_amount__sum ||
               fields.aggregate.total.cr_amount__sum)
             ">
-            <td rowspan="1" colspan="3"></td>
+            <td rowspan="1" colspan="2"></td>
             <td class="text-left">Net Closing</td>
             <td class="text-left">
               {{
@@ -116,7 +115,7 @@
               (fields.aggregate.total.dr_amount__sum ||
                 fields.aggregate.total.cr_amount__sum)
               ">
-            <td colspan="3"></td>
+            <td colspan="2"></td>
             <td class="text-left">Closing</td>
             <td class="text-left">
               {{
@@ -152,7 +151,7 @@
               (fields.aggregate.total.dr_amount__sum ||
                 fields.aggregate.total.cr_amount__sum)
               ">
-            <td colspan="3"></td>
+            <td colspan="2"></td>
             <td class="text-left">Transactions</td>
             <td class="text-left">
               {{ fields.aggregate.total.dr_amount__sum }}
@@ -168,8 +167,9 @@
               }}
             </td>
           </tr>
-          <tr v-for="(transaction, index) in       fields.transactions.results      " :key="index">
-            <td>{{ transaction.date }}</td>
+          <tr v-for="(transaction, index) in fields.transactions.results " :key="index">
+            <td>{{ store.isCalendarInAD ? transaction.date : DateConverter.getRepresentation(transaction.date, 'bs') }}
+            </td>
             <td>{{ transaction.source_type }}</td>
             <td>
               <div v-for="account in transaction.accounts" :key="account.id">
@@ -187,13 +187,10 @@
             </td>
             <td>{{ transaction.dr_amount }}</td>
             <td>{{ transaction.cr_amount }}</td>
-            <td>
-              {{ transaction.dr_amount || 0 - transaction.cr_amount || 0 }}
-            </td>
           </tr>
 
           <tr class="text-weight-bold" v-if="fields.aggregate && fields.aggregate.opening">
-            <td colspan="3"></td>
+            <td colspan="2"></td>
             <td class="text-left">Opening</td>
             <td class="text-left">
               {{ fields.aggregate.opening.dr_amount__sum }}
@@ -223,6 +220,8 @@
 <script lang="ts">
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   props: {
     fields: {
@@ -231,6 +230,7 @@ export default {
     },
   },
   setup(props) {
+    const store = useLoginStore()
     interface Amounts {
       dr: number
       cr: number
@@ -302,7 +302,9 @@ export default {
       props,
       getVoucherUrl,
       checkPermissions,
-      getPermissionsWithSourceType
+      getPermissionsWithSourceType,
+      store,
+      DateConverter
     }
   },
 }
