@@ -9,8 +9,8 @@ class TransactionResource(PrettyNameModelResource):
     date = Field(attribute='journal_entry__date', column_name='Date')
     class Meta:
         model = Transaction
-        fields = ['id', 'account', 'dr_amount', 'cr_amount', 'current_balance']
-        export_order = fields
+        fields = ['account', 'dr_amount', 'cr_amount']
+        export_order = ['date', *fields]  
 
 
 class TransactionGroupResource(PrettyNameModelResource):
@@ -55,3 +55,4 @@ class TransactionGroupResource(PrettyNameModelResource):
     class Meta:
         model = Transaction
         fields = ['label', 'year', 'total_debit', 'total_credit']
+        export_order = fields

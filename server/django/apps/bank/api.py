@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Case, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -105,7 +105,12 @@ class ChequeIssueViewSet(CRULViewSet):
     
     @action(detail=False)
     def export(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset()).annotate(
+            issued=Case(
+            When(issued_to__isnull=True, then='party__name'),
+            default='issued_to'
+            )
+        )
         params = [
             ('Invoices', queryset, ChequeIssueResource),
         ]

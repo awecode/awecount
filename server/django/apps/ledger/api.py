@@ -347,7 +347,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
 
     @action(detail=False)
     def export(self, request):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().order_by('-journal_entry__date')
         if not request.GET.get('group'):
             params = [
                 ('Transactions', queryset, TransactionResource)

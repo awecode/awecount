@@ -23,7 +23,7 @@ def export_data(request):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
         return response
     else:
-        return JsonResponse({'detail': 'Please provide valid credential!'}, status=401)
+        return JsonResponse({'detail': 'Please provide valitd credential!'}, status=401)
 
 
 @csrf_exempt
@@ -49,6 +49,18 @@ def qs_to_xls(querysets):
         data.title = title
         datasets.append(data)
     book = tablib.Databook(datasets)
+    for sheet in book.sheets():
+        column_sums = [0] * len(sheet.headers)
+        for row in sheet:
+            for idx, header in enumerate(sheet.headers):
+                value = row[idx]
+                if isinstance(value, (int, float)):
+                    column_sums[idx] += value
+        csum = []
+        for x in column_sums:
+            csum.append('') if not x else csum.append(round(x, 2))
+        csum[0] = 'Total'
+        sheet.append(csum)
     xls = book.xls
     response = HttpResponse(xls, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     filename = '{}_{}.xls'.format(qs.model.__name__ + '_', datetime.today().date())
