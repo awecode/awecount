@@ -414,7 +414,8 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         all_accounts.append(arg[1])
         if not matches:
             if arg[1] is None:
-                raise ValidationError('Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
+                raise ValidationError(
+                    'Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
             transaction = Transaction(account=arg[1], company=arg[1].company)
             if arg[0] == 'dr':
                 transaction.dr_amount = val
@@ -670,9 +671,10 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=root['Expenses'],
                                                 company=company, default=True)
-    
-    bank_charges = Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses, company=company,
-                                            default=True)
+
+    bank_charges = Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses,
+                                           company=company,
+                                           default=True)
     Account.objects.create(name='Bank Charges', category=bank_charges, code='E-I-BC-BC', company=company,
                            default=True)
     Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
@@ -839,6 +841,9 @@ class AccountClosing(models.Model):
     status = models.CharField(choices=CLOSING_STATUSES, max_length=50, default=CLOSING_STATUSES[0][0])
     journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.SET_NULL,
                                       blank=True, null=True)
+
+    def get_source_id(self):
+        return self.id
 
     def __str__(self):
         return '{}-{}'.format(str(self.company), str(self.fiscal_period))
