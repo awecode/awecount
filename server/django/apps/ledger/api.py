@@ -23,10 +23,12 @@ from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
-from .serializers import AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
+from .serializers import AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, \
+    AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, TransactionEntrySerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, \
+    TransactionEntrySerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -183,8 +185,12 @@ class TrialBalanceView(APIView):
             qq = Account.objects.filter(company=request.company).annotate(
                 od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
                 oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
-                cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
-                cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+                cd=Sum('transactions__dr_amount',
+                       filter=Q(transactions__journal_entry__date__lt=end_date) | Q(
+                           transactions__journal_entry__date=end_date, transactions__type='Regular')),
+                cc=Sum('transactions__cr_amount',
+                       filter=Q(transactions__journal_entry__date__lt=end_date) | Q(
+                           transactions__journal_entry__date=end_date, transactions__type='Regular')),
             ) \
                 .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
             return Response(list(qq))
@@ -329,17 +335,20 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         from django.db.models import Sum
 
         if group_by == 'acc':
-            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year',
+                                                                                                       'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'cat':
-            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year',
+                                                                                                                 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
         if group_by == 'type':
-            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'),
+                             label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
                 total_debit=Sum('dr_amount'),
                 total_credit=Sum('cr_amount'),
             ).order_by('-year')
