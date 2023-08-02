@@ -90,6 +90,8 @@ def run_account_closing(modeladmin, request, queryset):
     company = instance.company
     date = instance.fiscal_period.end
 
+    pl_account = Account.objects.get(name='Profit and Loss Account', default=True, company=company)
+
     income_category = Category.objects.get(name='Income', company=company, default=True, parent__isnull=True)
     income_accounts = Account.objects.filter(category__in=income_category.get_descendants(include_self=True))
 
@@ -102,22 +104,42 @@ def run_account_closing(modeladmin, request, queryset):
 
     transactions = []
 
+    total_income_amount = 0
     for income_account in income_accounts:
-        amount = income_account.get_day_closing(until_date=date)
+        income_amount = income_account.get_day_closing(until_date=date)
         # Amount is usually negative for Income
-        amount = -1 * amount
+        income_amount = -1 * income_amount
+        total_income_amount += income_amount
         # TODO What if amount is positive?
-        transaction = Transaction(account=income_account, dr_amount=amount, type='Closing', journal_entry_id=jeid,
-                                  company_id=company.id)
-        transactions.append(transaction)
+        if income_amount:
+            transaction = Transaction(account=income_account, dr_amount=income_amount, type='Closing',
+                                      journal_entry_id=jeid,
+                                      company_id=company.id)
+            transactions.append(transaction)
 
+    total_expense_amount = 0
     for expense_account in expenses_accounts:
-        amount = expense_account.get_day_closing(until_date=date)
+        expense_amount = expense_account.get_day_closing(until_date=date)
         # Amount is usually positive for Expense
         # TODO What if amount is negative?
-        transaction = Transaction(account=expense_account, cr_amount=amount, type='Closing', journal_entry_id=jeid,
-                                  company_id=company.id)
-        transactions.append(transaction)
+        total_expense_amount += expense_amount
+
+        if expense_amount:
+            transaction = Transaction(account=expense_account, cr_amount=expense_amount, type='Closing',
+                                      journal_entry_id=jeid,
+                                      company_id=company.id)
+            transactions.append(transaction)
+
+    diff = total_income_amount - total_expense_amount
+
+    if diff > 0:
+        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, cr_amount=diff,
+                                     type='Closing')
+    else:
+        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, dr_amount=diff,
+                                     type='Closing')
+
+    transactions.append(pl_transaction)
 
     Transaction.objects.bulk_create(transactions)
     instance.journal_entry = journal_entry
@@ -146,7 +168,8 @@ def undo_account_closing(modeladmin, request, queryset):
 @admin.register(AccountClosing)
 class AccountClosingAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'status')
-    list_filter = ('status',)
+    list_filter = ('status', 'company')
     search_fields = ('company__name', 'fiscal_year')
     actions = (run_account_closing, undo_account_closing)
     readonly_fields = ('status', 'journal_entry',)
+    ordering = ('-fiscal_period__start',)
