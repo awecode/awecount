@@ -41,32 +41,36 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete class="q-full-width" label="Discount Allowed Account"
-                v-model="fields.discount_allowed_account" :options="formDefaults.collections?.discount_allowed_account"
-                :modal-component="LedgerForm" :error="errors.discount_allowed_account" />
+                v-model="fields.discount_allowed_account" :options="formDefaults.collections?.discount_allowed_accounts"
+                :modal-component="LedgerForm" :error="!!errors.items_discount_allowed_account_type" />
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete class="q-full-width" label="Discount Received Account"
-                v-model="fields.discount_received_account" :options="formDefaults.collections?.discount_received_account"
-                :modal-component="LedgerForm" :error="errors.discount_received_account" />
+                v-model="fields.discount_received_account" :options="formDefaults.collections?.discount_received_accounts"
+                :modal-component="LedgerForm" :error="!!errors.items_discount_received_account_type" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <q-select v-model="fields.items_sales_account_type" :options="account_types"
-                label="Items Sales Account Type" />
+              <q-select option-value="value" option-label="label" map-options emit-value
+                v-model="fields.items_sales_account_type" :options="account_types" label="Items Sales Account Type"
+                :error="!!errors.items_sales_account_type" />
             </div>
             <div class="col-12 col-md-6">
-              <q-select v-model="fields.items_purchase_account_type" :options="account_types"
-                label="Items Purchase Account Type" />
+              <q-select option-value="value" option-label="label" map-options emit-value
+                v-model="fields.items_purchase_account_type" :options="account_types" label="Items Purchase Account Type"
+                :error="!!errors.items_purchase_account_type" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <q-select v-model="fields.items_discount_allowed_account_type" :options="account_types"
+              <q-select option-value="value" option-label="label" map-options emit-value
+                v-model="fields.items_discount_allowed_account_type" :options="account_types"
                 label="Items Discount Allowed Account Type" />
             </div>
             <div class="col-12 col-md-6">
-              <q-select v-model="fields.items_discount_received_account_type" :options="account_types"
+              <q-select option-value="value" option-label="label" map-options emit-value
+                v-model="fields.items_discount_received_account_type" :options="account_types"
                 label="Items Discount Received Account Type" />
             </div>
           </div>
@@ -227,6 +231,10 @@ fields.value.direct_expense = false
 fields.value.fixed_asset = false
 fields.value.indirect_expense = false
 fields.value.use_account_subcategory = false
+fields.value.items_discount_received_account_type = 'global'
+fields.value.items_discount_allowed_account_type = 'global'
+fields.value.items_sales_account_type = 'global'
+fields.value.items_purchase_account_type = 'global'
 </script>
 
 <style scoped>
@@ -255,5 +263,4 @@ fields.value.use_account_subcategory = false
 /* .q-checkbox.disabled {
   color: lightgrey;
   opacity: 0.5;
-} */
-</style>
+} */</style>
