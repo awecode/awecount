@@ -29,7 +29,7 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'category', 'parent', 'default')
     search_fields = ('company__name', 'code', 'name')
     list_filter = ('company', 'default', 'category')
-    readonly_fields = ('default',)
+    # readonly_fields = ('default',)
 
 
 class TransactionAdmin(admin.ModelAdmin):
