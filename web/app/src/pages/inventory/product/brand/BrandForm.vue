@@ -20,9 +20,9 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" @click.prevent="submitForm" color="primary"
-            label="Update" class="q-ml-auto" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" @click.prevent="submitForm" color="primary"
+          <q-btn v-if="checkPermissions('BrandModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
+            class="q-ml-auto" />
+          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" @click.prevent="submitForm" color="green"
             :label="isEdit ? 'Update' : 'Create'" class="q-ml-auto" />
         </div>
       </q-card>
@@ -44,7 +44,7 @@ export default {
     return {
       ...useForm(endpoint, {
         getDefaults: true,
-        successRoute: '/brand/',
+        successRoute: '/brand/list/',
       }), checkPermissions
     }
   },
