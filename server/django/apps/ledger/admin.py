@@ -136,7 +136,8 @@ def run_account_closing(modeladmin, request, queryset):
         pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, cr_amount=diff,
                                      type='Closing')
     else:
-        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, dr_amount=diff,
+        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id,
+                                     dr_amount=-1 * diff,
                                      type='Closing')
 
     transactions.append(pl_transaction)
