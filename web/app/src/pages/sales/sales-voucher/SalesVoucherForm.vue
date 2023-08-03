@@ -132,8 +132,9 @@
           <div>
             <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
           </div>
-          <q-select v-model="fields.sales_agent" label="Sales Agent" class="col-8" :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"></q-select>
+          <q-select v-model="fields.sales_agents" label="Sales Agent" class="col-8" :error="!!errors?.sales_agents"
+            :error-message="errors?.sales_agents" :options="formDefaults.collections?.sales_agents" option-value="id"
+            option-label="name" map-options emit-value></q-select>
           <!-- TODO: add sales agent form -->
         </div>
       </div>
