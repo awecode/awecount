@@ -94,7 +94,7 @@ class Account(models.Model):
     opening_cr = models.FloatField(default=0)
     # fy = models.ForeignKey(FiscalYear, null=True, blank=True)
     order = models.PositiveIntegerField(default=0)
-    default = models.BooleanField(default=False, editable=False)
+    default = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_accounts')
 
     def get_absolute_url(self):
