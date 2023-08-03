@@ -50,7 +50,7 @@
             <div class="col-6">
               <div class="row justify-between q-py-sm">
                 <div class="q-px-md text-grey-8">Closing Balance</div>
-                <div class="q-px-md">{{ fields?.closing_balance || '-' }}</div>
+                <div class="q-px-md">{{ (fields?.opening_balance || 0) - (fields?.current_balance || 0) }}</div>
               </div>
             </div>
           </div>
