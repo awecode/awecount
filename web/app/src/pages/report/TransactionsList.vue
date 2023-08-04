@@ -200,11 +200,11 @@ export default {
             // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
             // TODO: add missing links
             if (source_type === 'Cheque Deposit')
-                return `/bank/cheque/cheque-deposit/${row.source_id}/view/`
+                return `/cheque-deposit/${row.source_id}/view/`
             if (source_type === 'Payment Receipt')
                 return `/payment-receipt/${row.source_id}/view/`
             if (source_type === 'Cheque Issue')
-                return `/bank/cheque/cheque-issue/${row.source_id}/edit/`
+                return `/cheque-issue/${row.source_id}/`
             if (source_type === 'Challan') return `/challan/${row.source_id}/`
             if (source_type === 'Account Opening Balance')
                 return `/account-opening-balance/${row.source_id}/`
