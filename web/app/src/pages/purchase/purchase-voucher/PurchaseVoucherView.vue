@@ -58,7 +58,11 @@
         <q-btn v-if="fields?.status === 'Issued' && checkPermissions('PurchaseVoucherModify')"
           @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
           icon="mdi-check-all" />
-        <q-btn v-if="checkPermissions('PurchaseVoucherCancel')" color="red-5" label="Cancel" icon="cancel"
+        <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
+          @click.prevent="() => (isDeleteOpen = true)" />
+      </div>
+      <div v-else class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+        <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
           @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div>
