@@ -11,6 +11,7 @@
             <th class="text-left">Voucher No.</th>
             <th class="text-left">Dr</th>
             <th class="text-left">Cr</th>
+            <th v-if="fields.aggregate" class="text-left">Balance</th>
           </tr>
         </thead>
         <!-- <tbody v-if="fields.transactions">
@@ -79,6 +80,8 @@
             <td class="text-left">
               {{ parseFloat(fields.aggregate.opening.cr_amount__sum || 0) }}
             </td>
+            <td>{{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
+              0)) }}</td>
           </tr>
           <tr class="text-weight-bold" v-if="fields.aggregate &&
             fields.aggregate.total &&
@@ -94,6 +97,10 @@
             <td class="text-left">
               {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
             </td>
+            <td class="text-left">
+              {{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
+              }}
+            </td>
           </tr>
           <tr class="text-weight-bold" v-if="fields.aggregate &&
             fields.aggregate.total &&
@@ -102,12 +109,17 @@
             <td class="text-left">Closing</td>
             <td></td>
             <td class="text-left">
-              {{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.total.dr_amount__sum ||
+              {{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
                 0)) }}
             </td>
             <td class="text-left">
-              {{ parseFloat((fields.aggregate.opening.cr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum ||
+              {{ parseFloat((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
                 0)) }}
+            </td>
+            <td class="text-left">
+              {{ parseFloat(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+                0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+                  0)))) }}
             </td>
           </tr>
           <tr v-for="(transaction, index) in fields.transactions.results " :key="index">
@@ -131,6 +143,7 @@
             </td>
             <td><span v-if="transaction.dr_amount">{{ parseFloat(transaction.dr_amount || 0) }}</span></td>
             <td><span v-if="transaction.cr_amount">{{ parseFloat(transaction.cr_amount || 0) }}</span></td>
+            <td v-if="fields.aggregate"></td>
           </tr>
 
           <tr class="text-weight-bold" v-if="fields.aggregate &&
@@ -147,6 +160,8 @@
             <td class="text-left">
               {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
             </td>
+            <td>{{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
+            }}</td>
           </tr>
           <tr>
             <td colspan="7">
