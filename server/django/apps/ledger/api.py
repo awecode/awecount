@@ -83,7 +83,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
-    filter_class = CategoryFilterSet
+    filterset_class = CategoryFilterSet
 
     collections = (
         ('categories', Category, CategorySerializer),
@@ -94,7 +94,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
-    filter_class = AccountFilterSet
+    filterset_class = AccountFilterSet
 
     def get_account_ids(self, obj):
         return [obj.id]
