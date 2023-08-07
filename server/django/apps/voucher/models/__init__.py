@@ -31,8 +31,11 @@ STATUSES = (
 )
 
 CHALLAN_STATUSES = (
-    ('Approved', 'Approved'),
-    ('Unapproved', 'Unapproved'),
+    ('Draft', 'Draft'),
+    ('Issued', 'Issued'),
+    ('Cancelled', 'Cancelled'),
+    # ('Approved', 'Approved'),
+    # ('Unapproved', 'Unapproved'),
 )
 MODES = (
     ('Credit', 'Credit'),
@@ -50,7 +53,7 @@ class Challan(TransactionModel, InvoiceModel):
     issue_datetime = models.DateTimeField(default=timezone.now)
     date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
-
+    status = models.CharField(max_length=255, choices=CHALLAN_STATUSES)
     remarks = models.TextField(blank=True, null=True)
 
     print_count = models.PositiveSmallIntegerField(default=0)
