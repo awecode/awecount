@@ -96,6 +96,8 @@ export default {
     }
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status
+      if (fields.party) fields.mode = 'Credit'
+      else fields.mode = 'Cash'
       submitForm()
     }
     const switchPartyMode = (fields, isEdit) => {
@@ -114,6 +116,7 @@ export default {
     }
     formData.fields.value.date = formData.today
     formData.fields.value.party = ''
+    formData.fields.value.customer_name = null
     // onMounted(() => {
     //   if (formData.isEdit.value) {
     //     console.log(formData.fields.value)
