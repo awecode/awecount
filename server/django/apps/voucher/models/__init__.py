@@ -34,6 +34,7 @@ CHALLAN_STATUSES = (
     ('Draft', 'Draft'),
     ('Issued', 'Issued'),
     ('Cancelled', 'Cancelled'),
+    ('Resolved', 'Resolved'),
     # ('Approved', 'Approved'),
     # ('Unapproved', 'Unapproved'),
 )
