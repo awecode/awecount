@@ -9,7 +9,7 @@
           <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
             @click="fields = { start_date: null, end_date: null }"></q-btn>
           <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
-            @click="fetchData"></q-btn>
+            @click="updateData"></q-btn>
         </div>
         <div class="flex q-gutter-x-md q-gutter-y-xs" v-if="showData">
           <q-btn class="filterbtn" icon="settings" title="Config">
@@ -84,10 +84,10 @@
             <td class="text-weight-medium"><span>Total</span></td>
             <template v-if="config.show_opening_closing_dr_cr">
               <td class="text-left text-weight-medium">
-                {{ total.opening_dr }}
+                {{ parseFloat(total.opening_dr.toFixed(2)) }}
               </td>
               <td class="text-left text-weight-medium">
-                {{ total.opening_cr }}
+                {{ parseFloat(total.opening_cr.toFixed(2)) }}
               </td>
               <td class="text-left text-weight-medium">
                 {{ calculateNet(total, 'opening') }}
@@ -130,6 +130,7 @@ export default {
   setup() {
     const categoryTree = ref(null)
     const category_accounts = ref({})
+    const router = useRouter()
     const config = ref({
       hide_accounts: false,
       hide_categories: false,
@@ -280,6 +281,12 @@ export default {
         replaceHrefAttribute(child, baseUrl)
       }
     }
+    function updateData() {
+      // debugger
+      const query = { ...fields.value }
+      router.push({ path: '/report/trial-balance/', query })
+      fetchData()
+    }
     return {
       replaceHrefAttribute,
       onDownloadXls,
@@ -292,6 +299,7 @@ export default {
       showData,
       config,
       calculateNet,
+      updateData
     }
   },
   created() {
@@ -304,6 +312,15 @@ export default {
         console.log('err fetching data', error)
       })
   },
+  mounted() {
+    // if (route)
+    if (this.$route.query.start_date && this.$route.query.end_date) {
+      this.fields.start_date = this.$route.query.start_date
+      this.fields.end_date = this.$route.query.end_date
+      this.fetchData()
+    }
+    // console.log()
+  }
 }
 </script>
 
