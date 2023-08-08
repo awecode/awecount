@@ -35,28 +35,24 @@
           </q-btn>
         </div>
       </template>
-      <!--
+
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center">
-            <div
-              class="text-white text-subtitle2 row items-center justify-center"
-              :class="
-                props.row.status == 'Issued'
-                  ? 'bg-blue'
-                  : props.row.status == 'Paid'
-                  ? 'bg-green'
-                  : props.row.status == 'Draft'
-                  ? 'bg-orange'
-                  : 'bg-red'
-              "
-              style="border-radius: 30px; padding: 5px 15px"
-            >
+          <div class="row align-center justify-center">
+            <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
+              ? 'bg-blue-2 text-blue-10'
+              : props.row.status == 'Resolved'
+                ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft'
+                  ? 'bg-orange-2 text-orange-10'
+                  : 'bg-red-2 text-red-10'
+              " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
         </q-td>
-      </template> -->
+      </template>
+
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
           <div v-if="props.row.party_name">
@@ -110,6 +106,7 @@ export default {
         field: 'party_name',
       },
       { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status' },
       { name: 'actions' },
     ]
 
