@@ -357,7 +357,12 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         # TODO Optimize
         accounts = []
         for transaction in obj.journal_entry.transactions.all():
-            accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
+            accounts.append(
+                {'id': transaction.account_id,
+                 'name': transaction.account.name,
+                 'source_type':self.get_source_type(transaction)
+                 }
+            )
         return accounts
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
