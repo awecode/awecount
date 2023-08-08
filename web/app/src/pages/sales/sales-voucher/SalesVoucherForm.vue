@@ -291,6 +291,13 @@ export default {
                   icon: 'report_problem',
                   position: 'top-right',
                 })
+              } else if (err.status === 400) {
+                $q.notify({
+                  color: 'red-6',
+                  message: 'The Challan cannot be used!',
+                  icon: 'report_problem',
+                  position: 'top-right',
+                })
               }
             })
         }
