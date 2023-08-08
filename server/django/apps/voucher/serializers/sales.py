@@ -462,7 +462,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challan
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name',)
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name', 'status')
 
 
 class ChallanCreateSerializer(StatusReversionMixin,
