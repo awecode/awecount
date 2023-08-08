@@ -44,11 +44,13 @@
         <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
-      <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-sm">
-        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="() => submitForm()" color="green"
-          label="Create" />
-        <q-btn v-if="checkPermissions('ChallanModify') && isEdit" @click.prevent="() => submitForm()" color="green"
-          label="Update" />
+      <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
+        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
+        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit"
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>
   </q-form>
@@ -92,10 +94,10 @@ export default {
       }
       console.log(deleteObj)
     }
-    // const onSubmitClick = (status, fields, submitForm) => {
-    //   fields.status = status
-    //   submitForm()
-    // }
+    const onSubmitClick = (status, fields, submitForm) => {
+      fields.status = status
+      submitForm()
+    }
     const switchPartyMode = (fields, isEdit) => {
       if (isEdit && !!fields.customer_name) {
         fields.customer_name = null
@@ -146,7 +148,7 @@ export default {
       openDatePicker,
       partyMode,
       deleteRow,
-      // onSubmitClick,
+      onSubmitClick,
       ChallanTable,
       switchPartyMode,
       checkPermissions
