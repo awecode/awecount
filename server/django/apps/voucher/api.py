@@ -1197,10 +1197,13 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         qs = super().get_queryset().prefetch_related(
             Prefetch('rows',
                      ChallanRow.objects.all().select_related('item', 'unit')))
-        return Response(
-            ChallanCreateSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+        challan = get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                      queryset=qs)).data)
+                                                      queryset=qs)
+        if challan.status != 'Issued':
+            return Response({'detail': 'The challan can not be used.'}, status=400)
+        return Response(
+            ChallanCreateSerializer(challan).data)
 
         # @action(detail=False, url_path='by-voucher-no')
         # def by_voucher_no(self, request):
