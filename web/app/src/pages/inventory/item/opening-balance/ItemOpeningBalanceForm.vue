@@ -17,9 +17,12 @@
               :error-message="errors.name"
               :error="!!errors.name"
             /> -->
-            <div class="col-12 col-md-6">
+            <div v-if="!isEdit" class="col-12 col-md-6">
               <n-auto-complete v-model="fields.item_id" :options="formDefaults.collections?.items" label="Item *"
                 :error="errors?.item_id" :modalComponent="ItemAdd" />
+            </div>
+            <div v-else class="col-12 col-md-6">
+              <q-input v-model="fields.name" disable></q-input>
             </div>
             <q-input v-model="fields.opening_balance" label="Opening Balance *" class="col-12 col-md-6"
               :error-message="errors.opening_balance" :error="!!errors.opening_balance" type="number" />
