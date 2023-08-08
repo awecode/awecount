@@ -493,6 +493,11 @@ class ChallanCreateSerializer(StatusReversionMixin,
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if not (data.get('customer_name') or data.get('party')):
+            raise ValidationError({
+                'party': ['Party is required.'],
+                'customer_name': ['Customer name is required.']
+                })        
         return data
 
     def create(self, validated_data):
