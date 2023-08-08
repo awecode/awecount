@@ -45,7 +45,7 @@
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
+        <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
