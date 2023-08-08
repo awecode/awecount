@@ -74,7 +74,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 // import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
 import { ref } from 'vue'
-const miniState: Ref<boolean> = ref(false)
+const miniState: Ref<boolean> = ref(true)
 const router = useRouter()
 const route = useRoute()
 const breadCrums: Ref<Array<string | null>> = ref([])
