@@ -14,7 +14,7 @@
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
               <q-btn color="blue" @click="importChallanModal = true" label="Import challan(s)"></q-btn>
               <div v-if="fields.invoices">
-                <q-input dense v-model="fields.invoices" disable label="Import challan(s)"></q-input>
+                <q-input dense v-model="voucherArray" disable label="Import challan(s)"></q-input>
               </div>
               <q-dialog v-model="importChallanModal">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -30,7 +30,7 @@
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
-                      <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -165,6 +165,7 @@ export default {
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const importChallanModal = ref(false)
+    const voucherArray = ref([])
     const referenceFormData = ref({
       invoice_no: null,
       fiscal_year: null,
@@ -213,7 +214,8 @@ export default {
     formData.fields.value.mode = 'Credit'
     formData.fields.value.is_export = false
 
-    const fetchInvoice = async (fields) => {
+    const fetchInvoice = async (fields, voucherArray) => {
+      // debugger
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
@@ -237,8 +239,19 @@ export default {
             .then((data) => {
               const response = { ...data }
               if (fields.invoices) {
+                if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
+                  // debugger
+                  $q.notify({
+                    color: 'red-6',
+                    message: 'A single challan can be issued to a single party/customer only',
+                    icon: 'report_problem',
+                    position: 'top-right',
+                  })
+                  return
+                }
                 fields.invoices.push(data.id)
               } else fields.invoices = [data.id]
+              voucherArray.push(response.voucher_no)
               const removeArr = [
                 'id',
                 'date',
@@ -334,6 +347,8 @@ export default {
     //   }
     // )
 
+    // const challanMode = 
+
     return {
       ...formData,
       CategoryForm,
@@ -349,7 +364,8 @@ export default {
       importChallanModal,
       referenceFormData,
       fetchInvoice,
-      checkPermissions
+      checkPermissions,
+      voucherArray
     }
   },
 }
