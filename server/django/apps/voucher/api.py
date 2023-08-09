@@ -67,6 +67,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ('bank_accounts', BankAccount),
         ('tax_schemes', TaxScheme, TaxSchemeMinSerializer),
         ('items', Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)), ItemSalesSerializer),
+        ('sales_agent', SalesAgent, SalesAgentSerializer)
     ]
 
     filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
@@ -333,11 +334,14 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                      PurchaseVoucherRow.objects.all().select_related('item', 'unit', 'discount_obj',
                                                                      'tax_scheme'))).select_related(
             'discount_obj', 'bank_account')
-        return Response(
-            PurchaseVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
+        challan = get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                               party_id=request.query_params.get('party'),
                                                               fiscal_year_id=request.query_params.get('fiscal_year'),
-                                                              queryset=qs)).data)
+                                                              queryset=qs)
+        
+        
+        return Response(
+            PurchaseVoucherDetailSerializer().data)
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
