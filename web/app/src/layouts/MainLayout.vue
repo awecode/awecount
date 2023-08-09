@@ -5,7 +5,8 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px;">
-          <img style="width: 35px; height: 35px;" :src="store.companyInfo.logo_url" alt="Company Logo">
+          <img v-if="store.companyInfo.logo_url" style="width: 35px; height: 35px;" :src="store.companyInfo.logo_url"
+            alt="Company Logo">
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
               :to="{ name: breadCrum }" />
