@@ -21,8 +21,10 @@
               activeDateFormat }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
-            <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
-                :offset="[0, 10]">Help</q-tooltip></q-btn>
+            <a target="_blank" href="https://docs.awecount.com/" style="color: inherit;">
+              <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
+                  :offset="[0, 10]">Help</q-tooltip></q-btn>
+            </a>
             <q-btn @click="logoutDiologueOpen = true"><q-icon name="mdi-logout" /><q-tooltip :delay="1000"
                 :offset="[0, 10]">Logout</q-tooltip></q-btn>
             <q-dialog v-model="logoutDiologueOpen">
