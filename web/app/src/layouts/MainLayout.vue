@@ -5,8 +5,9 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px;">
-          <img v-if="store.companyInfo.logo_url" style="width: 35px; height: 35px;" :src="store.companyInfo.logo_url"
-            alt="Company Logo">
+          <RouterLink v-if="store.companyInfo.logo_url" to="/">
+            <img style="width: 35px; height: 35px;" :src="store.companyInfo.logo_url" alt="Company Logo">
+          </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
               :to="{ name: breadCrum }" />
@@ -78,6 +79,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 // import useApi from 'src/composables/useApi'
 import { Ref } from 'vue'
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 const miniState: Ref<boolean> = ref(true)
 const router = useRouter()
 const route = useRoute()
