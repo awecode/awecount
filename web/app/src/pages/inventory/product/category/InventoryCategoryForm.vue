@@ -231,10 +231,10 @@ fields.value.direct_expense = false
 fields.value.fixed_asset = false
 fields.value.indirect_expense = false
 fields.value.use_account_subcategory = false
-fields.value.items_discount_received_account_type = 'global'
-fields.value.items_discount_allowed_account_type = 'global'
-fields.value.items_sales_account_type = 'global'
-fields.value.items_purchase_account_type = 'global'
+fields.value.items_discount_received_account_type = 'dedicated'
+fields.value.items_discount_allowed_account_type = 'dedicated'
+fields.value.items_sales_account_type = 'dedicated'
+fields.value.items_purchase_account_type = 'dedicated'
 </script>
 
 <style scoped>
@@ -263,4 +263,5 @@ fields.value.items_purchase_account_type = 'global'
 /* .q-checkbox.disabled {
   color: lightgrey;
   opacity: 0.5;
-} */</style>
+} */
+</style>
