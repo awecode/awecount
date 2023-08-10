@@ -132,9 +132,10 @@
           <div>
             <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
           </div>
-          <q-select v-model="fields.sales_agents" label="Sales Agent" class="col-8" :error="!!errors?.sales_agents"
-            :error-message="errors?.sales_agents" :options="formDefaults.collections?.sales_agents" option-value="id"
-            option-label="name" map-options emit-value></q-select>
+          <q-select v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent" label="Sales Agent"
+            class="col-8" :error="!!errors?.sales_agent" :error-message="errors?.sales_agent"
+            :options="formDefaults.collections?.sales_agents" option-value="id" option-label="name" map-options
+            emit-value></q-select>
           <!-- TODO: add sales agent form -->
         </div>
       </div>
@@ -158,10 +159,12 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const endpoint = '/v1/sales-voucher/'
+    const loginStore = useLoginStore()
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const importChallanModal = ref(false)

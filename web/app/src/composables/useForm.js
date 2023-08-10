@@ -39,6 +39,16 @@ export default (endpoint, config) => {
           fields.value = data
         }
       )
+      // .catch((error) => {
+      //   if (error.status === 404) {
+      //     // router.push('/')
+      //     $q.notify({
+      //       color: 'negative',
+      //       message: 'Not Found!',
+      //       icon: 'report_problem',
+      //     })
+      //   }
+      // })
     }
     if (config.getDefaults) {
       useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
