@@ -49,6 +49,17 @@
         </q-td>
         <!-- TODO: add modals -->
       </template>
+      <template v-slot:body-cell-category="props">
+        <q-td :props="props">
+          <router-link v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
+            :to="`/inventory-category/${props.row.category.id}/`" style="font-weight: 500; text-decoration: none"
+            class="text-blue">
+            {{ props.row.category?.name }}
+          </router-link>
+          <span v-else>{{ props.row.category?.name }}</span>
+        </q-td>
+        <!-- TODO: add modals -->
+      </template>
     </q-table>
   </div>
 </template>
