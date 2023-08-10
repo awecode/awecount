@@ -252,7 +252,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # TODO: Verify if id is required or not
-            row.pop('id')
+            if row.get("id"):
+                row.pop('id')
             SalesVoucherRow.objects.create(voucher=instance, **row)
 
         if challans:
