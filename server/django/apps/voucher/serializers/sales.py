@@ -1,7 +1,8 @@
 import datetime
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from django.utils import timezone
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
@@ -237,6 +238,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #         {'date': ['Invoice with later date already exists!']},
                 #     )
 
+    def validate_due_date(self, due_date):
+        # import ipdb; ipdb.set_trace()
+        if due_date and due_date < timezone.now().date():
+            raise ValidationError("Due date cannot be before deposit date.")
+        
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
@@ -248,6 +254,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         self.validate_invoice_date(validated_data)
+        # import ipdb; ipdb.set_trace()
+        # self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
@@ -266,6 +274,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         return instance
 
     def update(self, instance, validated_data):
+        if validated_data['status']=='Issued':
+            if not instance.company.current_fiscal_year == instance.fiscal_year:
+                instance.fiscal_year = instance.company.current_fiscal_year
+                instance.issued_datetime = timezone.now
+                instance.date = timezone.now().date
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
         self.assign_fiscal_year(validated_data, instance=instance)
@@ -277,6 +290,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
         self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
+        # self.validate_due_date(validated_data['due_date'])
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
         for index, row in enumerate(rows_data):
