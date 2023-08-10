@@ -292,9 +292,17 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 onMounted(() => {
-  if (props.focuOnMount && (!value0.value || !value1.value)) {
+  // if (!value0.value && !value1.value) {
+
+  // }
+  if (props.focuOnMount && (!value0.value && !value1.value)) {
+    value0.value = store.dateRange.start_date
+    value1.value = store.dateRange.end_date
     menuDom.value.show()
   }
+})
+watch([value0, value1], (newValve) => {
+  store.updateDateRange(newValve[0], newValve[1])
 })
 </script>
 

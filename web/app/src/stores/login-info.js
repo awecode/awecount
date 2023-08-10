@@ -10,6 +10,10 @@ export const useLoginStore = defineStore('loginStore', {
     trialBalanceCollapseId: [],
     stockTrialBalanceCollapseId: [],
     userInfo: null,
+    dateRange: {
+      start_date : null,
+      end_date: null
+    }
   }),
   getters: {
     doubleCount: (state) => state.counter * 2,
@@ -25,6 +29,10 @@ export const useLoginStore = defineStore('loginStore', {
       this.stockTrialBalanceCollapseId = []
       this.userInfo = null
     },
+    updateDateRange(start_date, end_date) {
+      this.dateRange.start_date = start_date
+      this.dateRange.end_date = end_date
+    }
   },
   persist: true,
 })
