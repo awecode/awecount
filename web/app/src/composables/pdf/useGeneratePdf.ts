@@ -3,6 +3,7 @@ import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
 const loginStore: Record<string, string | number | object> = useLoginStore()
 const compayInfo: Record<string, string | number> = loginStore.companyInfo
+import DateConverter from 'src/components/date/VikramSamvat.js'
 
 export default function useGeneratePdf(
   voucherType: VoucherType,
@@ -14,8 +15,6 @@ export default function useGeneratePdf(
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        // debugger
-        // console.log(row, 'ahvsyvas row')
         if (isTaxSame !== false) {
           if (index === 0) isTaxSame = row.tax_scheme.id
           else {
@@ -164,7 +163,7 @@ export default function useGeneratePdf(
   >
     <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
     <span>COPY ${invoiceInfo.print_count} OF ORIGINAL (PRINT COUNT:${
-      invoiceInfo.print_count + 1
+      invoiceInfo.print_count
     })</span>
   </div>
   <div style="display: flex; justify-content: space-between">
@@ -176,7 +175,11 @@ export default function useGeneratePdf(
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
     }</div>
-      <div style="font-weight: 600; color: grey;">Tax reg. No.</div>
+      ${
+        invoiceInfo.tax_registration_number
+          ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_registration_number}</div>`
+          : ''
+      }
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div>
@@ -190,7 +193,10 @@ export default function useGeneratePdf(
       }
       </div>
       <div>
-      <span><span style="font-weight: 600; color: grey;">Miti: </span></span> ${'miti'}
+      <span><span style="font-weight: 600; color: grey;">Miti: </span></span> ${DateConverter.getRepresentation(
+        invoiceInfo.date,
+        'bs'
+      )}
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${
