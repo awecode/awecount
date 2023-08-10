@@ -1,76 +1,46 @@
 <template>
   <div class="row q-col-gutter-md">
     <div class="row q-col-gutter-md target">
-      <q-input
-        :model-value="getText0"
-        :error="error0"
-        :error-message="errorMessage0"
-        @update:model-value="onInput0"
-        label="Start Date"
-      />
-      <q-input
-        :model-value="getText1"
-        :error="error1"
-        :error-message="errorMessage1"
-        @update:model-value="onInput1"
-        label="End Date"
-      />
+      <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
+        label="Start Date" />
+      <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"
+        label="End Date" />
     </div>
-    <q-menu :target="'.target'" :no-focus="true">
+    <q-menu ref="menuDom" target=".target" :no-focus="true">
       <div class="row q-pa-md main-con">
         <div class="row" style="min-width: 150px">
           <div>
             <div class="text-caption">Date Range</div>
             <q-list dense padding class="rounded-borders q-pr-md">
               <q-item clickable :active="activeDate == 'today'" v-ripple>
-                <q-item-section @click="getToday((last = false))"
-                  >Today</q-item-section
-                >
+                <q-item-section @click="getToday((last = false))">Today</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-                <q-item-section @click="getToday((last = true))"
-                  >Yesterday</q-item-section
-                >
+                <q-item-section @click="getToday((last = true))">Yesterday</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last7'" v-ripple>
-                <q-item-section @click="getDays((last = 7))"
-                  >Last 7 Days</q-item-section
-                >
+                <q-item-section @click="getDays((last = 7))">Last 7 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last30'" v-ripple>
-                <q-item-section @click="getDays((last = 30))"
-                  >Last 30 Days</q-item-section
-                >
+                <q-item-section @click="getDays((last = 30))">Last 30 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = false))"
-                  >This Month</q-item-section
-                >
+                <q-item-section @click="getMonth((last = false))">This Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = true))"
-                  >Last Month</q-item-section
-                >
+                <q-item-section @click="getMonth((last = true))">Last Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-                <q-item-section @click="getYear((last = false))"
-                  >This Year</q-item-section
-                >
+                <q-item-section @click="getYear((last = false))">This Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-                <q-item-section @click="getYear((last = true))"
-                  >Last Year</q-item-section
-                >
+                <q-item-section @click="getYear((last = true))">Last Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-                <q-item-section @click="getFY((last = false))"
-                  >This FY</q-item-section
-                >
+                <q-item-section @click="getFY((last = false))">This FY</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-                <q-item-section @click="getFY((last = true))"
-                  >Last FY</q-item-section
-                >
+                <q-item-section @click="getFY((last = true))">Last FY</q-item-section>
               </q-item>
             </q-list>
           </div>
@@ -94,13 +64,7 @@
       />
     </div> -->
     <div v-if="!props.hideBtns">
-      <q-btn
-        v-if="value0 || value1"
-        color="red"
-        icon="fa-solid fa-xmark "
-        @click="clearFilter"
-        class="q-mt-md"
-      />
+      <q-btn v-if="value0 || value1" color="red" icon="fa-solid fa-xmark " @click="clearFilter" class="q-mt-md" />
     </div>
   </div>
 </template>
@@ -112,8 +76,9 @@ import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 const $q = useQuasar()
 
-const props = defineProps(['startDate', 'endDate', 'hideBtns'])
+const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focuOnMount'])
 
+const menuDom = ref(null)
 const value0 = ref(props.startDate)
 const value1 = ref(props.endDate)
 const error0 = ref(false)
@@ -326,22 +291,30 @@ const getDays = (last = 7) => {
   const startDayStr = DateConverter.date2str(startDay)
   setDateRange(startDayStr, todayStr)
 }
+onMounted(() => {
+  if (props.focuOnMount && (!value0.value || !value1.value)) {
+    menuDom.value.show()
+  }
+})
 </script>
 
 <style>
 .date-Con {
   width: 640px;
 }
+
 @media (max-width: 1280px) {
   .date-Con {
     width: 300px;
   }
 }
+
 @media (max-width: 520px) {
   .main-con {
     width: 325px;
   }
 }
+
 @media (min-width: 1280px) {
   .main-con {
     flex-wrap: nowrap;

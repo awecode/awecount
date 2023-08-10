@@ -4,7 +4,8 @@
       <div class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs">
         <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
           <div>
-            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
+            <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true"
+              :focuOnMount="true" />
           </div>
           <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
             @click="fields = { start_date: null, end_date: null }"></q-btn>
@@ -130,6 +131,7 @@ export default {
   setup() {
     const categoryTree = ref(null)
     const category_accounts = ref({})
+    const route = useRoute()
     const router = useRouter()
     const config = ref({
       hide_accounts: false,
@@ -287,6 +289,11 @@ export default {
       router.push({ path: '/report/trial-balance/', query })
       fetchData()
     }
+    if (route.query.start_date && route.query.end_date) {
+      fields.value.start_date = route.query.start_date
+      fields.value.end_date = route.query.end_date
+      fetchData()
+    }
     return {
       replaceHrefAttribute,
       onDownloadXls,
@@ -312,15 +319,11 @@ export default {
         console.log('err fetching data', error)
       })
   },
-  mounted() {
-    // if (route)
-    if (this.$route.query.start_date && this.$route.query.end_date) {
-      this.fields.start_date = this.$route.query.start_date
-      this.fields.end_date = this.$route.query.end_date
-      this.fetchData()
-    }
-    // console.log()
-  }
+  // mounted() {
+  //   // if (route)
+
+  //   // console.log()
+  // }
 }
 </script>
 
