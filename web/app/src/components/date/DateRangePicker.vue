@@ -47,7 +47,7 @@
         </div>
         <div v-if="isCalendarInAD" class="row md-no-wrap q-gutter-md date-Con">
           <q-date v-model="value0" mask="YYYY-MM-DD" />
-          <q-date v-model="value1" mask="YYYY-MM-DD" />
+          <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
         </div>
         <div v-else class="row md-no-wrap q-gutter-md date-Con">
           <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
@@ -292,9 +292,6 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 onMounted(() => {
-  // if (!value0.value && !value1.value) {
-
-  // }
   if (props.focuOnMount && (!value0.value && !value1.value)) {
     value0.value = store.dateRange.start_date
     value1.value = store.dateRange.end_date
@@ -304,6 +301,9 @@ onMounted(() => {
 watch([value0, value1], (newValve) => {
   store.updateDateRange(newValve[0], newValve[1])
 })
+const toDateValidation = (date) => {
+  return date >= value0.value.replaceAll('-', '/')
+}
 </script>
 
 <style>
