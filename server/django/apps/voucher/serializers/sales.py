@@ -220,6 +220,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             )
 
     def validate(self, data):
+        # TODO: Find why due date is null and fix the issue
+        if not data.get('due_date'):
+            data['due_date'] = self.context['request'].data['due_date']
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
@@ -239,8 +242,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #     )
 
     def validate_due_date(self, due_date):
-        # import ipdb; ipdb.set_trace()
-        if due_date and due_date < timezone.now().date():
+        if isinstance(due_date, str):
+            due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
+        if due_date < timezone.now().date():
             raise ValidationError("Due date cannot be before deposit date.")
         
     def create(self, validated_data):
@@ -254,8 +258,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         self.validate_invoice_date(validated_data)
-        # import ipdb; ipdb.set_trace()
-        # self.validate_due_date(validated_data["due_date"])
+        self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
