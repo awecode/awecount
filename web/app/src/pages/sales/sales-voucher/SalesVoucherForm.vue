@@ -43,7 +43,8 @@
                     :error="!!errors.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                   </q-input>
                   <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="PartyForm" />
+                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="PartyForm"
+                    @update:modelValue="onPartyChange" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -326,6 +327,17 @@ export default {
         })
       }
     }
+    const onPartyChange = (value) => {
+      if (!!value && !!formData.formDefaults.value.collections) {
+        const index =
+          formData.formDefaults.value.collections.parties.findIndex(
+            (option) => option.id === value
+          )
+        formData.fields.value.address =
+          formData.formDefaults.value.collections.parties[index].address
+        // const index = formDefaults.
+      }
+    }
     // partyMode.value = formData.formDefaults.value.options.show_customer
 
     // watch(
@@ -369,7 +381,8 @@ export default {
       fetchInvoice,
       checkPermissions,
       voucherArray,
-      loginStore
+      loginStore,
+      onPartyChange
     }
   },
 }
