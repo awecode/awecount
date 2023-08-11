@@ -302,7 +302,10 @@ watch([value0, value1], (newValve) => {
   store.updateDateRange(newValve[0], newValve[1])
 })
 const toDateValidation = (date) => {
-  return date >= value0.value.replaceAll('-', '/')
+  if (value0.value) {
+    return date >= value0.value.replaceAll('-', '/')
+  }
+  else return true
 }
 </script>
 
