@@ -335,34 +335,8 @@ export default {
           )
         formData.fields.value.address =
           formData.formDefaults.value.collections.parties[index].address
-        // const index = formDefaults.
       }
     }
-    // partyMode.value = formData.formDefaults.value.options.show_customer
-
-    // watch(
-    //   () => formData.fields.value.party,
-    //   (newValue) => {
-    //     console.log(newValue)
-    //     if (!!newValue && !!formData.formDefaults.value.collections) {
-    //       const index =
-    //         formData.formDefaults.value.collections.parties.findIndex(
-    //           (option) => option.id === newValue
-    //         )
-    //       formData.fields.value.address =
-    //         formData.formDefaults.value.collections.parties[index].address
-    //       // const index = formDefaults.
-    //     }
-    //   }
-    // )
-    // watch(
-    //   () => formData,
-    //   (newValue) => {
-    //     console.log(newValue)
-    //   }
-    // )
-
-    // const challanMode = 
 
     return {
       ...formData,

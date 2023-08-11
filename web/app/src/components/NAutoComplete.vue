@@ -16,6 +16,8 @@
       :disable="props.disabled"
       :error-message="props?.error"
       :error="!!props?.error"
+      clearable
+      clear-icon="close"
     />
     <div>
       <q-btn
