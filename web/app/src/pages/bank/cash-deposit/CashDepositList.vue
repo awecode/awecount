@@ -77,7 +77,7 @@ export default {
         name: 'bank_account',
         label: 'Bank Account',
         align: 'left',
-        field: 'bank_account',
+        field: 'bank_account_name',
       },
       {
         name: 'benefactor_name',
