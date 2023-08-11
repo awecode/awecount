@@ -9,7 +9,7 @@
       </thead>
       <tbody>
         <tr v-for="(value, key) in fields" :key="key">
-          <td class="text-left">{{ key }}</td>
+          <td class="text-left">{{ humanizeWord(key) }}</td>
           <td class="text-left">{{ value }}</td>
         </tr>
         <tr class="bg-grey-4 text-subtitle2">
@@ -18,7 +18,7 @@
         </tr>
       </tbody>
     </q-markup-table>
-    <q-btn label="Print" icon="print" class="q-mt-lg" />
+    <q-btn @click="onPrintClick" label="Print" icon="print" class="q-mt-lg" />
   </div>
 </template>
 
@@ -34,8 +34,17 @@ export default {
       total_amount: number
     }
     const fields: Ref<Fields | null> = ref(null)
+    const onPrintClick = () => {
+      window.print()
+    }
+    const humanizeWord = (word) => {
+      word = word.replace(/_/g, ' ')
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    }
     return {
       fields,
+      onPrintClick,
+      humanizeWord
     }
   },
   created() {
@@ -49,6 +58,9 @@ export default {
           'enable_row_description',
           'payment_receipts',
           'can_update_issued',
+          'issue_datetime',
+          'available_bank_accounts',
+          'id'
         ]
         removeArr.forEach((item) => delete data[item])
         this.fields = data
