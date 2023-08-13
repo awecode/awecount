@@ -72,7 +72,7 @@
                 ? 'col-4'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount_type" :options="formDefaults.collections
+                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount" :options="formDefaults.collections
                   ? staticOptions.discount_types.concat(
                     formDefaults?.collections.discounts
                   )
@@ -118,14 +118,15 @@
         <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12"
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
-      <div v-if="checkPermissions('DebitNoteCreate')" class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="!isEdit" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8"
+      <div v-if="checkPermissions('DebitNoteCreate')"
+        class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
+        <q-btn v-if="!isEdit" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8"
           label="Draft" :disable="fields.invoices ? false : true" />
-        <q-btn v-if="isEdit && fields.status === 'Draft'"
+        <q-btn v-if="isEdit && fields.status === 'Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
           :disable="fields.invoices ? false : true" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'" :disable="fields.invoices ? false : true" />
+          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
       </div>
     </q-card>
   </q-form>
