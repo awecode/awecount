@@ -1,22 +1,12 @@
 <template>
   <div>
-    <q-input
-      :model-value="getDateValue"
-      @onClick="this.select()"
-      :error="props.error"
-      :error-message="props.errorMessage"
-      :hint="props.hint"
-      :placeholder="props.placeholder"
-      :disable="props.disable"
-      @update:model-value="onDateInput"
-      :label="props.label"
-      type="text"
-      class="full-width"
-    >
+    <q-input :model-value="getDateValue" @onClick="this.select()" :error="props.error" :error-message="props.errorMessage"
+      :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable" @update:model-value="onDateInput"
+      :label="props.label" type="text" class="full-width">
     </q-input>
     <q-menu v-if="!props.disable" :no-focus="true">
-      <q-date v-if="isCalendarInAD" v-model="date" mask="YYYY-MM-DD" />
-      <bs-date-picker v-else v-model="date"></bs-date-picker>
+      <q-date v-if="isCalendarInAD" v-model="date" mask="YYYY-MM-DD" :options="toDateValidation" />
+      <bs-date-picker v-else v-model="date" :toLimit="props.toLimit"></bs-date-picker>
     </q-menu>
   </div>
 </template>
@@ -27,6 +17,7 @@ import { useLoginStore } from 'src/stores/login-info'
 
 const store = useLoginStore()
 const props = defineProps([
+  'toLimit',
   'modelValue',
   'label',
   'error',
@@ -102,5 +93,12 @@ const onDateInput = (text) => {
       errorMessage.value = 'Invalid BS Date'
     }
   }
+}
+
+const toDateValidation = (date) => {
+  if (props.toLimit) {
+    return date >= props.toLimit.replaceAll('-', '/')
+  }
+  else return true
 }
 </script>

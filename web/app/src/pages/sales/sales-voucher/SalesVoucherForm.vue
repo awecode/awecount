@@ -54,13 +54,12 @@
               </div>
               <div></div>
             </div>
-            <q-input class="col-md-6 col-12" label="Deposit Date*" v-model="fields.date" disable>
-            </q-input>
+            <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Deposit Date*" />
             <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
               :error="!!errors.address"></q-input>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
               v-model="fields.due_date" class="col-md-6 col-12" :error="!!errors?.due_date"
-              :error-message="errors?.due_date"></date-picker>
+              :error-message="errors?.due_date" :toLimit="fields.date"></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div :class="['Percent', 'Amount'].includes(fields.discount_type)
                 ? 'col-6'

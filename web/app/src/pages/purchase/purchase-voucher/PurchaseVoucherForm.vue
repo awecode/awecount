@@ -115,6 +115,7 @@
               v-model="fields.due_date" class="col-md-6 col-12" :error-message="errors?.due_date"
               :error="!!errors?.due_date"></date-picker>
           </div>
+          <!-- {{ fields.date }} -->
         </q-card-section>
       </q-card>
       <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
