@@ -110,9 +110,9 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('CreditNoteCreate')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'" />
+          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
       </div>
     </q-card>
   </q-form>
