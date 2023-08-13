@@ -76,8 +76,8 @@
               <div class="q-date__calendar-days fit">
                 <span v-for="(row, index) in monthRows" :key="index">
                   <span v-for="(obj, j) in row" :key="j">
-                    <span v-if="obj" @click="onDateClick(obj)">
-                      <div class="q-date__calendar-item q-date__calendar-item--in"><button
+                    <span class="border-none" v-if="obj" @click="onDateClick(obj)">
+                      <div class="q-date__calendar-item q-date__calendar-item--in"><button :disabled="compareBsDate(obj)"
                           class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
                           tabindex="0"
                           :class="day == obj ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat q-btn--active'"
@@ -135,7 +135,7 @@
 <script setup>
 import DateConverter from './VikramSamvat'
 
-const props = defineProps(['modelValue', 'error'])
+const props = defineProps(['modelValue', 'error', 'toLimit'])
 const emit = defineEmits(['update:modelValue'])
 const ad_date = ref(props.modelValue || null)
 if (!ad_date.value) {
@@ -234,7 +234,22 @@ watch(() => bsDate.value, (newVal) => {
 })
 
 const onDateClick = (data) => {
-  day.value = data
+  if (props.toLimit) {
+    const selectedDate = `${year.value}-${month.value < 10 ? `0${month.value}` : `${month.value}`}-${data < 10 ? `0${data}` : `${data}`}`
+    const toLimitConverted = DateConverter.ad2bs(props.toLimit)
+    if (selectedDate >= toLimitConverted) {
+      day.value = data
+    }
+  }
+  else day.value = data
+}
+const compareBsDate = (day) => {
+  if (props.toLimit) {
+    const selectedDate = `${year.value}-${month.value < 10 ? `0${month.value}` : `${month.value}`}-${day < 10 ? `0${day}` : `${day}`}`
+    const toLimitConverted = DateConverter.ad2bs(props.toLimit)
+    return !(selectedDate >= toLimitConverted)
+  }
+  else return false
 }
 
 const incMonth = () => {

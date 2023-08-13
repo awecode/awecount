@@ -51,7 +51,7 @@
         </div>
         <div v-else class="row md-no-wrap q-gutter-md date-Con">
           <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
-          <bs-date-picker v-model="value1"></bs-date-picker>
+          <bs-date-picker v-model="value1" :toLimit="value0"></bs-date-picker>
         </div>
       </div>
     </q-menu>
