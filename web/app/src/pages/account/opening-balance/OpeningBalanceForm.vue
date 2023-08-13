@@ -11,7 +11,7 @@
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-12">
+            <div class="col-6">
               <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account"
                 :modal-component="LedgerForm" :error="errors?.account" />
             </div>
