@@ -78,7 +78,7 @@
                   <span v-for="(obj, j) in row" :key="j">
                     <span class="border-none" v-if="obj" @click="onDateClick(obj)">
                       <div class="q-date__calendar-item q-date__calendar-item--in"><button :disabled="compareBsDate(obj)"
-                          class="q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
+                          class="day-selector q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
                           tabindex="0"
                           :class="day == obj ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat q-btn--active'"
                           type="button"><span class="q-focus-helper" :tabindex="day == obj ? '-1' : '0'"></span><span
@@ -301,3 +301,9 @@ const changeTo = (time) => {
   }
 }
 </script>
+
+<style scoped>
+button.day-selector:disabled {
+  opacity: 0.3 !important;
+}
+</style>

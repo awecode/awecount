@@ -113,7 +113,7 @@
                   @click.stop.prevent="fields.mode = null" /></template></q-select>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
               v-model="fields.due_date" class="col-md-6 col-12" :error-message="errors?.due_date"
-              :error="!!errors?.due_date"></date-picker>
+              :error="!!errors?.due_date" :toLimit="fields.date"></date-picker>
           </div>
           <!-- {{ fields.date }} -->
         </q-card-section>
