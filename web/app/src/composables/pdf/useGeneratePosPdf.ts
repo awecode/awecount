@@ -2,6 +2,7 @@ import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
 const loginStore: Record<string, string | number | object> = useLoginStore()
 const compayInfo: Record<string, string | number> = loginStore.companyInfo
+import DateConverter from 'src/components/date/VikramSamvat.js'
 
 export default function useGeneratePosPdf(
   invoiceInfo: object,
@@ -157,7 +158,11 @@ export default function useGeneratePosPdf(
   <div style="${invoiceInfo.party ? 'display: none;' : ''}">${
     invoiceInfo.address
   }</div>
-      <div style="font-weight: 600; color: grey;">Tax reg. No.</div>
+  ${
+    invoiceInfo.tax_registration_number
+      ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_registration_number}</div>`
+      : ''
+  }
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div>
@@ -171,7 +176,10 @@ export default function useGeneratePosPdf(
       }
       </div>
       <div>
-      <span><span style="font-weight: 600; color: grey;">Miti: </span></span> ${'miti'}
+      <span><span style="font-weight: 600; color: grey;">Miti: </span></span> ${DateConverter.getRepresentation(
+        invoiceInfo.date,
+        'bs'
+      )}
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${

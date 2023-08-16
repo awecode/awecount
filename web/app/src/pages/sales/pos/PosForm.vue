@@ -9,40 +9,34 @@
               debounce="300"
               label="Search Items..."
             ></q-input>
-            <q-markup-table flat bordered>
-              <thead>
-                <q-tr class="text-left">
-                  <q-th> Name </q-th>
-                  <q-th> Rate </q-th>
-                </q-tr>
-              </thead>
-              <tbody class="text-left">
-                <q-tr
+            <div class="row q-py-sm q-px-md text-subtitle2 q-mt-md">
+                <div class="col-7">Name</div>
+                <div class="col-5">Rate</div>
+              </div>
+                <div class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px;"
                   v-for="item in searchResults ||
                   formDefaults.collections?.items.results"
                   :key="item.id"
                 >
-                  <q-td>
+                  <div class="col-7">
                     {{ item.name }}
-                  </q-td>
-                  <q-td>
+                  </div>
+                  <div class="col-5">
                     <span class="row items-center q-gutter-x-sm">
                       <span class="col-5">{{ item.rate }}</span>
-                      <span class="col-5"
-                        ><q-btn @click="onAddItem(item)" size="sm q-px-xs"
-                          >+</q-btn
-                        ></span
+                      <span class="col-5">
+                        <q-icon name="add" class="add-btn" @click="onAddItem(item)" tabindex="0"></q-icon>
+                        </span
                       >
                     </span>
-                  </q-td>
-                </q-tr>
-              </tbody>
-            </q-markup-table>
+                  </div>
+                </div>
           </div>
         </q-card-section>
       </q-card>
     </div>
-    <q-card>
+    <div>
+      <q-card>
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -200,6 +194,7 @@
         />
       </div>
     </q-card>
+    </div>
   </q-form>
 </template>
 
@@ -282,6 +277,7 @@ export default {
     formData.fields.value.mode = 'Credit'
     formData.fields.value.party = ''
     formData.fields.value.rows = []
+    formData.fields.value.due_date = formData.today
     // handle Search
     const fetchResults = () => {
       if (searchTerm.value) {
@@ -391,5 +387,15 @@ export default {
   display: grid;
   grid-template-columns: 4fr 6fr;
   grid-gap: 1rem;
+}
+.add-btn {
+  // background-color: aqua;
+  padding: 4px 8px;
+  box-shadow: 0 0 3px rgb(109, 109, 109);
+  border: 1px solid lightgray;
+}
+.add-btn:hover {
+  background-color: lightgrey;
+  cursor: pointer;
 }
 </style>
