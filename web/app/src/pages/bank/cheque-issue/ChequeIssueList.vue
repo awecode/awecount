@@ -27,7 +27,7 @@
                       label="Bank Account" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cleared', 'Cancelled']" />
+                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Cleared']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
