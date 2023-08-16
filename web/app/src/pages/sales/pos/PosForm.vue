@@ -19,7 +19,10 @@
                   :key="item.id"
                 >
                   <div class="col-7">
-                    {{ item.name }}
+                    <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/items/${item.id}/`">
+                      {{ item.name }}
+                    </router-link>
+                    <span v-else>{{ item.name }}</span>
                   </div>
                   <div class="col-5">
                     <span class="row items-center q-gutter-x-sm">
@@ -349,6 +352,9 @@ export default {
       pri.focus()
       setTimeout(() => pri.print(), 100)
     }
+    const hasItemModifyAccess = computed(() => {
+      return checkPermissions('ItemModify')
+    })
     // to print
     return {
       ...formData,
@@ -368,6 +374,7 @@ export default {
       partyChoices,
       print,
       $router,
+      hasItemModifyAccess
     }
   },
   created() {
