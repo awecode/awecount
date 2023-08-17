@@ -102,7 +102,7 @@ export default function useGeneratePosPdf(
   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: Arial, Helvetica, sans-serif;">
       <div>
       <div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(12)}</div>
+      <div>${numberToText(invoiceInfo.voucher_meta.grand_total)}</div>
       </div>
       <div style="border-top: 1px solid lightgrey; width: 250px; padding: 10px 0">
         <div style="display: flex; justify-content: space-between; margin: 15px 0">
