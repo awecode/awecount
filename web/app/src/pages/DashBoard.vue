@@ -88,11 +88,7 @@ export default {
       .then((data) => {
         this.fields = data
       })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ name: '404' })
-        }
-      })
+      .catch((error) => console.log(error))
   },
 }
 </script>

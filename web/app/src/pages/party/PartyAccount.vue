@@ -205,7 +205,7 @@ export default {
           })
           .catch((error) => {
             if (error.response && error.response.status == 404) {
-              router.replace({ name: '404' })
+              router.replace({ path: '/ErrorNotFound' })
             }
           })
       }
@@ -220,7 +220,7 @@ export default {
         })
         .catch((error) => {
           if (error.response && error.response.status == 404) {
-            router.replace({ name: '404' })
+            router.replace({ path: '/ErrorNotFound' })
           }
         })
     }
@@ -247,7 +247,7 @@ export default {
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
-          this.$router.replace({ name: '404' })
+          this.$router.replace({ path: '/ErrorNotFound' })
         }
       })
   },
