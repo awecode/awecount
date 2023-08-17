@@ -96,9 +96,10 @@ const onDateInput = (text) => {
 }
 
 const toDateValidation = (date) => {
+  // debugger
   if (props.toLimit) {
-    return date >= props.toLimit.replaceAll('-', '/')
+    return (date >= props.toLimit.replaceAll('-', '/')) || ('1944/04/13' < date && date < '2033/04/14')
   }
-  else return true
+  else return '1944/04/13' < date && date < '2033/04/14'
 }
 </script>
