@@ -252,6 +252,7 @@ export default {
     }
     function onSubmitClick(status, fields) {
       this.fields.status = status
+      if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
         .then((data) => {
           this.errors = null
@@ -322,25 +323,14 @@ export default {
       } else return null
     }
     const gePartyObj = () => {
-      if (formData.fields.value.party) {
+      // if (formData.fields.value.party && !partyMode) {
+      if (formData.fields.value.party && !partyMode.value) {
         const index = partyChoices.value.findIndex(
           (item) => item.id === formData.fields.value.party
         )
         return partyChoices.value[index]
       } else return null
     }
-    // const onPrintclick = (bodyOnly) => {
-    //   const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
-    //   useApi(endpoint, { method: 'POST' })
-    //     .then(() => {
-    //       if (fields.value) {
-    //         fields.value.print_count = fields.value?.print_count + 1
-    //       }
-    //       print(bodyOnly)
-    //     })
-    //     .catch((err) => console.log('err from the api', err))
-    // }
-    // to print
     const print = (data) => {
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'

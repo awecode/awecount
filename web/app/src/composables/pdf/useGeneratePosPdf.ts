@@ -150,13 +150,10 @@ export default function useGeneratePosPdf(
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.party ? partyObj.name : invoiceInfo.customer_name
+        partyObj ? partyObj.name : invoiceInfo.customer_name
       }</div>
-      <div style="${invoiceInfo.party ? '' : 'display: none;'}">${
-    partyObj.address
-  }</div>
-  <div style="${invoiceInfo.party ? 'display: none;' : ''}">${
-    invoiceInfo.address
+      <div>${
+        (partyObj && partyObj.address) ? partyObj.address : '' 
   }</div>
   ${
     invoiceInfo.tax_registration_number
