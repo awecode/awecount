@@ -169,6 +169,7 @@ import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 // import { useLoginStore } from '/src/stores/login-info.js'
 // const roles = useLoginStore().userInfo.roles
+const emit = defineEmits([])
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
