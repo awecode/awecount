@@ -46,7 +46,7 @@
           </div>
         </div>
         <div v-if="isCalendarInAD" class="row md-no-wrap q-gutter-md date-Con">
-          <q-date v-model="value0" mask="YYYY-MM-DD" />
+          <q-date v-model="value0" :options="(date) => date < '2033/04/16'" mask="YYYY-MM-DD" />
           <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
         </div>
         <div v-else class="row md-no-wrap q-gutter-md date-Con">
@@ -303,9 +303,9 @@ watch([value0, value1], (newValve) => {
 })
 const toDateValidation = (date) => {
   if (value0.value) {
-    return date >= value0.value.replaceAll('-', '/')
+    return (date >= value0.value.replaceAll('-', '/') && date < '2033/04/16')
   }
-  else return true
+  else return date < '2033/04/16'
 }
 </script>
 

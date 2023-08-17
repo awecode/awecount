@@ -32,7 +32,6 @@
             />
           </div>
         </q-td>
-        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>

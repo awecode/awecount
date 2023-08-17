@@ -19,7 +19,7 @@
           <div v-if="!showMonth && !showYear" class="q-date__view q-date__calendar">
             <!------------------------------------------ Month, year switcher -------------------------------------->
             <div class="q-date__navigation row items-center no-wrap">
-              <div class="row items-center q-date__arrow"><button @click="decMonth"
+              <div class="row items-center q-date__arrow"><button :disabled="year < 2002 && month == 1" @click="decMonth"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
@@ -34,14 +34,14 @@
                         class="block">{{ months_list[month
                           - 1] }}</span></span></button></div>
               </div>
-              <div class="row items-center q-date__arrow"><button @click="incMonth"
+              <div class="row items-center q-date__arrow"><button :disabled="year == 2089 && month == 12" @click="incMonth"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
                       class="q-icon" aria-hidden="true" role="img"><svg viewBox="0 0 24 24">
                         <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
                       </svg></span></span></button></div>
-              <div class="row items-center q-date__arrow"><button @click="decYear"
+              <div class="row items-center q-date__arrow"><button :disabled="year < 2002" @click="decYear"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
@@ -56,7 +56,7 @@
                         class="block">{{ year
                         }}</span></span></button></div>
               </div>
-              <div class="row items-center q-date__arrow"><button @click="incYear"
+              <div class="row items-center q-date__arrow"><button :disabled="!(year < 2089)" @click="incYear"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
