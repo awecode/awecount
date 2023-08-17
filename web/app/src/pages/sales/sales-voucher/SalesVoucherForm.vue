@@ -210,6 +210,7 @@ export default {
     }
     const onSubmitClick = (status, fields, submitForm) => {
       fields.status = status
+      if (!partyMode.value) fields.customer_name = null
       submitForm()
     }
     formData.fields.value.due_date = formData.today

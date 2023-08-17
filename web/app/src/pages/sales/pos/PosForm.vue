@@ -120,7 +120,7 @@
               :error-message="errors?.mode ? errors.mode[0] : null"
               :error="!!errors?.mode"
               :options="
-                staticOptions.modes.concat(
+                ['Cash'].concat(
                   formDefaults.collections?.bank_accounts
                 )
               "
@@ -278,7 +278,7 @@ export default {
     }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
-    formData.fields.value.mode = 'Credit'
+    formData.fields.value.mode = 'Cash'
     formData.fields.value.party = ''
     formData.fields.value.rows = []
     formData.fields.value.due_date = formData.today
