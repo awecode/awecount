@@ -4,199 +4,119 @@
       <q-card>
         <q-card-section>
           <div>
-            <q-input
-              v-model="searchTerm"
-              debounce="300"
-              label="Search Items..."
-            ></q-input>
+            <q-input v-model="searchTerm" debounce="600" label="Search Items..." @keyup.enter="serachEntered"></q-input>
             <div class="row q-py-sm q-px-md text-subtitle2 q-mt-md">
-                <div class="col-7">Name</div>
-                <div class="col-5">Rate</div>
+              <div class="col-7">Name</div>
+              <div class="col-5">Rate</div>
+            </div>
+            <div class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px;"
+              v-for="item in searchResults ||
+                formDefaults.collections?.items.results" :key="item.id">
+              <div class="col-7">
+                <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none" class="text-blue"
+                  :to="`/items/${item.id}/`">
+                  {{ item.name }}
+                </router-link>
+                <span v-else>{{ item.name }}</span>
               </div>
-                <div class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px;"
-                  v-for="item in searchResults ||
-                  formDefaults.collections?.items.results"
-                  :key="item.id"
-                >
-                  <div class="col-7">
-                    <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/items/${item.id}/`">
-                      {{ item.name }}
-                    </router-link>
-                    <span v-else>{{ item.name }}</span>
-                  </div>
-                  <div class="col-5">
-                    <span class="row items-center q-gutter-x-sm">
-                      <span class="col-5">{{ item.rate }}</span>
-                      <span class="col-5">
-                        <q-icon name="add" class="add-btn" @click="onAddItem(item)" tabindex="0"></q-icon>
-                        </span
-                      >
-                    </span>
-                  </div>
-                </div>
+              <div class="col-5">
+                <span class="row items-center q-gutter-x-sm">
+                  <span class="col-5">{{ item.rate }}</span>
+                  <span class="col-5">
+                    <q-icon name="add" class="add-btn" @click="onAddItem(item)" tabindex="0"></q-icon>
+                  </span>
+                </span>
+              </div>
+            </div>
           </div>
+          <!-- <core-paginate :pagination="items.pagination"></core-paginate> -->
+          <!-- <PaginateList class="q-mt-md" v-if="formDefaults.collections?.items.pagination" :pagination="formDefaults.collections?.items.pagination"></PaginateList> -->
         </q-card-section>
       </q-card>
     </div>
     <div>
       <q-card>
-      <q-card class="q-mx-lg q-pt-md">
-        <q-card-section>
-          <div class="row q-col-gutter-md">
-            <div class="col-12">
-              <div class="row">
-                <div class="col-10">
-                  <q-input
-                    v-model="fields.customer_name"
-                    label="Customer Name"
-                    :error-message="
-                      errors.customer_name ? errors.customer_name[0] : null
-                    "
-                    :error="!!errors?.customer_name"
-                    v-if="partyMode && fields.mode !== 'Credit'"
-                  >
-                  </q-input>
-                  <n-auto-complete
-                    v-else
-                    v-model="fields.party"
-                    :options="partyChoices"
-                    label="Party"
-                    :error="errors?.party ? errors?.party[0] : null"
-                    :modal-component="PartyForm"
-                  />
-                </div>
-                <div class="col-2 row justify-center q-py-md">
-                  <q-btn flat size="md" @click="() => switchMode(fields)">
-                    <q-icon name="mdi-account-group"></q-icon>
-                  </q-btn>
+        <q-card class="q-mx-lg q-pt-md">
+          <q-card-section>
+            <div class="row q-col-gutter-md">
+              <div class="col-12">
+                <div class="row">
+                  <div class="col-10">
+                    <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name ? errors.customer_name[0] : null
+                      " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
+                    </q-input>
+                    <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
+                      :error="errors?.party ? errors?.party[0] : null" :modal-component="PartyForm" />
+                  </div>
+                  <div class="col-2 row justify-center q-py-md">
+                    <q-btn flat size="md" @click="() => switchMode(fields)">
+                      <q-icon name="mdi-account-group"></q-icon>
+                    </q-btn>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12 row q-col-gutter-md">
-              <div
-                :class="
-                  fields.discount_type === 'Amount' ||
+            <div class="row q-col-gutter-md">
+              <div class="col-md-6 col-12 row q-col-gutter-md">
+                <div :class="fields.discount_type === 'Amount' ||
                   fields.discount_type === 'Percent'
-                    ? 'col-8'
-                    : 'col-12'
-                "
-              >
-                <n-auto-complete
-                  v-model="fields.discount_type"
-                  label="Discount*"
-                  :error="errors?.discount_type"
-                  :options="
-                    formDefaults.collections
+                  ? 'col-8'
+                  : 'col-12'
+                  ">
+                  <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors?.discount_type"
+                    :options="formDefaults.collections
                       ? staticOptions.discount_types.concat(
-                          formDefaults?.collections.discounts
-                        )
+                        formDefaults?.collections.discounts
+                      )
                       : staticOptions.discount_types
-                  "
-                  :modal-component="SalesDiscountForm"
-                >
-                </n-auto-complete>
-              </div>
-              <div
-                class="col-4"
-                v-if="
-                  fields.discount_type === 'Amount' ||
+                      " :modal-component="SalesDiscountForm">
+                  </n-auto-complete>
+                </div>
+                <div class="col-4" v-if="fields.discount_type === 'Amount' ||
                   fields.discount_type === 'Percent'
-                "
-              >
-                <q-input
-                  v-model.number="fields.discount"
-                  label="Discount"
-                  :error-message="errors?.discount ? errors.discount[0] : null"
-                  :error="!!errors?.discount"
-                ></q-input>
+                  ">
+                  <q-input v-model.number="fields.discount" label="Discount"
+                    :error-message="errors?.discount ? errors.discount[0] : null" :error="!!errors?.discount"></q-input>
+                </div>
               </div>
-            </div>
-            <q-select
-              v-model="fields.mode"
-              label="Mode"
-              class="col-12 col-md-6"
-              :error-message="errors?.mode ? errors.mode[0] : null"
-              :error="!!errors?.mode"
-              :options="
-                ['Cash'].concat(
+              <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6"
+                :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="['Cash'].concat(
                   formDefaults.collections?.bank_accounts
                 )
-              "
-              option-value="id"
-              option-label="name"
-              map-options
-              emit-value
-            >
-              <template v-slot:append>
-                <q-icon
-                  v-if="fields.mode !== null"
-                  class="cursor-pointer"
-                  name="clear"
-                  @click.stop.prevent="fields.mode = null" /></template
-            ></q-select>
+                  " option-value="id" option-label="name" map-options emit-value>
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.mode = null" /></template></q-select>
+            </div>
+            <div class="row"></div>
+          </q-card-section>
+        </q-card>
+        <invoice-table :itemOptions="formDefaults.collections
+          ? formDefaults.collections.items.results
+          : null
+          " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
+    " :discountOptions="formDefaults.collections
+    ? staticOptions.discount_types.concat(
+      formDefaults?.collections.discounts
+    )
+    : staticOptions.discount_types
+    " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    discount_type: fields.discount_type,
+    discount: fields.discount,
+  }" :usedInPos="true" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+  "></invoice-table>
+        <div class="row q-px-lg">
+          <div class="col-12">
+            <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow :error="!!errors?.remarks"
+              :error-message="errors?.remarks ? errors.remarks[0] : null" />
           </div>
-          <div class="row"></div>
-        </q-card-section>
-      </q-card>
-      <invoice-table
-        :itemOptions="
-          formDefaults.collections
-            ? formDefaults.collections.items.results
-            : null
-        "
-        :unitOptions="
-          formDefaults.collections ? formDefaults.collections.units : null
-        "
-        :discountOptions="
-          formDefaults.collections
-            ? staticOptions.discount_types.concat(
-                formDefaults?.collections.discounts
-              )
-            : staticOptions.discount_types
-        "
-        :taxOptions="formDefaults.collections?.tax_schemes"
-        v-model="fields.rows"
-        :mainDiscount="{
-          discount_type: fields.discount_type,
-          discount: fields.discount,
-        }"
-        :usedInPos="true"
-        :errors="!!errors?.rows ? errors.rows : null"
-        @deleteRowErr="
-          (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-        "
-      ></invoice-table>
-      <div class="row q-px-lg">
-        <div class="col-12">
-          <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-            autogrow
-            :error="!!errors?.remarks"
-            :error-message="errors?.remarks ? errors.remarks[0] : null"
-          />
         </div>
-      </div>
 
-      <div
-        class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md"
-        v-if="fields.rows.length > 0"
-      >
-        <q-btn
-          @click.prevent="onSubmitClick('Draft', fields)"
-          color="orange-6"
-          label="Save Draft"
-        />
-        <q-btn
-          @click.prevent="onSubmitClick('Issued', fields)"
-          color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'"
-        />
-      </div>
-    </q-card>
+        <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
+          <q-btn @click.prevent="onSubmitClick('Draft', fields)" color="orange-6" label="Save Draft" />
+          <q-btn @click.prevent="onSubmitClick('Issued', fields)" color="green-8" :label="isEdit ? 'Update' : 'Issue'" />
+        </div>
+      </q-card>
     </div>
   </q-form>
 </template>
@@ -209,6 +129,7 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
+import { route } from 'quasar/wrappers'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
@@ -222,6 +143,7 @@ export default {
     const searchTerm = ref(null)
     const searchResults = ref(null)
     const $router = useRouter()
+    const enterClicked = ref(false)
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -286,8 +208,25 @@ export default {
     const fetchResults = () => {
       if (searchTerm.value) {
         useApi(`/v1/items/pos/?search=${searchTerm.value}`)
-          .then((data) => (searchResults.value = data.results))
-          .catch(() => console.log('Error Fetching Search Results'))
+          .then((data) => {
+            (searchResults.value = data.results)
+            if (enterClicked.value) {
+              let obj = data.results.find((item) => {
+                if (item.code === searchTerm.value) {
+                  return item;
+                }
+              })
+              if (obj) {
+                onAddItem(obj);
+                searchTerm.value = ''
+              }
+            }
+            enterClicked.value = false
+          })
+          .catch(() => {
+            console.log('Error Fetching Search Results')
+            enterClicked.value = false
+          })
       } else searchResults.value = null
     }
     watch(searchTerm, () => fetchResults())
@@ -345,7 +284,11 @@ export default {
     const hasItemModifyAccess = computed(() => {
       return checkPermissions('ItemModify')
     })
-    // to print
+
+    const serachEntered = () => {
+      enterClicked.value = true
+      setTimeout(() => enterClicked.value = false, 1000)
+    }
     return {
       ...formData,
       CategoryForm,
@@ -364,7 +307,9 @@ export default {
       partyChoices,
       print,
       $router,
-      hasItemModifyAccess
+      hasItemModifyAccess,
+      serachEntered,
+      enterClicked
     }
   },
   created() {
@@ -385,12 +330,14 @@ export default {
   grid-template-columns: 4fr 6fr;
   grid-gap: 1rem;
 }
+
 .add-btn {
   // background-color: aqua;
   padding: 4px 8px;
   box-shadow: 0 0 3px rgb(109, 109, 109);
   border: 1px solid lightgray;
 }
+
 .add-btn:hover {
   background-color: lightgrey;
   cursor: pointer;
