@@ -47,27 +47,13 @@
     </q-card>
     <div class="row q-mt-md justify-end">
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
-        @click.prevent="; (fields.status = 'Draft'), submitForm()" color="orange" icon="fa-solid fa-pen-to-square"
+        @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square"
         label="Draft" class="q-mr-md q-py-sm" />
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && isEdit && fields?.status === 'Draft'"
-        @click.prevent="; (fields.status = 'Draft'), submitForm()" color="orange" icon="fa-solid fa-pen-to-square"
+        @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square"
         label="Save Draft" class="q-mr-md q-py-sm" />
-      <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="
-        fields.status
-          ? fields.status == 'Draft'
-            ? (fields.status = 'Issued')
-            : ''
-          : (fields.status = 'Issued'),
-        submitForm()
-        " color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" />
-      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="
-        fields.status
-          ? fields.status == 'Draft'
-            ? (fields.status = 'Issued')
-            : ''
-          : (fields.status = 'Issued'),
-        submitForm()
-        " color="green-6" icon="fa-solid fa-floppy-disk" label="Update" />
+      <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" />
+      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Update" />
     </div>
   </q-form>
 </template>
@@ -97,11 +83,20 @@ export default {
       formData.fields.value.cheque_date || formData.today
 
     formData.fields.value.date = formData.fields.value.date || formData.today
+
+    const onSubmitClick = async (status) => {
+      const originalStatus = formData.fields.value.status
+      formData.fields.value.status = status
+      try {await formData.submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
+      }
+    }
     return {
       ...formData,
       CreateAccount,
       BenefactorForm,
-      checkPermissions
+      checkPermissions,
+      onSubmitClick
     }
   },
 }

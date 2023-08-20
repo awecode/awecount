@@ -208,10 +208,13 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    const onSubmitClick = (status, fields, submitForm) => {
+    const onSubmitClick = async (status, fields, submitForm) => {
+      const originalStatus = formData.fields.value.status
       fields.status = status
       if (!partyMode.value) fields.customer_name = null
-      submitForm()
+      try {await submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
+      }
     }
     formData.fields.value.due_date = formData.today
     formData.fields.value.date = formData.today

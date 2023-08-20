@@ -57,20 +57,20 @@
       </div>
       <div class="row q-ma-md justify-end">
         <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
-          @click.prevent="; (fields.status = 'Unapproved'), submitForm()" color="orange-7"
+          @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
           icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" />
         <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
-          @click.prevent="; (fields.status = 'Unapproved'), submitForm()" color="orange-7"
+          @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
           icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" />
         <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
-          @click.prevent="; (fields.status = 'Approved'), submitForm()" color="green-8" icon="fa-solid fa-floppy-disk"
+          @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
           :label="isEdit ? 'Update' : 'Save'" />
         <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit"
-          @click.prevent="; (fields.status = 'Approved'), submitForm()" color="green-8" icon="fa-solid fa-floppy-disk"
+          @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
           :label="isEdit ? 'Update' : 'Save'" />
       </div>
     </q-card>
-    <!-- {{ amountComputed }} --amountComputed -->
+    {{ fields.status }}--asvgavsg
   </q-form>
 </template>
 
@@ -154,6 +154,13 @@ export default {
     const checkAddVoucher = () => {
       if (amountComputed.value.dr !== amountComputed.value.cr) addNewVoucher()
     }
+    const onSubmitClick = async (status) => {
+      const originalStatus = formData.fields.value.status
+      formData.fields.value.status = status
+      try {await submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
+      }
+    }
     return {
       ...formData,
       VoucherRow,
@@ -162,7 +169,8 @@ export default {
       addNewVoucher,
       amountComputed,
       checkAddVoucher,
-      checkPermissions
+      checkPermissions,
+      onSubmitClick
     }
   },
 }

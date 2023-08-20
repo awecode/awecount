@@ -173,9 +173,12 @@ export default {
       if (!!errors.rows) errors.rows.splice(index, 1)
       // errors.rows.splice(index, 1)
     }
-    const onSubmitClick = (status, fields, submitForm) => {
-      fields.status = status
-      submitForm()
+    const onSubmitClick = async (status, fields, submitForm) => {
+      const originalStatus = formData.fields.value.status
+      formData.fields.value.status = status
+      try {await submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
+      }
     }
     watch(
       () => formData.fields,
