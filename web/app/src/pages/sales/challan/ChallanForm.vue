@@ -89,7 +89,7 @@ export default {
     const endpoint = '/v1/challan/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
-    const isDeleteOpen = ref(true)
+    const isDeleteOpen = ref(false)
     const deleteMsg = ref('')
     const formData = useForm(endpoint, {
       getDefaults: true,
