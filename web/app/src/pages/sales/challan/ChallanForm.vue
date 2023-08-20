@@ -115,11 +115,14 @@ export default {
       }
       console.log(deleteObj)
     }
-    const onSubmitClick = (status, fields, submitForm) => {
+    const onSubmitClick = async (status, fields, submitForm) => {
+      const originalStatus = formData.fields.value.status
       fields.status = status
       if (fields.party) fields.mode = 'Credit'
       else fields.mode = 'Cash'
-      submitForm()
+      try {await submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
+      }
     }
     const switchPartyMode = (fields, isEdit) => {
       if (isEdit && !!fields.customer_name) {

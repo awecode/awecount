@@ -140,6 +140,7 @@ export default (endpoint, config) => {
           icon: 'report_problem',
         })
         loading.value = false
+        throw new Error('Api Error')
       })
   }
 

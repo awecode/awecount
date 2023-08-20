@@ -287,36 +287,36 @@ export default {
             // const endpoint = `/v1/test/data/`
             const endpoint = `/v1/${route.path.includes('report/stock-trial-balance') ? 'inventory-account/trial-balance' : 'trial-balance'}/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
             useApi(endpoint)
-                .then((bata) => {
-                    const data = [
-                        {
-                            "id": 3187,
-                            "name": "Cotton Masks",
-                            "item__category_id": 150,
-                            "od": null,
-                            "oc": null,
-                            "cd": 4.0,
-                            "cc": 10.0
-                        },
-                        {
-                            "id": 3188,
-                            "name": "Helmet - Red",
-                            "item__category_id": 150,
-                            "od": 1234.0,
-                            "oc": null,
-                            "cd": 1235.0,
-                            "cc": 11.0
-                        },
-                        {
-                            "id": 3452,
-                            "name": "Pencils",
-                            "item__category_id": 155,
-                            "od": null,
-                            "oc": null,
-                            "cd": 10000.0,
-                            "cc": 10245.0
-                        }
-                    ]
+                .then((data) => {
+                    // const data = [
+                    //     {
+                    //         "id": 3187,
+                    //         "name": "Cotton Masks",
+                    //         "item__category_id": 150,
+                    //         "od": null,
+                    //         "oc": null,
+                    //         "cd": 4.0,
+                    //         "cc": 10.0
+                    //     },
+                    //     {
+                    //         "id": 3188,
+                    //         "name": "Helmet - Red",
+                    //         "item__category_id": 150,
+                    //         "od": 1234.0,
+                    //         "oc": null,
+                    //         "cd": 1235.0,
+                    //         "cc": 11.0
+                    //     },
+                    //     {
+                    //         "id": 3452,
+                    //         "name": "Pencils",
+                    //         "item__category_id": 155,
+                    //         "od": null,
+                    //         "oc": null,
+                    //         "cd": 10000.0,
+                    //         "cc": 10245.0
+                    //     }
+                    // ]
                     const computedData = [...categoryTree.value]
                     const tallyTotal = { ...objFormat }
                     data.forEach((obj) => {
