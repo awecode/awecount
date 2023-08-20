@@ -46,14 +46,14 @@
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
-          @click.prevent="onResolvedClick" color="green" icon="done_all" label="Mark As Cleared" />
+          @click.prevent="onResolvedClick" color="green" icon="done_all" label="Mark As Resolved" />
         <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
-          @click.prevent="onResolvedClick" color="red" label="Cancel" />
+          @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
-        <q-btn v-if="checkPermissions('ChallanModify') && isEdit"
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>
@@ -149,7 +149,7 @@ export default {
     //   }
     // })
     const onResolvedClick = () => {
-      useApi(`/v1/challan/${formData.fields.value.id}/mark-as-paid/`, {
+      useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
         method: 'POST',
         body: {},
       })
@@ -173,7 +173,7 @@ export default {
       useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
         method: 'POST',
         body: {
-          message: deleteMsg
+          message: deleteMsg.value
         },
       })
         .then(() => {
@@ -182,12 +182,17 @@ export default {
             message: 'Cancelled',
             icon: 'check_circle',
           })
-          fields.value.status = 'Cancelled'
+          formData.fields.value.status = 'Cancelled'
+          isDeleteOpen.value = false
         })
-        .catch(() => {
+        .catch((err) => {
+          let message = 'error'
+          if (err.data?.message) {
+            message = err.data?.message
+          }
           $q.notify({
             color: 'negative',
-            message: 'error',
+            message,
             icon: 'report_problem',
           })
         })
