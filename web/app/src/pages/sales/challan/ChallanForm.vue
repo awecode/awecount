@@ -45,6 +45,10 @@
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
+          @click.prevent="onResolvedClick" color="green" icon="done_all" label="Mark As Cleared" />
+        <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
+          @click.prevent="onResolvedClick" color="red" label="Cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
@@ -53,6 +57,22 @@
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-red-6">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancelation?</span>
+          </div>
+        </q-card-section>
+
+        <q-card-section class="q-ma-md">
+          <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+          <div class="text-right q-mt-lg">
+            <q-btn label="Confirm" @click="onCancelClick"></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -68,8 +88,9 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/challan/'
     const openDatePicker = ref(false)
-    // const $q = useQuasar()
-
+    const $q = useQuasar()
+    const isDeleteOpen = ref(true)
+    const deleteMsg = ref('')
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/challan/list/',
@@ -127,6 +148,50 @@ export default {
     //     }, 100)
     //   }
     // })
+    const onResolvedClick = () => {
+      useApi(`/v1/challan/${formData.fields.value.id}/mark-as-paid/`, {
+        method: 'POST',
+        body: {},
+      })
+        .then(() => {
+          $q.notify({
+            color: 'positive',
+            message: 'Marked As Resloved',
+            icon: 'check_circle',
+          })
+          fields.value.status = 'Resloved'
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            message: 'error',
+            icon: 'report_problem',
+          })
+        })
+    }
+    const onCancelClick = () => {
+      useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
+        method: 'POST',
+        body: {
+          message: deleteMsg
+        },
+      })
+        .then(() => {
+          $q.notify({
+            color: 'positive',
+            message: 'Cancelled',
+            icon: 'check_circle',
+          })
+          fields.value.status = 'Cancelled'
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            message: 'error',
+            icon: 'report_problem',
+          })
+        })
+    }
     watch(
       () => formData.fields.value.party,
       (newValue) => {
@@ -154,7 +219,11 @@ export default {
       onSubmitClick,
       ChallanTable,
       switchPartyMode,
-      checkPermissions
+      checkPermissions,
+      onResolvedClick,
+      onCancelClick,
+      isDeleteOpen,
+      deleteMsg
     }
   },
   // onmounted: () => console.log('mounted'),

@@ -129,7 +129,6 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
-import { route } from 'quasar/wrappers'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
