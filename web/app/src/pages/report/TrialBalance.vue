@@ -219,17 +219,6 @@ export default {
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
-    // functions
-    // const onDownloadXls = () => {
-    //   // TODO: add download xls link
-    //   const elt = document.getElementById('tableRef').children[0]
-    //   const baseUrl = window.location.origin
-    //   replaceHrefAttribute(elt, baseUrl)
-    //   const wb = utils.table_to_book(elt, {
-    //     sheet: 'sheet1',
-    //   })
-    //   writeFileXLSX(wb, 'TrialBalance.xls')
-    // }
     const onDownloadXls = () => {
       // TODO: add download xls link
       const elt = document.getElementById('tableRef').children[0]
@@ -319,18 +308,5 @@ export default {
         console.log('err fetching data', error)
       })
   },
-  // mounted() {
-  //   // if (route)
-
-  //   // console.log()
-  // }
 }
 </script>
-
-<!-- <style scoped>
-.q-table thead tr,
-.q-table tbody td {
-  height: 20px !important;
-  background-color: black !important;
-}
-</style> -->

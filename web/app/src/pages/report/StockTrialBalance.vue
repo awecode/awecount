@@ -5,7 +5,7 @@
                 <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
                     <div>
                         <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date"
-                            :hide-btns="true" />
+                            :hide-btns="true" :focuOnMount="true" />
                     </div>
                     <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
                         @click="fields = { start_date: null, end_date: null }"></q-btn>
