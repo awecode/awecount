@@ -4,14 +4,15 @@
       <q-card>
         <q-card-section>
           <div>
-            <q-input v-model="searchTerm" debounce="600" label="Search Items..." @keyup.enter="serachEntered"></q-input>
+            <q-input v-model="searchTerm" autofocus debounce="500" label="Search Items..."
+              @keyup.enter="serachEntered"></q-input>
             <div class="row q-py-sm q-px-md text-subtitle2 q-mt-md">
               <div class="col-7">Name</div>
               <div class="col-5">Rate</div>
             </div>
             <div class="row" style="border-bottom: 1px lightgrey solid; padding: 8px 16px 6px 16px; font-size: 13px;"
-              v-for="item in searchResults ||
-                formDefaults.collections?.items.results" :key="item.id">
+              v-for="item in (searchResults?.results ||
+                formDefaults.collections?.items.results)" :key="item.id">
               <div class="col-7">
                 <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none" class="text-blue"
                   :to="`/items/${item.id}/`">
@@ -29,8 +30,9 @@
               </div>
             </div>
           </div>
-          <!-- <core-paginate :pagination="items.pagination"></core-paginate> -->
-          <!-- <PaginateList class="q-mt-md" v-if="formDefaults.collections?.items.pagination" :pagination="formDefaults.collections?.items.pagination"></PaginateList> -->
+          <PaginateList class="q-mt-md" @update-page="(page) => currenPage = page"
+            v-if="formDefaults.collections?.items.pagination"
+            :pagination="searchResults?.pagination || formDefaults.collections?.items.pagination"></PaginateList>
         </q-card-section>
       </q-card>
     </div>
@@ -143,6 +145,7 @@ export default {
     const searchResults = ref(null)
     const $router = useRouter()
     const enterClicked = ref(false)
+    const currenPage = ref(null)
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -204,31 +207,27 @@ export default {
     formData.fields.value.rows = []
     formData.fields.value.due_date = formData.today
     // handle Search
-    const fetchResults = () => {
-      if (searchTerm.value) {
-        useApi(`/v1/items/pos/?search=${searchTerm.value}`)
-          .then((data) => {
-            (searchResults.value = data.results)
-            if (enterClicked.value) {
-              let obj = data.results.find((item) => {
-                if (item.code === searchTerm.value) {
-                  return item;
-                }
-              })
-              if (obj) {
-                onAddItem(obj);
-                searchTerm.value = ''
+    const fetchResults = async () => {
+      const data = await useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}&page=${currenPage.value || 1}`)
+        .then((data) => {
+          (searchResults.value = data)
+          if (enterClicked.value) {
+            let obj = data.results.find((item) => {
+              if (item.code === searchTerm.value) {
+                return item;
               }
+            })
+            if (obj) {
+              onAddItem(obj);
+              searchTerm.value = ''
             }
-            enterClicked.value = false
-          })
-          .catch(() => {
-            console.log('Error Fetching Search Results')
-            enterClicked.value = false
-          })
-      } else searchResults.value = null
+          }
+        })
+        .catch(() => {
+          console.log('Error Fetching Search Results')
+        })
     }
-    watch(searchTerm, () => fetchResults())
+    watch([searchTerm, currenPage], () => fetchResults())
     // handle Search
     const onAddItem = (itemInfo) => {
       const index = formData.fields.value.rows.findIndex(
@@ -286,7 +285,7 @@ export default {
 
     const serachEntered = () => {
       enterClicked.value = true
-      setTimeout(() => enterClicked.value = false, 1000)
+      setTimeout(() => enterClicked.value = false, 1500)
     }
     return {
       ...formData,
@@ -308,7 +307,8 @@ export default {
       $router,
       hasItemModifyAccess,
       serachEntered,
-      enterClicked
+      enterClicked,
+      currenPage
     }
   },
   created() {
