@@ -273,7 +273,6 @@ export default {
       }
     }
     function updateData() {
-      // debugger
       const query = { ...fields.value }
       router.push({ path: '/report/trial-balance/', query })
       fetchData()

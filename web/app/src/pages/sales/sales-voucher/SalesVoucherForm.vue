@@ -222,7 +222,6 @@ export default {
     formData.fields.value.is_export = false
 
     const fetchInvoice = async (fields, voucherArray) => {
-      // debugger
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
@@ -247,7 +246,6 @@ export default {
               const response = { ...data }
               if (fields.invoices) {
                 if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
-                  // debugger
                   $q.notify({
                     color: 'red-6',
                     message: 'A single challan can be issued to a single party/customer only',
@@ -287,9 +285,7 @@ export default {
                 fields[key] = data[key]
                 // if (key === )
               }
-              // debugger
               if (response.rows && response.rows.length > 0) {
-                // debugger
                 if (fields.rows) {
                   response.rows.forEach((row) => {
                     fields.rows.push(row)

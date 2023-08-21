@@ -195,7 +195,6 @@ export default {
     //   return `parties/${this.$route.params.pk}/transactions/`
     // }
     function fetchData() {
-      // debugger
       if (dateRef.value.start_date && dateRef.value.end_date) {
         router.push(`/parties/account/${route.params.id}/` + `?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
         const endpoint = `/v1/parties/${route.params.id}/transactions/${`?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`}`

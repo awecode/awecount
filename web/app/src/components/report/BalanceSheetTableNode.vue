@@ -271,7 +271,6 @@ export default {
                     })
                     emit('updateTotal', showTotalObject.value, props.index)
                 }
-                // debugger
             })
             return activeObj
         })

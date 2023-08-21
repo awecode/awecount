@@ -52,7 +52,6 @@ export default (endpoint, predefinedColumns = null) => {
 
   let cleanedFilterValues = Object.fromEntries(
     Object.entries(filterQueryValues).map(([k, v]) => {
-      // debugger
       if (v === 'true') {
         return [k, true]
       } else if (v === 'false') {
@@ -204,11 +203,9 @@ export default (endpoint, predefinedColumns = null) => {
     cleanedFilters.page = undefined
     cleanedFilters = sortOnKeys(cleanedFilters)
     // TODO withQuery isn't preserving the order
-    // debugger
     console.log(cleanedFilters)
     url = withQuery(url, cleanedFilters)
     url = url.replace('+', '%20')
-    // debugger
     router.push(url)
 
     // url = withQuery(url, cleanedFilters)

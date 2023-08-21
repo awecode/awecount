@@ -204,7 +204,6 @@ export default {
         this.modeOptions = data.available_bank_accounts
       })
       .catch((error) => {
-        debugger  
         if (error.response && error.response.status == 404) {
           this.$router.replace({ path: '/ErrorNotFound' })
         }

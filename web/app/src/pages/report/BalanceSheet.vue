@@ -199,7 +199,6 @@ export default {
                     (category_accounts.value[index][obj.category_id] = [])
                 category_accounts.value[index][obj.category_id].push(obj.id)
             })
-            // debugger
             accounts.value[index] = localAccounts
             showData.value = true
         }
