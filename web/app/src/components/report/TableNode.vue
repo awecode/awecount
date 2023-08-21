@@ -342,9 +342,6 @@ export default {
       const newTotalObjStatus = props.item.id && loginStore.trialBalanceCollapseId.includes(props.item.id)
       return !newTotalObjStatus
     })
-    // watch([newTotalObj, showTotalObject], () => {
-
-    // })
     return {
       props,
       itemProps,
@@ -370,8 +367,6 @@ export default {
 
   svg {
     padding: 5px;
-    // width: 20px;
-    // width: 100%;
     translate: 0.5px 1px;
     transition: all 0.2s ease-in;
   }

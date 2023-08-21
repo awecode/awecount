@@ -24,18 +24,11 @@
                                         <q-checkbox v-model="config.hide_accounts" label="Hide Accounts?"></q-checkbox>
                                     </div>
                                     <div class="q-pb-sm">
-                                        <q-checkbox v-model="config.hide_categories" label="Hide Categories?"></q-checkbox>
-                                    </div>
-                                    <div class="q-pb-sm">
                                         <q-checkbox v-model="config.hide_sums" label="Hide Sums?"></q-checkbox>
                                     </div>
                                     <div class="q-pb-sm">
                                         <q-checkbox v-model="config.show_opening_closing_dr_cr"
                                             label="Show Opening Closing Dr/Cr?"></q-checkbox>
-                                    </div>
-                                    <div class="q-pb-sm">
-                                        <q-checkbox v-model="config.hide_zero_transactions"
-                                            label="Hide accounts without transactions?"></q-checkbox>
                                     </div>
                                 </div>
                             </div>
@@ -85,7 +78,7 @@
                                         <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         <span style="display: inline-block; width: 40px; margin-left: -5px;">
                                             <q-btn class="expand-btn" dense flat round
-                                                :class="expandStatus ? 'expanded' : ''"
+                                                :class="loginStore.stockTrialBalanceCollapseId.includes(parent.id) ? 'expanded' : ''"
                                                 @click="changeExpandStatus(parent.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                                     viewBox="0 0 24 24" class="text-grey-7">
@@ -100,37 +93,43 @@
                                     </td>
                                     <template v-if="config.show_opening_closing_dr_cr">
                                         <td class="text-left text-weight-medium">
-                                            {{ parent.total?.opening_dr }}
+                                            <span v-if="!config.hide_sums">{{ parent.total?.opening_dr }}</span>
                                         </td>
                                         <td class="text-left text-weight-medium">
-                                            {{ parent.total?.opening_cr }}
+                                            <span v-if="!config.hide_sums">{{ parent.total?.opening_cr }}</span>
                                         </td>
                                         <td class="text-left text-weight-medium">
-                                            {{ calculateNet(parent.total, 'opening') }}
+                                            <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'opening')
+                                            }}</span>
                                         </td>
                                     </template>
                                     <td v-else class="text-left text-weight-medium">
-                                        {{ calculateNet(parent.total, 'opening') }}
+                                        <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'opening') }}</span>
                                     </td>
                                     <td class="text-left text-weight-medium">
-                                        {{ parseFloat(parent.total.transaction_dr.toFixed(2)) }}
+                                        <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_dr.toFixed(2))
+                                        }}</span>
                                     </td>
                                     <td class="text-left text-weight-medium">
-                                        {{ parseFloat(parent.total.transaction_cr.toFixed(2)) }}
+                                        <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_cr.toFixed(2))
+                                        }}</span>
                                     </td>
                                     <template v-if="config.show_opening_closing_dr_cr">
                                         <td class="text-left text-weight-medium">
-                                            {{ parseFloat(parent.total.closing_dr.toFixed(2)) }}
+                                            <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_dr.toFixed(2))
+                                            }}</span>
                                         </td>
                                         <td class="text-left text-weight-medium">
-                                            {{ parseFloat(parent.total.closing_cr.toFixed(2)) }}
+                                            <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_cr.toFixed(2))
+                                            }}</span>
                                         </td>
                                         <td class="text-left text-weight-medium">
-                                            {{ calculateNet(parent.total, 'closing') }}
+                                            <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'closing')
+                                            }}</span>
                                         </td>
                                     </template>
                                     <td v-else class="text-left text-weight-medium">
-                                        {{ calculateNet(parent.total, 'closing') }}
+                                        <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'closing') }}</span>
                                     </td>
                                 </tr>
                                 <template v-for="(child, index) in parent.children" :key="index">
@@ -182,6 +181,50 @@
                                     </tr>
                                 </template>
                             </template>
+                        </template>
+                        <template v-for="child in unCatogarizedData" :key="child.account_id">
+                            <tr v-if="!config.hide_accounts">
+                                <td class="text-blue-6">
+                                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                    <RouterLink style="text-decoration: none" target="_blank"
+                                        :to="`/account/?has_balance=true&category=${child.account_id}`" class="text-blue-6">
+                                        {{ child.name }}</RouterLink>
+                                </td>
+                                <template v-if="config.show_opening_closing_dr_cr">
+                                    <td class="text-left text-weight-medium">
+                                        {{ child.opening_dr }}
+                                    </td>
+                                    <td class="text-left text-weight-medium">
+                                        {{ child.opening_cr }}
+                                    </td>
+                                    <td class="text-left text-weight-medium">
+                                        {{ calculateNet(child, 'opening') }}
+                                    </td>
+                                </template>
+                                <td v-else class="text-left text-weight-medium">
+                                    {{ calculateNet(child, 'opening') }}
+                                </td>
+                                <td class="text-left text-weight-medium">
+                                    {{ parseFloat(child.transaction_dr.toFixed(2)) }}
+                                </td>
+                                <td class="text-left text-weight-medium">
+                                    {{ parseFloat(child.transaction_cr.toFixed(2)) }}
+                                </td>
+                                <template v-if="config.show_opening_closing_dr_cr">
+                                    <td class="text-left text-weight-medium">
+                                        {{ parseFloat(child.closing_dr.toFixed(2)) }}
+                                    </td>
+                                    <td class="text-left text-weight-medium">
+                                        {{ parseFloat(child.closing_cr.toFixed(2)) }}
+                                    </td>
+                                    <td class="text-left text-weight-medium">
+                                        {{ calculateNet(child, 'closing') }}
+                                    </td>
+                                </template>
+                                <td v-else class="text-left text-weight-medium">
+                                    {{ calculateNet(child, 'closing') }}
+                                </td>
+                            </tr>
                         </template>
                         <tr v-if="showData">
                             <td class="text-weight-medium"><span>Total</span></td>
@@ -240,10 +283,8 @@ export default {
         const loginStore = useLoginStore()
         const config = ref({
             hide_accounts: false,
-            hide_categories: false,
             hide_sums: false,
             show_opening_closing_dr_cr: false,
-            hide_zero_transactions: false,
         })
         const objFormat = {
             transaction_dr: 0,
@@ -256,6 +297,7 @@ export default {
         const showData = ref(false)
         const total = ref(null)
         const computedTreeData = ref(null)
+        const unCatogarizedData = ref([])
         const fields = ref({
             start_date: null,
             end_date: null,
@@ -287,38 +329,38 @@ export default {
             // const endpoint = `/v1/test/data/`
             const endpoint = `/v1/${route.path.includes('report/stock-trial-balance') ? 'inventory-account/trial-balance' : 'trial-balance'}/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
             useApi(endpoint)
-                .then((bata) => {
-                    const data = [
-    {
-        "id": 3187,
-        "name": "Cotton Masks",
-        "item__category_id": 150,
-        "od": 4,
-        "oc": 10,
-        "cd": 4,
-        "cc": 10
-    },
-    {
-        "id": 3188,
-        "name": "Helmet - Red",
-        "item__category_id": 150,
-        "od": 2001,
-        "oc": 11,
-        "cd": 2001,
-        "cc": 11
-    },
-    {
-        "id": 3452,
-        "name": "Pencils",
-        "item__category_id": 155,
-        "od": 10000,
-        "oc": 10246,
-        "cd": 10000,
-        "cc": 10246
-    }
-]
+                .then((data) => {
+                    // const data = [
+                    //     {
+                    //         "id": 3187,
+                    //         "name": "Cotton Masks",
+                    //         "item__category_id": 150,
+                    //         "od": 4,
+                    //         "oc": 10,
+                    //         "cd": 4,
+                    //         "cc": 10
+                    //     },
+                    //     {
+                    //         "id": 3188,
+                    //         "name": "Helmet - Red",
+                    //         "item__category_id": 150,
+                    //         "od": 2001,
+                    //         "oc": 11,
+                    //         "cd": 2001,
+                    //         "cc": 11
+                    //     },
+                    //     {
+                    //         "id": 3452,
+                    //         "name": "Pencils",
+                    //         "item__category_id": 155,
+                    //         "od": 10000,
+                    //         "oc": 10246,
+                    //         "cd": 10000,
+                    //         "cc": 10246
+                    //     }
+                    // ]
+                    unCatogarizedData.value = []
                     const computedData = [...categoryTree.value]
-                    debugger
                     const tallyTotal = { ...objFormat }
                     data.forEach((obj) => {
                         const acc = {
@@ -339,8 +381,8 @@ export default {
                         tallyTotal.closing_dr += acc.closing_dr
                         tallyTotal.closing_cr += acc.closing_cr
                         const index = categoryTree.value.findIndex((item) => item.id === acc.category_id)
-                        if (index) {
-                            if (!computedData[index].children) {
+                        if (index > -1) {
+                            if (!computedData[index]?.children) {
                                 computedData[index].children = []
                                 computedData[index].total = { ...objFormat }
                             }
@@ -348,6 +390,9 @@ export default {
                             filedArray.forEach((field_name) => {
                                 computedData[index].total[field_name] += acc[field_name]
                             })
+                        }
+                        else {
+                            unCatogarizedData.value.push(acc)
                         }
                     })
                     // TODO make unreactive
@@ -442,64 +487,39 @@ export default {
             total,
             computedTreeData,
             changeExpandStatus,
-            loginStore
+            loginStore,
+            unCatogarizedData
         }
     },
     created() {
         const endpoint = '/v1/inventory-categories/trial-balance/'
-        // useApi(endpoint, { method: 'GET' })
-        //     .then((data) => {
-        //         this.categoryTree = data
-        //     })
-        //     .catch((error) => {
-        //         console.log('err fetching data', error)
-        //     })
-        this.categoryTree = [
-    {
-        "name": "name",
-        "id": 121,
-        "can_be_sold": true,
-        "can_be_purchased": true,
-        "fixed_asset": false
-    },
-    {
-        "name": "Safety",
-        "id": 150,
-        "can_be_sold": true,
-        "can_be_purchased": true,
-        "fixed_asset": false
-    },
-    {
-        "name": "Test Category",
-        "id": 161,
-        "can_be_sold": true,
-        "can_be_purchased": true,
-        "fixed_asset": false
-    },
-    {
-        "name": "Pencils",
-        "id": 155,
-        "can_be_sold": true,
-        "can_be_purchased": true,
-        "fixed_asset": false
-    },
-    {
-        "name": "asas",
-        "id": 156,
-        "can_be_sold": true,
-        "can_be_purchased": true,
-        "fixed_asset": false
-    }
-]
+        useApi(endpoint, { method: 'GET' })
+            .then((data) => {
+                this.categoryTree = data
+            })
+            .catch((error) => {
+                console.log('err fetching data', error)
+            })
     },
 }
 </script>
-  
-  <!-- <style scoped>
-  .q-table thead tr,
-  .q-table tbody td {
-    height: 20px !important;
-    background-color: black !important;
-  }
-  </style> -->
-  
+<style lang="scss">
+.expand-btn {
+    width: 20px;
+
+    svg {
+        padding: 5px;
+        // width: 20px;
+        // width: 100%;
+        translate: 0.5px 1px;
+        transition: all 0.2s ease-in;
+    }
+
+    &.expanded {
+        svg {
+            translate: 1px 1px;
+            transform: rotate(-90deg);
+        }
+    }
+
+}</style>
