@@ -27,6 +27,7 @@
           label="Phone Number"
           class="col-12 col-md-6"
           @change="updateVal"
+          type="number"
         />
         <q-input
           v-model="representative.email"
@@ -34,11 +35,12 @@
           class="col-12 col-md-6"
           type="email"
           @change="updateVal"
+          :error="!!errors[index]?.email"
+          :error-message="!!errors[index]?.email ? errors[index]?.email[0] : ''"
         />
       </div>
     </div>
   </q-card>
-  <!-- {{ JSON.parse(errors) }} -->
 </template>
 <script>
 export default {
@@ -60,6 +62,10 @@ export default {
         return {}
       },
     },
+    index:{
+      type: Number,
+      default: 0
+    }
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {

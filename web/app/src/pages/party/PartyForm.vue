@@ -27,7 +27,7 @@
               class="col-12 col-md-6" :error-message="errors.tax_registration_number"
               :error="!!errors.tax_registration_number" />
           </div>
-          <PartyRepresentative v-model="fields.representative" :errors="errors?.representative"></PartyRepresentative>
+          <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1"></PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg row">
           <span v-if="isEdit" class="q-gutter-x-sm row">
@@ -63,7 +63,6 @@
 </template>
 
 <script>
-import { route } from 'quasar/wrappers'
 import useForm from '/src/composables/useForm'
 import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
