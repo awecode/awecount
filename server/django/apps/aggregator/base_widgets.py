@@ -86,12 +86,18 @@ class BaseWidget(object):
                 labels.append(date.strftime("%B"))
         elif self.group_by == 'week':
             dates = [dt for dt in rrule(WEEKLY, dtstart=self.start_date, until=self.end_date)]
+
+            # Add current week if not in dates
+            today = datetime.date.today()
+            weeks = [dt.isocalendar().week for dt in dates]
+            if today.isocalendar().week not in weeks:
+                dates.append(today)
+
             for idx, date in enumerate(dates):
-                # TODO: verify this
-                # show data for running week or not?
-                week_num = date.isocalendar()[1] + 1
+                week_num = date.isocalendar()[1]
                 self.group_indices[week_num] = idx
                 labels.append('Week {}'.format(week_num))
+                
         elif self.group_by == 'year':
             dates = [dt for dt in rrule(YEARLY, dtstart=self.start_date, until=self.end_date)]
             for idx, date in enumerate(dates):
