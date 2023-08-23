@@ -87,7 +87,8 @@ class BaseWidget(object):
         elif self.group_by == 'week':
             dates = [dt for dt in rrule(WEEKLY, dtstart=self.start_date, until=self.end_date)]
             for idx, date in enumerate(dates):
-                week_num = date.isocalendar()[1]
+                # TODO: verify this
+                week_num = date.isocalendar()[1] + 1
                 self.group_indices[week_num] = idx
                 labels.append('Week {}'.format(week_num))
         elif self.group_by == 'year':
