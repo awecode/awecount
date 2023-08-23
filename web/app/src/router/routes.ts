@@ -1159,7 +1159,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Audit Logs',
         component: () => import('src/pages/settings/auditlog/AuditLogList.vue'),
         meta: {
-          breadcrumb: ['Home', 'Sales Agents'],
+          breadcrumb: ['Home', 'Audit Logs'],
         },
       },
       {
@@ -1167,7 +1167,7 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import('src/pages/settings/auditlog/AuditLogDetails.vue'),
         meta: {
-          breadcrumb: ['Home', 'Sales Agents', 'Detail'],
+          breadcrumb: ['Home', 'Audit Logs', 'Detail'],
         },
       },
     ],
