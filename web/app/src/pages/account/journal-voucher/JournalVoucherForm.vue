@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card class="q-pa-xs"><q-card-section>
         <q-card>
           <q-card-section class="bg-green text-white">
@@ -58,19 +58,18 @@
       <div class="row q-ma-md justify-end">
         <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
           @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
-          icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" />
+          icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit"/>
         <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
           @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
-          icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" />
+          icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
         <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
           @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
-          :label="isEdit ? 'Update' : 'Save'" />
+          label="Save"/>
         <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit"
           @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
-          :label="isEdit ? 'Update' : 'Save'" />
+          label="Update" type="submit"/>
       </div>
     </q-card>
-    {{ fields.status }}--asvgavsg
   </q-form>
 </template>
 
@@ -157,7 +156,7 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      try {await formData.submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
