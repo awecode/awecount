@@ -54,8 +54,8 @@
                                 <!-- {{ timeperoid }} -->
                                 <div class="flex">
                                     <div class="text-weight-medium text-caption text-left">
-                                        <div style="margin-bottom: -5px;">{{ timeperoid.start_date }}&nbsp;</div>
-                                        <div>{{ timeperoid.end_date }}</div>
+                                        <div style="margin-bottom: -5px;"> {{ store.isCalendarInAD ? timeperoid.start_date : DateConverter.getRepresentation(timeperoid.start_date, 'bs') }}&nbsp;</div>
+                                        <div> {{ store.isCalendarInAD ? timeperoid.end_date : DateConverter.getRepresentation(timeperoid.end_date, 'bs') }}</div>
                                     </div>
                                     <q-btn v-if="accounts.length > 0" @click="onRemoveColumn(index)" dense flat
                                         color="red-5" size="sm" title="Delete Column" class="q-ml-md">
@@ -123,8 +123,11 @@
   
 <script>
 // import { utils, writeFile } from 'xlsx'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
     setup() {
+        const store = useLoginStore()
         const categoryTree = ref(null)
         const category_accounts = ref([])
         const config = ref({
@@ -287,7 +290,9 @@ export default {
             onAddColumn,
             onRemoveColumn,
             onDownloadXls,
-            timePeriodArray
+            timePeriodArray,
+            store,
+            DateConverter
         }
     },
     created() {

@@ -80,6 +80,11 @@
           </div>
         </q-td>
       </template>
+      <template v-slot:body-cell-date="props">
+        <q-td :props="props">
+          {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date, 'bs') }}
+        </q-td>
+      </template>
     </q-table>
     <!-- {{ aggregate }} -->
     <q-card class="q-mt-md" v-if="aggregate">
@@ -114,6 +119,7 @@
         </div>
       </q-card-section>
     </q-card>
+    <!-- {{ store.isCalendarInAD }} -->
   </div>
 </template>
 
@@ -121,10 +127,13 @@
 import useList from '/src/composables/useList'
 import MultiSelectChip from '/src/components/filter/MultiSelectChip.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
 // import ListFilter from '/src/components/sales/row/ListFilter.vue'
 import { Ref } from 'vue'
 export default {
   setup() {
+    const store = useLoginStore()
     const endpoint = '/v1/sales-row/'
     const listData = useList(endpoint)
     const metaData = {
@@ -201,7 +210,9 @@ export default {
       usedOptions,
       fetchedOptions,
       MultiSelectChip,
-      checkPermissions
+      checkPermissions,
+      store,
+      DateConverter
     }
   },
   created() {
