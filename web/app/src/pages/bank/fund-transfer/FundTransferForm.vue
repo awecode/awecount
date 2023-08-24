@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -44,9 +44,9 @@
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" />
+            label="Create" class="q-ml-auto" type="submit" />
           <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
-            label="Update" class="q-ml-auto" />
+            label="Update" class="q-ml-auto" type="submit" />
           <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="cancelForm"
             icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"

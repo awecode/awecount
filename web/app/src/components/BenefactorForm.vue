@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -46,6 +46,7 @@
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
+          type="submit"
             @click.prevent="submitForm"
             color="primary"
             :label="isEdit ? 'Update' : 'Create'"

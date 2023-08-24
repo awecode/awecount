@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" v-if="fields">
+  <q-form class="q-pa-lg" v-if="fields" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -57,7 +57,7 @@
         <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="orange-7" label="Update" />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="orange-7" label="Update" type="submit" />
       </div>
     </q-card>
   </q-form>

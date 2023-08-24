@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -7,7 +7,6 @@
           <span v-else>Update Payment Receipt</span>
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -53,9 +52,9 @@
 
           <div class="q-mt-lg row q-pb-lg flex justify-end">
             <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Create" />
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Create" type="submit" />
             <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Update" />
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Update" type="submit" />
           </div>
         </q-card-section>
       </q-card>

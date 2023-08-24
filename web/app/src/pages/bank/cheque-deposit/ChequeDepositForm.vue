@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -48,12 +48,12 @@
     <div class="row q-mt-md justify-end">
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
         @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square"
-        label="Draft" class="q-mr-md q-py-sm" />
+        label="Draft" type="submit" class="q-mr-md q-py-sm" />
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && isEdit && fields?.status === 'Draft'"
         @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square"
         label="Save Draft" class="q-mr-md q-py-sm" />
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" />
-      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Update" />
+      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Update" type="submit"/>
     </div>
   </q-form>
 </template>

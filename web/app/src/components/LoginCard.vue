@@ -1,7 +1,7 @@
 <template>
   <div class="row justify-center items-center bg-white q-pa-md">
     <div class="full-width q-px-md">
-      <q-form class="text-sm" @submit="onLoginSubmit">
+      <q-form class="text-sm" @submit="onLoginSubmit" autofocus>
         <!-- <q-input label="Email" class="q-mb-lg" :hide-bottom-space="true"></q-input> -->
         <q-input v-model="username" label="Email" input-class="text-body1"
           :error="Boolean(errorMessage?.email ? true : false)" :error-message="errorMessage

@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -109,8 +109,8 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="checkPermissions('CreditNoteCreate')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
+        <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft') "
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
           :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
       </div>
@@ -176,7 +176,7 @@ export default {
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      try {await formData.submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }

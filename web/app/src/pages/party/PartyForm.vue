@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -32,14 +32,14 @@
         <div class="text-right q-pr-md q-pb-lg row">
           <span v-if="isEdit" class="q-gutter-x-sm row">
             <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="orange-6" label="Update"
-              class="q-mb-sm" />
+              class="q-mb-sm" type="submit" />
             <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="deleteModal = true" color="red-6" label="Delete"
               class="q-mb-sm" />
             <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
               class="q-mb-sm" />
           </span>
           <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create"
-            class="q-mr-sm q-mb-sm" />
+            class="q-mr-sm q-mb-sm" type="submit"/>
         </div>
       </q-card>
     </q-card>

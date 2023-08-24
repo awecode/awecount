@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -32,9 +32,9 @@
       </q-card-section>
       <div class="q-ma-md row q-pb-lg justify-end">
         <q-btn v-if="checkPermissions('WidgetCreate') && !isEdit" @click.prevent="submitForm" color="green-8"
-          label="Create" />
+          label="Create" type="submit" />
         <q-btn v-if="checkPermissions('WidgetModify') && isEdit" @click.prevent="submitForm" color="green-8"
-          label="Update" />
+          label="Update" type="submit" />
       </div>
     </q-card>
   </q-form>

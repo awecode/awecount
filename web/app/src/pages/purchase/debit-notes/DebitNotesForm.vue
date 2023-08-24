@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -121,10 +121,10 @@
       <div v-if="checkPermissions('DebitNoteCreate')"
         class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8"
-          label="Draft" :disable="fields.invoices ? false : true" />
+          label="Draft" :disable="fields.invoices ? false : true" type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
-          :disable="fields.invoices ? false : true" />
+          :disable="fields.invoices ? false : true" type="submit" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8"
           :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
       </div>

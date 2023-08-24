@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-md row-con">
+  <q-form class="q-pa-md row-con" autofocus>
     <div>
       <q-card>
         <q-card-section>
@@ -115,8 +115,8 @@
         </div>
 
         <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
-          <q-btn @click.prevent="onSubmitClick('Draft', fields)" color="orange-6" label="Save Draft" />
-          <q-btn @click.prevent="onSubmitClick('Issued', fields)" color="green-8" :label="isEdit ? 'Update' : 'Issue'" />
+          <q-btn @click.prevent="onSubmitClick('Draft', fields)" color="orange-6" label="Save Draft" type="submit" />
+          <q-btn @click.prevent="onSubmitClick('Issued', fields)" color="green-8" :label="isEdit ? 'Update' : 'Issue'" type="submit" />
         </div>
       </q-card>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -50,7 +50,7 @@
         <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
           @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'"

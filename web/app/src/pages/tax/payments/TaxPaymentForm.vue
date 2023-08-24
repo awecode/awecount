@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" v-if="fields">
+  <q-form class="q-pa-lg" v-if="fields" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -35,7 +35,7 @@
         <div class="q-pb-lg row justify-start q-gutter-x-md">
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Draft', submitForm)"
-              color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" />
+              color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" type="submit" />
             <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')"
               @click.prevent="submitWithStatus('Cancelled', submitForm)" color="red-6" label="Cancel" icon="cancel"
               class="q-px-lg q-mb-sm" />

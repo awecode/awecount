@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg">
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -24,9 +24,9 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('CategoryModify') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('CategoryModify') && !isEdit" type="submit" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto" />
-          <q-btn v-if="checkPermissions('CategoryModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('CategoryModify') && isEdit" type="submit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" />
         </div>
       </q-card>
