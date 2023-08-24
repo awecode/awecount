@@ -86,7 +86,7 @@ export default {
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/credit-note/export/' + query)
+      useApi('/v1/credit-note/export' + query)
         .then((data) =>
           usedownloadFile(
             data,
