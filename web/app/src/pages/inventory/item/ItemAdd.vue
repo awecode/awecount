@@ -36,8 +36,12 @@
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories" :modal-component="InventoryCategoryForm"
-                  :error="errors.category" />
+                  :error="errors.category" @update:modelValue="setCategory" />
               </div>
+            </div>
+            <div v-if="fields.extra_fields">
+              <q-input v-for="(field, index) in fields.extra_fields" :label="field.name" :type="field.type.value"
+                :key="index" v-model="fields.extra_data[field.name]"></q-input>
             </div>
             <!-- TODO: What is Extra field, hasPerm? ? -->
             <div class="row q-col-gutter-md">
@@ -221,6 +225,130 @@ fields.value.fixed_asset = false
 fields.value.can_be_purchased = false
 fields.value.direct_expense = false
 fields.value.indirect_expense = false
+fields.value.extra_fields = []
+fields.value.extra_data = null
+
+const getOptionCollection = (collections, name) => {
+  if (collections) {
+    let option = collections.find(item => {
+      if (item.name === name && item.default) {
+        return item;
+      }
+    });
+    if (option) {
+      return option.id;
+    }
+  }
+}
+
+const setCategory = () => {
+  let category_id = fields.value.category
+  if (category_id) {
+    const selected = formDefaults.value.collections.inventory_categories.find(item => {
+      if (item.id === category_id) {
+        return item;
+      }
+    });
+    if (selected.hasOwnProperty("extra_fields")) {
+      if (fields.value.extra_data === null) {
+        fields.value.extra_data = {}
+      }
+      if (selected.extra_fields && selected.extra_fields.length) {
+        fields.value.extra_fields = selected.extra_fields
+        selected.extra_fields.forEach(item => {
+          const { extra_data } = fields.value
+          fields.value.extra_data[item.name.toLowerCase()] = null
+          if (!Object.keys(extra_data).includes(item.name.toLowerCase())) {
+            fields.value.extra_data[item.name] = null
+          }
+        })
+      } else {
+        fields.value.extra_data = null
+        fields.value.extra_fields = null
+      }
+    }
+    if (selected.hasOwnProperty("default_unit_id")) {
+      if (selected.default_unit_id) {
+        fields.value.unit_id = selected.default_unit_id
+      } else {
+        fields.value.unit_id = ""
+      }
+    }
+
+    if (selected.hasOwnProperty("default_tax_scheme_id")) {
+      if (selected.default_tax_scheme_id) {
+        fields.value.tax_scheme_id = selected.default_tax_scheme_id
+      } else {
+        fields.value.tax_scheme_id = ""
+      }
+    }
+    if (
+      !fields.value.sales_account &&
+      selected.hasOwnProperty("items_sales_account_type")
+    ) {
+      if (selected.items_sales_account_type === "category") {
+        fields.value.sales_account = selected.sales_account
+      }
+      if (selected.items_sales_account_type === "global") {
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
+      }
+    }
+    if (
+      !fields.value.purchase_account &&
+      selected.hasOwnProperty("items_purchase_account_type")
+    ) {
+      if (selected.items_purchase_account_type === "category") {
+        fields.value.purchase_account = selected.purchase_account
+      }
+      if (selected.items_purchase_account_type === "global") {
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
+      }
+    }
+
+    if (
+      !fields.value.discount_allowed_account &&
+      selected.hasOwnProperty("items_discount_allowed_account_type")
+    ) {
+      if (selected.items_discount_allowed_account_type === "category") {
+        fields.value.discount_allowed_account = selected.discount_allowed_account
+      }
+      if (selected.items_discount_allowed_account_type === "global") {
+        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
+      }
+    }
+
+    if (
+      !fields.value.discount_received_account &&
+      selected.hasOwnProperty("items_discount_received_account_type")
+    ) {
+      if (selected.items_discount_received_account_type === "category") {
+        fields.value.discount_received_account = selected.discount_received_account
+      }
+      if (selected.items_discount_received_account_type === "global") {
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_account, "Discount Income")
+      }
+    }
+
+    if (selected.hasOwnProperty("track_inventory")) {
+      fields.value.track_inventory = selected.track_inventory
+    }
+    if (selected.hasOwnProperty("can_be_sold")) {
+      fields.value.can_be_sold = selected.can_be_sold
+    }
+    if (selected.hasOwnProperty("can_be_purchased")) {
+      fields.value.can_be_purchased = selected.can_be_purchased
+    }
+    if (selected.hasOwnProperty("fixed_asset")) {
+      fields.value.fixed_asset = selected.fixed_asset
+    }
+    if (selected.hasOwnProperty("direct_expense")) {
+      fields.value.direct_expense = selected.direct_expense
+    }
+    if (selected.hasOwnProperty("indirect_expense")) {
+      fields.value.indirect_expense = selected.indirect_expense
+    }
+  }
+}
 </script>
 
 <style scoped>
