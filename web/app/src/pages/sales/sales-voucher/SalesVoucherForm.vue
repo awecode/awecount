@@ -211,7 +211,9 @@ export default {
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
       fields.status = status
+      debugger
       if (!partyMode.value) fields.customer_name = null
+      else fields.party = null
       try {await submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
@@ -327,14 +329,18 @@ export default {
       }
     }
     const onPartyChange = (value) => {
+      let index
       if (!!value && !!formData.formDefaults.value.collections) {
-        const index =
+        index =
           formData.formDefaults.value.collections.parties.findIndex(
             (option) => option.id === value
           )
         formData.fields.value.address =
           formData.formDefaults.value.collections.parties[index].address
-      }
+          if (index) {
+            formData.fields.value.mode = "Credit"
+          }
+      } else if (!index) formData.fields.value.mode = "Cash"
     }
 
     return {
