@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Sales Invoice | Draft</span>
-          <span v-else>Update Sale Invoice | Draft</span>
+          <span v-else>Update Sale Invoice | {{ fields.status }} <span v-if="fields.voucher_no">| # {{ fields.voucher_no }}</span></span>
         </div>
       </q-card-section>
 
@@ -143,10 +143,10 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" type="submit"/>
-        <q-btn v-if="isEdit && checkPermissions('SalesModify')"
+        <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft" type="submit" />
         <q-btn v-if="checkPermissions('SalesCreate')" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="'Issue'" />
+          color="green" :label="isEdit ? 'Update': 'Issue'" />
       </div>
     </q-card>
   </q-form>
