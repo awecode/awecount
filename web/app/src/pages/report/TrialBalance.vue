@@ -126,7 +126,7 @@
 
 <script>
 // import { utils, writeFile } from 'xlsx'
-import XLSX from "xlsx-js-style"
+// import XLSX from "xlsx-js-style"
 export default {
   setup() {
     const categoryTree = ref(null)
@@ -219,8 +219,9 @@ export default {
         .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
-    const onDownloadXls = () => {
+    const onDownloadXls = async() => {
       // TODO: add download xls link
+      const XLSX = await import("xlsx-js-style")
       const elt = document.getElementById('tableRef').children[0]
       const baseUrl = window.location.origin
       replaceHrefAttribute(elt, baseUrl)

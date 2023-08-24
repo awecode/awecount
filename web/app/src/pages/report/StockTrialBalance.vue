@@ -272,7 +272,7 @@
   
 <script>
 // import { utils, writeFile } from 'xlsx'
-import XLSX from "xlsx-js-style"
+// import XLSX from "xlsx-js-style"
 import { useRoute } from "vue-router"
 import { useLoginStore } from 'src/stores/login-info'
 export default {
@@ -326,39 +326,9 @@ export default {
                 'opening_cr',
                 'closing_dr',
                 'closing_cr']
-            // const endpoint = `/v1/test/data/`
-            const endpoint = `/v1/${route.path.includes('report/stock-trial-balance') ? 'inventory-account/trial-balance' : 'trial-balance'}/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+            const endpoint = `/v1/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
             useApi(endpoint)
                 .then((data) => {
-                    // const data = [
-                    //     {
-                    //         "id": 3187,
-                    //         "name": "Cotton Masks",
-                    //         "item__category_id": 150,
-                    //         "od": 4,
-                    //         "oc": 10,
-                    //         "cd": 4,
-                    //         "cc": 10
-                    //     },
-                    //     {
-                    //         "id": 3188,
-                    //         "name": "Helmet - Red",
-                    //         "item__category_id": 150,
-                    //         "od": 2001,
-                    //         "oc": 11,
-                    //         "cd": 2001,
-                    //         "cc": 11
-                    //     },
-                    //     {
-                    //         "id": 3452,
-                    //         "name": "Pencils",
-                    //         "item__category_id": 155,
-                    //         "od": 10000,
-                    //         "oc": 10246,
-                    //         "cd": 10000,
-                    //         "cc": 10246
-                    //     }
-                    // ]
                     unCatogarizedData.value = []
                     const computedData = [...categoryTree.value]
                     const tallyTotal = { ...objFormat }
@@ -414,8 +384,9 @@ export default {
         //   })
         //   writeFileXLSX(wb, 'TrialBalance.xls')
         // }
-        const onDownloadXls = () => {
+        const onDownloadXls = async () => {
             // TODO: add download xls link
+            const XLSX = await import("xlsx-js-style")
             const elt = document.getElementById('tableRef').children[0]
             const baseUrl = window.location.origin
             replaceHrefAttribute(elt, baseUrl)
