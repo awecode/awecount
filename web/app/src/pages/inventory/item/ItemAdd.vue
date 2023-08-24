@@ -43,13 +43,11 @@
               <q-input v-for="(field, index) in fields.extra_fields" :label="field.name" :type="field.type.value"
                 :key="index" v-model="fields.extra_data[field.name]"></q-input>
             </div>
-            <!-- TODO: What is Extra field, hasPerm? ? -->
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
                   :options="formDefaults.collections?.units" :modal-component="UnitForm" :error="errors.unit_id" />
               </div>
-              <!-- {{ fields.unit_id }}--uit id -->
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
                   :options="formDefaults.collections?.tax_scheme" :modal-component="TaxForm"
@@ -171,8 +169,6 @@ import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import AccountForm from 'src/pages/account/ledger/LedgerForm.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-// import { useLoginStore } from '/src/stores/login-info.js'
-// const roles = useLoginStore().userInfo.roles
 const emit = defineEmits([])
 const toggleExpenses = (type) => {
   fields.value[type] = false
@@ -304,7 +300,6 @@ const setCategory = () => {
         fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
       }
     }
-
     if (
       !fields.value.discount_allowed_account &&
       selected.hasOwnProperty("items_discount_allowed_account_type")
@@ -316,7 +311,6 @@ const setCategory = () => {
         fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
       }
     }
-
     if (
       !fields.value.discount_received_account &&
       selected.hasOwnProperty("items_discount_received_account_type")
