@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Challan</span>
-          <span v-else>Update Challan</span>
+          <span v-else>Update Challan <span v-if="isEdit && fields?.voucher_no">| {{ fields?.status }} | # {{fields?.voucher_no}}</span></span>
         </div>
       </q-card-section>
 

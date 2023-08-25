@@ -211,7 +211,6 @@ export default {
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
       fields.status = status
-      debugger
       if (!partyMode.value) fields.customer_name = null
       else fields.party = null
       try {await submitForm() } catch (err) {
