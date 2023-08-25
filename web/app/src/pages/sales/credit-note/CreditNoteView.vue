@@ -3,9 +3,7 @@
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Credit Note | {{ fields?.status }} | #{{
-            fields?.voucher_no
-          }}</span>
+          <span>Credit Note | {{ fields?.status }} <span v-if="fields?.voucher_no"> | #{{ fields?.voucher_no }}</span></span>
         </div>
       </q-card-section>
       <ViewerHeader :fields="fields" />
@@ -33,7 +31,7 @@
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
         <!-- {{ fields }} -->
-        <q-btn v-if="checkPermissions('CreditNoteModify') && fields?.status === 'Draft'" color="orange-5" label="Edit"
+        <q-btn v-if="checkPermissions('CreditNoteModify') && fields.can_update_issued" color="orange-5" label="Edit"
           icon="edit" :to="`/credit-note/${fields.id}/`" />
         <!-- <q-btn
             v-if="fields?.status === 'Issued'"
