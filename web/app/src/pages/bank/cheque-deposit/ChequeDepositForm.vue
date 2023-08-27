@@ -22,7 +22,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
-              :error="!!errors.amount" />
+              :error="!!errors.amount" type="number" />
             <date-picker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date*" :error-message="errors.date"
               :error="!!errors.date"></date-picker>
           </div>
@@ -30,11 +30,11 @@
             <date-picker v-model="fields.cheque_date" class="col-md-6 col-12" label="Cheque Date"
               :error-message="errors.cheque_date" :error="!!errors.cheque_date"></date-picker>
             <q-input v-model="fields.cheque_number" label="Cheque Number" class="col-6"
-              :error-message="errors.cheque_number" :error="!!errors.cheque_number" />
+              :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number" />
           </div>
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.voucher_no" label="Voucher Number" class="col-md-6 col-12"
-              :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
+              :error-message="errors.voucher_no" :error="!!errors.voucher_no" type="number" />
             <q-input v-model="fields.deposited_by" label="Deposited By" class="col-md-6 col-12"
               :error-message="errors.deposited_by" :error="!!errors.deposited_by" />
           </div>

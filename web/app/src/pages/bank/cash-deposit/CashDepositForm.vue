@@ -7,39 +7,35 @@
           <span v-else>Update Cash Deposit</span>
         </div>
       </q-card-section>
-
       <q-card class="q-ma-sm q-pt-md">
-        <q-card-section>
-          <q-card class="q-pa-lg">
-            <div class="row q-col-gutter-md">
-              <div class="col-md-6 col-12">
-                <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
-                  label="Bank Account *" :modal-component="CreateAccount" :error="errors?.bank_account" />
-              </div>
-              <div class="col-md-6 col-12">
-                <n-auto-complete v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
-                  label="Benefactor *" :modal-component="BenefactorForm" :error="errors?.benefactor" />
-              </div>
+        <q-card class="q-pa-lg">
+          <div class="row q-col-gutter-md">
+            <div class="col-md-6 col-12">
+              <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
+                label="Bank Account *" :modal-component="CreateAccount" :error="errors?.bank_account" />
             </div>
-            <div class="row q-col-gutter-md">
-              <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
-                :error="!!errors.amount" />
-              <date-picker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date *"
-                :error-message="errors.date" :error="!!errors.date"></date-picker>
+            <div class="col-md-6 col-12">
+              <n-auto-complete v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
+                label="Benefactor *" :modal-component="BenefactorForm" :error="errors?.benefactor" />
             </div>
-            <div class="row q-col-gutter-md">
-              <q-input v-model="fields.voucher_no" label="Voucher Number" class="col-md-6 col-12"
-                :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
-              <q-input v-model="fields.deposited_by" label="Deposited By" class="col-md-6 col-12"
-                :error-message="errors.deposited_by" :error="!!errors.deposited_by" />
-            </div>
-          </q-card>
+          </div>
+          <div class="row q-col-gutter-md">
+            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
+              :error="!!errors.amount" type="number" />
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date *" :error-message="errors.date"
+              :error="!!errors.date"></date-picker>
+          </div>
+          <div class="row q-col-gutter-md">
+            <q-input v-model="fields.voucher_no" label="Voucher Number" class="col-md-6 col-12"
+              :error-message="errors.voucher_no" :error="!!errors.voucher_no" type="number" />
+            <q-input v-model="fields.deposited_by" label="Deposited By" class="col-md-6 col-12"
+              :error-message="errors.deposited_by" :error="!!errors.deposited_by" />
+          </div>
           <div class="row">
             <q-input v-model="fields.narration" label="Narration" class="col-12 q-mt-md" type="textarea" autogrow
               :error-message="errors.narration" :error="!!errors.narration" />
           </div>
-        </q-card-section>
-
+        </q-card>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('BankCashDepositCreate') && !isEdit" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto" type="submit" />

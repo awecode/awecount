@@ -13,7 +13,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
-                label="Bank Account *" :disabled="isEdit" :error="errors?.bank_account" />
+                label="Bank Account *" :disabled="isEdit" :error="errors?.bank_account"
+                @update:modelValue="updateBankAccount" />
             </div>
             <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date"
               :error="!!errors.date"></date-picker>
@@ -116,6 +117,23 @@ export default {
       pri.focus()
       setTimeout(() => pri.print(), 100)
     }
+    const updateBankAccount = (newValue) => {
+      const { bank_account } = formData.fields.value
+      const bank_accounts = formData.formDefaults.value.collections.bank_accounts
+      if (bank_accounts && bank_account && !formData.fields.value.id) {
+        const selected = bank_accounts.find((account) => {
+          return bank_account === account.id;
+        });
+        if (selected.hasOwnProperty("cheque_no")) {
+          if (selected.cheque_no) {
+            // this.$set(this.fields, "cheque_no", selected.cheque_no);
+            formData.fields.value.cheque_no = selected.cheque_no
+          } else {
+            formData.fields.value.cheque_no = ''
+          }
+        }
+      }
+    }
 
     return {
       ...formData,
@@ -123,7 +141,8 @@ export default {
       BenefactorForm,
       toggleDrAccount,
       checkPermissions,
-      exportPDF
+      exportPDF,
+      updateBankAccount
     }
   },
 }
