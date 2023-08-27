@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Cheque Issue</span>
-          <span v-else>Update Cheque Issue</span>
+          <span v-else>Update Cheque | #{{ fields.cheque_no }}</span>
         </div>
       </q-card-section>
 
@@ -44,13 +44,19 @@
             </div>
           </div>
         </q-card-section>
-        <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green"
-            label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
-            icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+        <div class="q-pr-md q-pb-lg row justify-between">
+          <div class="row q-gutter-md">
+            <q-btn @click="exportPDF" v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="green"
+              outline class="q-px-lg q-py-ms" style="display: inline-block;">Print Pdf</q-btn>
+            <q-btn v-if="fields?.status == 'Issued' && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
+              icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+          </div>
+          <div>
+            <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
+              label="Create" class="q-ml-auto" type="submit" />
+            <q-btn v-if="checkPermissions('ChequeIssueModify') && isEdit" @click.prevent="submitForm" color="green"
+              label="Update" class="q-ml-auto" type="submit" />
+          </div>
         </div>
       </q-card>
     </q-card>
@@ -61,6 +67,7 @@
 import useForm from '/src/composables/useForm'
 import BenefactorForm from '/src/components/BenefactorForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
 // const $q = useQuasar()
 
 export default {
@@ -96,12 +103,27 @@ export default {
       }
     })
 
+    const exportPDF = () => {
+      // console.log('print cheque')
+      let ifram = document.createElement('iframe')
+      ifram.style = 'display:none; margin: 20px'
+      document.body.appendChild(ifram)
+      const pri = ifram.contentWindow
+      pri.document.open()
+      pri.document.write(useGenerateChequePdf(formData.fields.value))
+      // pri.document.body.firstElementChild.prepend()
+      pri.document.close()
+      pri.focus()
+      setTimeout(() => pri.print(), 100)
+    }
+
     return {
       ...formData,
       showDrAccount,
       BenefactorForm,
       toggleDrAccount,
-      checkPermissions
+      checkPermissions,
+      exportPDF
     }
   },
 }
