@@ -82,11 +82,11 @@
       </template>
       <template v-slot:body-cell-date="props">
         <q-td :props="props">
-          {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date, 'bs') }}
+          {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date,
+            'bs') }}
         </q-td>
       </template>
     </q-table>
-    <!-- {{ aggregate }} -->
     <q-card class="q-mt-md" v-if="aggregate">
       <q-card-section>
         <div>
@@ -96,26 +96,16 @@
         </div>
         <hr />
         <div class="q-mt-md">
-          <div class="row q-mb-md" v-for="(value, key) in aggregate" :key="key">
+          <div class="row q-mb-md" v-for="header in aggregate_headers" :key="header[0]">
             <div class="col-6">
-              <div class="text-weight-medium text-grey-9 text-capitalize">
-                {{ key.replace(/_/g, ' ') }}
+              <div class="text-weight-medium text-grey-9">
+                {{ header[0] }}
               </div>
             </div>
             <div class="col-6">
-              <div class="text-weight-bold">{{ value }}</div>
+              <div class="text-weight-bold">{{ parseInt((aggregate?.[header[1]] || 0).toFixed(2)) }}</div>
             </div>
           </div>
-          <!-- <div class="row">
-            <div class="col-6">
-              <span class="text-weight-medium text-grey-9"
-                >Total Sales Invoice(s) Issued</span
-              >
-            </div>
-            <div class="col-6">
-              <span class="text-weight-bold"> 15 </span>
-            </div>
-          </div> -->
         </div>
       </q-card-section>
     </q-card>
@@ -204,6 +194,18 @@ export default {
       'inventory-categories': null,
       item_choices: null,
     })
+    const aggregate_headers = [
+      ['Total Sales Invoice(s) Issued', 'voucher__count'],
+      ['Taxable Sales Amount', 'sales_after_tax'],
+      ['Tax in Sales', 'tax_amount__sum'],
+      ['Net Sales Amount', 'net_amount__sum'],
+      ['Total Discounted Amount', 'discount_amount__sum'],
+      ['Total Quantity Sold', 'quantity__sum'],
+      ['Unique Items Sold', 'item__count'],
+      ['Customer(s)', 'voucher__party__count'],
+      ['Average Selling Price', 'rate__avg'],
+      ['Sales Agent(s)', 'voucher__sales_agent__count']
+    ]
     return {
       ...listData,
       newColumn,
@@ -212,7 +214,8 @@ export default {
       MultiSelectChip,
       checkPermissions,
       store,
-      DateConverter
+      DateConverter,
+      aggregate_headers
     }
   },
   created() {
