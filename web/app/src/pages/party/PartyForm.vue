@@ -27,38 +27,23 @@
               class="col-12 col-md-6" :error-message="errors.tax_registration_number"
               :error="!!errors.tax_registration_number" />
           </div>
-          <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1"></PartyRepresentative>
+          <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1">
+          </PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg row">
           <span v-if="isEdit" class="q-gutter-x-sm row">
             <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="orange-6" label="Update"
               class="q-mb-sm" type="submit" />
-            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="deleteModal = true" color="red-6" label="Delete"
+            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
               class="q-mb-sm" />
             <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
               class="q-mb-sm" />
           </span>
           <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create"
-            class="q-mr-sm q-mb-sm" type="submit"/>
+            class="q-mr-sm q-mb-sm" type="submit" />
         </div>
       </q-card>
     </q-card>
-    <q-dialog v-model="deleteModal">
-      <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-red-6">
-          <div class="text-h6 text-white">
-            <span class="q-mx-md">Are you sure?</span>
-          </div>
-        </q-card-section>
-
-        <q-card-section class="q-ma-md">
-          <div class="text-right text-blue-8 q-mt-lg row justify-between q-mx-lg">
-            <q-btn label="Yes" @click="onDeletClick(fields)"></q-btn>
-            <q-btn label="No" @click="() => (deleteModal = false)"></q-btn>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
   </q-form>
 </template>
 
@@ -90,26 +75,33 @@ export default {
     const addRepresentetive = (fields) => {
       fields.representative.push({})
     }
-    const deleteModal = ref(false)
-    function onDeletClick(fields) {
-      useApi(`/v1/parties/${fields.id}/`, { method: 'DELETE' })
-        .then(() => {
-          router.push('/party/list/')
-        })
-        .catch((err) => {
-          if (err.status === 400) {
-            $q.notify({
-              color: 'red-6',
-              message: err.data[0],
-              icon: 'report_problem',
-            })
-          }
-        })
+    function onDeletClick() {
+      $q.dialog({
+        title: '<span class="text-red">Delete?</span>',
+        message: 'Are you sure you want to delete?',
+        cancel: true,
+        html: true,
+      }).onOk(() => {
+        // submitWithStatus('Cancelled')
+        useApi(`/v1/parties/${formData.fields.value.id}/`, { method: 'DELETE' })
+          .then(() => {
+            router.push('/party/list/')
+          })
+          .catch((err) => {
+            if (err.status === 400) {
+              $q.notify({
+                color: 'red-6',
+                message: err.data[0],
+                icon: 'report_problem',
+              })
+            }
+          })
+      })
     }
+
     return {
       ...formData,
       addRepresentetive,
-      deleteModal,
       onDeletClick,
       checkPermissions
     }
