@@ -61,7 +61,7 @@
               </div>
             </div>
             <div class="col-6">
-              <div class="text-weight-bold">{{ parseFloat((value || 0).toFixed()) }}</div>
+              <div class="text-weight-bold">{{ parseInt(value || 0) }}</div>
             </div>
           </div>
         </div>

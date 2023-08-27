@@ -107,11 +107,11 @@
           <div class="row q-mb-md" v-for="(value, key) in aggregate" :key="key">
             <div class="col-6">
               <div class="text-weight-medium text-grey-9 text-capitalize">
-                {{ key.replace(/_/g, ' ') }}
+                {{ key.replace(/_/g, ' ').replace('meta', '') }}
               </div>
             </div>
             <div class="col-6">
-              <div class="text-weight-bold">{{ value }}</div>
+              <div class="text-weight-bold">{{ parseInt((value || 0)) }}</div>
             </div>
           </div>
         </div>
