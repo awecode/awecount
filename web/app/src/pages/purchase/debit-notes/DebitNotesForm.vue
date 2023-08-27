@@ -234,6 +234,9 @@ export default {
             removeArr.forEach((item) => {
               delete data[item]
             })
+            data.rows.forEach(row => {
+              delete row["id"]
+            });
             for (const key in data) {
               fields[key] = data[key]
               // if (key === )
