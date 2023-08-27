@@ -68,6 +68,7 @@ export default {
       getDefaults: true,
       successRoute: '/fund-transfer/list/',
     })
+    const route = useRoute()
     useMeta(() => {
       return {
         title:
@@ -78,6 +79,19 @@ export default {
     })
     formData.fields.value.date = formData.fields.value.date || formData.today
 
+    // TODO: Should Test this
+    onMounted(() => {
+      if (route.params && route.params.template) {
+        const template = route.params.template
+        if (template.from_account)
+          formData.fields.value.from_account = template.from_account
+        if (template.to_account) formData.fields.value.to_account = template.to_account
+        if (template.transaction_fee_account)
+          formData.fields.value.transaction_fee_account = template.transaction_fee_account
+        if (template.transaction_fee)
+          formData.fields.value.transaction_fee = template.transaction_fee
+      }
+    })
     return {
       ...formData,
       checkPermissions
