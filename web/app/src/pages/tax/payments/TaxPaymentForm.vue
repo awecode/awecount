@@ -4,10 +4,9 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!fields.id">New Tax Payment</span>
-          <span v-else>Update {{ fields.name }}</span>
+          <span v-else>Update</span>
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -36,9 +35,8 @@
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Draft', submitForm)"
               color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" type="submit" />
-            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')"
-              @click.prevent="submitWithStatus('Cancelled', submitForm)" color="red-6" label="Cancel" icon="cancel"
-              class="q-px-lg q-mb-sm" />
+            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')" @click.prevent="onCancelClick"
+              color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm" />
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Paid', submitForm)"
               color="green-6" :label="'Mark as paid'" class="q-px-lg q-mb-sm" />
           </span>
@@ -49,38 +47,25 @@
                 submitForm
               )
               " color="green-6" :label="'Update'" class="q-px-lg q-mb-sm" />
-            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="submitWithStatus('Cancelled', submitForm)"
-              color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm" />
+            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="onCancelClick" color="red-6" label="Cancel"
+              icon="cancel" class="q-px-lg q-mb-sm" />
           </span>
         </div>
       </q-card>
     </q-card>
-    <q-dialog v-model="deleteModal">
-      <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-red-6">
-          <div class="text-h6 text-white">
-            <span class="q-mx-md">Are you sure?</span>
-          </div>
-        </q-card-section>
-
-        <q-card-section class="q-ma-md">
-          <div class="text-right text-blue-8 q-mt-lg row justify-between q-mx-lg">
-            <q-btn label="Yes" @click="() => submitWithStatus('Cancelled', submitForm)"></q-btn>
-            <q-btn label="No" @click="() => (deleteModal = false)"></q-btn>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
   </q-form>
 </template>
 
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useQuasar } from 'quasar'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/tax-payments/'
+    const $q = useQuasar()
+    // const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
@@ -95,19 +80,27 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
     async function submitWithStatus(status, submitForm) {
-      const originalStatus = this.fields.status
-      this.fields.status = status
-      await submitForm()
-      if (Object.keys(this.errors).length > 0) {
-        this.fields.status = originalStatus
+      const originalStatus = formData.fields.value.status
+      formData.fields.value.status = status
+      try { await formData.submitForm() } catch (err) {
+        formData.fields.value.status = originalStatus
       }
     }
-    const deleteModal = ref(false)
+    const onCancelClick = async () => {
+      $q.dialog({
+        title: '<span class="text-red">Delete?</span>',
+        message: 'Are you sure you want to delete?',
+        cancel: true,
+        html: true,
+      }).onOk(() => {
+        submitWithStatus('Cancelled')
+      })
+    }
     return {
       ...formData,
       submitWithStatus,
-      deleteModal,
-      checkPermissions
+      checkPermissions,
+      onCancelClick
     }
   },
 }

@@ -47,7 +47,7 @@
             label="Create" class="q-ml-auto" type="submit" />
           <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="cancelForm"
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="onCancelClick"
             icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"
             icon="library_books" label="Journal Entries" class="text-h7 q-py-sm q-ml-md" />
@@ -60,10 +60,12 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useQuasar } from 'quasar'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/fund-transfer/'
+    const $q = useQuasar()
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/fund-transfer/list/',
@@ -92,9 +94,20 @@ export default {
           formData.fields.value.transaction_fee = template.transaction_fee
       }
     })
+    const onCancelClick = async () => {
+      $q.dialog({
+        title: '<span class="text-red">Delete?</span>',
+        message: 'Are you sure you want to delete?',
+        cancel: true,
+        html: true,
+      }).onOk(() => {
+        formData.cancelForm()
+      })
+    }
     return {
       ...formData,
-      checkPermissions
+      checkPermissions,
+      onCancelClick
     }
   },
 }
