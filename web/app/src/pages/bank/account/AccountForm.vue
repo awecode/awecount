@@ -5,7 +5,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Account</span>
-          <span v-else>Update Account</span>
+          <span v-else>Update Account | {{ fields.short_name }}</span>
         </div>
       </q-card-section>
 
