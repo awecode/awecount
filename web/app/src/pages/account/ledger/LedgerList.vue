@@ -58,6 +58,21 @@
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
       </template>
+      <template v-slot:body-cell-dr="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.dr || 0) }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-cr="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.cr || 0) }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-balance="props">
+        <q-td :props="props">
+          {{ parseInt(props.row.computed_balance || 0) }}
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
