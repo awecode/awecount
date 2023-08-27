@@ -4,7 +4,7 @@
         <q-card>
           <q-card-section class="bg-green text-white">
             <div class="text-h6">
-              <span v-if="isEdit">Update Journal Voucher</span>
+              <span v-if="isEdit">Update Journal Voucher | {{ fields.status }}</span>
               <span v-else>New Journal Voucher</span>
             </div>
           </q-card-section>
