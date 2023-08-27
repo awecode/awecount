@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Payment Receipt</span>
-          <span v-else>Update Payment Receipt</span>
+          <span v-else>Update Payment Receipt <span v-if="fields.voucher_no">| # {{ fields.voucher_no }}</span> </span>
         </div>
       </q-card-section>
       <q-card class="q-mx-lg q-pt-md">

@@ -61,7 +61,7 @@
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white print-hide">
           <div class="text-h6">
-            <span>Payment Receipt | {{ fields?.status }}</span>
+            <span>Payment Receipt | {{ fields?.status }} <span v-if="fields?.voucher_no">| </span></span>
           </div>
         </q-card-section>
         <div class="q-pa-lg q-pb-lg">
