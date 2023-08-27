@@ -37,32 +37,6 @@
                 </q-card>
               </q-dialog>
             </div>
-            <!-- <q-input
-              v-model="fields.date"
-              class="col-md-6 col-12"
-              label="Start Date"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="fields.date" mask="YYYY-MM-DD">
-                      <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input> -->
             <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
@@ -186,7 +160,6 @@ export default {
         formData.fields.value.deleted_rows.push(deleteObj)
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
-      // errors.rows.splice(index, 1)
     }
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
@@ -195,12 +168,6 @@ export default {
         formData.fields.value.status = originalStatus
       }
     }
-    // watch(
-    //   () => formData.fields,
-    //   (newValue) => {
-    //     console.log('dis type', newValue)
-    //   }
-    // )
     const fetchInvoice = (fields) => {
       if (
         referenceFormData.value.invoice_no &&

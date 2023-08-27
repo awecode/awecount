@@ -54,8 +54,11 @@
     <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+          <q-btn v-if="checkPermissions('DebitNoteModify') && fields.can_update_issued"
+            :to="`/debit-note/${fields.id}`" color="orange-6" label="Edit"
+            icon="edit" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as resolved"
             icon="mdi-check-all" />
           <q-btn v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" />
