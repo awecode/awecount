@@ -32,17 +32,17 @@
               <tr>
                 <td class="text-left">1.1 Taxable Sales</td>
                 <td class="text-center">
-                  {{ reportData.sales.total_meta_taxable }}
+                  {{ $nf(reportData.sales.total_meta_taxable) }}
                 </td>
                 <td class="text-center"></td>
                 <td class="text-center">
-                  {{ reportData.sales.total_meta_tax }}
+                  {{ $nf(reportData.sales.total_meta_tax) }}
                 </td>
               </tr>
               <tr>
                 <td class="text-left">1.2 Export</td>
                 <td class="text-center">
-                  {{ reportData.sales.total_export || 0 }}
+                  {{ $nf(reportData.sales.total_export) }}
                 </td>
                 <td class="text-center"></td>
                 <td class="text-center"></td>
@@ -50,7 +50,7 @@
               <tr>
                 <td class="text-left">1.3 Non-taxable Sales</td>
                 <td class="text-center">
-                  {{ reportData.sales.total_meta_non_taxable || 0 }}
+                  {{ $nf(reportData.sales.total_meta_non_taxable) }}
                 </td>
                 <td class="text-center"></td>
                 <td class="text-center"></td>
@@ -63,10 +63,10 @@
               <tr>
                 <td class="text-left">2.1 Taxable Purchase</td>
                 <td class="text-center">
-                  {{ reportData.purchase.total_meta_taxable }}
+                  {{ $nf(reportData.purchase.total_meta_taxable) }}
                 </td>
                 <td class="text-center">
-                  {{ reportData.purchase.total_meta_tax }}
+                  {{ $nf(reportData.purchase.total_meta_tax) }}
                 </td>
                 <td class="text-center">
                 </td>
@@ -74,10 +74,10 @@
               <tr>
                 <td class="text-left">2.2 Taxable Import</td>
                 <td class="text-center">
-                  {{ reportData.import.total_meta_taxable || 0 }}
+                  {{ $nf(reportData.import.total_meta_taxable) }}
                 </td>
                 <td class="text-center">
-                  {{ reportData.import.total_meta_tax || 0 }}
+                  {{ $nf(reportData.import.total_meta_tax) }}
                 </td>
                 <td class="text-center">
                 </td>
@@ -85,7 +85,7 @@
               <tr>
                 <td class="text-left">2.3 Non-taxable Purchase</td>
                 <td class="text-center">
-                  {{ reportData.purchase.total_meta_non_taxable || 0 }}
+                  {{ $nf(reportData.purchase.total_meta_non_taxable) }}
                 </td>
                 <td class="text-center">
                 </td>
@@ -95,7 +95,7 @@
               <tr>
                 <td class="text-left">2.4 Non-taxable Import</td>
                 <td class="text-center">
-                  {{ reportData.import.total_meta_non_taxable || 0 }}
+                  {{ $nf(reportData.import.total_meta_non_taxable) }}
                 </td>
                 <td class="text-center">
                 </td>
@@ -106,7 +106,7 @@
                 <td colspan="2" class="text-center text-black"><span class="text-center" style="color: black;">
                 <th>Tax Payable</th></span></td>
                 <td colspan="2" class="text-center text-weight-bold"><span class="text-center" style="color: black;">
-                <th>{{ Math.round((reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) * 100) / 100 }}
+                <th>{{ $nf(reportData.sales.total_meta_tax - reportData.purchase.total_meta_tax) }}
                 </th></span></td>
               </tr>
             </tbody>
@@ -119,6 +119,7 @@
 
 <script lang="ts">
 import { Ref } from 'vue'
+import {$nf} from 'src/composables/global'
 export default {
   setup() {
     const metaData = {
@@ -155,7 +156,7 @@ export default {
     //   }
     //   else return null
     // })
-    return { reportData, fetchData, fields }
+    return { reportData, fetchData, fields, $nf }
   },
 }
 </script>
