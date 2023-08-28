@@ -1,5 +1,11 @@
 <template>
-  <div class="row justify-center q-mt-lg">
-    <q-btn label="Go tO Login Page" color="green" to="/login"></q-btn>
+  <div>
+    <header class="row justify-between">
+      <div>
+        <img src="/img/" alt="">
+        <span>AWECOUNT</span>
+      </div>
+      <div></div>
+    </header>
   </div>
 </template>

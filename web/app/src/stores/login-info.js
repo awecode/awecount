@@ -23,11 +23,8 @@ export const useLoginStore = defineStore('loginStore', {
       this.username = null
       this.email = null
       this.token = null
-      this.companyInfo = null
-      this.isCalendarInAD = true
-      this.trialBalanceCollapseId = []
-      this.stockTrialBalanceCollapseId = []
-      this.userInfo = null
+      this.companyInfo = {}
+      this.userInfo = {}
     },
     updateDateRange(start_date, end_date) {
       this.dateRange.start_date = start_date
