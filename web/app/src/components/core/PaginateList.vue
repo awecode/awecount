@@ -60,26 +60,10 @@ const page_links = computed(() => {
 
     return rangeWithDots;
 })
-// const fetchPage = (page) => {
-//     // this.get(this.endpoint, page, this.collection_name);
-// }
-// const getLink = (pg) => {
-//     return { path: route.fullPath, query: { page: pg } };
-// }
 const changePage = (page) => {
-    // router.push({
-    //     path: $route.fullPath,
-    //     query: { search: route.query.search, page: page }
-    // })
     emit('updatePage', page)
 } 
 </script>
-<!-- <script>
-export default {
-    props: ,
-
-};
-</script> -->
 <style scoped>
 li {
     list-style: none;
