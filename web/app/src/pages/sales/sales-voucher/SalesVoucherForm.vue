@@ -4,7 +4,8 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Sales Invoice | Draft</span>
-          <span v-else>Update Sale Invoice | {{ fields.status }} <span v-if="fields.voucher_no">| # {{ fields.voucher_no }}</span></span>
+          <span v-else>Update Sale Invoice | {{ fields.status }} <span v-if="fields.voucher_no">| # {{ fields.voucher_no
+          }}</span></span>
         </div>
       </q-card-section>
 
@@ -142,11 +143,13 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" type="submit"/>
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft"
+          type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft" type="submit" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
+          type="submit" />
         <q-btn v-if="checkPermissions('SalesCreate')" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? 'Update': 'Issue'" />
+          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no}`" />
       </div>
     </q-card>
   </q-form>
@@ -165,7 +168,6 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/sales-voucher/'
     const loginStore = useLoginStore()
-    const openDatePicker = ref(false)
     const $q = useQuasar()
     const importChallanModal = ref(false)
     const voucherArray = ref([])
@@ -213,13 +215,12 @@ export default {
       fields.status = status
       if (!partyMode.value) fields.customer_name = null
       else fields.party = null
-      try {await submitForm() } catch (err) {
+      try { await submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
     formData.fields.value.due_date = formData.today
     formData.fields.value.date = formData.today
-    formData.fields.value.mode = 'Credit'
     formData.fields.value.is_export = false
 
     const fetchInvoice = async (fields, voucherArray) => {
@@ -336,18 +337,29 @@ export default {
           )
         formData.fields.value.address =
           formData.formDefaults.value.collections.parties[index].address
-          if (index) {
-            formData.fields.value.mode = "Credit"
-          }
+        if (index) {
+          formData.fields.value.mode = "Credit"
+        }
       } else if (!index) formData.fields.value.mode = "Cash"
     }
-
+    watch(() => formData.formDefaults.value, () => {
+      if (formData.isEdit.value) {
+        if (formData.fields.value.customer_name) partyMode.value = true
+      } else {
+        if (formData.formDefaults.value.fields?.mode) {
+          if (isNaN(formData.formDefaults.value.fields?.mode)) {
+            formData.fields.value.mode = formData.formDefaults.value.fields.mode
+          } else {
+            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
+          }
+        } else formData.fields.value.mode = 'Credit'
+      }
+    })
     return {
       ...formData,
       CategoryForm,
       PartyForm,
       SalesDiscountForm,
-      openDatePicker,
       staticOptions,
       InvoiceTable,
       partyMode,

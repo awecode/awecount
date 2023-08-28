@@ -211,8 +211,17 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.due_date = formData.today
     formData.fields.value.is_import = false
-    // formData.fields.value.mode = 'Credit'
-    // formData.fields.value.party = ''
+    watch(() => formData.formDefaults.value, () => {
+      if (!formData.isEdit.value) {
+        if (formData.formDefaults.value.fields?.mode) {
+          if (isNaN(formData.formDefaults.value.fields?.mode)) {
+            formData.fields.value.mode = formData.formDefaults.value.fields.mode
+          } else {
+            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
+          }
+        } else formData.fields.value.mode = 'Credit'
+      }
+    })
 
     return {
       ...formData,
