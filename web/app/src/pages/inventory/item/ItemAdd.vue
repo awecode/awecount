@@ -24,7 +24,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete class="q-full-width" label="Brand" v-model="fields.brand"
-                :options="formDefaults.collections?.brands" :modal-component="BrandForm" :error="errors.brand" />
+                :options="formDefaults.collections?.brands" :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
             </div>
           </div>
           <div>
@@ -35,7 +35,7 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
-                  :options="formDefaults.collections?.inventory_categories" :modal-component="InventoryCategoryForm"
+                  :options="formDefaults.collections?.inventory_categories" :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
                   :error="errors.category" @update:modelValue="setCategory" />
               </div>
             </div>
@@ -46,23 +46,23 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
-                  :options="formDefaults.collections?.units" :modal-component="UnitForm" :error="errors.unit_id" />
+                  :options="formDefaults.collections?.units" :modal-component="checkPermissions('UnitCreate') ?  UnitForm : null" :error="errors.unit_id" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
-                  :options="formDefaults.collections?.tax_scheme" :modal-component="TaxForm"
+                  :options="formDefaults.collections?.tax_scheme" :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
                   :error="errors.tax_scheme_id" />
               </div>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Sales Account" v-model="fields.sales_account"
-                  :options="formDefaults.collections?.accounts" :modal-component="AccountForm"
+                  :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
                   :error="errors.sales_account" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Purchase Account" v-model="fields.purchase_account"
-                  :options="formDefaults.collections?.accounts" :modal-component="AccountForm"
+                  :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ?  AccountForm : null"
                   :error="errors.purchase_account" />
               </div>
             </div>
@@ -70,12 +70,12 @@
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Discount Allowed Account"
                   v-model="fields.discount_allowed_account" :options="formDefaults.collections?.accounts"
-                  :modal-component="AccountForm" :error="errors.discount_allowed_account" />
+                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_allowed_account" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Discount Received Account"
                   v-model="fields.discount_received_account" :options="formDefaults.collections?.accounts"
-                  :modal-component="AccountForm" :error="errors.discount_received_account" />
+                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_received_account" />
               </div>
             </div>
             <div class="row q-gutter-y-lg q-mt-lg">
