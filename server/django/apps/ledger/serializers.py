@@ -405,7 +405,7 @@ class AggregatorSerializer(serializers.Serializer):
 
 
 class AccountClosingSerializer(serializers.ModelSerializer):
-    fiscal_period = serializers.StringRelatedField()
+    # fiscal_period = serializers.StringRelatedField()
     company = serializers.StringRelatedField()
     class Meta:
         model = AccountClosing

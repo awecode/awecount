@@ -372,9 +372,9 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
 
 
 class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
+    from rest_framework.permissions import AllowAny
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
-    from rest_framework.permissions import AllowAny
     permission_classes = [AllowAny]
 
     collections = [
@@ -387,11 +387,14 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
     @action(detail=False, methods=["POST"], url_path="run-closing")
     def run_closing(self, request):
         company = request.company
+        # import ipdb; ipdb.set_trace()
         fiscal_year_id = request.data.get("fiscal_year")
-        date = FiscalYear.objects.get(id=fiscal_year_id).end
+        fiscal_year = FiscalYear.objects.get(id=fiscal_year_id)
+        date = fiscal_year.end
         account_closing = AccountClosing.objects.get_or_create(company=company, fiscal_period_id=fiscal_year_id)[0]
         if account_closing.status == "Closed":
             return Response("Your accounts for this year have already been closed.", status=400)
         if datetime.now().date() < date:
             return Response("You cannot close your accounts before year end.", status=400)
-        return Response({})
+        account_closing.close(fiscal_year)
+        return Response("Successfully closed accounts for selected fiscal year.", status=200)
