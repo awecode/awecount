@@ -51,7 +51,7 @@
                     formDefaults?.collections.discounts
                   )
                   : staticOptions.discount_types
-                  " :modal-component="SalesDiscountForm">
+                  " :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||
@@ -110,7 +110,7 @@
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
-import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
+import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
@@ -243,7 +243,7 @@ export default {
       ...formData,
       CategoryForm,
       PartyForm,
-      SalesDiscountForm,
+      PurchaseDiscountForm,
       openDatePicker,
       staticOptions,
       InvoiceTable,
