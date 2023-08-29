@@ -49,7 +49,7 @@
                         " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                       </q-input>
                       <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
-                        :error="errors?.party ? errors?.party[0] : null" :modal-component="PartyForm" />
+                        :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                     </div>
                     <div class="col-2 row justify-center q-py-md">
                       <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -72,7 +72,7 @@
                           formDefaults?.collections.discounts
                         )
                         : staticOptions.discount_types
-                        " :modal-component="SalesDiscountForm">
+                        " :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                     </n-auto-complete>
                   </div>
                   <div class="col-4" v-if="fields.discount_type === 'Amount' ||
@@ -134,6 +134,7 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
@@ -314,6 +315,7 @@ export default {
       hasItemModifyAccess,
       enterClicked,
       currentPage,
+      checkPermissions
     }
   },
   created() {
