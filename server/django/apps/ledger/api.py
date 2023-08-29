@@ -8,7 +8,7 @@ from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
@@ -371,7 +371,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             return qs_to_xls(params)
 
 
-class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
+class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin, GenericViewSet):
     from rest_framework.permissions import AllowAny
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
@@ -392,11 +392,9 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         return super().get_queryset().filter(company=self.request.company)
-
-    @action(detail=False, methods=["POST"], url_path="run-closing")
-    def run_closing(self, request):
+    
+    def create(self, request, *args, **kwargs):
         company = request.company
-        # import ipdb; ipdb.set_trace()
         fiscal_year_id = request.data.get("fiscal_year")
         fiscal_year = FiscalYear.objects.get(id=fiscal_year_id)
         date = fiscal_year.end
@@ -407,3 +405,4 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
             return Response("You cannot close your accounts before year end.", status=400)
         account_closing.close(fiscal_year)
         return Response("Successfully closed accounts for selected fiscal year.", status=200)
+        
