@@ -379,7 +379,7 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
     permission_classes = [AllowAny]
 
     collections = [
-        ('fiscal-years', FiscalYear)
+        ('fiscal_years', FiscalYear)
     ]
 
     def get_queryset(self):
