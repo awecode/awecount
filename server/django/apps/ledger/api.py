@@ -381,6 +381,15 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
         ('fiscal_years', FiscalYear)
     ]
 
+    def get_defaults(self, request=None):
+        company = request.company
+        current_fiscal_year_id = company.current_fiscal_year_id
+        return {
+            "fields": {
+                "current_fiscal_year_id": current_fiscal_year_id
+            }
+        }
+
     def get_queryset(self):
         return super().get_queryset().filter(company=self.request.company)
 
