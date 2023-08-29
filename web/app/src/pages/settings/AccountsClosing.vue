@@ -34,6 +34,8 @@ const $q = useQuasar()
 const endpoint = '/v1/account-closing/'
 const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
     getDefaults: true,
+    successRoute: '/settings/account-closing/'
+    
 })
 watch(() => formDefaults.value, (newVal) => {
     if (newVal.fields.current_fiscal_year_id) {
