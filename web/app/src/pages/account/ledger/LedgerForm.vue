@@ -22,7 +22,7 @@
             </div>
             <div class="col-6">
               <n-auto-complete v-model="fields.category" :options="categoryChoices" label="Category *"
-                :modal-component="CategoryForm" :error="errors?.category" />
+                :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
             </div>
           </div>
         </q-card-section>

@@ -22,7 +22,7 @@
             v-model="voucher.account_id"
             :options="props.options"
             label="Account"
-            :modal-component="LedgerForm"
+            :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
@@ -106,6 +106,7 @@
 
 <script setup>
 import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 const props = defineProps(['voucher', 'index', 'options', 'errors'])
 const emit = defineEmits(['deleteVoucher', 'checkAddVoucher'])
 const voucher = ref(props.voucher)

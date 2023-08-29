@@ -13,7 +13,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-6">
               <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account"
-                :modal-component="LedgerForm" :error="errors?.account" />
+                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
