@@ -403,6 +403,6 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin,
             return Response('Your accounts for this year have already been closed.', status=400)
         if datetime.now().date() < date:
             return Response('You cannot close your accounts before year end.', status=400)
-        account_closing.close(fiscal_year)
+        account_closing.close()
         return Response('Successfully closed accounts for selected fiscal year.', status=200)
         

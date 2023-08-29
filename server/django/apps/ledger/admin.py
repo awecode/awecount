@@ -87,65 +87,66 @@ def run_account_closing(modeladmin, request, queryset):
     if instance.status == 'Closed':
         messages.warning(request, 'Already closed.')
         return
-    company = instance.company
-    date = instance.fiscal_period.end
+    # company = instance.company
+    # date = instance.fiscal_period.end
 
-    pl_account = Account.objects.get(name='Profit and Loss Account', default=True, company=company)
+    # pl_account = Account.objects.get(name='Profit and Loss Account', default=True, company=company)
 
-    income_category = Category.objects.get(name='Income', company=company, default=True, parent__isnull=True)
-    income_accounts = Account.objects.filter(category__in=income_category.get_descendants(include_self=True))
+    # income_category = Category.objects.get(name='Income', company=company, default=True, parent__isnull=True)
+    # income_accounts = Account.objects.filter(category__in=income_category.get_descendants(include_self=True))
 
-    expenses_category = Category.objects.get(name='Expenses', company=company, default=True, parent__isnull=True)
-    expenses_accounts = Account.objects.filter(category__in=expenses_category.get_descendants(include_self=True))
+    # expenses_category = Category.objects.get(name='Expenses', company=company, default=True, parent__isnull=True)
+    # expenses_accounts = Account.objects.filter(category__in=expenses_category.get_descendants(include_self=True))
 
-    journal_entry = JournalEntry.objects.create(date=date, content_type=ContentType.objects.get_for_model(instance),
-                                                object_id=instance.id, type='Closing')
-    jeid = journal_entry.id
+    # journal_entry = JournalEntry.objects.create(date=date, content_type=ContentType.objects.get_for_model(instance),
+    #                                             object_id=instance.id, type='Closing')
+    # jeid = journal_entry.id
 
-    transactions = []
+    # transactions = []
 
-    total_income_amount = 0
-    for income_account in income_accounts:
-        income_amount = income_account.get_day_closing(until_date=date)
-        # Amount is usually negative for Income
-        income_amount = -1 * income_amount
-        total_income_amount += income_amount
-        # TODO What if amount is positive?
-        if income_amount:
-            transaction = Transaction(account=income_account, dr_amount=income_amount, type='Closing',
-                                      journal_entry_id=jeid,
-                                      company_id=company.id)
-            transactions.append(transaction)
+    # total_income_amount = 0
+    # for income_account in income_accounts:
+    #     income_amount = income_account.get_day_closing(until_date=date)
+    #     # Amount is usually negative for Income
+    #     income_amount = -1 * income_amount
+    #     total_income_amount += income_amount
+    #     # TODO What if amount is positive?
+    #     if income_amount:
+    #         transaction = Transaction(account=income_account, dr_amount=income_amount, type='Closing',
+    #                                   journal_entry_id=jeid,
+    #                                   company_id=company.id)
+    #         transactions.append(transaction)
 
-    total_expense_amount = 0
-    for expense_account in expenses_accounts:
-        expense_amount = expense_account.get_day_closing(until_date=date)
-        # Amount is usually positive for Expense
-        # TODO What if amount is negative?
-        total_expense_amount += expense_amount
+    # total_expense_amount = 0
+    # for expense_account in expenses_accounts:
+    #     expense_amount = expense_account.get_day_closing(until_date=date)
+    #     # Amount is usually positive for Expense
+    #     # TODO What if amount is negative?
+    #     total_expense_amount += expense_amount
 
-        if expense_amount:
-            transaction = Transaction(account=expense_account, cr_amount=expense_amount, type='Closing',
-                                      journal_entry_id=jeid,
-                                      company_id=company.id)
-            transactions.append(transaction)
+    #     if expense_amount:
+    #         transaction = Transaction(account=expense_account, cr_amount=expense_amount, type='Closing',
+    #                                   journal_entry_id=jeid,
+    #                                   company_id=company.id)
+    #         transactions.append(transaction)
 
-    diff = total_income_amount - total_expense_amount
+    # diff = total_income_amount - total_expense_amount
 
-    if diff > 0:
-        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, cr_amount=diff,
-                                     type='Closing')
-    else:
-        pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id,
-                                     dr_amount=-1 * diff,
-                                     type='Closing')
+    # if diff > 0:
+    #     pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, cr_amount=diff,
+    #                                  type='Closing')
+    # else:
+    #     pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id,
+    #                                  dr_amount=-1 * diff,
+    #                                  type='Closing')
 
-    transactions.append(pl_transaction)
+    # transactions.append(pl_transaction)
 
-    Transaction.objects.bulk_create(transactions)
-    instance.journal_entry = journal_entry
-    instance.status = 'Closed'
-    instance.save()
+    # Transaction.objects.bulk_create(transactions)
+    # instance.journal_entry = journal_entry
+    # instance.status = 'Closed'
+    # instance.save()
+    instance.close()
     messages.success(request, 'Closed all income and expense accounts.')
 
 
