@@ -67,7 +67,7 @@ const onLoginSubmit = async () => {
       loginStore.email = data.user.email
       loginStore.companyInfo = data.company
       loginStore.userInfo = data.user
-      router.push('/')
+      router.push('/dashboard')
     })
     .catch((err) => {
       console.log(err)
