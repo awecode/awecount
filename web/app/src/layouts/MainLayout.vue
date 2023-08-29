@@ -440,6 +440,11 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/settings/purchase/',
         hide: !checkPermissions('PurchaseSettingView')
       },
+      {
+        title: 'Account Closing',
+        icon: 'mdi:building',
+        link: '/settings/account-closing/',
+      },
     ],
   },
   {

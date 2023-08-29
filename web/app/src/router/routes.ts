@@ -1197,6 +1197,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Purchase Settings'],
         },
       },
+      {
+        path: 'account-closing/',
+        component: () => import('src/pages/settings/AccountsClosing.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Account Closing'],
+        },
+      },
     ],
   },
   {
