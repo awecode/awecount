@@ -7,7 +7,6 @@
           <span v-else>Update Credit Note | <span v-if="isEdit"> {{ fields?.status }} | # {{fields?.voucher_no}}</span></span>
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -51,7 +50,7 @@
                       formDefaults?.collections.discounts
                     )
                     : staticOptions.discount_types
-                    " :modal-component="SalesDiscountForm">
+                    " :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||

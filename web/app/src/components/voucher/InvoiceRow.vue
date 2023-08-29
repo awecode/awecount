@@ -6,7 +6,7 @@
           <!-- TODO: solve error -->
           <n-auto-complete v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null"
-            :modal-component="usedInPos ? false : ItemAdd" :disabled="usedInPos" />
+            :modal-component="usedInPos ? false : (checkPermissions('InventoryAccountCreate') ? ItemAdd : null)" :disabled="usedInPos" />
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null">
@@ -81,6 +81,7 @@
 
 <script>
 import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
+import checkPermissions from 'src/composables/checkPermissions'
 export default {
   props: {
     itemOptions: {
@@ -251,6 +252,7 @@ export default {
       selectedItem,
       selectedTax,
       deleteRow,
+      checkPermissions
     }
   },
 }

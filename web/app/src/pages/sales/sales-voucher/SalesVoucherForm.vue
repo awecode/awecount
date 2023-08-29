@@ -44,7 +44,7 @@
                     :error="!!errors.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                   </q-input>
                   <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="PartyForm"
+                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
                     @update:modelValue="onPartyChange" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
@@ -72,7 +72,7 @@
                       formDefaults?.collections.discounts
                     )
                     : staticOptions.discount_types
-                    " :modal-component="SalesDiscountForm">
+                    " :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">

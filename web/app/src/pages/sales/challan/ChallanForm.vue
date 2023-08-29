@@ -18,7 +18,7 @@
                     :error="!!errors.customer_name" v-if="!partyMode || !!fields.customer_name">
                   </q-input>
                   <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="PartyForm" />
+                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchPartyMode(fields, isEdit)">
