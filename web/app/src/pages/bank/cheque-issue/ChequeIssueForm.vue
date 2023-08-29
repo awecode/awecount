@@ -21,8 +21,8 @@
           </div>
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12"
-              :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" />
-            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
+              :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
+            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount" type="number"
               :error="!!errors.amount" />
           </div>
           <div class="row q-col-gutter-md">
@@ -47,9 +47,9 @@
         </q-card-section>
         <div class="q-pr-md q-pb-lg row justify-between">
           <div class="row q-gutter-md">
-            <q-btn @click="exportPDF" v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="green"
+            <q-btn @click="exportPDF" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green"
               outline class="q-px-lg q-py-ms" style="display: inline-block;">Print Pdf</q-btn>
-            <q-btn v-if="fields?.status == 'Issued' && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
+            <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
               icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           </div>
           <div>
