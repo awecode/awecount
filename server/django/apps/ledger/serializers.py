@@ -2,6 +2,7 @@ from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
+from apps.ledger.models.base import AccountClosing
 
 from awecount.libs.drf_fields import RoundedField
 from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction, AccountOpeningBalance
@@ -401,3 +402,15 @@ class AggregatorSerializer(serializers.Serializer):
     year = serializers.CharField(required=False)
     total_debit = RoundedField()
     total_credit = RoundedField()
+
+
+class AccountClosingSerializer(serializers.ModelSerializer):
+    fiscal_period = serializers.StringRelatedField()
+    company = serializers.StringRelatedField()
+    class Meta:
+        model = AccountClosing
+        fields = ["company", "fiscal_period", "status"]
+        extra_kwargs = {
+            "status": {"read_only": True},
+            "company": {"read_only": True}
+        }

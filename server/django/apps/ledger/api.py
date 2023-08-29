@@ -16,14 +16,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from apps.aggregator.views import qs_to_xls
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
+from apps.ledger.models.base import AccountClosing
 from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
+from apps.users.models import FiscalYear
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
-from .serializers import AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, \
+from .serializers import AccountClosingSerializer, AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, \
     AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
@@ -367,3 +369,28 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
                 ('Transactions', queryset, TransactionGroupResource)
             ]
             return qs_to_xls(params)
+
+
+class AccountClosingViewSet(CollectionViewSet, ListModelMixin, GenericViewSet):
+    queryset = AccountClosing.objects.all()
+    serializer_class = AccountClosingSerializer
+    # def get_queryset()
+    from rest_framework.permissions import AllowAny
+    permission_classes = [AllowAny]
+
+    collections = [
+        ('fiscal-years', FiscalYear)
+    ]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(company=self.request.company)
+
+    @action(detail=False, methods=["POST"], url_path="run-closing")
+    def run_closing(self, request):
+        company = request.company
+        fiscal_year = company.current_fiscal_year
+        date = fiscal_year.end
+        account_closing = AccountClosing.objects.get_or_create(company=company, fiscal_period=fiscal_year)[0]
+        if account_closing.status == "Closed":
+            return Response("Your accounts for this year have already been closed.")
+        return Response("Hello")

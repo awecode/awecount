@@ -71,6 +71,7 @@ router.register('log-entries', aggregator.LogEntryViewSet, basename='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, basename='widget')
 
 router.register('test', TestView, basename='test')
+router.register('account-closing', ledger.AccountClosingViewSet, basename='account-closing')
 
 
 def trigger_error(request):
@@ -96,7 +97,6 @@ urlpatterns = [
                   path('v1/export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
                   path('v1/import/', aggregator_views.import_data, name='import_data'),
                 #   path('test/', TestView.as_view())
-
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
