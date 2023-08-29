@@ -13,11 +13,11 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
-                label="Bank Account *" :modal-component="CreateAccount" :error="errors?.bank_account" />
+                label="Bank Account *" :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null" :error="errors?.bank_account" />
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
-                label="Benefactor *" :modal-component="BenefactorForm" :error="errors?.benefactor" />
+                label="Benefactor *" :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null" :error="errors?.benefactor" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
@@ -61,7 +61,7 @@
 <script>
 import CreateAccount from '../account/AccountForm.vue'
 import useForm from '/src/composables/useForm'
-import BenefactorForm from '/src/components/BenefactorForm.vue'
+import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

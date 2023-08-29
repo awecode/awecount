@@ -66,7 +66,7 @@
 
 <script>
 import useForm from '/src/composables/useForm'
-import BenefactorForm from '/src/components/BenefactorForm.vue'
+import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
 // const $q = useQuasar()
