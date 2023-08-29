@@ -6,50 +6,58 @@
         <span class="text-h4 text-weight-bold text-grey-9">AWECOUNT</span>
       </div>
       <div class="row q-gutter-md btns-con">
-        <a href="https://docs.awecount.com/" style="color: inherit;"><q-btn style="letter-spacing: 1px;">Documentation</q-btn></a>
-        <q-btn style="letter-spacing: 1px;" to="/login">Sign in</q-btn>
+        <a href="https://docs.awecount.com/" style="color: inherit;"><q-btn
+            style="letter-spacing: 1px;">Documentation</q-btn></a>
+        <span><q-btn style="letter-spacing: 1px;" to="/login">Sign in</q-btn></span>
       </div>
     </header>
     <main class="q-py-xl q-mx-lg text-grey-9">
-      <div class="row-con items-end q-mb-xl">
-        <div>
-          <div class="text-h6 text-weight-bold text-blue-7">INTRODUCING</div>
-          <div class="text-h4 text-weight-bold q-mt-sm">Your Awesome Accountant</div>
-          <div class="text-body1 q-mt-xl">Automatic book-keeping for your business transactions.</div>
-          <div style="max-width: 450px; display: flex;" class="q-mt-md ">
-            <q-input v-model="text" label="Your Email Address?" filled style="flex-grow: 1;" />
-            <q-btn style="flex-grow: 0; flex-shrink: 0;" color="blue-6">Get Started!</q-btn>
+      <div style="max-width: 1400px; margin: 0 auto;">
+        <div class="row-con items-end q-mb-xl">
+          <div>
+            <div class="text-h6 text-weight-bold text-blue-7">INTRODUCING</div>
+            <div class="text-h4 text-weight-bold q-mt-sm">Your Awesome Accountant</div>
+            <div class="text-body1 q-mt-xl">Automatic book-keeping for your business transactions.</div>
+            <form action="https://formspree.io/mjvwepkb" method="POST">
+              <q-input v-model="fields.email" class="q-mt-md" label="Your Email Address?" filled style="flex-grow: 1; max-width: 450px;" type="email" required value=""
+                name="email" />
+              <div style="max-width: 450px; display: flex;" class="q-mt-md ">
+                <q-input v-model="fields.phone_no" label="Your Phone Number?" filled style="flex-grow: 1;" type="number" required value=""
+                  name="phone_no" />
+                <q-btn style="flex-grow: 0; flex-shrink: 0;" color="blue-6" type="submit">Get Started!</q-btn>
+              </div>
+            </form>
+          </div>
+          <div>
+            <img src="/img/login_bg.jpg" alt="" style="max-height: 350px; max-width: 100%;">
           </div>
         </div>
-        <div>
-          <img src="/img/login_bg.jpg" alt="" style="max-height: 350px; max-width: 100%;">
-        </div>
-      </div>
-      <div class="row-con q-mb-xl">
-        <div class="bg-white q-pa-lg">
-          <div class="text-body1 text-weight-medium">FEATURES</div>
-          <div class="q-mt-lg" style="display: flex; gap: 10px;" v-for="(item, index) in items" :key="index">
-            <div style="width: 50px;">
-              <q-icon :name="item.icon" size="sm" color="grey-8" style="flex-grow: 0; flex-shrink: 0;"></q-icon>
+        <div class="row-con q-mb-xl">
+          <div class="bg-white q-pa-lg">
+            <div class="text-body1 text-weight-medium">FEATURES</div>
+            <div class="q-mt-lg q-pt-sm" style="display: flex; gap: 10px;" v-for="(item, index) in items" :key="index">
+              <div style="width: 50px;">
+                <q-icon :name="item.icon" size="sm" color="grey-8" style="flex-grow: 0; flex-shrink: 0;"></q-icon>
+              </div>
+              <div style="flex-grow: 1;" class="text-body1 text-weight-medium text-grey-8">{{ item.text }}</div>
             </div>
-            <div style="flex-grow: 1;" class="text-body1 text-weight-medium text-grey-8">{{ item.text }}</div>
+          </div>
+          <div class="bg-white q-pa-lg">
+            <div class="q-my-lg">
+              <div class="text-center text-h6 font-weight-medium text-grey-8">Already have an account?</div>
+              <div class="text-center text-body2 text-weight-bold text-grey-8 q-mt-md">Login to Company Portal</div>
+            </div>
+            <LoginCard />
           </div>
         </div>
-        <div class="bg-white q-pa-lg">
-          <div class="q-my-lg">
-            <div class="text-center text-h6 font-weight-medium text-grey-8">Already have an account?</div>
-            <div class="text-center text-body2 text-weight-bold text-grey-8 q-mt-md">Login to Company Portal</div>
+        <div class="cards-con">
+          <div v-for="(card, index) in cards" :key="index" class="bg-white q-pa-md">
+            <div class="text-center q-mb-lg q-mt-sm">
+              <q-icon :name="card.icon" size="xl" color="blue-6"></q-icon>
+            </div>
+            <div class="text-center q-mb-lg text-h5 text-grey-8 font-weight-medium">{{ card.title }}</div>
+            <div class="text-center q-mb-lg text-body1 text-grey-7 font-weight-medium">{{ card.text }}</div>
           </div>
-          <LoginCard />
-        </div>
-      </div>
-      <div class="cards-con">
-        <div v-for="(card, index) in cards" :key="index" class="bg-white q-pa-md">
-          <div class="text-center q-mb-lg q-mt-sm">
-            <q-icon :name="card.icon" size="xl" color="blue-6"></q-icon>
-          </div>
-          <div class="text-center q-mb-lg text-h5 text-grey-8 font-weight-medium">{{ card.title }}</div>
-          <div class="text-center q-mb-lg text-body1 text-grey-7 font-weight-medium">{{ card.text }}</div>
         </div>
       </div>
     </main>
@@ -69,70 +77,6 @@
     </footer>
   </div>
 </template>
-<style scoped>
-/* .row-con {
-    display: grid;
-    grid-template-rows: auto auto;
-  } */
-.row-con {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 50px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.cards-con {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 15px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr 1fr;
-  }
-  @media (max-width: 800px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.client-con {
-  max-width: 1300px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-
-  @media (max-width: 800px) {
-    flex-flow: column;
-    /* justify-content: center; */
-    align-items: center;
-    gap: 15px;
-  }
-
-  @media (max-width: 800px) {
-    flex-flow: column;
-    /* justify-content: center; */
-    align-items: center;
-    gap: 15px;
-  }
-}
-
-@media (max-width: 800px) {
-  .client-con img {
-    max-width: 180px;
-    max-height: 40px;
-  }
-  .btns-con {
-    display: none;
-  }
-}
-
-.client-con img {
-  height: 50px;
-  width: auto;
-}
-</style>
 
 <script setup>
 const items = [
@@ -180,4 +124,79 @@ const cards = [
     icon: 'mdi-face-agent'
   },
 ]
+// const onEmailSubmit = (event) => {
+//   console.log('emit')
+//   debugger
+// }
+const fields = ref({
+  email: '',
+  phone_no: ''
+})
 </script>
+
+<style scoped>
+/* .row-con {
+    display: grid;
+    grid-template-rows: auto auto;
+  } */
+.row-con {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cards-con {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.client-con {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+
+  @media (max-width: 800px) {
+    flex-flow: column;
+    /* justify-content: center; */
+    align-items: center;
+    gap: 15px;
+  }
+
+  @media (max-width: 800px) {
+    flex-flow: column;
+    /* justify-content: center; */
+    align-items: center;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 800px) {
+  .client-con img {
+    max-width: 180px;
+    max-height: 40px;
+  }
+
+  .btns-con {
+    display: none;
+  }
+}
+
+.client-con img {
+  height: 50px;
+  width: auto;
+}
+</style>
