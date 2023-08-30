@@ -1274,7 +1274,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return PurchaseOrderCreateSerializer
     
     @action(detail=True, methods=["POST"])
-    def cancel(self, request):
+    def cancel(self, request, pk=None):
         instance = self.get_object()
         message = request.data.get("message")
         if not message:
