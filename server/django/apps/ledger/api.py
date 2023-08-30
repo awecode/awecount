@@ -372,10 +372,8 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
 
 
 class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin, GenericViewSet):
-    from rest_framework.permissions import AllowAny
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
-    permission_classes = [AllowAny]
 
     collections = [
         ('fiscal_years', FiscalYear)
