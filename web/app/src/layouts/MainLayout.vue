@@ -213,6 +213,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('DebitNoteView')
       },
       {
+        title: 'Purchase Order',
+        icon: 'mdi-clipboard-arrow-up',
+        link: '/purchase-order/list/',
+        hide: !checkPermissions('DebitNoteView')
+      },
+      {
         title: 'Purchase Discounts',
         icon: 'mdi-sale',
         link: '/purchase-discount/list/',

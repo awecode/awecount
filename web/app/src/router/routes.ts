@@ -482,6 +482,37 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/purchase-order',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/purchase-order/PurchaseOrderList.vue'),
+        name: 'Purchase Orders',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Orders'],
+        },
+      },
+      {
+        path: 'add/',
+        component: () =>
+          import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchase Orders', 'Create'],
+        },
+      },
+      {
+        path: '/purchase-order/:id',
+        component: () =>
+          import('src/pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Purchase Orders', 'Update'],
+        },
+      }
+    ],
+  },
+  {
     path: '/debit-note',
     component: () => import('layouts/MainLayout.vue'),
     children: [

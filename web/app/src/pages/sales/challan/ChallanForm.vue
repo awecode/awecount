@@ -113,7 +113,6 @@ export default {
       if (errors.rows) {
         errors.rows.splice(index, 1)
       }
-      console.log(deleteObj)
     }
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
