@@ -60,6 +60,7 @@ class PurchaseSetting(models.Model):
     mode = models.CharField(default='Credit', max_length=15)
 
     enable_row_description = models.BooleanField(default=False)
+    enable_purchase_order_import = models.BooleanField(default=False)
 
     @property
     def fields(self):
