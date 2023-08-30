@@ -19,6 +19,7 @@ MODULES = [
     *gdp('Category'),
     *gdp('Party'),
     *gdp('Account'),
+    *gdp('AccountClosing'),
     # Tax
     *gdp('TaxScheme'),
     # Voucher
@@ -31,6 +32,7 @@ MODULES = [
     *gdp('JournalVoucher'), 'JournalVoucherCancel',
     *gdp('Challan'),
     *gdp('InvoiceDesign'),
+    *gdp('PurchaseOrder'), 'PurchaseOrderCancel',
     # Bank
     *gdp('BankAccount'),
     *gdp('BankBranch'),

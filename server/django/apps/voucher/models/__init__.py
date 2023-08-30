@@ -340,7 +340,7 @@ class PurchaseOrder(TransactionModel, InvoiceModel):
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_orders')
 
     # Model key for module based permission
-    key = 'Purchase Order'
+    key = 'PurchaseOrder'
 
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')

@@ -839,6 +839,8 @@ class AccountClosing(models.Model):
     status = models.CharField(choices=CLOSING_STATUSES, max_length=50, default=CLOSING_STATUSES[0][0])
     journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.SET_NULL,
                                       blank=True, null=True)
+    
+    key = 'AccountClosing'
 
     def get_source_id(self):
         return self.id
