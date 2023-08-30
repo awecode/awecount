@@ -167,9 +167,6 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseOrder
         exclude = ['company', 'user', 'fiscal_year']
-        extra_kwargs = {
-            "party_id": {"required": True}
-        }
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -187,6 +184,10 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
             return
         next_voucher_no = get_next_voucher_no(PurchaseOrder, self.context['request'].company_id)
         validated_data['voucher_no'] = next_voucher_no
+
+    def validate_party(self, attr):
+        if not attr:
+            raise ValidationError("You must select a party.")
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
