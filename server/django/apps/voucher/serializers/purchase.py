@@ -200,3 +200,13 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
         for index, row in enumerate(rows_data):
             PurchaseOrderRow.objects.create(voucher=instance, **row)
         return instance
+    
+    def update(self, instance, validated_data):
+        rows_data = validated_data.pop('rows')
+        self.assign_fiscal_year(validated_data, instance=instance)
+        # self.validate_voucher_status(validated_data, instance)
+        self.assign_voucher_number(validated_data, instance)
+        self.Meta.model.objects.filter(pk=instance.id).update(**validated_data)
+        for index, row in enumerate(rows_data):
+            PurchaseOrderRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        return instance
