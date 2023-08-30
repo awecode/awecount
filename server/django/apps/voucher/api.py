@@ -1167,6 +1167,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             }
         }
         return data
+    
 
     @action(detail=True, methods=['POST'])
     def mark_as_paid(self, request, pk):
@@ -1234,7 +1235,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
 class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     queryset = PurchaseOrder.objects.all()
-    serializer_class = PurchaseOrderListSerializer
+    serializer_class = PurchaseOrderCreateSerializer
     model = PurchaseOrder
     row = PurchaseOrderRow
 
@@ -1282,4 +1283,3 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         instance.status = "Cancelled"
         instance.save()
         return Response({})
-

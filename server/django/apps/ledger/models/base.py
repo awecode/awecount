@@ -204,8 +204,6 @@ class Account(models.Model):
     @property
     def transaction_amounts(self):
         return 0
-        # # import ipdb
-        # # ipdb.set_trace()
         # return self.transactions.aggregate(dr=Sum('dr_amount'), cr=Sum('cr_amount'))
 
     class Meta:

@@ -188,6 +188,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     def validate_party(self, attr):
         if not attr:
             raise ValidationError("You must select a party.")
+        return attr
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
