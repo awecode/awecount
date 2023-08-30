@@ -31,9 +31,9 @@
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
                 <q-btn v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
-                    @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="red" label="Update" />
+                    @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
                 <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
-                    @click.prevent="onResolvedClick" color="green" />
+                    @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
                 <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)"
                     color="green" label="Issue" />
             </div>
@@ -69,6 +69,7 @@ export default {
     setup(props, { emit }) {
         const endpoint = '/v1/purchase-order/'
         const openDatePicker = ref(false)
+        const router = useRouter()
         const $q = useQuasar()
         const isDeleteOpen = ref(false)
         const deleteMsg = ref('')
@@ -104,7 +105,7 @@ export default {
         formData.fields.value.date = formData.today
         formData.fields.value.party = ''
         const onCancelClick = () => {
-            useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
+            useApi(`/v1/purchase-order/${formData.fields.value.id}/cancel/`, {
                 method: 'POST',
                 body: {
                     message: deleteMsg.value
@@ -118,6 +119,7 @@ export default {
                     })
                     formData.fields.value.status = 'Cancelled'
                     isDeleteOpen.value = false
+                    router.push('/purchase-order/list/')
                 })
                 .catch((err) => {
                     let message = 'error'
