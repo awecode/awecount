@@ -1234,7 +1234,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
 class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     queryset = PurchaseOrder.objects.all()
-    serializer_class = None
+    serializer_class = PurchaseOrderListSerializer
     model = PurchaseOrder
     row = PurchaseOrderRow
 

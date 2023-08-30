@@ -155,7 +155,7 @@ class PurchaseOrderListSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source='party.name')
 
     class Meta:
-        model = PurchaseOrderRow
+        model = PurchaseOrder
         fields = ['id', 'voucher_no', 'party_name', 'date', 'status']
 
 
