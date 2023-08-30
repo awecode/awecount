@@ -35,7 +35,7 @@
                 </q-card>
               </q-dialog>
             </div>
-            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date"></date-picker>
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -209,6 +209,7 @@ export default {
           `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
         )
           .then((data) => {
+            const response = { ...data }
             if (fields.invoices) {
               fields.invoices.push(data.id)
             } else fields.invoices = [data.id]
@@ -226,6 +227,7 @@ export default {
               'due_date',
               'date',
               'remarks',
+              'rows'
             ]
             removeArr.forEach((item) => {
               delete data[item]
@@ -234,6 +236,13 @@ export default {
               fields[key] = data[key]
               // if (key === )
             }
+            if (response.rows && response.rows.length > 0) {
+                fields.rows = []
+                response.rows.forEach((row) => {
+                  delete row.id
+                  fields.rows.push(row)
+                })
+              }
             if (data.discount_obj && data.discount_obj.id) {
               fields.discount_type = data.discount_obj.id
             }
