@@ -7,58 +7,42 @@
           <span v-else>Update Purchase / Expense</span>
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
+            <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_purchase_order_import">
+              <q-btn color="blue" @click="importPurchaseOrder = true" label="Import purchase order(s)"></q-btn>
+              <div v-if="fields.invoices">
+                <q-input dense v-model="voucherArray" disable label="Purchase Order(s)"></q-input>
+              </div>
+              <q-dialog v-model="importPurchaseOrder">
+                <q-card style="min-width: min(60vw, 400px)">
+                  <q-card-section class="bg-grey-4">
+                    <div class="text-h6">
+                      <span>Add Reference Purchase Order(s)</span>
+                    </div>
+                  </q-card-section>
+
+                  <q-card-section class="q-mx-lg">
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*"></q-input>
+                    <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
+                      :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
+                      emit-value></q-select>
+                    <div class="row justify-end q-mt-lg">
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-dialog>
+            </div>
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
-                :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
+                :error="errors?.party ? errors?.party : null"
+                :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
             </div>
             <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
               :error-message="errors.voucher_no" :error="!!errors.voucher_no">
             </q-input>
-          </div>
-          <div class="row q-col-gutter-md">
-            <!-- <div class="col-md-6 col-12 row" style="flex-wrap: nowrap">
-              <div
-                :class="
-                  fields.discount_type === 'Amount' ||
-                  fields.discount_type === 'Percent'
-                    ? 'col-8'
-                    : 'col-12'
-                "
-              >
-                <n-auto-complete
-                  v-model="fields.discount_type"
-                  label="Discount*"
-                  :error="errors.discount_type"
-                  :options="
-                    formDefaults.collections
-                      ? staticOptions.discount_types.concat(
-                          formDefaults?.collections.discounts
-                        )
-                      : staticOptions.discount_types
-                  "
-                  :modal-component="SalesDiscountForm"
-                >
-                </n-auto-complete>
-              </div>
-              <div
-                style="flex-grow: 1; margin-left: 10px"
-                v-if="
-                  fields.discount_type === 'Amount' ||
-                  fields.discount_type === 'Percent'
-                "
-              >
-                <q-input
-                  v-model.number="fields.discount"
-                  label="Discount"
-                  :error-message="errors.discount"
-                  :error="!!errors.discount"
-                ></q-input>
-              </div>
-            </div> -->
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div :class="['Percent', 'Amount'].includes(fields.discount_type)
                 ? 'col-6'
@@ -91,12 +75,6 @@
               </div>
             </div>
             <div class="col-md-6 col-12">
-              <!-- <q-input
-                v-model="fields.date"
-                label="Date"
-                :error-message="errors.date"
-                :error="!!errors.date"
-              ></q-input> -->
               <date-picker v-model="fields.date" label="Date" :error-message="errors.date"
                 :error="!!errors.date"></date-picker>
             </div>
@@ -153,7 +131,8 @@
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft" type="submit" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft"
+          type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit"
@@ -176,6 +155,7 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/purchase-vouchers/'
     const openDatePicker = ref(false)
+    const $q = useQuasar()
     const staticOptions = {
       discount_types: discount_types,
       modes: modes,
@@ -184,6 +164,12 @@ export default {
       getDefaults: true,
       successRoute: '/purchase-voucher/list/',
     })
+    const importPurchaseOrder = ref(false)
+    const referenceFormData = ref({
+      invoice_no: null,
+      fiscal_year: null,
+    })
+    const voucherArray = ref([])
     useMeta(() => {
       return {
         title:
@@ -204,7 +190,7 @@ export default {
     const onSubmitClick = async (status, fields, submitForm) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      try { await submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -222,7 +208,93 @@ export default {
         } else formData.fields.value.mode = 'Credit'
       }
     })
-
+    const fetchInvoice = async (fields, voucherArray) => {
+      if (
+        referenceFormData.value.invoice_no &&
+        referenceFormData.value.fiscal_year
+      ) {
+        if (
+          fields.invoices &&
+          fields.invoices.includes(referenceFormData.value.invoice_no)
+        ) {
+          $q.notify({
+            color: 'red-6',
+            message: 'Invoice Already Exists!',
+            icon: 'report_problem',
+            position: 'top-right',
+          })
+        } else {
+          const url = 'v1/purchase-order/by-voucher-no/'
+          useApi(
+            url +
+            `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
+          )
+            .then((data) => {
+              const response = { ...data }
+              if (fields.invoices) {
+                if (fields.party && fields.party !== response.party) {
+                  $q.notify({
+                    color: 'red-6',
+                    message: 'A single purchase order can be issued to a single party only',
+                    icon: 'report_problem',
+                    position: 'top-right',
+                  })
+                  return
+                }
+                fields.invoices.push(data.id)
+              } else fields.invoices = [data.id]
+              voucherArray.push(response.voucher_no)
+              const removeArr = [
+                'id',
+                'date',
+                'voucher_meta',
+                'print_count',
+                'issue_datetime',
+                'is_export',
+                'status',
+                'due_date',
+                'rows',
+                'date',
+                'remarks',
+                'voucher_no'
+              ]
+              removeArr.forEach((item) => {
+                delete data[item]
+              })
+              for (const key in data) {
+                fields[key] = data[key]
+                // if (key === )
+              }
+              if (response.rows && response.rows.length > 0) {
+                if (!fields.rows) fields.rows = []
+                response.rows.forEach((row) => {
+                  delete row.id
+                  fields.rows.push(row)
+                })
+              }
+              // if (data.discount_obj && data.discount_obj.id) {
+              //   fields.discount_type = data.discount_obj.id
+              // }
+              importPurchaseOrder.value = false
+            })
+            .catch((err) => {
+              $q.notify({
+                color: 'red-6',
+                message: err.data?.detail || 'Error',
+                icon: 'report_problem',
+                position: 'top-right',
+              })
+            })
+        }
+      } else {
+        $q.notify({
+          color: 'red-6',
+          message: 'Please fill in the form completely!',
+          icon: 'report_problem',
+          position: 'top-right',
+        })
+      }
+    }
     return {
       ...formData,
       CategoryForm,
@@ -233,7 +305,11 @@ export default {
       InvoiceTable,
       deleteRowErr,
       onSubmitClick,
-      checkPermissions
+      checkPermissions,
+      importPurchaseOrder,
+      referenceFormData,
+      fetchInvoice,
+      voucherArray
     }
   },
 }

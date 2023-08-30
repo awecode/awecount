@@ -302,21 +302,12 @@ export default {
               importChallanModal.value = false
             })
             .catch((err) => {
-              if (err.status === 404) {
-                $q.notify({
+              $q.notify({
                   color: 'red-6',
-                  message: 'Invoice not found!',
+                  message: err.data?.detail || 'Error',
                   icon: 'report_problem',
                   position: 'top-right',
                 })
-              } else if (err.status === 400) {
-                $q.notify({
-                  color: 'red-6',
-                  message: 'The Challan cannot be used!',
-                  icon: 'report_problem',
-                  position: 'top-right',
-                })
-              }
             })
         }
       } else {

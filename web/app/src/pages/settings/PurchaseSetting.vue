@@ -44,6 +44,10 @@
               <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?">
               </q-checkbox>
             </div>
+            <div>
+              <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?">
+              </q-checkbox>
+            </div>
             <div></div>
           </div>
         </div>
