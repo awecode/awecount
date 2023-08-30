@@ -1283,3 +1283,15 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         instance.status = "Cancelled"
         instance.save()
         return Response({})
+    
+    @action(detail=False, url_path='by-voucher-no')
+    def by_voucher_no(self, request):
+        qs = super().get_queryset().prefetch_related(
+            Prefetch('rows', PurchaseOrderRow.objects.all().select_related('item', 'unit'))
+        )
+        voucher_number = request.query_params.get('invoice_no')
+        fiscal_year=request.query_params.get('fiscal_year')
+        instance = get_object_or_404(voucher_no=voucher_number, fiscal_year_id=fiscal_year, queryset=qs)
+        if instance.status == 'Cancelled':
+            return Response({'detail': 'The selected purchase order can not be used.'})
+        return Response(PurchaseOrderCreateSerializer(instance).data)
