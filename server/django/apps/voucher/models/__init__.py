@@ -40,9 +40,9 @@ CHALLAN_STATUSES = (
 )
 
 PURCHASE_ORDER_STATUS_CHOICES = [
-    ('Draft', 'Draft'),
+    # ('Draft', 'Draft'),
     ('Issued', 'Issued'),
-    ('Resolved', 'Resolved'),
+    # ('Resolved', 'Resolved'),
     ('Cancelled', 'Cancelled')
 ]
 
