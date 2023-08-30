@@ -167,6 +167,9 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseOrder
         exclude = ['company', 'user', 'fiscal_year']
+        extra_kwargs = {
+            "party_id": {"required": True}
+        }
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
