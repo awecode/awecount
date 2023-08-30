@@ -3,7 +3,8 @@
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Credit Note | {{ fields?.status }} <span v-if="fields?.voucher_no"> | #{{ fields?.voucher_no }}</span></span>
+          <span>Credit Note | {{ fields?.status }} <span v-if="fields?.voucher_no"> | #{{ fields?.voucher_no
+          }}</span></span>
         </div>
       </q-card-section>
       <ViewerHeader :fields="fields" />
@@ -33,13 +34,8 @@
         <!-- {{ fields }} -->
         <q-btn v-if="checkPermissions('CreditNoteModify') && fields.can_update_issued" color="orange-5" label="Edit"
           icon="edit" :to="`/credit-note/${fields.id}/`" />
-        <q-btn
-            v-if="fields?.status === 'Issued'"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            color="green-6"
-            label="mark as resolved"
-            icon="mdi-check-all"
-          />
+        <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
+          color="green-6" label="mark as resolved" icon="mdi-check-all" />
         <q-btn v-if="checkPermissions('CreditNoteCancel')" color="red-5" label="Cancel" icon="cancel"
           @click.prevent="() => (isDeleteOpen = true)" />
       </div>

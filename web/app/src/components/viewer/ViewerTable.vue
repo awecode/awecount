@@ -74,8 +74,8 @@
       </q-tr>
       <q-tr class="text-subtitle2">
         <td></td>
-        <td>
-          <span>In Words: {{ numberToText(fields?.total_amount) }} </span>
+        <td colspan="6">
+          <span style="white-space: wrap;">In Words: {{ numberToText(fields?.total_amount) }} </span>
         </td>
       </q-tr>
     </tbody>
