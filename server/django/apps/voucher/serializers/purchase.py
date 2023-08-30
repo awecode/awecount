@@ -148,7 +148,7 @@ class PurchaseOrderRowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseOrderRow
-        fields = ['item', 'voucher', 'unit']
+        exclude = ['item', 'voucher', 'unit']
 
 
 class PurchaseOrderListSerializer(serializers.ModelSerializer):
