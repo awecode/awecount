@@ -1,5 +1,6 @@
 from django.db import models
 from django.dispatch import receiver
+from django.contrib.postgres.fields import ArrayField
 
 from apps.bank.models import BankAccount
 from apps.users.models import Company
@@ -61,6 +62,9 @@ class PurchaseSetting(models.Model):
 
     enable_row_description = models.BooleanField(default=False)
     enable_purchase_order_import = models.BooleanField(default=False)
+
+    enable_item_rate_change_alert = models.BooleanField(default=False)
+    rate_change_alert_emails = ArrayField(models.EmailField(blank=True, null=True), null=True, blank=True)
 
     @property
     def fields(self):
