@@ -76,7 +76,8 @@ class PurchaseSetting(models.Model):
             'show_trade_discount_in_row': self.show_trade_discount_in_row,
             'enable_row_description': self.enable_row_description,
             'is_trade_discount_in_row': self.is_trade_discount_in_row,
-            'enable_due_date_in_voucher': self.enable_due_date_in_voucher
+            'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
+            'enable_purchase_order_import': self.enable_purchase_order_import
         }
 
     def __str__(self):
