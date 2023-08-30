@@ -27,7 +27,7 @@ class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSe
             if not bool(dr_amt) and not bool(cr_amt):
                 raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
         
-        # Raise error is debit and credit totals differ
+        # Raise error if debit and credit totals differ
         dr_total = 0
         cr_total = 0
         for row in attrs.get("rows"):

@@ -2,8 +2,9 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.tax.serializers import TaxSchemeSerializer
+from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
-from ..models import PurchaseDiscount, PurchaseVoucherRow, PurchaseVoucher
+from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
 
@@ -138,3 +139,60 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
         model = PurchaseVoucher
         fields = ('date', 'party_name', 'tax_registration_number', 'voucher_no', 'voucher_meta', 'item_names', 'units',
                   'total_quantity')
+
+
+class PurchaseOrderRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=False)
+    unit_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = PurchaseOrderRow
+        fields = ['item', 'voucher', 'unit']
+
+
+class PurchaseOrderListSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source='party.name')
+
+    class Meta:
+        model = PurchaseOrderRow
+        fields = ['id', 'voucher_no', 'party_name', 'date', 'status']
+
+
+class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
+    print_count = serializers.ReadOnlyField()
+    rows = PurchaseOrderRowSerializer(many=True)
+
+    class Meta:
+        model = PurchaseOrder
+        exclude = ['company', 'user', 'fiscal_year']
+
+    def assign_fiscal_year(self, validated_data, instance=None):
+        if instance and instance.fiscal_year_id:
+            return
+        fiscal_year = self.context['request'].company.current_fiscal_year
+        if fiscal_year.includes(validated_data.get('date')):
+            validated_data['fiscal_year_id'] = fiscal_year.id
+        else:
+            raise ValidationError({
+                'date': ['Date not in current fiscal year.']
+            })
+
+    def assign_voucher_number(self, validated_data, instance=None):
+        if instance and instance.voucher_no:
+            return
+        next_voucher_no = get_next_voucher_no(PurchaseOrder, self.context['request'].company_id)
+        validated_data['voucher_no'] = next_voucher_no
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop('rows')
+        request = self.context['request']
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
+        validated_data['company_id'] = request.company_id
+        validated_data['user_id'] = request.user.id
+        instance = PurchaseOrder.objects.create(**validated_data)
+        for index, row in enumerate(rows_data):
+            PurchaseOrderRow.objects.create(voucher=instance, **row)
+        return instance

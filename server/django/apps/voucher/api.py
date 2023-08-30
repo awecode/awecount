@@ -25,7 +25,7 @@ from apps.product.serializers import ItemSalesSerializer, ItemPurchaseSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.filters import SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
+from apps.voucher.filters import PurchaseOrderFilterSet, SalesVoucherFilterSet, PurchaseVoucherFilterSet, CreditNoteFilterSet, \
     SalesDiscountFilterSet, DebitNoteFilterSet, PurchaseDiscountFilterSet, JournalVoucherFilterSet, SalesRowFilterSet, \
     PaymentReceiptFilterSet, ChallanFilterSet
 from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
@@ -33,6 +33,7 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
     PurchaseVoucherRowResource, CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
+from apps.voucher.serializers.purchase import PurchaseOrderCreateSerializer, PurchaseOrderListSerializer
 from apps.voucher.serializers.voucher_settings import PurchaseSettingCreateSerializer, SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, SalesSettingCreateSerializer, \
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 # from awecount.libs.db import DistinctSum
@@ -40,7 +41,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin, GenericSerializer
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
-from .models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
+from .models import PurchaseOrder, PurchaseOrderRow, SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
     InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, \
     PurchaseDiscount, \
     DebitNote, DebitNoteRow
@@ -1229,3 +1230,44 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         #          SalesVoucherRowResource),
         #     ]
         #     return qs_to_xls(params)
+
+
+class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
+    queryset = PurchaseOrder.objects.all()
+    serializer_class = None
+    model = PurchaseOrder
+    row = PurchaseOrderRow
+
+    from rest_framework.permissions import AllowAny
+    permission_classes = [AllowAny]
+
+    collections = [
+        ('parties', Party, PartyMinSerializer),
+        ('units', Unit),
+        ('items', Item.objects.filter(can_be_purchased=True, track_inventory=True), ItemPurchaseSerializer)
+    ]
+
+    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+
+    filterset_class = PurchaseOrderFilterSet
+
+    search_fields = [
+        'voucher_no',
+        'party__name',
+        'remarks',
+        'party__tax_registration_number',
+        'rows__item__name'
+    ]
+
+    def get_queryset(self, **kwargs):
+        qs = super(PurchaseOrderViewSet, self).get_queryset()
+        if self.action == 'retrieve':
+            qs = qs.prefetch_related('rows')
+        elif self.action == 'list':
+            qs = qs.select_related('party')
+        return qs.order_by('-pk')
+    
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PurchaseOrderListSerializer
+        return PurchaseOrderCreateSerializer
