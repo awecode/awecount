@@ -1271,3 +1271,15 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == "list":
             return PurchaseOrderListSerializer
         return PurchaseOrderCreateSerializer
+    
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request):
+        instance = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
+        instance.remarks = f"Reason for cancellation: {message}"
+        instance.status = "Cancelled"
+        instance.save()
+        return Response({})
+
