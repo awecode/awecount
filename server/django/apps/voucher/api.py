@@ -311,6 +311,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == 'list' or self.action in ('choices',):
             return PurchaseVoucherListSerializer
         return PurchaseVoucherCreateSerializer
+    
+    def get_defaults(self, request=None):
+        return {
+            'options': {
+                'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data
+            },
+        }
 
     @action(detail=True)
     def details(self, request, pk):
