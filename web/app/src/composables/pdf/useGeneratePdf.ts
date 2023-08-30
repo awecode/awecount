@@ -42,7 +42,7 @@ export default function useGeneratePdf(
   if (!onlyBody) {
     const header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
-      <h1 style="margin: 5px 0; font-size: 45px; font-weight: 500;">${compayInfo.name} ${
+      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${compayInfo.name} ${
       compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : 'Ltd.'
     }</h1>
       <div>${compayInfo.address}</div>
