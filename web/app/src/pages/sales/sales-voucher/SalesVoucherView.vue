@@ -69,7 +69,7 @@
         </q-dialog>
       </div>
     </div>
-    <div class="print-only" v-html="useGeneratePdf('salesVoucher', false, fields)">
+    <div class="print-only" v-html="useGeneratePdf('salesVoucher', true, fields)">
     </div>
   </div>
 </template>
