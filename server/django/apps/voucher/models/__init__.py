@@ -38,6 +38,14 @@ CHALLAN_STATUSES = (
     # ('Approved', 'Approved'),
     # ('Unapproved', 'Unapproved'),
 )
+
+PURCHASE_ORDER_STATUS_CHOICES = [
+    ('Draft', 'Draft'),
+    ('Issued', 'Issued'),
+    ('Resolved', 'Resolved'),
+    ('Cancelled', 'Cancelled')
+]
+
 MODES = (
     ('Credit', 'Credit'),
     ('Cash', 'Cash'),
@@ -314,6 +322,39 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     @property
     def amount_before_discount(self):
         return self.net_amount - self.tax_amount + self.discount_amount
+    
+
+class PurchaseOrder(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    date = models.DateField()
+    status = models.CharField(max_length=255, choices=PURCHASE_ORDER_STATUS_CHOICES)
+    remarks = models.TextField(blank=True, null=True)
+
+    print_count = models.PositiveSmallIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_orders')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='purchase_Orders')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_orders')
+
+    # Model key for module based permission
+    key = 'Purchase Order'
+
+    class Meta:
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
+
+
+class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name='rows')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='purchase_order_rows')
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Model key for module based permission
+    key = 'Purchase Order'
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
