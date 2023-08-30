@@ -397,12 +397,9 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin,
         company = request.company
         fiscal_year_id = request.data.get('fiscal_year')
         fiscal_year = FiscalYear.objects.get(id=fiscal_year_id)
-        date = fiscal_year.end
         account_closing = AccountClosing.objects.get_or_create(company=company, fiscal_period_id=fiscal_year_id)[0]
         if account_closing.status == 'Closed':
             return Response({'detail': 'Your accounts for this year have already been closed.'}, status=400)
-        if datetime.now().date() < date:
-            return Response({'detail': 'You cannot close your accounts before year end.'}, status=400)
         account_closing.close()
         return Response('Successfully closed accounts for selected fiscal year.', status=200)
         
