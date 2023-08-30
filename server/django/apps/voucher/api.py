@@ -1245,10 +1245,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = PurchaseOrderCreateSerializer
     model = PurchaseOrder
     row = PurchaseOrderRow
-
-    from rest_framework.permissions import AllowAny
-    permission_classes = [AllowAny]
-
+    
     collections = [
         ('parties', Party, PartyMinSerializer),
         ('units', Unit),
