@@ -28,7 +28,7 @@
               </div>
               <div></div>
             </div>
-            <DatePicker class="col-md-6 col-12" label="Deposit Date*" v-model="fields.date" />
+            <DatePicker class="col-md-6 col-12" label="Deposit Date*" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
           </div>
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"

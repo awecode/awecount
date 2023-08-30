@@ -24,7 +24,7 @@
                     </div>
                   </div>
                   <div class="q-mx-md">
-                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
+                    <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" :error="true" :error-message="'asgcvagscvg'" />
                   </div>
                   <div class="q-mx-md row q-mb-md q-mt-lg">
                     <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
@@ -65,7 +65,7 @@
             <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
             <div class="row q-gutter-x-md">
               <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
-                class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/challan/${props.row.voucher_no}/`" />
+                class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/purchase-order/${props.row.voucher_no}/`" />
             </div>
             <!-- {{ props }} -->
           </q-td>
@@ -79,7 +79,7 @@
   import checkPermissions from 'src/composables/checkPermissions'
   export default {
     setup() {
-      const endpoint = '/v1/challan/'
+      const endpoint = '/v1/purchase-order/'
       const listData = useList(endpoint)
       const metaData = {
         title: 'Purchase Orders | Awecount',

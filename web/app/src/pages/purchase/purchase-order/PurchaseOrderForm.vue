@@ -17,7 +17,7 @@
                                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                             <div></div>
                         </div>
-                        <DatePicker class="col-md-6 col-12" label="Date*" v-model="fields.date" />
+                        <DatePicker class="col-md-6 col-12" label="Date*" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
                     </div>
                 </q-card-section>
             </q-card>
@@ -31,10 +31,10 @@
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
                 <q-btn v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
-                    @click.prevent="isDeleteOpen = true" color="red" label="Update" />
+                    @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="red" label="Update" />
                 <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
-                    @click.prevent="onResolvedClick" color="green" label="Update" />
-                <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="isDeleteOpen = true"
+                    @click.prevent="onResolvedClick" color="green" />
+                <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)"
                     color="green" label="Issue" />
             </div>
         </q-card>
@@ -67,14 +67,14 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setup(props, { emit }) {
-        const endpoint = '/v1/challan/'
+        const endpoint = '/v1/purchase-order/'
         const openDatePicker = ref(false)
         const $q = useQuasar()
         const isDeleteOpen = ref(false)
         const deleteMsg = ref('')
         const formData = useForm(endpoint, {
             getDefaults: true,
-            successRoute: '/challan/list/',
+            successRoute: '/purchase-order/list/',
         })
         useMeta(() => {
             return {
@@ -103,27 +103,6 @@ export default {
         }
         formData.fields.value.date = formData.today
         formData.fields.value.party = ''
-        const onResolvedClick = () => {
-            useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
-                method: 'POST',
-                body: {},
-            })
-                .then(() => {
-                    $q.notify({
-                        color: 'positive',
-                        message: 'Marked As Resloved',
-                        icon: 'check_circle',
-                    })
-                    fields.value.status = 'Resloved'
-                })
-                .catch(() => {
-                    $q.notify({
-                        color: 'negative',
-                        message: 'error',
-                        icon: 'report_problem',
-                    })
-                })
-        }
         const onCancelClick = () => {
             useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
                 method: 'POST',
@@ -178,7 +157,6 @@ export default {
             onSubmitClick,
             ChallanTable,
             checkPermissions,
-            onResolvedClick,
             onCancelClick,
             isDeleteOpen,
             deleteMsg
