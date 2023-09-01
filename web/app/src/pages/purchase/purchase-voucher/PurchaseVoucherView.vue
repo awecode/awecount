@@ -2,7 +2,7 @@
   <div v-if="fields" class="sales-invoice">
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
-        <div class="text-h6 d-print-none">
+        <div class="text-h6">
           <span>Purchase Invoice | {{ fields?.status }} | #{{
             fields?.voucher_no
           }}</span>
@@ -211,3 +211,15 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+@media print {
+
+  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
+
+  .q-card {
+    box-shadow: none;
+    padding: 0;
+  }
+}
+</style>

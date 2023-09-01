@@ -40,7 +40,7 @@
           @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-        <q-btn @click="onPrintclick" :label="`Print Copy No ${(fields?.print_count || 0) + 1}`" icon="print" />
+        <q-btn @click="onPrintclick" label="Print" icon="print" />
         <q-btn color="blue-7" label="Journal Entries" icon="books"
           :to="`/journal-entries/credit-note/${this.$route.params.id}/`" />
       </div>
@@ -188,15 +188,14 @@ export default {
 
 @media print {
   /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
-
   .d-print-none {
     display: none;
     visibility: hidden;
     width: none;
   }
   .q-card {
-  box-shadow: none;
-  padding: 0;
-}
+    box-shadow: none;
+    padding: 0;
+  }
 }
 </style>

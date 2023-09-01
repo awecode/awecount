@@ -158,3 +158,15 @@ function prompt() {
     })
 }
 </script>
+
+<style scoped>
+  @media print {
+
+/* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
+
+.q-card {
+  box-shadow: none;
+  padding: 0;
+}
+}
+</style>
