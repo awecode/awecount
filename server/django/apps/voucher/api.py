@@ -979,6 +979,7 @@ class SalesSettingsViewSet(CRULViewSet):
         data = {
             'fields': SalesSettingsSerializer(s_setting, context={'request': request}).data
         }
+        return data
 
 
 class PaymentReceiptViewSet(CRULViewSet):
