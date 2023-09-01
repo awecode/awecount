@@ -214,7 +214,7 @@ const essentialLinks: EssentialLinkProps[] = [
       },
       {
         title: 'Purchase Order',
-        icon: 'mdi-clipboard-arrow-up',
+        icon: 'mdi-clipboard-arrow-left',
         link: '/purchase-order/list/',
         hide: !checkPermissions('DebitNoteView')
       },
@@ -448,7 +448,7 @@ const essentialLinks: EssentialLinkProps[] = [
       },
       {
         title: 'Account Closing',
-        icon: 'mdi:building',
+        icon: 'mdi-calendar-multiple-check',
         link: '/settings/account-closing/',
       },
     ],
