@@ -103,7 +103,7 @@ export default {
             message: 'Saved!',
             icon: 'check',
           })
-          fields.value = data
+          fields = data
         })
         .catch((err) => {
           if (err.status === 400) {
