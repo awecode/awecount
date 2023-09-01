@@ -199,7 +199,8 @@ export default {
 // } = useList(endpoint);
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+
 @media print {
 
   // @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");

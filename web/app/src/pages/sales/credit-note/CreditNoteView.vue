@@ -185,4 +185,18 @@ export default {
   flex-grow: 0;
   flex-shrink: 0;
 }
+
+@media print {
+  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
+
+  .d-print-none {
+    display: none;
+    visibility: hidden;
+    width: none;
+  }
+  .q-card {
+  box-shadow: none;
+  padding: 0;
+}
+}
 </style>
