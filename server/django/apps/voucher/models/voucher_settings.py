@@ -43,6 +43,7 @@ class SalesSetting(models.Model):
             'is_trade_discount_in_row': self.is_trade_discount_in_row,
             'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
             'enable_import_challan': self.enable_import_challan,
+            'enable_amount_entry': self.enable_amount_entry
         }
 
     def __str__(self):
