@@ -18,7 +18,7 @@
                                 :options="formDefaults.collections?.fiscal_years" option-value="id" option-label="name"
                                 map-options emit-value></q-select>
                         </div>
-                        <q-btn class="q-mt-md" color="blue" type="submit">
+                        <q-btn v-if="checkPermissions('AccountClosingCreate')" class="q-mt-md" color="blue" type="submit">
                             Close Accounts
                         </q-btn>
                     </div>
@@ -30,6 +30,7 @@
 
 <script setup>
 const $q = useQuasar()
+import checkPermissions from 'src/composables/checkPermissions'
 // const fiscal_year = ref(null)
 const endpoint = '/v1/account-closing/'
 const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {

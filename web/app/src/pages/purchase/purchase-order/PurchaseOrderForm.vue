@@ -32,11 +32,11 @@
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
                 <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${1}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     color="blue" label="Issue Purchase Voucher" />
-                <q-btn v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+                <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'"
                     @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-                <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
+                <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'"
                     @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
-                <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)"
+                <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)"
                     color="green" label="Issue" />
             </div>
         </q-card>

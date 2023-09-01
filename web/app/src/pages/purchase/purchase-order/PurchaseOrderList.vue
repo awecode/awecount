@@ -60,14 +60,11 @@
           </q-td>
         </template>
         <template v-slot:body-cell-actions="props">
-          <!-- {{ props }} -->
           <q-td :props="props">
-            <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
             <div class="row q-gutter-x-md">
-              <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
+              <q-btn v-if="checkPermissions('PurchaseOrderModify')" color="orange" label="Edit"
                 class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/purchase-order/${props.row.voucher_no}/`" />
             </div>
-            <!-- {{ props }} -->
           </q-td>
         </template>
       </q-table>

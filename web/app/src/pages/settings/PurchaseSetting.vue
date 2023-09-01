@@ -66,7 +66,7 @@
         <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="orange-7" label="Update" type="submit" />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" />
       </div>
     </q-card>
   </q-form>
