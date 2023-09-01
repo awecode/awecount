@@ -770,7 +770,7 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
         if self.is_filtered_by_date():
             input_stream_path = os.path.join(settings.BASE_DIR,
                                              'awecount/store/spreadsheet_templates/np/sales-book.xlsx')
-            input_stream = open(input_stream_path, "rb")
+            input_stream = open(input_stream_path, 'rb')
             wb = openpyxl.load_workbook(input_stream)
             ws = wb.active
             # TODO Optimization: Check if queryset can be optimized
@@ -898,7 +898,7 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
         if self.is_filtered_by_date():
             input_stream_path = os.path.join(settings.BASE_DIR,
                                              'awecount/store/spreadsheet_templates/np/purchase-book.xlsx')
-            input_stream = open(input_stream_path, "rb")
+            input_stream = open(input_stream_path, 'rb')
             wb = openpyxl.load_workbook(input_stream)
             ws = wb.active
             qs = super().get_queryset().filter(company_id=self.request.company_id,
@@ -957,6 +957,14 @@ class PurchaseSettingsViewSet(CRULViewSet):
             'fields': PurchaseSettingSerializer(p_setting).data
         }
         return data
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        update_data = request.data
+        if not update_data['enable_item_rate_change_alert']:
+            update_data.pop('rate_change_alert_emails')
+            instance.update(update_data)
+        return super().update(request, *args, **kwargs)
 
 
 class SalesSettingsViewSet(CRULViewSet):
@@ -971,7 +979,6 @@ class SalesSettingsViewSet(CRULViewSet):
         data = {
             'fields': SalesSettingsSerializer(s_setting, context={'request': request}).data
         }
-        return data
 
 
 class PaymentReceiptViewSet(CRULViewSet):
@@ -1273,18 +1280,18 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs.order_by('-pk')
     
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action == 'list':
             return PurchaseOrderListSerializer
         return PurchaseOrderCreateSerializer
     
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=['POST'])
     def cancel(self, request, pk=None):
         instance = self.get_object()
-        message = request.data.get("message")
+        message = request.data.get('message')
         if not message:
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
-        instance.remarks = f"Reason for cancellation: {message}"
-        instance.status = "Cancelled"
+        instance.remarks = f'Reason for cancellation: {message}'
+        instance.status = 'Cancelled'
         instance.save()
         return Response({})
     

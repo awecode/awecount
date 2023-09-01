@@ -28,9 +28,14 @@ class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
 
 
 class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = PurchaseSetting
         exclude = ('company',)
+
+    # def update(self, instance, validated_data):
+    #     import ipdb; ipdb.set_trace()
+    #     return super().update(instance, validated_data)
 
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):

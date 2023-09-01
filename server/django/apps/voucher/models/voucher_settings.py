@@ -66,6 +66,17 @@ class PurchaseSetting(models.Model):
     enable_item_rate_change_alert = models.BooleanField(default=False)
     rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
 
+    def update(self, update_data):
+        for key, value in update_data.items():
+            if key == 'bank_account':
+                if update_data['bank_account'] == self.bank_account_id:
+                    pass
+                else:
+                    self.bank_account_id = BankAccount.objects.get(id=update_data['bank_account']).id
+            else:
+                setattr(self, key,value)
+        self.save()
+
     @property
     def fields(self):
         return {
