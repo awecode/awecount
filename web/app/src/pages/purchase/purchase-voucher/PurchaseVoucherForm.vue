@@ -209,7 +209,7 @@ export default {
       }
     })
     const fetchInvoice = async (data) => {
-      const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year : referenceFormData.value.fiscal_year}
+      const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
       if (
         fetchData.invoice_no &&
         fetchData.fiscal_year
@@ -299,8 +299,13 @@ export default {
     onMounted(() => {
       const route = useRoute()
       if (route.query.purchase_order && route.query.fiscal_year) {
-        const data = { invoice_no: route.query.purchase_order, fiscal_year : route.query.fiscal_year}
+        const data = { invoice_no: route.query.purchase_order, fiscal_year: route.query.fiscal_year }
         fetchInvoice(data)
+      }
+    })
+    watch(() => formData.formDefaults.value, () => {
+      if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
+        formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
       }
     })
     return {

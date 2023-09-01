@@ -334,6 +334,9 @@ export default {
       } else if (!index) formData.fields.value.mode = "Cash"
     }
     watch(() => formData.formDefaults.value, () => {
+      if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
+        formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
+      }
       if (formData.isEdit.value) {
         if (formData.fields.value.customer_name) partyMode.value = true
       } else {
