@@ -16,6 +16,7 @@ declare module '@vue/runtime-core' {
     DateInputDisabled: typeof import('./src/components/date/DateInputDisabled.vue')['default']
     DatePicker: typeof import('./src/components/date/DatePicker.vue')['default']
     DateRangePicker: typeof import('./src/components/date/DateRangePicker.vue')['default']
+    EmailList: typeof import('./src/components/settings/EmailList.vue')['default']
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']

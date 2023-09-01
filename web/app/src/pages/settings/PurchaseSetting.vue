@@ -48,6 +48,18 @@
               <q-checkbox v-model="fields.enable_purchase_order_import" label="Enable Purchase Orders Import?">
               </q-checkbox>
             </div>
+            <div>
+              <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?">
+              </q-checkbox>
+              <q-card class="q-mt-lg" v-if="fields.enable_item_rate_change_alert">
+                <q-card-section>
+                  <div class="text-grey-7 q-mb-md"><q-icon name="info" size="sm"></q-icon> List of email address that will receive alert</div>
+                  <div class=" q-mb-md">
+                    <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" />
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
             <div></div>
           </div>
         </div>
@@ -77,6 +89,7 @@ export default {
     useMeta(metaData)
     const fields = ref(null)
     const modeErrors = ref(null)
+    const emailListErrors = ref(null)
     const onUpdateClick = (fields) => {
       useApi(`v1/purchase-settings/${fields.id}/`, {
         method: 'PUT',
@@ -84,6 +97,7 @@ export default {
       })
         .then((data) => {
           modeErrors.value = null
+          emailListErrors.value = null
           $q.notify({
             color: 'green',
             message: 'Saved!',
@@ -102,8 +116,18 @@ export default {
                 position: 'top-right',
               })
             }
+            if (err.data.rate_change_alert_emails) {
+              emailListErrors.value = err.data.rate_change_alert_emails
+              $q.notify({
+                color: 'red-6',
+                message: 'Please Fill the email fields properly!',
+                icon: 'report_problem',
+                position: 'top-right',
+              })
+            }
           } else {
             modeErrors.value = null
+            emailListErrors.value = null
             $q.notify({
               color: 'red-6',
               message: 'Server Error Please Contact!',
@@ -120,6 +144,7 @@ export default {
       modes,
       onUpdateClick,
       modeErrors,
+      emailListErrors
     }
   },
 }
