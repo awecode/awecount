@@ -30,6 +30,8 @@
                     :error="!!errors?.remarks" :error-message="errors?.remarks" />
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
+                <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${1}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+                    color="blue" label="Issue Purchase Voucher" />
                 <q-btn v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
                 <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"

@@ -29,7 +29,7 @@
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
-                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice()"></q-btn>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -208,14 +208,15 @@ export default {
         } else formData.fields.value.mode = 'Credit'
       }
     })
-    const fetchInvoice = async (fields, voucherArray) => {
+    const fetchInvoice = async (data) => {
+      const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year : referenceFormData.value.fiscal_year}
       if (
-        referenceFormData.value.invoice_no &&
-        referenceFormData.value.fiscal_year
+        fetchData.invoice_no &&
+        fetchData.fiscal_year
       ) {
         if (
-          fields.invoices &&
-          fields.invoices.includes(referenceFormData.value.invoice_no)
+          formData.fields.value.invoices &&
+          formData.fields.value.invoices.includes(fetchData.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -227,12 +228,12 @@ export default {
           const url = 'v1/purchase-order/by-voucher-no/'
           useApi(
             url +
-            `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
+            `?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`
           )
             .then((data) => {
               const response = { ...data }
-              if (fields.invoices) {
-                if (fields.party && fields.party !== response.party) {
+              if (formData.fields.value.invoices) {
+                if (formData.fields.value.party && formData.fields.value.party !== response.party) {
                   $q.notify({
                     color: 'red-6',
                     message: 'A single purchase order can be issued to a single party only',
@@ -241,9 +242,9 @@ export default {
                   })
                   return
                 }
-                fields.invoices.push(data.id)
-              } else fields.invoices = [data.id]
-              voucherArray.push(response.voucher_no)
+                formData.fields.value.invoices.push(data.id)
+              } else formData.fields.value.invoices = [data.id]
+              voucherArray.value.push(response.voucher_no)
               const removeArr = [
                 'id',
                 'date',
@@ -262,14 +263,14 @@ export default {
                 delete data[item]
               })
               for (const key in data) {
-                fields[key] = data[key]
+                formData.fields.value[key] = data[key]
                 // if (key === )
               }
               if (response.rows && response.rows.length > 0) {
-                if (!fields.rows) fields.rows = []
+                if (!formData.fields.value.rows) formData.fields.value.rows = []
                 response.rows.forEach((row) => {
                   delete row.id
-                  fields.rows.push(row)
+                  formData.fields.value.rows.push(row)
                 })
               }
               // if (data.discount_obj && data.discount_obj.id) {
@@ -295,6 +296,13 @@ export default {
         })
       }
     }
+    onMounted(() => {
+      const route = useRoute()
+      if (route.query.purchase_order && route.query.fiscal_year) {
+        const data = { invoice_no: route.query.purchase_order, fiscal_year : route.query.fiscal_year}
+        fetchInvoice(data)
+      }
+    })
     return {
       ...formData,
       CategoryForm,
@@ -309,7 +317,7 @@ export default {
       importPurchaseOrder,
       referenceFormData,
       fetchInvoice,
-      voucherArray
+      voucherArray,
     }
   },
 }
