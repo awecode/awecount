@@ -24,6 +24,7 @@ class SalesSetting(models.Model):
     enable_row_description = models.BooleanField(default=False)
 
     enable_import_challan = models.BooleanField(default=False)
+    enable_amount_entry = models.BooleanField(default=False)
 
     @property
     def fields(self):
