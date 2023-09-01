@@ -22,7 +22,7 @@
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
               " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" />
+            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -140,6 +140,10 @@ export default {
       default: () => false,
     },
     showRowTradeDiscount: {
+      type: Boolean,
+      default: () => false,
+    },
+    inputAmount: {
       type: Boolean,
       default: () => false,
     },

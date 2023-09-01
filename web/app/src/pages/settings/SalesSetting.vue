@@ -52,6 +52,10 @@
               <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?">
               </q-checkbox>
             </div>
+            <div>
+              <q-checkbox v-model="fields.enable_amount_entry" label="Enable Amount Entry in voucher row?">
+              </q-checkbox>
+            </div>
           </div>
         </div>
         <!-- {{ formDefaults.collections }} -->
