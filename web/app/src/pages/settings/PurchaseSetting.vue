@@ -6,7 +6,6 @@
           <span>Purchase Settings</span>
         </div>
       </q-card-section>
-
       <q-card-section>
         <div>
           <div class="column q-gutter-y-sm q-mb-sm">
@@ -35,7 +34,7 @@
               </template>
             </q-select>
           </div>
-          <div class="column q-gutter-y-sm q-mb-sm">
+          <div class="column q-gutter-y-sm">
             <div>
               <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?">
               </q-checkbox>
@@ -51,19 +50,17 @@
             <div>
               <q-checkbox v-model="fields.enable_item_rate_change_alert" label="Enable Item Rate Change alert?">
               </q-checkbox>
-              <q-card class="q-mt-lg" v-if="fields.enable_item_rate_change_alert">
+            </div>
+          </div>
+          <q-card class="q-mt-lg" v-if="fields.enable_item_rate_change_alert">
                 <q-card-section>
                   <div class="text-grey-7 q-mb-md"><q-icon name="info" size="sm"></q-icon> List of email address that will receive alert</div>
                   <div class=" q-mb-md">
-                    <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" />
+                    <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @updateErrors="onupdateErrors"/>
                   </div>
                 </q-card-section>
               </q-card>
-            </div>
-            <div></div>
-          </div>
         </div>
-        <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
         <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" />
@@ -138,13 +135,15 @@ export default {
         })
     }
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    const onupdateErrors = () => emailListErrors.value = null
     return {
       ...formData,
       fields,
       modes,
       onUpdateClick,
       modeErrors,
-      emailListErrors
+      emailListErrors,
+      onupdateErrors
     }
   },
 }

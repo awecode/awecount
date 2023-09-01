@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="row" v-for="(value, index) in modelValue" :key="index">
-            <div class="col-12 col-md-6 row items-end q-gutter-md">
+            <div class="col-12 col-md-6 row items-center q-gutter-md">
                 <q-input v-model="propsModelValue[index]" type="email" label="Email" style="flex-grow: 1;" :error="!!(props.errors && props.errors[index])" :error-message="(props.errors && props.errors[index]) ? props.errors[index][0] : null"></q-input>
                 <q-btn @click="removeEmail(index)" style="flex-grow: 0; flex-shrink: 0;" icon="delete" size="md" color="red-5" title="Remove Email"></q-btn>
             </div>
@@ -21,9 +21,9 @@
             default: () => ({})
         }
     })
+    const emit = defineEmits(['updateErrors'])
     const propsModelValue = ref(props.modelValue)
     watch(propsModelValue, (newVal) => {
-        debugger
         emit('update:modelValue', newVal)
     })
     const addEmail = () => {
@@ -31,6 +31,14 @@
     }
     const removeEmail = (index) => {
         propsModelValue.value.splice(index, 1)
+        // console.log('props')
+        // if (props.errors && props.errors[index])
+        // {
+        //     const newError = props.errors
+        //     delete newError[index]
+        //     emit('updateErrors', newError)
+        // }
+        emit('updateErrors')
     }
     onMounted(() => {
         if (propsModelValue.value && propsModelValue.value.length === 0) addEmail()
