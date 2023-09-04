@@ -22,8 +22,8 @@
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.cheque_no" label="Cheque Number" class="col-md-6 col-12"
               :error-message="errors.cheque_no" :error="!!errors.cheque_no" :disable="isEdit" type="number" />
-            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount" type="number"
-              :error="!!errors.amount" />
+            <q-input v-model="fields.amount" label="Amount *" class="col-md-6 col-12" :error-message="errors.amount"
+              type="number" :error="!!errors.amount" />
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-8">
@@ -48,9 +48,11 @@
         <div class="q-pr-md q-pb-lg row justify-between">
           <div class="row q-gutter-md">
             <q-btn @click="exportPDF" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green"
-              outline class="q-px-lg q-py-ms" style="display: inline-block;">Print Pdf</q-btn>
-            <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')" @click.prevent="cancelForm"
-              icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+              outline class="q-px-lg q-py-sm" style="display: inline-block;">Print Pdf</q-btn>
+            <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'" color="green"
+              outline class="q-px-lg q-py-sm" style="display: inline-block;" label="Print Cheque"></q-btn>
+            <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
+              @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
           </div>
           <div>
             <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
@@ -117,6 +119,28 @@ export default {
       pri.focus()
       setTimeout(() => pri.print(), 100)
     }
+    const onChequePrint = () => {
+      import("jspdf").then(({ jsPDF }) => {
+        const doc = new jsPDF({
+          orientation: "landscape",
+          unit: "in",
+          format: [7.5, 3.5]
+        })
+        const amt = formData.fields.value.amount_in_words + ' only'
+        const amountArray = splitString(amt, 45)
+        doc.setFontSize(13)
+        const dateArray = (formData.fields.value.date.replaceAll('-', '')).split('')
+        const dateString = dateArray.join('   ')
+        doc.text(dateString, 5.45, 0.5)
+        doc.text(formData.fields.value.payee, 1.8, 0.925)
+        doc.text(`${formatNumberWithCommas(formData.fields.value.amount)}` + '/-', 5.5, 1.35)
+        doc.text(amountArray[0], 1, 1.2)
+        if (amountArray[1]) {
+          doc.text(amountArray[1], 0.75, 1.45)
+        }
+        doc.save("a4.pdf")
+      })
+    }
     const updateBankAccount = (newValue) => {
       const { bank_account } = formData.fields.value
       const bank_accounts = formData.formDefaults.value.collections.bank_accounts
@@ -134,6 +158,64 @@ export default {
         }
       }
     }
+    // function splitString(str, chunkSize) {
+    //   const chunks = [];
+    //   for (let i = 0; i < str.length; i += chunkSize) {
+    //     chunks.push(str.slice(i, i + chunkSize));
+    //   }
+    //   return chunks;
+    // }
+    function splitString(str, chunkSize) {
+      const chunks = [];
+      let start = 0;
+
+      while (start < str.length) {
+        let end = start + chunkSize;
+        if (end >= str.length) {
+          end = str.length;
+        } else {
+          // Find the closest space before the end index
+          while (end > start && str[end] !== ' ' && str[end] !== undefined) {
+            end--;
+          }
+        }
+        chunks.push(str.slice(start, end).trim()); // Remove leading/trailing spaces
+        start = end + 1; // Move start to the next character after the space
+      }
+
+      return chunks;
+    }
+
+    function formatNumberWithCommas(number) {
+      const roundNumber = Math.round(number * 100) / 100
+      // Convert the number to a string
+      const numStr = roundNumber.toString();
+
+      // Split the string into integer and decimal parts (if any)
+      const parts = numStr.split('.');
+
+      // Format the integer part
+      let integerPart = parts[0];
+      let formattedIntegerPart = '';
+      let commaCount = 0;
+
+      for (let i = integerPart.length - 1; i >= 0; i--) {
+        formattedIntegerPart = integerPart[i] + formattedIntegerPart;
+        commaCount++;
+
+        if (commaCount === 3 && i !== 0) {
+          formattedIntegerPart = ',' + formattedIntegerPart;
+          commaCount = 0;
+        }
+      }
+
+      // Combine the formatted integer part with the decimal part (if any)
+      const formattedNumber = parts.length === 2
+        ? formattedIntegerPart + '.' + parts[1]
+        : formattedIntegerPart;
+
+      return formattedNumber;
+    }
 
     return {
       ...formData,
@@ -142,7 +224,8 @@ export default {
       toggleDrAccount,
       checkPermissions,
       exportPDF,
-      updateBankAccount
+      updateBankAccount,
+      onChequePrint,
     }
   },
 }
