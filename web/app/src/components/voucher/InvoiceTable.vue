@@ -30,7 +30,7 @@
             <div class="row q-pb-md">
               <div class="col-6 text-right">Sub Total</div>
               <div class="col-6 q-pl-md">
-                {{ parseFloat(totalDataComputed.subTotal) }}
+                {{ Math.round(totalDataComputed.subTotal * 100) / 100 }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
