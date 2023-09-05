@@ -814,6 +814,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Stock Trial Balance'],
         },
       },
+      {
+        path: 'ageing-report/',
+        component: () => import('src/pages/report/AgeingReport.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Customer Ageing Report'],
+        },
+      },
     ],
   },
   {

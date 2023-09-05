@@ -320,6 +320,11 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/report/transactions/',
         hide: !checkPermissions('TransactionView')
       },
+      {
+        title: 'Customer Ageing Report',
+        icon: 'mdi-chart-gantt',
+        link: '/report/ageing-report/',
+      },
     ],
   },
   {
