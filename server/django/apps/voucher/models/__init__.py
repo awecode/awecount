@@ -108,6 +108,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     issue_datetime = models.DateTimeField(default=timezone.now)
     date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
+    payment_date = models.DateField(blank=True, null=True)
 
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
 
@@ -183,6 +184,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         elif self.mode == 'Cash':
             dr_acc = get_account(self.company, 'Cash')
             self.status = 'Paid'
+            self.payment_date = timezone.now().date()
         elif self.mode == 'Bank Deposit':
             dr_acc = self.bank_account.ledger
             self.status = 'Paid'

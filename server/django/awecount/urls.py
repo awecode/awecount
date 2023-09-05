@@ -12,6 +12,7 @@ from apps.tax import api as tax
 from apps.voucher import api as voucher
 from apps.bank import api as bank
 from apps.aggregator import api as aggregator
+from apps.report import api as report_api
 
 from apps.aggregator import views as aggregator_views
 
@@ -73,6 +74,9 @@ router.register('widgets', aggregator.WidgetViewSet, basename='widget')
 
 router.register('test', TestView, basename='test')
 router.register('account-closing', ledger.AccountClosingViewSet, basename='account-closing')
+
+# Report
+router.register('report', report_api.ReportViewSet, basename='report')
 
 
 def trigger_error(request):
