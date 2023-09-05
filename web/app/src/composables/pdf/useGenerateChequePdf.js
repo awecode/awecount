@@ -1,4 +1,5 @@
 import DateConverter from 'src/components/date/VikramSamvat.js'
+import formatNumberWithCommas from '../formatNumberWithComma'
 export default function useGenerateChequePdf(fields) {
   return `
     <div style="border: 2px solid black; padding: 20px;">
@@ -15,7 +16,7 @@ export default function useGenerateChequePdf(fields) {
           fields.amount_in_words
         } only</span></div>
         <div style="margin-left: 20px; border: black 2px solid; padding: 3px 10px; text-align: right;">${
-          fields.amount
+          formatNumberWithCommas(fields.amount)
         } -/</div>
     </div>
     <div style="margin-top: 15px;">Cheque number : &nbsp; # ${fields.cheque_no}</div>

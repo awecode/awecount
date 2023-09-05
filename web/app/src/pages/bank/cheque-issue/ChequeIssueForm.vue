@@ -71,6 +71,7 @@ import useForm from '/src/composables/useForm'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
+import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
 // const $q = useQuasar()
 
 export default {
@@ -186,36 +187,6 @@ export default {
       return chunks;
     }
 
-    function formatNumberWithCommas(number) {
-      const roundNumber = Math.round(number * 100) / 100
-      // Convert the number to a string
-      const numStr = roundNumber.toString();
-
-      // Split the string into integer and decimal parts (if any)
-      const parts = numStr.split('.');
-
-      // Format the integer part
-      let integerPart = parts[0];
-      let formattedIntegerPart = '';
-      let commaCount = 0;
-
-      for (let i = integerPart.length - 1; i >= 0; i--) {
-        formattedIntegerPart = integerPart[i] + formattedIntegerPart;
-        commaCount++;
-
-        if (commaCount === 3 && i !== 0) {
-          formattedIntegerPart = ',' + formattedIntegerPart;
-          commaCount = 0;
-        }
-      }
-
-      // Combine the formatted integer part with the decimal part (if any)
-      const formattedNumber = parts.length === 2
-        ? formattedIntegerPart + '.' + parts[1]
-        : formattedIntegerPart;
-
-      return formattedNumber;
-    }
 
     return {
       ...formData,
