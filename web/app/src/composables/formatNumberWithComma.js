@@ -6,12 +6,10 @@ function formatNumberWithCommas(number) {
     // Split the string into integer and decimal parts (if any)
     const parts = numStr.split('.');
     const intergers = parts[0].split('').reverse()
-    console.log(intergers)
     let tempGroup = ''
     let commaCount = 0
     const numbersArray = []
     for (let i = 0; i <= intergers.length - 1; i++) {
-      console.log(intergers[i])
       tempGroup = tempGroup + intergers[i]
       if (i === 2 && commaCount === 0) {
         numbersArray.push(tempGroup)
