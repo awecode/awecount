@@ -2,6 +2,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+import datetime
 from django.db.models import (
     Sum,
     F,
@@ -50,21 +51,22 @@ class ReportViewSet(GenericViewSet):
     def ageing_report(self, request):
         
         # base_date = (timezone.now() - timezone.timedelta(days=12)).date()
-        base_date = request.query_params["date"]
-        date_range_30 = [base_date - timezone.timedelta(days=3), base_date]
+        base_date_str =  request.query_params["date"]
+        base_date = datetime.datetime.strptime(base_date_str, "%Y-%m-%d")
+        date_range_30 = [base_date - timezone.timedelta(days=30), base_date]
         date_range_60 = [
-            base_date - timezone.timedelta(days=6),
-            base_date - timezone.timedelta(days=3),
+            base_date - timezone.timedelta(days=60),
+            base_date - timezone.timedelta(days=30),
         ]
         date_range_90 = [
-            base_date - timezone.timedelta(days=9),
-            base_date - timezone.timedelta(days=6),
+            base_date - timezone.timedelta(days=90),
+            base_date - timezone.timedelta(days=60),
         ]
         date_range_120 = [
-            base_date - timezone.timedelta(days=12),
-            base_date - timezone.timedelta(days=9),
+            base_date - timezone.timedelta(days=120),
+            base_date - timezone.timedelta(days=90),
         ]
-        date_120plus = base_date - timezone.timedelta(days=12)
+        date_120plus = base_date - timezone.timedelta(days=120)
 
         status_case_expr = Case(
             When(
