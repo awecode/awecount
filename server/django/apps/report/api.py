@@ -50,7 +50,7 @@ class ReportViewSet(GenericViewSet):
     def ageing_report(self, request):
         
         # base_date = (timezone.now() - timezone.timedelta(days=12)).date()
-        base_date = request.data["date"]
+        base_date = request.query_params["date"]
         date_range_30 = [base_date - timezone.timedelta(days=3), base_date]
         date_range_60 = [
             base_date - timezone.timedelta(days=6),
