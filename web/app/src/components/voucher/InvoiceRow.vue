@@ -20,10 +20,15 @@
           type="number"></q-input>
       </div>
       <div class="col-2">
-        <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
+        <q-input v-if="!hideRowDetails || !inputAmount" v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
           :error="errors?.rate ? true : false" type="number"></q-input>
       </div>
-      <div class="col-2 row justify-center items-center">
+      <div v-if="inputAmount" class="col-2">
+        <!-- <span class="">{{ amountComputed }}</span> -->
+        <q-input v-model="amountComputed" label="Amount" @change="onAmountInput"></q-input>
+        <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
+      </div>
+      <div v-else class="col-2 row justify-center items-center">
         <span class="">{{ amountComputed }}</span>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
@@ -171,8 +176,9 @@ export default {
     const expandedState = ref(false)
     const modalValue = ref(props.modelValue)
     const selectedTax = ref(null)
+    const hideRowDetails = ref(false)
     const amountComputed = computed(
-      () => (modalValue.value.rate || 0) * (modalValue.value.quantity || 0)
+      () => Math.round(((modalValue.value.rate || 0) * (modalValue.value.quantity || 0)) * 100) / 100
     )
     const selectedItem = ref(null)
 
@@ -243,12 +249,22 @@ export default {
         } else modalValue.value.discountObj = null
       }
     )
+    watch(() => modalValue.value.rate,() => hideRowDetails.value = false )
     const deleteRow = (index) => {
       emit('deleteRow', index)
     }
     onMounted(() => {
       if (props.usedIn === 'creditNote') modalValue.value.is_returned = true
     })
+    const onAmountInput = (amount) => {
+      // debugger
+      if (amount !== ((modalValue.value.rate || 0) * (modalValue.value.quantity || 1))) {
+        // debugger
+        if (!modalValue.value.quantity) modalValue.value.quantity = 1
+        modalValue.value.rate = amount / modalValue.value.quantity
+        nextTick(() => hideRowDetails.value = true)
+      }
+    }
     return {
       ItemAdd,
       expandedState,
@@ -257,7 +273,9 @@ export default {
       selectedItem,
       selectedTax,
       deleteRow,
-      checkPermissions
+      checkPermissions,
+      onAmountInput,
+      hideRowDetails
     }
   },
 }
