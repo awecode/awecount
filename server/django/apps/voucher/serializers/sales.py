@@ -359,6 +359,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     enable_row_description = serializers.ReadOnlyField(source='company.sales_setting.enable_row_description')
 
     payment_receipts = serializers.SerializerMethodField()
+    options = serializers.SerializerMethodField()
 
     def get_payment_receipts(self, obj):
         receipts = []
@@ -368,6 +369,12 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
                     {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount,
                      'status': receipt.status})
         return receipts
+    
+    def get_options(self, obj):
+        options = {}
+        amt_qt_setting = obj.company.sales_setting.show_rate_quantity_in_voucher
+        options["show_rate_quantity_in_voucher"] = amt_qt_setting
+        return options
 
     class Meta:
         model = SalesVoucher
