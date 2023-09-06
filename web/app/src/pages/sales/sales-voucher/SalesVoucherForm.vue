@@ -118,7 +118,7 @@
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry"></invoice-table>
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :show_row_column_in_voucher_row="show_row_column_in_voucher_row"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -168,6 +168,8 @@ export default {
   setup(props, { emit }) {
     const endpoint = '/v1/sales-voucher/'
     const loginStore = useLoginStore()
+    const show_row_column_in_voucher_row = true
+    // TODO: temp
     const $q = useQuasar()
     const importChallanModal = ref(false)
     const voucherArray = ref([])
@@ -366,7 +368,9 @@ export default {
       checkPermissions,
       voucherArray,
       loginStore,
-      onPartyChange
+      onPartyChange,
+      // TODO: temp
+      show_row_column_in_voucher_row
     }
   },
 }

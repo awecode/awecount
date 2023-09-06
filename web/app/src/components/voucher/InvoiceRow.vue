@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{ show_row_column_in_voucher_row }}
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
@@ -169,6 +170,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    show_row_column_in_voucher_row: {
+      type: Boolean,
+      default: () => true,
+    }
   },
 
   emits: ['update:modelValue', 'deleteRow'],
