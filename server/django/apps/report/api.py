@@ -118,7 +118,7 @@ class ReportViewSet(GenericViewSet):
 
         total_90 = (
             (
-                SalesVoucher.filter(company=request.company).objects.exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_90)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -134,7 +134,7 @@ class ReportViewSet(GenericViewSet):
 
         total_120 = (
             (
-                SalesVoucher.filter(company=request.company).objects.exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_120)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -150,7 +150,7 @@ class ReportViewSet(GenericViewSet):
 
         total_120plus = (
             (
-                SalesVoucher.filter(company=request.company).objects.exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__lte=date_120plus)
                 .filter(
                     Q(payment_date__isnull=True)
