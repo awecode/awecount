@@ -2,6 +2,8 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from django.core.paginator import Paginator
+
 import datetime
 from django.db.models import (
     Sum,
@@ -19,6 +21,7 @@ from django.utils import timezone
 from apps.ledger.models.base import Account, Party
 from apps.ledger.serializers import PartySerializer
 from apps.voucher.models import SalesVoucher
+from awecount.libs.pagination import PageNumberPagination
 
 
 def merge_dict_lists(lists, k):
@@ -173,5 +176,9 @@ class ReportViewSet(GenericViewSet):
                 dct[k] = v
                 if k.startswith("total"):
                     dct["grand_total"] += v
-            ret_dicts.append(dct)    
+            ret_dicts.append(dct)
+
+        page = self.paginate_queryset(ret_dicts)
+        if page is not None:
+            return self.get_paginated_response(page)
         return Response(ret_dicts)
