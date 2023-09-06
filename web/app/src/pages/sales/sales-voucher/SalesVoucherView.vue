@@ -68,7 +68,7 @@
         </q-dialog>
       </div>
     </div>
-    <div class="print-only" v-html="useGeneratePdf('salesVoucher', true, fields)">
+    <div class="print-only" v-html="useGeneratePdf('salesVoucher', true, fields, !fields.options.show_rate_quantity_in_voucher)">
     </div>
   </div>
 </template>
@@ -144,7 +144,7 @@ export default {
       const pri: Record<string, string | object | HTMLElement> =
         ifram.contentWindow
       pri.document.open()
-      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value))
+      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
       // pri.document.body.firstElementChild.prepend()
       pri.document.close()
       pri.focus()

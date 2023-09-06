@@ -8,7 +8,8 @@ import DateConverter from 'src/components/date/VikramSamvat.js'
 export default function useGeneratePdf(
   voucherType: VoucherType,
   onlyBody: boolean,
-  invoiceInfo: object
+  invoiceInfo: object,
+  hideRowQuantity: boolean
 ): string {
   let sameTax = null
   const tableRow = (rows: Array<object>): string => {
@@ -26,8 +27,8 @@ export default function useGeneratePdf(
         index + 1
       }</th>
       <th style="width: 50%; font-weight: 400;">${row.item_name}</th>
-      <th style="text-align: right; font-weight: 400;">${row.quantity}</th>
-      <th style="text-align: right; font-weight: 400;">${row.rate}</th>
+      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity}</span></th>
+      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.rate}</span></th>
       <th style="text-align: right; font-weight: 400;">${
         row.quantity * row.rate
       }</th>
