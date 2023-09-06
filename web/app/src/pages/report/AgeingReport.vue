@@ -3,6 +3,7 @@
         <div class="row q-gutter-x-md justify-end">
             <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
         </div>
+        {{ reportData }}
         <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
             v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
             <template v-slot:top>
@@ -13,12 +14,12 @@
                         </template>
                     </q-input> -->
                     <div class="flex items-end q-gutter-md">
-                        <DatePicker label="Date" v-model="filters.start_date"></DatePicker>
+                        <DatePicker label="Date" v-model="filters.date"></DatePicker>
                         <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
                     </div>
                 </div>
             </template>
-            <template v-slot:body-cell-status="props">
+            <!-- <template v-slot:body-cell-status="props">
                 <q-td :props="props">
                     <div class="row align-center">
                         <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
@@ -52,66 +53,33 @@
                             class="q-py-none q-px-md font-size-sm" style="font-size: 12px" />
                     </div>
                 </q-td>
-            </template>
+            </template> -->
         </q-table>
     </div>
 </template>
 
 
 <script>
-import useList from '/src/composables/useList'
-import usedownloadFile from 'src/composables/usedownloadFile'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
-    setup() {
-        const endpoint = '/v1/debit-note/'
-        const listData = useList(endpoint)
-        const metaData = {
-            title: 'Debit Notes | Awecount',
-        }
-        useMeta(metaData)
-        const route = useRoute()
-        const onDownloadXls = () => {
-            const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-            useApi('v1/debit-note/export' + query)
-                .then((data) =>
-                    usedownloadFile(
-                        data,
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                        'Debit_Notes'
-                    )
-                )
-                .catch((err) => console.log('Error Due To', err))
-            // useApi('v1/sales-voucher/export/')
-            //   .then((data) =>
-            //     usedownloadFile(
-            //       data,
-            //       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            //       'Credit_Notes'
-            //     )
-            //   )
-            //   .catch((err) => console.log('Error Due To', err))
-        }
-        const newColumn = [
-            {
-                name: 'voucher_no',
-                label: 'Note No.',
-                align: 'left',
-                field: 'voucher_no',
-            },
-            {
-                name: 'party_name',
-                label: 'Party',
-                align: 'left',
-                field: 'party_name',
-            },
-            { name: 'status', label: 'Status', align: 'left', field: 'status' },
-            { name: 'date', label: 'Date', align: 'left', field: 'date' },
-            { name: 'actions', label: 'Actions', align: 'left' },
-        ]
-
-        return { ...listData, onDownloadXls, newColumn, checkPermissions }
-    },
+  setup() {
+    const reportData= ref(null)
+    const fields = ref({
+      start_date: null,
+      end_date: null,
+    })
+    const metaData = {
+      title: 'Collection Report | Awecount',
+    }
+    useMeta(metaData)
+    const fetchData = () => {
+      const endpoint = `/v1/payment-receipt/collection-report/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      useApi(endpoint)
+        .then((data) => (reportData.value = data))
+        .catch((err) => console.log(err))
+      // TODO: add 404 error routing
+    }
+    return { reportData, fetchData, fields }
+  },
 }
 </script>
 
