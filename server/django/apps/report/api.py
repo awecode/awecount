@@ -89,7 +89,7 @@ class ReportViewSet(GenericViewSet):
 
         total_30 = (
             (
-                SalesVoucher.objects.exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_30)
                 .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date))
                 .annotate(party_name=F("party__name"))
