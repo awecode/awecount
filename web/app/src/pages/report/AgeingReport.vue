@@ -1,7 +1,7 @@
 <template>
     <div class="q-pa-md">
         <div class="row q-gutter-x-md justify-end">
-            <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
+            <!-- <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" /> -->
         </div>
         <q-table title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id"
             @request="onRequest" v-model:pagination="pagination" class="q-mt-md" :rows-per-page-options="[20]">

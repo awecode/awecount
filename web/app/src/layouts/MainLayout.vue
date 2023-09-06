@@ -304,11 +304,11 @@ const essentialLinks: EssentialLinkProps[] = [
       //   icon: 'mdi-chart-gantt',
       //   link: '/report/income-statement/',
       // },
-      {
-        title: 'Balance Sheet',
-        icon: 'mdi-clipboard-text',
-        link: '/report/balance-sheet/',
-      },
+      // {
+      //   title: 'Balance Sheet',
+      //   icon: 'mdi-clipboard-text',
+      //   link: '/report/balance-sheet/',
+      // },
       // {
       //   title: 'Ratio Analysis',
       //   icon: 'mdi-chart-arc',
