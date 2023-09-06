@@ -52,7 +52,7 @@ class ReportViewSet(GenericViewSet):
 
     @action(detail=False, methods=["GET"], url_path="ageing-report")
     def ageing_report(self, request):
-        
+        # TODO: refactor this code, manage recurring code
         # base_date = (timezone.now() - timezone.timedelta(days=12)).date()
         base_date_str =  request.query_params["date"]
         base_date = datetime.datetime.strptime(base_date_str, "%Y-%m-%d")

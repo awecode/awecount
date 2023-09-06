@@ -25,6 +25,7 @@ class SalesSetting(models.Model):
 
     enable_import_challan = models.BooleanField(default=False)
     enable_amount_entry = models.BooleanField(default=False)
+    show_rate_quantity_in_voucher = models.BooleanField(default=True)
 
     @property
     def fields(self):
