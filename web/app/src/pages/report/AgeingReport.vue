@@ -14,7 +14,7 @@
                     </q-input> -->
                     <div class="flex items-end q-gutter-md">
                         <DatePicker label="Date" v-model="date"></DatePicker>
-                        <q-btn color="green" label="Filter" class="q-mr-md" @click="fetchData"></q-btn>
+                        <q-btn color="green" label="Filter" class="q-mr-md" @click="onUpdate"></q-btn>
                     </div>
                 </div>
             </template>
@@ -79,6 +79,18 @@ export default {
             }
             router.push(url)
         }
+        function onUpdate() {
+            let url = route.path
+            if (route.query.page == 1) {
+                url = withQuery(url, { page: undefined })
+            } else {
+                url = withQuery(url, { page: route.query.page })
+            }
+            if (date.value) {
+                url = withQuery(url, { date: date.value })
+            }
+            router.push(url)
+        }
         const newColumns = [
             {
                 name: 'party',
@@ -101,7 +113,7 @@ export default {
         watch(() => route.query, () => {
             fetchData()
         })
-        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest }
+        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate }
     },
     created() {
         if (!this.date) {
