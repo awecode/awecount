@@ -164,15 +164,17 @@ export default function useGeneratePdf(
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
-    <span>COPY ${invoiceInfo.print_count} OF ORIGINAL (PRINT COUNT:${
-      invoiceInfo.print_count
-    })</span>
   </div>
+  <div style="text-align:center; ${invoiceInfo.print_count > 1 ? '' :`display: none`}">
+    COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
+      invoiceInfo.print_count
+    })
+  </div> 
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.party ? invoiceInfo.party_name : invoiceInfo.customer_name
+        invoiceInfo.party ? invoiceInfo.party_name : (invoiceInfo.customer_name || '')
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
