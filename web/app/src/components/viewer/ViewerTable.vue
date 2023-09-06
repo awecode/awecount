@@ -32,9 +32,9 @@
           {{ row.item_name }}
         </q-td>
         <q-td>
-          {{ row.quantity }}
+          <span v-if="props.showRateQuantity">{{ row.quantity }}</span>
         </q-td>
-        <q-td> {{ row.rate }} </q-td>
+        <q-td> <span v-if="props.showRateQuantity">{{ row.rate }}</span> </q-td>
         <q-td> {{ row?.discount }} {{ row.discount ? row.discount_type == 'Amount' ? '-/' : '%' : '' }} </q-td>
         <!-- <q-td> {{ row.discount }} </q-td> -->
         <q-td class="text-right">
@@ -91,6 +91,10 @@ export default {
       default: () => {
         return {}
       },
+    },
+    showRateQuantity: {
+      type: Boolean,
+      default: () => true,
     },
   },
   setup(props) {

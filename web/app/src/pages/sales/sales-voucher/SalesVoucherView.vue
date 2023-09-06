@@ -8,13 +8,12 @@
             </span>
           </div>
         </q-card-section>
-
         <ViewerHeader :fields="fields" :changeModes="true" @updateMode="(newValue) => updateMode(newValue)"
           :modeOptions="modeOptions" />
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
         <q-card-section>
-          <ViewerTable :fields="fields" />
+          <ViewerTable :fields="fields" :showRateQuantity="fields.options.show_rate_quantity_in_voucher"/>
         </q-card-section>
       </q-card>
       <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">

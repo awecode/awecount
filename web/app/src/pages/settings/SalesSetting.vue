@@ -56,6 +56,10 @@
               <q-checkbox v-model="fields.enable_amount_entry" label="Enable Amount Entry in voucher row?">
               </q-checkbox>
             </div>
+            <div>
+              <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?">
+              </q-checkbox>
+            </div>
           </div>
         </div>
         <!-- {{ formDefaults.collections }} -->

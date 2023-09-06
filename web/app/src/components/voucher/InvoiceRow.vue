@@ -1,6 +1,5 @@
 <template>
   <div>
-    {{ show_row_column_in_voucher_row }}
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
@@ -16,13 +15,17 @@
         </div>
       </div>
       <div class="col-2">
-        <q-input v-model.number="modalValue.quantity" label="Quantity"
-          :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-          type="number"></q-input>
+        <span v-if="showRateQuantity">
+          <q-input v-model.number="modalValue.quantity" label="Quantity"
+            :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
+            type="number"></q-input>
+        </span>
       </div>
       <div class="col-2">
-        <q-input v-if="!hideRowDetails || !inputAmount" v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
-          :error="errors?.rate ? true : false" type="number"></q-input>
+        <span v-if="showRateQuantity">
+          <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
+            :error="errors?.rate ? true : false" type="number"></q-input>
+        </span>
       </div>
       <div v-if="inputAmount" class="col-2">
         <!-- <span class="">{{ amountComputed }}</span> -->
@@ -170,7 +173,7 @@ export default {
       type: Boolean,
       default: () => false,
     },
-    show_row_column_in_voucher_row: {
+    showRateQuantity: {
       type: Boolean,
       default: () => true,
     }
@@ -181,7 +184,6 @@ export default {
     const expandedState = ref(false)
     const modalValue = ref(props.modelValue)
     const selectedTax = ref(null)
-    const hideRowDetails = ref(false)
     const amountComputed = computed(
       () => Math.round(((modalValue.value.rate || 0) * (modalValue.value.quantity || 0)) * 100) / 100
     )
@@ -254,7 +256,6 @@ export default {
         } else modalValue.value.discountObj = null
       }
     )
-    watch(() => modalValue.value.rate,() => hideRowDetails.value = false )
     const deleteRow = (index) => {
       emit('deleteRow', index)
     }
@@ -267,7 +268,6 @@ export default {
         // debugger
         if (!modalValue.value.quantity) modalValue.value.quantity = 1
         modalValue.value.rate = amount / modalValue.value.quantity
-        nextTick(() => hideRowDetails.value = true)
       }
     }
     return {
@@ -279,8 +279,7 @@ export default {
       selectedTax,
       deleteRow,
       checkPermissions,
-      onAmountInput,
-      hideRowDetails
+      onAmountInput
     }
   },
 }
