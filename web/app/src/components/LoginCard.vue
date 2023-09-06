@@ -67,6 +67,9 @@ const onLoginSubmit = async () => {
       loginStore.email = data.user.email
       loginStore.companyInfo = data.company
       loginStore.userInfo = data.user
+      // TODO: remove
+      loginStore.companyInfo.logo_url = '/img/stockCompany.png'
+      // TODO: remove
       router.push('/dashboard')
     })
     .catch((err) => {

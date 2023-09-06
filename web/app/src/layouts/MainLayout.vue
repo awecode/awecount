@@ -6,8 +6,7 @@
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px;">
           <RouterLink v-if="store.companyInfo.logo_url" to="/">
-            <!-- TODO: make logo img dynamic -->
-            <img style="width: 40px; height: 40px;" src="/img/stockCompany.png" alt="Company Logo">
+            <img style="width: 40px; height: 40px;" :src="store.companyInfo.logo_url" alt="Company Logo">
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
