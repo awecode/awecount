@@ -4,7 +4,7 @@
             <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
         </div>
         <q-table title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id"
-            @request="onRequest" class="q-mt-md" hide-bottom>
+            @request="onRequest" v-model:pagination="pagination" class="q-mt-md" :rows-per-page-options="[20]">
             <template v-slot:top>
                 <div class="search-bar">
                     <!-- <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
@@ -33,11 +33,14 @@
 
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
+import { withQuery } from 'ufo'
 export default {
     setup() {
         const route = useRoute()
+        const router = useRouter()
         const reportData = ref([])
         const loading = ref(false)
+        const pagination = ref(null)
         // const 
         const date = ref(route.query.date || null)
         const metaData = {
@@ -45,18 +48,36 @@ export default {
         }
         useMeta(metaData)
         const fetchData = () => {
-            const endpoint = `/v1/report/ageing-report/?date=${date.value}`
+            const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}`: ''}`
             loading.value = true
             useApi(endpoint)
                 .then((data) => {
-                    reportData.value = data
+                    reportData.value = data.results
                     loading.value = false
+                    pagination.value = {
+                        page: data.pagination.page,
+                        rowsPerPage: data.pagination.size,
+                        rowsNumber: data.pagination.count,
+                    }
                 })
                 .catch((err) => {
                     console.log(err)
                     loading.value = false
+                    pagination.value = null
                 })
             // TODO: add 404 error routing
+        }
+        function onRequest(props) {
+            let url = route.path
+            if (props.pagination.page == 1) {
+                url = withQuery(url, { page: undefined })
+            } else {
+                url = withQuery(url, { page: props.pagination.page })
+            }
+            if (route.query.date) {
+                url = withQuery(url, { date: route.query.date })
+            }
+            router.push(url)
         }
         const newColumns = [
             {
@@ -77,7 +98,10 @@ export default {
             { name: 'total_120', label: '120 Days', align: 'left', field: 'total_120' },
             { name: 'total_120plus', label: '120 Days Plus', align: 'left', field: 'total_120plus' }
         ]
-        return { reportData, fetchData, date, newColumns, checkPermissions }
+        watch(() => route.query, () => {
+            fetchData()
+        })
+        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest }
     },
     created() {
         if (!this.date) {
