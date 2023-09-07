@@ -190,37 +190,55 @@ class ReportViewSet(GenericViewSet):
     @action(detail=False, methods=["GET"], url_path="export-ageing-report")
     def export_ageing_report(self, request):
         ret_dicts = self.ageing_report_data(request)
+        for dct in ret_dicts:
+            dct.pop("party_id")
+
         from xlsxwriter import Workbook
-        headers = [
-            "party_name",
-            "total_30",
-            "total_60",
-            "total_90",
-            "total_120",
-            "total_120plus",
-            "grand_total",
-            "party_id"
-        ]
+        headers = {
+            "party_name": "Party",
+            "total_30": "30 days",
+            "total_60": "60 days",
+            "total_90": "90 days",
+            "total_120": "120 days",
+            "total_120plus": "120 days +",
+            "grand_total": "Total"
+        }
+        aggregate = {
+            "party_name": "Total",
+            "total_30": 0,
+            "total_60": 0,
+            "total_90": 0,
+            "total_120": 0,
+            "total_120plus": 0,
+            "grand_total": 0
+        }
+        for dct in ret_dicts:
+            for k, v in dct.items():
+                if not isinstance(v, str):
+                    aggregate[k] += v
         wb = Workbook("ageing_report.xlsx")
         ws = wb.add_worksheet("report")
         first_row = 0
-        for header in headers:
-            col = headers.index(header)
+        headers_list = [v for k, v in headers.items()]
+        for header in headers_list:
+            col = headers_list.index(header)
             ws.write(first_row, col, header)
         row = 1
         for dict in ret_dicts:
             for key, value in dict.items():
-                col=headers.index(key)
+                col=headers_list.index(headers[key])
                 ws.write(row, col, value)
             row += 1
+        for k, v in aggregate.items():
+            col = headers_list.index(headers[k])
+            ws.write(row, col, v)
+        ws.set_row(first_row, None, wb.add_format({'bold': True}))
+        ws.set_row(row, None, wb.add_format({'bold': True}))
         wb.close()
         with open("ageing_report.xlsx", "rb") as excel:
             data = excel.read()
         response = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = '{}_{}.xlsx'.format('Test', datetime.datetime.today().date())
+        filename = 'Ageing_{}.xlsx'.format(datetime.datetime.today().date())
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
-        # import ipdb; ipdb.set_trace()
-
-
         return response
 
