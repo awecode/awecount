@@ -164,7 +164,7 @@ export default function useGeneratePdf(
       font-family: Arial, Helvetica, sans-serif;
     "
   >
-    <h4 style="margin: 0; font-size: 1.4rem">TAX INVOICE</h4>
+    <h4 style="margin: 0; font-size: 1.4rem">${invoiceInfo.status === 'Issued' ? 'TAX INVOICE' : invoiceInfo.status === 'Draft' ? 'PRO FORMA INVOICE' : '' }</h4>
   </div>
   <div style="text-align:center; ${invoiceInfo.print_count > 1 ? '' :`display: none`}">
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
@@ -187,7 +187,7 @@ export default function useGeneratePdf(
       }
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
-      <div>
+      <div style="${invoiceInfo.voucher_no ? '' : 'display: none;'}">
       <span><span style="font-weight: 600; color: grey;">INV No.: </span></span> ${
         invoiceInfo.voucher_no
       }
@@ -206,7 +206,7 @@ export default function useGeneratePdf(
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${
         invoiceInfo.mode
-      }
+      } ${invoiceInfo.status === 'Draft' ? '(Draft)' : invoiceInfo.status === 'Paid' ? '(Paid)' : ''}
       </div>
     </div>
   </div>
