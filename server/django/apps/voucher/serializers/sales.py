@@ -360,6 +360,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
 
     payment_receipts = serializers.SerializerMethodField()
     options = serializers.SerializerMethodField()
+    fiscal_year = serializers.StringRelatedField()
 
     def get_payment_receipts(self, obj):
         receipts = []
