@@ -149,7 +149,7 @@
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
           type="submit" />
         <q-btn v-if="checkPermissions('SalesCreate')" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no}`" />
+          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" />
       </div>
     </q-card>
   </q-form>
