@@ -1,7 +1,7 @@
 <template>
     <div class="q-pa-md">
         <div class="row q-gutter-x-md justify-end">
-            <!-- <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" /> -->
+            <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
         </div>
         <q-table title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id"
             @request="onRequest" v-model:pagination="pagination" class="q-mt-md" :rows-per-page-options="[20]">
@@ -47,8 +47,20 @@ export default {
             title: 'Customer Ageing Report | Awecount',
         }
         useMeta(metaData)
+        const onDownloadXls = () => {
+            const query = route.fullPath.slice(route.fullPath.indexOf('?'))
+            useApi('v1/report/export-ageing-report/' + query)
+                .then((data) =>
+                    usedownloadFile(
+                        data,
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'Customer_Ageing_Report'
+                    )
+                )
+                .catch((err) => console.log('Error Due To', err))
+        }
         const fetchData = () => {
-            const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}`: ''}`
+            const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
             loading.value = true
             useApi(endpoint)
                 .then((data) => {
@@ -113,7 +125,7 @@ export default {
         watch(() => route.query, () => {
             fetchData()
         })
-        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate }
+        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate, onDownloadXls }
     },
     created() {
         if (!this.date) {
