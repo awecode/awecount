@@ -214,7 +214,7 @@ class ReportViewSet(GenericViewSet):
                 ws.write(row, col, value)
             row += 1
         wb.close()
-        with open("ageing_report.xlsx", "r", encoding="utf-8", errors="ignore") as excel:
+        with open("ageing_report.xlsx", "rb") as excel:
             data = excel.read()
         response = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         filename = '{}_{}.xlsx'.format('Test', datetime.datetime.today().date())
