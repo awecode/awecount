@@ -23,21 +23,13 @@ export default function useGeneratePdf(
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400;">${
         index + 1
       }</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:35px;">${
-        row.item_name
-      }<br><span style="font-size: 12px; ${
-          row.description ? '' : 'display: none;'
-        }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px;"><span style="${
-        hideRowQuantity ? 'display: none' : ''
-      }">${row.quantity + ` (${row.unit_name})`}</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px;"><span style="${
-        hideRowQuantity ? 'display: none' : ''
-      }">${row.rate}</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px;">${
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:35px;">${row.item_name}<br><span style="font-size: 12px; ${row.description ? '' : 'display: none;' }" class="text-grey-8">(${row.description})</span></th>
+      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity + ` (${row.unit_name})`}</span></th>
+      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.rate}</span></th>
+      <th style="text-align: right; font-weight: 400;">${
         row.quantity * row.rate
       }</th>
     </tr>
@@ -98,13 +90,13 @@ export default function useGeneratePdf(
     html = html.concat(header)
   }
   const table = `<div>
-  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey;">
+  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif;">
     <tr style="color: grey; font-weight: 500;">
-      <th style="width: 40px; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">SN</th>
-      <th style="width: 40%; text-align:left; padding-left:35px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Particular</th>
-      <th style="text-align: left; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Qty</th>
-      <th style="text-align: right; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Rate</th>
-      <th style="text-align: right; padding:5px; border-bottom: LightGrey solid 1px;">Amount(${
+      <th style="width: 20px;">SN</th>
+      <th style="width: 50%; text-align:left; padding-left:35px;">Particular</th>
+      <th style="text-align: right;">Qty</th>
+      <th style="text-align: right;">Rate</th>
+      <th style="text-align: right;">Amount(${
         compayInfo.config_template === 'np' ? 'NRS' : 'N/A'
       })</th>
 
@@ -172,17 +164,9 @@ export default function useGeneratePdf(
       font-family: Arial, Helvetica, sans-serif;
     "
   >
-    <h4 style="margin: 0; font-size: 1.4rem">${
-      invoiceInfo.status === 'Issued'
-        ? 'TAX INVOICE'
-        : invoiceInfo.status === 'Draft'
-        ? 'PRO FORMA INVOICE'
-        : ''
-    }</h4>
+    <h4 style="margin: 0; font-size: 1.4rem">${invoiceInfo.status === 'Issued' ? 'TAX INVOICE' : invoiceInfo.status === 'Draft' ? 'PRO FORMA INVOICE' : '' }</h4>
   </div>
-  <div style="text-align:center; ${
-    invoiceInfo.print_count > 1 ? '' : `display: none`
-  }">
+  <div style="text-align:center; ${invoiceInfo.print_count > 1 ? '' :`display: none`}">
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count
     })
@@ -191,9 +175,7 @@ export default function useGeneratePdf(
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
-        invoiceInfo.party
-          ? invoiceInfo.party_name
-          : invoiceInfo.customer_name || ''
+        invoiceInfo.party ? invoiceInfo.party_name : (invoiceInfo.customer_name || '')
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
@@ -224,13 +206,7 @@ export default function useGeneratePdf(
       <div>
       <span><span style="font-weight: 600; color: grey;">Mode: </span></span> ${
         invoiceInfo.mode
-      } ${
-      invoiceInfo.status === 'Draft'
-        ? '(Draft)'
-        : invoiceInfo.status === 'Paid'
-        ? '(Paid)'
-        : ''
-    }
+      } ${invoiceInfo.status === 'Draft' ? '(Draft)' : invoiceInfo.status === 'Paid' ? '(Paid)' : ''}
       </div>
     </div>
   </div>
@@ -238,16 +214,10 @@ export default function useGeneratePdf(
 <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
 ${table}
 <div style="font-size: 14px; text-align: right;">
-<div style="margin-bottom: 20px; text-align: left; ${
-      invoiceInfo.invoice_footer_text ? '' : 'display: none;'
-    }">${invoiceInfo.invoice_footer_text}
+<div style="margin-bottom: 20px; text-align: left; ${invoiceInfo.invoice_footer_text ? '' : 'display: none;'}">${invoiceInfo.invoice_footer_text}
 </div>
   <div style="margin-bottom: 5px">
-    Generated by ${loginStore.username} for ${loginStore.companyInfo.name} ${
-      loginStore.companyInfo.organization_type === 'private_limited'
-        ? 'Private Limited'
-        : ''
-    }.
+    Generated by ${loginStore.username} for ${loginStore.companyInfo.name} ${loginStore.companyInfo.organization_type === 'private_limited' ? 'Private Limited' :''}.
   </div>
   ${
     onlyBody
