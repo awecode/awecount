@@ -29,8 +29,8 @@
           </div>
           <div class="row q-ml-sm">
             <q-select class="col-12 col-sm-6" label="Mode" v-model.number="fields.mode" :options="formDefaults.collections.bank_accounts
-                ? formDefaults.collections.bank_accounts.concat(modes)
-                : modes
+              ? formDefaults.collections.bank_accounts.concat(modes)
+              : modes
               " option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
               :error-message="modeErrors">
               <!-- TODO: the id of modes in field comes as string must be chnaged to number -->
@@ -59,6 +59,9 @@
             <div>
               <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?">
               </q-checkbox>
+            </div>
+            <div class="row q-pl-sm">
+              <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow label="Invoice footer text" />
             </div>
           </div>
         </div>
