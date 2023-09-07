@@ -181,7 +181,7 @@ export default function useGeneratePdf(
     }</h4>
   </div>
   <div style="text-align:center; ${
-    invoiceInfo.print_count > 1 ? '' : `display: none`
+    invoiceInfo.print_count > 1 && ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status) ? '' : `display: none`
   }">
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count

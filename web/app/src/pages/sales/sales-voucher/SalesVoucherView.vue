@@ -13,7 +13,7 @@
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
         <q-card-section>
-          <ViewerTable :fields="fields" :showRateQuantity="fields.options.show_rate_quantity_in_voucher"/>
+          <ViewerTable :fields="fields" :showRateQuantity="fields.options.show_rate_quantity_in_voucher" />
         </q-card-section>
       </q-card>
       <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
@@ -25,8 +25,8 @@
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('SalesModify') && fields.status === 'Draft'" color="orange-5" label="Edit" icon="edit"
-              :to="`/sales-voucher/${fields?.id}/`" />
+            <q-btn v-if="checkPermissions('SalesModify') && fields.status === 'Draft'" color="orange-5" label="Edit"
+              icon="edit" :to="`/sales-voucher/${fields?.id}/`" />
             <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
               icon="mdi-check-all" />
@@ -35,14 +35,14 @@
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false)" :label="`Print Copy ${fields?.status !== 'Cancelled'
-            ? `# ${(fields?.print_count || 0) + 1}`
-            : ''
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print Copy ${ ['Draft', 'Cancelled'].includes(fields?.status)
+            ? ''
+            : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
-          <q-btn @click="() => onPrintclick(true)" :label="`Print Body ${fields?.status !== 'Cancelled'
-            ? `# ${(fields?.print_count || 0) + 1}`
-            : ''
+          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${ ['Draft', 'Cancelled'].includes(fields?.status)
+            ? ''
+            : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
           <q-btn color="blue-7" label="Materialized View" icon="mdi-table"
@@ -68,7 +68,8 @@
         </q-dialog>
       </div>
     </div>
-    <div class="print-only" v-html="useGeneratePdf('salesVoucher', true, fields, !fields.options.show_rate_quantity_in_voucher)">
+    <div class="print-only"
+      v-html="useGeneratePdf('salesVoucher', true, fields, !fields.options.show_rate_quantity_in_voucher)">
     </div>
   </div>
 </template>
@@ -125,16 +126,18 @@ export default {
         fields.value.mode = newValue
       }
     }
-    const onPrintclick = (bodyOnly: boolean) => {
-      const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
-      useApi(endpoint, { method: 'POST' })
-        .then(() => {
-          if (fields.value) {
-            fields.value.print_count = fields.value?.print_count + 1
-          }
-          print(bodyOnly)
-        })
-        .catch((err) => console.log('err from the api', err))
+    const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
+      if (!noApiCall) {
+        const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
+        useApi(endpoint, { method: 'POST' })
+          .then(() => {
+            if (fields.value) {
+              fields.value.print_count = fields.value?.print_count + 1
+            }
+            print(bodyOnly)
+          })
+          .catch((err) => console.log('err from the api', err))
+      } else print(bodyOnly)
     }
     // to print
     const print = (bodyOnly: boolean) => {
@@ -199,7 +202,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 @media print {
 
   // @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");
