@@ -16,3 +16,4 @@ requests
 django-import-export
 django-auditlog
 openpyxl==3.0.10
+XlsxWriter

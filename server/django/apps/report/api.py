@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -17,9 +18,11 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from apps.aggregator.views import qs_to_xls
 
 from apps.ledger.models.base import Account, Party
 from apps.ledger.serializers import PartySerializer
+from apps.report.resources import AgeingReportResource
 from apps.voucher.models import SalesVoucher
 from awecount.libs.pagination import PageNumberPagination
 
@@ -49,11 +52,8 @@ class ReportViewSet(GenericViewSet):
             .filter(customer_account_id__isnull=False)
         )
         return queryset
-
-    @action(detail=False, methods=["GET"], url_path="ageing-report")
-    def ageing_report(self, request):
-        # TODO: refactor this code, manage recurring code
-        # base_date = (timezone.now() - timezone.timedelta(days=12)).date()
+    
+    def ageing_report_data(selg, request):
         base_date_str =  request.query_params["date"]
         base_date = datetime.datetime.strptime(base_date_str, "%Y-%m-%d")
         date_range_30 = [base_date - timezone.timedelta(days=30), base_date]
@@ -177,8 +177,50 @@ class ReportViewSet(GenericViewSet):
                 if k.startswith("total"):
                     dct["grand_total"] += v
             ret_dicts.append(dct)
+        return ret_dicts
 
+    @action(detail=False, methods=["GET"], url_path="ageing-report")
+    def ageing_report(self, request):
+        ret_dicts = self.ageing_report_data(request)
         page = self.paginate_queryset(ret_dicts)
         if page is not None:
             return self.get_paginated_response(page)
         return Response(ret_dicts)
+    
+    @action(detail=False, methods=["GET"], url_path="export-ageing-report")
+    def export_ageing_report(self, request):
+        ret_dicts = self.ageing_report_data(request)
+        from xlsxwriter import Workbook
+        headers = [
+            "party_name",
+            "total_30",
+            "total_60",
+            "total_90",
+            "total_120",
+            "total_120plus",
+            "grand_total",
+            "party_id"
+        ]
+        wb = Workbook("ageing_report.xlsx")
+        ws = wb.add_worksheet("report")
+        first_row = 0
+        for header in headers:
+            col = headers.index(header)
+            ws.write(first_row, col, header)
+        row = 1
+        for dict in ret_dicts:
+            for key, value in dict.items():
+                col=headers.index(key)
+                ws.write(row, col, value)
+            row += 1
+        wb.close()
+        with open("ageing_report.xlsx", "r", encoding="utf-8", errors="ignore") as excel:
+            data = excel.read()
+        response = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename = '{}_{}.xlsx'.format('Test', datetime.datetime.today().date())
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        # import ipdb; ipdb.set_trace()
+
+
+        return response
+
