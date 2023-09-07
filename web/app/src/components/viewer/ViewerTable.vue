@@ -29,10 +29,10 @@
           {{ index + 1 }}
         </q-td>
         <q-td>
-          {{ row.item_name }}
+          {{ row.item_name }} <br> <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">{{ `(${row.description})` }}</span>
         </q-td>
         <q-td>
-          <span v-if="props.showRateQuantity">{{ row.quantity }}</span>
+          <span v-if="props.showRateQuantity">{{ row.quantity }} <span class="text-grey-9"> ({{row.unit_name}})</span></span>
         </q-td>
         <q-td> <span v-if="props.showRateQuantity">{{ row.rate }}</span> </q-td>
         <q-td> {{ row?.discount }} {{ row.discount ? row.discount_type == 'Amount' ? '-/' : '%' : '' }} </q-td>

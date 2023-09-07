@@ -26,8 +26,8 @@ export default function useGeneratePdf(
       <th style="width: 20px; padding: 10px 0; font-weight: 400;">${
         index + 1
       }</th>
-      <th style="width: 50%; font-weight: 400;">${row.item_name}</th>
-      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity}</span></th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:35px;">${row.item_name}<br><span style="font-size: 12px; ${row.description ? '' : 'display: none;' }" class="text-grey-8">(${row.description})</span></th>
+      <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.quantity + ` (${row.unit_name})`}</span></th>
       <th style="text-align: right; font-weight: 400;"><span style="${hideRowQuantity ? 'display: none' : ''}">${row.rate}</span></th>
       <th style="text-align: right; font-weight: 400;">${
         row.quantity * row.rate
@@ -93,7 +93,7 @@ export default function useGeneratePdf(
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif;">
     <tr style="color: grey; font-weight: 500;">
       <th style="width: 20px;">SN</th>
-      <th style="width: 50%;">Particular</th>
+      <th style="width: 50%; text-align:left; padding-left:35px;">Particular</th>
       <th style="text-align: right;">Qty</th>
       <th style="text-align: right;">Rate</th>
       <th style="text-align: right;">Amount(${
@@ -302,6 +302,9 @@ ${table}
     }
   </div>
   <style>
+    body {
+      display: none;
+    }
     table {
       tr {
         border-bottom: 1px solid #ddd;
