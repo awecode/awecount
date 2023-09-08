@@ -362,7 +362,7 @@ const Converter = {
       }
       return dateStr
     }
-    if (calendarType === 'bs' && time !== '00:00:00') {
+    if (calendarType === 'bs' && time !== '00:00:00' && showTime) {
       return this.ad2bs(adDate) + ' ' + time
     } else if (calendarType === 'bs') {
       return this.ad2bs(adDate)
