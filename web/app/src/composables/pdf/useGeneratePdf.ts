@@ -54,7 +54,7 @@ export default function useGeneratePdf(
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${
         compayInfo.name
       } ${
-      compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : 'Ltd.'
+      compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.' : ''
     }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${

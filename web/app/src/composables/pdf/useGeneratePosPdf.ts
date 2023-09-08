@@ -43,7 +43,7 @@ export default function useGeneratePosPdf(
   const header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <h1 style="margin: 5px 0">${compayInfo.name} ${
-    compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : 'Ltd.'
+        compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.' : ''
   }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${
