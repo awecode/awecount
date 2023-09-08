@@ -11,9 +11,11 @@
   </div>
 </template>
 
-<!-- <script setup>
-import LoginCard from 'src/components/LoginCard.vue'
-</script> -->
+<script setup>
+useMeta({
+  title: 'Login | Awecount',
+})
+</script>
 
 <style scoped>
 .background {

@@ -19,11 +19,11 @@
             <div class="text-h4 text-weight-bold q-mt-sm">Your Awesome Accountant</div>
             <div class="text-body1 q-mt-xl">Automatic book-keeping for your business transactions.</div>
             <form action="https://formspree.io/mjvwepkb" method="POST">
-              <q-input v-model="fields.email" class="q-mt-md" label="Your Email Address?" filled style="flex-grow: 1; max-width: 450px;" type="email" required value=""
-                name="email" />
+              <q-input v-model="fields.email" class="q-mt-md" label="Your Email Address?" filled
+                style="flex-grow: 1; max-width: 450px;" type="email" required value="" name="email" />
               <div style="max-width: 450px; display: flex;" class="q-mt-md ">
-                <q-input v-model="fields.phone_no" label="Your Phone Number?" filled style="flex-grow: 1;" type="number" required value=""
-                  name="phone_no" />
+                <q-input v-model="fields.phone_no" label="Your Phone Number?" filled style="flex-grow: 1;" type="number"
+                  required value="" name="phone_no" />
                 <q-btn style="flex-grow: 0; flex-shrink: 0;" color="blue-6" type="submit">Get Started!</q-btn>
               </div>
             </form>
@@ -131,6 +131,9 @@ const cards = [
 const fields = ref({
   email: '',
   phone_no: ''
+})
+useMeta({
+  title: 'Awecount',
 })
 </script>
 
