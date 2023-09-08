@@ -1,8 +1,8 @@
 {
   "name": "awecount-quasar-ts",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": "Quasar App",
+  "description": "Automatic book-keeping for your business transactions.",
+  "productName": "Awecount",
   "author": "",
   "private": true,
   "scripts": {
