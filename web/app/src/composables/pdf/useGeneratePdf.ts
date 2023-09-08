@@ -33,7 +33,7 @@ export default function useGeneratePdf(
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}"><span style="${
         hideRowQuantity ? 'display: none' : ''
-      }">${row.quantity + ` (${row.unit_name})`}</span></th>
+      }">${row.quantity + `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`}</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}"><span style="${
         hideRowQuantity ? 'display: none' : ''
       }">${row.rate}</span></th>
