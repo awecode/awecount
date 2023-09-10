@@ -1,8 +1,6 @@
 type VoucherType = 'salesVoucher' | 'creditNote' | 'debitNote'
 import { useLoginStore } from 'src/stores/login-info'
 import numberToText from '../numToText'
-const loginStore: Record<string, string | number | object> = useLoginStore()
-const compayInfo: Record<string, string | number> = loginStore.companyInfo
 import DateConverter from 'src/components/date/VikramSamvat.js'
 
 export default function useGeneratePdf(
@@ -11,6 +9,8 @@ export default function useGeneratePdf(
   invoiceInfo: object,
   hideRowQuantity: boolean
 ): string {
+  const loginStore: Record<string, string | number | object> = useLoginStore()
+  const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
