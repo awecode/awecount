@@ -230,10 +230,10 @@ export default {
       }
     )
     watch(
-      () => props.modelValue.tax_scheme_id, updateTaxObj
+      () => props.modelValue.tax_scheme_id, () => updateTaxObj()
     )
     watch(
-      () => props.taxOptions, updateTaxObj
+      () => props.taxOptions, () => updateTaxObj()
     )
     watch(
       () => props.errors,
