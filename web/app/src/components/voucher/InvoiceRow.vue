@@ -71,7 +71,7 @@
             <div class="col-3 row" v-if="['Amount', 'Percent'].includes(modalValue.discount_type) &&
               showRowTradeDiscount
               ">
-              <q-checkbox v-model="modalValue.trade_discount" label="Trade Discount?" :false-value="null"></q-checkbox>
+              <q-checkbox v-model="modalValue.trade_discount" label="Trade Discount?"></q-checkbox>
             </div>
           </div>
         </div>
@@ -154,6 +154,7 @@ export default {
           taxObj: null,
           discount_id: null,
           itemObj: null,
+          trade_discount: false
         }
       },
     },

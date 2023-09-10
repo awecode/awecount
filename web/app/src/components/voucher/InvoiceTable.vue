@@ -128,6 +128,7 @@ export default {
           tax_scheme_id: '',
           taxObj: null,
           discount_id: null,
+          trade_discount: false
         },
       ],
     },
