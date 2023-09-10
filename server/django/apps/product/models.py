@@ -507,9 +507,9 @@ class Item(models.Model):
                     account.suggest_code(self)
                     account.save()
                     self.sales_account = account
-                elif self.sales_account.name != name:
-                    self.sales_account.name = name
-                    self.sales_account.save()
+                # elif self.sales_account.name != name:
+                #     self.sales_account.name = name
+                #     self.sales_account.save()
 
                 name = 'Discount Allowed - ' + self.name
                 if not self.discount_allowed_account_id:
@@ -521,9 +521,9 @@ class Item(models.Model):
                     discount_allowed_account.suggest_code(self)
                     discount_allowed_account.save()
                     self.discount_allowed_account = discount_allowed_account
-                elif self.discount_allowed_account.name != name:
-                    self.discount_allowed_account.name = name
-                    self.discount_allowed_account.save()
+                # elif self.discount_allowed_account.name != name:
+                #     self.discount_allowed_account.name = name
+                #     self.discount_allowed_account.save()
 
             if self.can_be_purchased:
                 name = self.name + ' (Purchase)'
@@ -536,9 +536,9 @@ class Item(models.Model):
                     account.suggest_code(self)
                     account.save()
                     self.purchase_account = account
-                elif self.purchase_account.name != name:
-                    self.purchase_account.name = name
-                    self.purchase_account.save()
+                # elif self.=.name != name:
+                #     self.purchase_account.name = name
+                #     self.purchase_account.save()
 
             if self.can_be_purchased or self.fixed_asset or self.expense:
                 name = 'Discount Received - ' + self.name
@@ -551,9 +551,9 @@ class Item(models.Model):
                     discount_received_acc.suggest_code(self)
                     discount_received_acc.save()
                     self.discount_received_account = discount_received_acc
-                elif self.discount_received_account.name != name:
-                    self.discount_received_account.name = name
-                    self.discount_received_account.save()
+                # elif self.discount_received_account.name != name:
+                #     self.discount_received_account.name = name
+                #     self.discount_received_account.save()
 
             if self.direct_expense or self.indirect_expense:
                 if not self.expense_account_id:
