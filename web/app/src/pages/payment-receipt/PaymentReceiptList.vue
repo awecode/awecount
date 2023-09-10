@@ -99,9 +99,9 @@
             <span v-for=" invoice  in  props.row.invoices " :key="invoice.id">
               <router-link v-if="checkPermissions('SalesView')" class="text-blue" style="text-decoration: none"
                 :to="`/sales-voucher/${invoice.id}/view`">
-                #{{ invoice.id }}
+                #{{ invoice.voucher_no }}
               </router-link>
-              <span v-else>#{{ invoice.id }}</span>
+              <span v-else>#{{ invoice.voucher_no }}</span>
             </span>
           </div>
         </q-td>

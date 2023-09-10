@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span>Cheque Deposit | {{ fields?.status || '-' }} | #{{
-            fields?.voucher_no || '-'
+            fields?.id || '-'
           }}</span>
         </div>
       </q-card-section>
@@ -87,7 +87,7 @@
           class="text-h7 q-py-sm" />
       </div>
       <div class="q-ml-auto" v-if="fields?.status === 'Cleared'">
-        <q-btn :to="`/journal-entries/payment-receipt/${fields.id}/`" color="blue" icon="library_books"
+        <q-btn :to="`/journal-entries/cheque-deposits/${fields.id}/`" color="blue" icon="library_books"
           label="Journal Entries" class="text-h7 q-py-sm" />
       </div>
     </div>
