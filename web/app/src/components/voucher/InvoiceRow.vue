@@ -197,6 +197,7 @@ export default {
       if (taxindex > -1) {
         selectedTax.value = props.taxOptions[taxindex]
         modalValue.value.taxObj = props.taxOptions[taxindex]
+        emit('update:modelValue', modalValue.value)
       }
     }
 
@@ -204,12 +205,13 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
+        emit('update:modelValue', newValue)
       }
     )
     watch(
-      () => modalValue,
+      () => modalValue.value,
       (newValue) => {
-        emit('update:modelValue', newValue.value)
+        emit('update:modelValue', newValue)
       },
       { deep: true }
     )
