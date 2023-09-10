@@ -206,9 +206,12 @@ export default function useGeneratePdf(
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
       <div style="${invoiceInfo.voucher_no ? '' : 'display: none;'}">
-      <span><span style="font-weight: 600; color: grey;">INV No.: </span></span> ${
+      <span><span style="font-weight: 600; color: grey;">INV No.: </span></span>  ${
+        invoiceInfo.fiscal_year
+      }-<span style="font-weight: bold;">${
         invoiceInfo.voucher_no
       }
+      </span>
       </div>
       <div>
       <span><span style="font-weight: 600; color: grey;">Date: </span></span> ${
