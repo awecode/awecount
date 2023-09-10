@@ -57,24 +57,24 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Sales Account" v-model="fields.sales_account"
-                  :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
+                  :options="formDefaults.collections?.sales_accounts" :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
                   :error="errors.sales_account" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Purchase Account" v-model="fields.purchase_account"
-                  :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ?  AccountForm : null"
+                  :options="formDefaults.collections?.purchase_accounts" :modal-component="checkPermissions('AccountCreate') ?  AccountForm : null"
                   :error="errors.purchase_account" />
               </div>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Discount Allowed Account"
-                  v-model="fields.discount_allowed_account" :options="formDefaults.collections?.accounts"
+                  v-model="fields.discount_allowed_account" :options="formDefaults.collections?.discount_allowed_accounts"
                   :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_allowed_account" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Discount Received Account"
-                  v-model="fields.discount_received_account" :options="formDefaults.collections?.accounts"
+                  v-model="fields.discount_received_account" :options="formDefaults.collections?.discount_received_accounts"
                   :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_received_account" />
               </div>
             </div>
