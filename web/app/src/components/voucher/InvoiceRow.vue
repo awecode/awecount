@@ -196,8 +196,7 @@ export default {
       )
       if (taxindex > -1) {
         selectedTax.value = props.taxOptions[taxindex]
-        modalValue.value.taxObj = props.taxOptions[taxindex]
-        emit('update:modelValue', modalValue.value)
+        nextTick(() => modalValue.value.taxObj = props.taxOptions[taxindex])
       }
     }
 
