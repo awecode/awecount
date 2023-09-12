@@ -22,7 +22,7 @@
         <q-td :props="props">
           <div class="row align-center">
             <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
-              class="text-blue" :to="`/sales-voucher/${props.row.voucher_no}/view`">
+              class="text-blue" :to="`/sales-voucher/${props.row.id}/view`">
               {{ props.row.voucher_no }}
             </router-link>
             <span v-else> {{ props.row.voucher_no }}</span>
