@@ -61,9 +61,9 @@
           <div class="row align-center">
             <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
               class="text-blue" :to="`/sales-voucher/${props.row.voucher_id}/view`">
-              {{ props.row.voucher_id }}
+              {{ props.row.voucher__voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher_id }}</span>
+            <span v-else>{{ props.row.voucher__voucher_no }}</span>
           </div>
         </q-td>
       </template>
@@ -136,7 +136,6 @@ export default {
         label: 'Bill No',
         align: 'left',
         field: 'voucher_id',
-        sortable: true,
       },
       {
         name: 'date',
@@ -181,12 +180,6 @@ export default {
         field: 'net_amount',
       },
     ]
-    const usedOptions: Array<string> = [
-      'sales-agent',
-      'parties',
-      'tax_scheme',
-      'inventory-categories',
-    ]
     const fetchedOptions: Ref<Record<string, Array<object> | null>> = ref({
       'sales-agent': null,
       parties: null,
@@ -209,7 +202,6 @@ export default {
     return {
       ...listData,
       newColumn,
-      usedOptions,
       fetchedOptions,
       MultiSelectChip,
       checkPermissions,
@@ -217,16 +209,6 @@ export default {
       DateConverter,
       aggregate_headers
     }
-  },
-  created() {
-    this.usedOptions.forEach((type: string) => {
-      useApi(`/v1/${type}/choices/`).then((data) => {
-        this.fetchedOptions[type] = data
-      })
-      useApi('/v1/items/sales-choices/').then((data) => {
-        this.fetchedOptions.item_choices = data
-      })
-    })
   },
 }
 </script>
