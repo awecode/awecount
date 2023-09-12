@@ -90,6 +90,7 @@ export default {
                 url = withQuery(url, { date: route.query.date })
             }
             router.push(url)
+            fetchData()
         }
         function onUpdate() {
             let url = route.path
@@ -102,6 +103,7 @@ export default {
                 url = withQuery(url, { date: date.value })
             }
             router.push(url)
+            fetchData()
         }
         const newColumns = [
             {
@@ -122,9 +124,9 @@ export default {
             { name: 'total_120', label: '120 Days', align: 'left', field: 'total_120' },
             { name: 'total_120plus', label: '120 Days Plus', align: 'left', field: 'total_120plus' }
         ]
-        watch(() => route.query, () => {
-            fetchData()
-        })
+        // watch(() => route.query, () => {
+        //     fetchData()
+        // })
         return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate, onDownloadXls }
     },
     created() {

@@ -16,6 +16,23 @@
           <ViewerTable :fields="fields" :showRateQuantity="fields.options.show_rate_quantity_in_voucher" />
         </q-card-section>
       </q-card>
+      <div v-if="fields?.payment_receipts && fields?.payment_receipts.length > 0">
+        <q-card class="q-mx-lg q-mt-md" id="to_print" v-for="receipt in fields.payment_receipts" :key="receipt">
+          <q-card-section>
+            <div class="row">
+              <div class="col-3">Receipt #
+                <router-link v-if="checkPermissions('PaymentReceiptView')" style="font-weight: 500; text-decoration: none"
+                  class="text-blue" :to="`//payment-receipt/${receipt.id}/view`">
+                  {{ receipt.id }}
+                </router-link>
+              </div>
+              <div class="col-3">Amount: <span class="text-weight-medium">Rs {{ receipt.amount }}</span></div>
+              <div class="col-3">Status: <span class="text-weight-medium">{{ receipt.status }}</span></div>
+              <div class="col-3">TDS Amount: <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span></div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
       <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
         <q-card-section>
           <span class="text-subtitle2 text-grey-9"> Remarks: </span>
@@ -24,23 +41,23 @@
       </q-card>
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
-          <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('SalesModify') && fields.status === 'Draft'" color="orange-5" label="Edit"
-              icon="edit" :to="`/sales-voucher/${fields?.id}/`" />
+          <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
+            <q-btn v-if="checkPermissions('SalesModify')" color="orange-5" label="Edit" icon="edit"
+              :to="`/sales-voucher/${fields?.id}/`" />
             <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
               icon="mdi-check-all" />
-            <q-btn v-if="checkPermissions('SalesCancel')" color="red-5" label="Cancel" icon="cancel"
-              @click.prevent="() => (isDeleteOpen = true)" />
+            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
+              icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print Copy ${ ['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
-          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${ ['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0) + 1}`
             }`
