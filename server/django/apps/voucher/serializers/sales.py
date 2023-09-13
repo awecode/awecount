@@ -258,7 +258,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         self.validate_invoice_date(validated_data)
-        self.validate_due_date(validated_data["due_date"])
+        if validated_data.get("due_data"):
+            self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
