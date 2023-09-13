@@ -141,7 +141,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return {
             'options': {
                 'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data,
-                'enable_sales_agents': request.company.enable_sales_agents
+                'enable_sales_agents': request.company.enable_sales_agents,
+                'enable_fifo': request.company.inventory_setting.enable_fifo
             },
         }
 
