@@ -67,7 +67,7 @@ module.exports = configure(function (ctx) {
       env: {
         BASE_URL: ctx.dev
           ? 'http://localhost:8000'
-          : 'https://awecount-backend-production.up.railway.app/',
+          : process.env.BASE_URL,
       },
 
       // rawDefine: {}
