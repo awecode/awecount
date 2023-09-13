@@ -1242,6 +1242,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Account Closing'],
         },
       },
+      {
+        path: 'inventory-settings/',
+        component: () => import('src/pages/settings/InventorySettings.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Settings'],
+        },
+      },
     ],
   },
   {
