@@ -22,7 +22,7 @@
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
               " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" />
+            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -151,7 +151,11 @@ export default {
     showRateQuantity: {
       type: Boolean,
       default: () => true,
-    }
+    },
+    isFifo: {
+      type: Boolean,
+      default: () => false,
+    },
   },
   emits: ['update:modelValue', 'deleteRowErr'],
   setup(props, { emit }) {

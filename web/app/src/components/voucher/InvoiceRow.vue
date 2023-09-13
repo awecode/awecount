@@ -22,10 +22,15 @@
         </span>
       </div>
       <div class="col-2">
-        <span v-if="showRateQuantity">
-          <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
-            :error="errors?.rate ? true : false" type="number"></q-input>
-        </span>
+        <div v-if="showRateQuantity" style="display: flex; align-items: center; gap: 4px;">
+          <span v-if="showRateQuantity">
+            <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
+              :error="errors?.rate ? true : false" type="number"></q-input>
+          </span>
+          <!-- <span>asvhva</span> -->
+          <!-- <q-icon v-if="isFifo" name="info" size="28px" color="blue-3" :title="`COGS: ${'5000'}-/`">
+          </q-icon> -->
+        </div>
       </div>
       <div v-if="inputAmount" class="col-2">
         <!-- <span class="">{{ amountComputed }}</span> -->
@@ -44,6 +49,12 @@
           <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
         </q-btn>
       </div>
+    </div>
+    <div v-if="isFifo" class="row text-blue-4">
+      <div class="col-5">Cost Of Goods Sold:</div>
+      <div class="col-2"></div>
+      <div class="col-2 q-pl-sm">12</div>
+      <div class="col-2 text-center">12,000</div>
     </div>
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
@@ -177,7 +188,11 @@ export default {
     showRateQuantity: {
       type: Boolean,
       default: () => true,
-    }
+    },
+    isFifo: {
+      type: Boolean,
+      default: () => false,
+    },
   },
 
   emits: ['update:modelValue', 'deleteRow'],
