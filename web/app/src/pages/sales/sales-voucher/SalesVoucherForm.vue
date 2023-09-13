@@ -55,7 +55,7 @@
               </div>
               <div></div>
             </div>
-            <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Deposit Date*" />
+            <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
             <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
               :error="!!errors.address"></q-input>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
