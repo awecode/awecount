@@ -55,7 +55,8 @@
                 ? 'bg-green-2 text-green-10'
                 : props.row.status == 'Draft'
                   ? 'bg-orange-2 text-orange-10'
-                  : 'bg-red-2 text-red-10'
+                  : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                    : 'bg-red-2 text-red-10'
               " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
