@@ -515,7 +515,25 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
         if not self.item.cost_price:
             self.item.cost_price = self.rate
             self.item.save()
+        self.send_rate_alert()
         super().save(*args, **kwargs)
+    
+    def send_rate_alert(self):
+        from django_q.tasks import async_task
+        if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
+            return
+        existing_rate = self.item.purchase_rows.order_by("-id").first().rate 
+        if existing_rate != self.rate:
+            status = "increased" if existing_rate<self.rate else "decreased" 
+            message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
+            to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
+            async_task(
+                'django.core.mail.send_mail',
+                "Item purchase rate change alert.",
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                to_emails
+            )
 
 
 CREDIT_NOTE_STATUSES = (
