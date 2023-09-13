@@ -34,7 +34,7 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from apps.voucher.serializers.purchase import PurchaseOrderCreateSerializer, PurchaseOrderListSerializer
-from apps.voucher.serializers.voucher_settings import PurchaseSettingCreateSerializer, SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, SalesSettingCreateSerializer, \
+from apps.voucher.serializers.voucher_settings import InventorySettingCreateSerializer, PurchaseSettingCreateSerializer, SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, SalesSettingCreateSerializer, \
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no
@@ -978,6 +978,17 @@ class SalesSettingsViewSet(CRULViewSet):
 
         data = {
             'fields': SalesSettingsSerializer(s_setting, context={'request': request}).data
+        }
+        return data
+    
+
+class InventorySettingsViewSet(CRULViewSet):
+    serializer_class = InventorySettingCreateSerializer
+
+    def get_defaults(self, request=None):
+        i_setting = self.request.company.inventory_setting
+        data = {
+            'fields': self.get_serializer(i_setting).data
         }
         return data
 

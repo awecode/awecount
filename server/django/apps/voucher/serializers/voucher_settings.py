@@ -67,3 +67,9 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
         if not obj.mode in ['Cash', 'Credit']:
             return int(obj.mode)
         return obj.mode
+
+
+class InventorySettingCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesSetting
+        exclude = ['company']
