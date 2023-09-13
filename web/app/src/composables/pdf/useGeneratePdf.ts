@@ -23,23 +23,28 @@ export default function useGeneratePdf(
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}">${
-        index + 1
-      }</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}">${
-        row.item_name
-      }<br><span style="font-size: 12px; ${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
+        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
+      }">${index + 1}</th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px; ${
+        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
+      }">${row.item_name}<br><span style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}"><span style="${
-        hideRowQuantity ? 'display: none' : ''
-      }">${row.quantity + `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`}</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}"><span style="${
-        hideRowQuantity ? 'display: none' : ''
-      }">${row.rate}</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px; ${index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''}">${
-        row.quantity * row.rate
-      }</th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
+        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
+      }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+          row.quantity +
+          `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`
+        }</span></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
+        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
+      }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+          row.rate
+        }</span></th>
+      <th style="text-align: right; font-weight: 400; padding:5px; ${
+        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
+      }">${row.quantity * row.rate}</th>
     </tr>
     `
       }
@@ -54,7 +59,13 @@ export default function useGeneratePdf(
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${
         compayInfo.name
       } ${
-      compayInfo.organization_type === 'private_limited' ? ' Pvt. Ltd.' : ['public_limited', 'corporation'].includes(compayInfo.organization_type) ? 'Ltd.' : ''
+      compayInfo.organization_type === 'private_limited'
+        ? ' Pvt. Ltd.'
+        : ['public_limited', 'corporation'].includes(
+            compayInfo.organization_type
+          )
+        ? 'Ltd.'
+        : ''
     }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${
@@ -158,11 +169,12 @@ export default function useGeneratePdf(
       : ''
   }
   </div>
-  <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
+  <div style="margin-top: 20px">
+  </div>
   `
   let body = ''
   if (voucherType === 'salesVoucher') {
-    body = `<div style="${onlyBody ? 'margin-top: 80px;' : ''}">
+    body = `<div style="${onlyBody ? 'margin-top: 80px; margin-bottom: 20px' : 'margin-top: 20px; margin-bottom: 20px'}">
   <div
     style="
       display: flex;
@@ -173,7 +185,7 @@ export default function useGeneratePdf(
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">${
-      invoiceInfo.status === 'Issued'
+      (invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid')
         ? 'TAX INVOICE'
         : invoiceInfo.status === 'Draft'
         ? 'PRO FORMA INVOICE'
@@ -181,7 +193,10 @@ export default function useGeneratePdf(
     }</h4>
   </div>
   <div style="text-align:center; ${
-    invoiceInfo.print_count > 1 && ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status) ? '' : `display: none`
+    invoiceInfo.print_count > 1 &&
+    ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status)
+      ? ''
+      : `display: none`
   }">
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count
@@ -208,9 +223,7 @@ export default function useGeneratePdf(
       <div style="${invoiceInfo.voucher_no ? '' : 'display: none;'}">
       <span><span style="font-weight: 600; color: grey;">INV No.: </span></span>  ${
         invoiceInfo.fiscal_year
-      }-<span style="font-weight: bold;">${
-        invoiceInfo.voucher_no
-      }
+      }-<span style="font-weight: bold;">${invoiceInfo.voucher_no}
       </span>
       </div>
       <div>
@@ -238,7 +251,6 @@ export default function useGeneratePdf(
     </div>
   </div>
 </div>
-<hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0;">
 ${table}
 <div style="font-size: 14px; text-align: right;">
 <div style="margin-bottom: 20px; text-align: left; ${
@@ -323,7 +335,11 @@ ${table}
   ${table}
   <div style="font-size: 14px; text-align: right">
     <div style="margin-bottom: 5px">
-      Generated by ${loginStore.username} for Test Company Pvt. Ltd
+      Generated by ${loginStore.username} for ${loginStore.companyInfo.name} ${
+      loginStore.companyInfo.organization_type === 'private_limited'
+        ? 'Private Limited'
+        : ''
+    }
     </div>
     ${
       onlyBody
@@ -336,16 +352,6 @@ ${table}
     `
     }
   </div>
-  <style>
-    body {
-      display: none;
-    }
-    table {
-      tr {
-        border-bottom: 1px solid #ddd;
-      }
-    }
-  </style>
 `
   }
   return html.concat(body)
