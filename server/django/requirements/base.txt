@@ -16,3 +16,4 @@ requests
 django-import-export
 django-auditlog
 openpyxl
+django-q

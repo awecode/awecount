@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'auditlog',
     'mptt',
+    'django_q',
 
     'apps.users',
     'apps.voucher',
