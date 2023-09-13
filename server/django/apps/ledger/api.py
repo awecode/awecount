@@ -2,26 +2,35 @@ from datetime import datetime
 
 from django.db.models import Q, Sum, Case, When, F, Max
 from django.db.models.functions import Coalesce
+from django.contrib.contenttypes.models import ContentType
 from django_filters import rest_framework as filters
 from mptt.utils import get_cached_trees
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.mixins import DestroyModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
+from django_filters.rest_framework import DjangoFilterBackend
+from apps.aggregator.views import qs_to_xls
 
-from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
+from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
+from apps.ledger.models.base import AccountClosing
+from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
+from apps.users.models import FiscalYear
 from apps.voucher.models import SalesVoucher, PurchaseVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 from .models import Account, JournalEntry, Category, AccountOpeningBalance
-from .serializers import PartySerializer, AccountSerializer, AccountDetailSerializer, CategorySerializer, \
+from .serializers import AccountClosingSerializer, AggregatorSerializer, ContentTypeListSerializer, PartySerializer, AccountSerializer, \
+    AccountDetailSerializer, CategorySerializer, \
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
-    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer
+    AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, \
+    TransactionEntrySerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -76,7 +85,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
-    filter_class = CategoryFilterSet
+    filterset_class = CategoryFilterSet
 
     collections = (
         ('categories', Category, CategorySerializer),
@@ -87,7 +96,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ('code', 'name',)
-    filter_class = AccountFilterSet
+    filterset_class = AccountFilterSet
 
     def get_account_ids(self, obj):
         return [obj.id]
@@ -174,11 +183,16 @@ class TrialBalanceView(APIView):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         if start_date and end_date:
+            # TODO Only use Transactions whose journal_entry.type=='Regular'
             qq = Account.objects.filter(company=request.company).annotate(
                 od=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
                 oc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lt=start_date)),
-                cd=Sum('transactions__dr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
-                cc=Sum('transactions__cr_amount', filter=Q(transactions__journal_entry__date__lte=end_date)),
+                cd=Sum('transactions__dr_amount',
+                       filter=Q(transactions__journal_entry__date__lt=end_date) | Q(
+                           transactions__journal_entry__date=end_date, transactions__type='Regular')),
+                cc=Sum('transactions__cr_amount',
+                       filter=Q(transactions__journal_entry__date__lt=end_date) | Q(
+                           transactions__journal_entry__date=end_date, transactions__type='Regular')),
             ) \
                 .values('id', 'name', 'category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
             return Response(list(qq))
@@ -276,3 +290,113 @@ class CustomerClosingView(APIView):
                                                                          'id',
                                                                          'last_invoice_date')
         return Response({'balances': balances, 'last_invoice_dates': last_invoice_dates})
+
+
+class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
+    company_id_attr = 'journal_entry__company_id'
+    serializer_class = TransactionEntrySerializer
+    # filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
+    # filterset_class = TransactionFilterSet
+    # search_fields = ['journal_entry__source__get_voucher_no']
+    journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
+    collections = [
+        ('accounts', Account),
+        ('transaction_types', ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer),
+        ('categories', Category)
+    ]
+
+    def get_serializer_class(self):
+        if self.request.GET.get('group'):
+            return AggregatorSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        accounts = list(filter(None, self.request.GET.getlist('account')))
+        categories = list(filter(None, self.request.GET.getlist('category')))
+        sources = list(filter(None, self.request.GET.getlist('source')))
+        group_by = self.request.GET.get('group')
+
+        # TODO Optimize this query
+        if start_date and end_date:
+            qs = qs.filter(journal_entry__date__range=[start_date, end_date])
+        if accounts:
+            qs = qs.filter(account_id__in=accounts)
+        if categories:
+            qs = qs.filter(account__category_id__in=categories)
+        if sources:
+            qs = qs.filter(journal_entry__content_type_id__in=sources)
+        if group_by:
+            qs = self.aggregate(qs, group_by)
+        return qs
+
+    def aggregate(self, qs, group_by):
+        from django.db.models.functions import ExtractYear
+        from django.db.models import Sum
+
+        if group_by == 'acc':
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__name')).values('year',
+                                                                                                       'label').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'cat':
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'), label=F('account__category__name')).values('year',
+                                                                                                                 'label').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        if group_by == 'type':
+            qs = qs.annotate(year=ExtractYear('journal_entry__date'),
+                             label=F('journal_entry__content_type__model')).values('year', 'label').annotate(
+                total_debit=Sum('dr_amount'),
+                total_credit=Sum('cr_amount'),
+            ).order_by('-year')
+        return qs
+
+    @action(detail=False)
+    def export(self, request):
+        queryset = self.get_queryset().order_by('-journal_entry__date')
+        if not request.GET.get('group'):
+            params = [
+                ('Transactions', queryset, TransactionResource)
+            ]
+            return qs_to_xls(params)
+        else:
+            params = [
+                ('Transactions', queryset, TransactionGroupResource)
+            ]
+            return qs_to_xls(params)
+
+
+class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin, GenericViewSet):
+    queryset = AccountClosing.objects.all()
+    serializer_class = AccountClosingSerializer
+
+    collections = [
+        ('fiscal_years', FiscalYear)
+    ]
+
+    def get_defaults(self, request=None):
+        company = request.company
+        current_fiscal_year_id = company.current_fiscal_year_id
+        return {
+            'fields': {
+                'current_fiscal_year_id': current_fiscal_year_id
+            }
+        }
+
+    def get_queryset(self):
+        return super().get_queryset().filter(company=self.request.company)
+    
+    def create(self, request, *args, **kwargs):
+        company = request.company
+        fiscal_year_id = request.data.get('fiscal_year')
+        account_closing = AccountClosing.objects.get_or_create(company=company, fiscal_period_id=fiscal_year_id)[0]
+        if account_closing.status == 'Closed':
+            return Response({'detail': 'Your accounts for this year have already been closed.'}, status=400)
+        account_closing.close()
+        return Response('Successfully closed accounts for selected fiscal year.', status=200)
+        

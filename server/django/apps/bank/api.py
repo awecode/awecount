@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Case, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -8,11 +8,13 @@ from rest_framework.response import Response
 
 from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, FundTransferFilterSet
 from apps.bank.models import BankAccount, ChequeDeposit, BankCashDeposit, FundTransferTemplate
+from apps.bank.resources import ChequeIssueResource
 from apps.bank.serializers import BankAccountSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, \
     ChequeIssueSerializer, BankAccountChequeIssueSerializer, BankCashDepositCreateSerializer, \
     BankCashDepositListSerializer, FundTransferSerializer, FundTransferListSerializer, FundTransferTemplateSerializer
 from apps.ledger.models import Party, Account
 from apps.ledger.serializers import PartyMinSerializer, JournalEntriesSerializer
+from apps.aggregator.views import qs_to_xls
 from awecount.libs.CustomViewSet import CRULViewSet
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -97,9 +99,22 @@ class ChequeIssueViewSet(CRULViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.action == 'list':
+        if self.action in ['list', 'export']:
             qs = qs.select_related('party')
         return qs.order_by('-pk')
+    
+    @action(detail=False)
+    def export(self, request):
+        queryset = self.filter_queryset(self.get_queryset()).annotate(
+            issued=Case(
+            When(issued_to__isnull=True, then='party__name'),
+            default='issued_to'
+            )
+        )
+        params = [
+            ('Invoices', queryset, ChequeIssueResource),
+        ]
+        return qs_to_xls(params)
 
 
 class FundTransferViewSet(CRULViewSet):

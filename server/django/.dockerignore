@@ -1,0 +1,5 @@
+*.pyc
+.idea
+awecount/settings/env.py
+*.sqlite3
+.vscode/

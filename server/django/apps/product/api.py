@@ -33,7 +33,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('brands', Brand, BrandSerializer),
         ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
         ('units', Unit, UnitSerializer),
-        ('accounts', Account, AccountMinSerializer),
+        ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
+        ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
@@ -218,7 +219,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-pk', '-journal_entry__date') \
+        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by('-journal_entry__date', '-pk') \
             .select_related('journal_entry__content_type')
 
         aggregate = {}

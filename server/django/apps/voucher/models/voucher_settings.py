@@ -1,5 +1,6 @@
 from django.db import models
 from django.dispatch import receiver
+from django.contrib.postgres.fields import ArrayField
 
 from apps.bank.models import BankAccount
 from apps.users.models import Company
@@ -23,6 +24,9 @@ class SalesSetting(models.Model):
     enable_row_description = models.BooleanField(default=False)
 
     enable_import_challan = models.BooleanField(default=False)
+    enable_amount_entry = models.BooleanField(default=False)
+    show_rate_quantity_in_voucher = models.BooleanField(default=True)
+    invoice_footer_text = models.CharField(max_length=255, null=True, blank=True)
 
     @property
     def fields(self):
@@ -41,6 +45,8 @@ class SalesSetting(models.Model):
             'is_trade_discount_in_row': self.is_trade_discount_in_row,
             'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
             'enable_import_challan': self.enable_import_challan,
+            'enable_amount_entry': self.enable_amount_entry,
+            'show_rate_quantity_in_voucher': self.show_rate_quantity_in_voucher
         }
 
     def __str__(self):
@@ -60,6 +66,21 @@ class PurchaseSetting(models.Model):
     mode = models.CharField(default='Credit', max_length=15)
 
     enable_row_description = models.BooleanField(default=False)
+    enable_purchase_order_import = models.BooleanField(default=False)
+
+    enable_item_rate_change_alert = models.BooleanField(default=False)
+    rate_change_alert_emails = ArrayField(models.EmailField(), default=list, blank=True)
+
+    def update(self, update_data):
+        for key, value in update_data.items():
+            if key == 'bank_account':
+                if update_data['bank_account'] == self.bank_account_id:
+                    pass
+                else:
+                    self.bank_account_id = BankAccount.objects.get(id=update_data['bank_account']).id
+            else:
+                setattr(self, key,value)
+        self.save()
 
     @property
     def fields(self):
@@ -75,7 +96,8 @@ class PurchaseSetting(models.Model):
             'show_trade_discount_in_row': self.show_trade_discount_in_row,
             'enable_row_description': self.enable_row_description,
             'is_trade_discount_in_row': self.is_trade_discount_in_row,
-            'enable_due_date_in_voucher': self.enable_due_date_in_voucher
+            'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
+            'enable_purchase_order_import': self.enable_purchase_order_import
         }
 
     def __str__(self):

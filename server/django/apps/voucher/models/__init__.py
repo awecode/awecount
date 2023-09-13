@@ -31,9 +31,21 @@ STATUSES = (
 )
 
 CHALLAN_STATUSES = (
-    ('Approved', 'Approved'),
-    ('Unapproved', 'Unapproved'),
+    ('Draft', 'Draft'),
+    ('Issued', 'Issued'),
+    ('Cancelled', 'Cancelled'),
+    ('Resolved', 'Resolved'),
+    # ('Approved', 'Approved'),
+    # ('Unapproved', 'Unapproved'),
 )
+
+PURCHASE_ORDER_STATUS_CHOICES = [
+    # ('Draft', 'Draft'),
+    ('Issued', 'Issued'),
+    # ('Resolved', 'Resolved'),
+    ('Cancelled', 'Cancelled')
+]
+
 MODES = (
     ('Credit', 'Credit'),
     ('Cash', 'Cash'),
@@ -50,7 +62,7 @@ class Challan(TransactionModel, InvoiceModel):
     issue_datetime = models.DateTimeField(default=timezone.now)
     date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
-
+    status = models.CharField(max_length=255, choices=CHALLAN_STATUSES)
     remarks = models.TextField(blank=True, null=True)
 
     print_count = models.PositiveSmallIntegerField(default=0)
@@ -96,6 +108,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     issue_datetime = models.DateTimeField(default=timezone.now)
     date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
+    payment_date = models.DateField(blank=True, null=True)
 
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
 
@@ -171,11 +184,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         elif self.mode == 'Cash':
             dr_acc = get_account(self.company, 'Cash')
             self.status = 'Paid'
+            self.payment_date = timezone.now().date()
         elif self.mode == 'Bank Deposit':
             dr_acc = self.bank_account.ledger
             self.status = 'Paid'
         else:
             raise ValueError('No such mode!')
+        
 
         self.save()
 
@@ -227,6 +242,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     entries.append(['dr', self.bank_account.commission_account, commission])
             else:
                 entries.append(['dr', dr_acc, row_total])
+            
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
@@ -308,6 +324,39 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     @property
     def amount_before_discount(self):
         return self.net_amount - self.tax_amount + self.discount_amount
+    
+
+class PurchaseOrder(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
+    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    date = models.DateField()
+    status = models.CharField(max_length=255, choices=PURCHASE_ORDER_STATUS_CHOICES)
+    remarks = models.TextField(blank=True, null=True)
+
+    print_count = models.PositiveSmallIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_orders')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='purchase_Orders')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_orders')
+
+    # Model key for module based permission
+    key = 'PurchaseOrder'
+
+    class Meta:
+        unique_together = ('company', 'voucher_no', 'fiscal_year')
+
+
+class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name='rows')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='purchase_order_rows')
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Model key for module based permission
+    key = 'Purchase Order'
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):

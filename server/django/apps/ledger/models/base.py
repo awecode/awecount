@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
 
+from dateutil.utils import today
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -93,7 +94,7 @@ class Account(models.Model):
     opening_cr = models.FloatField(default=0)
     # fy = models.ForeignKey(FiscalYear, null=True, blank=True)
     order = models.PositiveIntegerField(default=0)
-    default = models.BooleanField(default=False, editable=False)
+    default = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_accounts')
 
     def get_absolute_url(self):
@@ -110,32 +111,21 @@ class Account(models.Model):
             val = zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
             return float(round(decimalize(val), 2))
 
-    def get_day_opening_dr(self, before_date=None):
-        if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return transactions[0].current_dr
-        return self.current_dr
-
-    def get_day_opening_cr(self, before_date=None):
-        if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return transactions[0].current_cr
-        return self.current_cr
-
     def get_day_opening(self, before_date=None):
         if not before_date:
-            before_date = datetime.date.today()
-        transactions = Transaction.objects.filter(account=self, journal_entry__date__lt=before_date).order_by(
-            '-journal_entry__id', '-journal_entry__date')[:1]
-        if len(transactions) > 0:
-            return zero_for_none(transactions[0].current_dr) - zero_for_none(transactions[0].current_cr)
-        return self.opening_dr - self.opening_cr
+            before_date = today()
+        tr = Transaction.objects.filter(account=self, journal_entry__date__lte=before_date).aggregate(
+            dr=Sum('dr_amount'),
+            cr=Sum('cr_amount'))
+        return (tr.get('dr') or 0) - (tr.get('cr') or 0)
+
+    def get_day_closing(self, until_date=None):
+        if not until_date:
+            until_date = today()
+        tr = Transaction.objects.filter(account=self, journal_entry__date__lte=until_date).aggregate(
+            dr=Sum('dr_amount'),
+            cr=Sum('cr_amount'))
+        return (tr.get('dr') or 0) - (tr.get('cr') or 0)
 
     def add_category(self, category):
         category_instance = Category.objects.get(name=category, company=self.company, default=True)
@@ -214,8 +204,6 @@ class Account(models.Model):
     @property
     def transaction_amounts(self):
         return 0
-        # # import ipdb
-        # # ipdb.set_trace()
         # return self.transactions.aggregate(dr=Sum('dr_amount'), cr=Sum('cr_amount'))
 
     class Meta:
@@ -239,12 +227,14 @@ class Party(models.Model):
 
     def can_be_deleted(self):
         # Allow party to be deleted only if no transactions exist
-        return Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+        return Party.objects.filter(supplier_account__transactions__isnull=True,
+                                    customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists()
 
     def delete(self, *args, **kwargs):
         # Allow party to be deleted only if no transactions exist
-        if not Party.objects.filter(supplier_account__transactions__isnull=True, customer_account__transactions__isnull=True,
+        if not Party.objects.filter(supplier_account__transactions__isnull=True,
+                                    customer_account__transactions__isnull=True,
                                     company_id=self.company_id, id=self.id).exists():
             raise BadOperation('This party has transactions and therefore can not be deleted.')
         try:
@@ -286,7 +276,7 @@ class PartyRepresentative(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     position = models.CharField(max_length=100, blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.PROTECT, related_name='representative')
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='representative')
 
     company_id_accessor = 'party__company_id'
 
@@ -337,11 +327,19 @@ class Node(object):
         return self.name
 
 
+TRANSACTION_TYPES = (
+    ('Regular', 'Regular'),
+    ('Opening', 'Opening'),
+    ('Closing', 'Closing'),
+)
+
+
 class JournalEntry(models.Model):
     date = models.DateField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='journal_entries')
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
+    type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
@@ -364,6 +362,11 @@ class Transaction(models.Model):
     current_dr = models.FloatField(null=True, blank=True)
     current_cr = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='transactions', null=True)
+    type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
+
+    def get_amount(self):
+        return self.dr_amount - self.cr_amount
 
     def get_balance(self):
         return zero_for_none(self.current_dr) - zero_for_none(self.current_cr)
@@ -409,8 +412,9 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         all_accounts.append(arg[1])
         if not matches:
             if arg[1] is None:
-                raise ValidationError('Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
-            transaction = Transaction(account=arg[1])
+                raise ValidationError(
+                    'Cannot create {} transaction {} when account does not exist!'.format(arg[0], arg[2]))
+            transaction = Transaction(account=arg[1], company=arg[1].company)
             if arg[0] == 'dr':
                 transaction.dr_amount = val
                 transaction.cr_amount = None
@@ -496,19 +500,19 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
         raise RuntimeError(error_msg)
 
 
-@receiver(pre_delete, sender=Transaction)
-def _transaction_delete(sender, instance, **kwargs):
-    transaction = instance
-    if transaction.dr_amount:
-        transaction.account.current_dr -= transaction.dr_amount
-
-    if transaction.cr_amount:
-        transaction.account.current_cr -= transaction.cr_amount
-
-    alter(transaction.account, transaction.journal_entry.date, float(zero_for_none(transaction.dr_amount)) * -1,
-          float(zero_for_none(transaction.cr_amount)) * -1)
-
-    transaction.account.save()
+# @receiver(pre_delete, sender=Transaction)
+# def _transaction_delete(sender, instance, **kwargs):
+#     transaction = instance
+#     if transaction.dr_amount:
+#         transaction.account.current_dr -= transaction.dr_amount
+#
+#     if transaction.cr_amount:
+#         transaction.account.current_cr -= transaction.cr_amount
+#
+#     alter(transaction.account, transaction.journal_entry.date, float(zero_for_none(transaction.dr_amount)) * -1,
+#           float(zero_for_none(transaction.cr_amount)) * -1)
+#
+#     transaction.account.save()
 
 
 def delete_rows(rows, model):
@@ -540,10 +544,12 @@ def handle_company_creation(sender, **kwargs):
 
     # Account.objects.create(name='Paid in Capital', category=equity, code='Q-PC', company=company, default=True)
     # Account.objects.create(name='Retained Earnings', category=equity, code='Q-RE', company=company, default=True)
-    # Account.objects.create(name='Profit and Loss Account', category=equity, code='Q-PL', company=company, default=True)
+    Account.objects.create(name='Profit and Loss Account', category=root['Equity'], code='Q-PL', company=company,
+                           default=True)
     Account.objects.create(name='Opening Balance Equity', category=root['Equity'], code='Q-OBE', company=company,
                            default=True)
-    Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company, default=True)
+    Account.objects.create(name='Capital Investment', category=root['Equity'], code='Q-CI', company=company,
+                           default=True)
     Account.objects.create(name='Drawing Capital', category=root['Equity'], code='Q-DC', company=company, default=True)
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR ASSETS
@@ -556,9 +562,11 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Category.objects.create(name='Deposits Made', code='A-D', parent=root['Assets'], company=company, default=True)
     Category.objects.create(name='Employee', code='A-E', parent=root['Assets'], company=company, default=True)
-    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'], company=company,
+    tax_receivables = Category.objects.create(name='Tax Receivables', code='A-TR', parent=root['Assets'],
+                                              company=company,
                                               default=True)
-    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables, code='A-TR-TDS')
+    Account.objects.create(company=company, default=True, name='TDS Receivables', category=tax_receivables,
+                           code='A-TR-TDS')
 
     cash_account = Category.objects.create(name='Cash Accounts', code='A-C', parent=root['Assets'], company=company,
                                            default=True)
@@ -613,8 +621,10 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     Account.objects.create(name='Provision for Accumulated Depreciation', category=root['Liabilities'], code='L-DEP',
                            company=company, default=True)
-    Account.objects.create(name='Audit Fee Payable', category=root['Liabilities'], code='L-AFP', company=company, default=True)
-    Account.objects.create(name='Other Payables', category=root['Liabilities'], code='L-OP', company=company, default=True)
+    Account.objects.create(name='Audit Fee Payable', category=root['Liabilities'], code='L-AFP', company=company,
+                           default=True)
+    Account.objects.create(name='Other Payables', category=root['Liabilities'], code='L-OP', company=company,
+                           default=True)
     duties_and_taxes = Category.objects.create(name='Duties & Taxes', code='L-T', parent=root['Liabilities'],
                                                company=company,
                                                default=True)
@@ -659,13 +669,21 @@ def handle_company_creation(sender, **kwargs):
                             default=True)
     indirect_expenses = Category.objects.create(name='Indirect Expenses', code='E-I', parent=root['Expenses'],
                                                 company=company, default=True)
-    Account.objects.create(name='Bank Charges', category=indirect_expenses, code='E-I-BC', company=company, default=True)
+
+    bank_charges = Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses,
+                                           company=company,
+                                           default=True)
+    Account.objects.create(name='Bank Charges', category=bank_charges, code='E-I-BC-BC', company=company,
+                           default=True)
     Account.objects.create(name='Fines & Penalties', category=indirect_expenses, code='E-I-FP', company=company,
                            default=True)
     Category.objects.create(name='Pay Head', code='E-I-P', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company, default=True)
-    Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company, default=True)
+    Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company,
+                            default=True)
+    Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company,
+                            default=True)
+    Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company,
+                            default=True)
     Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company,
                             default=True)
     Category.objects.create(name='Repair and Maintenance', code='E-I-RM', parent=indirect_expenses, company=company,
@@ -781,7 +799,8 @@ class AccountOpeningBalance(models.Model):
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
-        opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference', default=True)
+        opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference',
+                                                         default=True)
         dr_entries = [
         ]
         cr_entries = [
@@ -806,3 +825,84 @@ class AccountOpeningBalance(models.Model):
 
     class Meta:
         unique_together = ('company', 'fiscal_year', 'account')
+
+
+CLOSING_STATUSES = (
+    ('Pending', 'Pending'),
+    ('Closed', 'Closed'),
+)
+
+
+class AccountClosing(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='account_closings')
+    fiscal_period = models.ForeignKey(FiscalYear, on_delete=models.PROTECT)
+    status = models.CharField(choices=CLOSING_STATUSES, max_length=50, default=CLOSING_STATUSES[0][0])
+    journal_entry = models.ForeignKey(JournalEntry, related_name='account_closings', on_delete=models.SET_NULL,
+                                      blank=True, null=True)
+    
+    key = 'AccountClosing'
+
+    def get_source_id(self):
+        return self.id
+
+    def __str__(self):
+        return '{}-{}'.format(str(self.company), str(self.fiscal_period))
+    
+    def close(self):
+        company = self.company
+        date = self.fiscal_period.end
+        pl_account = Account.objects.get(name='Profit and Loss Account', default=True, company=company)
+
+        income_category = Category.objects.get(name='Income', company=company, default=True, parent__isnull=True)
+        income_accounts = Account.objects.filter(category__in=income_category.get_descendants(include_self=True))
+
+        expenses_category = Category.objects.get(name='Expenses', company=company, default=True, parent__isnull=True)
+        expenses_accounts = Account.objects.filter(category__in=expenses_category.get_descendants(include_self=True))
+
+        journal_entry = JournalEntry.objects.create(date=date, content_type=ContentType.objects.get_for_model(self),object_id=self.id, type='Closing')
+        jeid = journal_entry.id
+
+        transactions = []
+
+        total_income_amount = 0
+        for income_account in income_accounts:
+            income_amount = income_account.get_day_closing(until_date=date)
+            # Amount is usually negative for Income
+            income_amount = -1 * income_amount
+            total_income_amount += income_amount
+            # TODO What if amount is positive?
+            if income_amount:
+                transaction = Transaction(account=income_account, dr_amount=income_amount, type='Closing',
+                                        journal_entry_id=jeid,
+                                        company_id=company.id)
+                transactions.append(transaction)
+
+        total_expense_amount = 0
+        for expense_account in expenses_accounts:
+            expense_amount = expense_account.get_day_closing(until_date=date)
+            # Amount is usually positive for Expense
+            # TODO What if amount is negative?
+            total_expense_amount += expense_amount
+
+            if expense_amount:
+                transaction = Transaction(account=expense_account, cr_amount=expense_amount, type='Closing',
+                                        journal_entry_id=jeid,
+                                        company_id=company.id)
+                transactions.append(transaction)
+
+        diff = total_income_amount - total_expense_amount
+
+        if diff > 0:
+            pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id, cr_amount=diff,
+                                        type='Closing')
+        else:
+            pl_transaction = Transaction(account=pl_account, journal_entry_id=jeid, company_id=company.id,
+                                        dr_amount=-1 * diff,
+                                        type='Closing')
+
+        transactions.append(pl_transaction)
+
+        Transaction.objects.bulk_create(transactions)
+        self.journal_entry = journal_entry
+        self.status = 'Closed'
+        self.save()

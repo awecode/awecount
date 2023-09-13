@@ -15,6 +15,7 @@ django-ses
 requests
 django-import-export
 django-auditlog
-openpyxl
 django-q
 redis
+openpyxl==3.0.10
+XlsxWriter

@@ -10,21 +10,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for company in Company.objects.all():
-            indirect_expenses = Category.objects.get(name='Indirect Expenses', code='E-I', company=company, default=True)
 
-            # Category.objects.create(name='Food and Beverages', code='E-I-FB', parent=indirect_expenses, company=company,
-            #                         default=True)
-            # Category.objects.create(name='Communication Expenses', code='E-I-C', parent=indirect_expenses, company=company,
-            #                         default=True)
-            # Category.objects.create(name='Courier Charges', code='E-I-CC', parent=indirect_expenses, company=company,
-            #                         default=True)
-            # Category.objects.create(name='Printing and Stationery', code='E-I-PS', parent=indirect_expenses, company=company,
-            #                         default=True)
-            # Category.objects.create(name='Repair and Maintenance', code='E-I-RM', parent=indirect_expenses, company=company,
-            #                         default=True)
-            # Category.objects.create(name='Fuel and Transport', code='E-I-FT', parent=indirect_expenses, company=company,
-            #                         default=True)
+            root = {}
+            for category in Category.ROOT:
+                root[category[0]] = Category.objects.get(name=category[0], code=category[1], company=company,
+                                                         default=True)
 
-            if not Category.objects.filter(name='Bank Charges', company=company).exists():
-                Category.objects.create(name='Bank Charges', code='E-I-BC', parent=indirect_expenses, company=company,
-                                        default=True)
+            # parent_name = 'Indirect Expenses'
+            # parent_code = 'E-I'
+            # parent = Category.objects.get(name=parent_name, code=parent_code, company=company, default=True)
+            # category_name = 'Bank Charges'
+            # category_code = 'E-I-BC'
+            # if not Category.objects.filter(name=category_name, company=company).exists():
+            #     Category.objects.create(name=category_name, code=category_code, parent=parent, company=company,
+            #                             default=True)
+
+            account_name = 'Profit and Loss Account'
+            account_code = 'Q-PL'
+            category = root['Equity']
+
+            Account.objects.create(name=account_name, category=category, code=account_code, company=company,
+                                   default=True)

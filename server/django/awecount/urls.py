@@ -12,8 +12,11 @@ from apps.tax import api as tax
 from apps.voucher import api as voucher
 from apps.bank import api as bank
 from apps.aggregator import api as aggregator
+from apps.report import api as report_api
 
 from apps.aggregator import views as aggregator_views
+
+from test_app.api import TestView
 
 router = DefaultRouter()
 
@@ -24,6 +27,7 @@ router.register('accounts', ledger.AccountViewSet, basename='accounts')
 
 router.register('inventory-account', item.InventoryAccountViewSet, basename='inventory-account')
 router.register('account-opening-balance', ledger.AccountOpeningBalanceViewSet, basename='account-opening-balance')
+router.register('transaction', ledger.TransactionViewSet, basename='transaction')
 
 # item
 router.register('items', item.ItemViewSet, basename='item')
@@ -51,6 +55,7 @@ router.register('sales-row', voucher.SalesRowViewSet, basename='sales-row')
 router.register('sales-agent', voucher.SalesAgentViewSet, basename='sales-agent')
 router.register('sales-settings', voucher.SalesSettingsViewSet, basename='sales-settings')
 router.register('purchase-book', voucher.PurchaseBookViewSet, basename='purchase-book')
+router.register('purchase-order', voucher.PurchaseOrderViewSet, basename='purchase-order')
 
 # bank
 router.register('cheque-deposits', bank.ChequeDepositViewSet, basename='cheque-deposit')
@@ -66,6 +71,12 @@ router.register('tax-payments', tax.TaxPaymentViewSet, basename='tax-payment')
 # aggregator
 router.register('log-entries', aggregator.LogEntryViewSet, basename='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, basename='widget')
+
+router.register('test', TestView, basename='test')
+router.register('account-closing', ledger.AccountClosingViewSet, basename='account-closing')
+
+# Report
+router.register('report', report_api.ReportViewSet, basename='report')
 
 
 def trigger_error(request):
@@ -90,7 +101,7 @@ urlpatterns = [
                   path('v1/export/', aggregator_views.export_data, name='export_data'),
                   path('v1/export/auditlog/', aggregator_views.export_auditlog, name='export_auditlog'),
                   path('v1/import/', aggregator_views.import_data, name='import_data'),
-
+                #   path('test/', TestView.as_view())
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

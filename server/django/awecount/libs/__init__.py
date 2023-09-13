@@ -29,14 +29,14 @@ def get_next_voucher_no(cls, company_id, attr='voucher_no'):
 
 
 def zero_for_none(obj):
-    if obj is None or obj is '':
+    if obj is None or obj == '':
         return 0
     else:
         return obj
 
 
 def decimalize(obj):
-    if obj is None or obj is '':
+    if obj is None or obj == '':
         return Decimal(0)
     else:
         return Decimal(obj)

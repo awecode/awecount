@@ -1,7 +1,8 @@
 import datetime
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from django.utils import timezone
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
@@ -219,6 +220,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             )
 
     def validate(self, data):
+        # TODO: Find why due date is null and fix the issue
+        if not data.get('due_date'):
+            data['due_date'] = self.context['request'].data['due_date']
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
@@ -237,6 +241,12 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #         {'date': ['Invoice with later date already exists!']},
                 #     )
 
+    def validate_due_date(self, due_date):
+        if isinstance(due_date, str):
+            due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
+        if due_date < timezone.now().date():
+            raise ValidationError("Due date cannot be before deposit date.")
+        
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
@@ -248,9 +258,13 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         self.validate_invoice_date(validated_data)
+        self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            # TODO: Verify if id is required or not
+            if row.get("id"):
+                row.pop('id')
             SalesVoucherRow.objects.create(voucher=instance, **row)
 
         if challans:
@@ -258,10 +272,16 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             instance.challans.add(*challans)
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
-        instance.synchronize()
+        # TODO: synchronize with CBMS
+        # instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):
+        if validated_data['status']=='Issued':
+            if not instance.company.current_fiscal_year == instance.fiscal_year:
+                instance.fiscal_year = instance.company.current_fiscal_year
+                instance.issued_datetime = timezone.now
+                instance.date = timezone.now().date
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
         self.assign_fiscal_year(validated_data, instance=instance)
@@ -273,6 +293,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
         self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
+        # self.validate_due_date(validated_data['due_date'])
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
         for index, row in enumerate(rows_data):
@@ -338,6 +359,9 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     enable_row_description = serializers.ReadOnlyField(source='company.sales_setting.enable_row_description')
 
     payment_receipts = serializers.SerializerMethodField()
+    options = serializers.SerializerMethodField()
+    fiscal_year = serializers.StringRelatedField()
+    invoice_footer_text = serializers.ReadOnlyField(source="company.sales_setting.invoice_footer_text")
 
     def get_payment_receipts(self, obj):
         receipts = []
@@ -347,6 +371,12 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
                     {'id': receipt.id, 'amount': receipt.amount, 'tds_amount': receipt.tds_amount,
                      'status': receipt.status})
         return receipts
+    
+    def get_options(self, obj):
+        options = {}
+        amt_qt_setting = obj.company.sales_setting.show_rate_quantity_in_voucher
+        options["show_rate_quantity_in_voucher"] = amt_qt_setting
+        return options
 
     class Meta:
         model = SalesVoucher
@@ -461,7 +491,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challan
-        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name',)
+        fields = ('id', 'voucher_no', 'party_name', 'date', 'customer_name', 'status')
 
 
 class ChallanCreateSerializer(StatusReversionMixin,
@@ -492,6 +522,11 @@ class ChallanCreateSerializer(StatusReversionMixin,
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if not (data.get('customer_name') or data.get('party')):
+            raise ValidationError({
+                'party': ['Party is required.'],
+                'customer_name': ['Customer name is required.']
+                })        
         return data
 
     def create(self, validated_data):
@@ -505,7 +540,8 @@ class ChallanCreateSerializer(StatusReversionMixin,
         for index, row in enumerate(rows_data):
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
-        instance.synchronize()
+        # TODO: Sync with CBMS
+        # instance.synchronize()
         return instance
 
     def update(self, instance, validated_data):

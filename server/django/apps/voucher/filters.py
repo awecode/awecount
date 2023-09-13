@@ -3,7 +3,7 @@ from django_filters import rest_framework as filters
 
 from apps.voucher.models import SalesDiscount, PurchaseDiscount, DebitNote, DISCOUNT_TYPES, JournalVoucher, \
     SalesVoucherRow, PAYMENT_MODES, PaymentReceipt, PAYMENT_STATUSES, Challan
-from .models import SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote
+from .models import PURCHASE_ORDER_STATUS_CHOICES, PurchaseOrder, SalesVoucher, PurchaseVoucher, STATUSES, CREDIT_NOTE_STATUSES, CreditNote, CHALLAN_STATUSES
 
 
 class DateFilterSet(filters.FilterSet):
@@ -102,8 +102,16 @@ class PaymentReceiptFilterSet(DateFilterSet):
 
 
 class ChallanFilterSet(DateFilterSet):
-    status = filters.MultipleChoiceFilter(choices=STATUSES)
+    status = filters.MultipleChoiceFilter(choices=CHALLAN_STATUSES)
 
     class Meta:
         model = Challan
         fields = ()
+
+
+class PurchaseOrderFilterSet(DateFilterSet):
+    status = filters.MultipleChoiceFilter(choices=PURCHASE_ORDER_STATUS_CHOICES)
+
+    class MEta:
+        model = PurchaseOrder
+        fields = []

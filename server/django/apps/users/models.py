@@ -2,7 +2,6 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -69,8 +68,8 @@ class Company(models.Model):
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Company, self).save(*args, **kwargs)
-        if created:
-            company_creation.send(sender=None, company=self)
+        # if created:
+        #     company_creation.send(sender=None, company=self)
 
 
 class UserManager(BaseUserManager):
@@ -97,7 +96,8 @@ class UserManager(BaseUserManager):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = ChoiceArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list, blank=True)
+    modules = ChoiceArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list,
+                               blank=True)
 
     def __str__(self):
         return self.name

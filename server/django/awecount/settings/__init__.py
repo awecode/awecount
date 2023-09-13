@@ -1,3 +1,6 @@
 from .base import *
 from .cbms_nepal import CBMS_NEPAL
-from .env import *
+try:
+    from .env import *
+except ImportError:
+    from .test import *
