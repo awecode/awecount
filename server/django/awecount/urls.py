@@ -16,8 +16,6 @@ from apps.report import api as report_api
 
 from apps.aggregator import views as aggregator_views
 
-from test_app.api import TestView
-
 router = DefaultRouter()
 
 # TODO fix singular/plural
@@ -72,7 +70,6 @@ router.register('tax-payments', tax.TaxPaymentViewSet, basename='tax-payment')
 router.register('log-entries', aggregator.LogEntryViewSet, basename='log-entry')
 router.register('widgets', aggregator.WidgetViewSet, basename='widget')
 
-router.register('test', TestView, basename='test')
 router.register('account-closing', ledger.AccountClosingViewSet, basename='account-closing')
 
 # Report
