@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.voucher.models import SalesSetting, PurchaseSetting
+from apps.voucher.models.voucher_settings import InventorySetting
 
 
 class SalesCreateSettingSerializer(serializers.ModelSerializer):
@@ -71,5 +72,5 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
 
 class InventorySettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SalesSetting
+        model = InventorySetting
         exclude = ['company']
