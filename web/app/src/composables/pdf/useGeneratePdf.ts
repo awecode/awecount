@@ -82,9 +82,7 @@ export default function useGeneratePdf(
       "
     >
       <div style="margin-bottom: 5px;">
-        <img src="${
-          compayInfo.logo_url
-        }" alt="Compony Logo" style="height: 70px; ${
+        <img src="/img/edusanjal.png" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain; ${
       compayInfo.logo_url ? '' : 'display: none;'
     }"/>
       </div>
