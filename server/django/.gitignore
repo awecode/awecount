@@ -5,3 +5,4 @@ awecount/settings/env.py
 .~lock.*
 env/
 *.xlsx
+temp.*
