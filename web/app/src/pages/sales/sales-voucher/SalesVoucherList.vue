@@ -133,7 +133,7 @@ export default {
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/sales-voucher/export/' + query)
+      useApi('v1/sales-voucher/export' + query)
         .then((data) =>
           usedownloadFile(
             data,
