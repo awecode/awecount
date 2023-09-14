@@ -108,6 +108,7 @@ class InventorySetting(models.Model):
     company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='inventory_setting')
 
     enable_fifo = models.BooleanField(default=False)
+    enable_negative_stock_check = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return 'Inventory Setting - {}'.format(self.company.name)
