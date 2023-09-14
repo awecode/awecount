@@ -11,7 +11,7 @@ from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
-from ..models import SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
+from ..models import PurchaseVoucherRow, SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):
@@ -248,6 +248,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError("Due date cannot be before deposit date.")
         
     def create(self, validated_data):
+        import ipdb; ipdb.set_trace()
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
         request = self.context['request']
@@ -258,12 +259,38 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         self.validate_invoice_date(validated_data)
-        if validated_data.get("due_data"):
+        if validated_data.get("due_date"):
             self.validate_due_date(validated_data["due_date"])
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # TODO: Verify if id is required or not
+            if request.company.inventory_setting.enable_fifo:
+                item_id = row.get("item_id")
+                quantity = row.get("quantity")
+                purchase_rows = PurchaseVoucherRow.objects.filter(
+                    item_id=item_id,
+                    # ramaining_quantity__isnull=False,
+                    remaining_quantity__gt=0
+                ).order_by("voucher__date", "id")
+                sold_items = {}
+                for purchase_row in purchase_rows:
+                    if purchase_row.remaining_quantity == quantity:
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                        sold_items[purchase_row.id] = quantity
+                        break
+                    elif purchase_row.remaining_quantity > quantity:
+                        purchase_row.remaining_quantity -= quantity
+                        purchase_row.save()
+                        sold_items[purchase_row.id] = quantity
+                        break
+                    else:
+                        quantity -= purchase_row.remaining_quantity
+                        sold_items[purchase_row.id] = purchase_row.remaining_quantity
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+
             if row.get("id"):
                 row.pop('id')
             SalesVoucherRow.objects.create(voucher=instance, **row)
