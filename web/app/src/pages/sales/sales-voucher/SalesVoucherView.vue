@@ -42,7 +42,7 @@
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('SalesModify')" color="orange-5" label="Edit" icon="edit"
+            <q-btn v-if="checkPermissions('SalesModify') && fields.can_update_issued" color="orange-5" label="Edit" icon="edit"
               :to="`/sales-voucher/${fields?.id}/`" />
             <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"

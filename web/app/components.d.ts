@@ -8,11 +8,9 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     BalanceSheetTableNode: typeof import('./src/components/report/BalanceSheetTableNode.vue')['default']
-    BenefactorForm: typeof import('./src/components/BenefactorForm.vue')['default']
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
     ChartsView: typeof import('./src/components/charts/ChartsView.vue')['default']
-    DateInputdisabled: typeof import('./src/components/date/DateInputdisabled.vue')['default']
     DateInputDisabled: typeof import('./src/components/date/DateInputDisabled.vue')['default']
     DatePicker: typeof import('./src/components/date/DatePicker.vue')['default']
     DateRangePicker: typeof import('./src/components/date/DateRangePicker.vue')['default']
@@ -26,7 +24,6 @@ declare module '@vue/runtime-core' {
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
-    Paginate: typeof import('./src/components/core/Paginate.vue')['default']
     PaginateList: typeof import('./src/components/core/PaginateList.vue')['default']
     PieChart: typeof import('./src/components/report/PieChart.vue')['default']
     PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']

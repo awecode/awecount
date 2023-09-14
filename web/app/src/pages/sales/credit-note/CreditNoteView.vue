@@ -32,7 +32,7 @@
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
         <!-- {{ fields }} -->
-        <q-btn v-if="checkPermissions('CreditNoteModify') && fields.can_update_issued" color="orange-5" label="Edit"
+        <q-btn v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')" color="orange-5" label="Edit"
           icon="edit" :to="`/credit-note/${fields.id}/`" />
         <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
           color="green-6" label="mark as resolved" icon="mdi-check-all" />
