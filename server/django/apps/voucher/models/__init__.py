@@ -506,6 +506,8 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
 
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
 
+    remaining_quantity = models.FloatField(blank=True, null=True)
+
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
