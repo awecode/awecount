@@ -314,6 +314,8 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
 
+    sold_items = models.JSONField(blank=True, null=True)
+
     # Model key for module based permission
     key = 'Sales'
 
