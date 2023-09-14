@@ -248,7 +248,6 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError("Due date cannot be before deposit date.")
         
     def create(self, validated_data):
-        import ipdb; ipdb.set_trace()
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
         request = self.context['request']
@@ -293,6 +292,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
             if row.get("id"):
                 row.pop('id')
+            row["sold_items"] = sold_items
             SalesVoucherRow.objects.create(voucher=instance, **row)
 
         if challans:
