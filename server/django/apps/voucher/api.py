@@ -290,6 +290,16 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
          ItemPurchaseSerializer),
     )
 
+    def create(self, request, *args, **kwargs):
+        date = datetime.strptime(request.data.get("date"), "%Y-%m-%d")
+        item_ids = [x.get("item_id") for x in request.data.get("rows")]
+        if not request.query_params.get("fifo_inconsistency"):
+            if request.company.inventory_setting.enable_fifo:
+                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids).exists():
+                    # TODO: descriptive message for msg
+                    return Response({"msg": "FIFO inconsistency error.", "type": "fifo_inconsistency"}, status=422)
+        return super().create(request, *args, **kwargs)
+
     def get_create_defaults(self, request=None):
         return PurchaseCreateSettingSerializer(request.company.purchase_setting).data
 

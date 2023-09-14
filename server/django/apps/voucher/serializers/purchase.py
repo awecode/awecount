@@ -47,6 +47,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 {'party': ['Party is required for a credit issue.']},
             )
         return data
+    
+    # def validate(self, date):
+    #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
