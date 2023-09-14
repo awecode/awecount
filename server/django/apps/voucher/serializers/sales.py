@@ -247,6 +247,33 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if due_date < timezone.now().date():
             raise ValidationError("Due date cannot be before deposit date.")
         
+    def update_purchase_rows(self, request, row):
+        if request.company.inventory_setting.enable_fifo:
+            item_id = row.get("item_id")
+            quantity = row.get("quantity")
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=item_id,
+                remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
+            sold_items = {}
+            for purchase_row in purchase_rows:
+                if purchase_row.remaining_quantity == quantity:
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+                    sold_items[purchase_row.id] = quantity
+                    break
+                elif purchase_row.remaining_quantity > quantity:
+                    purchase_row.remaining_quantity -= quantity
+                    purchase_row.save()
+                    sold_items[purchase_row.id] = quantity
+                    break
+                else:
+                    quantity -= purchase_row.remaining_quantity
+                    sold_items[purchase_row.id] = purchase_row.remaining_quantity
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+            return sold_items
+        
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
@@ -263,33 +290,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            sold_items = self.update_purchase_rows(request, row)
             # TODO: Verify if id is required or not
-            if request.company.inventory_setting.enable_fifo:
-                item_id = row.get("item_id")
-                quantity = row.get("quantity")
-                purchase_rows = PurchaseVoucherRow.objects.filter(
-                    item_id=item_id,
-                    # ramaining_quantity__isnull=False,
-                    remaining_quantity__gt=0
-                ).order_by("voucher__date", "id")
-                sold_items = {}
-                for purchase_row in purchase_rows:
-                    if purchase_row.remaining_quantity == quantity:
-                        purchase_row.remaining_quantity = 0
-                        purchase_row.save()
-                        sold_items[purchase_row.id] = quantity
-                        break
-                    elif purchase_row.remaining_quantity > quantity:
-                        purchase_row.remaining_quantity -= quantity
-                        purchase_row.save()
-                        sold_items[purchase_row.id] = quantity
-                        break
-                    else:
-                        quantity -= purchase_row.remaining_quantity
-                        sold_items[purchase_row.id] = purchase_row.remaining_quantity
-                        purchase_row.remaining_quantity = 0
-                        purchase_row.save()
-
             if row.get("id"):
                 row.pop('id')
             row["sold_items"] = sold_items
