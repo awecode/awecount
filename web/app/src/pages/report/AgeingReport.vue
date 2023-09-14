@@ -53,7 +53,7 @@ export default {
                 .then((data) =>
                     usedownloadFile(
                         data,
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'text/csv',
                         'Customer_Ageing_Report'
                     )
                 )

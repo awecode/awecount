@@ -90,7 +90,7 @@ export default {
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/csv',
             'Credit_Notes'
           )
         )

@@ -143,11 +143,11 @@ export default {
     }
     useMeta(metaData)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
+      useApi('v1/sales-voucher/export')
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/csv',
             'Credit_Notes'
           )
         )

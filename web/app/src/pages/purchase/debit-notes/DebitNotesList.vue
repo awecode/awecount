@@ -95,20 +95,11 @@ export default {
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/csv',
             'Debit_Notes'
           )
         )
         .catch((err) => console.log('Error Due To', err))
-      // useApi('v1/sales-voucher/export/')
-      //   .then((data) =>
-      //     usedownloadFile(
-      //       data,
-      //       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      //       'Credit_Notes'
-      //     )
-      //   )
-      //   .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
       {

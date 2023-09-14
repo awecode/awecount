@@ -200,11 +200,11 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/purchase-book/export/' + downloadEndpoint)
+      useApi('v1/purchase-book/export' + downloadEndpoint)
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/csv',
             'Purchase_Book'
           )
         )
