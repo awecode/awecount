@@ -291,7 +291,6 @@ ${table}
       <h4 style="margin: 0; font-size: 1.4rem">${
         voucherType === 'creditNote' ? 'Credit Note' : 'Debit Note'
       }</h4>
-      <span>Copy of Original (${invoiceInfo.print_count + 1})</span>
     </div>
     <div>
       <div style="display: flex; flex-direction: column; gap: 5px">

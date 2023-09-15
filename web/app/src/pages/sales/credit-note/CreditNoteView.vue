@@ -32,15 +32,19 @@
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
         <!-- {{ fields }} -->
-        <q-btn v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')" color="orange-5" label="Edit"
-          icon="edit" :to="`/credit-note/${fields.id}/`" />
+        <q-btn v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
+          color="orange-5" label="Edit" icon="edit" :to="`/credit-note/${fields.id}/`" />
         <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
           color="green-6" label="mark as resolved" icon="mdi-check-all" />
         <q-btn v-if="checkPermissions('CreditNoteCancel')" color="red-5" label="Cancel" icon="cancel"
           @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-        <q-btn @click="onPrintclick" label="Print" icon="print" />
+        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
+          @click="onPrintclick(false)" />
+        <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
+        <!-- <q-btn @click="onPrintclick" label="Print" icon="print" /> -->
         <q-btn color="blue-7" label="Journal Entries" icon="books"
           :to="`/journal-entries/credit-note/${this.$route.params.id}/`" />
       </div>
@@ -115,16 +119,18 @@ export default {
       pri.focus()
       setTimeout(() => pri.print(), 100)
     }
-    const onPrintclick = () => {
-      const endpoint = `/v1/credit-note/${fields.value.id}/log-print/`
-      useApi(endpoint, { method: 'POST' })
-        .then(() => {
-          if (fields.value) {
-            print(false)
-            fields.value.print_count = fields.value?.print_count + 1
-          }
-        })
-        .catch((err) => console.log('err from the api', err))
+    const onPrintclick = (noApiCall = false) => {
+      if (!noApiCall) {
+        const endpoint = `/v1/credit-note/${fields.value.id}/log-print/`
+        useApi(endpoint, { method: 'POST' })
+          .then(() => {
+            if (fields.value) {
+              print(false)
+              fields.value.print_count = fields.value?.print_count + 1
+            }
+          })
+          .catch((err) => console.log('err from the api', err))
+      } else print(false)
     }
     return {
       allowPrint: false,
@@ -187,12 +193,14 @@ export default {
 }
 
 @media print {
+
   /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
   .d-print-none {
     display: none;
     visibility: hidden;
     width: none;
   }
+
   .q-card {
     box-shadow: none;
     padding: 0;
