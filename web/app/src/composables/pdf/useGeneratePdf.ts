@@ -309,7 +309,7 @@ ${table}
       <div style="display: flex; flex-direction: column; gap: 5px">
         <div><span style="font-weight: 600; color: dimgray;">${
           voucherType === 'creditNote' ? 'Credit Note No:' : 'Debit Note No:'
-        }</span>  (${invoiceInfo.id})</div>
+        }</span>  (${invoiceInfo.voucher_no || '-'})</div>
         <div style="${
           invoiceInfo.party_name ? '' : 'display: none;'
         }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
