@@ -155,7 +155,7 @@ export default {
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Sales Book'
           )
         )
