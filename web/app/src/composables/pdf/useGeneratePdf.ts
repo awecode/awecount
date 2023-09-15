@@ -185,11 +185,11 @@ export default function useGeneratePdf(
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">${
-      (invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid')
+      (invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' || invoiceInfo.status === 'Partially Paid' )
         ? 'TAX INVOICE'
         : invoiceInfo.status === 'Draft'
         ? 'PRO FORMA INVOICE'
-        : ''
+        : invoiceInfo.status === 'Cancelled' ? 'TAX INVOICE (CANCELLED)' : ''
     }</h4>
   </div>
   <div style="text-align:center; ${

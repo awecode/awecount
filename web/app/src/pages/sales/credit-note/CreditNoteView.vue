@@ -116,7 +116,7 @@ export default {
       setTimeout(() => pri.print(), 100)
     }
     const onPrintclick = () => {
-      const endpoint = `/v1/credit-note/${fields.value.voucher_no}/log-print/`
+      const endpoint = `/v1/credit-note/${fields.value.id}/log-print/`
       useApi(endpoint, { method: 'POST' })
         .then(() => {
           if (fields.value) {
