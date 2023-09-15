@@ -91,6 +91,7 @@ export default {
         label: 'Balance',
         align: 'left',
         field: (row) => Math.round(row.balance * 100) / 100,
+        sortable: true
       },
       {
         name: 'actions',

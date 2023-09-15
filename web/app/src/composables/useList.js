@@ -84,6 +84,7 @@ export default (endpoint, predefinedColumns = null) => {
     if (filters.value) {
       url = withQuery(url, filters.value)
     }
+    debugger
     useApi(url)
       .then((response) => {
         unCalculatedrows.value = response.results
@@ -166,6 +167,11 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { search: undefined })
     }
+    if (props.pagination.sortBy) {
+      const query =   `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy}`
+      url = withQuery(url, { ordering: query })
+    }
+    // debugger
     router.push(url)
   }
 
