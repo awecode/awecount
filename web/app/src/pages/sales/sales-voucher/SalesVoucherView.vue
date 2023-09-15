@@ -63,7 +63,7 @@
             }`
             " icon="print" />
           <q-btn color="blue-7" label="Materialized View" icon="mdi-table"
-            :to="`/sales-voucher/${fields?.voucher_no}/mv`" />
+            :to="`/sales-voucher/${fields?.id}/mv`" />
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
