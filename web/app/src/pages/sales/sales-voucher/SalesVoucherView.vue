@@ -52,10 +52,10 @@
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print Copy ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${ fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
-            : `# ${(fields?.print_count || 0) + 1}`
-            }`
+            : `# ${(fields?.print_count || 0)}`
+            }` : ''}`
             " icon="print" />
           <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
