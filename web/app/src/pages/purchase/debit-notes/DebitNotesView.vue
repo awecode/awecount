@@ -65,7 +65,7 @@
       </div>
       <div class="row q-mb-md q-gutter-x-md">
         <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print Copy No. ${fields.print_count}`" icon="print" @click="onPrintclick" />
+          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print" @click="onPrintclick" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick" />
         <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Paid'" color="blue-7" label="Journal Entries"
           icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
@@ -184,7 +184,7 @@ export default {
       setTimeout(() => pri.print(), 100)
     }
     const onPrintclick = () => {
-      const endpoint = `/v1/debit-note/${fields.value?.voucher_no}/log-print/`
+      const endpoint = `/v1/debit-note/${fields.value?.id}/log-print/`
       useApi(endpoint, { method: 'POST' })
         .then(() => {
           if (fields.value) {
