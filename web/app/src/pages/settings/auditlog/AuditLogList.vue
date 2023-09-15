@@ -53,7 +53,7 @@ export default {
         .then((data) =>
           usedownloadFile(
             data,
-            'text/csv',
+            'application/vnd.ms-excel',
             'Audit Logs'
           )
         )
