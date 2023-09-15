@@ -286,11 +286,24 @@ ${table}
         gap: 11px;
         flex-direction: column;
         font-family: Arial, Helvetica, sans-serif;
+        margin-bottom: 15px;
       "
     >
       <h4 style="margin: 0; font-size: 1.4rem">${
         voucherType === 'creditNote' ? 'Credit Note' : 'Debit Note'
       }</h4>
+      <span style="text-align:center; font-size: 1rem; ${
+        invoiceInfo.print_count > 1 &&
+        ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status)
+          ? ''
+          : `display: none`
+      }">
+        COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
+          invoiceInfo.print_count
+        })
+        </span>
+
+
     </div>
     <div>
       <div style="display: flex; flex-direction: column; gap: 5px">
