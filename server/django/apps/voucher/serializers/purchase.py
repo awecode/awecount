@@ -4,6 +4,7 @@ from apps.product.models import Item
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -47,7 +48,16 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        return data
+        request = self.context["request"]
+        if request.query_params.get("fifo_inconsistency"):
+            return data
+        else:
+            if request.company.inventory_setting.enable_fifo:
+                # import ipdb; ipdb.set_trace()
+                item_ids = [x.get("item_id") for x in data.get("rows")]
+                date = data["date"]
+                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+                    raise UnprocessableException(msg="Creating a purchase date on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", type="fifo_inconsistency")
     
     # def validate(self, date):
     #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)

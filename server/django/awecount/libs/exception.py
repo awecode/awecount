@@ -1,6 +1,6 @@
 from django.core.exceptions import SuspiciousOperation
 from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError, APIException
 from rest_framework.views import exception_handler as drf_exception_handler
 
 
@@ -33,3 +33,16 @@ def exception_handler(exception, context):
         exception = DRFValidationError(detail=str(exception))
 
     return drf_exception_handler(exception, context)
+
+
+class UnprocessableException(APIException):
+    status_code = 422
+    default_detail = 'Unprocessable Entity'
+    default_code = 'unprocessable_entity'
+
+    def __init__(self, msg, type):
+        self.detail = {
+            "msg": msg,
+            "type": type
+        }
+        super().__init__()
