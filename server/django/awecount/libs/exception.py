@@ -41,7 +41,7 @@ class UnprocessableException(APIException):
     default_code = 'unprocessable_entity'
 
     def __init__(self, msg, type):
-        self.detail = {
+        self.default_detail = {
             "msg": msg,
             "type": type
         }
