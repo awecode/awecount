@@ -37,12 +37,17 @@ def exception_handler(exception, context):
 
 class UnprocessableException(APIException):
     status_code = 422
-    default_detail = 'Unprocessable Entity'
-    default_code = 'unprocessable_entity'
+    default_detail = 'Request cannot be processed.'
+    default_code = 'unprocessable_request'
 
-    def __init__(self, msg, type):
-        self.default_detail = {
-            "msg": msg,
-            "type": type
+    def __init__(self, detail=None, code=None):
+
+        if detail is None:
+            detail = self.default_detail
+        if code is None:
+            code = self.default_code
+
+        self.detail = {
+            "detail": detail,
+            "code": code
         }
-        super().__init__()
