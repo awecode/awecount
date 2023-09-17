@@ -221,8 +221,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
     def validate(self, data):
         # TODO: Find why due date is null and fix the issue
-        if not data.get('due_date'):
-            data['due_date'] = self.context['request'].data['due_date']
+        request_data = self.context["request"].data
+        if "due_date" not in request_data.keys():
+            data["due_date"] = None
+        else:
+            data['due_date'] = request_data['due_date']
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
