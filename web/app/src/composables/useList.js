@@ -36,8 +36,8 @@ export default (endpoint, predefinedColumns = null) => {
     ...filterQueryValues
   } = route.query
   const pagination = ref({
-    // sortBy: 'desc',
-    // descending: false,
+    sortBy: route.query.ordering || '',
+    descending: route.query.ordering && route.query.ordering.includes('-'),
     page: 1,
     rowsPerPage: 4,
   })
@@ -84,13 +84,21 @@ export default (endpoint, predefinedColumns = null) => {
     if (filters.value) {
       url = withQuery(url, filters.value)
     }
+    if (pagination.value.sortBy) {
+      const query = `${pagination.value.descending ? '-' : ''}${pagination.value.sortBy}`
+      url = withQuery(url, { ordering: query })
+    }
     useApi(url)
       .then((response) => {
         unCalculatedrows.value = response.results
         initiallyLoaded.value = true
+        const orderValues = {
+          descending: pagination.value.descending || false,
+          sortBy: pagination.value.sortBy || ''
+        }
         pagination.value = {
-          // sortBy: 'desc',
-          // descending: false,
+          sortBy: orderValues.sortBy,
+          descending: orderValues.descending,
           page: response.pagination.page,
           rowsPerPage: response.pagination.size,
           rowsNumber: response.pagination.count,
@@ -155,7 +163,7 @@ export default (endpoint, predefinedColumns = null) => {
   // NOTE: removed because was making 2 calls
 
   function onRequest(props) {
-    let url = route.fullPath
+    let url = route.path
     if (props.pagination?.page == 1) {
       url = withQuery(url, { page: undefined })
     } else {
@@ -166,6 +174,18 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { search: undefined })
     }
+    if (props.pagination.sortBy) {
+      pagination.value.sortBy = props.pagination.sortBy
+      pagination.value.descending = props.pagination.descending
+      const query =   `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy}`
+      url = withQuery(url, { ordering: query })
+    }
+    else {
+      pagination.value.sortBy = ''
+      pagination.value.descending = false
+      url = withQuery(url, { ordering: undefined })
+    }
+    // debugger
     router.push(url)
   }
 

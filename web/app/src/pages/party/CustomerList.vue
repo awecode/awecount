@@ -79,18 +79,21 @@ export default {
         label: 'Dr.',
         align: 'left',
         field: (row) => Math.round(row.dr * 100) / 100,
+        sortable: true
       },
       {
         name: 'cr',
         label: 'Cr.',
         align: 'left',
         field: (row) => Math.round(row.cr * 100) / 100,
+        sortable: true
       },
       {
         name: 'balance',
         label: 'Balance',
         align: 'left',
         field: (row) => Math.round(row.balance * 100) / 100,
+        sortable: true
       },
       {
         name: 'actions',
