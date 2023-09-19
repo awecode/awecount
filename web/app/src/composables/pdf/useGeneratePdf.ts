@@ -23,28 +23,18 @@ export default function useGeneratePdf(
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
-        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
-      }">${index + 1}</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px; ${
-        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
-      }">${row.item_name}<br><span style="font-size: 12px; ${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;">${index + 1}</th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;">${row.item_name}<br><span style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
-        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
-      }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
           row.quantity +
           `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`
         }</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px; ${
-        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
-      }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
           row.rate
         }</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px; ${
-        index + 1 !== rows.length ? 'border-bottom: LightGrey solid 1px;' : ''
-      }">${row.quantity * row.rate}</th>
+      <th style="text-align: right; font-weight: 400; padding:5px;">${row.quantity * row.rate}</th>
     </tr>
     `
       }
@@ -66,7 +56,7 @@ export default function useGeneratePdf(
   let html = ''
   if (!onlyBody) {
     let header = ''
-    if (compayInfo.name === 'Awecod') {
+    if (compayInfo.name === 'Spark Car') {
       header = `
     <div>
     <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
@@ -192,7 +182,7 @@ export default function useGeneratePdf(
 
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
-    ${compayInfo.name === 'Awecod' ? `${emptyRows()}` : ''}
+    ${compayInfo.name === 'Spark Car' ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey; border-top: none; padding: 20px; padding-top: 0;">
       <div>
