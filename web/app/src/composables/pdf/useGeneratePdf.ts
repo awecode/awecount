@@ -48,25 +48,95 @@ export default function useGeneratePdf(
     </tr>
     `
       }
-    )
+    ) 
     sameTax = isTaxSame
     return htmlRows.join('')
   }
+  const emptyRows = () => {
+    const number = 5 - invoiceInfo.rows.length
+    return `<tr style="color: grey; font-weight: 400;">
+      <th style="width: 20px; height:${80 * number}px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
+      <th style="text-align: right; font-weight: 400; padding:5px;"></th>
+    </tr>
+    `
+  }
   let html = ''
   if (!onlyBody) {
-    const header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
+    let header = ''
+    if (compayInfo.name === 'Awecode') {
+      header = `
+    <div>
+    <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
+    <img src="${
+      compayInfo.logo_url
+    }" alt="Compony Logo" style="height: 60px; max-width: 200px; object-fit: contain; ${
+    compayInfo.logo_url ? '' : 'display: none;'
+  }"/>
+    <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%);">${
+      compayInfo.name
+    } ${
+        compayInfo.organization_type === 'private_limited'
+          ? ' Pvt. Ltd.'
+          : ['public_limited', 'corporation'].includes(
+              compayInfo.organization_type
+            )
+          ? 'Ltd.'
+          : ''
+      }</h1>
+    </div> 
+    <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
+    <div>
+      <div>${compayInfo.address}</div>
+      <div>Tax Reg. No. <strong>${
+        compayInfo.tax_registration_number
+      }</strong></div>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-end;
+      "
+    >
+      <div style="display: flex; align-items: center">
+        <img
+          src="/icons/telephone-fill.svg"
+          alt="Email"
+          style="margin-right: 10px; width: 14px"
+        />
+        <span style="color: skyblue">${compayInfo.contact_no}</span>
+      </div>
+      <div style="display: flex; align-items: center">
+        <img
+          src="/icons/envelope-fill.svg"
+          alt="Call"
+          style="margin-right: 10px; width: 14px"
+        /><span style="color: skyblue">${compayInfo.email}</span>
+      </div>
+    </div>
+  </div>
+    </div>  
+    
+  <hr style="margin: 20px 0" />`
+    } else {
+      header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${
         compayInfo.name
       } ${
-      compayInfo.organization_type === 'private_limited'
-        ? ' Pvt. Ltd.'
-        : ['public_limited', 'corporation'].includes(
-            compayInfo.organization_type
-          )
-        ? 'Ltd.'
-        : ''
-    }</h1>
+        compayInfo.organization_type === 'private_limited'
+          ? ' Pvt. Ltd.'
+          : ['public_limited', 'corporation'].includes(
+              compayInfo.organization_type
+            )
+          ? 'Ltd.'
+          : ''
+      }</h1>
       <div>${compayInfo.address}</div>
       <div>Tax Reg. No. <strong>${
         compayInfo.tax_registration_number
@@ -85,8 +155,8 @@ export default function useGeneratePdf(
         <img src="${
           compayInfo.logo_url
         }" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain; ${
-      compayInfo.logo_url ? '' : 'display: none;'
-    }"/>
+        compayInfo.logo_url ? '' : 'display: none;'
+      }"/>
       </div>
       <div style="display: flex; align-items: center">
         <img
@@ -106,6 +176,7 @@ export default function useGeneratePdf(
     </div>
   </div>
   <hr style="margin: 20px 0" />`
+    }
     html = html.concat(header)
   }
   const table = `<div>
@@ -121,6 +192,7 @@ export default function useGeneratePdf(
 
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
+    ${compayInfo.name === 'Awecode' ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey; border-top: none; padding: 20px; padding-top: 0;">
       <div>
@@ -174,7 +246,11 @@ export default function useGeneratePdf(
   `
   let body = ''
   if (voucherType === 'salesVoucher') {
-    body = `<div style="${onlyBody ? 'margin-top: 80px; margin-bottom: 20px' : 'margin-top: 20px; margin-bottom: 20px'}">
+    body = `<div style="${
+      onlyBody
+        ? 'margin-top: 80px; margin-bottom: 20px'
+        : 'margin-top: 20px; margin-bottom: 20px'
+    }">
   <div
     style="
       display: flex;
@@ -185,11 +261,15 @@ export default function useGeneratePdf(
     "
   >
     <h4 style="margin: 0; font-size: 1.4rem">${
-      (invoiceInfo.status === 'Issued' || invoiceInfo.status === 'Paid' || invoiceInfo.status === 'Partially Paid' )
+      invoiceInfo.status === 'Issued' ||
+      invoiceInfo.status === 'Paid' ||
+      invoiceInfo.status === 'Partially Paid'
         ? 'TAX INVOICE'
         : invoiceInfo.status === 'Draft'
         ? 'PRO FORMA INVOICE'
-        : invoiceInfo.status === 'Cancelled' ? 'TAX INVOICE (CANCELLED)' : ''
+        : invoiceInfo.status === 'Cancelled'
+        ? 'TAX INVOICE (CANCELLED)'
+        : ''
     }</h4>
   </div>
   <div style="text-align:center; ${
@@ -299,8 +379,8 @@ ${table}
           : `display: none`
       }">
         COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
-          invoiceInfo.print_count
-        })
+      invoiceInfo.print_count
+    })
         </span>
 
 
