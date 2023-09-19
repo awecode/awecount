@@ -6,7 +6,7 @@ from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
-from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher
+from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher, SalesVoucherRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
 
@@ -84,15 +84,105 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
         return instance
+    
+    def update_fifo(self, instance, row):
+        item = Item.objects.get(id=row["item_id"])
+        if item.track_inventory:
+            if row.get("id"):
+                db_row = instance.rows.get(id=row["id"])
+                diff = row["quantity"] - db_row.quantity
+                if diff>=0:
+                    row["remaining_quantity"] = db_row.remaining_quantity + diff
+                else:
+                    sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.get("id"))).order("-id")
+                    for sales_row in sales_rows:
+                        sold_items = sales_row.sold_items
+                        sold_quantity = sold_items[str(row["id"])]
+                        if sold_quantity > diff:
+                            sold_quantity -= diff
+                            sold_items[str(row["id"])] = sold_quantity
+                            purchase_rows = PurchaseVoucherRow.objects.filter(
+                                item_id=sales_row.item_id,
+                                remaining_quantity__gt=0
+                                ).order_by("voucher__date", "id")
+                            for purchase_row in purchase_rows:
+                                if purchase_row.remaining_quantity == diff:
+                                    purchase_row.remaining_quantity = 0
+                                    purchase_row.save()
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += diff
+                                    else:
+                                        sold_items[str(purchase_row.id)] = diff
+                                    break
+                                elif purchase_row.remaining_quantity > diff:
+                                    purchase_row.remaining_quantity -= diff
+                                    purchase_row.save()
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += diff
+                                    else:
+                                        sold_items[str(purchase_row.id)] = diff
+                                    break
+                                else:
+                                    diff -= purchase_row.remaining_quantity
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                                    else:
+                                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                    purchase_row.remaining_quantity = 0
+                                    purchase_row.save()
+                            sales_row.sold_items = sold_items
+                            sales_row.save()
+                            break
+                        else:
+                            sold_quantity = sold_items.pop(str(row["id"]))
+                            sold_items[str(row["id"])] = sold_quantity
+                            purchase_rows = PurchaseVoucherRow.objects.filter(
+                                item_id=sales_row.item_id,
+                                remaining_quantity__gt=0
+                                ).order_by("voucher__date", "id")
+                            for purchase_row in purchase_rows:
+                                if purchase_row.remaining_quantity == diff:
+                                    purchase_row.remaining_quantity = 0
+                                    purchase_row.save()
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += diff
+                                    else:
+                                        sold_items[str(purchase_row.id)] = diff
+                                    break
+                                elif purchase_row.remaining_quantity > diff:
+                                    purchase_row.remaining_quantity -= diff
+                                    purchase_row.save()
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += diff
+                                    else:
+                                        sold_items[str(purchase_row.id)] = diff
+                                    break
+                                else:
+                                    diff -= purchase_row.remaining_quantity
+                                    if str(purchase_row.id) in sold_items.keys():
+                                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                                    else:
+                                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                    purchase_row.remaining_quantity = 0
+                                    purchase_row.save()
+                            sales_row.sold_items = sold_items
+                            sales_row.save()
+            else:
+                row["remaining_quantity"] = row["quantity"]
+        return row
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            if request.company.inventory_setting.enable_fifo:
+                self.update_fifo(instance, row)
+                
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)

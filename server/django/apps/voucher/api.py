@@ -187,7 +187,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             # purchase_row_ids = [int(k) for k, v in sold_items.items()]
             # purchase_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids)
             # 
-            updates = [PurchaseVoucherRow.objects.filter(id=key).update(remaining_quantity=F("remaining_quantity")+value) for key, value in sold_items.items()]
+            updates = [PurchaseVoucherRow.objects.filter(id=key)\
+                    .update(remaining_quantity=F("remaining_quantity")+value) for key, value in sold_items.items()]
             row.sold_items = {}
             row.save()
 
