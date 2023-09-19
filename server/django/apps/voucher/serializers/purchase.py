@@ -85,6 +85,91 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         instance.apply_transactions(voucher_meta=meta)
         return instance
     
+    def handle_quantity_decrease(self, db_row, row, diff):
+        # import ipdb; ipdb.set_trace()
+        diff = abs(diff)
+        r_diff = db_row.remaining_quantity - diff
+        row["remaining_quantity"] = r_diff if r_diff>0 else 0
+        db_row.remaining_quantity = r_diff
+        
+        # db_row.remaining_quantity += diff
+        # db_row.save()
+        sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.get("id"))).order_by("-id")
+        for sales_row in sales_rows:
+            sold_items = sales_row.sold_items
+            sold_quantity = sold_items[str(row["id"])]
+            if sold_quantity > diff:
+                sold_quantity -= diff
+                sold_items[str(row["id"])] = sold_quantity
+                purchase_rows = PurchaseVoucherRow.objects.filter(
+                    item_id=sales_row.item_id,
+                    remaining_quantity__gt=0
+                    ).order_by("voucher__date", "id")
+                for purchase_row in purchase_rows:
+                    if purchase_row.remaining_quantity == diff:
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += diff
+                        else:
+                            sold_items[str(purchase_row.id)] = diff
+                        break
+                    elif purchase_row.remaining_quantity > diff:
+                        purchase_row.remaining_quantity -= diff
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += diff
+                        else:
+                            sold_items[str(purchase_row.id)] = diff
+                        break
+                    else:
+                        diff -= purchase_row.remaining_quantity
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                        else:
+                            sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                sales_row.sold_items = sold_items
+                sales_row.save()
+                break
+            else:
+                import ipdb; ipdb.set_trace()
+                sold_quantity = sold_items.pop(str(row["id"]))
+                qt = diff - sold_quantity
+                sold_items[str(row["id"])] = qt
+                purchase_rows = PurchaseVoucherRow.objects.filter(
+                    item_id=sales_row.item_id,
+                    remaining_quantity__gt=0
+                    ).order_by("voucher__date", "id")
+                for purchase_row in purchase_rows:
+                    if purchase_row.remaining_quantity == diff:
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += diff
+                        else:
+                            sold_items[str(purchase_row.id)] = diff
+                        break
+                    elif purchase_row.remaining_quantity > diff:
+                        purchase_row.remaining_quantity -= diff
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += diff
+                        else:
+                            sold_items[str(purchase_row.id)] = diff
+                        break
+                    else:
+                        diff -= purchase_row.remaining_quantity
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                        else:
+                            sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                sales_row.sold_items = sold_items
+                sales_row.save()
+    
     def update_fifo(self, instance, row):
         item = Item.objects.get(id=row["item_id"])
         if item.track_inventory:
@@ -94,79 +179,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 if diff>=0:
                     row["remaining_quantity"] = db_row.remaining_quantity + diff
                 else:
-                    sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.get("id"))).order("-id")
-                    for sales_row in sales_rows:
-                        sold_items = sales_row.sold_items
-                        sold_quantity = sold_items[str(row["id"])]
-                        if sold_quantity > diff:
-                            sold_quantity -= diff
-                            sold_items[str(row["id"])] = sold_quantity
-                            purchase_rows = PurchaseVoucherRow.objects.filter(
-                                item_id=sales_row.item_id,
-                                remaining_quantity__gt=0
-                                ).order_by("voucher__date", "id")
-                            for purchase_row in purchase_rows:
-                                if purchase_row.remaining_quantity == diff:
-                                    purchase_row.remaining_quantity = 0
-                                    purchase_row.save()
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += diff
-                                    else:
-                                        sold_items[str(purchase_row.id)] = diff
-                                    break
-                                elif purchase_row.remaining_quantity > diff:
-                                    purchase_row.remaining_quantity -= diff
-                                    purchase_row.save()
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += diff
-                                    else:
-                                        sold_items[str(purchase_row.id)] = diff
-                                    break
-                                else:
-                                    diff -= purchase_row.remaining_quantity
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
-                                    else:
-                                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
-                                    purchase_row.remaining_quantity = 0
-                                    purchase_row.save()
-                            sales_row.sold_items = sold_items
-                            sales_row.save()
-                            break
-                        else:
-                            sold_quantity = sold_items.pop(str(row["id"]))
-                            sold_items[str(row["id"])] = sold_quantity
-                            purchase_rows = PurchaseVoucherRow.objects.filter(
-                                item_id=sales_row.item_id,
-                                remaining_quantity__gt=0
-                                ).order_by("voucher__date", "id")
-                            for purchase_row in purchase_rows:
-                                if purchase_row.remaining_quantity == diff:
-                                    purchase_row.remaining_quantity = 0
-                                    purchase_row.save()
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += diff
-                                    else:
-                                        sold_items[str(purchase_row.id)] = diff
-                                    break
-                                elif purchase_row.remaining_quantity > diff:
-                                    purchase_row.remaining_quantity -= diff
-                                    purchase_row.save()
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += diff
-                                    else:
-                                        sold_items[str(purchase_row.id)] = diff
-                                    break
-                                else:
-                                    diff -= purchase_row.remaining_quantity
-                                    if str(purchase_row.id) in sold_items.keys():
-                                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
-                                    else:
-                                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
-                                    purchase_row.remaining_quantity = 0
-                                    purchase_row.save()
-                            sales_row.sold_items = sold_items
-                            sales_row.save()
+                    self.handle_quantity_decrease(db_row, row, diff)              
             else:
                 row["remaining_quantity"] = row["quantity"]
         return row
