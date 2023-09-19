@@ -85,7 +85,7 @@
         </q-dialog>
       </div>
     </div>
-    <div
+    <div class="print-only"
       v-html="useGeneratePdf('salesVoucher', false, fields, !fields.options.show_rate_quantity_in_voucher)">
     </div>
   </div>
