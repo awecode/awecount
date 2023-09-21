@@ -34,7 +34,7 @@ from apps.voucher.resources import SalesVoucherResource, SalesVoucherRowResource
 from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteListSerializer, \
     DebitNoteDetailSerializer
 from apps.voucher.serializers.purchase import PurchaseOrderCreateSerializer, PurchaseOrderListSerializer
-from apps.voucher.serializers.voucher_settings import PurchaseSettingCreateSerializer, SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, SalesSettingCreateSerializer, \
+from apps.voucher.serializers.voucher_settings import InventorySettingCreateSerializer, PurchaseSettingCreateSerializer, SalesCreateSettingSerializer, PurchaseCreateSettingSerializer, SalesSettingCreateSerializer, \
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no
@@ -141,7 +141,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return {
             'options': {
                 'fiscal_years': FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data,
-                'enable_sales_agents': request.company.enable_sales_agents
+                'enable_sales_agents': request.company.enable_sales_agents,
+                'enable_fifo': request.company.inventory_setting.enable_fifo
             },
         }
 
@@ -179,6 +180,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             obj.bank_account_id = None
         obj.apply_transactions()
         return Response({})
+    
+    def fifo_update_purchase_rows(self, sales_rows):
+        for row in sales_rows:
+            sold_items = row.sold_items
+            # purchase_row_ids = [int(k) for k, v in sold_items.items()]
+            # purchase_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids)
+            # 
+            updates = [PurchaseVoucherRow.objects.filter(id=key).update(remaining_quantity=F("remaining_quantity")+value) for key, value in sold_items.items()]
+            row.sold_items = {}
+            row.save()
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
@@ -188,9 +199,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
         try:
             sales_voucher.cancel(request.data.get('message'))
+            if request.company.inventory_setting.enable_fifo:
+                sales_rows = sales_voucher.rows.all()
+                self.fifo_update_purchase_rows(sales_rows)            
             return Response({})
         except Exception as e:
-            raise RESTValidationError({'detail': e.messages})
+            raise RESTValidationError({'detail': e})
 
     @action(detail=True, methods=['POST'], url_path='log-print')
     def log_print(self, request, pk):
@@ -289,6 +303,16 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
          ItemPurchaseSerializer),
     )
 
+    def create(self, request, *args, **kwargs):
+        date = datetime.strptime(request.data.get("date"), "%Y-%m-%d")
+        item_ids = [x.get("item_id") for x in request.data.get("rows")]
+        if not request.query_params.get("fifo_inconsistency"):
+            if request.company.inventory_setting.enable_fifo:
+                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+                    # TODO: descriptive message for msg
+                    return Response({"msg": "FIFO inconsistency error.", "type": "fifo_inconsistency"}, status=422)
+        return super().create(request, *args, **kwargs)
+
     def get_create_defaults(self, request=None):
         return PurchaseCreateSettingSerializer(request.company.purchase_setting).data
 
@@ -358,12 +382,66 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         except Exception as e:
             raise APIException(str(e))
+        
+    def fifo_update_sales_rows(self, purchase_voucher):
+        rows = purchase_voucher.rows.all()
+        # row_ids = purchase_voucher.rows.values_list("id", flat=True)
+        # filter_conditions = Q()
+        # for row_id in row_ids:
+            # filter_conditions |= Q(sold_items__has_key=str(row_id))
+        # sales_voucher_rows = SalesVoucherRow.objects.filter(filter_conditions)
+        # import ipdb; ipdb.set_trace()
+        for row in rows:
+            row.remaining_quantity = 0
+            row.save()
+            sales_voucher_rows = SalesVoucherRow.objects\
+                .filter(sold_items__has_key=str(row.id))
+            for sales_row in sales_voucher_rows:
+                sold_items = sales_row.sold_items
+                # import ipdb; ipdb.set_trace()
+                quantity = sold_items.pop(str(row.id))
+                # import ipdb; ipdb.set_trace()
+                # quantity = popped_data[str(row.id)]
+                purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=sales_row.item_id,
+                remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
+                # sales_row.sold_items[str(row.id)] = 0
+                for purchase_row in purchase_rows:
+                    if purchase_row.remaining_quantity == quantity:
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += quantity
+                        else:
+                            sold_items[str(purchase_row.id)] = quantity
+                        break
+                    elif purchase_row.remaining_quantity > quantity:
+                        purchase_row.remaining_quantity -= quantity
+                        purchase_row.save()
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += quantity
+                        else:
+                            sold_items[str(purchase_row.id)] = quantity
+                        break
+                    else:
+                        quantity -= purchase_row.remaining_quantity
+                        if str(purchase_row.id) in sold_items.keys():
+                            sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                        else:
+                            sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                        purchase_row.remaining_quantity = 0
+                        purchase_row.save()
+                sales_row.sold_items = sold_items
+                sales_row.save()
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
         purchase_voucher = self.get_object()
         try:
             purchase_voucher.cancel()
+            if request.company.inventory_setting.enable_fifo:
+                self.fifo_update_sales_rows(purchase_voucher)
             return Response({})
         except Exception as e:
             raise APIException(str(e))
@@ -978,6 +1056,17 @@ class SalesSettingsViewSet(CRULViewSet):
 
         data = {
             'fields': SalesSettingsSerializer(s_setting, context={'request': request}).data
+        }
+        return data
+    
+
+class InventorySettingsViewSet(CRULViewSet):
+    serializer_class = InventorySettingCreateSerializer
+
+    def get_defaults(self, request=None):
+        i_setting = self.request.company.inventory_setting
+        data = {
+            'fields': self.get_serializer(i_setting).data
         }
         return data
 

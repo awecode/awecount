@@ -45,6 +45,7 @@ MODULES = [
     *gdp('TaxPayment'), 'TaxPaymentCancel',
     *gdp('PurchaseSetting'),
     *gdp('SalesSetting'),
+    *gdp('InventorySetting'),
     *gdp('PaymentReceipt'), 'PaymentReceiptCancel',
     *gdp('TransactionCharge'),
     *gdp('AccountOpeningBalance'),
