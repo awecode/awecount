@@ -85,7 +85,9 @@ export default (endpoint, predefinedColumns = null) => {
       url = withQuery(url, filters.value)
     }
     if (pagination.value.sortBy) {
-      const query = `${pagination.value.descending ? '-' : ''}${pagination.value.sortBy}`
+      const query = `${pagination.value.descending ? '-' : ''}${
+        pagination.value.sortBy
+      }`
       url = withQuery(url, { ordering: query })
     }
     useApi(url)
@@ -94,7 +96,7 @@ export default (endpoint, predefinedColumns = null) => {
         initiallyLoaded.value = true
         const orderValues = {
           descending: pagination.value.descending || false,
-          sortBy: pagination.value.sortBy || ''
+          sortBy: pagination.value.sortBy || '',
         }
         pagination.value = {
           sortBy: orderValues.sortBy,
@@ -174,24 +176,33 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { search: undefined })
     }
-    // if (filters.value) {
-    //   for (const [key, value] of Object.entries(filters.value)) {
-    //     // console.log(`${key} ${value}`); // "a 5", "b 7", "c 9"
-    //     debugger
-    //   }
-    // }
+    if (filters.value && Object.keys(filters.value).length > 0) {
+      let totalFilters = { ...filters.value }
+      // TODO: check with dipesh sir
+      let cleanedFilters = Object.fromEntries(
+        Object.entries(totalFilters).map(([k, v]) => {
+          if (v === null) {
+            return [k, undefined]
+          }
+          return [k, v]
+        })
+      )
+      cleanedFilters = sortOnKeys(cleanedFilters)
+      url = withQuery(url, cleanedFilters)
+      url = url.replace('+', '%20')
+    }
     if (props.pagination.sortBy) {
       pagination.value.sortBy = props.pagination.sortBy
       pagination.value.descending = props.pagination.descending
-      const query =   `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy}`
+      const query = `${props.pagination.descending ? '-' : ''}${
+        props.pagination.sortBy
+      }`
       url = withQuery(url, { ordering: query })
-    }
-    else {
+    } else {
       pagination.value.sortBy = ''
       pagination.value.descending = false
       url = withQuery(url, { ordering: undefined })
     }
-    // debugger
     router.push(url)
   }
 
@@ -229,7 +240,6 @@ export default (endpoint, predefinedColumns = null) => {
     cleanedFilters.page = undefined
     cleanedFilters = sortOnKeys(cleanedFilters)
     // TODO withQuery isn't preserving the order
-    console.log(cleanedFilters)
     url = withQuery(url, cleanedFilters)
     url = url.replace('+', '%20')
     router.push(url)
