@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-dialog v-model="isItemImportOpen">
       <q-card style="min-width: 80vw">
-        <ItemImport></ItemImport>
+        <ItemImport @modalClose="isItemImportOpen = false"></ItemImport>
       </q-card>
     </q-dialog>
     <div class="row" v-if="checkPermissions('ItemCreate')">
