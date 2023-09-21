@@ -1,13 +1,19 @@
 <template>
     <div class="q-ma-lg">
-        <div>
-            Import xls from
-        </div>
-        <q-form @submit="() => onSubmit(file)" autofocus>
-            <q-file v-model="file" name="file" @update:model-value="
-                onFileChange(file, $event, 'front_image')"></q-file>
-            <q-btn type="submit">Upload</q-btn>
-        </q-form>
+        <q-card>
+            <q-card-section class="bg-blue text-white">
+                <div class="text-h6">
+                    <span>Import Items From XLS</span>
+                </div>
+            </q-card-section>
+            <q-card-section>
+                <q-form @submit="() => onSubmit(file)" autofocus>
+                    <q-file v-model="file" name="file" @update:model-value="
+                        onFileChange(file, $event, 'front_image')"></q-file>
+                    <q-btn color="blue" type="submit" class="q-mt-lg">Upload</q-btn>
+                </q-form>
+            </q-card-section>
+        </q-card>
     </div>
 </template>
 
