@@ -20,8 +20,6 @@
 const file = ref(null)
 const onSubmit = async () => {
     const formData = new FormData()
-    debugger
-    console.log(file.value)
     formData.append('file',file.value)
     useApi('/v1/items/import/', {
         method: 'POST',
