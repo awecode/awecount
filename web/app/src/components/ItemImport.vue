@@ -1,16 +1,16 @@
 <template>
     <div class="q-ma-lg">
         <q-card>
-            <q-card-section class="bg-blue text-white">
+            <q-card-section class="bg-green text-white">
                 <div class="text-h6">
-                    <span>Import Items From XLS</span>
+                    <span>Import Items From Excel Sheet</span>
                 </div>
             </q-card-section>
             <q-card-section>
                 <q-form @submit="onSubmit()" autofocus>
-                    <q-file v-model="file" name="file"
-                        accept=".xml,,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></q-file>
-                    <q-btn :loading="loading" color="blue" type="submit" class="q-mt-lg">Upload</q-btn>
+                    <q-file v-model="file" name="file" style="max-width: 400px;"
+                        accept=".xml,,application/vnd.openxmlformats-officedocument.wordprocessingml.document" label="Select File" ></q-file>
+                    <q-btn :loading="loading" color="green" type="submit" class="q-mt-lg">Upload</q-btn>
                     <!-- <q-spinner v-else color="blue" size="2em" :thickness="6" class="q-mt-lg"/> -->
                 </q-form>
             </q-card-section>
