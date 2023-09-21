@@ -7,9 +7,8 @@
                 </div>
             </q-card-section>
             <q-card-section>
-                <q-form @submit="() => onSubmit(file)" autofocus>
-                    <q-file v-model="file" name="file" @update:model-value="
-                        onFileChange(file, $event, 'front_image')"></q-file>
+                <q-form @submit="onSubmit()" autofocus>
+                    <q-file v-model="file" name="file" accept=".xml,,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></q-file>
                     <q-btn color="blue" type="submit" class="q-mt-lg">Upload</q-btn>
                 </q-form>
             </q-card-section>
@@ -19,23 +18,14 @@
 
 <script setup>
 const file = ref(null)
-const onSubmit = async (file) => {
+const onSubmit = async () => {
+    const formData = new FormData()
+    debugger
+    console.log(file.value)
+    formData.append('file',file.value)
     useApi('/v1/items/import/', {
         method: 'POST',
-        body: { file: file.value },
+        body: formData,
     }).then(() => console.log('done')).catch((err) => console.log('error due to', err))
-}
-const onFileChange = (dct, event, attr) => {
-    const file = event
-    let reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.fileName = file.name
-    reader.onload = () => {
-        console.log(file)
-        file.value = reader.result
-    }
-    reader.onerror = function (error) {
-        console.error('Error: ', error)
-    }
 }
 </script>
