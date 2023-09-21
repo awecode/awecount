@@ -1,6 +1,12 @@
 <template>
   <div class="q-pa-md">
+    <q-dialog v-model="isItemImportOpen">
+      <q-card style="min-width: 80vw">
+        <ItemImport></ItemImport>
+      </q-card>
+    </q-dialog>
     <div class="row" v-if="checkPermissions('ItemCreate')">
+      <q-btn color="blue" label="Import From XlS" @click="isItemImportOpen = true"></q-btn>
       <q-btn color="green" to="/items/add/" label="Add Item" class="q-ml-auto" icon-right="add" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery"
@@ -80,6 +86,7 @@ const metaData = {
   title: 'Items | Awecount',
 }
 useMeta(metaData)
+const isItemImportOpen = ref(false)
 const {
   columns,
   rows,

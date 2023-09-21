@@ -20,6 +20,7 @@ declare module '@vue/runtime-core' {
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
+    ItemImport: typeof import('./src/components/ItemImport.vue')['default']
     JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
