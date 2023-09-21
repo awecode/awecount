@@ -98,6 +98,7 @@ export default {
         label: 'Voucher no',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'party_name',
@@ -105,8 +106,8 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
-      { name: 'status', label: 'Status', align: 'center', field: 'status' },
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
       { name: 'actions' },
     ]
 
