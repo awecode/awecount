@@ -135,6 +135,7 @@ import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
@@ -142,6 +143,7 @@ export default {
       title: 'POS | Awecount',
     }
     useMeta(metaData)
+    const store = useLoginStore()
     const endpoint = 'v1/pos/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
@@ -191,6 +193,7 @@ export default {
           })
           print(data)
           setTimeout(() => this.$router.go(), 100)
+          this.fields.rows = []
         })
         .catch((err) => {
           fields.status = null
@@ -240,6 +243,11 @@ export default {
       }}
       else { fetchResults() }
     }, {deep: true})
+    watch(() => formData.fields.value.rows, (newVal) => {
+      store.posData = newVal
+    }, {
+      deep: true
+    })
     // handle Search
     const onAddItem = (itemInfo) => {
       const index = formData.fields.value.rows.findIndex(
@@ -315,7 +323,8 @@ export default {
       hasItemModifyAccess,
       enterClicked,
       currentPage,
-      checkPermissions
+      checkPermissions,
+      store
     }
   },
   created() {
@@ -327,6 +336,9 @@ export default {
         console.log('error fetching choices due to', err)
       })
   },
+  mounted() {
+    this.fields.rows = this.store.posData || []
+  }
 }
 </script>
 

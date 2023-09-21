@@ -169,10 +169,16 @@ export default (endpoint, predefinedColumns = null) => {
     } else {
       url = withQuery(url, { page: props.pagination.page })
     }
-    if (props.filter) {
-      url = withQuery(url, { search: props.filter })
+    if (searchQuery.value) {
+      url = withQuery(url, { search: searchQuery.value })
     } else {
       url = withQuery(url, { search: undefined })
+    }
+    if (filters.value) {
+      for (const [key, value] of Object.entries(filters.value)) {
+        // console.log(`${key} ${value}`); // "a 5", "b 7", "c 9"
+        debugger
+      }
     }
     if (props.pagination.sortBy) {
       pagination.value.sortBy = props.pagination.sortBy
