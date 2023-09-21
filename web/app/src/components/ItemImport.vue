@@ -13,9 +13,11 @@
 <script setup>
 const file = ref(null)
 const onSubmit = async (file) => {
+    // debugger
+    console.log(file[0])
     useApi('/v1/items/import/', {
         method: 'POST',
-        body: { file: file.value },
+        body: { file: file[0] },
     }).then(() => console.log('done')).catch((err) => console.log('error due to', err))
 }
 </script>
