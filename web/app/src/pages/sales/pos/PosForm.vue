@@ -49,7 +49,8 @@
                         " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                       </q-input>
                       <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
-                        :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
+                        :error="errors?.party ? errors?.party[0] : null"
+                        :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                     </div>
                     <div class="col-2 row justify-center q-py-md">
                       <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -237,14 +238,18 @@ export default {
         })
     }
     watch([searchTerm, currentPage], (newVal, oldVal) => {
-      if (newVal[0] !== oldVal[0]) { {
-        currentPage.value = 1
-        fetchResults()
-      }}
+      if (newVal[0] !== oldVal[0]) {
+        {
+          currentPage.value = 1
+          fetchResults()
+        }
+      }
       else { fetchResults() }
-    }, {deep: true})
+    }, { deep: true })
     watch(() => formData.fields.value.rows, (newVal) => {
-      store.posData = newVal
+      if (formData.formDefaults.value.options.persist_pos_items) {
+        store.posData = newVal
+      }
     }, {
       deep: true
     })
@@ -302,6 +307,11 @@ export default {
     const hasItemModifyAccess = computed(() => {
       return checkPermissions('ItemModify')
     })
+    watch(() => formData.formDefaults.value, () => {
+      if (formData.formDefaults.value.options.persist_pos_items) {
+        formData.fields.value.rows = store.posData || []
+      }
+    })
     return {
       ...formData,
       CategoryForm,
@@ -336,9 +346,6 @@ export default {
         console.log('error fetching choices due to', err)
       })
   },
-  mounted() {
-    this.fields.rows = this.store.posData || []
-  }
 }
 </script>
 
