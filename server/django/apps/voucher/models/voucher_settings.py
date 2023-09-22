@@ -47,7 +47,8 @@ class SalesSetting(models.Model):
             'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
             'enable_import_challan': self.enable_import_challan,
             'enable_amount_entry': self.enable_amount_entry,
-            'show_rate_quantity_in_voucher': self.show_rate_quantity_in_voucher
+            'show_rate_quantity_in_voucher': self.show_rate_quantity_in_voucher,
+            'persist_pos_items': self.persist_pos_items
         }
 
     def __str__(self):
