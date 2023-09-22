@@ -114,7 +114,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     
             
         for row in ws.iter_rows(values_only=True):
-            # import ipdb; ipdb.set_trace()
             item = {
                 "company_id":request.company.id,
                 "name":row[0],
@@ -135,7 +134,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 # items = Item.objects.bulk_create(items)
                 accounts_to_create = []
                 items_to_update = []
-                for item in items:
+                for i, item in enumerate(items):
+                    # print(i)
                     if item.can_be_purchased:
                         name = item.name + ' (Purchase)'
                         purchase_account = Account(name=name, company=item.company)
@@ -176,7 +176,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
                 res_msg = f"Duplicate items with code {code} detected."
                 return Response({"details": res_msg}, status=400)        
-        print("Done")
         return Response({}, status=200)
 
 
