@@ -35,6 +35,14 @@ class FiscalYear(models.Model):
 
 
 class Company(models.Model):
+
+    TEMPLATE_CHOICES = [
+        (1, "Template 1"),
+        (2, "Template 2"),
+        # (3, "Template 3"),
+        # (4, "Template 4")
+    ]
+
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
     logo = models.ImageField(blank=True, null=True, upload_to='logos/')
@@ -53,6 +61,7 @@ class Company(models.Model):
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
     config_template = models.CharField(max_length=255, default='np')
+    invoice_template = models.IntegerField(max_length=255, choices=TEMPLATE_CHOICES, default=1)
 
     def __str__(self):
         return self.name

@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.db import IntegrityError
 
 from apps.ledger.models import handle_company_creation
+from apps.voucher.models.voucher_settings import handle_company_creation as create_settings
 from apps.product.models import Unit, Category as InventoryCategory, Item, Brand
 from apps.tax.models import TaxScheme
 from .models import User, Company, Role, FiscalYear, AccessKey
@@ -21,6 +22,7 @@ admin.site.index_title = "Welcome to Awecount"
 def create_company_defaults(modeladmin, request, queryset):
     for company in queryset:
         handle_company_creation(modeladmin, company=company)
+        create_settings(modeladmin, company=company)
 
 
 create_company_defaults.short_description = "Create company defaults"

@@ -67,7 +67,7 @@ class ItemPurchaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'description', 'is_trackable')
+        fields = ('id', 'name', 'unit_id', 'rate', 'tax_scheme_id', 'description', 'is_trackable', 'track_inventory')
 
 
 class BookSerializer(ItemSerializer):

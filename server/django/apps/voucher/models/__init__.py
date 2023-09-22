@@ -314,6 +314,8 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
 
+    sold_items = models.JSONField(blank=True, null=True)
+
     # Model key for module based permission
     key = 'Sales'
 
@@ -505,6 +507,8 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
                                      related_name='purchase_rows')
 
     tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
+
+    remaining_quantity = models.FloatField(blank=True, null=True)
 
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)

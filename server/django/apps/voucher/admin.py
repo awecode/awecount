@@ -4,6 +4,7 @@ from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, Credi
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
     DebitNoteRow, \
     DebitNote, SalesAgent, SalesSetting, PurchaseSetting, PaymentReceipt, ChallanRow, Challan
+from apps.voucher.models.voucher_settings import InventorySetting
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -150,3 +151,9 @@ class PurchaseVoucherRowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)
+
+
+@admin.register(InventorySetting)
+class InventorySettingAdmin(admin.ModelAdmin):
+    # list_display = []
+    pass

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from apps.product.models import Item
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
@@ -47,6 +48,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 {'party': ['Party is required for a credit issue.']},
             )
         return data
+    
+    # def validate(self, date):
+    #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -59,6 +63,11 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         instance = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            if request.company.inventory_setting.enable_fifo:
+                # TODO: use this from request data
+                item = Item.objects.get(id=row["item_id"])
+                if item.track_inventory:
+                    row["remaining_quantity"] = row["quantity"]
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
