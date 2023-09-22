@@ -27,6 +27,7 @@ class SalesSetting(models.Model):
     enable_amount_entry = models.BooleanField(default=False)
     show_rate_quantity_in_voucher = models.BooleanField(default=True)
     invoice_footer_text = models.CharField(max_length=255, null=True, blank=True)
+    persist_pos_items = models.BooleanField(default=False)
 
     @property
     def fields(self):
