@@ -56,7 +56,7 @@ export default function useGeneratePdf(
   let html = ''
   if (!onlyBody) {
     let header = ''
-    if (compayInfo.name === 'Spark Car') {
+    if (compayInfo.invoice_template === 2) {
       header = `
     <div>
     <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
@@ -182,7 +182,7 @@ export default function useGeneratePdf(
 
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
-    ${compayInfo.name === 'Spark Car' ? `${emptyRows()}` : ''}
+    ${compayInfo.invoice_template === 2 ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey; border-top: none; padding: 20px; padding-top: 0;">
       <div>
