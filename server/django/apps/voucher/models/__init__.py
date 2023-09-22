@@ -526,18 +526,21 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
         from django_q.tasks import async_task
         if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
             return
-        existing_rate = self.item.purchase_rows.order_by("-id").first().rate 
-        if existing_rate != self.rate:
-            status = "increased" if existing_rate<self.rate else "decreased" 
-            message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
-            to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
-            async_task(
-                'django.core.mail.send_mail',
-                "Item purchase rate change alert.",
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                to_emails
-            )
+        # import ipdb; ipdb.set_trace()
+        rows = self.item.purchase_rows.order_by("-id")
+        if rows.exists():
+            existing_rate = rows.first().rate 
+            if existing_rate != self.rate:
+                status = "increased" if existing_rate<self.rate else "decreased" 
+                message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
+                to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
+                async_task(
+                    'django.core.mail.send_mail',
+                    "Item purchase rate change alert.",
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    to_emails
+                )
 
 
 CREDIT_NOTE_STATUSES = (
