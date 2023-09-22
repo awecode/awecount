@@ -176,7 +176,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                             sales_accounts.append(sales_account)
                             item.sales_account = sales_account
 
-                        name = 'Discount Allowed - ' + self.name
+                        name = 'Discount Allowed - ' + item.name
                         if not item.discount_allowed_account_id:
                             discount_allowed_account = Account(name=name, company=item.company)
                             if item.category and item.category.discount_allowed_account_category_id:
@@ -191,10 +191,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
                 
                 Account.objects.bulk_create(purchase_accounts)
-                Account.objects.bulk_create(sales_account)
+                Account.objects.bulk_create(sales_accounts)
                 Account.objects.bulk_create(discount_allowed_accounts)
                 Account.objects.bulk_create(discount_received_accounts)
-                Item.objects.bulk_update(items_to_update, fields=["purchase_account"])
+                Item.objects.bulk_update(items_to_update, fields=["purchase_account", "sales_account", "discount_received_account", "discount_allowed_account"])
 
             except IntegrityError as e:
                 # code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
