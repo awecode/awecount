@@ -107,7 +107,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 if qs.exists():
                     return qs.first()
                 else:
-                    if request.data.get("create_new_category"):
+                    if request.data.get("create_new_category") == "true":
                         cat = Category.objects.create(name=value, company_id=request.company.id)
                         return cat
                     return None
@@ -131,74 +131,50 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         with transaction.atomic():
             try:
-                # Item.objects.bulk_create(items, batch_size=500)
-                items = Item.objects.bulk_create(items)
-                # for i, item in enumerate(items):
-                #     item.save()
-                #     print(i+1)
-                purchase_accounts = []
-                discount_received_accounts = []
-                sales_accounts = []
-                discount_allowed_accounts = []
+                Item.objects.bulk_create(items, batch_size=1000)
+                # items = Item.objects.bulk_create(items)
+                accounts_to_create = []
                 items_to_update = []
                 for item in items:
                     if item.can_be_purchased:
                         name = item.name + ' (Purchase)'
                         purchase_account = Account(name=name, company=item.company)
-                        if item.category and item.category.purchase_account_category_id:
-                            purchase_account.category_id = item.category.purchase_account_category_id
-                        else:
-                            purchase_account.add_category('Purchase')
+                        purchase_account.add_category('Purchase')
                         purchase_account.suggest_code(item)
-                        purchase_accounts.append(purchase_account)
-                        # import ipdb; ipdb.set_trace()
+                        accounts_to_create.append(purchase_account)
                         item.purchase_account = purchase_account
 
                         name = 'Discount Received - ' + item.name
-                        if not item.discount_received_account_id:
-                            discount_received_acc = Account(name=name, company=item.company)
-                            discount_received_acc.category = item.category.discount_received_account_category
-                        else:
-                            discount_received_acc.add_category('Discount Income')
+                        discount_received_acc = Account(name=name, company=item.company)
+                        discount_received_acc.add_category('Discount Income')
                         discount_received_acc.suggest_code(item)
-                        discount_received_accounts.append(discount_received_acc)
+                        accounts_to_create.append(discount_received_acc)
                         item.discount_received_account = discount_received_acc
 
                     if item.can_be_sold:
                         name = item.name + ' (Sales)'
                         if not item.sales_account_id:
                             sales_account = Account(name=name, company=item.company)
-                            if item.category and item.category.sales_account_category_id:
-                                sales_account.category = item.category.sales_account_category
-                            else:
-                                sales_account.add_category('Sales')
+                            sales_account.add_category('Sales')
                             sales_account.suggest_code(item)
-                            sales_accounts.append(sales_account)
+                            accounts_to_create.append(sales_account)
                             item.sales_account = sales_account
 
                         name = 'Discount Allowed - ' + item.name
-                        if not item.discount_allowed_account_id:
-                            discount_allowed_account = Account(name=name, company=item.company)
-                            if item.category and item.category.discount_allowed_account_category_id:
-                                discount_allowed_account.category = item.category.discount_allowed_account_category
-                            else:
-                                discount_allowed_account.add_category('Discount Expenses')
-                            discount_allowed_account.suggest_code(item)
-                            discount_allowed_accounts.append(discount_allowed_account)
-                            item.discount_allowed_account = discount_allowed_account
+                        discount_allowed_account = Account(name=name, company=item.company)
+                        discount_allowed_account.add_category('Discount Expenses')
+                        discount_allowed_account.suggest_code(item)
+                        accounts_to_create.append(discount_allowed_account)
+                        item.discount_allowed_account = discount_allowed_account
 
                     items_to_update.append(item)
 
-                
-                Account.objects.bulk_create(purchase_accounts)
-                Account.objects.bulk_create(sales_accounts)
-                Account.objects.bulk_create(discount_allowed_accounts)
-                Account.objects.bulk_create(discount_received_accounts)
+                Account.objects.bulk_create(accounts_to_create, batch_size=1000)
                 Item.objects.bulk_update(items_to_update, fields=["purchase_account", "sales_account", "discount_received_account", "discount_allowed_account"])
 
             except IntegrityError as e:
-                # code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
-                res_msg = f"Duplicate items with  detected."
+                code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
+                res_msg = f"Duplicate items with code {code} detected."
                 return Response({"details": res_msg}, status=400)        
         print("Done")
         return Response({}, status=200)
