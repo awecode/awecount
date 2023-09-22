@@ -266,3 +266,14 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+@media print {
+  td,
+  th {
+    padding: 3px 5px;
+    margin: 0;
+    font-size: 12px !important;
+  }
+}
+</style>
