@@ -79,18 +79,21 @@ export default {
         label: 'Dr.',
         align: 'left',
         field: 'dr',
+        sortable: true
       },
       {
         name: 'cr',
         label: 'Cr.',
         align: 'left',
         field: 'cr',
+        sortable: true
       },
       {
         name: 'balance',
         label: 'Balance',
         align: 'left',
         field: 'balance',
+        sortable: true
       },
       {
         name: 'actions',

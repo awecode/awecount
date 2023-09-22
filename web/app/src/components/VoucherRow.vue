@@ -14,6 +14,7 @@
             label="Type"
             :error-message="''"
             :error="false"
+            @update:model-value="onSwitchDrCr"
           />
           <!-- <n-auto-complete v-model="voucher.account_id" :options="props.options" label="Account" :modal-component="LedgerForm" :error="errors?.account_id" /> -->
         </div>
@@ -132,5 +133,13 @@ const deleteVoucher = () => {
 }
 const focusOut = () => {
   emit('checkAddVoucher', props.index)
+}
+const onSwitchDrCr = (mode) => {
+  if (mode === 'Cr') {
+    voucher.value.dr_amount = null
+  }
+  else if (mode === 'Dr') {
+    voucher.value.cr_amount = null
+  }
 }
 </script>

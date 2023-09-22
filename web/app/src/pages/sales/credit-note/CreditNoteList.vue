@@ -5,8 +5,7 @@
       <q-btn v-if="checkPermissions('CreditNoteCreate')" color="green" to="/credit-note/add/" label="New Credit Note"
         class="q-ml-lg" icon-right="add" />
     </div>
-
-    <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
+    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
@@ -82,6 +81,19 @@ export default {
       title: 'Credit Notes | Awecount',
     }
     useMeta(metaData)
+    const newColumns = [
+      {
+        name: 'voucher_no',
+        label: 'Voucher no',
+        align: 'left',
+        field: 'voucher_no',
+        sortable: true
+      },
+      { name: 'party', label: 'Party', align: 'left', field: 'party'},
+      { name: 'date', label: 'Date', align: 'left', field: 'date' , sortable: true},
+      { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true},
+      { name: 'actions' }
+    ]
     const endpoint = '/v1/credit-note/'
     const route = useRoute()
     const onDownloadXls = () => {
@@ -90,13 +102,13 @@ export default {
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'Credit_Notes'
           )
         )
         .catch((err) => console.log('Error Due To', err))
     }
-    return { ...useList(endpoint), onDownloadXls, checkPermissions }
+    return { ...useList(endpoint), newColumns, onDownloadXls, checkPermissions }
   },
 }
 </script>

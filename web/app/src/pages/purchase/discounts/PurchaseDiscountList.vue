@@ -73,11 +73,11 @@ export default {
     const endpoint = '/v1/purchase-discount/'
     const listData = useList(endpoint)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
+      useApi('v1/sales-voucher/export')
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'Credit_Notes'
           )
         )

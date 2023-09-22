@@ -133,11 +133,11 @@ export default {
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/sales-voucher/export/' + query)
+      useApi('v1/sales-voucher/export' + query)
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'Sales_voucher'
           )
         )
@@ -149,6 +149,7 @@ export default {
         label: 'Voucher no',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'party_name',
@@ -161,13 +162,15 @@ export default {
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       {
         name: 'total_amount',
         label: 'Total amount',
         align: 'left',
         field: 'total_amount',
+        sortable: true
       },
       {
         name: 'payment_receipts',

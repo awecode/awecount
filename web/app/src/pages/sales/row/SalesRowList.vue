@@ -80,7 +80,7 @@
           </div>
         </q-td>
       </template>
-      <template v-slot:body-cell-date="props">
+      <template v-slot:body-cell-voucher__date="props">
         <q-td :props="props">
           {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date,
             'bs') }}
@@ -136,48 +136,56 @@ export default {
         label: 'Bill No',
         align: 'left',
         field: 'voucher_id',
+        sortable: true
       },
       {
-        name: 'date',
+        name: 'voucher__date',
         label: 'Date',
         align: 'left',
         field: 'voucher__date',
+        sortable: true
       },
       {
         name: 'buyers_name',
         label: 'Buyer',
         align: 'left',
         field: 'buyers_name',
+        sortable: true
       },
       {
         name: 'quantity',
         label: 'Quantity',
         align: 'left',
         field: 'quantity',
+        sortable: true
       },
       {
         name: 'rate',
         label: 'Rate',
         align: 'left',
         field: 'rate',
+        sortable: true
       },
       {
-        name: 'discount',
+        name: 'discount_amount',
         label: 'Discount',
         align: 'left',
         field: 'discount_amount',
+        sortable: true
       },
       {
         name: 'tax_amount',
         label: 'Tax',
         align: 'left',
         field: 'tax_amount',
+        sortable: true
       },
       {
         name: 'net_amount',
         label: 'Amount',
         align: 'left',
         field: 'net_amount',
+        sortable: true
       },
     ]
     const fetchedOptions: Ref<Record<string, Array<object> | null>> = ref({

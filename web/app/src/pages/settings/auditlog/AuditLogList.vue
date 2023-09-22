@@ -49,11 +49,11 @@ export default {
     const endpoint = '/v1/log-entries/'
     const listData = useList(endpoint)
     const onDownloadXls = () => {
-      useApi('v1/log-entries/export/')
+      useApi('v1/log-entries/export')
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'Audit Logs'
           )
         )

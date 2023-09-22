@@ -143,48 +143,52 @@ export default {
     }
     useMeta(metaData)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export/')
+      useApi('v1/sales-voucher/export')
         .then((data) =>
           usedownloadFile(
             data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'Credit_Notes'
           )
         )
         .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
       {
         name: 'party_name',
         label: 'Party',
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
       {
         name: 'mode',
         label: 'Mode',
         align: 'left',
         field: 'mode',
+        sortable: true
       },
       {
         name: 'amount',
         label: 'Amount',
         align: 'left',
         field: 'amount',
+        sortable: true
       },
       {
         name: 'tds_amount',
         label: 'TDS',
         align: 'left',
         field: 'tds_amount',
+        sortable: true
       },
       {
         name: 'invoices',
         label: 'Invoice(s)',
         align: 'left',
         field: 'invoices',
+        sortable: true
       },
       { name: 'actions', label: 'Actions', align: 'left' },
     ]
@@ -192,18 +196,6 @@ export default {
     return { ...listData, newColumn, onDownloadXls, checkPermissions }
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>
 
 <style>

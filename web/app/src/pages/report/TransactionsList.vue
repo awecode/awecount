@@ -111,11 +111,11 @@ export default {
         const route = useRoute()
         const onDownloadXls = () => {
             const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-            useApi('v1/transaction/export/' + query)
+            useApi('v1/transaction/export' + query)
                 .then((data) =>
                     usedownloadFile(
                         data,
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/vnd.ms-excel',
                         'Sales_voucher'
                     )
                 )

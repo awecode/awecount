@@ -49,7 +49,8 @@
                         " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                       </q-input>
                       <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
-                        :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
+                        :error="errors?.party ? errors?.party[0] : null"
+                        :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                     </div>
                     <div class="col-2 row justify-center q-py-md">
                       <q-btn flat size="md" @click="() => switchMode(fields)">
@@ -135,6 +136,7 @@ import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
@@ -142,6 +144,7 @@ export default {
       title: 'POS | Awecount',
     }
     useMeta(metaData)
+    const store = useLoginStore()
     const endpoint = 'v1/pos/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
@@ -191,6 +194,7 @@ export default {
           })
           print(data)
           setTimeout(() => this.$router.go(), 100)
+          this.fields.rows = []
         })
         .catch((err) => {
           fields.status = null
@@ -234,12 +238,21 @@ export default {
         })
     }
     watch([searchTerm, currentPage], (newVal, oldVal) => {
-      if (newVal[0] !== oldVal[0]) { {
-        currentPage.value = 1
-        fetchResults()
-      }}
+      if (newVal[0] !== oldVal[0]) {
+        {
+          currentPage.value = 1
+          fetchResults()
+        }
+      }
       else { fetchResults() }
-    }, {deep: true})
+    }, { deep: true })
+    watch(() => formData.fields.value.rows, (newVal) => {
+      if (formData.formDefaults.value.options.persist_pos_items) {
+        store.posData = newVal
+      }
+    }, {
+      deep: true
+    })
     // handle Search
     const onAddItem = (itemInfo) => {
       const index = formData.fields.value.rows.findIndex(
@@ -294,6 +307,11 @@ export default {
     const hasItemModifyAccess = computed(() => {
       return checkPermissions('ItemModify')
     })
+    watch(() => formData.formDefaults.value, () => {
+      if (formData.formDefaults.value.options.persist_pos_items) {
+        formData.fields.value.rows = store.posData || []
+      }
+    })
     return {
       ...formData,
       CategoryForm,
@@ -315,7 +333,8 @@ export default {
       hasItemModifyAccess,
       enterClicked,
       currentPage,
-      checkPermissions
+      checkPermissions,
+      store
     }
   },
   created() {

@@ -13,7 +13,8 @@ export const useLoginStore = defineStore('loginStore', {
     dateRange: {
       start_date : null,
       end_date: null
-    }
+    },
+    posData: null
   }),
   getters: {
     doubleCount: (state) => state.counter * 2,

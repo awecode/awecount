@@ -63,6 +63,10 @@
             <div class="row q-pl-sm">
               <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow label="Invoice footer text" />
             </div>
+            <div>
+              <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?">
+              </q-checkbox>
+            </div>
           </div>
         </div>
         <!-- {{ formDefaults.collections }} -->

@@ -60,7 +60,8 @@ export default {
           'can_update_issued',
           'issue_datetime',
           'available_bank_accounts',
-          'id'
+          'id',
+          'options'
         ]
         removeArr.forEach((item) => delete data[item])
         this.fields = data

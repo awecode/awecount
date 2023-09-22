@@ -54,8 +54,8 @@
     <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('DebitNoteModify') && fields.can_update_issued" :to="`/debit-note/${fields.id}`"
-            color="orange-6" label="Edit" icon="edit" />
+          <q-btn v-if="checkPermissions('DebitNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
+            :to="`/debit-note/${fields.id}`" color="orange-6" label="Edit" icon="edit" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as resolved"
             icon="mdi-check-all" />
@@ -65,8 +65,9 @@
       </div>
       <div class="row q-mb-md q-gutter-x-md">
         <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print Copy No. ${fields.print_count}`" icon="print" @click="onPrintclick" />
-        <q-btn v-else label="Print" icon="print" @click="onPrintclick" />
+          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
+          @click="onPrintclick(false)" />
+        <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
         <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Paid'" color="blue-7" label="Journal Entries"
           icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
       </div>
@@ -183,16 +184,18 @@ export default {
       pri.focus()
       setTimeout(() => pri.print(), 100)
     }
-    const onPrintclick = () => {
-      const endpoint = `/v1/debit-note/${fields.value?.voucher_no}/log-print/`
-      useApi(endpoint, { method: 'POST' })
-        .then(() => {
-          if (fields.value) {
-            print(false)
-            fields.value.print_count = fields.value?.print_count + 1
-          }
-        })
-        .catch((err) => console.log('err from the api', err))
+    const onPrintclick = (noApiCall) => {
+      if (!noApiCall) {
+        const endpoint = `/v1/debit-note/${fields.value?.id}/log-print/`
+        useApi(endpoint, { method: 'POST' })
+          .then(() => {
+            if (fields.value) {
+              print(false)
+              fields.value.print_count = fields.value?.print_count + 1
+            }
+          })
+          .catch((err) => console.log('err from the api', err))
+      } else print(false)
     }
     const discountComputed = computed(() => {
       if (fields.value?.discount_obj) {

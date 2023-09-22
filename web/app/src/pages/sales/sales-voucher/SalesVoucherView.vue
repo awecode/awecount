@@ -42,7 +42,7 @@
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('SalesModify')" color="orange-5" label="Edit" icon="edit"
+            <q-btn v-if="checkPermissions('SalesModify') && (fields.can_update_issued || fields?.status === 'Draft')" color="orange-5" label="Edit" icon="edit"
               :to="`/sales-voucher/${fields?.id}/`" />
             <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
@@ -52,10 +52,10 @@
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print Copy ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${ fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
-            : `# ${(fields?.print_count || 0) + 1}`
-            }`
+            : `# ${(fields?.print_count || 0)}`
+            }` : ''}`
             " icon="print" />
           <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
@@ -63,7 +63,7 @@
             }`
             " icon="print" />
           <q-btn color="blue-7" label="Materialized View" icon="mdi-table"
-            :to="`/sales-voucher/${fields?.voucher_no}/mv`" />
+            :to="`/sales-voucher/${fields?.id}/mv`" />
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
@@ -86,7 +86,7 @@
       </div>
     </div>
     <div class="print-only"
-      v-html="useGeneratePdf('salesVoucher', true, fields, !fields.options.show_rate_quantity_in_voucher)">
+      v-html="useGeneratePdf('salesVoucher', false, fields, !fields.options.show_rate_quantity_in_voucher)">
     </div>
   </div>
 </template>
