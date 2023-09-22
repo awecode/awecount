@@ -78,7 +78,7 @@ class Category(MPTTModel):
 
     class Meta:
         verbose_name_plural = u'Categories'
-        unique_together = ('code', 'company')
+        unique_together = [['code', 'company'], ['name', 'company']]
 
 
 class Account(models.Model):

@@ -115,6 +115,9 @@ class Category(models.Model):
     # Required for module-wise permission check
     key = 'InventoryCategory'
 
+    def suggest_code(self, prefix=None):
+        self.code = self.name.lower().replace(" ", "-")
+
     def get_account_category(self, default_category_name, prefix=''):
         if default_category_name in ['Fixed Assets', 'Direct Expenses',
                                      'Indirect Expenses'] and self.account_category_id and self.account_category:
@@ -145,6 +148,8 @@ class Category(models.Model):
         self.validate_unique()
 
         post_save = kwargs.pop('post_save', True)
+        if not self.code:
+            self.suggest_code()
         super().save(*args, **kwargs)
 
         if post_save:
