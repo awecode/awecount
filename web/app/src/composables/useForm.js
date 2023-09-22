@@ -96,6 +96,7 @@ export default (endpoint, config) => {
     } else {
       postEndpoint = endpoint
     }
+    const originalStatus = fields.value.status
     await useApi(postEndpoint, {
       method: isEdit.value ? 'PATCH' : 'POST',
       body: fields.value,
@@ -144,7 +145,7 @@ export default (endpoint, config) => {
           }).onOk(() => {
             useApi(postEndpoint + '?fifo_inconsistency=true', {
               method: isEdit.value ? 'PATCH' : 'POST',
-              body: fields.value,
+              body: {...fields.value, status: originalStatus},
             }).then((data) => {
               $q.notify({
                 color: 'positive',
