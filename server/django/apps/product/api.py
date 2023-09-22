@@ -153,12 +153,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
                     if item.can_be_sold:
                         name = item.name + ' (Sales)'
-                        if not item.sales_account_id:
-                            sales_account = Account(name=name, company=item.company)
-                            sales_account.add_category('Sales')
-                            sales_account.suggest_code(item)
-                            accounts_to_create.append(sales_account)
-                            item.sales_account = sales_account
+                        sales_account = Account(name=name, company=item.company)
+                        sales_account.add_category('Sales')
+                        sales_account.suggest_code(item)
+                        accounts_to_create.append(sales_account)
+                        item.sales_account = sales_account
 
                         name = 'Discount Allowed - ' + item.name
                         discount_allowed_account = Account(name=name, company=item.company)
