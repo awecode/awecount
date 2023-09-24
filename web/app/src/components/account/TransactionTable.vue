@@ -89,8 +89,8 @@
               transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
-        <td><span v-if="transaction.dr_amount">{{ transaction.dr_amount || 0 }}</span></td>
-        <td><span v-if="transaction.cr_amount">{{ transaction.cr_amount || 0 }}</span></td>
+        <td><span v-if="transaction.dr_amount">{{ Math.round((transaction.dr_amount || 0) * 100) / 100 }}</span></td>
+        <td><span v-if="transaction.cr_amount">{{ Math.round((transaction.cr_amount || 0) * 100) / 100 }}</span></td>
         <td v-if="fields.aggregate"></td>
       </tr>
 
