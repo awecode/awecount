@@ -23,13 +23,13 @@
         <td class="text-left">Opening</td>
         <td></td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.opening.dr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.opening.cr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.opening.cr_amount__sum || 0) * 100) / 100 }}
         </td>
-        <td>{{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
-          0) || 0 * 100) / 100 }}</td>
+        <td>{{ Math.round((((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
+          0))) * 100 ) / 100 }}</td>
       </tr>
       <tr class="text-weight-bold" v-if="fields.aggregate &&
         fields.aggregate.total &&
@@ -40,13 +40,13 @@
         <td class="text-left">Transactions</td>
         <td></td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.total.dr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.total.dr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.total.cr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.total.cr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) || 0 *
+          {{ Math.round(((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) )*
             100) / 100 }}
         </td>
       </tr>
@@ -57,17 +57,17 @@
         <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+          {{ Math.round( (fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
             0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-            0) * 100) / 100 }}
+          {{ Math.round(((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+            0)) * 100) / 100 }}
         </td>
         <td class="text-left">
           {{ Math.round(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
             0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-              0))) || 0 * 100) / 100 }}
+              0)) || 0) * 100) / 100 }}
         </td>
       </tr>
       <tr v-for="(transaction, index) in mergedTransactions" :key="index">
@@ -89,8 +89,8 @@
               transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
-        <td><span v-if="transaction.dr_amount">{{ Math.round(transaction.dr_amount || 0 * 100) / 100 }}</span></td>
-        <td><span v-if="transaction.cr_amount">{{ Math.round(transaction.cr_amount || 0 * 100) / 100 }}</span></td>
+        <td><span v-if="transaction.dr_amount">{{ transaction.dr_amount || 0 }}</span></td>
+        <td><span v-if="transaction.cr_amount">{{ transaction.cr_amount || 0 }}</span></td>
         <td v-if="fields.aggregate"></td>
       </tr>
 
@@ -103,12 +103,12 @@
         <td class="text-left">Total</td>
         <td></td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.total.dr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.total.dr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round(fields.aggregate.total.cr_amount__sum || 0 * 100) / 100 }}
+          {{ Math.round((fields.aggregate.total.cr_amount__sum || 0) * 100) / 100 }}
         </td>
-        <td>{{ Math.round((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) || 0
+        <td>{{ Math.round(((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
           * 100) / 100
         }}</td>
       </tr>

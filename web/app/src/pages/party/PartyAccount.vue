@@ -27,10 +27,10 @@
             </td>
             <td class="text-left">{{ fields.supplier_account.code }}</td>
             <td class="text-left">
-              {{ Math.round(fields.supplier_account.amounts.dr || 0 * 100) / 100 }}
+              {{ Math.round((fields.supplier_account.amounts.dr || 0) * 100) / 100 }}
             </td>
             <td class="text-left">
-              {{ Math.round(fields.supplier_account.amounts.cr || 0 * 100) / 100 }}
+              {{ Math.round((fields.supplier_account.amounts.cr || 0) * 100) / 100 }}
             </td>
             <td class="text-left">
               {{
@@ -51,15 +51,15 @@
             </td>
             <td class="text-left">{{ fields.customer_account.code }}</td>
             <td class="text-left">
-              {{ Math.round(fields.customer_account.amounts.dr || 0 * 100) / 100 }}
+              {{ Math.round((fields.customer_account.amounts.dr || 0) * 100) / 100 }}
             </td>
             <td class="text-left">
-              {{ Math.round(fields.customer_account.amounts.cr || 0 * 100) / 100 }}
+              {{ Math.round((fields.customer_account.amounts.cr || 0) * 100) / 100 }}
             </td>
             <td class="text-left">
               {{
                 Math.round(((fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0)) || 0 * 100) / 100
+                  (fields.customer_account.amounts.cr || 0)) * 100) / 100
               }}
             </td>
           </tr>
@@ -69,14 +69,14 @@
               {{
                 Math.round((fields.supplier_account.amounts.dr ||
                   0 + fields.customer_account.amounts.dr ||
-                  0) || 0 * 100) / 100
+                  0) * 100) / 100
               }}
             </th>
             <th class="text-left">
               {{
                 Math.round((fields.supplier_account.amounts.cr ||
                   0 + fields.customer_account.amounts.cr ||
-                  0) || 0 * 100) / 100
+                  0) * 100) / 100
               }}
             </th>
             <th class="text-left">
@@ -84,7 +84,7 @@
                 Math.round(((fields.supplier_account.amounts.dr || 0) -
                   (fields.supplier_account.amounts.cr || 0) +
                   (fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0)) || 0 * 100) / 100
+                  (fields.customer_account.amounts.cr || 0)) * 100) / 100
               }}
             </th>
           </tr>
