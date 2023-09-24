@@ -9,7 +9,7 @@
             <q-card-section>
                 <q-form @submit="onSubmit()">
                     <div class="row justify-end">
-                        <q-btn @click="onSampleDownload" color="blue" icon="download" label="Download Sample"></q-btn>
+                        <q-btn @click="onSampleDownload" color="blue-5" icon="download" label="Download Sample"></q-btn>
                     </div>
                     <q-file v-model="file" name="file" style="max-width: 400px;"
                         accept=".xml,,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -67,7 +67,6 @@ const onSubmit = async () => {
 const onSampleDownload = async () => {
     const XLSX = await import("xlsx-js-style")
     const wb = XLSX.utils.book_new()
-    // STEP 2: Create data rows and styles
     const row = [
         { v: "Name", s: { font: { bold: true } } },
         { v: "Code", s: { font: { bold: true } } },
@@ -87,12 +86,8 @@ const onSampleDownload = async () => {
         { v: "T", },
         {v: 'Note: Remove the row and fill in your data. Please Do not remove any columns. if you don\'t to insert data in any particular cell then leave it empty.'}
     ]
-
-    // STEP 3: Create worksheet with rows; Add worksheet to workbook
     const ws = XLSX.utils.aoa_to_sheet([row, row2])
-    XLSX.utils.book_append_sheet(wb, ws, "readme demo")
-
-    // STEP 4: Write Excel file to browser
-    XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Items Import")
+    XLSX.writeFile(wb, "Items_import_sample.xlsx")
 } 
 </script>
