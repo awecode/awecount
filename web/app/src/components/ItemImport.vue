@@ -7,12 +7,17 @@
                 </div>
             </q-card-section>
             <q-card-section>
-                <q-form @submit="onSubmit()" autofocus>
+                <q-form @submit="onSubmit()">
+                    <div class="row justify-end">
+                        <q-btn @click="onSampleDownload" color="blue" icon="download" label="Download Sample"></q-btn>
+                    </div>
                     <q-file v-model="file" name="file" style="max-width: 400px;"
                         accept=".xml,,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         label="Select File"></q-file>
                     <div class="q-mt-md">
-                        <q-checkbox v-model="createNewCategory" label="Create New Category?"></q-checkbox> <q-icon color="grey-6" name="info" size="sm" title="Enabling this creates new category if the given category does not exist."></q-icon>
+                        <q-checkbox v-model="createNewCategory" label="Create New Category?"></q-checkbox> <q-icon
+                            color="grey-6" name="info" size="sm"
+                            title="Enabling this creates new category if the given category does not exist."></q-icon>
                     </div>
                     <q-btn :loading="loading" color="green" type="submit" class="q-mt-lg">Upload</q-btn>
                 </q-form>
@@ -59,4 +64,35 @@ const onSubmit = async () => {
             })
         })
 }
+const onSampleDownload = async () => {
+    const XLSX = await import("xlsx-js-style")
+    const wb = XLSX.utils.book_new()
+    // STEP 2: Create data rows and styles
+    const row = [
+        { v: "Name", s: { font: { bold: true } } },
+        { v: "Code", s: { font: { bold: true } } },
+        { v: "Category", s: { font: { bold: true } } },
+        { v: "Cost Price", s: { font: { bold: true } } },
+        { v: "Selling Price", s: { font: { bold: true } } },
+        { v: "Can be Purchased", s: { font: { bold: true } } },
+        { v: "Can be Sold", s: { font: { bold: true } } },
+    ];
+    const row2 = [
+        { v: "Test Item", },
+        { v: "Code", },
+        { v: "Category_name", },
+        { v: "0", },
+        { v: "0", },
+        { v: "t", },
+        { v: "T", },
+        {v: 'Note: Remove the row and fill in your data. Please Do not remove any columns. if you don\'t to insert data in any particular cell then leave it empty.'}
+    ]
+
+    // STEP 3: Create worksheet with rows; Add worksheet to workbook
+    const ws = XLSX.utils.aoa_to_sheet([row, row2])
+    XLSX.utils.book_append_sheet(wb, ws, "readme demo")
+
+    // STEP 4: Write Excel file to browser
+    XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx")
+} 
 </script>
