@@ -31,4 +31,20 @@
     padding: 0 !important;
     margin: 0 !important;
   }
+  
+  .search-bar {
+    display: none !important;
+  }
+  
+  td,
+  th {
+    padding: 5px;
+    margin: 0;
+    font-size: 12px !important;
+    height: inherit !important;
+  }
+  .q-card {
+    box-shadow: none;
+  }
+
 }
