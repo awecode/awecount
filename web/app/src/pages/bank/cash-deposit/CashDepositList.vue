@@ -72,12 +72,14 @@ export default {
         label: 'Voucher No.',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
-        name: 'bank_account',
+        name: 'bank_account_name',
         label: 'Bank Account',
         align: 'left',
         field: 'bank_account_name',
+        sortable: true
       },
       {
         name: 'benefactor_name',
@@ -90,18 +92,21 @@ export default {
         label: 'Deposited By',
         align: 'left',
         field: 'deposited_by',
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
       {
         name: 'status',
         label: 'Status',
         align: 'center',
         field: 'status',
+        sortable: true
       },
       {
         name: 'actions',

@@ -78,10 +78,10 @@ export default {
     const endpoint = '/v1/cheque-deposits/'
     const newColumn = [
       {
-        name: 'bank_account',
+        name: 'bank_account_name',
         label: 'Bank Account',
         align: 'left',
-        field: 'bank_account',
+        field: 'bank_account_name',
       },
       {
         name: 'benefactor_name',
@@ -94,12 +94,14 @@ export default {
         label: 'Status',
         align: 'center',
         field: 'status',
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
       {
         name: 'actions',
