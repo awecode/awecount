@@ -31,20 +31,27 @@
     padding: 0 !important;
     margin: 0 !important;
   }
-  
+
   .search-bar {
     display: none !important;
   }
-  
   td,
   th {
-    padding: 5px;
-    margin: 0;
+    padding: 3px 2px !important;
+    margin: 0 !important;
+    // max-width: fit-content;
+    width: 150px;
+    overflow-x: hidden;
     font-size: 12px !important;
     height: inherit !important;
+  }
+  td .q-icon {
+    display: none;
   }
   .q-card {
     box-shadow: none;
   }
-
+  .q-table__card {
+    box-shadow: none;
+  }
 }
