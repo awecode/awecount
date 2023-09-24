@@ -62,10 +62,6 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" />
         </div>
-        <div v-else class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" />
-        </div>
         <div>
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/purchase-vouchers/${fields?.id}/`" />
@@ -152,8 +148,42 @@ export default {
             }
           }
         })
-        .catch(() => {
+        .catch((data) => {
           // TODO: Properly Parse Error and show
+          if (data.status === 422) {
+            $q.dialog({
+              title: '<span class="text-orange">Fifo Inconsistency!</span>',
+              message:
+                `<span class="text-grey-8">Reason: ${data.data.detail}` +
+                '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+              cancel: true,
+              html: true,
+            }).onOk(() => {
+              useApi(endpoint + '?fifo_inconsistency=true', body).then((data) => {
+                if (fields.value) {
+                  fields.value.status = status
+                  if (status === 'Cancelled') {
+                    $q.notify({
+                      color: 'green-6',
+                      message: 'Voucher has been cancelled.',
+                    })
+                    isDeleteOpen.value = false
+                  } else if (status === 'Paid') {
+                    $q.notify({
+                      color: 'green-6',
+                      message: 'Voucher Marked as paid.',
+                    })
+                  }
+                }
+              }).catch((error) => {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              })
+            })
+          }
           $q.notify({
             color: 'red-6',
             message: 'Something Went Wrong!',
