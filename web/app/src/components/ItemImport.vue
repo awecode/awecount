@@ -19,7 +19,7 @@
                             color="grey-6" name="info" size="sm"
                             title="Enabling this creates new category if the given category does not exist."></q-icon>
                     </div>
-                    <q-btn :loading="loading" color="green" type="submit" class="q-mt-lg">Upload</q-btn>
+                    <q-btn :loading="loading" :disable="!file" color="green" type="submit" class="q-mt-lg">Upload</q-btn>
                 </q-form>
             </q-card-section>
         </q-card>
