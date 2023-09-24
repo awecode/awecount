@@ -12,56 +12,6 @@
         <th v-if="fields.aggregate" class="text-left">Balance</th>
       </tr>
     </thead>
-    <!-- <tbody v-if="fields.transactions">
-          <tr
-            v-if="
-              fields.aggregate &&
-              fields.aggregate.total &&
-              fields.aggregate.opening &&
-              (fields.aggregate.total.dr_amount__sum ||
-                fields.aggregate.total.cr_amount__sum)
-            "
-          >
-            <td rowspan="1" colspan="3"></td>
-            <th class="text-left">Net Closing</th>
-            <td class="text-left">
-              {{
-                fields.aggregate.total.dr_amount__sum ||
-                0 +
-                  parseFloat(
-                    fields.aggregate.opening.dr_amount__sum ||
-                      0 - fields.aggregate.opening.cr_amount__sum ||
-                      0
-                  )
-              }}
-            </td>
-            <td class="text-left">
-              {{
-                fields.aggregate.total.cr_amount__sum ||
-                0 +
-                  parseFloat(
-                    fields.aggregate.opening.dr_amount__sum ||
-                      0 - fields.aggregate.opening.cr_amount__sum ||
-                      0
-                  )
-              }}
-            </td>
-            <td class="text-left">
-              {{
-                parseFloat(
-                  fields.aggregate.total.dr_amount__sum ||
-                    0 - fields.aggregate.total.cr_amount__sum ||
-                    0
-                ) +
-                parseFloat(
-                  fields.aggregate.opening.dr_amount__sum ||
-                    0 - fields.aggregate.opening.cr_amount__sum ||
-                    0
-                )
-              }}
-            </td>
-          </tr>
-        </tbody> -->
     <tbody v-if="fields.transactions">
       <tr class="text-weight-bold" v-if="fields.aggregate &&
         fields.aggregate.total &&
@@ -73,13 +23,13 @@
         <td class="text-left">Opening</td>
         <td></td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.opening.dr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.opening.dr_amount__sum || 0 * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.opening.cr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.opening.cr_amount__sum || 0 * 100) / 100 }}
         </td>
-        <td>{{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
-          0)) }}</td>
+        <td>{{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
+          0) || 0 * 100) / 100 }}</td>
       </tr>
       <tr class="text-weight-bold" v-if="fields.aggregate &&
         fields.aggregate.total &&
@@ -90,14 +40,14 @@
         <td class="text-left">Transactions</td>
         <td></td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.total.dr_amount__sum || 0 * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.total.cr_amount__sum || 0 * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
-          }}
+          {{ Math.round((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) || 0 *
+            100) / 100 }}
         </td>
       </tr>
       <tr class="text-weight-bold" v-if="fields.aggregate &&
@@ -107,20 +57,20 @@
         <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
-            0)) }}
+          {{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+            0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-            0)) }}
+          {{ Math.round((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+            0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+          {{ Math.round(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
             0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-              0)))) }}
+              0))) || 0 * 100) / 100 }}
         </td>
       </tr>
-      <tr v-for="(transaction, index) in fields.transactions.results " :key="index">
+      <tr v-for="(transaction, index) in mergedTransactions" :key="index">
         <td>{{ store.isCalendarInAD ? transaction.date : DateConverter.getRepresentation(transaction.date, 'bs') }}
         </td>
         <td>{{ transaction.source_type }}</td>
@@ -139,8 +89,8 @@
               transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
-        <td><span v-if="transaction.dr_amount">{{ parseFloat(transaction.dr_amount || 0) }}</span></td>
-        <td><span v-if="transaction.cr_amount">{{ parseFloat(transaction.cr_amount || 0) }}</span></td>
+        <td><span v-if="transaction.dr_amount">{{ Math.round(transaction.dr_amount || 0 * 100) / 100 }}</span></td>
+        <td><span v-if="transaction.cr_amount">{{ Math.round(transaction.cr_amount || 0 * 100) / 100 }}</span></td>
         <td v-if="fields.aggregate"></td>
       </tr>
 
@@ -153,12 +103,13 @@
         <td class="text-left">Total</td>
         <td></td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.total.dr_amount__sum || 0 * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
+          {{ Math.round(fields.aggregate.total.cr_amount__sum || 0 * 100) / 100 }}
         </td>
-        <td>{{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
+        <td>{{ Math.round((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) || 0
+          * 100) / 100
         }}</td>
       </tr>
       <tr>
@@ -251,13 +202,44 @@ export default {
       'Tax Payment': 'TaxPaymentModify',
       'Item': 'ItemView'
     }
+    const mergedTransactions = computed(() => {
+      let dct = {};
+      if (fields.value.transactions?.results) {
+        fields.value.transactions.results.forEach((transaction) => {
+          const sourceType = transaction.source_type
+            .toLowerCase()
+            .replace(" ", "");
+          const key = `${sourceType}-${transaction.source_id}`;
+          if (key in dct && dct[key].date === transaction.date) {
+            dct[key].accounts.push('agvsghvasgcvag')
+            if (transaction.dr_amount) {
+              dct[key].dr_amount =
+                parseFloat(transaction.dr_amount) +
+                parseFloat(dct[key].dr_amount);
+            }
+            if (transaction.cr_amount) {
+              dct[key].cr_amount =
+                parseFloat(transaction.cr_amount) +
+                parseFloat(dct[key].cr_amount);
+            }
+          } else {
+            dct[key] = transaction;
+          }
+        });
+      }
+
+      return Object.keys(dct).map(function (key) {
+        return dct[key];
+      })
+    })
     return {
       props,
       getVoucherUrl,
       checkPermissions,
       getPermissionsWithSourceType,
       store,
-      DateConverter
+      DateConverter,
+      mergedTransactions
     }
   },
 }
@@ -272,6 +254,7 @@ export default {
   .box-shadow {
     box-shadow: none;
   }
+
   td,
   th {
     padding: 5px;
@@ -279,6 +262,7 @@ export default {
     font-size: 12px !important;
     height: inherit !important;
   }
+
   .q-card,
   .q-card__section {
     box-shadow: none !important;

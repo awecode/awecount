@@ -27,15 +27,15 @@
             </td>
             <td class="text-left">{{ fields.supplier_account.code }}</td>
             <td class="text-left">
-              {{ fields.supplier_account.amounts.dr || '' }}
+              {{ Math.round(fields.supplier_account.amounts.dr || 0 * 100) / 100 }}
             </td>
             <td class="text-left">
-              {{ fields.supplier_account.amounts.cr || '' }}
+              {{ Math.round(fields.supplier_account.amounts.cr || 0 * 100) / 100 }}
             </td>
             <td class="text-left">
               {{
-                (fields.supplier_account.amounts.dr || 0) -
-                (fields.supplier_account.amounts.cr || 0)
+                Math.round(((fields.supplier_account.amounts.dr || 0) -
+                  (fields.supplier_account.amounts.cr || 0)) * 100) / 100
               }}
             </td>
           </tr>
@@ -51,15 +51,15 @@
             </td>
             <td class="text-left">{{ fields.customer_account.code }}</td>
             <td class="text-left">
-              {{ fields.customer_account.amounts.dr || '' }}
+              {{ Math.round(fields.customer_account.amounts.dr || 0 * 100) / 100 }}
             </td>
             <td class="text-left">
-              {{ fields.customer_account.amounts.cr || '' }}
+              {{ Math.round(fields.customer_account.amounts.cr || 0 * 100) / 100 }}
             </td>
             <td class="text-left">
               {{
-                (fields.customer_account.amounts.dr || 0) -
-                (fields.customer_account.amounts.cr || 0)
+                Math.round(((fields.customer_account.amounts.dr || 0) -
+                  (fields.customer_account.amounts.cr || 0)) || 0 * 100) / 100
               }}
             </td>
           </tr>
@@ -67,24 +67,24 @@
             <td colspan="2"></td>
             <th class="text-left">
               {{
-                fields.supplier_account.amounts.dr ||
-                0 + fields.customer_account.amounts.dr ||
-                0
+                Math.round((fields.supplier_account.amounts.dr ||
+                  0 + fields.customer_account.amounts.dr ||
+                  0) || 0 * 100) / 100
               }}
             </th>
             <th class="text-left">
               {{
-                fields.supplier_account.amounts.cr ||
-                0 + fields.customer_account.amounts.cr ||
-                0
+                Math.round((fields.supplier_account.amounts.cr ||
+                  0 + fields.customer_account.amounts.cr ||
+                  0) || 0 * 100) / 100
               }}
             </th>
             <th class="text-left">
               {{
-                (fields.supplier_account.amounts.dr || 0) -
-                (fields.supplier_account.amounts.cr || 0) +
-                (fields.customer_account.amounts.dr || 0) -
-                (fields.customer_account.amounts.cr || 0)
+                Math.round(((fields.supplier_account.amounts.dr || 0) -
+                  (fields.supplier_account.amounts.cr || 0) +
+                  (fields.customer_account.amounts.dr || 0) -
+                  (fields.customer_account.amounts.cr || 0)) || 0 * 100) / 100
               }}
             </th>
           </tr>
@@ -166,34 +166,6 @@ export default {
       start_date: null,
       end_date: null
     })
-    // function journalQueryFilter() {
-    //   const { start_date, end_date } = this.filters
-    //   if (!(start_date && end_date)) {
-    //     this.$error('Date Range not set.')
-    //     return
-    //   }
-    //   const start_date_object = new Date(start_date)
-    //   const end_date_object = new Date(end_date)
-    //   if (start_date_object > end_date_object) {
-    //     this.$error('Start Date greater than end date')
-    //     return
-    //   }
-    //   const queryParam = { start_date: start_date, end_date: end_date }
-    //   this.$router.replace({ query: queryParam }).catch(() => {
-    //     console.log('err')
-    //   })
-
-    //   this.$http
-    //     .get(this.getEndPoint(), {
-    //       params: this.filters,
-    //     })
-    //     .then(({ data }) => {
-    //       this.fields = Object.assign({}, this.fields, data)
-    //     })
-    // }
-    // function getEndPoint() {
-    //   return `parties/${this.$route.params.pk}/transactions/`
-    // }
     function fetchData() {
       if (dateRef.value.start_date && dateRef.value.end_date) {
         router.push(`/parties/account/${route.params.id}/` + `?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
@@ -255,6 +227,7 @@ export default {
 
 <style scoped>
 @media print {
+
   td,
   th {
     padding: 5px;
@@ -262,6 +235,7 @@ export default {
     font-size: 12px !important;
     height: inherit !important;
   }
+
   .q-card {
     box-shadow: none;
   }
