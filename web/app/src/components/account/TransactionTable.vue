@@ -1,20 +1,18 @@
 <template>
-  <q-card class="q-mt-md" v-if="fields">
-    <q-card-section class="q-pa-none">
-      <q-markup-table>
-        <!-- TODO: aggregate data not availaible, so check if it works -->
-        <thead>
-          <tr>
-            <th class="text-left">Date</th>
-            <th class="text-left">Voucher Type</th>
-            <th class="text-left">Against</th>
-            <th class="text-left">Voucher No.</th>
-            <th class="text-left">Dr</th>
-            <th class="text-left">Cr</th>
-            <th v-if="fields.aggregate" class="text-left">Balance</th>
-          </tr>
-        </thead>
-        <!-- <tbody v-if="fields.transactions">
+  <q-markup-table class="box-shadow q-mt-sm" v-if="fields">
+    <!-- TODO: aggregate data not availaible, so check if it works -->
+    <thead>
+      <tr>
+        <th class="text-left">Date</th>
+        <th class="text-left">Voucher Type</th>
+        <th class="text-left">Against</th>
+        <th class="text-left">Voucher No.</th>
+        <th class="text-left">Dr</th>
+        <th class="text-left">Cr</th>
+        <th v-if="fields.aggregate" class="text-left">Balance</th>
+      </tr>
+    </thead>
+    <!-- <tbody v-if="fields.transactions">
           <tr
             v-if="
               fields.aggregate &&
@@ -64,114 +62,112 @@
             </td>
           </tr>
         </tbody> -->
-        <tbody v-if="fields.transactions">
-          <tr class="text-weight-bold" v-if="fields.aggregate &&
-            fields.aggregate.total &&
-            fields.aggregate.opening &&
-            (fields.aggregate.opening.dr_amount__sum ||
-              fields.aggregate.opening.cr_amount__sum)
-            ">
-            <td rowspan="1" colspan="2"></td>
-            <td class="text-left">Opening</td>
-            <td></td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.opening.dr_amount__sum || 0) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.opening.cr_amount__sum || 0) }}
-            </td>
-            <td>{{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
-              0)) }}</td>
-          </tr>
-          <tr class="text-weight-bold" v-if="fields.aggregate &&
-            fields.aggregate.total &&
-            (fields.aggregate.total.dr_amount__sum ||
-              fields.aggregate.total.cr_amount__sum)
-            ">
-            <td colspan="2"></td>
-            <td class="text-left">Transactions</td>
-            <td></td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
-              }}
-            </td>
-          </tr>
-          <tr class="text-weight-bold" v-if="fields.aggregate &&
-            fields.aggregate.total &&
-            fields.aggregate.opening">
-            <td colspan="2"></td>
-            <td class="text-left">Closing</td>
-            <td></td>
-            <td class="text-left">
-              {{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
-                0)) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-                0)) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
-                0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
-                  0)))) }}
-            </td>
-          </tr>
-          <tr v-for="(transaction, index) in fields.transactions.results " :key="index">
-            <td>{{ store.isCalendarInAD ? transaction.date : DateConverter.getRepresentation(transaction.date, 'bs') }}
-            </td>
-            <td>{{ transaction.source_type }}</td>
-            <td>
-              <div v-for="account in transaction.accounts" :key="account.id">
-                <router-link v-if="account.id !== fields.id" :to="`/account/${account.id}/view/`"
-                  style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${account.name}`">
-                  {{ account.name }}
-                </router-link>
-              </div>
-            </td>
-            <td>
-              <router-link
-                v-if="checkPermissions(getPermissionsWithSourceType[transaction.source_type]) && transaction.voucher_no"
-                class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
-                  transaction.voucher_no }}</router-link>
-              <span v-else> {{ transaction.voucher_no }} </span>
-            </td>
-            <td><span v-if="transaction.dr_amount">{{ parseFloat(transaction.dr_amount || 0) }}</span></td>
-            <td><span v-if="transaction.cr_amount">{{ parseFloat(transaction.cr_amount || 0) }}</span></td>
-            <td v-if="fields.aggregate"></td>
-          </tr>
+    <tbody v-if="fields.transactions">
+      <tr class="text-weight-bold" v-if="fields.aggregate &&
+        fields.aggregate.total &&
+        fields.aggregate.opening &&
+        (fields.aggregate.opening.dr_amount__sum ||
+          fields.aggregate.opening.cr_amount__sum)
+        ">
+        <td rowspan="1" colspan="2"></td>
+        <td class="text-left">Opening</td>
+        <td></td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.opening.dr_amount__sum || 0) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.opening.cr_amount__sum || 0) }}
+        </td>
+        <td>{{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
+          0)) }}</td>
+      </tr>
+      <tr class="text-weight-bold" v-if="fields.aggregate &&
+        fields.aggregate.total &&
+        (fields.aggregate.total.dr_amount__sum ||
+          fields.aggregate.total.cr_amount__sum)
+        ">
+        <td colspan="2"></td>
+        <td class="text-left">Transactions</td>
+        <td></td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
+          }}
+        </td>
+      </tr>
+      <tr class="text-weight-bold" v-if="fields.aggregate &&
+        fields.aggregate.total &&
+        fields.aggregate.opening">
+        <td colspan="2"></td>
+        <td class="text-left">Closing</td>
+        <td></td>
+        <td class="text-left">
+          {{ parseFloat((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+            0)) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+            0)) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat(((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+            0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+              0)))) }}
+        </td>
+      </tr>
+      <tr v-for="(transaction, index) in fields.transactions.results " :key="index">
+        <td>{{ store.isCalendarInAD ? transaction.date : DateConverter.getRepresentation(transaction.date, 'bs') }}
+        </td>
+        <td>{{ transaction.source_type }}</td>
+        <td>
+          <div v-for="account in transaction.accounts" :key="account.id">
+            <router-link v-if="account.id !== fields.id" :to="`/account/${account.id}/view/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${account.name}`">
+              {{ account.name }}
+            </router-link>
+          </div>
+        </td>
+        <td>
+          <router-link
+            v-if="checkPermissions(getPermissionsWithSourceType[transaction.source_type]) && transaction.voucher_no"
+            class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
+              transaction.voucher_no }}</router-link>
+          <span v-else> {{ transaction.voucher_no }} </span>
+        </td>
+        <td><span v-if="transaction.dr_amount">{{ parseFloat(transaction.dr_amount || 0) }}</span></td>
+        <td><span v-if="transaction.cr_amount">{{ parseFloat(transaction.cr_amount || 0) }}</span></td>
+        <td v-if="fields.aggregate"></td>
+      </tr>
 
-          <tr class="text-weight-bold" v-if="fields.aggregate &&
-            fields.aggregate.total &&
-            (fields.aggregate.total.dr_amount__sum ||
-              fields.aggregate.total.cr_amount__sum)
-            ">
-            <td colspan="2"></td>
-            <td class="text-left">Total</td>
-            <td></td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
-            </td>
-            <td class="text-left">
-              {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
-            </td>
-            <td>{{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
-            }}</td>
-          </tr>
-          <tr>
-            <td colspan="7">
-              <slot> </slot>
-            </td>
-          </tr>
-        </tbody>
-      </q-markup-table>
-    </q-card-section>
-  </q-card>
+      <tr class="text-weight-bold" v-if="fields.aggregate &&
+        fields.aggregate.total &&
+        (fields.aggregate.total.dr_amount__sum ||
+          fields.aggregate.total.cr_amount__sum)
+        ">
+        <td colspan="2"></td>
+        <td class="text-left">Total</td>
+        <td></td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.total.dr_amount__sum || 0) }}
+        </td>
+        <td class="text-left">
+          {{ parseFloat(fields.aggregate.total.cr_amount__sum || 0) }}
+        </td>
+        <td>{{ parseFloat((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0))
+        }}</td>
+      </tr>
+      <tr>
+        <td colspan="7">
+          <slot> </slot>
+        </td>
+      </tr>
+    </tbody>
+  </q-markup-table>
 </template>
 
 <script lang="ts">
@@ -268,12 +264,24 @@ export default {
 </script>
 
 <style scoped>
+.box-shadow {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
+}
+
 @media print {
+  .box-shadow {
+    box-shadow: none;
+  }
   td,
   th {
-    padding: 3px 5px;
+    padding: 5px;
     margin: 0;
     font-size: 12px !important;
+    height: inherit !important;
+  }
+  .q-card,
+  .q-card__section {
+    box-shadow: none !important;
   }
 }
 </style>

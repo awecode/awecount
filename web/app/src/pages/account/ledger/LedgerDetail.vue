@@ -54,7 +54,7 @@
       </q-card>
       <div>
         <div class="text-h5 text-bold q-py-md">Transactions</div>
-        <div class="row q-col-gutter-md">
+        <div class="row q-col-gutter-md print-hide">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
             <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />
@@ -162,8 +162,21 @@ onMounted(() => {
 })
 </script>
 
-<style>
+<style scoped>
 hr {
   border-color: azure;
+}
+
+@media print {
+  td,
+  th {
+    padding: 5px;
+    margin: 0;
+    font-size: 12px !important;
+    height: inherit !important;
+  }
+  .q-card {
+    box-shadow: none;
+  }
 }
 </style>

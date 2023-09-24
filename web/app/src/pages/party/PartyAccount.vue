@@ -93,7 +93,7 @@
     </q-card>
     <q-card class="q-mt-md q-pa-md">
       <h5 class="q-ma-none">Transactions</h5>
-      <div class="row items-center q-mx-sm">
+      <div class="row items-center q-mx-sm print-hide">
         <DateRangePicker v-model:startDate="dateRef.start_date" v-model:endDate="dateRef.end_date" :hide-btns="true"
           class="q-mr-md" />
         <span class="row items-end q-gutter-y-sm">
@@ -252,3 +252,18 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+@media print {
+  td,
+  th {
+    padding: 5px;
+    margin: 0;
+    font-size: 12px !important;
+    height: inherit !important;
+  }
+  .q-card {
+    box-shadow: none;
+  }
+}
+</style>
