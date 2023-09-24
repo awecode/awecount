@@ -9,7 +9,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn color="blue" class="q-py-none q-px-md font-size-sm q-mr-md" style="font-size: 12px" label="Account"
-            :to="`/account/${props.row.id}/view/`" />
+            :to="`/account/${props.row.ledger}/view/`" />
           <q-btn v-if="checkPermissions('BankAccountModify')" label="Edit" color="orange-6"
             class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/bank-accounts/${props.row.id}/`" />
         </q-td>
