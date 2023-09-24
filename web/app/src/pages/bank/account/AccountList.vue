@@ -43,10 +43,10 @@ export default {
         field: 'account_number',
       },
       {
-        name: 'bankwallet_name',
+        name: 'bank_name',
         label: 'Bank/Wallet Name',
         align: 'left',
-        field: 'account_name',
+        field: 'bank_name',
       },
       {
         name: 'actions',
