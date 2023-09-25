@@ -3,8 +3,16 @@
 .hr {
   border-bottom: 2px solid lightgrey;
 }
-
+.print-show {
+  visibility: hidden;
+  height: 0px;
+  overflow: hidden;
+}
 @media print {
+  .print-show {
+    visibility: visible;
+    height: auto;
+  }
   .q-page-container {
     padding-left: 0 !important;
   }

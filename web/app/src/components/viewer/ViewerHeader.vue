@@ -42,6 +42,12 @@
           {{ fields?.mode }}
         </div>
       </div>
+      <div v-if="fields.mode === 'Bank Deposit'" class="col-12 col-md-6 row">
+        <div class="col-6">Bank Account</div>
+        <div class="col-6">
+          {{ fields?.bank_account_name }}
+        </div>
+      </div>
       <!-- <div class="col-12 col-md-6 row">
         <div class="col-6">Party</div>
         <div class="col-6">{{ fields?.status }}</div>
