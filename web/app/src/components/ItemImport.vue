@@ -84,7 +84,7 @@ const onSampleDownload = async () => {
         { v: "0", },
         { v: "t", },
         { v: "T", },
-        {v: 'Note: Remove the row and fill in your data. Please Do not remove any columns. if you don\'t to insert data in any particular cell then leave it empty.'}
+        {v: 'Note: Remove the row and fill in your data. Please Do not remove any columns. if you don\'t want to insert data in any particular cell then leave it empty. Category column is optional. If the values of Can be Sold and Can be Purchased columns are t or T then it will be set to true, leaving the values to be something else or empty will result in those fields being false.'}
     ]
     const ws = XLSX.utils.aoa_to_sheet([row, row2])
     XLSX.utils.book_append_sheet(wb, ws, "Items Import")
