@@ -151,9 +151,9 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create"
+          <q-btn :loading="loading" v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create"
             class="q-ml-auto q-px-xl" type="submit" />
-          <q-btn v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
+          <q-btn :loading="loading" v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
             class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
@@ -178,7 +178,7 @@ const images = ref({
   back_image: null,
 })
 const endpoint = '/v1/items/'
-const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
+const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
 })

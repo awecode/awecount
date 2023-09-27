@@ -106,6 +106,7 @@ export default (endpoint, config) => {
           message: 'Saved',
           icon: 'check_circle',
         })
+        loading.value = false
         if (isModal) {
           context.emit('modalSignal', data)
         } else {
@@ -193,5 +194,6 @@ export default (endpoint, config) => {
     submitForm,
     cancel,
     cancelForm,
+    loading
   }
 }
