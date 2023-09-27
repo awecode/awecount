@@ -25,9 +25,9 @@
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('AccountOpeningBalanceCreate') && !isEdit" @click.prevent="submitForm"
-            color="green" label="Create" class="q-ml-auto" type="submit" />
+            color="green" label="Create" class="q-ml-auto" type="submit" :loading="loading" />
           <q-btn v-if="checkPermissions('AccountOpeningBalanceModify') && isEdit" @click.prevent="submitForm"
-            color="green" label="Update" class="q-ml-auto" type="submit" />
+            color="green" label="Update" class="q-ml-auto" type="submit" :loading="loading" />
         </div>
       </q-card>
     </q-card>

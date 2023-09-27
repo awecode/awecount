@@ -56,16 +56,16 @@
           :error-message="errors?.narration" :error="!!errors?.narration" />
       </div>
       <div class="row q-ma-md justify-end">
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
           icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit"/>
-        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'"
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit && fields.status === 'Draft'" :loading="loading"
           @click.prevent="onSubmitClick('Unapproved')" color="orange-7"
-          icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
-        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          icon="fa-solid fa-pen-to-square" label="Save Draft" class="q-mr-md q-py-sm" type="submit"/>
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
           label="Save"/>
-        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit"
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit" :loading="loading"
           @click.prevent="onSubmitClick('Approved')" color="green-8" icon="fa-solid fa-floppy-disk"
           label="Update" type="submit"/>
       </div>

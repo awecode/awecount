@@ -45,15 +45,15 @@
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'" :loading="loading"
           @click.prevent="onResolvedClick" color="green" icon="done_all" label="Mark As Resolved" />
-        <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
+        <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')" :loading="loading"
           @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-        <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
+        <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
-        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit"
+        <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
-        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'"
+        <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>

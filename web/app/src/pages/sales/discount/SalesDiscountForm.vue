@@ -27,9 +27,9 @@
             :error-message="errors.trade_discount" :error="!!errors.trade_discount" />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('SalesDiscountCreate') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('SalesDiscountCreate') && !isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('SalesDiscountModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('SalesDiscountModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" type="submit" />
         </div>
       </q-card>

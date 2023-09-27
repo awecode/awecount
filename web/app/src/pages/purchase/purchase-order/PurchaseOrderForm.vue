@@ -31,12 +31,12 @@
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
                 <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${1}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
-                    color="blue" label="Issue Purchase Voucher" />
-                <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'"
+                    color="blue" label="Issue Purchase Voucher" :loading="loading" />
+                <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-                <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'"
+                <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
-                <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)"
+                <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)" :loading="loading"
                     color="green" label="Issue" />
             </div>
         </q-card>
