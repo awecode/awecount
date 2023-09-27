@@ -119,7 +119,7 @@ export default (endpoint, config) => {
       .catch((data) => {
         let message
         if (data.status == 400) {
-          message = 'Error!'
+          message = 'Please fill out the form correctly.'
           if (data.data?.detail) {
             message = `${data.data.detail}`
           }
