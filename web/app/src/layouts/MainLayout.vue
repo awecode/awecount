@@ -36,10 +36,10 @@
                   <div class="text-h6 text-grey-9">
                     <span>Are you sure you want to logout?</span>
                   </div>
-                  <div class="q-mx-md" style="margin-top: 40px">
+                  <div class="q-mb-md" style="margin-top: 40px">
                     <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn flat label="Logout" @click="onLogoutClick()"></q-btn>
-                      <q-btn flat label="Cancel" @click="logoutDiologueOpen = false"></q-btn>
+                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false"></q-btn>
+                      <q-btn flat label="Yes" class="text-red" @click="onLogoutClick()"></q-btn>
                     </div>
                   </div>
                 </div>
