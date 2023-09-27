@@ -29,7 +29,7 @@
           {{ Math.round((fields.aggregate.opening.cr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td>{{ Math.round((((fields.aggregate.opening.dr_amount__sum || 0) - (fields.aggregate.opening.cr_amount__sum ||
-          0))) * 100 ) / 100 }}</td>
+          0))) * 100) / 100 }}</td>
       </tr>
       <tr class="text-weight-bold" v-if="fields.aggregate &&
         fields.aggregate.total &&
@@ -46,7 +46,7 @@
           {{ Math.round((fields.aggregate.total.cr_amount__sum || 0) * 100) / 100 }}
         </td>
         <td class="text-left">
-          {{ Math.round(((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0) )*
+          {{ Math.round(((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0)) *
             100) / 100 }}
         </td>
       </tr>
@@ -57,7 +57,7 @@
         <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{ Math.round( (fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+          {{ Math.round((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
             0) * 100) / 100 }}
         </td>
         <td class="text-left">
@@ -91,7 +91,9 @@
         </td>
         <td><span v-if="transaction.dr_amount">{{ Math.round((transaction.dr_amount || 0) * 100) / 100 }}</span></td>
         <td><span v-if="transaction.cr_amount">{{ Math.round((transaction.cr_amount || 0) * 100) / 100 }}</span></td>
-        <td v-if="fields.aggregate"></td>
+        <td v-if="fields.aggregate">
+          {{ runningBalance[transaction.id] }}
+        </td>
       </tr>
 
       <tr class="text-weight-bold" v-if="fields.aggregate &&
@@ -232,6 +234,21 @@ export default {
         return dct[key];
       })
     })
+    const runningBalance = computed(() => {
+      const runningBalanceData: Record<number , number> = {}
+      if (mergedTransactions.value) {
+        const openingBalance = (fields.value.aggregate.opening?.dr_amount__sum || 0) - (fields.value.aggregate.opening?.dr_amount__sum || 0)
+        let currentRunningBalance = openingBalance
+        mergedTransactions.value.forEach((item) => {
+          const netAmount = currentRunningBalance + (item.dr_amount ? typeof item.dr_amount === 'string' ? parseInt(item.dr_amount) : item.dr_amount : 0) - (item.cr_amount ? typeof item.cr_amount === 'string' ? parseInt(item.cr_amount) : item.cr_amount : 0)
+          runningBalanceData[item.id] = netAmount < 0 ? `(${netAmount * -1})` : netAmount
+          currentRunningBalance = netAmount
+          // console.log((item.dr_amount && typeof item.dr_amount === 'number' ? parseInt(item.dr_amount) : 0))
+        })
+        // console.log(runningBalanceData)
+      }
+      return runningBalanceData
+    })
     return {
       props,
       getVoucherUrl,
@@ -239,7 +256,8 @@ export default {
       getPermissionsWithSourceType,
       store,
       DateConverter,
-      mergedTransactions
+      mergedTransactions,
+      runningBalance
     }
   },
 }
