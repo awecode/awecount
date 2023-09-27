@@ -28,9 +28,9 @@
             :error-message="errors.recoverable" :error="!!errors.recoverable" />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('TaxSchemeCreate') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('TaxSchemeCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading"
             label="Create" class="q-ml-auto q-px-lg" type="submit" />
-          <q-btn v-if="checkPermissions('TaxSchemeModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('TaxSchemeModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading"
             label="Update" class="q-ml-auto q-px-lg" type="submit" />
         </div>
       </q-card>
