@@ -1,49 +1,56 @@
 <template>
   <div class="q-py-lg q-pl-lg q-mr-xl">
-    <div class="text-h5">
-      <!-- <span v-if="fields?.code" class="q-ml-md text-grey-9 text-h5x"
+    <div class="flex justify-between">
+      <div class="text-h5">
+        <!-- <span v-if="fields?.code" class="q-ml-md text-grey-9 text-h5x"
         >{{ fields.code }}:
       </span> -->
-      <span class="text-bold">{{ fields?.name || '-' }}</span>
-      <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9" title="Code">{{
+        <span class="text-bold">{{ fields?.name || '-' }}</span>
+        <!-- <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9" title="Code">{{
         fields.code
-      }}</span>
-      <span
-        v-if="fields?.category_name"
-        class="q-ml-md text-h6 text-grey-7"
-        title="Category"
-        >({{ fields?.category_name || '-' }})</span
-      >
+      }}</span> -->
+        <span
+          v-if="fields?.category_name"
+          class="q-ml-md text-h6 text-grey-7"
+          title="Category"
+          >({{ fields?.category_name || '-' }})</span
+        >
+      </div>
+      <div>
+        <span
+          v-if="fields?.code"
+          class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block"
+          title="Code"
+          >[Code: {{ fields.code }}]</span
+        >
+      </div>
     </div>
     <div class="mt-8">
       <!-- <q-card class="q-mt-md">
         <q-card-section> -->
-      <div class="grid grid-cols-3 gap-x-24">
-        <div
-          class="row justify-between q-py-sm border-color-red border border-bottom-1 bg-gray-200"
-        >
+      <div class="grid grid-cols-3 gap-x-6">
+        <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Dr Amount</div>
           <div class="q-px-md">
             {{ $nf(fields?.amounts?.dr) || '-' }}
           </div>
         </div>
 
-        <div class="row justify-between q-py-sm bg-gray-200">
+        <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Cr Amount</div>
-          <div class="q-px-md">{{ fields?.amounts?.cr || '-' }}</div>
+          <div class="q-px-md">{{ $nf(fields?.amounts?.cr) || '-' }}</div>
         </div>
 
-        <div class="row justify-between q-py-sm bg-gray-200">
+        <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Closing Balance</div>
           <div class="q-px-md">
-            {{ (fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0) }}
+            {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
           </div>
         </div>
       </div>
       <!-- </q-card-section>
       </q-card> -->
-      <div>
-        <div class="text-h6 text-bold q-py-md">Transactions</div>
+      <div class="mt-8 px-2">
         <div class="row q-col-gutter-md print-hide">
           <DateRangePicker
             v-model:startDate="startDate"
@@ -135,7 +142,6 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
-// import { $nf } from 'src/composables/global'
 import { withQuery } from 'ufo'
 const fields = ref(null)
 const route = useRoute()
