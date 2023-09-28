@@ -20,10 +20,12 @@
         <q-card-section> -->
       <div class="grid grid-cols-3 gap-x-24">
         <div
-          class="row justify-between q-py-sm border-color-red border border-bottom-1"
+          class="row justify-between q-py-sm border-color-red border border-bottom-1 bg-gray-200"
         >
-          <div class="q-px-md text-grey-8 bg-gray-200">Dr Amount</div>
-          <div class="q-px-md">{{ fields?.amounts?.dr || '-' }}</div>
+          <div class="q-px-md text-grey-8">Dr Amount</div>
+          <div class="q-px-md">
+            {{ $nf(fields?.amounts?.dr) || '-' }}
+          </div>
         </div>
 
         <div class="row justify-between q-py-sm bg-gray-200">
@@ -133,6 +135,7 @@
 
 <script setup>
 import useApi from 'src/composables/useApi'
+// import { $nf } from 'src/composables/global'
 import { withQuery } from 'ufo'
 const fields = ref(null)
 const route = useRoute()
