@@ -101,10 +101,10 @@ export default {
       }
       if (amountComputed.value.dr - amountComputed.value.cr > 0) {
         newRow.type = 'Cr'
-        newRow.cr_amount = amountComputed.value.dr - amountComputed.value.cr
+        newRow.cr_amount = Math.floor((amountComputed.value.dr - amountComputed.value.cr) * 100) / 100
       } else if (amountComputed.value.cr - amountComputed.value.dr > 0) {
         newRow.type = 'Dr'
-        newRow.dr_amount = amountComputed.value.cr - amountComputed.value.dr
+        newRow.dr_amount = Math.floor((amountComputed.value.cr - amountComputed.value.dr) * 100) / 100
       }
       formData.fields.value.rows.push(newRow)
     }
