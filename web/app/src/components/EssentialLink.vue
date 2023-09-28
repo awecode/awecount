@@ -2,7 +2,7 @@
   <q-expansion-item v-if="children" :icon="icon || 'menu_open'" :label="title">
     <template v-for="child in children" :key="child.title">
       <EssentialLink v-if="!child.hide" :level="level + 1" v-bind="child"
-        :style="`padding-left:${level * 2 + 3}em !important`" />
+        :style="`padding-left:${level * 2 + 3}em !important`" @changeHide="changeHide" />
     </template>
   </q-expansion-item>
   <!-- <q-item v-else clickable :to="link" :style="style"> -->
@@ -37,5 +37,10 @@ const props = withDefaults(defineProps<EssentialLinkProps>(), {
   icon: '',
   level: 0,
 })
-
+const emits = defineEmits(['changeHide'])
+const hideParent = ref(false)
+if (props.level == 0 && props.children && props.children.length > 0) {
+  const hideStatus = props.children.some((child) => !child.hide)
+  if (!hideStatus) hideParent.value = true
+}
 </script>
