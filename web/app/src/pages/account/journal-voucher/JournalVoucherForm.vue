@@ -153,6 +153,12 @@ export default {
       formData.fields.value.rows[i] = e
     }
     const deleteVoucher = (i, errors) => {
+      if (formData.isEdit.value) {
+        if (!formData.fields.value.deleted_rows) {
+          formData.fields.value.deleted_rows = []
+        }
+        formData.fields.value.deleted_rows.push(formData.fields.value.rows[i])
+      }
       if (errors.rows) {
         errors.rows.splice(i, 1)
       }
