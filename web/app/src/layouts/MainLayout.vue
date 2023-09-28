@@ -455,6 +455,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Account Closing',
         icon: 'mdi-calendar-multiple-check',
         link: '/settings/account-closing/',
+        hide: !checkPermissions('AccountClosingCreate')
       },
     ],
   },
