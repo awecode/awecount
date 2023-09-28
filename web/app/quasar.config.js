@@ -32,7 +32,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['axios', 'ofetch', 'num'],
+    boot: ['ofetch', 'num'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -123,10 +123,6 @@ module.exports = configure(function (ctx) {
                 //   'useMouse', // import { useMouse } from '@vueuse/core',
                 //   // alias
                 //   ['useFetch', 'useMyFetch'], // import { useFetch as useMyFetch } from '@vueuse/core',
-                // ],
-                // axios: [
-                //   // default imports
-                //   ['default', 'axios'], // import { default as axios } from 'axios',
                 // ],
                 // '[package-name]': [
                 //   '[import-names]',
