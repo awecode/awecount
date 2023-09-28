@@ -8,6 +8,8 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
+const UnoCSS = require('unocss/vite').default
+const { presetAttributify, presetUno } = require('unocss')
 const { configure } = require('quasar/wrappers')
 
 module.exports = configure(function (ctx) {
@@ -65,9 +67,7 @@ module.exports = configure(function (ctx) {
       // env: {},
       // env: require('dotenv').config().parsed,
       env: {
-        BASE_URL: ctx.dev
-          ? 'http://localhost:8000'
-          : process.env.BASE_URL,
+        BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
       },
 
       // rawDefine: {}
@@ -76,7 +76,13 @@ module.exports = configure(function (ctx) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf(viteConf) {
+        viteConf.plugins.push(
+          ...UnoCSS({
+            presets: [presetUno(), presetAttributify()],
+          })
+        )
+      },
       // viteVuePluginOptions: {},
 
       vitePlugins: [
