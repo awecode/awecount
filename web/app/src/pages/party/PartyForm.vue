@@ -32,14 +32,14 @@
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg row">
           <span v-if="isEdit" class="q-gutter-x-sm row">
-            <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="orange-6" label="Update"
+            <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="orange-6" label="Update" :loading="loading"
               class="q-mb-sm" type="submit" />
-            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
+            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete" :loading="loading"
               class="q-mb-sm" />
-            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
+            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative" :loading="loading"
               class="q-mb-sm" />
           </span>
-          <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create"
+          <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create" :loading="loading"
             class="q-mr-sm q-mb-sm" type="submit" />
         </div>
       </q-card>

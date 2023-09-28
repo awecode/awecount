@@ -106,6 +106,7 @@ export default (endpoint, config) => {
           message: 'Saved',
           icon: 'check_circle',
         })
+        loading.value = false
         if (isModal) {
           context.emit('modalSignal', data)
         } else {
@@ -119,7 +120,7 @@ export default (endpoint, config) => {
       .catch((data) => {
         let message
         if (data.status == 400) {
-          message = 'Error!'
+          message = 'Please fill out the form correctly.'
           if (data.data?.detail) {
             message = `${data.data.detail}`
           }
@@ -193,5 +194,6 @@ export default (endpoint, config) => {
     submitForm,
     cancel,
     cancelForm,
+    loading
   }
 }

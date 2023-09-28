@@ -6,6 +6,7 @@
   "author": "",
   "private": true,
   "scripts": {
+    "dev": "quasar dev",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"
@@ -14,6 +15,7 @@
     "@quasar/extras": "^1.0.0",
     "axios": "^0.21.1",
     "chart.js": "^4.2.1",
+    "decimal.js": "^10.4.3",
     "dotenv": "^16.1.4",
     "fs": "^0.0.1-security",
     "jspdf": "^2.5.1",

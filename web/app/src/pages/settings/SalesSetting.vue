@@ -72,7 +72,7 @@
         <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" :loading="formLoading" />
       </div>
     </q-card>
   </q-form>
@@ -95,13 +95,16 @@ export default {
     useMeta(metaData)
     const fields = ref(null)
     const modeErrors = ref(null)
+    const formLoading = ref(false)
     const onUpdateClick = (fields) => {
+      formLoading.value = true
       useApi(`v1/sales-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
       })
         .then((data) => {
           modeErrors.value = null
+          formLoading.value = false
           $q.notify({
             color: 'green',
             message: 'Saved!',
@@ -129,6 +132,7 @@ export default {
               position: 'top-right',
             })
           }
+          formLoading.value = false
         })
     }
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
@@ -138,6 +142,7 @@ export default {
       modes,
       onUpdateClick,
       modeErrors,
+      formLoading
     }
   },
 }

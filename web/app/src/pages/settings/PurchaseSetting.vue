@@ -63,7 +63,7 @@
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" :loading="formLoading" />
       </div>
     </q-card>
   </q-form>
@@ -83,11 +83,13 @@ export default {
     const metaData = {
       title: 'Purchase Settings | Awecount',
     }
+    const formLoading = ref(false)
     useMeta(metaData)
     const fields = ref(null)
     const modeErrors = ref(null)
     const emailListErrors = ref(null)
     const onUpdateClick = (fields) => {
+      formLoading.value = true
       useApi(`v1/purchase-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
@@ -95,6 +97,7 @@ export default {
         .then((data) => {
           modeErrors.value = null
           emailListErrors.value = null
+          formLoading.value = false
           $q.notify({
             color: 'green',
             message: 'Saved!',
@@ -132,6 +135,7 @@ export default {
               position: 'top-right',
             })
           }
+          formLoading.value = false
         })
     }
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
@@ -143,7 +147,8 @@ export default {
       onUpdateClick,
       modeErrors,
       emailListErrors,
-      onupdateErrors
+      onupdateErrors,
+      formLoading
     }
   },
 }

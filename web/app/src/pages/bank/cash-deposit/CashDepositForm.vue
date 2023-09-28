@@ -38,14 +38,14 @@
         </q-card>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('BankCashDepositCreate') && !isEdit" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit" />
+            label="Create" class="q-ml-auto" type="submit" :loading="loading" />
           <q-btn v-if="checkPermissions('BankCashDepositModify') && isEdit" @click.prevent="submitForm" color="green"
-            label="Update" class="q-ml-auto" type="submit" />
+            label="Update" class="q-ml-auto" type="submit" :loading="loading" />
           <q-btn v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
-            @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+            @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" :loading="loading" />
           <q-btn v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
             :to="`/journal-entries/bank-cash-deposits/${id}/`" color="blue" icon="library_books" label="Journal Entries"
-            class="text-h7 q-py-sm q-ml-md" />
+            class="text-h7 q-py-sm q-ml-md" :loading="loading" />
         </div>
       </q-card>
     </q-card>

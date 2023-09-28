@@ -139,9 +139,9 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto q-px-xl" type="submit" />
-          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
@@ -172,7 +172,7 @@ const toggleExpenses = (type) => {
   fields.value[type] = false
 }
 const endpoint = '/v1/inventory-categories/'
-const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
+const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/inventory-category/list/',
 })

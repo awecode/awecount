@@ -210,7 +210,7 @@ export default {
       if (formData.fields.value.amount_in_words) {
         return splitString(formData.fields.value.amount_in_words + ' only', 50)
       }
-       else return []
+      else return []
     })
 
     return {
@@ -249,21 +249,25 @@ export default {
   left: 151px;
   top: 75px;
 }
+
 .cheque-con .amt1 {
   position: absolute;
   left: 56px;
   top: 102px;
 }
+
 .cheque-con .amt2 {
   position: absolute;
   left: 50px;
   top: 128px;
 }
+
 .cheque-con .amt-num {
   position: absolute;
   left: 528px;
   top: 117px;
 }
+
 @media print {
   .cheque-con {
     position: absolute;

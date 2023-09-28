@@ -20,9 +20,9 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
+          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green" label="Update"
             class="q-ml-auto" type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" @click.prevent="submitForm" color="green"
+          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto" type="submit"/>
         </div>
       </q-card>

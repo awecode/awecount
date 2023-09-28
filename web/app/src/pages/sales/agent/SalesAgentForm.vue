@@ -22,9 +22,9 @@
         </div>
       </q-card-section>
       <div class="q-ma-md row q-pb-lg justify-end">
-        <q-btn v-if="checkPermissions('SalesAgentCreate') && !isEdit" @click.prevent="submitForm" color="green"
+        <q-btn v-if="checkPermissions('SalesAgentCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading"
           label="Create" type="submit" />
-        <q-btn v-if="checkPermissions('SalesAgentModify') && isEdit" @click.prevent="submitForm" color="green"
+        <q-btn v-if="checkPermissions('SalesAgentModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading"
           label="Update" type="submit" />
       </div>
     </q-card>

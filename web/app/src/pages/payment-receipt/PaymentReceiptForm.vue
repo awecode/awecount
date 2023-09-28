@@ -51,10 +51,10 @@
             :error="!!errors?.remarks" :error-message="errors?.remarks" />
 
           <div class="q-mt-lg row q-pb-lg flex justify-end">
-            <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Create" type="submit" />
-            <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" label="Update" type="submit" />
+            <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit" :loading="loading"
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" type="submit" />
+            <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit" :loading="loading"
+              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" type="submit" />
           </div>
         </q-card-section>
       </q-card>

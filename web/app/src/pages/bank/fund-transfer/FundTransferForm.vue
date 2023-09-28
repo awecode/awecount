@@ -43,13 +43,13 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading"
             label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading"
             label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="onCancelClick"
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="onCancelClick" :loading="loading"
             icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
-          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"
+          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue" :loading="loading"
             icon="library_books" label="Journal Entries" class="text-h7 q-py-sm q-ml-md" />
         </div>
       </q-card>
