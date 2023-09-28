@@ -834,7 +834,7 @@
     "@unocss/core" "0.56.4"
     ofetch "^1.3.3"
 
-"@unocss/preset-wind@0.56.4":
+"@unocss/preset-wind@0.56.4", "@unocss/preset-wind@^0.56.4":
   version "0.56.4"
   resolved "https://registry.yarnpkg.com/@unocss/preset-wind/-/preset-wind-0.56.4.tgz#85f494fa48adca2756797b6bf59c3c774ceb1492"
   integrity sha512-llQYQxrA531kl1juYMyaDEEl/IVdHoIPXaaJTdNHbGkSbMqrpZSRzLPsGE+CpaOBKTNqa93UyU1qlUGSr9ZB+A==

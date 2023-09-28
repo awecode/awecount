@@ -9,7 +9,10 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const UnoCSS = require('unocss/vite').default
-const { presetAttributify, presetUno } = require('unocss')
+// const { presetAttributify, presetUno } = require('unocss')
+// import presetWind from '@unocss/preset-wind'
+const { presetWind } = require('unocss')
+
 const { configure } = require('quasar/wrappers')
 
 module.exports = configure(function (ctx) {
@@ -79,7 +82,7 @@ module.exports = configure(function (ctx) {
       extendViteConf(viteConf) {
         viteConf.plugins.push(
           ...UnoCSS({
-            presets: [presetUno(), presetAttributify()],
+            presets: [presetWind()],
           })
         )
       },

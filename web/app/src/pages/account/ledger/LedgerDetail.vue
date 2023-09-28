@@ -22,7 +22,7 @@
         <div
           class="row justify-between q-py-sm border-color-red border border-bottom-1"
         >
-          <div class="q-px-md text-grey-8">Dr Amount</div>
+          <div class="q-px-md text-grey-8 bg-gray-200">Dr Amount</div>
           <div class="q-px-md">{{ fields?.amounts?.dr || '-' }}</div>
         </div>
 
