@@ -140,6 +140,10 @@ const subtract = (a, b) => {
   return new Decimal(a).minus(new Decimal(b)).toNumber()
 }
 
+const add = (a, b) => {
+  return new Decimal(a).plus(new Decimal(b)).toNumber()
+}
+
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -212,9 +216,9 @@ export default {
       let amount = { dr: 0, cr: 0 }
       formData.fields.value.rows.forEach((item) => {
         if (item.type === 'Dr') {
-          amount.dr = amount.dr + Number(item.dr_amount)
+          amount.dr = add(amount.dr, Number(item.dr_amount))
         } else if (item.type === 'Cr') {
-          amount.cr = amount.cr + Number(item.cr_amount)
+          amount.cr = add(amount.cr, Number(item.cr_amount))
         }
       })
       return amount
