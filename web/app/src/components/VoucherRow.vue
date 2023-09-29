@@ -23,6 +23,7 @@
             v-model="voucher.account_id"
             :options="props.options"
             label="Account"
+            :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
             :error="
               props.errors
