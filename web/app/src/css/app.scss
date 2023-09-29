@@ -11,7 +11,8 @@
 .b {
   // border-solid border-1 border-gray-200 shadow-md
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 5px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
 }
 
 @media print {
