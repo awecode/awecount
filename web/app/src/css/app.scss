@@ -15,6 +15,10 @@
   border-radius: 2px;
 }
 
+.focus-highLight:focus {
+  background-color: lightgray;
+}
+
 @media print {
   .print-show {
     visibility: visible;

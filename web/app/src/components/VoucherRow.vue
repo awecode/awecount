@@ -65,7 +65,7 @@
         >
           <q-btn
             flat
-            class="q-pa-sm highlight"
+            class="q-pa-sm focus-highLight"
             color="transparent"
             @click.prevent="() => (openDescription = !openDescription)"
           >
@@ -80,7 +80,7 @@
           <q-btn
             flat
             @click="deleteVoucher"
-            class="q-pa-sm highlight"
+            class="q-pa-sm focus-highLight"
             color="transparent"
           >
             <q-icon
@@ -144,9 +144,3 @@ const onSwitchDrCr = (mode) => {
   }
 }
 </script>
-
-<style scoped>
-.q-btn:focus {
-  background-color: lightgray;
-}
-</style>
