@@ -112,12 +112,14 @@ export default {
       title: 'Sales Invoices | Awecount',
     }
     useMeta(metaData)
+    const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const submitChangeStatus = (id: number, status: string) => {
       let endpoint = ''
+      const originalStatus = fields.value?.status
       let body: null | object = null
       if (status === 'Paid') {
         endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
@@ -136,78 +138,81 @@ export default {
             isDeleteOpen.value = false
           }
         })
-        .catch((err) => console.log('err from the api', err))
-    }
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleDeleteFifoInconsistency(endpoint, data, body)
+          }
+        })
+  }
     const updateMode = (newValue: number) => {
-      if (fields.value) {
-        fields.value.mode = newValue
-      }
+    if (fields.value) {
+      fields.value.mode = newValue
     }
+  }
     const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
-      if (!noApiCall) {
-        const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
-        useApi(endpoint, { method: 'POST' })
-          .then(() => {
-            if (fields.value) {
-              fields.value.print_count = fields.value?.print_count + 1
-            }
-            print(bodyOnly)
-          })
-          .catch((err) => console.log('err from the api', err))
-      } else print(bodyOnly)
-    }
+    if (!noApiCall) {
+      const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
+      useApi(endpoint, { method: 'POST' })
+        .then(() => {
+          if (fields.value) {
+            fields.value.print_count = fields.value?.print_count + 1
+          }
+          print(bodyOnly)
+        })
+        .catch((err) => console.log('err from the api', err))
+    } else print(bodyOnly)
+  }
     // to print
     const print = (bodyOnly: boolean) => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri: Record<string, string | object | HTMLElement> =
-        ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
-      // pri.document.body.firstElementChild.prepend()
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
-    }
+    let ifram = document.createElement('iframe')
+    ifram.style = 'display:none; margin: 20px'
+    document.body.appendChild(ifram)
+    const pri: Record<string, string | object | HTMLElement> =
+      ifram.contentWindow
+    pri.document.open()
+    pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
+    // pri.document.body.firstElementChild.prepend()
+    pri.document.close()
+    pri.focus()
+    setTimeout(() => pri.print(), 100)
+  }
     // to print
 
     return {
-      allowPrint: false,
-      bodyOnly: false,
-      options: {},
-      fields,
-      dialog: false,
-      partyObj: null,
-      modes: modes,
-      submitChangeStatus,
-      isDeleteOpen,
-      deleteMsg,
-      updateMode,
-      modeOptions,
-      onPrintclick,
-      checkPermissions,
-      useGeneratePdf
-    }
-  },
-  created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
-    useApi(endpoint, { method: 'GET' }, false, true)
-      .then((data) => {
-        this.fields = data
-        this.modeOptions = data.available_bank_accounts
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ path: '/ErrorNotFound' })
-        }
-      })
-  },
+    allowPrint: false,
+    bodyOnly: false,
+    options: {},
+    fields,
+    dialog: false,
+    partyObj: null,
+    modes: modes,
+    submitChangeStatus,
+    isDeleteOpen,
+    deleteMsg,
+    updateMode,
+    modeOptions,
+    onPrintclick,
+    checkPermissions,
+    useGeneratePdf
+  }
+},
+created() {
+  const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+  useApi(endpoint, { method: 'GET' }, false, true)
+    .then((data) => {
+      this.fields = data
+      this.modeOptions = data.available_bank_accounts
+    })
+    .catch((error) => {
+      if (error.response && error.response.status == 404) {
+        this.$router.replace({ path: '/ErrorNotFound' })
+      }
+    })
+},
 }
 </script>
 
 <style scoped lang="scss">
-
 @media print {
 
   @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");
