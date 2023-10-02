@@ -28,9 +28,10 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Sales Account" v-model="fields.sales_account"
+              <select-item-accounts-with-types v-model="fields.sales_account" label="Sales" :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
+              <!-- <n-auto-complete class="q-full-width" label="Sales Account" v-model="fields.sales_account"
                 :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
-                :error="errors.sales_account" />
+                :error="errors.sales_account" /> -->
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete class="q-full-width" label="Purchase Account" v-model="fields.purchase_account"

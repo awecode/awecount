@@ -24,7 +24,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete class="q-full-width" label="Brand" v-model="fields.brand"
-                :options="formDefaults.collections?.brands" :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
+                :options="formDefaults.collections?.brands"
+                :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
             </div>
           </div>
           <div>
@@ -35,7 +36,8 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
-                  :options="formDefaults.collections?.inventory_categories" :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
+                  :options="formDefaults.collections?.inventory_categories"
+                  :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
                   :error="errors.category" @update:modelValue="setCategory" />
               </div>
             </div>
@@ -46,36 +48,44 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
-                  :options="formDefaults.collections?.units" :modal-component="checkPermissions('UnitCreate') ?  UnitForm : null" :error="errors.unit_id" />
+                  :options="formDefaults.collections?.units"
+                  :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.unit_id" />
               </div>
               <div class="col-12 col-md-6">
                 <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
-                  :options="formDefaults.collections?.tax_scheme" :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
-                  :error="errors.tax_scheme_id" />
+                  :options="formDefaults.collections?.tax_scheme"
+                  :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="col-6 q-full-width" label="Sales Account" v-model="fields.sales_account"
-                  :options="formDefaults.collections?.sales_accounts" :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
-                  :error="errors.sales_account" />
+                <select-item-accounts-with-types v-model="fields.sales_account" label="Sales" :options="formDefaults.collections?.sales_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
               </div>
-              <div class="col-12 col-md-6">
+              <!-- <div class="col-12 col-md-6">
                 <n-auto-complete class="col-6 q-full-width" label="Purchase Account" v-model="fields.purchase_account"
-                  :options="formDefaults.collections?.purchase_accounts" :modal-component="checkPermissions('AccountCreate') ?  AccountForm : null"
+                  :options="formDefaults.collections?.purchase_accounts"
+                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
                   :error="errors.purchase_account" />
+              </div> -->
+              <div class="col-12 col-md-6">
+                <select-item-accounts-with-types v-model="fields.purchase_account" label="Purchase" :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
               </div>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="col-6 q-full-width" label="Discount Allowed Account"
+                <select-item-accounts-with-types v-model="fields.discount_allowed_account" label="Discount Allowed" :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
+                <!-- <n-auto-complete class="col-6 q-full-width" label="Discount Allowed Account"
                   v-model="fields.discount_allowed_account" :options="formDefaults.collections?.discount_allowed_accounts"
-                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_allowed_account" />
+                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
+                  :error="errors.discount_allowed_account" /> -->
               </div>
               <div class="col-12 col-md-6">
-                <n-auto-complete class="col-6 q-full-width" label="Discount Received Account"
-                  v-model="fields.discount_received_account" :options="formDefaults.collections?.discount_received_accounts"
-                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="errors.discount_received_account" />
+                <select-item-accounts-with-types v-model="fields.discount_received_account" label="Discount Received" :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
+                <!-- <n-auto-complete class="col-6 q-full-width" label="Discount Received Account"
+                  v-model="fields.discount_received_account"
+                  :options="formDefaults.collections?.discount_received_accounts"
+                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
+                  :error="errors.discount_received_account" /> -->
               </div>
             </div>
             <div class="row q-gutter-y-lg q-mt-lg">
@@ -151,10 +161,10 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn :loading="loading" v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create"
-            class="q-ml-auto q-px-xl" type="submit" />
-          <q-btn :loading="loading" v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
-            class="q-ml-auto q-px-xl" type="submit" />
+          <q-btn :loading="loading" v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm"
+            color="green" label="Create" class="q-ml-auto q-px-xl" type="submit" />
+          <q-btn :loading="loading" v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm"
+            color="green" label="Update" class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -166,10 +176,16 @@ import NAutoComplete from 'src/components/NAutoComplete.vue'
 import BrandForm from 'src/pages/inventory/product/brand/BrandForm.vue'
 import InventoryCategoryForm from 'src/pages/inventory/product/category/InventoryCategoryForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
-import AccountForm from 'src/pages/account/ledger/LedgerForm.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 const emit = defineEmits([])
+const accountTypeValues = ref({
+  sales_account: 'dedicated',
+  purchase_account: 'dedicated',
+  discount_allowed_account: 'dedicated',
+  discount_received_account: 'dedicated'
+})
+
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
@@ -286,7 +302,7 @@ const setCategory = () => {
         fields.value.sales_account = selected.sales_account
       }
       if (selected.items_sales_account_type === "global") {
-        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
       }
     }
     if (
@@ -297,7 +313,7 @@ const setCategory = () => {
         fields.value.purchase_account = selected.purchase_account
       }
       if (selected.items_purchase_account_type === "global") {
-        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.purchase_accounts, "Purchase Account")
       }
     }
     if (
@@ -343,6 +359,25 @@ const setCategory = () => {
     }
   }
 }
+watch(() => accountTypeValues.value.sales_account, (newValue) => {
+  // debugger
+  if (accountTypeValues.value.sales_account === "category") {
+    if (fields.value.category) {
+      const selected = formDefaults.value.collections.inventory_categories.find(item => {
+        if (item.id === fields.value.category) {
+          return item;
+        }
+      })
+      if (selected) fields.value.sales_account = selected.sales_account
+    }
+  }
+  else if (accountTypeValues.value.sales_account === "global") {
+    fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
+  }
+  else {
+    fields.value.sales_account = null
+  }
+})
 </script>
 
 <style scoped>

@@ -1,0 +1,121 @@
+<template>
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <q-select class="q-full-width" :label="`${label} A/C Options`" option-value="value" option-label="label"
+                map-options emit-value v-model="type" :options="account_types" error-message="" />
+        </div>
+        <div>
+            <n-auto-complete v-if="type === 'dedicated'" class="q-full-width" :label="`${label} Account`"
+                v-model="modalValue" :options="props.options"
+                :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
+            <div v-else-if="type === 'create'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
+                <q-icon name="info" size="sm" color="grey-7"></q-icon>
+                <div class="text-grey-7">A new {{ props.label }} Account will be created for the Item</div>
+                <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
+            </div>
+            <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
+                v-model="modalValue" readonly :options="props.options" :error="!!error" :error-message="error"></q-select>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import checkPermissions from 'src/composables/checkPermissions'
+import AccountForm from 'src/pages/bank/account/AccountForm.vue'
+const props = defineProps({
+    label: {
+        type: String,
+        required: true
+    },
+    options: {
+        type: Array,
+        default: () => []
+    },
+    error: {
+        type: String,
+        default: () => ''
+    },
+    activeCategory: {
+        type: [Number, null],
+        default: () => null
+    },
+    modelValue: {
+        type: [Number, null],
+        default: () => null
+    },
+    inventory_categories: {
+        type: Array,
+        default: () => []
+    },
+    itemName: {
+        type: String,
+        required: false
+    },
+    usedInCategoryForm: {
+        type: Boolean,
+        default: () => false
+    }
+})
+const emits = defineEmits(['update:modelValue'])
+const type = ref(null)
+const modalValue = ref(props.modelValue)
+// const options
+const account_types = props.usedInCategoryForm ? [
+    { value: 'create', label: 'Create New Account' },
+    { value: 'dedicated', label: 'Use An Existing Account' },
+    { value: 'global', label: 'Use Global Account' },
+] : [
+    { value: 'create', label: 'Create New Account' },
+    { value: 'dedicated', label: 'Use An Existing Account' },
+    { value: 'category', label: "Use Category's Account" },
+    { value: 'global', label: 'Use Global Account' },
+]
+const getOptionCollection = (collections, name) => {
+    if (collections) {
+        let option = collections.find(item => {
+            if (item.name === name && item.default) {
+                return item;
+            }
+        });
+        if (option) {
+            return option.id;
+        }
+    }
+}
+watch(() => type.value, (newValue) => {
+    if (newValue === "category") {
+        if (props.activeCategory) {
+            const selected = props.inventory_categories.find(item => {
+                if (item.id === props.activeCategory) {
+                    return item;
+                }
+            })
+            const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
+            if (selected) modalValue.value = selected[fieldType]
+            else modalValue.value = null
+        } else modalValue.value = null
+    }
+    else if (newValue === "global") {
+        // const globalAccountName = props.label
+        modalValue.value = getOptionCollection(props.options, globalAccountName[props.label])
+    }
+    else {
+        modalValue.value = null
+    }
+})
+watch(
+    () => props.modelValue,
+    (newValue) => {
+        modalValue.value = newValue
+    }
+)
+watch(
+    () => modalValue, () => emits('update:modelValue')
+)
+const globalAccountName = {
+    Sales: 'Sales Account',
+    Purchase: 'Purchase Account',
+    'Discount Allowed': 'Discount Expenses',
+    'Discount Received': 'Discount Income'
+}
+</script>
