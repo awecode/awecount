@@ -43,6 +43,10 @@ const props = defineProps({
         type: [Number, null],
         default: () => null
     },
+    typeModelValue: {
+        type: [String, null],
+        default: () => null
+    },
     inventory_categories: {
         type: Array,
         default: () => []
@@ -56,8 +60,8 @@ const props = defineProps({
         default: () => false
     }
 })
-const emits = defineEmits(['update:modelValue'])
-const type = ref(null)
+const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
+const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
 // const options
 const account_types = props.usedInCategoryForm ? [
@@ -110,7 +114,16 @@ watch(
     }
 )
 watch(
-    () => modalValue, () => emits('update:modelValue')
+    () => props.typeModelValue,
+    (newValue) => {
+        type.value = newValue
+    }
+)
+watch(
+    () => type.value, (newValue) => emits('update:typeModelValue', newValue)
+)
+watch(
+    () => modalValue.value, (newValue) => emits('update:modelValue', newValue)
 )
 const globalAccountName = {
     Sales: 'Sales Account',

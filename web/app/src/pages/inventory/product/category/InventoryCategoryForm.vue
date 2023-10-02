@@ -28,7 +28,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <select-item-accounts-with-types v-model="fields.sales_account" label="Sales" :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
+              <select-item-accounts-with-types v-model:modelValue="fields.sales_account" v-model:typeModelValue="fields.items_sales_account_type" label="Sales" :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
               <!-- <n-auto-complete class="q-full-width" label="Sales Account" v-model="fields.sales_account"
                 :options="formDefaults.collections?.accounts" :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
                 :error="errors.sales_account" /> -->
@@ -53,9 +53,9 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <q-select option-value="value" option-label="label" map-options emit-value
+              <!-- <q-select option-value="value" option-label="label" map-options emit-value
                 v-model="fields.items_sales_account_type" :options="account_types" label="Items Sales Account Type"
-                :error="!!errors.items_sales_account_type" />
+                :error="!!errors.items_sales_account_type" /> -->
             </div>
             <div class="col-12 col-md-6">
               <q-select option-value="value" option-label="label" map-options emit-value
