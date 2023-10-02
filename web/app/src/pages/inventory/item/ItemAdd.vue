@@ -58,19 +58,23 @@
               </div>
             </div>
             <div>
-              <select-item-accounts-with-types v-model="fields.sales_account" label="Sales"
+              <select-item-accounts-with-types v-model:modelValue="fields.sales_account"
+                v-model:typeModelValue="fields.items_sales_account_type" label="Sales"
                 :options="formDefaults.collections?.sales_accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
-              <select-item-accounts-with-types v-model="fields.purchase_account" label="Purchase"
+              <select-item-accounts-with-types v-model:modelValue="fields.purchase_account"
+                v-model:typeModelValue="fields.items_purchase_account_type" label="Purchase"
                 :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
-              <select-item-accounts-with-types v-model="fields.discount_allowed_account" label="Discount Allowed"
+              <select-item-accounts-with-types v-model:modelValue="fields.discount_allowed_account"
+                v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
                 :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
-              <select-item-accounts-with-types v-model="fields.discount_received_account" label="Discount Received"
+              <select-item-accounts-with-types v-model:modelValue="fields.discount_received_account"
+                v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
@@ -282,7 +286,7 @@ const setCategory = () => {
       }
     }
     if (
-      !fields.value.sales_account &&
+      !fields.value.sales_account && !fields.value.items_sales_account_type &&
       selected.hasOwnProperty("items_sales_account_type")
     ) {
       if (selected.items_sales_account_type === "category") {
@@ -291,9 +295,10 @@ const setCategory = () => {
       if (selected.items_sales_account_type === "global") {
         fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
       }
+      fields.value.items_sales_account_type = selected.items_sales_account_type
     }
     if (
-      !fields.value.purchase_account &&
+      !fields.value.purchase_account && !fields.value.items_purchase_account_type &&
       selected.hasOwnProperty("items_purchase_account_type")
     ) {
       if (selected.items_purchase_account_type === "category") {
@@ -302,9 +307,10 @@ const setCategory = () => {
       if (selected.items_purchase_account_type === "global") {
         fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.purchase_accounts, "Purchase Account")
       }
+      fields.value.items_purchase_account_type = selected.items_purchase_account_type
     }
     if (
-      !fields.value.discount_allowed_account &&
+      !fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type &&
       selected.hasOwnProperty("items_discount_allowed_account_type")
     ) {
       if (selected.items_discount_allowed_account_type === "category") {
@@ -313,9 +319,10 @@ const setCategory = () => {
       if (selected.items_discount_allowed_account_type === "global") {
         fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
       }
+      fields.value.items_discount_allowed_account_type = selected.items_discount_allowed_account_type
     }
     if (
-      !fields.value.discount_received_account &&
+      !fields.value.discount_received_account && !fields.value.items_discount_received_account_type &&
       selected.hasOwnProperty("items_discount_received_account_type")
     ) {
       if (selected.items_discount_received_account_type === "category") {
@@ -324,6 +331,7 @@ const setCategory = () => {
       if (selected.items_discount_received_account_type === "global") {
         fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_account, "Discount Income")
       }
+      fields.value.items_discount_received_account_type = selected.items_discount_received_account_type
     }
 
     if (selected.hasOwnProperty("track_inventory")) {
@@ -380,4 +388,5 @@ watch(() => accountTypeValues.value.sales_account, (newValue) => {
     column-gap: 15px;
     row-gap: 15px;
   }
-}</style>
+}
+</style>
