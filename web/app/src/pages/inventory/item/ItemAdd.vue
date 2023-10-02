@@ -57,36 +57,23 @@
                   :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
             </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <select-item-accounts-with-types v-model="fields.sales_account" label="Sales" :options="formDefaults.collections?.sales_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
-              </div>
-              <!-- <div class="col-12 col-md-6">
-                <n-auto-complete class="col-6 q-full-width" label="Purchase Account" v-model="fields.purchase_account"
-                  :options="formDefaults.collections?.purchase_accounts"
-                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
-                  :error="errors.purchase_account" />
-              </div> -->
-              <div class="col-12 col-md-6">
-                <select-item-accounts-with-types v-model="fields.purchase_account" label="Purchase" :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
-              </div>
-            </div>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <select-item-accounts-with-types v-model="fields.discount_allowed_account" label="Discount Allowed" :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
-                <!-- <n-auto-complete class="col-6 q-full-width" label="Discount Allowed Account"
-                  v-model="fields.discount_allowed_account" :options="formDefaults.collections?.discount_allowed_accounts"
-                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
-                  :error="errors.discount_allowed_account" /> -->
-              </div>
-              <div class="col-12 col-md-6">
-                <select-item-accounts-with-types v-model="fields.discount_received_account" label="Discount Received" :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name" :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"/>
-                <!-- <n-auto-complete class="col-6 q-full-width" label="Discount Received Account"
-                  v-model="fields.discount_received_account"
-                  :options="formDefaults.collections?.discount_received_accounts"
-                  :modal-component="checkPermissions('AccountCreate') ? AccountForm : null"
-                  :error="errors.discount_received_account" /> -->
-              </div>
+            <div>
+              <select-item-accounts-with-types v-model="fields.sales_account" label="Sales"
+                :options="formDefaults.collections?.sales_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" />
+              <select-item-accounts-with-types v-model="fields.purchase_account" label="Purchase"
+                :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" />
+              <select-item-accounts-with-types v-model="fields.discount_allowed_account" label="Discount Allowed"
+                :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" />
+              <select-item-accounts-with-types v-model="fields.discount_received_account" label="Discount Received"
+                :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" />
             </div>
             <div class="row q-gutter-y-lg q-mt-lg">
               <div class="col-md-6 col-12 col-lg-4">
@@ -393,5 +380,4 @@ watch(() => accountTypeValues.value.sales_account, (newValue) => {
     column-gap: 15px;
     row-gap: 15px;
   }
-}
-</style>
+}</style>

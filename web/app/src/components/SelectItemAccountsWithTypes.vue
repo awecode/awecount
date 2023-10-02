@@ -2,7 +2,7 @@
     <div class="grid grid-cols-2 gap-4">
         <div>
             <q-select class="q-full-width" :label="`${label} A/C Options`" option-value="value" option-label="label"
-                map-options emit-value v-model="type" :options="account_types" error-message="" />
+                map-options emit-value v-model="type" :options="account_types" :error="false"/>
         </div>
         <div>
             <n-auto-complete v-if="type === 'dedicated'" class="q-full-width" :label="`${label} Account`"
@@ -14,7 +14,7 @@
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
             <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
-                v-model="modalValue" readonly :options="props.options" :error="!!error" :error-message="error"></q-select>
+                v-model="modalValue" disable :options="props.options" :error="!!error" :error-message="error"></q-select>
         </div>
     </div>
 </template>
