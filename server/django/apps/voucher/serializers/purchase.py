@@ -54,15 +54,11 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             return data
         else:
             if request.company.inventory_setting.enable_fifo:
-                # import ipdb; ipdb.set_trace()
                 item_ids = [x.get("item_id") for x in data.get("rows")]
                 date = data["date"]
                 if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
                     raise UnprocessableException(detail="Creating a purchase date on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
-                return data
-    
-    # def validate(self, date):
-    #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)
+            return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -76,7 +72,6 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo:
-                # TODO: use this from request data
                 item = Item.objects.get(id=row["item_id"])
                 if item.track_inventory:
                     row["remaining_quantity"] = row["quantity"]
@@ -134,7 +129,6 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 sales_row.save()
                 break
             else:
-                import ipdb; ipdb.set_trace()
                 sold_quantity = sold_items.pop(str(row["id"]))
                 qt = diff - sold_quantity
                 sold_items[str(row["id"])] = qt

@@ -39,6 +39,7 @@ from apps.voucher.serializers.voucher_settings import InventorySettingCreateSeri
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin, GenericSerializer
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
 from .models import PurchaseOrder, PurchaseOrderRow, SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, \
@@ -199,10 +200,22 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if not message:
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
         try:
-            sales_voucher.cancel(request.data.get('message'))
             if request.company.inventory_setting.enable_fifo:
-                sales_rows = sales_voucher.rows.all()
-                self.fifo_update_purchase_rows(sales_rows)            
+                if request.query_params.get('fifo_inconsistency'):
+                    sales_voucher.cancel(request.data.get('message'))
+                    sales_rows = sales_voucher.rows.all()
+                    self.fifo_update_purchase_rows(sales_rows) 
+                else:
+                    raise UnprocessableException(detail="This action may create inconsistencies in FIFO.", code="fifo_inconsistency")
+            else:
+                sales_voucher.cancel(request.data.get('message'))
+            
+            # if request.query_params.get('fifo_inconsistency'):
+            #     sales_voucher.cancel(request.data.get('message'))
+            
+            # if request.company.inventory_setting.enable_fifo:
+            #     sales_rows = sales_voucher.rows.all()
+            #     self.fifo_update_purchase_rows(sales_rows)            
             return Response({})
         except Exception as e:
             raise RESTValidationError({'detail': e})
@@ -432,6 +445,12 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
         purchase_voucher = self.get_object()
+        row_ids = purchase_voucher.rows.values_list("id", flat=True)
+        str_ids = [str(x) for x in row_ids]
+        sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
+        if sales_rows.exists():
+            # TODO: provide a descriptive message
+            raise UnprocessableException(detail="This action might create inconsistencies in FIFO.", code="fifo_inconsistency")
         try:
             purchase_voucher.cancel()
             if request.company.inventory_setting.enable_fifo:
