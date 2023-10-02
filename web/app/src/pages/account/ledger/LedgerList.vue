@@ -93,36 +93,42 @@ export default {
         label: 'Code',
         align: 'left',
         field: 'code',
+        sortable: true
       },
       {
         name: 'name',
         label: 'Name',
         align: 'left',
         field: 'name',
+        sortable: true
       },
       {
         name: 'category',
         label: 'Category',
         align: 'left',
         field: 'category',
+        sortable: true
       },
       {
         name: 'dr',
         label: 'Dr',
         align: 'left',
         field: 'dr',
+        sortable: true
       },
       {
         name: 'cr',
         label: 'Cr',
         align: 'left',
         field: 'cr',
+        sortable: true
       },
       {
-        name: 'balance',
+        name: 'computed_balance',
         label: 'Balance',
         align: 'left',
         field: 'computed_balance',
+        sortable: true
       },
       {
         name: 'actions',

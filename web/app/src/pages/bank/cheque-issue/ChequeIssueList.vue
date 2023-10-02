@@ -91,30 +91,35 @@ export default {
         label: 'TO',
         align: 'left',
         field: 'issued_to',
+        sortable: true
       },
       {
         name: 'cheque_no',
         label: 'Cheque #',
         align: 'left',
         field: 'cheque_no',
+        sortable: true
       },
       {
         name: 'amount',
         label: 'Amount',
         align: 'left',
-        field: 'amount',
+        field: (row) => Math.round(row.amount * 100) / 100,
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
       {
         name: 'status',
         label: 'Status',
         align: 'center',
         field: 'status',
+        sortable: true
       },
       {
         name: 'actions',

@@ -119,6 +119,7 @@ export default {
         label: 'Bill No.',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'party_name',
@@ -126,19 +127,21 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status' },
-      { name: 'date', label: 'Date', align: 'left', field: 'date' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
       {
         name: 'mode',
         label: 'Mode',
         align: 'left',
         field: 'mode',
+        sortable: true
       },
       {
         name: 'total_amount',
         label: 'Total amount',
         align: 'left',
         field: 'total_amount',
+        sortable: true
       },
       { name: 'actions', label: 'Actions', align: 'left' },
     ]

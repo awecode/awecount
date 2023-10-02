@@ -66,14 +66,16 @@ const newColumns = [
     label: 'Code.',
     align: 'left',
     field: 'code',
+    sortable: true
   },
   {
     name: 'name',
     label: 'Name',
     align: 'left',
     field: 'name',
+    sortable: true
   },
-  { name: 'default', label: 'Default', align: 'center', field: 'default' },
+  { name: 'default', label: 'Default', align: 'center', field: 'default', sortable: true},
   { name: 'actions', label: 'Actions', align: 'center' },
 ]
 const {

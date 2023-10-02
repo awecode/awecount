@@ -313,7 +313,7 @@ export default {
     })
     const addRow = () => {
       modalValue.value.push({
-        quantity: '',
+        quantity: 1,
         rate: '',
         item_id: null,
         unit_id: '',
@@ -348,3 +348,4 @@ export default {
   },
 }
 </script>
+

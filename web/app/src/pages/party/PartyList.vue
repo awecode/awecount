@@ -43,12 +43,14 @@ export default {
         label: 'Name',
         align: 'left',
         field: 'name',
+        sortable: true
       },
       {
         name: 'address',
         label: 'Address',
         align: 'left',
         field: 'address',
+        sortable: true
       },
       {
         name: 'contact_no',
@@ -67,6 +69,7 @@ export default {
         label: 'Pan No.',
         align: 'center',
         field: 'tax_registration_number',
+        sortable: true
       },
       {
         name: 'actions',

@@ -18,7 +18,9 @@
             </div>
             <div class="col-6 row">
               <div class="col-6">Date</div>
-              <div class="col-6">{{ fields?.date || '-' }}</div>
+              <div class="col-6">{{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(
+                fields?.date, 'bs'
+              ) }}</div>
             </div>
           </div>
         </q-card-section>
@@ -101,6 +103,9 @@
 <script setup>
 import useApi from 'src/composables/useApi'
 import checkPermissions from 'src/composables/checkPermissions'
+import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info'
+const store = useLoginStore()
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
@@ -160,13 +165,13 @@ function prompt() {
 </script>
 
 <style scoped>
-  @media print {
+@media print {
 
-/* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
+  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
 
-.q-card {
-  box-shadow: none;
-  padding: 0;
-}
+  .q-card {
+    box-shadow: none;
+    padding: 0;
+  }
 }
 </style>

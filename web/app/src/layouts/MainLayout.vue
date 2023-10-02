@@ -5,7 +5,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px;">
-          <RouterLink v-if="store.companyInfo.logo_url" to="/" style="max-width: 60px; max-height: 40px;">
+          <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px;">
             <img style="max-width: 60px; max-height: 40px; object-fit: contain;" :src="store.companyInfo.logo_url" alt="Company Logo">
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
@@ -36,10 +36,10 @@
                   <div class="text-h6 text-grey-9">
                     <span>Are you sure you want to logout?</span>
                   </div>
-                  <div class="q-mx-md" style="margin-top: 40px">
+                  <div class="q-mb-md" style="margin-top: 40px">
                     <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn flat label="Logout" @click="onLogoutClick()"></q-btn>
-                      <q-btn flat label="Cancel" @click="logoutDiologueOpen = false"></q-btn>
+                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false"></q-btn>
+                      <q-btn flat label="Yes" class="text-red" @click="onLogoutClick()"></q-btn>
                     </div>
                   </div>
                 </div>
@@ -460,6 +460,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Account Closing',
         icon: 'mdi-calendar-multiple-check',
         link: '/settings/account-closing/',
+        hide: !checkPermissions('AccountClosingCreate')
       },
     ],
   },

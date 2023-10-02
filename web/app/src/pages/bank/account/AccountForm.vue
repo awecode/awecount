@@ -40,9 +40,9 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BankAccountCreate') && !isEdit" color="green" label="Create" class="q-ml-auto"
+          <q-btn v-if="checkPermissions('BankAccountCreate') && !isEdit" color="green" label="Create" class="q-ml-auto" :loading="loading"
             @click.prevent="submitForm" type="submit"/>
-          <q-btn v-if="checkPermissions('BankAccountModify') && isEdit" color="green" label="Update" class="q-ml-auto"
+          <q-btn v-if="checkPermissions('BankAccountModify') && isEdit" color="green" label="Update" class="q-ml-auto" :loading="loading"
             @click.prevent="submitForm" type="submit"/>
         </div>
       </q-card>

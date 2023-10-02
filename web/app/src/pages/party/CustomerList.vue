@@ -49,6 +49,7 @@ export default {
         label: 'Name',
         align: 'left',
         field: 'name',
+        sortable: true
       },
       {
         name: 'address',
@@ -73,6 +74,7 @@ export default {
         label: 'Pan No.',
         align: 'left',
         field: 'tax_registration_number',
+        sortable: true
       },
       {
         name: 'dr',

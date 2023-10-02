@@ -128,14 +128,14 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
-        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft"
           type="submit" />
-        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
-        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit"
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
       </div>
     </q-card>

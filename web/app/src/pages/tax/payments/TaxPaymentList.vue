@@ -83,18 +83,21 @@ export default {
         label: 'Voucher No.',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'tax_scheme_name',
         label: 'Tax Scheme',
         align: 'left',
         field: 'tax_scheme_name',
+        sortable: true
       },
       {
         name: 'amount',
         label: 'Amount',
         align: 'left',
         field: 'amount',
+        sortable: true
       },
       {
         name: 'cr_account_name',
@@ -107,12 +110,14 @@ export default {
         label: 'Status',
         align: 'center',
         field: 'status',
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
       {
         name: 'actions',

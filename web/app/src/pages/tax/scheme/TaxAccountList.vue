@@ -60,30 +60,35 @@ export default {
         label: 'Name',
         align: 'left',
         field: 'name',
+        sortable: true
       },
       {
         name: 'short_name',
         label: 'Short Name',
         align: 'left',
         field: 'short_name',
+        sortable: true
       },
       {
         name: 'rate',
         label: 'Rate',
         align: 'left',
         field: 'rate',
+        sortable: true
       },
       {
         name: 'recoverable',
         label: 'Recoverable',
         align: 'center',
         field: 'recoverable',
+        sortable: true
       },
       {
         name: 'default',
         label: 'Default',
         align: 'center',
         field: 'default',
+        sortable: true
       },
       {
         name: 'actions',

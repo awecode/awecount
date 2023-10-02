@@ -84,12 +84,14 @@ export default {
         label: 'Voucher #',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
       {
         name: 'from',
@@ -108,12 +110,14 @@ export default {
         label: 'Amount',
         align: 'center',
         field: 'amount',
+        sortable: true
       },
       {
         name: 'status',
         label: 'Status',
         align: 'center',
         field: 'status',
+        sortable: true
       },
       {
         name: 'actions',

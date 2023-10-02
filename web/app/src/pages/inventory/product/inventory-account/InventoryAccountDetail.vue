@@ -1,81 +1,59 @@
 <template>
   <div class="q-py-lg q-pl-lg q-mr-xl">
-    <div class="row justify-between text-h4 text-bold">
-      {{ fields?.name || '-' }}
-      <q-btn v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${route.params.id}/`"
-        color="orange-6">View Item</q-btn>
-    </div>
-    <div>
-      <q-card class="q-mt-md">
-        <q-card-section>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Code</div>
-                <div class="q-px-md">{{ fields?.code || '-' }}</div>
-              </div>
-              <hr />
-            </div>
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Current Balance</div>
-                <div class="q-px-md">{{ fields?.current_balance || '-' }}</div>
-              </div>
-              <hr />
-            </div>
-          </div>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Category</div>
-                <div class="q-px-md">{{ fields?.category || '-' }}</div>
-              </div>
-              <hr />
-            </div>
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Opening Balance</div>
-                <div class="q-px-md">{{ fields?.opening_balance || '-' }}</div>
-              </div>
-              <hr />
-            </div>
-          </div>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Parent</div>
-                <div class="q-px-md">{{ fields?.parent || '-' }}</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="row justify-between q-py-sm">
-                <div class="q-px-md text-grey-8">Closing Balance</div>
-                <div class="q-px-md">{{ (fields?.opening_balance || 0) - (fields?.current_balance || 0) }}</div>
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
+    <div class="flex justify-between">
+      <div class="text-h5">
+      <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${fields?.item}/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${fields?.name}`">
+              {{ fields?.name }}
+            </router-link>
+        <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
+        <span
+          v-if="fields?.category_name"
+          class="q-ml-md text-h6 text-grey-7"
+          title="Category"
+          >({{ fields?.category_name || '-' }})</span
+        >
+      </div>
       <div>
-        <div class="text-h5 text-bold q-py-md">Transactions</div>
+        <span
+          v-if="fields?.code"
+          class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block"
+          title="Code"
+          >[Code: {{ fields.code }}]</span
+        >
+      </div>
+    </div>
+    <div class="mt-8">
+      <div class="grid grid-cols-3 gap-x-6">
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">Current Balance</div>
+          <div class="q-px-md">
+            {{ $nf(fields?.current_balance) || '-' }}
+          </div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">Opening Balance</div>
+          <div class="q-px-md">{{ $nf(fields?.opening_balance) || '-' }}</div>
+        </div>
+
+        <div class="row justify-between q-py-sm b">
+          <div class="q-px-md text-grey-8">Closing Balance</div>
+          <div class="q-px-md">
+            {{ $nf(fields?.closing_balance) || '-' }}
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 px-2">
         <div class="row q-col-gutter-md">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
-          <!-- <div v-if="startDate != null || endDate != null">
-            <q-btn
-              @click.prevent="resetDate"
-              square
-              color="red"
-              icon="fa-solid fa-xmark"
-              class="q-mt-md"
-            />
-          </div> -->
           <div>
             <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
           </div>
         </div>
       </div>
       <q-table :columns="columnList" :rows="rows" :loading="loading" v-model:pagination="pagination" row-key="id"
-        @request="onRequest" class="q-mt-lg" :binary-state-sort="true" :rows-per-page-options="[20]">
+        @request="onRequest" class="q-mt-xs" :binary-state-sort="true" :rows-per-page-options="[20]">
         <template v-slot:body-cell-voucher_no="props">
           <q-td :props="props">
             <router-link v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])"

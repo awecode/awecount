@@ -46,12 +46,14 @@ export default {
         label: 'Opening Dr',
         align: 'left',
         field: 'opening_dr',
+        sortable: true
       },
       {
         name: 'opening_cr',
         label: 'Opening Cr',
         align: 'left',
         field: 'opening_cr',
+        sortable: true
       },
       {
         name: 'actions',

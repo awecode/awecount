@@ -109,7 +109,7 @@
                 fields.indirect_expense
                 ">
                 <q-select v-model="fields.account_category" :options="parent_account_categories"
-                  label="Items Discount Received Account Type" />
+                  label="Account Category" option-value="id" option-label="name" map-options emit-value />
               </div>
             </div>
             <div class="col-12 col-md-6 row item-center field-height">
@@ -139,9 +139,9 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto q-px-xl" type="submit" />
-          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" @click.prevent="submitForm" color="green"
+          <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" :loading="loading" @click.prevent="submitForm" color="green"
             label="Create" class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
@@ -172,7 +172,7 @@ const toggleExpenses = (type) => {
   fields.value[type] = false
 }
 const endpoint = '/v1/inventory-categories/'
-const { fields, errors, isEdit, formDefaults, submitForm } = useForm(endpoint, {
+const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/inventory-category/list/',
 })
@@ -197,18 +197,18 @@ watch(isExpenses, () => {
   }
 })
 
-const parent_account_categories = () => {
-  if (this.fields.fixed_asset) {
-    return formDefaults.collections.fixed_assets_categories
+const parent_account_categories = computed(() => {
+  if (fields.value.fixed_asset) {
+    return formDefaults.value.collections.fixed_assets_categories
   }
-  if (this.fields.direct_expense) {
-    return formDefaults.collections.direct_expenses_categories
+  if (fields.value.direct_expense) {
+    return formDefaults.value.collections.direct_expenses_categories
   }
-  if (this.fields.indirect_expense) {
-    return formDefaults.collections.indirect_expenses_categories
+  if (fields.value.indirect_expense) {
+    return formDefaults.value.collections.indirect_expenses_categories
   }
   return []
-}
+})
 const addExtraFields = () => {
   if (
     fields.value.extra_fields === null ||
@@ -236,6 +236,7 @@ fields.value.items_discount_received_account_type = 'dedicated'
 fields.value.items_discount_allowed_account_type = 'dedicated'
 fields.value.items_sales_account_type = 'dedicated'
 fields.value.items_purchase_account_type = 'dedicated'
+
 </script>
 
 <style scoped>

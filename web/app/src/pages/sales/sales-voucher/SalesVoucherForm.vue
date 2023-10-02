@@ -142,13 +142,13 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="!isEdit && checkPermissions('SalesCreate')"
+        <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft"
           type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" label="Save Draft"
           type="submit" />
-        <q-btn v-if="checkPermissions('SalesCreate')" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
           color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" />
       </div>
     </q-card>

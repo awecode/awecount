@@ -23,6 +23,7 @@
             v-model="voucher.account_id"
             :options="props.options"
             label="Account"
+            :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
             :error="
               props.errors
@@ -64,7 +65,7 @@
         >
           <q-btn
             flat
-            class="q-pa-sm"
+            class="q-pa-sm focus-highLight"
             color="transparent"
             @click.prevent="() => (openDescription = !openDescription)"
           >
@@ -79,7 +80,7 @@
           <q-btn
             flat
             @click="deleteVoucher"
-            class="q-pa-sm"
+            class="q-pa-sm focus-highLight"
             color="transparent"
           >
             <q-icon

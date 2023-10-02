@@ -89,14 +89,16 @@ export default {
         label: 'Name.',
         align: 'left',
         field: 'name',
+        sortable: true
       },
-      { name: 'type', label: 'Type', align: 'left', field: 'type' },
-      { name: 'value', label: 'Value', align: 'left', field: 'value' },
+      { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true},
+      { name: 'value', label: 'Value', align: 'left', field: 'value', sortable: true},
       {
         name: 'trade_discount',
         label: 'Trade Discount',
         align: 'center',
         field: 'trade_discount',
+        sortable: true
       },
       { name: 'actions', label: 'Actions', align: 'left' },
     ]

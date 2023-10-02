@@ -80,14 +80,16 @@ export default {
         label: 'Voucher No.',
         align: 'left',
         field: 'voucher_no',
+        sortable: true
       },
       {
         name: 'date',
         label: 'Date',
         align: 'left',
         field: 'date',
+        sortable: true
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status' },
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
       {
         name: 'narration',
         label: 'Narration',
