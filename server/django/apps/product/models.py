@@ -81,15 +81,19 @@ class Category(models.Model):
                                                related_name='sales_item_categories')
     purchase_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
                                                   related_name='purchase_item_categories')
-    discount_allowed_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+    discount_allowed_account_category = models.ForeignKey(AccountCategory, blank=True, null=True,
+                                                          on_delete=models.SET_NULL,
                                                           related_name='discount_allowed_item_categories')
-    discount_received_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+    discount_received_account_category = models.ForeignKey(AccountCategory, blank=True, null=True,
+                                                           on_delete=models.SET_NULL,
                                                            related_name='discount_received_item_categories')
     fixed_asset_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
                                                      related_name='fixed_asset_account_category')
-    direct_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+    direct_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True,
+                                                        on_delete=models.SET_NULL,
                                                         related_name='direct_expense_account_category')
-    indirect_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True, on_delete=models.SET_NULL,
+    indirect_expense_account_category = models.ForeignKey(AccountCategory, blank=True, null=True,
+                                                          on_delete=models.SET_NULL,
                                                           related_name='indirect_expense_account_category')
 
     items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
@@ -123,7 +127,8 @@ class Category(models.Model):
                                      'Indirect Expenses'] and self.account_category_id and self.account_category:
             parent_account_category = self.account_category
         else:
-            parent_account_category = AccountCategory.objects.get(name=default_category_name, default=True, company=self.company)
+            parent_account_category = AccountCategory.objects.get(name=default_category_name, default=True,
+                                                                  company=self.company)
 
         if self.use_account_subcategory:
             name = self.name
@@ -349,7 +354,8 @@ def find_obsolete_transactions(model, date, *args):
     args = [arg for arg in args if arg is not None]
 
     try:
-        journal_entry = JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(model), object_id=model.id)
+        journal_entry = JournalEntry.objects.get(content_type=ContentType.objects.get_for_model(model),
+                                                 object_id=model.id)
     except JournalEntry.DoesNotExist:
         if model.voucher.status not in ['Cancelled', 'Draft']:
             print('Not found', model, model.voucher.status, model.voucher.id)
@@ -372,16 +378,30 @@ def find_obsolete_transactions(model, date, *args):
 
 def set_inventory_transactions(model, date, *args, clear=True):
     args = [arg for arg in args if arg is not None]
-    journal_entry, created = JournalEntry.objects.get_or_create(
-        content_type=ContentType.objects.get_for_model(model), object_id=model.id,
-        defaults={
-            'date': date
-        })
+
+    content_type = ContentType.objects.get_for_model(model)
+
+    created = False
+    try:
+        journal_entry = JournalEntry.objects.get(content_type=content_type, object_id=model.id)
+    except JournalEntry.DoesNotExist:
+
+        if hasattr(model, 'voucher_id'):
+            voucher_id = model.voucher_id
+            voucher_no = model.voucher.voucher_no
+        else:
+            voucher_id = model.id
+            voucher_no = model.voucher_no
+
+        journal_entry = JournalEntry(content_type=content_type, object_id=model.id, date=date, voucher_id=voucher_id,
+                                     voucher_no=voucher_no)
+        journal_entry.save()
+        created = True
 
     all_transaction_ids = []
 
     for arg in args:
-        matches = journal_entry.transactions.filter(account=arg[1])
+        matches = journal_entry.transactions.filter(account=arg[1]) if not created else []
         diff = 0
         if not matches:
             transaction = Transaction()
