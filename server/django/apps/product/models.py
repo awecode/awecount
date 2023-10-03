@@ -286,7 +286,7 @@ class JournalEntry(models.Model):
     content_type = models.ForeignKey(ContentType, related_name='inventory_journal_entries', on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
-    source_voucher_number = models.CharField(max_length=50, blank=True, null=True)
+    source_voucher_no = models.CharField(max_length=50, blank=True, null=True)
     source_voucher_id = models.PositiveIntegerField(blank=True, null=True)
 
     @staticmethod
