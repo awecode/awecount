@@ -76,8 +76,9 @@ class PartySerializer(serializers.ModelSerializer):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
         for representative in representatives:
-            if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
-                    'position'):
+            if representative.get('name') or representative.get('phone') or representative.get(
+                    'email') or representative.get(
+                'position'):
                 representative['party_id'] = instance.id
                 PartyRepresentative.objects.create(**representative)
         return instance
@@ -87,8 +88,9 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
-            if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
-                    'position'):
+            if representative.get('name') or representative.get('phone') or representative.get(
+                    'email') or representative.get(
+                'position'):
                 representative['party_id'] = instance.id
                 try:
                     PartyRepresentative.objects.update_or_create(
@@ -344,15 +346,14 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
 class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()
-    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
     dr_amount = RoundedField()
     cr_amount = RoundedField()
     account_name = serializers.StringRelatedField(source='account')
-
-    # voucher_no is too expensive on DB -
-    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
-
     accounts = serializers.SerializerMethodField()
+
+    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+    # # voucher_no is too expensive on DB -
+    # voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
 
     def get_accounts(self, obj):
         # TODO Optimize
@@ -361,7 +362,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
             accounts.append(
                 {'id': transaction.account_id,
                  'name': transaction.account.name,
-                 'source_type':self.get_source_type(transaction)
+                 'source_type': self.get_source_type(transaction)
                  }
             )
         return accounts
@@ -376,26 +377,31 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         if v_type == 'account':
             return 'Opening Balance'
         return v_type.strip().title()
-    
+
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'account_name', 'source_id', 'voucher_no', 'journal_entry', 'accounts')
-        
+            'id', 'dr_amount', 'cr_amount', 'account_id', 'journal_entry', 'date', 'source_type', 'account_name',
+            'accounts',
+            'source_id',
+            # 'voucher_no',
+        )
+
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+
     class Meta:
         model = ContentType
         fields = ('id', 'name', 'model')
 
     def get_name(self, obj):
         return obj.name.capitalize()
-    
+
 
 class ParamSerializer(serializers.Serializer):
     account = serializers.ListField(child=serializers.IntegerField())
-        
+
 
 class AggregatorSerializer(serializers.Serializer):
     label = serializers.CharField(required=False)
@@ -407,6 +413,7 @@ class AggregatorSerializer(serializers.Serializer):
 class AccountClosingSerializer(serializers.ModelSerializer):
     # fiscal_period = serializers.StringRelatedField()
     company = serializers.StringRelatedField()
+
     class Meta:
         model = AccountClosing
         fields = ["company", "fiscal_period", "status"]

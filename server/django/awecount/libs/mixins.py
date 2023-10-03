@@ -58,7 +58,7 @@ class TransactionsViewMixin(object):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by(
+        transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).order_by(
             '-journal_entry__date', '-pk') \
             .select_related('journal_entry__content_type').prefetch_related(
             Prefetch('journal_entry__transactions', Transaction.objects.select_related('account')))

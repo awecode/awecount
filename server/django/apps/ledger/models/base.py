@@ -340,6 +340,8 @@ class JournalEntry(models.Model):
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
     type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
+    source_voucher_number = models.CharField(max_length=50, blank=True, null=True)
+    source_voucher_id = models.PositiveIntegerField(blank=True, null=True)
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
