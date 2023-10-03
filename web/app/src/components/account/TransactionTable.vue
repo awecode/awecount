@@ -92,7 +92,7 @@
         <td><span v-if="transaction.dr_amount">{{ Math.round((transaction.dr_amount || 0) * 100) / 100 }}</span></td>
         <td><span v-if="transaction.cr_amount">{{ Math.round((transaction.cr_amount || 0) * 100) / 100 }}</span></td>
         <td v-if="fields.aggregate">
-          {{ runningBalance[transaction.id] }}
+          {{ runningBalance[transaction.id].dr - runningBalance[transaction.id].cr }}
         </td>
       </tr>
 
@@ -141,12 +141,12 @@ export default {
       dr: number
       cr: number
     }
-    interface Fields {
-      customer_account: Record<string, string | number | Amounts> | null
-      name: string
-      supplier_account: Record<string, string | number | Amounts> | null
-    }
-    const fields: Ref<null | Fields> = ref(props.fields)
+    // interface Fields {
+    //   customer_account: Record<string, string | number | Amounts> | null
+    //   name: string
+    //   supplier_account: Record<string, string | number | Amounts> | null
+    // }
+    const fields: Ref<null | Record<string, any>> = ref(props.fields)
     watch(
       () => props.fields,
       (newValue) => {
@@ -156,7 +156,7 @@ export default {
     // function getEndPoint() {
     //   return `parties/${this.$route.params.pk}/transactions/`
     // }
-    function getVoucherUrl(row) {
+    function getVoucherUrl(row: Record<string, string>) {
       const source_type = row.source_type
       if (source_type === 'Sales Voucher')
         return `/sales-voucher/${row.source_id}/view/`
@@ -206,8 +206,8 @@ export default {
     }
     const mergedTransactions = computed(() => {
       let dct = {};
-      if (fields.value.transactions?.results) {
-        fields.value.transactions.results.forEach((transaction) => {
+      if (fields.value?.transactions?.results) {
+        fields.value?.transactions.results.forEach((transaction) => {
           const sourceType = transaction.source_type
             .toLowerCase()
             .replace(" ", "");
@@ -235,17 +235,15 @@ export default {
       })
     })
     const runningBalance = computed(() => {
-      const runningBalanceData: Record<number , number> = {}
-      if (mergedTransactions.value) {
-        const openingBalance = (fields.value.aggregate.opening?.dr_amount__sum || 0) - (fields.value.aggregate.opening?.dr_amount__sum || 0)
+      const runningBalanceData: Record<number, Record<string, number>> = {}
+      if (mergedTransactions.value && fields.value) {
+        const openingBalance = { dr: (fields.value.aggregate.opening?.dr_amount__sum || 0), cr: (fields.value.aggregate.opening?.dr_amount__sum || 0) }
         let currentRunningBalance = openingBalance
         mergedTransactions.value.forEach((item) => {
-          const netAmount = currentRunningBalance + (item.dr_amount ? typeof item.dr_amount === 'string' ? parseInt(item.dr_amount) : item.dr_amount : 0) - (item.cr_amount ? typeof item.cr_amount === 'string' ? parseInt(item.cr_amount) : item.cr_amount : 0)
-          runningBalanceData[item.id] = netAmount < 0 ? `(${netAmount * -1})` : netAmount
-          currentRunningBalance = netAmount
-          // console.log((item.dr_amount && typeof item.dr_amount === 'number' ? parseInt(item.dr_amount) : 0))
+          currentRunningBalance.dr += (item.dr_amount ? typeof item.dr_amount === 'string' ? parseInt(item.dr_amount) : item.dr_amount : 0)
+          currentRunningBalance.cr = currentRunningBalance.cr + (item.cr_amount ? typeof item.cr_amount === 'string' ? parseInt(item.cr_amount) : item.cr_amount : 0)
+          runningBalanceData[item.id] = currentRunningBalance 
         })
-        // console.log(runningBalanceData)
       }
       return runningBalanceData
     })
