@@ -61,7 +61,7 @@ class Company(models.Model):
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
     config_template = models.CharField(max_length=255, default='np')
-    invoice_template = models.IntegerField(max_length=255, choices=TEMPLATE_CHOICES, default=1)
+    invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
 
     def __str__(self):
         return self.name
