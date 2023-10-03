@@ -235,14 +235,16 @@ export default {
       })
     })
     const runningBalance = computed(() => {
-      const runningBalanceData: Record<number, Record<string, number>> = {}
+      const runningBalanceData: Record<number, Record<string, number | string | null>> = {}
       if (mergedTransactions.value && fields.value) {
         const openingBalance = { dr: (fields.value.aggregate.opening?.dr_amount__sum || 0), cr: (fields.value.aggregate.opening?.dr_amount__sum || 0) }
         let currentRunningBalance = openingBalance
         mergedTransactions.value.forEach((item) => {
-          currentRunningBalance.dr += (item.dr_amount ? typeof item.dr_amount === 'string' ? parseInt(item.dr_amount) : item.dr_amount : 0)
-          currentRunningBalance.cr = currentRunningBalance.cr + (item.cr_amount ? typeof item.cr_amount === 'string' ? parseInt(item.cr_amount) : item.cr_amount : 0)
-          runningBalanceData[item.id] = currentRunningBalance 
+          const activeBalance = {...currentRunningBalance}
+          activeBalance.dr = activeBalance.dr + (item.dr_amount ? parseInt(item.dr_amount) : 0)
+          activeBalance.cr = activeBalance.cr + (item.cr_amount ? parseInt(item.cr_amount) : 0)
+          runningBalanceData[item.id] = activeBalance
+          currentRunningBalance = activeBalance
         })
       }
       return runningBalanceData
