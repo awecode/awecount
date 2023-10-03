@@ -315,7 +315,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     account_name = serializers.StringRelatedField(source='account')
     accounts = serializers.SerializerMethodField()
 
-    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
+    source_id = serializers.ReadOnlyField(source='source_voucher_id')
     # # voucher_no is too expensive on DB -
     # voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
 
