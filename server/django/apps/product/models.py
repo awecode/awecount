@@ -286,6 +286,8 @@ class JournalEntry(models.Model):
     content_type = models.ForeignKey(ContentType, related_name='inventory_journal_entries', on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
+    source_voucher_number = models.CharField(max_length=50, blank=True, null=True)
+    source_voucher_id = models.PositiveIntegerField(blank=True, null=True)
 
     @staticmethod
     def get_for(source):
@@ -393,8 +395,8 @@ def set_inventory_transactions(model, date, *args, clear=True):
             voucher_id = model.id
             voucher_no = model.voucher_no
 
-        journal_entry = JournalEntry(content_type=content_type, object_id=model.id, date=date, voucher_id=voucher_id,
-                                     voucher_no=voucher_no)
+        journal_entry = JournalEntry(content_type=content_type, object_id=model.id, date=date,
+                                     source_voucher_id=voucher_id, source_voucher_no=voucher_no)
         journal_entry.save()
         created = True
 

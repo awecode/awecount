@@ -394,18 +394,33 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
     """
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
-    journal_entry, created = JournalEntry.objects.get_or_create(
-        content_type=ContentType.objects.get_for_model(submodel), object_id=submodel.id,
-        defaults={
-            'date': date
-        })
+
+    content_type = ContentType.objects.get_for_model(submodel)
+
+    created = False
+    try:
+        journal_entry = JournalEntry.objects.get(content_type=content_type, object_id=submodel.id)
+    except JournalEntry.DoesNotExist:
+
+        if hasattr(submodel, 'voucher_id'):
+            voucher_id = submodel.voucher_id
+            voucher_no = submodel.voucher.voucher_no
+        else:
+            voucher_id = submodel.id
+            voucher_no = submodel.voucher_no
+
+        journal_entry = JournalEntry(content_type=content_type, object_id=submodel.id, date=date,
+                                     source_voucher_id=voucher_id, source_voucher_no=voucher_no)
+        journal_entry.save()
+        created = True
+
     dr_total = 0
     cr_total = 0
     all_accounts = []
     all_transaction_ids = []
     for arg in entries:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
-        matches = journal_entry.transactions.filter(account=arg[1])
+        matches = journal_entry.transactions.filter(account=arg[1])  if not created else []
         # with localcontext() as ctx:
         #     ctx.rounding = ROUND_HALF_UP
         #     val = round(decimalize(arg[2]), 2)
