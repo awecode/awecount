@@ -1,6 +1,7 @@
 <template>
   <div class="row no-wrap">
     <q-select
+      :autofocus="focusOnMount"
       v-model="modalValue"
       input-debounce="0"
       :label="label"
@@ -70,6 +71,10 @@ export default {
       type: String,
       required: false,
     },
+    focusOnMount: {
+      type: Boolean,
+      default: false
+    }
   },
   emits: ['update:modelValue'],
 

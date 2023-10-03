@@ -145,7 +145,7 @@
             ></q-td
           >
           <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td
-          >data.purchase_account
+          >
           <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
           <q-td>{{
             (data.fixed_asset_account?.amounts.dr || 0) -
@@ -159,11 +159,11 @@
               >Discount Received</router-link
             ></q-td
           >
-          <q-td>{{ data.discount_received_account?.amounts.dr }}</q-td>
-          <q-td>{{ data.discount_received_account?.amounts.cr }}</q-td>
+          <q-td>{{ $nf(data.discount_received_account?.amounts.dr) }}</q-td>
+          <q-td>{{ $nf(data.discount_received_account?.amounts.cr) }}</q-td>
           <q-td>{{
-            (data.discount_received_account?.amounts.dr || 0) -
-            (data.discount_received_account?.amounts.cr || 0)
+            $nf((data.discount_received_account?.amounts.dr || 0) -
+            (data.discount_received_account?.amounts.cr || 0))
           }}</q-td>
         </q-tr>
       </template>

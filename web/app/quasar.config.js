@@ -8,6 +8,11 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
+const UnoCSS = require('unocss/vite').default
+// const { presetAttributify, presetUno } = require('unocss')
+// import presetWind from '@unocss/preset-wind'
+const { presetWind } = require('unocss')
+
 const { configure } = require('quasar/wrappers')
 
 module.exports = configure(function (ctx) {
@@ -27,7 +32,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['axios', 'ofetch'],
+    boot: ['ofetch', 'num'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -65,9 +70,7 @@ module.exports = configure(function (ctx) {
       // env: {},
       // env: require('dotenv').config().parsed,
       env: {
-        BASE_URL: ctx.dev
-          ? 'http://localhost:8000'
-          : process.env.BASE_URL,
+        BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
       },
 
       // rawDefine: {}
@@ -76,7 +79,13 @@ module.exports = configure(function (ctx) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf(viteConf) {
+        viteConf.plugins.push(
+          ...UnoCSS({
+            presets: [presetWind()],
+          })
+        )
+      },
       // viteVuePluginOptions: {},
 
       vitePlugins: [
@@ -114,10 +123,6 @@ module.exports = configure(function (ctx) {
                 //   'useMouse', // import { useMouse } from '@vueuse/core',
                 //   // alias
                 //   ['useFetch', 'useMyFetch'], // import { useFetch as useMyFetch } from '@vueuse/core',
-                // ],
-                // axios: [
-                //   // default imports
-                //   ['default', 'axios'], // import { default as axios } from 'axios',
                 // ],
                 // '[package-name]': [
                 //   '[import-names]',

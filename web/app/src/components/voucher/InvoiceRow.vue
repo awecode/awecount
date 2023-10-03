@@ -37,10 +37,10 @@
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
-        <q-btn flat class="q-pa-sm" color="transparent" @click="() => (expandedState = !expandedState)">
+        <q-btn flat class="q-pa-sm focus-highLight" color="transparent" @click="() => (expandedState = !expandedState)">
           <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"></q-icon>
         </q-btn>
-        <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm" color="transparent">
+        <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent">
           <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
         </q-btn>
       </div>

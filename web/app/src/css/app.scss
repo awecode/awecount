@@ -8,6 +8,17 @@
   height: 0px;
   overflow: hidden;
 }
+.b {
+  // border-solid border-1 border-gray-200 shadow-md
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.focus-highLight:focus {
+  background-color: lightgray;
+}
+
 @media print {
   .print-show {
     visibility: visible;

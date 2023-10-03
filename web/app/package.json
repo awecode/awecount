@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "axios": "^0.21.1",
+    "@unocss/preset-wind": "^0.56.4",
     "chart.js": "^4.2.1",
     "decimal.js": "^10.4.3",
     "dotenv": "^16.1.4",
@@ -24,6 +24,7 @@
     "pinia": "^2.0.11",
     "pinia-plugin-persistedstate": "^3.0.2",
     "quasar": "^2.6.0",
+    "unocss": "^0.56.4",
     "unplugin-auto-import": "^0.13.0",
     "unplugin-vue-components": "^0.23.0",
     "vue": "^3.0.0",
