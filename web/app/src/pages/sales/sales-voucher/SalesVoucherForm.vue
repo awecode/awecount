@@ -66,7 +66,7 @@
                 ? 'col-6'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*"
+                <n-auto-complete v-model="fields.discount_type" label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null" :options="formDefaults.collections
                     ? staticOptions.discount_types.concat(
                       formDefaults?.collections.discounts
@@ -95,7 +95,7 @@
           </div>
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode"
+            <q-select v-model="fields.mode" label="Mode *" class="col-12 col-md-6" :error-message="errors.mode"
               :error="!!errors.mode" :options="staticOptions.modes.concat(
                 formDefaults.collections?.bank_accounts
               )
