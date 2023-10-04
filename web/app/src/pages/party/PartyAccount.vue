@@ -27,15 +27,15 @@
             </td>
             <td class="text-left">{{ fields.supplier_account.code }}</td>
             <td class="text-left">
-              {{ Math.round((fields.supplier_account.amounts.dr || 0) * 100) / 100 }}
+              {{ $nf(fields.supplier_account.amounts.dr, 2) }}
             </td>
             <td class="text-left">
-              {{ Math.round((fields.supplier_account.amounts.cr || 0) * 100) / 100 }}
+              {{ $nf(fields.supplier_account.amounts.cr, 2) }}
             </td>
             <td class="text-left">
               {{
-                Math.round(((fields.supplier_account.amounts.dr || 0) -
-                  (fields.supplier_account.amounts.cr || 0)) * 100) / 100
+                $nf((fields.supplier_account.amounts.dr || 0) -
+                  (fields.supplier_account.amounts.cr || 0), 2)
               }}
             </td>
           </tr>
@@ -51,15 +51,15 @@
             </td>
             <td class="text-left">{{ fields.customer_account.code }}</td>
             <td class="text-left">
-              {{ Math.round((fields.customer_account.amounts.dr || 0) * 100) / 100 }}
+              {{ $nf(fields.customer_account.amounts.dr, 2) }}
             </td>
             <td class="text-left">
-              {{ Math.round((fields.customer_account.amounts.cr || 0) * 100) / 100 }}
+              {{ $nf(fields.customer_account.amounts.cr, 2) }}
             </td>
             <td class="text-left">
               {{
-                Math.round(((fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0)) * 100) / 100
+                $nf((fields.customer_account.amounts.dr || 0) -
+                  (fields.customer_account.amounts.cr || 0), 2)
               }}
             </td>
           </tr>
@@ -67,24 +67,24 @@
             <td colspan="2"></td>
             <th class="text-left">
               {{
-                Math.round((fields.supplier_account.amounts.dr ||
+                $nf(fields.supplier_account.amounts.dr ||
                   0 + fields.customer_account.amounts.dr ||
-                  0) * 100) / 100
+                  0, 2)
               }}
             </th>
             <th class="text-left">
               {{
-                Math.round((fields.supplier_account.amounts.cr ||
+                $nf(fields.supplier_account.amounts.cr ||
                   0 + fields.customer_account.amounts.cr ||
-                  0) * 100) / 100
+                  0, 2)
               }}
             </th>
             <th class="text-left">
               {{
-                Math.round(((fields.supplier_account.amounts.dr || 0) -
+                $nf((fields.supplier_account.amounts.dr || 0) -
                   (fields.supplier_account.amounts.cr || 0) +
                   (fields.customer_account.amounts.dr || 0) -
-                  (fields.customer_account.amounts.cr || 0)) * 100) / 100
+                  (fields.customer_account.amounts.cr || 0), 2)
               }}
             </th>
           </tr>
