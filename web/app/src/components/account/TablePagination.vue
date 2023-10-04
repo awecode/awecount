@@ -1,5 +1,11 @@
 <template>
     <div class="row justify-end items-center" v-if="fields.transactions?.pagination.pages > 0">
+        <span class="q-mr-md row items-center gap-4">
+            <span>Records Per Page</span>
+            <q-select small borderless dense v-model="pageSize" @update:model-value="updatePageSize"
+                :options="[20, 30, 40, 50, 100, 200, 300, 400, 500]">
+            </q-select>
+        </span>
         <div class="q-mr-sm">
             <span>
                 {{ (fields.transactions?.pagination.page - 1) * 20 + 1 }} -
@@ -29,6 +35,7 @@
 import { withQuery } from 'ufo'
 const router = useRouter()
 const route = useRoute()
+const pageSize = ref(route.query.page_size || 20)
 const props = defineProps({
     fields: {
         type: Object,
@@ -37,6 +44,10 @@ const props = defineProps({
 })
 const goToPage = (pageNo) => {
     let newQuery = Object.assign({ ...route.query }, { page: pageNo })
-    router.push(withQuery(`/account/${route.params.id}/view/`, newQuery))
+    router.push(withQuery(route.path, newQuery))
+}
+const updatePageSize = () => {
+    let newQuery = Object.assign({ ...route.query }, { page_size: pageSize.value }, { page: undefined })
+    router.push(withQuery(route.path, newQuery))
 }
 </script>

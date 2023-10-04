@@ -99,7 +99,7 @@
         <span class="row items-end q-gutter-y-sm">
           <q-btn v-if="dateRef.start_date && dateRef.end_date" @click="resetDate" color="red" icon="close"
             class="q-mr-sm"></q-btn>
-          <q-btn @click="fetchData" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter"
+          <q-btn @click="filter" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter"
             color="blue"></q-btn>
         </span>
       </div>
@@ -112,6 +112,7 @@
 
 <script lang="ts">
 import useApi from 'src/composables/useApi'
+import { withQuery } from 'ufo'
 import { Ref } from 'vue'
 import TransactionTable from 'src/components/account/TransactionTable.vue'
 import { useRouter } from 'vue-router'
@@ -124,6 +125,7 @@ export default {
     useMeta(metaData)
     const router = useRouter()
     const route = useRoute()
+    const $q = useQuasar()
     interface Amounts {
       dr: number
       cr: number
@@ -142,26 +144,11 @@ export default {
       start_date: null,
       end_date: null
     })
+    const endpoint = ref(
+      withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query)
+    )
     function fetchData() {
-      if (dateRef.value.start_date && dateRef.value.end_date) {
-        router.push(`/parties/account/${route.params.id}/` + `?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`)
-        const endpoint = `/v1/parties/${route.params.id}/transactions/${`?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`}`
-        useApi(endpoint, { method: 'GET' })
-          .then((data) => {
-            fields.value = data
-          })
-          .catch((error) => {
-            if (error.response && error.response.status == 404) {
-              router.replace({ path: '/ErrorNotFound' })
-            }
-          })
-      }
-    }
-    const resetDate = () => {
-      dateRef.value = { start_date: null, end_date: null }
-      const endpoint = `/v1/parties/${route.params.id}/transactions/`
-      router.push(`/parties/account/${route.params.id}/`)
-      useApi(endpoint, { method: 'GET' })
+      useApi(endpoint.value, { method: 'GET' })
         .then((data) => {
           fields.value = data
         })
@@ -171,24 +158,56 @@ export default {
           }
         })
     }
+    const resetDate = () => {
+      dateRef.value = { start_date: null, end_date: null }
+      router.push(`/parties/account/${route.params.id}/`)
+    }
+    watch(endpoint, () => fetchData())
+    watch(
+      route,
+      () => {
+        if (route.params.id) {
+          const url = `/v1/parties/${route.params.id}/transactions/?`
+          const updatedEndpoint = withQuery(url, route.query)
+          endpoint.value = updatedEndpoint
+        }
+      },
+      {
+        deep: true,
+      }
+    )
+    const filter = () => {
+      if (!dateRef.value.start_date || !dateRef.value.end_date) {
+        $q.notify({
+          color: 'negative',
+          message: 'Date Range not set!',
+          icon: 'report_problem',
+        })
+      } else {
+        router.push(
+          `/parties/account/${route.params.id}/?start_date=${dateRef.value.start_date}&end_date=${dateRef.value.end_date}`
+        )
+      }
+    }
     return {
       fields,
       // journalQueryFilter,
       TransactionTable,
       fetchData,
       dateRef,
-      resetDate
+      resetDate,
+      endpoint,
+      filter
     }
   },
   created() {
-    const endpoint = `/v1/parties/${this.$route.params.id}/transactions/${this.$route.query.start_date || this.$route.query.end_date ? `?start_date=${this.$route.query.start_date}&end_date=${this.$route.query.end_date}` : ''}`
     if (this.$route.query.start_date && this.$route.query.end_date) {
       this.dateRef = {
         start_date: this.$route.query.start_date,
         end_date: this.$route.query.end_date
       }
     }
-    useApi(endpoint, { method: 'GET' })
+    useApi(this.endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data
       })
