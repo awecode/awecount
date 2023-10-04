@@ -40,23 +40,23 @@
       </td>
       <td>
         <span v-if="!props.config.hide_sums">
-          {{ Math.round(newTotalObj.transaction_dr * 100) / 100 }}
+          {{ $nf(newTotalObj.transaction_dr) }}
         </span>
       </td>
       <td>
         <span v-if="!props.config.hide_sums">
-          {{ Math.round(newTotalObj.transaction_cr * 100) / 100 }}
+          {{ $nf(newTotalObj.transaction_cr) }}
         </span>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
           <span v-if="!props.config.hide_sums">{{
-            Math.round(newTotalObj.closing_dr * 100) / 100
+            $nf(newTotalObj.closing_dr)
           }}</span>
         </td>
         <td>
           <span v-if="!props.config.hide_sums">{{
-            Math.round(newTotalObj.closing_cr * 100) / 100
+            $nf(newTotalObj.closing_cr)
           }}</span>
         </td>
         <td>
@@ -114,12 +114,12 @@
       </td>
       <td>
         <span v-if="!props.config.hide_sums">{{
-          Math.round(showTotalObject.transaction_dr * 100) / 100
+          $nf(showTotalObject.transaction_dr)
         }}</span>
       </td>
       <td>
         <span v-if="!props.config.hide_sums">{{
-          Math.round(showTotalObject.transaction_cr * 100) / 100
+          $nf(showTotalObject.transaction_cr)
         }}</span>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
@@ -171,8 +171,8 @@
         <td v-else>
           {{ calculateNet(activeObject, 'opening') }}
         </td>
-        <td>{{ Math.round(activeObject.transaction_dr * 100) / 100 }}</td>
-        <td>{{ Math.round(activeObject.transaction_cr * 100) / 100 }}</td>
+        <td>{{ $nf(activeObject.transaction_dr) }}</td>
+        <td>{{ $nf(activeObject.transaction_cr) }}</td>
         <template v-if="props.config.show_opening_closing_dr_cr">
           <td>{{ activeObject.closing_dr }}</td>
           <td>{{ activeObject.closing_cr }}</td>

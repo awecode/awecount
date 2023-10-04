@@ -108,12 +108,12 @@
       </template>
       <template v-slot:body-cell-tds_amount="props">
         <q-td :props="props">
-          <span>{{ Math.round(props.row.tds_amount * 100) / 100 }}</span>
+          <span>{{ $nf(props.row.tds_amount) }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-amount="props">
         <q-td :props="props">
-          <span>{{ Math.round(props.row.amount * 100) / 100 }}</span>
+          <span>{{ $nf(props.row.amount) }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">
