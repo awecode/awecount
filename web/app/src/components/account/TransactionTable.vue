@@ -175,10 +175,6 @@ export default {
   },
   setup(props) {
     const store = useLoginStore()
-    interface Amounts {
-      dr: number
-      cr: number
-    }
     const fields = ref(props.fields)
     watch(
       () => props.fields,
