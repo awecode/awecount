@@ -837,6 +837,10 @@ class AccountOpeningBalance(models.Model):
     def get_voucher_no(self):
         return self.pk
 
+    @property
+    def voucher_no(self):
+        return self.pk
+
     def get_source_id(self):
         return self.pk
 
