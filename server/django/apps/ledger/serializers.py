@@ -342,7 +342,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
-        v_type = obj.journal_entry.content_type.name
+        v_type = obj.content_type_model
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':

@@ -68,26 +68,30 @@ class TransactionsViewMixin(object):
         raw_query = f"""
         WITH AccountAggregation AS (
         SELECT
+            je.id AS journal_entry_id,
             je.source_voucher_id,
+            je.date,
+            ct.model AS content_type_model,
             ARRAY_AGG(DISTINCT t.account_id) AS account_ids,
-            STRING_AGG(DISTINCT acc.name, 'ǯ') AS account_names
+            STRING_AGG(DISTINCT acc.name, ',') AS account_names
         FROM
             ledger_transaction AS t
         JOIN
             ledger_journalentry AS je ON t.journal_entry_id = je.id
         JOIN
             ledger_account AS acc ON t.account_id = acc.id
+        JOIN
+            django_content_type AS ct ON je.content_type_id = ct.id
         WHERE
             t.account_id NOT IN ({account_id_list_str})
         GROUP BY
-            je.source_voucher_id,
-            je.date
+            je.id, je.source_voucher_id, je.date, ct.model
     )
 
     SELECT
         1 as id,
-        je.source_voucher_id as source_id,
-        ct.model AS content_type_model,
+        aa.source_voucher_id as source_id,
+        aa.content_type_model as content_type_model,
         SUM(t.dr_amount) AS total_dr_amount,
         SUM(t.cr_amount) AS total_cr_amount,
         aa.account_ids,
@@ -95,21 +99,17 @@ class TransactionsViewMixin(object):
     FROM
         ledger_transaction AS t
     JOIN
-        ledger_journalentry AS je ON t.journal_entry_id = je.id
-    JOIN
-        django_content_type AS ct ON je.content_type_id = ct.id
-    LEFT JOIN
-        AccountAggregation AS aa ON je.source_voucher_id = aa.source_voucher_id
+        AccountAggregation AS aa ON t.journal_entry_id = aa.journal_entry_id
     WHERE
         t.account_id IN ({account_id_list_str})
     GROUP BY
-        je.source_voucher_id,
-        je.date,
-        ct.model,
+        aa.source_voucher_id,
+        aa.date,
+        aa.content_type_model,
         aa.account_ids,
         aa.account_names
     ORDER BY
-        je.date DESC
+        aa.date DESC
         """
 
 
