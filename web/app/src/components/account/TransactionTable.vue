@@ -61,23 +61,13 @@
         <td class="text-left">Transactions</td>
         <td></td>
         <td class="text-left">
-          {{
-            Math.round((fields.aggregate.total.dr_amount__sum || 0) * 100) / 100
-          }}
+          {{ $nf(fields.aggregate.total.dr_amount__sum, 2) }}
         </td>
         <td class="text-left">
-          {{
-            Math.round((fields.aggregate.total.cr_amount__sum || 0) * 100) / 100
-          }}
+          {{ $nf(fields.aggregate.total.cr_amount__sum, 2) }}
         </td>
         <td class="text-left">
-          {{
-            Math.round(
-              ((fields.aggregate.total.dr_amount__sum || 0) -
-                (fields.aggregate.total.cr_amount__sum || 0)) *
-                100
-            ) / 100
-          }}
+          {{ $nf((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0), 2) }}
         </td>
       </tr>
       <tr
@@ -90,31 +80,15 @@
         <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{
-            Math.round(
-              (fields.aggregate.opening.dr_amount__sum || 0) +
-                (fields.aggregate.total.dr_amount__sum || 0) * 100
-            ) / 100
-          }}
+          {{ $nf((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum || 0), 2) }}
         </td>
         <td class="text-left">
-          {{
-            Math.round(
-              ((fields.aggregate.opening.cr_amount__sum || 0) +
-                (fields.aggregate.total.cr_amount__sum || 0)) *
-                100
-            ) / 100
-          }}
+          {{ $nf((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum || 0), 2) }}
         </td>
         <td class="text-left">
-          {{
-            Math.round(
-              ((fields.aggregate.opening.dr_amount__sum || 0) +
-                (fields.aggregate.total.dr_amount__sum || 0) -
-                ((fields.aggregate.opening.cr_amount__sum || 0) +
-                  (fields.aggregate.total.cr_amount__sum || 0)) || 0) * 100
-            ) / 100
-          }}
+          {{ $nf((fields.aggregate.opening.dr_amount__sum || 0) + (fields.aggregate.total.dr_amount__sum ||
+            0) - ((fields.aggregate.opening.cr_amount__sum || 0) + (fields.aggregate.total.cr_amount__sum ||
+              0)), 2) }}
         </td>
       </tr>
       <tr v-for="(transaction, index) in mergedTransactions" :key="index">
@@ -153,16 +127,8 @@
           >
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
-        <td>
-          <span v-if="transaction.dr_amount">{{
-            Math.round((transaction.dr_amount || 0) * 100) / 100
-          }}</span>
-        </td>
-        <td>
-          <span v-if="transaction.cr_amount">{{
-            Math.round((transaction.cr_amount || 0) * 100) / 100
-          }}</span>
-        </td>
+        <td><span v-if="transaction.dr_amount">{{ $nf(transaction.dr_amount, 2) }}</span></td>
+        <td><span v-if="transaction.cr_amount">{{ $nf(transaction.cr_amount, 2) }}</span></td>
         <td v-if="fields.aggregate"></td>
       </tr>
 
@@ -179,24 +145,13 @@
         <td class="text-left">Total</td>
         <td></td>
         <td class="text-left">
-          {{
-            Math.round((fields.aggregate.total.dr_amount__sum || 0) * 100) / 100
-          }}
+          {{ $nf(fields.aggregate.total.dr_amount__sum, 2) }}
         </td>
         <td class="text-left">
-          {{
-            Math.round((fields.aggregate.total.cr_amount__sum || 0) * 100) / 100
-          }}
+          {{ $nf(fields.aggregate.total.cr_amount__sum, 2) }}
         </td>
-        <td>
-          {{
-            Math.round(
-              ((fields.aggregate.total.dr_amount__sum || 0) -
-                (fields.aggregate.total.cr_amount__sum || 0)) *
-                100
-            ) / 100
-          }}
-        </td>
+        <td>{{ $nf((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0), 2)
+        }}</td>
       </tr>
       <tr>
         <td colspan="7">

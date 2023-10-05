@@ -48,7 +48,7 @@
                 ? 'col-6'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount_type"
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
                   :error-message="errors.discount_type" :options="formDefaults.collections
                     ? staticOptions.discount_types.concat(
                       formDefaults?.collections.discounts
@@ -75,7 +75,7 @@
               </div>
             </div>
             <div class="col-md-6 col-12">
-              <date-picker v-model="fields.date" label="Date" :error-message="errors.date"
+              <date-picker v-model="fields.date" label="Date *" :error-message="errors.date"
                 :error="!!errors.date"></date-picker>
             </div>
           </div>

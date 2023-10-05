@@ -33,6 +33,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SelectWithFetch: typeof import('./src/components/SelectWithFetch.vue')['default']
     TableNode: typeof import('./src/components/report/TableNode.vue')['default']
+    TablePagination: typeof import('./src/components/account/TablePagination.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
