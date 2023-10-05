@@ -315,21 +315,30 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     # account_name = serializers.StringRelatedField(source='account')
     # accounts = serializers.SerializerMethodField()
 
+    account_ids = serializers.ReadOnlyField()  # New field for the aggregated account IDs
+    account_names = serializers.ReadOnlyField()
+
     source_id = serializers.ReadOnlyField()
     count = serializers.ReadOnlyField()
     # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
 
-    def get_accounts(self, obj):
-        # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
-        accounts = []
-        for transaction in obj.journal_entry.transactions.all():
-            accounts.append(
-                {'id': transaction.account_id,
-                 'name': transaction.account.name,
-                 'source_type': self.get_source_type(transaction)
-                 }
-            )
-        return accounts
+    def xget_accounts(self, obj):
+        # Split the comma-separated strings and create a list of dictionaries
+        names = obj.account_names.split(',')
+        ids = [int(id) for id in obj.account_ids.split(',')]
+        return [{'id': id, 'name': name} for id, name in zip(ids, names)]
+
+    # def get_accounts(self, obj):
+    #     # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
+    #     accounts = []
+    #     for transaction in obj.journal_entry.transactions.all():
+    #         accounts.append(
+    #             {'id': transaction.account_id,
+    #              'name': transaction.account.name,
+    #              'source_type': self.get_source_type(transaction)
+    #              }
+    #         )
+    #     return accounts
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
@@ -344,7 +353,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount')
+        fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
