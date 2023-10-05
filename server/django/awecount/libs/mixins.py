@@ -62,7 +62,7 @@ class TransactionsViewMixin(object):
         account_id_list_str = ','.join([str(account_id) for account_id in account_ids])
 
         # transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).values(
-        #     'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
+        # 'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
         #     count=Count('journal_entry__source_voucher_id'))
 
         raw_query = f"""
@@ -79,7 +79,7 @@ JOIN
 JOIN
     django_content_type AS ct ON je.content_type_id = ct.id
 WHERE
-    t.account_id IN ({account_id_list_str})  -- Replace with your list of account_ids
+    t.account_id IN ({account_id_list_str})
 GROUP BY
     je.source_voucher_id,
     je.date,
@@ -87,6 +87,8 @@ GROUP BY
 ORDER BY
     je.date DESC  -- To order by the journal entry date
         """
+
+
 
         transactions = Transaction.objects.raw(raw_query)
 
