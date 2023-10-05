@@ -163,7 +163,6 @@
 </template>
 
 <script lang="ts">
-import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
@@ -179,11 +178,6 @@ export default {
     interface Amounts {
       dr: number
       cr: number
-    }
-    interface Fields {
-      customer_account: Record<string, string | number | Amounts> | null
-      name: string
-      supplier_account: Record<string, string | number | Amounts> | null
     }
     const fields = ref(props.fields)
     watch(
