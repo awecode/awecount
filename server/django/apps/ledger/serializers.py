@@ -310,16 +310,17 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
 class TransactionEntrySerializer(serializers.ModelSerializer):
     date = serializers.ReadOnlyField(source='journal_entry.date')
     source_type = serializers.SerializerMethodField()
-    dr_amount = RoundedField()
-    cr_amount = RoundedField()
+    dr_amount = RoundedField(source='total_dr_amount')
+    cr_amount = RoundedField(source='total_cr_amount')
     # account_name = serializers.StringRelatedField(source='account')
-    accounts = serializers.SerializerMethodField()
+    # accounts = serializers.SerializerMethodField()
 
-    source_id = serializers.ReadOnlyField(source='journal_entry.source_voucher_id')
-    voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
+    source_id = serializers.ReadOnlyField()
+    count = serializers.ReadOnlyField()
+    # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
 
     def get_accounts(self, obj):
-        # TODO Optimize
+        # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
         accounts = []
         for transaction in obj.journal_entry.transactions.all():
             accounts.append(
@@ -343,9 +344,7 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = (
-        'id', 'dr_amount', 'cr_amount', 'account_id', 'journal_entry', 'date', 'source_type', 'accounts', 'source_id',
-        'voucher_no')
+        fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount')
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):

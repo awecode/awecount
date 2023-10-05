@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Sum, Prefetch
+from django.db.models import Sum, Prefetch, Count
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -58,11 +58,38 @@ class TransactionsViewMixin(object):
         account_ids = self.get_account_ids(obj)
         start_date = param.get('start_date', None)
         end_date = param.get('end_date', None)
-        transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).order_by(
-            '-journal_entry__date', '-pk') \
-            .select_related('journal_entry__content_type').prefetch_related(
-            Prefetch('journal_entry__transactions', Transaction.objects.select_related('account')))
 
+        account_id_list_str = ','.join([str(account_id) for account_id in account_ids])
+
+        # transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).values(
+        #     'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
+        #     count=Count('journal_entry__source_voucher_id'))
+        
+        raw_query = f"""
+        SELECT
+    1 as id,
+    je.source_voucher_id as source_id,
+    ct.model AS content_type_model,
+    SUM(t.dr_amount) AS total_dr_amount,
+    SUM(t.cr_amount) AS total_cr_amount
+FROM 
+    ledger_transaction AS t
+JOIN 
+    ledger_journalentry AS je ON t.journal_entry_id = je.id
+JOIN 
+    django_content_type AS ct ON je.content_type_id = ct.id
+WHERE 
+    t.account_id IN ({account_id_list_str})  -- Replace with your list of account_ids
+GROUP BY 
+    je.source_voucher_id,
+    je.date,
+    ct.model
+ORDER BY 
+    je.date DESC  -- To order by the journal entry date
+        """
+        
+        transactions = Transaction.objects.raw(raw_query)
+        
         aggregate = {}
         if start_date or end_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
