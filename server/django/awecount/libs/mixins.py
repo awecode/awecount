@@ -64,7 +64,7 @@ class TransactionsViewMixin(object):
         # transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).values(
         #     'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
         #     count=Count('journal_entry__source_voucher_id'))
-        
+
         raw_query = f"""
         SELECT
     1 as id,
@@ -72,24 +72,24 @@ class TransactionsViewMixin(object):
     ct.model AS content_type_model,
     SUM(t.dr_amount) AS total_dr_amount,
     SUM(t.cr_amount) AS total_cr_amount
-FROM 
+FROM
     ledger_transaction AS t
-JOIN 
+JOIN
     ledger_journalentry AS je ON t.journal_entry_id = je.id
-JOIN 
+JOIN
     django_content_type AS ct ON je.content_type_id = ct.id
-WHERE 
+WHERE
     t.account_id IN ({account_id_list_str})  -- Replace with your list of account_ids
-GROUP BY 
+GROUP BY
     je.source_voucher_id,
     je.date,
     ct.model
-ORDER BY 
+ORDER BY
     je.date DESC  -- To order by the journal entry date
         """
-        
+
         transactions = Transaction.objects.raw(raw_query)
-        
+
         aggregate = {}
         if start_date or end_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
