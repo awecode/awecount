@@ -122,12 +122,10 @@ class TransactionsViewMixin(object):
 
         aggregate = {}
         if start_date or end_date:
-           aggregate['total'] = {
+            aggregate['total'] = {
                 'dr_amount': sum([t.total_dr_amount for t in transactions if t.total_dr_amount is not None]),
                 'cr_amount': sum([t.total_cr_amount for t in transactions if t.total_cr_amount is not None])
             }
-            
-
 
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
@@ -143,8 +141,10 @@ class TransactionsViewMixin(object):
                 'cr_amount': sum([t.total_cr_amount for t in page if t.total_cr_amount is not None])
             },
             'opening_balance': {
-                'dr_amount': sum([t.total_dr_amount for t in transactions_from_previous_pages if t.total_dr_amount is not None]),
-                'cr_amount': sum([t.total_cr_amount for t in transactions_from_previous_pages if t.total_cr_amount is not None])
+                'dr_amount': sum(
+                    [t.total_dr_amount for t in transactions_from_previous_pages if t.total_dr_amount is not None]),
+                'cr_amount': sum(
+                    [t.total_cr_amount for t in transactions_from_previous_pages if t.total_cr_amount is not None])
             }
         }
 
