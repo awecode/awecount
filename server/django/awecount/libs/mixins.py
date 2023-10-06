@@ -76,7 +76,7 @@ class TransactionsViewMixin(object):
             ct.model AS content_type_model,
             ct.app_label AS content_type_app_label,
             ARRAY_AGG(DISTINCT t.account_id) AS account_ids,
-            STRING_AGG(DISTINCT acc.name, ',') AS account_names
+            STRING_AGG(DISTINCT acc.name, '\u0283') AS account_names
         FROM
             ledger_transaction AS t
         JOIN
@@ -153,14 +153,8 @@ class TransactionsViewMixin(object):
 
                  SELECT
                      SUM(t.id) as id,
-                     aa.source_voucher_id as source_id,
-                     aa.content_type_model as content_type_model,
-                     aa.content_type_app_label as content_type_app_label,
                      SUM(t.dr_amount) AS total_dr_amount,
-                     SUM(t.cr_amount) AS total_cr_amount,
-                     aa.account_ids,
-                     aa.account_names,
-                     aa.date
+                     SUM(t.cr_amount) AS total_cr_amount
                  FROM
                      ledger_transaction AS t
                  JOIN
