@@ -67,16 +67,16 @@
             <td colspan="2"></td>
             <th class="text-left">
               {{
-                $nf(fields.supplier_account.amounts.dr ||
-                  0 + fields.customer_account.amounts.dr ||
-                  0, 2)
+                $nf((fields.supplier_account.amounts.dr ||
+                  0) + (fields.customer_account.amounts.dr ||
+                  0), 2)
               }}
             </th>
             <th class="text-left">
               {{
-                $nf(fields.supplier_account.amounts.cr ||
-                  0 + fields.customer_account.amounts.cr ||
-                  0, 2)
+                $nf((fields.supplier_account.amounts.cr ||
+                  0) + (fields.customer_account.amounts.cr ||
+                  0), 2)
               }}
             </th>
             <th class="text-left">
