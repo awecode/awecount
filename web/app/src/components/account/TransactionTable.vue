@@ -54,41 +54,47 @@
           {{ $nf((fields.amounts.dr || 0) - (fields.amounts.cr || 0), 2) }}
         </td>
       </tr> -->
-      <tr class="text-weight-bold" v-if="$route.query.end_date">
-        <td colspan="2"></td>
-        <td class="text-left">Final Closing</td>
-        <td></td>
-        <td class="text-left">
-          {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2) }}
-        </td>
-        <td class="text-left">
-          {{ $nf(fields.aggregate.total.cr + fields.aggregate.opening.cr, 2) }}
-        </td>
-        <td class="text-left">
-          {{
-            $nf(
-              fields.aggregate.total.dr +
-              fields.aggregate.opening.dr -
-              (fields.aggregate.total.cr + fields.aggregate.opening.cr),
-              2
-            )
-          }}
-        </td>
-      </tr>
-      <tr class="text-weight-bold" v-else>
-        <td colspan="2"></td>
-        <td class="text-left">Final Closing</td>
-        <td></td>
-        <td class="text-left">
-          {{ $nf(fields.amounts.dr || 0, 2) }}
-        </td>
-        <td class="text-left">
-          {{ $nf(fields.amounts.dr || 0, 2) }}
-        </td>
-        <td class="text-left">
-          {{ $nf((fields.amounts.dr || 0) - (fields.amounts.cr || 0), 2) }}
-        </td>
-      </tr>
+      <template v-if="fields.amounts">
+        <tr class="text-weight-bold" v-if="$route.query.end_date">
+          <td colspan="2"></td>
+          <td class="text-left">Final Closing</td>
+          <td></td>
+          <td class="text-left">
+            {{
+              $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2)
+            }}
+          </td>
+          <td class="text-left">
+            {{
+              $nf(fields.aggregate.total.cr + fields.aggregate.opening.cr, 2)
+            }}
+          </td>
+          <td class="text-left">
+            {{
+              $nf(
+                fields.aggregate.total.dr +
+                fields.aggregate.opening.dr -
+                (fields.aggregate.total.cr + fields.aggregate.opening.cr),
+                2
+              )
+            }}
+          </td>
+        </tr>
+        <tr class="text-weight-bold" v-else>
+          <td colspan="2"></td>
+          <td class="text-left">Final Closing</td>
+          <td></td>
+          <td class="text-left">
+            {{ $nf(fields.amounts.dr || 0, 2) }}
+          </td>
+          <td class="text-left">
+            {{ $nf(fields.amounts.cr || 0, 2) }}
+          </td>
+          <td class="text-left">
+            {{ $nf((fields.amounts.dr || 0) - (fields.amounts.cr || 0), 2) }}
+          </td>
+        </tr>
+      </template>
       <tr class="text-weight-bold" v-if="$route.query.start_date">
         <td colspan="2"></td>
         <td class="text-left">Closing</td>
