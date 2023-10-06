@@ -80,7 +80,7 @@
               </span>
               {{ fields.party_name }}, {{ fields.party_address }}</span>
             <span><span class="text-weight-medium text-grey-8">Amount: </span> NRS
-              {{ Math.round(fields.amount * 100) / 100 }}</span>
+              {{ $nf(fields.amount) }}</span>
             <span><span class="text-weight-medium text-grey-8">In words: </span>
               {{ numberToText(fields.amount) }}</span>
           </div>
@@ -201,7 +201,7 @@
               </div>
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">Amount</span>
-                <span>Rs. {{ Math.round(fields.amount * 100) / 100 }}</span>
+                <span>Rs. {{ $nf(fields.amount) }}</span>
               </div>
             </div>
             <div class="row q-gutter-y-md">
@@ -212,7 +212,7 @@
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">
                   TDS Amount</span>
-                <span>{{ Math.round(fields.tds_amount * 100) / 100 }}</span>
+                <span>{{ $nf(fields.tds_amount) }}</span>
               </div>
             </div>
           </div>

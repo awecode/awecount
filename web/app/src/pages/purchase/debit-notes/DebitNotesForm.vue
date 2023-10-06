@@ -37,7 +37,7 @@
                 </q-card>
               </q-dialog>
             </div>
-            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date"></date-picker>
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date *" :error="!!errors.date" :error-message="errors.date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -46,7 +46,7 @@
                 ? 'col-4'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount" :options="formDefaults.collections
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount" :options="formDefaults.collections
                   ? staticOptions.discount_types.concat(
                     formDefaults?.collections.discounts
                   )
@@ -64,7 +64,7 @@
               </div>
             </div>
             <div class="row col-md-6 col-12">
-              <q-select v-model="fields.mode" label="Mode" class="col-12" :error-message="errors.mode"
+              <q-select v-model="fields.mode" label="Mode *" class="col-12" :error-message="errors.mode"
                 :error="!!errors.mode" :options="staticOptions.modes.concat(
                   formDefaults.collections?.bank_accounts
                 )

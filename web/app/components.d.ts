@@ -34,6 +34,7 @@ declare module '@vue/runtime-core' {
     SelectItemAccountsWithTypes: typeof import('./src/components/SelectItemAccountsWithTypes.vue')['default']
     SelectWithFetch: typeof import('./src/components/SelectWithFetch.vue')['default']
     TableNode: typeof import('./src/components/report/TableNode.vue')['default']
+    TablePagination: typeof import('./src/components/account/TablePagination.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
