@@ -72,6 +72,7 @@ class TransactionsViewMixin(object):
             je.source_voucher_id,
             je.date,
             ct.model AS content_type_model,
+            ct.app_label AS content_type_app_label,
             ARRAY_AGG(DISTINCT t.account_id) AS account_ids,
             STRING_AGG(DISTINCT acc.name, ',') AS account_names
         FROM
@@ -84,18 +85,22 @@ class TransactionsViewMixin(object):
             django_content_type AS ct ON je.content_type_id = ct.id
         WHERE
             t.account_id NOT IN ({account_id_list_str})
+            {"AND je.date >= '" + start_date + "'" if start_date else ''}
+            {"AND je.date <= '" + end_date + "'" if end_date else ''}
         GROUP BY
-            je.id, je.source_voucher_id, je.date, ct.model
+            je.id, je.source_voucher_id, je.date, ct.model, ct.app_label
     )
 
     SELECT
-        1 as id,
+        SUM(t.id) as id,
         aa.source_voucher_id as source_id,
         aa.content_type_model as content_type_model,
+        aa.content_type_app_label as content_type_app_label,
         SUM(t.dr_amount) AS total_dr_amount,
         SUM(t.cr_amount) AS total_cr_amount,
         aa.account_ids,
-        aa.account_names
+        aa.account_names,
+        aa.date
     FROM
         ledger_transaction AS t
     JOIN
@@ -106,31 +111,42 @@ class TransactionsViewMixin(object):
         aa.source_voucher_id,
         aa.date,
         aa.content_type_model,
+        aa.content_type_app_label,
         aa.account_ids,
         aa.account_names
     ORDER BY
         aa.date DESC
         """
 
-
-
         transactions = Transaction.objects.raw(raw_query)
 
         aggregate = {}
         if start_date or end_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
-            if start_date == end_date:
-                transactions = transactions.filter(journal_entry__date=start_date)
-            else:
-                transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
-            aggregate['total'] = transactions.aggregate(Sum('dr_amount'), Sum('cr_amount'))
-            aggregate['opening'] = Transaction.objects.select_related('journal_entry__content_type').filter(
-                account_id__in=account_ids, journal_entry__date__lte=start_date).aggregate(Sum('dr_amount'),
-                                                                                           Sum('cr_amount'))
+           aggregate['total'] = {
+                'dr_amount': sum([t.total_dr_amount for t in transactions if t.total_dr_amount is not None]),
+                'cr_amount': sum([t.total_cr_amount for t in transactions if t.total_cr_amount is not None])
+            }
+            
+
 
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data['transactions'] = self.paginator.get_response_data(serializer.data)
+
+        # paginated_aggregate
+        limit = self.paginator.page_size
+        offset = (self.paginator.page.number - 1) * limit
+        transactions_from_previous_pages = transactions[:offset]
+        data['page_aggregate'] = {
+            'total': {
+                'dr_amount': sum([t.total_dr_amount for t in page if t.total_dr_amount is not None]),
+                'cr_amount': sum([t.total_cr_amount for t in page if t.total_cr_amount is not None])
+            },
+            'opening_balance': {
+                'dr_amount': sum([t.total_dr_amount for t in transactions_from_previous_pages if t.total_dr_amount is not None]),
+                'cr_amount': sum([t.total_cr_amount for t in transactions_from_previous_pages if t.total_cr_amount is not None])
+            }
+        }
+
         data['aggregate'] = aggregate
         return Response(data)

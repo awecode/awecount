@@ -816,6 +816,9 @@ class AccountOpeningBalance(models.Model):
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
+        # self.account.opening_dr = self.opening_dr
+        # self.account.opening_cr = self.opening_cr
+        # self.account.save()
         opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference',
                                                          default=True)
         dr_entries = [

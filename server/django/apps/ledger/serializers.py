@@ -307,8 +307,8 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
         fields = ('id', 'account', 'opening_dr', 'opening_cr')
 
 
-class TransactionEntrySerializer(serializers.ModelSerializer):
-    date = serializers.ReadOnlyField(source='journal_entry.date')
+class TransactionEntrySerializer(serializers.Serializer):
+    date = serializers.ReadOnlyField()
     source_type = serializers.SerializerMethodField()
     dr_amount = RoundedField(source='total_dr_amount')
     cr_amount = RoundedField(source='total_cr_amount')
@@ -342,18 +342,24 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
+        from django.apps import apps
+
         v_type = obj.content_type_model
+        # ctype = ContentType.objects.get(model=v_type)
+        m = apps.get_model(obj.content_type_app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
             v_type = v_type[:-10]
         if v_type == 'account':
             return 'Opening Balance'
-        return v_type.strip().title()
-
-    class Meta:
-        model = Transaction
-        fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
+        # FIXME: remove 'row' from the name properly
+        # return v_type.strip().title()
+        return m._meta.verbose_name.title().replace('Row', '').strip()
+    
+    # class Meta:
+    #     model = Transaction
+    #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
