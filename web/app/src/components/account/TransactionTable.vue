@@ -68,8 +68,8 @@
           {{
             $nf(
               fields.aggregate.total.dr +
-                fields.aggregate.opening.dr -
-                (fields.aggregate.total.cr + fields.aggregate.opening.cr),
+              fields.aggregate.opening.dr -
+              (fields.aggregate.total.cr + fields.aggregate.opening.cr),
               2
             )
           }}
@@ -97,8 +97,8 @@
           {{
             $nf(
               fields.page_cumulative.current.dr +
-                fields.page_cumulative.next.dr +
-                fields.aggregate.opening.dr,
+              fields.page_cumulative.next.dr +
+              fields.aggregate.opening.dr,
               2
             )
           }}
@@ -107,8 +107,8 @@
           {{
             $nf(
               fields.page_cumulative.current.cr +
-                fields.page_cumulative.next.cr +
-                fields.aggregate.opening.cr,
+              fields.page_cumulative.next.cr +
+              fields.aggregate.opening.cr,
               2
             )
           }}
@@ -117,11 +117,11 @@
           {{
             $nf(
               fields.page_cumulative.current.dr +
-                fields.page_cumulative.next.dr +
-                fields.aggregate.opening.dr -
-                (fields.page_cumulative.current.cr +
-                  fields.page_cumulative.next.cr +
-                  fields.aggregate.opening.cr),
+              fields.page_cumulative.next.dr +
+              fields.aggregate.opening.dr -
+              (fields.page_cumulative.current.cr +
+                fields.page_cumulative.next.cr +
+                fields.aggregate.opening.cr),
               2
             )
           }}
@@ -135,7 +135,7 @@
           {{
             $nf(
               fields.page_cumulative.current.dr +
-                fields.page_cumulative.next.dr,
+              fields.page_cumulative.next.dr,
               2
             )
           }}
@@ -144,7 +144,7 @@
           {{
             $nf(
               fields.page_cumulative.current.cr +
-                fields.page_cumulative.next.cr,
+              fields.page_cumulative.next.cr,
               2
             )
           }}
@@ -153,51 +153,38 @@
           {{
             $nf(
               fields.page_cumulative.current.dr +
-                fields.page_cumulative.next.dr -
-                (fields.page_cumulative.current.cr +
-                  fields.page_cumulative.next.cr),
+              fields.page_cumulative.next.dr -
+              (fields.page_cumulative.current.cr +
+                fields.page_cumulative.next.cr),
               2
             )
           }}
         </td>
       </tr>
-      <tr
-        v-for="(transaction, index) in fields.transactions.results"
-        :key="index"
-      >
+      <tr v-for="(transaction, index) in fields.transactions.results" :key="index">
         <td>
           {{
             store.isCalendarInAD
-              ? transaction.date
-              : DateConverter.getRepresentation(transaction.date, 'bs')
+            ? transaction.date
+            : DateConverter.getRepresentation(transaction.date, 'bs')
           }}
         </td>
         <td>{{ transaction.source_type }}</td>
         <td>
-          <div v-for="account in transaction.accounts" :key="account.id">
-            <router-link
-              v-if="account.id !== fields.id"
-              :to="`/account/${account.id}/view/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-              :title="`${account.name}`"
-            >
+          <account-list :account_ids="transaction.account_ids" :account_names="transaction.account_names"></account-list>
+          <!-- <div v-for="(id, index) in transaction.account_ids" :key="id">
+            <router-link :to="`/account/${id}/view/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${transaction.account_names}`">
               {{ account.name }}
             </router-link>
-          </div>
+          </div> -->
         </td>
         <td>
-          <router-link
-            v-if="
-              checkPermissions(
-                getPermissionsWithSourceType[transaction.source_type]
-              ) && transaction.voucher_no
-            "
-            class="text-blue"
-            style="text-decoration: none"
-            :to="getVoucherUrl(transaction)"
-            >{{ transaction.voucher_no }}</router-link
-          >
+          <router-link v-if="checkPermissions(
+            getPermissionsWithSourceType[transaction.source_type]
+          ) && transaction.voucher_no
+            " class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
+    transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
         <td>
@@ -213,15 +200,11 @@
         <td v-if="fields.aggregate"></td>
       </tr>
 
-      <tr
-        class="text-weight-bold"
-        v-if="
-          fields.aggregate &&
-          fields.aggregate.total &&
-          (fields.aggregate.total.dr_amount__sum ||
-            fields.aggregate.total.cr_amount__sum)
-        "
-      >
+      <tr class="text-weight-bold" v-if="fields.aggregate &&
+        fields.aggregate.total &&
+        (fields.aggregate.total.dr_amount__sum ||
+          fields.aggregate.total.cr_amount__sum)
+        ">
         <td colspan="2"></td>
         <td class="text-left">Total</td>
         <td></td>
@@ -235,7 +218,7 @@
           {{
             $nf(
               (fields.aggregate.total.dr_amount__sum || 0) -
-                (fields.aggregate.total.cr_amount__sum || 0),
+              (fields.aggregate.total.cr_amount__sum || 0),
               2
             )
           }}
@@ -283,8 +266,8 @@
           {{
             $nf(
               fields.aggregate.opening.dr +
-                fields.page_cumulative.next.dr -
-                (fields.aggregate.opening.cr + fields.page_cumulative.next.cr),
+              fields.page_cumulative.next.dr -
+              (fields.aggregate.opening.cr + fields.page_cumulative.next.cr),
               2
             )
           }}
