@@ -185,9 +185,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def fifo_update_purchase_rows(self, sales_rows):
         for row in sales_rows:
             sold_items = row.sold_items
-            # purchase_row_ids = [int(k) for k, v in sold_items.items()]
-            # purchase_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids)
-            # 
             updates = [PurchaseVoucherRow.objects.filter(id=key)\
                     .update(remaining_quantity=F("remaining_quantity")+value) for key, value in sold_items.items()]
             row.sold_items = {}
@@ -392,12 +389,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         
     def fifo_update_sales_rows(self, purchase_voucher):
         rows = purchase_voucher.rows.all()
-        # row_ids = purchase_voucher.rows.values_list("id", flat=True)
-        # filter_conditions = Q()
-        # for row_id in row_ids:
-            # filter_conditions |= Q(sold_items__has_key=str(row_id))
-        # sales_voucher_rows = SalesVoucherRow.objects.filter(filter_conditions)
-        # import ipdb; ipdb.set_trace()
+
         for row in rows:
             row.remaining_quantity = 0
             row.save()
@@ -405,15 +397,11 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 .filter(sold_items__has_key=str(row.id))
             for sales_row in sales_voucher_rows:
                 sold_items = sales_row.sold_items
-                # import ipdb; ipdb.set_trace()
                 quantity = sold_items.pop(str(row.id))
-                # import ipdb; ipdb.set_trace()
-                # quantity = popped_data[str(row.id)]
                 purchase_rows = PurchaseVoucherRow.objects.filter(
                 item_id=sales_row.item_id,
                 remaining_quantity__gt=0
             ).order_by("voucher__date", "id")
-                # sales_row.sold_items[str(row.id)] = 0
                 for purchase_row in purchase_rows:
                     if purchase_row.remaining_quantity == quantity:
                         purchase_row.remaining_quantity = 0
