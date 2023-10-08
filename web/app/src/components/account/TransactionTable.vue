@@ -241,7 +241,7 @@ export default {
           const sourceType = transaction.source_type
             .toLowerCase()
             .replace(' ', '')
-          const key = `${sourceType}-${123}`
+          const key = `${sourceType}-${transaction.source_id}`
           if (key in dct && dct[key].date === transaction.date) {
             dct[key].accounts.push('agvsghvasgcvag')
             if (transaction.dr_amount) {
