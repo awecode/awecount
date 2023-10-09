@@ -434,6 +434,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         purchase_voucher = self.get_object()
+        message = request.data.get('message')
+        if not message:
+            raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
 
         if request.company.inventory_setting.enable_fifo:
             row_ids = purchase_voucher.rows.values_list("id", flat=True)
