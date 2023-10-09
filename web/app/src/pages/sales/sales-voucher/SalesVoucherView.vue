@@ -140,7 +140,7 @@ export default {
         })
         .catch((data) => {
           if (data.status === 422) {
-            useHandleDeleteFifoInconsistency(endpoint, data, body)
+            useHandleCancelFifoInconsistency(endpoint, data, body)
           }
         })
   }

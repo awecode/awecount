@@ -60,7 +60,7 @@ declare global {
   const useForm: typeof import('./src/composables/useForm.js')['default']
   const useFormChild: typeof import('quasar')['useFormChild']
   const useGetDataAuth: typeof import('./src/composables/useGetDataAuth.js')['default']
-  const useHandleDeleteFifoInconsistency: typeof import('./src/composables/useHandleDeleteFifoInconsistency')['default']
+  const useHandleCancelFifoInconsistency: typeof import('./src/composables/useHandleCancelFifoInconsistency')['default']
   const useLink: typeof import('vue-router')['useLink']
   const useList: typeof import('./src/composables/useList.js')['default']
   const useMeta: typeof import('quasar')['useMeta']

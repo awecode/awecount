@@ -94,6 +94,7 @@ import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
+import useHandleCancelFifoInconsistency from 'src/composables/useHandleCancelFifoInconsistency'
 interface Fields {
   status: string
   voucher_no: string
@@ -149,45 +150,33 @@ export default {
           }
         })
         .catch((data) => {
-          // TODO: Properly Parse Error and show
           if (data.status === 422) {
-            $q.dialog({
-              title: '<span class="text-orange">Fifo Inconsistency!</span>',
-              message:
-                `<span class="text-grey-8">Reason: ${data.data.detail}` +
-                '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
-              cancel: true,
-              html: true,
-            }).onOk(() => {
-              useApi(endpoint + '?fifo_inconsistency=true', body).then((data) => {
-                if (fields.value) {
-                  fields.value.status = status
-                  if (status === 'Cancelled') {
-                    $q.notify({
-                      color: 'green-6',
-                      message: 'Voucher has been cancelled.',
-                    })
-                    isDeleteOpen.value = false
-                  } else if (status === 'Paid') {
-                    $q.notify({
-                      color: 'green-6',
-                      message: 'Voucher Marked as paid.',
-                    })
-                  }
+            useHandleCancelFifoInconsistency(endpoint, data, body, $q).then((data) => {
+              if (fields.value) {
+                fields.value.status = status
+                if (status === 'Cancelled') {
+                  $q.notify({
+                    color: 'green-6',
+                    message: 'Voucher has been cancelled.',
+                  })
+                  isDeleteOpen.value = false
                 }
-              }).catch((error) => {
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
                 $q.notify({
                   color: 'negative',
                   message: 'Something went Wrong!',
                   icon: 'report_problem',
                 })
-              })
+              }
+            })
+          } else {
+            $q.notify({
+              color: 'red-6',
+              message: 'Something Went Wrong!',
             })
           }
-          $q.notify({
-            color: 'red-6',
-            message: 'Something Went Wrong!',
-          })
         })
     }
     const getDate = computed(() => {
