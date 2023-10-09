@@ -8,6 +8,7 @@ from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
+from awecount.libs.exception import UnprocessableException
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
@@ -259,14 +260,16 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        if request.query_params.get("fifo_inconsistency"):
-            return data
-        else:
-            if request.company.inventory_setting.enable_fifo:
-                # item_ids = [row]
-                # import ipdb; ipdb.set_trace()
-                pass
-            return data
+        if request.company.inventory_setting.enable_fifo:
+            if request.query_params.get("fifo_inconsistency"):
+                    return data
+            else:
+                item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
+                date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+                sales_vouchers = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
+                if sales_vouchers.exists():
+                    raise UnprocessableException(detail="This may cause inconsistencies in FIFO", code="fifo_inconsistency")
+        return data
 
     def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
@@ -302,11 +305,12 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         instance = SalesVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            # if row.item.track_inventory:
             sold_items = update_purchase_rows(request, row)
+            row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
                 row.pop('id')
-            row["sold_items"] = sold_items
             SalesVoucherRow.objects.create(voucher=instance, **row)
 
         if challans:
