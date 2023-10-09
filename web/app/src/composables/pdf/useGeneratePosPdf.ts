@@ -74,7 +74,7 @@ export default function useGeneratePosPdf(
     }" alt="Compony Logo" style="height: 60px; max-width: 200px; object-fit: contain; ${
     compayInfo.logo_url ? '' : 'display: none;'
   }"/>
-    <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%);">${
+    <h1 style="width: 600px; text-align:center; padding-left: 20px; line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
       compayInfo.name
     } ${
         compayInfo.organization_type === 'private_limited'
@@ -85,7 +85,7 @@ export default function useGeneratePosPdf(
           ? 'Ltd.'
           : ''
       }</h1>
-    </div> 
+    </div>
     <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
       <div>${compayInfo.address}</div>
