@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AccountList: typeof import('./src/components/account/AccountList.vue')['default']
     BalanceSheetTableNode: typeof import('./src/components/report/BalanceSheetTableNode.vue')['default']
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
@@ -33,6 +34,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SelectWithFetch: typeof import('./src/components/SelectWithFetch.vue')['default']
     TableNode: typeof import('./src/components/report/TableNode.vue')['default']
+    TablePagination: typeof import('./src/components/account/TablePagination.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']

@@ -55,7 +55,10 @@
               </div>
               <div></div>
             </div>
-            <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
+            <date-picker label="Invoice Date*"
+              v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
+              :error-message="errors?.date"></date-picker>
+            <!-- <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" /> -->
             <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
               :error="!!errors.address"></q-input>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
@@ -66,7 +69,7 @@
                 ? 'col-6'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*"
+                <n-auto-complete v-model="fields.discount_type" label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null" :options="formDefaults.collections
                     ? staticOptions.discount_types.concat(
                       formDefaults?.collections.discounts
@@ -95,7 +98,7 @@
           </div>
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode"
+            <q-select v-model="fields.mode" label="Mode *" class="col-12 col-md-6" :error-message="errors.mode"
               :error="!!errors.mode" :options="staticOptions.modes.concat(
                 formDefaults.collections?.bank_accounts
               )
