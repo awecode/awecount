@@ -81,7 +81,7 @@
               " />
         </div>
       </div>
-      <div v-if="$route.params.id ? enableRowDescription : (!!modalValue.itemObj && enableRowDescription)">
+      <div v-if="$route.params.id ? ((!!modalValue.item_id || !!modalValue.itemObj ) && enableRowDescription) : (!!modalValue.itemObj && enableRowDescription)">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg">
         </q-input>
       </div>
@@ -153,7 +153,6 @@ export default {
           tax_scheme_id: '',
           taxObj: null,
           discount_id: null,
-          itemObj: null,
           trade_discount: false
         }
       },
