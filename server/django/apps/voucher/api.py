@@ -388,7 +388,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise APIException(str(e))
         
     def fifo_update_sales_rows(self, purchase_voucher):
-        rows = purchase_voucher.rows.all()
+        rows = purchase_voucher.rows.select_related("item").all()
 
         for row in rows:
             if row.item.track_inventory:

@@ -264,7 +264,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         else:
             if request.company.inventory_setting.enable_fifo:
                 # item_ids = [row]
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
                 pass
             return data
 
