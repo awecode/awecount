@@ -1,4 +1,5 @@
 <template>
+  {{ runningBalance }}
   <q-markup-table class="box-shadow q-mt-sm" v-if="fields">
     <!-- TODO: aggregate data not availaible, so check if it works -->
     <thead>
@@ -358,6 +359,7 @@ export default {
       dr: number
       cr: number
     }
+    const route = useRoute()
     // interface Fields {
     //   customer_account: Record<string, string | number | Amounts> | null
     //   name: string
@@ -451,29 +453,34 @@ export default {
     //     return dct[key]
     //   })
     // })
-    // const runningBalance = computed(() => {
-    //   const runningBalanceData: Record<
-    //     number,
-    //     Record<string, number | string | null>
-    //   > = {}
-    //   if (mergedTransactions.value && fields.value) {
-    //     const openingBalance = {
-    //       dr: fields.value.aggregate.opening?.dr_amount__sum || 0,
-    //       cr: fields.value.aggregate.opening?.dr_amount__sum || 0,
-    //     }
-    //     let currentRunningBalance = openingBalance
-    //     mergedTransactions.value.forEach((item) => {
-    //       const activeBalance = { ...currentRunningBalance }
-    //       activeBalance.dr =
-    //         activeBalance.dr + (item.dr_amount ? parseInt(item.dr_amount) : 0)
-    //       activeBalance.cr =
-    //         activeBalance.cr + (item.cr_amount ? parseInt(item.cr_amount) : 0)
-    //       runningBalanceData[item.id] = activeBalance
-    //       currentRunningBalance = activeBalance
-    //     })
-    //   }
-    //   return runningBalanceData
-    // })
+    const runningBalance = computed(() => {
+      const runningBalanceData: Record<
+        number,
+        Record<string, number | string | null>
+      > = {}
+      if (fields.value?.transactions?.results) {
+        const openingBalance = { dr: 0, cr: 0}
+        if (route.query.start_date) {
+          openingBalance.dr = (fields.value.aggregate.opening.dr || 0) + (fields.value.page_cumulative.next.dr || 0)
+          openingBalance.cr = (fields.value.aggregate.opening.cr || 0) + (fields.value.page_cumulative.next.cr || 0)
+        }
+        // const openingBalance = {
+        //   dr: fields.value.aggregate.opening?.dr_amount__sum || 0,
+        //   cr: fields.value.aggregate.opening?.dr_amount__sum || 0,
+        // }
+        let currentRunningBalance = openingBalance
+        fields.value?.transactions?.results.forEach((item, index) => {
+          const activeBalance = { ...currentRunningBalance }
+          activeBalance.dr =
+            activeBalance.dr + (item.dr_amount ? parseInt(item.dr_amount) : 0)
+          activeBalance.cr =
+            activeBalance.cr + (item.cr_amount ? parseInt(item.cr_amount) : 0)
+          runningBalanceData[index] = activeBalance
+          currentRunningBalance = activeBalance
+        })
+      }
+      return runningBalanceData
+    })
     return {
       props,
       getVoucherUrl,
@@ -482,7 +489,7 @@ export default {
       store,
       DateConverter,
       // mergedTransactions,
-      // runningBalance,
+      runningBalance,
     }
   },
 }
