@@ -527,7 +527,6 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
         from django_q.tasks import async_task
         if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
             return
-        # import ipdb; ipdb.set_trace()
         rows = self.item.purchase_rows.order_by("-id")
         if rows.exists():
             existing_rate = rows.first().rate 

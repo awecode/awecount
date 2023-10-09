@@ -430,22 +430,32 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 sales_row.sold_items = sold_items
                 sales_row.save()
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         purchase_voucher = self.get_object()
-        row_ids = purchase_voucher.rows.values_list("id", flat=True)
-        str_ids = [str(x) for x in row_ids]
-        sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
-        if sales_rows.exists():
-            # TODO: provide a descriptive message
-            raise UnprocessableException(detail="This action might create inconsistencies in FIFO.", code="fifo_inconsistency")
-        try:
-            purchase_voucher.cancel()
-            if request.company.inventory_setting.enable_fifo:
+
+        if request.company.inventory_setting.enable_fifo:
+            row_ids = purchase_voucher.rows.values_list("id", flat=True)
+            str_ids = [str(x) for x in row_ids]
+            sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
+            if request.query_params.get("fifo_inconsistency"):
+                purchase_voucher.cancel()
                 self.fifo_update_sales_rows(purchase_voucher)
+                return Response({})
+            if sales_rows.exists():
+                # TODO: provide a descriptive message
+                raise UnprocessableException(
+                    detail="This action might create inconsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
+        # try:
+        else:
+            purchase_voucher.cancel()
+        # if request.company.inventory_setting.enable_fifo:
+        #     self.fifo_update_sales_rows(purchase_voucher)
             return Response({})
-        except Exception as e:
-            raise APIException(str(e))
+        # except Exception as e:
+        #     raise APIException(str(e))
 
     @action(detail=False)
     def export(self, request):

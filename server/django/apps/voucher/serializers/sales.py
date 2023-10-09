@@ -194,31 +194,31 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
     
 
 def update_purchase_rows(request, row):
-        if request.company.inventory_setting.enable_fifo:
-            item_id = row.get("item_id")
-            quantity = row.get("quantity")
-            purchase_rows = PurchaseVoucherRow.objects.filter(
-                item_id=item_id,
-                remaining_quantity__gt=0
-            ).order_by("voucher__date", "id")
-            sold_items = {}
-            for purchase_row in purchase_rows:
-                if purchase_row.remaining_quantity == quantity:
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = quantity
-                    break
-                elif purchase_row.remaining_quantity > quantity:
-                    purchase_row.remaining_quantity -= quantity
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = quantity
-                    break
-                else:
-                    quantity -= purchase_row.remaining_quantity
-                    sold_items[purchase_row.id] = purchase_row.remaining_quantity
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-            return sold_items
+    if request.company.inventory_setting.enable_fifo:
+        item_id = row.get("item_id")
+        quantity = row.get("quantity")
+        purchase_rows = PurchaseVoucherRow.objects.filter(
+            item_id=item_id,
+            remaining_quantity__gt=0
+        ).order_by("voucher__date", "id")
+        sold_items = {}
+        for purchase_row in purchase_rows:
+            if purchase_row.remaining_quantity == quantity:
+                purchase_row.remaining_quantity = 0
+                purchase_row.save()
+                sold_items[purchase_row.id] = quantity
+                break
+            elif purchase_row.remaining_quantity > quantity:
+                purchase_row.remaining_quantity -= quantity
+                purchase_row.save()
+                sold_items[purchase_row.id] = quantity
+                break
+            else:
+                quantity -= purchase_row.remaining_quantity
+                sold_items[purchase_row.id] = purchase_row.remaining_quantity
+                purchase_row.remaining_quantity = 0
+                purchase_row.save()
+        return sold_items
 
 
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -249,16 +249,24 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
     def validate(self, data):
         # TODO: Find why due date is null and fix the issue
-        request_data = self.context["request"].data
-        if "due_date" not in request_data.keys():
+        request = self.context['request']
+        # request_data = self.context["request"].data
+        if "due_date" not in request.data.keys():
             data["due_date"] = None
         else:
-            data['due_date'] = request_data['due_date']
+            data['due_date'] = request.data['due_date']
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        return data
+        if request.query_params.get("fifo_inconsistency"):
+            return data
+        else:
+            if request.company.inventory_setting.enable_fifo:
+                # item_ids = [row]
+                import ipdb; ipdb.set_trace()
+                pass
+            return data
 
     def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
