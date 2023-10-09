@@ -23,29 +23,39 @@ export default function useGeneratePdf(
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;">${index + 1}</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;">${row.item_name}<br><span style="font-size: 12px; ${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;">${
+        index + 1
+      }</th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;">${
+        row.item_name
+      }<br><span style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${
+        hideRowQuantity ? 'display: none' : ''
+      }">${
           row.quantity +
           `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`
         }</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
-          row.rate
-        }</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px;">${row.quantity * row.rate}</th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${
+        hideRowQuantity ? 'display: none' : ''
+      }">${row.rate}</span></th>
+      <th style="text-align: right; font-weight: 400; padding:5px;">${
+        row.quantity * row.rate
+      }</th>
     </tr>
     `
       }
-    ) 
+    )
     sameTax = isTaxSame
     return htmlRows.join('')
   }
   const emptyRows = () => {
     const number = 5 - invoiceInfo.rows.length
     return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; height:${80 * number}px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
+      <th style="width: 20px; height:${
+        80 * number
+      }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
@@ -62,10 +72,11 @@ export default function useGeneratePdf(
     <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 60px; max-width: 200px; object-fit: contain; ${
-    compayInfo.logo_url ? '' : 'display: none;'
-  }"/>
-    <h1 style="width: 600px; text-align:center; padding-left: 20px; line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
+    }" alt="Compony Logo" style="height: 75px; max-width: 220px; object-fit: contain; ${
+        compayInfo.logo_url ? '' : 'display: none;'
+      }"/>
+  <div style="width: 600px; text-align:center; padding-left: 10px;">
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
       compayInfo.name
     } ${
         compayInfo.organization_type === 'private_limited'
@@ -76,15 +87,15 @@ export default function useGeneratePdf(
           ? 'Ltd.'
           : ''
       }</h1>
+      <div style="display: flex; justify-content: center;">
+        <div>${compayInfo.address}</div>, &nbsp;
+        <div>Tax Reg. No. <strong>${
+          compayInfo.tax_registration_number
+        }</strong></div>
+      </div>
+  </div>
     </div> 
-    <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
-    <div>
-      <div>${compayInfo.address}</div>
-      <div>Tax Reg. No. <strong>${
-        compayInfo.tax_registration_number
-      }</strong></div>
-    </div>
-
+    <div style="display: flex; justify-content: end; font-family: Arial, Helvetica, sans-serif;">
     <div
       style="
         display: flex;
