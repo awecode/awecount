@@ -377,6 +377,7 @@ export default {
     //   return `parties/${this.$route.params.pk}/transactions/`
     // }
     function getVoucherUrl(row: Record<string, string>) {
+      if (!row.source_id) return ''
       const source_type = row.source_type
       if (source_type === 'Sales Voucher')
         return `/sales-voucher/${row.source_id}/view/`
@@ -417,43 +418,13 @@ export default {
       'Cheque Deposit': 'ChequeDepositView',
       'Payment Receipt': 'PaymentReceiptView',
       'Cheque Issue': 'ChequeIssueModify',
-      Challan: 'ChallanModify',
+      'Challan': 'ChallanModify',
       'Account Opening Balance': 'AccountOpeningBalanceModify',
       'Fund Transfer': 'FundTransferModify',
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
-      Item: 'ItemView',
+      'Item': 'ItemView',
     }
-    // const mergedTransactions = computed(() => {
-    //   let dct = {}
-    //   if (fields.value?.transactions?.results) {
-    //     fields.value?.transactions.results.forEach((transaction) => {
-    //       const sourceType = transaction.source_type
-    //         .toLowerCase()
-    //         .replace(' ', '')
-    //       const key = `${sourceType}-${transaction.source_id}`
-    //       if (key in dct && dct[key].date === transaction.date) {
-    //         // dct[key].accounts.push('agvsghvasgcvag')
-    //         if (transaction.dr_amount) {
-    //           dct[key].dr_amount =
-    //             parseFloat(transaction.dr_amount) +
-    //             parseFloat(dct[key].dr_amount)
-    //         }
-    //         if (transaction.cr_amount) {
-    //           dct[key].cr_amount =
-    //             parseFloat(transaction.cr_amount) +
-    //             parseFloat(dct[key].cr_amount)
-    //         }
-    //       } else {
-    //         dct[key] = transaction
-    //       }
-    //     })
-    //   }
-
-    //   return Object.keys(dct).map(function (key) {
-    //     return dct[key]
-    //   })
-    // })
     const runningBalance = computed(() => {
       const runningBalanceData: Record<
         number,
