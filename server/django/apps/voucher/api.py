@@ -391,44 +391,45 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         rows = purchase_voucher.rows.all()
 
         for row in rows:
-            row.remaining_quantity = 0
-            row.save()
-            sales_voucher_rows = SalesVoucherRow.objects\
-                .filter(sold_items__has_key=str(row.id))
-            for sales_row in sales_voucher_rows:
-                sold_items = sales_row.sold_items
-                quantity = sold_items.pop(str(row.id))
-                purchase_rows = PurchaseVoucherRow.objects.filter(
-                item_id=sales_row.item_id,
-                remaining_quantity__gt=0
-            ).order_by("voucher__date", "id")
-                for purchase_row in purchase_rows:
-                    if purchase_row.remaining_quantity == quantity:
-                        purchase_row.remaining_quantity = 0
-                        purchase_row.save()
-                        if str(purchase_row.id) in sold_items.keys():
-                            sold_items[str(purchase_row.id)] += quantity
+            if row.item.track_inventory:
+                row.remaining_quantity = 0
+                row.save()
+                sales_voucher_rows = SalesVoucherRow.objects\
+                    .filter(sold_items__has_key=str(row.id))
+                for sales_row in sales_voucher_rows:
+                    sold_items = sales_row.sold_items
+                    quantity = sold_items.pop(str(row.id))
+                    purchase_rows = PurchaseVoucherRow.objects.filter(
+                    item_id=sales_row.item_id,
+                    remaining_quantity__gt=0
+                ).order_by("voucher__date", "id")
+                    for purchase_row in purchase_rows:
+                        if purchase_row.remaining_quantity == quantity:
+                            purchase_row.remaining_quantity = 0
+                            purchase_row.save()
+                            if str(purchase_row.id) in sold_items.keys():
+                                sold_items[str(purchase_row.id)] += quantity
+                            else:
+                                sold_items[str(purchase_row.id)] = quantity
+                            break
+                        elif purchase_row.remaining_quantity > quantity:
+                            purchase_row.remaining_quantity -= quantity
+                            purchase_row.save()
+                            if str(purchase_row.id) in sold_items.keys():
+                                sold_items[str(purchase_row.id)] += quantity
+                            else:
+                                sold_items[str(purchase_row.id)] = quantity
+                            break
                         else:
-                            sold_items[str(purchase_row.id)] = quantity
-                        break
-                    elif purchase_row.remaining_quantity > quantity:
-                        purchase_row.remaining_quantity -= quantity
-                        purchase_row.save()
-                        if str(purchase_row.id) in sold_items.keys():
-                            sold_items[str(purchase_row.id)] += quantity
-                        else:
-                            sold_items[str(purchase_row.id)] = quantity
-                        break
-                    else:
-                        quantity -= purchase_row.remaining_quantity
-                        if str(purchase_row.id) in sold_items.keys():
-                            sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
-                        else:
-                            sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
-                        purchase_row.remaining_quantity = 0
-                        purchase_row.save()
-                sales_row.sold_items = sold_items
-                sales_row.save()
+                            quantity -= purchase_row.remaining_quantity
+                            if str(purchase_row.id) in sold_items.keys():
+                                sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                            else:
+                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                            purchase_row.remaining_quantity = 0
+                            purchase_row.save()
+                    sales_row.sold_items = sold_items
+                    sales_row.save()
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
