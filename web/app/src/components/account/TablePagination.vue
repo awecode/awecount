@@ -8,12 +8,12 @@
         </span>
         <div class="q-mr-sm">
             <span>
-                {{ (fields.transactions?.pagination.page - 1) * 20 + 1 }} -
+                {{ (fields.transactions?.pagination.page - 1) * pageSize + 1 }} -
                 {{
                     fields.transactions?.pagination.page ===
                     fields.transactions?.pagination.pages
                     ? fields.transactions?.pagination.count
-                    : (fields.transactions?.pagination.page - 1) * 20 +
+                    : (fields.transactions?.pagination.page - 1) * pageSize +
                     fields.transactions?.pagination.size
                 }}
             </span>

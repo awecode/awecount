@@ -1,5 +1,4 @@
 <template>
-  {{ runningBalance }}
   <q-markup-table class="box-shadow q-mt-sm" v-if="fields">
     <!-- TODO: aggregate data not availaible, so check if it works -->
     <thead>
@@ -204,8 +203,8 @@
             $nf(transaction.cr_amount, 2)
           }}</span>
         </td>
-        <td v-if="runningBalance && runningBalance[index]">
-          {{runningBalance[index].dr - runningBalance[index].cr}}
+        <td v-if="runningBalance && Object.keys(runningBalance).length">
+          {{ $nf((runningBalance[index].dr - runningBalance[index].cr), 2) }}
         </td>
       </tr>
 
@@ -461,24 +460,23 @@ export default {
         Record<string, number | string | null>
       > = {}
       if (fields.value?.transactions?.results) {
-        const openingBalance = { dr: 0, cr: 0}
+        const openingBalance = { dr: 0, cr: 0 }
         if (route.query.start_date) {
           openingBalance.dr = (fields.value.aggregate.opening.dr || 0) + (fields.value.page_cumulative.next.dr || 0)
           openingBalance.cr = (fields.value.aggregate.opening.cr || 0) + (fields.value.page_cumulative.next.cr || 0)
+        } else {
+          openingBalance.dr = (fields.value.page_cumulative.next.dr || 0)
+          openingBalance.cr = (fields.value.page_cumulative.next.cr || 0)
         }
-        // const openingBalance = {
-        //   dr: fields.value.aggregate.opening?.dr_amount__sum || 0,
-        //   cr: fields.value.aggregate.opening?.dr_amount__sum || 0,
-        // }
         let currentRunningBalance = openingBalance
-        const reversedTransactions = fields.value.transactions.results.reverse()
-        const dataLength = fields.value.transactions.results.length
-        reversedTransaction.forEach((item, index) => {
+        const reversedTransactions = [...fields.value.transactions.results].reverse()
+        const dataLength = fields.value.transactions.results.length - 1
+        reversedTransactions.forEach((item, index) => {
           const activeBalance = { ...currentRunningBalance }
           activeBalance.dr =
-            activeBalance.dr + (item.dr_amount ? parseInt(item.dr_amount) : 0)
+            activeBalance.dr + (item.dr_amount ? parseFloat(item.dr_amount) : 0)
           activeBalance.cr =
-            activeBalance.cr + (item.cr_amount ? parseInt(item.cr_amount) : 0)
+            activeBalance.cr + (item.cr_amount ? parseFloat(item.cr_amount) : 0)
           const dataIndex = dataLength - index
           runningBalanceData[dataIndex] = activeBalance
           currentRunningBalance = activeBalance
