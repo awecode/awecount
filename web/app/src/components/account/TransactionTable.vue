@@ -186,9 +186,9 @@
           </div> -->
         </td>
         <td>
-          <router-link v-if="checkPermissions(
+          <router-link v-if="transaction.source_type && transaction.voucher_no && checkPermissions(
             getPermissionsWithSourceType[transaction.source_type]
-          ) && transaction.voucher_no
+          )
             " class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
     transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
