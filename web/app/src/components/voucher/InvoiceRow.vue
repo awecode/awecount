@@ -81,7 +81,7 @@
               " />
         </div>
       </div>
-      <div v-if="!!modalValue.itemObj && enableRowDescription">
+      <div v-if="$route.params.id ? enableRowDescription : (!!modalValue.itemObj && enableRowDescription)">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg">
         </q-input>
       </div>
