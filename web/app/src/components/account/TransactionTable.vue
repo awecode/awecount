@@ -491,7 +491,6 @@ export default {
       getPermissionsWithSourceType,
       store,
       DateConverter,
-      // mergedTransactions,
       runningBalance,
     }
   },
