@@ -204,7 +204,9 @@
             $nf(transaction.cr_amount, 2)
           }}</span>
         </td>
-        <td v-if="fields.aggregate"></td>
+        <td v-if="runningBalance && runningBalance[index]">
+          {{runningBalance[index].dr - runningBalance[index].cr}}
+        </td>
       </tr>
 
       <tr class="text-weight-bold" v-if="fields.aggregate &&
@@ -469,13 +471,16 @@ export default {
         //   cr: fields.value.aggregate.opening?.dr_amount__sum || 0,
         // }
         let currentRunningBalance = openingBalance
-        fields.value?.transactions?.results.forEach((item, index) => {
+        const reversedTransactions = fields.value.transactions.results.reverse()
+        const dataLength = fields.value.transactions.results.length
+        reversedTransaction.forEach((item, index) => {
           const activeBalance = { ...currentRunningBalance }
           activeBalance.dr =
             activeBalance.dr + (item.dr_amount ? parseInt(item.dr_amount) : 0)
           activeBalance.cr =
             activeBalance.cr + (item.cr_amount ? parseInt(item.cr_amount) : 0)
-          runningBalanceData[index] = activeBalance
+          const dataIndex = dataLength - index
+          runningBalanceData[dataIndex] = activeBalance
           currentRunningBalance = activeBalance
         })
       }
