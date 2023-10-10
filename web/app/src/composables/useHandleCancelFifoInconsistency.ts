@@ -7,8 +7,8 @@ export default (
 ) => {
   return new Promise((resolve, reject) => {
     $q.notify({
-      color: 'negative',
-      message: 'Fifo Inconsistency Error!',
+      color: 'orange',
+      message: 'Fifo Inconsistency!',
       icon: 'report_problem',
     })
     $q.dialog({

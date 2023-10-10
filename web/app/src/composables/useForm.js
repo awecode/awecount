@@ -176,7 +176,8 @@ export default (endpoint, config) => {
         if (data.status === 422) {
           $q.notify({
             color: 'orange',
-            message: data.data?.detail,
+            // message: data.data?.code,
+            message: "FIFO Inconsistency!",
             icon: 'report_problem',
           })
         } else {
