@@ -87,8 +87,8 @@ export default function useGeneratePdf(
           ? 'Ltd.'
           : ''
       }</h1>
-      <div style="display: flex; justify-content: center;">
-        <div>${compayInfo.address}</div>, &nbsp;
+      <div style="display: flex; justify-content: center; flex-direction: column;">
+        <div>${compayInfo.address}</div>
         <div>Tax Reg. No. <strong>${
           compayInfo.tax_registration_number
         }</strong></div>
@@ -100,11 +100,11 @@ export default function useGeneratePdf(
       style="
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         align-items: flex-end;
       "
     >
-      <div style="display: flex; align-items: center">
+      <div style="display: flex; align-items: center;">
         <img
           src="/icons/telephone-fill.svg"
           alt="Email"
@@ -118,6 +118,13 @@ export default function useGeneratePdf(
           alt="Call"
           style="margin-right: 10px; width: 14px"
         /><span style="color: skyblue">${compayInfo.email}</span>
+      </div>
+      <div style="display: ${compayInfo.website ? 'flex': 'none'}; align-items: center">
+        <img
+          src="/icons/web-fill.svg"
+          alt="Call"
+          style="margin-right: 10px; width: 14px"
+        /><span style="color: skyblue">${compayInfo.website}</span>
       </div>
     </div>
   </div>
