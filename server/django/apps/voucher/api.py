@@ -196,26 +196,17 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         message = request.data.get('message')
         if not message:
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
-        # try:
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get('fifo_inconsistency'):
                 sales_voucher.cancel(message)
                 sales_rows = sales_voucher.rows.all()
-                self.fifo_update_purchase_rows(sales_rows) 
+                self.fifo_update_purchase_rows(sales_rows)
+                return Response({})
             else:
                 raise UnprocessableException(detail="This action may create inconsistencies in FIFO.", code="fifo_inconsistency")
         else:
-            sales_voucher.cancel(request.data.get('message'))
-        
-        # if request.query_params.get('fifo_inconsistency'):
-        #     sales_voucher.cancel(request.data.get('message'))
-        
-        # if request.company.inventory_setting.enable_fifo:
-        #     sales_rows = sales_voucher.rows.all()
-        #     self.fifo_update_purchase_rows(sales_rows)            
-        return Response({})
-        # except Exception as e:
-        #     raise RESTValidationError({'detail': e})
+            sales_voucher.cancel(message)
+            return Response({})
 
     @action(detail=True, methods=['POST'], url_path='log-print')
     def log_print(self, request, pk):
@@ -452,14 +443,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     detail="This action might create inconsistencies in FIFO.",
                     code="fifo_inconsistency",
                 )
-        # try:
         else:
             purchase_voucher.cancel()
-        # if request.company.inventory_setting.enable_fifo:
-        #     self.fifo_update_sales_rows(purchase_voucher)
             return Response({})
-        # except Exception as e:
-        #     raise APIException(str(e))
 
     @action(detail=False)
     def export(self, request):

@@ -57,7 +57,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 item_ids = [x.get("item_id") for x in data.get("rows")]
                 date = data["date"]
                 if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
-                    raise UnprocessableException(detail="Creating a purchase date on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+                    raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
             return data
 
     def create(self, validated_data):
