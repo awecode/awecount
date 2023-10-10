@@ -209,7 +209,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     for k,v in dct.items():
                         if int(k) not in keys:
                             keys.append(int(k))
-                existing_sales = SalesVoucherRow.objects.filter(sold_items__has_keys=keys, voucher__date__lt=sales_voucher.date)
+                existing_sales = SalesVoucherRow.objects.filter(sold_items__has_keys=keys, voucher__issue_datetime__gt=sales_voucher.issue_datetime)
+
                 if existing_sales.exists():
                     raise UnprocessableException(detail="This action may create inconsistencies in FIFO.", code="fifo_inconsistency")
                 else:
