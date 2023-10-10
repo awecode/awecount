@@ -172,8 +172,9 @@ export default {
             })
           } else {
             $q.notify({
-              color: 'red-6',
-              message: 'Something Went Wrong!',
+              color: 'negative',
+              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              icon: 'report_problem',
             })
           }
         })

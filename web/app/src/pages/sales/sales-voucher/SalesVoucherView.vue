@@ -155,7 +155,11 @@ export default {
                 })
               }
             })
-          }
+          } else $q.notify({
+              color: 'negative',
+              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              icon: 'report_problem',
+            })
         })
     }
     const updateMode = (newValue: number) => {
