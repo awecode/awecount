@@ -197,13 +197,25 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if not message:
             raise RESTValidationError({'message': 'message field is required for cancelling invoice!'})
         if request.company.inventory_setting.enable_fifo:
+            sales_rows = sales_voucher.rows.all()
             if request.query_params.get('fifo_inconsistency'):
                 sales_voucher.cancel(message)
-                sales_rows = sales_voucher.rows.all()
                 self.fifo_update_purchase_rows(sales_rows)
                 return Response({})
             else:
-                raise UnprocessableException(detail="This action may create inconsistencies in FIFO.", code="fifo_inconsistency")
+                sold_item_dicts = sales_rows.values_list("sold_items", flat=True)
+                keys = []
+                for dct in sold_item_dicts:
+                    for k,v in dct.items():
+                        if int(k) not in keys:
+                            keys.append(int(k))
+                existing_sales = SalesVoucherRow.objects.filter(sold_items__has_keys=keys, voucher__date__lt=sales_voucher.date)
+                if existing_sales.exists():
+                    raise UnprocessableException(detail="This action may create inconsistencies in FIFO.", code="fifo_inconsistency")
+                else:
+                    sales_voucher.cancel(message)
+                    self.fifo_update_purchase_rows(sales_rows)
+                    return Response({})
         else:
             sales_voucher.cancel(message)
             return Response({})
@@ -443,6 +455,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     detail="This action might create inconsistencies in FIFO.",
                     code="fifo_inconsistency",
                 )
+            purchase_voucher.cancel()
+            self.fifo_update_sales_rows(purchase_voucher)
+            return Response({})
         else:
             purchase_voucher.cancel()
             return Response({})
