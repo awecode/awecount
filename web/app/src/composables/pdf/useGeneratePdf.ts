@@ -122,7 +122,7 @@ export default function useGeneratePdf(
       <div style="display: ${compayInfo.website ? 'flex': 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
-          alt="Call"
+          alt="Website"
           style="margin-right: 10px; width: 14px"
         /><span style="color: skyblue">${compayInfo.website}</span>
       </div>
