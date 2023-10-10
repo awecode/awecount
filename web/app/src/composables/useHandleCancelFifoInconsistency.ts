@@ -20,9 +20,10 @@ export default (
       cancel: true,
     })
       .onOk(() => {
+        debugger
         useApi(url + '?fifo_inconsistency=true', {
           method: method,
-          body: body,
+          body: body?.body,
         }).then((data) => {
           resolve(data)
         })
