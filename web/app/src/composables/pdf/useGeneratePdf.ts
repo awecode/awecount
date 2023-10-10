@@ -72,7 +72,7 @@ export default function useGeneratePdf(
     <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 75px; max-width: 220px; object-fit: contain; ${
+    }" alt="Compony Logo" style="height: 85px; max-width: 245px; object-fit: contain; ${
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
   <div style="width: 600px; text-align:center; padding-left: 10px;">
