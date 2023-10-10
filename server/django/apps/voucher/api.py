@@ -1291,10 +1291,10 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     
 
     @action(detail=True, methods=['POST'])
-    def mark_as_paid(self, request, pk):
+    def resolve(self, request, pk):
         challan = self.get_object()
         try:
-            challan.mark_as_resolved(status='Paid')
+            challan.mark_as_resolved(status='Resolved')
             return Response({})
         except Exception as e:
             raise APIException(str(e))

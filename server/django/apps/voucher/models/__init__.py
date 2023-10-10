@@ -83,6 +83,13 @@ class Challan(TransactionModel, InvoiceModel):
                 ['cr', row.item.account, int(row.quantity)],
             )
 
+    def mark_as_resolved(self, status):
+        if self.status in ['Issued']:
+            self.status = status
+            self.save()
+        else:
+            raise ValueError('This voucher cannot be mark as resolved!')
+
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
 
@@ -244,7 +251,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             else:
                 entries.append(['dr', dr_acc, row_total])
             
-
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 

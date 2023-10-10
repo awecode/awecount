@@ -264,7 +264,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             if request.query_params.get("fifo_inconsistency"):
                     return data
             else:
-                item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
+                if not request.data.get("invoices"):
+                    item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
+                else:
+                    item_ids = [row["item_id"] for row in request.data.get("rows")]
                 date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
                 sales_vouchers = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
                 if sales_vouchers.exists():
@@ -306,8 +309,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
-            sold_items = update_purchase_rows(request, row)
-            row["sold_items"] = sold_items
+            if not request.data.get("invoices"):
+                sold_items = update_purchase_rows(request, row)
+                row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
                 row.pop('id')
@@ -326,7 +330,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if validated_data['status']=='Issued':
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
-                instance.issued_datetime = timezone.now
+                instance.issue_datetime = timezone.now
                 instance.date = timezone.now().date
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
