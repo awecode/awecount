@@ -130,7 +130,6 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
             fields.value.status = status
           }
@@ -140,75 +139,90 @@ export default {
         })
         .catch((data) => {
           if (data.status === 422) {
-            useHandleCancelFifoInconsistency(endpoint, data, body)
+            useHandleCancelFifoInconsistency(endpoint, data, body, $q).then(() => {
+              if (fields.value) {
+                fields.value.status = status
+              }
+              if (status === 'Cancelled') {
+                isDeleteOpen.value = false
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+            })
           }
         })
-  }
-    const updateMode = (newValue: number) => {
-    if (fields.value) {
-      fields.value.mode = newValue
     }
-  }
+    const updateMode = (newValue: number) => {
+      if (fields.value) {
+        fields.value.mode = newValue
+      }
+    }
     const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
-    if (!noApiCall) {
-      const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
-      useApi(endpoint, { method: 'POST' })
-        .then(() => {
-          if (fields.value) {
-            fields.value.print_count = fields.value?.print_count + 1
-          }
-          print(bodyOnly)
-        })
-        .catch((err) => console.log('err from the api', err))
-    } else print(bodyOnly)
-  }
+      if (!noApiCall) {
+        const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
+        useApi(endpoint, { method: 'POST' })
+          .then(() => {
+            if (fields.value) {
+              fields.value.print_count = fields.value?.print_count + 1
+            }
+            print(bodyOnly)
+          })
+          .catch((err) => console.log('err from the api', err))
+      } else print(bodyOnly)
+    }
     // to print
     const print = (bodyOnly: boolean) => {
-    let ifram = document.createElement('iframe')
-    ifram.style = 'display:none; margin: 20px'
-    document.body.appendChild(ifram)
-    const pri: Record<string, string | object | HTMLElement> =
-      ifram.contentWindow
-    pri.document.open()
-    pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
-    // pri.document.body.firstElementChild.prepend()
-    pri.document.close()
-    pri.focus()
-    setTimeout(() => pri.print(), 100)
-  }
+      let ifram = document.createElement('iframe')
+      ifram.style = 'display:none; margin: 20px'
+      document.body.appendChild(ifram)
+      const pri: Record<string, string | object | HTMLElement> =
+        ifram.contentWindow
+      pri.document.open()
+      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
+      // pri.document.body.firstElementChild.prepend()
+      pri.document.close()
+      pri.focus()
+      setTimeout(() => pri.print(), 100)
+    }
     // to print
 
     return {
-    allowPrint: false,
-    bodyOnly: false,
-    options: {},
-    fields,
-    dialog: false,
-    partyObj: null,
-    modes: modes,
-    submitChangeStatus,
-    isDeleteOpen,
-    deleteMsg,
-    updateMode,
-    modeOptions,
-    onPrintclick,
-    checkPermissions,
-    useGeneratePdf
-  }
-},
-created() {
-  const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
-  useApi(endpoint, { method: 'GET' }, false, true)
-    .then((data) => {
-      this.fields = data
-      this.modeOptions = data.available_bank_accounts
-    })
-    .catch((error) => {
-      if (error.response && error.response.status == 404) {
-        this.$router.replace({ path: '/ErrorNotFound' })
-      }
-    })
-},
+      allowPrint: false,
+      bodyOnly: false,
+      options: {},
+      fields,
+      dialog: false,
+      partyObj: null,
+      modes: modes,
+      submitChangeStatus,
+      isDeleteOpen,
+      deleteMsg,
+      updateMode,
+      modeOptions,
+      onPrintclick,
+      checkPermissions,
+      useGeneratePdf
+    }
+  },
+  created() {
+    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    useApi(endpoint, { method: 'GET' }, false, true)
+      .then((data) => {
+        this.fields = data
+        this.modeOptions = data.available_bank_accounts
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          this.$router.replace({ path: '/ErrorNotFound' })
+        }
+      })
+  },
 }
 </script>
 
