@@ -146,36 +146,46 @@ export default (endpoint, config) => {
           }).onOk(() => {
             useApi(postEndpoint + '?fifo_inconsistency=true', {
               method: isEdit.value ? 'PATCH' : 'POST',
-              body: {...fields.value, status: originalStatus},
-            }).then((data) => {
-              $q.notify({
-                color: 'positive',
-                message: 'Saved',
-                icon: 'check_circle',
-              })
-              if (isModal) {
-                context.emit('modalSignal', data)
-              } else {
-                if (config.successRoute) {
-                  router.push(config.successRoute)
-                } else {
-                  router.push(removeLastUrlSegment(route.path))
-                }
-              }
-            }).catch((error) => {
-              $q.notify({
-                color: 'negative',
-                message: 'Something went Wrong!',
-                icon: 'report_problem',
-              })
+              body: { ...fields.value, status: originalStatus },
             })
+              .then((data) => {
+                $q.notify({
+                  color: 'positive',
+                  message: 'Saved',
+                  icon: 'check_circle',
+                })
+                if (isModal) {
+                  context.emit('modalSignal', data)
+                } else {
+                  if (config.successRoute) {
+                    router.push(config.successRoute)
+                  } else {
+                    router.push(removeLastUrlSegment(route.path))
+                  }
+                }
+              })
+              .catch((error) => {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              })
           })
         }
-        $q.notify({
-          color: 'negative',
-          message: message,
-          icon: 'report_problem',
-        })
+        if (data.status === 422) {
+          $q.notify({
+            color: 'orange',
+            message: data.data?.detail,
+            icon: 'report_problem',
+          })
+        } else {
+          $q.notify({
+            color: 'negative',
+            message: message,
+            icon: 'report_problem',
+          })
+        }
         loading.value = false
         throw new Error('Api Error')
       })
@@ -230,6 +240,6 @@ export default (endpoint, config) => {
     submitForm,
     cancel,
     cancelForm,
-    loading
+    loading,
   }
 }
