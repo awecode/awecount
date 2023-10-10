@@ -83,9 +83,9 @@ class Challan(TransactionModel, InvoiceModel):
                 ['cr', row.item.account, int(row.quantity)],
             )
 
-    def mark_as_resolved(self, status):
-        if self.status in ['Issued']:
-            self.status = status
+    def mark_as_resolved(self):
+        if self.status == 'Issued':
+            self.status = "Resolved"
             self.rows.update(sold_items={})
             self.save()
         else:
