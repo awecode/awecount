@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from django.utils import timezone
+from django.db.models import Sum
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
@@ -576,7 +577,21 @@ class ChallanCreateSerializer(StatusReversionMixin,
             raise ValidationError({
                 'party': ['Party is required.'],
                 'customer_name': ['Customer name is required.']
-                })        
+                })
+        
+        request = self.context["request"]
+
+        # Check Negative Stock
+        inventory_settings = request.company.inventory_setting
+        if inventory_settings.enable_fifo and inventory_settings.enable_negative_stock_check:
+            rows = data["rows"]
+            for row in rows:
+                item_id = row["item_id"]
+                item = Item.objects.get(id=item_id)
+                remaining_quantity = item.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+                if row["quantity"] > remaining_quantity:
+                    raise UnprocessableException(detail="You do not have enough stock to create this challan.", code="negative_stock")
+                
         return data
 
     def create(self, validated_data):
