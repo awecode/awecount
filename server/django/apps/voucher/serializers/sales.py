@@ -584,10 +584,11 @@ class ChallanCreateSerializer(StatusReversionMixin,
         # Check Negative Stock
         inventory_settings = request.company.inventory_setting
         if inventory_settings.enable_fifo and inventory_settings.enable_negative_stock_check:
+            if request.query_params.get("fifo_inconsistency"):
+                return data
             rows = data["rows"]
             for row in rows:
-                item_id = row["item_id"]
-                item = Item.objects.get(id=item_id)
+                item = Item.objects.get(id=row["item_id"])
                 remaining_quantity = item.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
                 if row["quantity"] > remaining_quantity:
                     raise UnprocessableException(detail="You do not have enough stock to create this challan.", code="negative_stock")
