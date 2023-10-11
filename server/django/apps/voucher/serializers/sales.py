@@ -280,8 +280,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 for row in rows:
                     # TODO: Improve queries
                     item = Item.objects.get(id=row["item_id"])
-                    if item.negative_stock(row["quantity"]):
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales.", code="negative_stock")
+                    # if item.negative_stock(row["quantity"]):
+                    if item.remaining_stock < row["quantity"]:
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
@@ -609,8 +610,8 @@ class ChallanCreateSerializer(StatusReversionMixin,
                 for row in rows:
                     # TODO: Improve queries
                     item = Item.objects.get(id=row["item_id"])
-                    if item.negative_stock(row["quantity"]):
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan.", code="negative_stock")
+                    if item.remaining_stock < row["quantity"]:
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
         return data
 
     def create(self, validated_data):
