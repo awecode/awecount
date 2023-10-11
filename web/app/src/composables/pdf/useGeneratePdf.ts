@@ -69,13 +69,13 @@ export default function useGeneratePdf(
     if (compayInfo.invoice_template === 2) {
       header = `
     <div>
-    <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
+    <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 85px; max-width: 245px; object-fit: contain; ${
+    }" alt="Compony Logo" style="height: 110px; object-fit: contain; position: absolute ${
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
-  <div style="width: 600px; text-align:center; padding-left: 10px;">
+  <div style="text-align:center; padding-left: 10px;">
     <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
       compayInfo.name
     } ${
