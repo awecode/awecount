@@ -403,6 +403,42 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         except Exception as e:
             raise APIException(str(e))
         
+    def update_rows(self, rows, row_id):
+         for row in rows:
+            sold_items = row.sold_items
+            quantity = sold_items.pop(str(row_id))
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+            item_id=row.item_id,
+            remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
+            for purchase_row in purchase_rows:
+                if purchase_row.remaining_quantity == quantity:
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)] += quantity
+                    else:
+                        sold_items[str(purchase_row.id)] = quantity
+                    break
+                elif purchase_row.remaining_quantity > quantity:
+                    purchase_row.remaining_quantity -= quantity
+                    purchase_row.save()
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)] += quantity
+                    else:
+                        sold_items[str(purchase_row.id)] = quantity
+                    break
+                else:
+                    quantity -= purchase_row.remaining_quantity
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                    else:
+                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+            row.sold_items = sold_items
+            row.save()
+        
     def fifo_update_sales_rows(self, purchase_voucher):
         rows = purchase_voucher.rows.select_related("item").all()
 
@@ -410,42 +446,16 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             if row.item.track_inventory:
                 row.remaining_quantity = 0
                 row.save()
+
+                # Update sales rows
                 sales_voucher_rows = SalesVoucherRow.objects\
                     .filter(sold_items__has_key=str(row.id))
-                for sales_row in sales_voucher_rows:
-                    sold_items = sales_row.sold_items
-                    quantity = sold_items.pop(str(row.id))
-                    purchase_rows = PurchaseVoucherRow.objects.filter(
-                    item_id=sales_row.item_id,
-                    remaining_quantity__gt=0
-                ).order_by("voucher__date", "id")
-                    for purchase_row in purchase_rows:
-                        if purchase_row.remaining_quantity == quantity:
-                            purchase_row.remaining_quantity = 0
-                            purchase_row.save()
-                            if str(purchase_row.id) in sold_items.keys():
-                                sold_items[str(purchase_row.id)] += quantity
-                            else:
-                                sold_items[str(purchase_row.id)] = quantity
-                            break
-                        elif purchase_row.remaining_quantity > quantity:
-                            purchase_row.remaining_quantity -= quantity
-                            purchase_row.save()
-                            if str(purchase_row.id) in sold_items.keys():
-                                sold_items[str(purchase_row.id)] += quantity
-                            else:
-                                sold_items[str(purchase_row.id)] = quantity
-                            break
-                        else:
-                            quantity -= purchase_row.remaining_quantity
-                            if str(purchase_row.id) in sold_items.keys():
-                                sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
-                            else:
-                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
-                            purchase_row.remaining_quantity = 0
-                            purchase_row.save()
-                    sales_row.sold_items = sold_items
-                    sales_row.save()
+                self.update_rows(sales_voucher_rows, row.id)
+
+                # Update challan rows
+                challan_rows = ChallanRow.objects.filter(sold_items__has_key=str(row.id))
+                self.update_rows(challan_rows, row.id)
+               
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
@@ -457,12 +467,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if request.company.inventory_setting.enable_fifo:
             row_ids = purchase_voucher.rows.values_list("id", flat=True)
             str_ids = [str(x) for x in row_ids]
-            sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
             if request.query_params.get("fifo_inconsistency"):
                 purchase_voucher.cancel()
                 self.fifo_update_sales_rows(purchase_voucher)
                 return Response({})
-            if sales_rows.exists():
+            sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
+            challan_rows = ChallanRow.objects.filter(sold_items__has_keys=str_ids)
+            if sales_rows.exists() or challan_rows.exists():
                 # TODO: provide a descriptive message
                 raise UnprocessableException(
                     detail="This action might create inconsistencies in FIFO.",
