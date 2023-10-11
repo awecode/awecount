@@ -144,7 +144,7 @@ export default (endpoint, config) => {
             cancel: true,
             html: true,
           }).onOk(() => {
-            useApi(postEndpoint + `?${response.data?.code}=true`, {
+            useApi(postEndpoint + `?${data.data?.code}=true`, {
               method: isEdit.value ? 'PATCH' : 'POST',
               body: { ...fields.value, status: originalStatus },
             })

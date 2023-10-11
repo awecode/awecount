@@ -12,7 +12,7 @@ export default (
       icon: 'report_problem',
     })
     $q.dialog({
-      title: `<span class="text-orange">${humanizeWord(response.data?.code)}!}</span>`,
+      title: `<span class="text-orange">${humanizeWord(response.data?.code)}!</span>`,
       message:
         `<span class="text-grey-8">Reason: ${response.data.detail}` +
         '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
