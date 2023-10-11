@@ -137,7 +137,7 @@ export default (endpoint, config) => {
           message = 'Server Error! Please contact us with the problem.'
         } else if (data.status === 422) {
           $q.dialog({
-            title: '<span class="text-orange">Fifo Inconsistency!</span>',
+            title: `<span class="text-orange">${data.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!"}Fifo Inconsistency!</span>`,
             message:
               `<span class="text-grey-8">Reason: ${data.data.detail}` +
               '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
@@ -177,7 +177,7 @@ export default (endpoint, config) => {
           $q.notify({
             color: 'orange',
             // message: data.data?.code,
-            message: "FIFO Inconsistency!",
+            message: data.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!",
             icon: 'report_problem',
           })
         } else {
