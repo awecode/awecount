@@ -638,5 +638,11 @@ class Item(models.Model):
             # prevents recursion
             self.save(post_save=False)
 
+    def negative_stock(self, quantity):
+        remaining_quantity = self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+        if remaining_quantity < quantity:
+            return True
+        return False
+
     class Meta:
         unique_together = ('code', 'company',)

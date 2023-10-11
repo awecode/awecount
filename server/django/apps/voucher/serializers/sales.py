@@ -273,6 +273,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
             if sales_rows.exists() or challan_rows.exists():
                 raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
+            
+            # Check negative stock
+            if request.company.inventory_setting.enable_negative_stock_check:
+                rows = data["rows"]
+                for row in rows:
+                    # TODO: Improve queries
+                    item = Item.objects.get(id=row["item_id"])
+                    if item.negative_stock(row["quantity"]):
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales.", code="negative_stock")
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
@@ -581,19 +590,27 @@ class ChallanCreateSerializer(StatusReversionMixin,
         
         request = self.context["request"]
 
-        # Check Negative Stock
         inventory_settings = request.company.inventory_setting
-        if inventory_settings.enable_fifo and inventory_settings.enable_negative_stock_check:
+        if inventory_settings.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
                 return data
+
             rows = data["rows"]
-            for row in rows:
-                # TODO: Improve queries
-                item = Item.objects.get(id=row["item_id"])
-                remaining_quantity = item.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
-                if row["quantity"] > remaining_quantity:
-                    raise UnprocessableException(detail="You do not have enough stock to create this challan.", code="negative_stock")
-                
+            # validate back date entry
+            item_ids = [row["item_id"] for row in rows]
+            date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
+            sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
+            challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
+            if sales_rows.exists() or challan_rows.exists():
+                raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
+
+            # Check Negative Stock
+            if inventory_settings.enable_negative_stock_check:
+                for row in rows:
+                    # TODO: Improve queries
+                    item = Item.objects.get(id=row["item_id"])
+                    if item.negative_stock(row["quantity"]):
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan.", code="negative_stock")
         return data
 
     def create(self, validated_data):
