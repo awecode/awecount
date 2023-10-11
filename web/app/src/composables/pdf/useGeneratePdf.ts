@@ -87,11 +87,16 @@ export default function useGeneratePdf(
           ? 'Ltd.'
           : ''
       }</h1>
-      <div style="display: flex; justify-content: center; flex-direction: column;">
-        <div>${compayInfo.address}</div>
-        <div>VAT No. <strong>${
-          compayInfo.tax_registration_number
-        }</strong></div>
+      <div>${compayInfo.address}</div>
+      <div style="font-size: 14px;">
+          <div style="display: flex; justify-content: center; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Email: ${compayInfo.emails.join(',&nbsp;')}</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Tel: ${compayInfo.contact_no}</span>
+        </div>
+      </div>
       </div>
   </div>
     </div> 
@@ -104,21 +109,9 @@ export default function useGeneratePdf(
         align-items: flex-end;
       "
     >
-      <div style="display: flex; align-items: center;">
-        <img
-          src="/icons/telephone-fill.svg"
-          alt="Email"
-          style="margin-right: 10px; width: 14px"
-        />
-        <span style="color: skyblue">${compayInfo.contact_no}</span>
-      </div>
-      <div style="display: flex; align-items: center">
-        <img
-          src="/icons/envelope-fill.svg"
-          alt="Call"
-          style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
-      </div>
+      <div style="font-size: 14px;" >VAT No. <strong>${
+        compayInfo.tax_registration_number
+      }</strong></div>
       <div style="display: ${compayInfo.website ? 'flex': 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
@@ -179,7 +172,7 @@ export default function useGeneratePdf(
           src="/icons/envelope-fill.svg"
           alt="Call"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
+        /><span style="color: skyblue">${compayInfo.emails.join(',')}</span>
       </div>
     </div>
   </div>

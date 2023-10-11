@@ -76,49 +76,45 @@ export default function useGeneratePosPdf(
     <img src="${
       compayInfo.logo_url
     }" alt="Compony Logo" style="height: 85px; max-width: 245px; object-fit: contain; ${
-      compayInfo.logo_url ? '' : 'display: none;'
-    }"/>
-    <h1 style="width: 600px; text-align:center; padding-left: 20px; line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
+        compayInfo.logo_url ? '' : 'display: none;'
+      }"/>
+  <div style="width: 600px; text-align:center; padding-left: 10px;">
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
       compayInfo.name
     } ${
-      compayInfo.organization_type === 'private_limited'
-        ? ' Pvt. Ltd.'
-        : ['public_limited', 'corporation'].includes(
-            compayInfo.organization_type
-          )
-        ? 'Ltd.'
-        : ''
-    }</h1>
-    </div>
-    <div style="display: flex; justify-content: center; flex-direction: column;">
+        compayInfo.organization_type === 'private_limited'
+          ? ' Pvt. Ltd.'
+          : ['public_limited', 'corporation'].includes(
+              compayInfo.organization_type
+            )
+          ? 'Ltd.'
+          : ''
+      }</h1>
       <div>${compayInfo.address}</div>
-      <div>VAT No. <strong>${compayInfo.tax_registration_number}</strong>
+      <div style="font-size: 14px;">
+          <div style="display: flex; justify-content: center; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Email: ${compayInfo.emails.join(',&nbsp;')}</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Tel: ${compayInfo.contact_no}</span>
+        </div>
       </div>
-    </div>
-
+      </div>
+  </div>
+    </div> 
+    <div style="display: flex; justify-content: end; font-family: Arial, Helvetica, sans-serif;">
     <div
       style="
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         align-items: flex-end;
       "
     >
-      <div style="display: flex; align-items: center">
-        <img
-          src="/icons/telephone-fill.svg"
-          alt="Email"
-          style="margin-right: 10px; width: 14px"
-        />
-        <span style="color: skyblue">${compayInfo.contact_no}</span>
-      </div>
-      <div style="display: flex; align-items: center">
-        <img
-          src="/icons/envelope-fill.svg"
-          alt="Call"
-          style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
-      </div>
+      <div style="font-size: 14px;" >VAT No. <strong>${
+        compayInfo.tax_registration_number
+      }</strong></div>
       <div style="display: ${compayInfo.website ? 'flex': 'none'}; align-items: center">
         <img
           src="/icons/web-fill.svg"
@@ -128,7 +124,8 @@ export default function useGeneratePosPdf(
       </div>
     </div>
   </div>
-    </div>
+    </div>  
+    
   <hr style="margin: 20px 0" />`
   } else {
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
