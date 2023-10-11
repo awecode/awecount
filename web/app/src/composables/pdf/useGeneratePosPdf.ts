@@ -215,10 +215,10 @@ export default function useGeneratePosPdf(
             formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
           }</span>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? `${tax_scheme_obj.name} ` + `${tax_scheme_obj.rate} %`
+              ? compayInfo.invoice_template === 2 ? (`${tax_scheme_obj.rate} % ` + `${tax_scheme_obj.name}`) : (`${tax_scheme_obj.name} ` + `${tax_scheme_obj.rate} %`)
               : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
         </div>

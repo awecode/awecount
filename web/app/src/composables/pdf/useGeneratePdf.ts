@@ -220,8 +220,8 @@ export default function useGeneratePdf(
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
-                `${invoiceInfo.rows[0].tax_scheme.rate} %`
+              ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[0].tax_scheme.rate} % ` + `${invoiceInfo.rows[0].tax_scheme.name}`) : (`${invoiceInfo.rows[0].tax_scheme.name} ` +
+                `${invoiceInfo.rows[0].tax_scheme.rate} %`)
               : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
         </div>
