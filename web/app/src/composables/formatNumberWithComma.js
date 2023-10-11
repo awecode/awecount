@@ -1,5 +1,11 @@
 function formatNumberWithCommas(number) {
-  const roundNumber = Math.round(number * 100) / 100
+  if (!number || isNaN(number) || number === 'NaN') {
+    number = 0
+  }
+  if (typeof number !== 'number') {
+    number = parseFloat(number)
+  }
+  const roundNumber = Math.round((number + Number.EPSILON) * 100) / 100
   // Convert the number to a string
   const numStr = roundNumber.toString();
 

@@ -41,7 +41,7 @@ export default function useGeneratePdf(
         hideRowQuantity ? 'display: none' : ''
       }">${row.rate}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
-        row.quantity * row.rate
+        formatNumberWithComma(row.quantity * row.rate)
       }</th>
     </tr>
     `
@@ -214,14 +214,14 @@ export default function useGeneratePdf(
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #c3c3c3; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            invoiceInfo.voucher_meta.sub_total
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #c3c3c3;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            invoiceInfo.voucher_meta.discount
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
@@ -230,11 +230,11 @@ export default function useGeneratePdf(
               ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
                 `${invoiceInfo.rows[0].tax_scheme.rate} %`
               : 'TAX'
-          }</span> <span>${invoiceInfo.meta_tax}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            invoiceInfo.voucher_meta.grand_total
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>

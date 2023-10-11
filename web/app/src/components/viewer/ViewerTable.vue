@@ -49,20 +49,20 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Sub Total </q-td><q-td class="text-right">{{
-          fields?.meta_sub_total }}</q-td>
+          formatNumberWithComma(fields?.meta_sub_total) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Discount </q-td><q-td class="text-right">{{
-          fields?.meta_discount }}</q-td>
+          formatNumberWithComma(fields?.meta_discount) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td><q-td class="text-right">{{ fields?.meta_tax
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td><q-td class="text-right">{{ formatNumberWithComma(fields?.meta_tax)
         }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -70,7 +70,7 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Total </q-td><q-td class="text-right">{{
-          fields?.total_amount }}</q-td>
+          formatNumberWithComma(fields?.total_amount) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <td></td>
@@ -84,6 +84,7 @@
 
 <script>
 import numberToText from 'src/composables/numToText'
+import formatNumberWithComma from 'src/composables/formatNumberWithComma'
 export default {
   props: {
     fields: {
@@ -102,6 +103,7 @@ export default {
       props,
       // columns,
       numberToText,
+      formatNumberWithComma
     }
   },
 }
