@@ -8,11 +8,11 @@ export default (
   return new Promise((resolve, reject) => {
     $q.notify({
       color: 'orange',
-      message: 'Fifo Inconsistency!',
+      message: response.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!",
       icon: 'report_problem',
     })
     $q.dialog({
-      title: '<span class="text-orange">Fifo Inconsistency!</span>',
+      title: `<span class="text-orange">${response.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!"}</span>`,
       message:
         `<span class="text-grey-8">Reason: ${response.data.detail}` +
         '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
@@ -20,7 +20,7 @@ export default (
       cancel: true,
     })
       .onOk(() => {
-        useApi(url + '?fifo_inconsistency=true', {
+        useApi(url + `?${response.data?.code}=true`, {
           method: method,
           body: body?.body,
         }).then((data) => {
