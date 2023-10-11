@@ -23,21 +23,21 @@ export default function useGeneratePdf(
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;">${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${
         index + 1
       }</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #c3c3c3 solid 2px;">${
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${
         row.item_name
       }<br><span style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;"><span style="${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
         hideRowQuantity ? 'display: none' : ''
       }">${
           row.quantity +
           `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`
         }</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;"><span style="${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
         hideRowQuantity ? 'display: none' : ''
       }">${row.rate}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
@@ -55,10 +55,10 @@ export default function useGeneratePdf(
     return `<tr style="color: grey; font-weight: 400;">
       <th style="width: 20px; height:${
         80 * number
-      }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;"></th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #c3c3c3 solid 2px;"></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;"></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #c3c3c3 solid 2px;"></th>
+      }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: right; font-weight: 400; padding:5px;"></th>
     </tr>
     `
@@ -181,13 +181,13 @@ export default function useGeneratePdf(
     html = html.concat(header)
   }
   const table = `<div>
-  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #c3c3c3;">
+  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
     <tr style="color: grey; font-weight: 500;">
-      <th style="width: 40px; padding:5px; border-right: #c3c3c3 solid 2px; border-bottom: #c3c3c3 solid 2px;">SN</th>
-      <th style="width: 40%; text-align:left; padding-left:20px; border-right: #c3c3c3 solid 2px; border-bottom: #c3c3c3 solid 2px;">Particular</th>
-      <th style="text-align: left; padding:5px; border-right: #c3c3c3 solid 2px; border-bottom: #c3c3c3 solid 2px;">Qty</th>
-      <th style="text-align: left; padding:5px; border-right: #c3c3c3 solid 2px; border-bottom: #c3c3c3 solid 2px;">Rate</th>
-      <th style="text-align: right; padding:5px; border-bottom: #c3c3c3 solid 2px;">Amount(${
+      <th style="width: 40px; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">SN</th>
+      <th style="width: 40%; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Particular</th>
+      <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Qty</th>
+      <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Rate</th>
+      <th style="text-align: right; padding:5px; border-bottom: #b9b9b9 solid 2px;">Amount(${
         compayInfo.config_template === 'np' ? 'NRS' : 'N/A'
       })</th>
 
@@ -195,7 +195,7 @@ export default function useGeneratePdf(
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
     ${compayInfo.invoice_template === 2 ? `${emptyRows()}` : ''}
   </table>
-  <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #c3c3c3; border-top: none; padding: 20px; padding-top: 0;">
+  <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
       ${
         voucherType === 'creditNote' || voucherType === 'debitNote'
@@ -204,20 +204,20 @@ export default function useGeneratePdf(
       <div>${numberToText(invoiceInfo.total_amount, 2)}</div>`
       }
       </div>
-      <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #c3c3c3; margin-top: 15px;">
-        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
+      <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
             formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
-        }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #c3c3c3;">
+        }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
             formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
           }</span>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
               ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
@@ -424,7 +424,7 @@ ${table}
       </div>
     </div>
   </div>
-  <hr style="border: 0.5px solid #c3c3c3; height: 0; margin: 20px 0" />
+  <hr style="border: 0.5px solid #b9b9b9; height: 0; margin: 20px 0" />
   ${table}
   <div style="font-size: 14px; text-align: right">
     <div style="margin-bottom: 5px">
