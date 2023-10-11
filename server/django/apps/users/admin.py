@@ -184,8 +184,8 @@ import_sold_books.short_description = "Import Sold Books"
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
-    list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number')
+    search_fields = ('name', 'address', 'contact_no', 'emails', 'tax_registration_number')
+    list_display = ('name', 'address', 'contact_no', 'emails', 'tax_registration_number')
     list_filter = ('organization_type',)
     actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category,
                import_sold_books]

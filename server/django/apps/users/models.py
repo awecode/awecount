@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
+from django.contrib.postgres.fields import ArrayField
 
 from apps.users.signals import company_creation
 from awecount.libs.fields import ChoiceArrayField
@@ -47,7 +48,8 @@ class Company(models.Model):
     address = models.TextField(blank=True)
     logo = models.ImageField(blank=True, null=True, upload_to='logos/')
     contact_no = models.CharField(max_length=25)
-    email = models.EmailField()
+    # email = models.EmailField()
+    emails = ArrayField(models.EmailField(), default=list, blank=True)
     website = models.URLField(blank=True, null=True)
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='private_limited')
     tax_registration_number = models.IntegerField()
