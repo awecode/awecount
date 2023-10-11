@@ -588,6 +588,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
                 return data
             rows = data["rows"]
             for row in rows:
+                # TODO: Improve queries
                 item = Item.objects.get(id=row["item_id"])
                 remaining_quantity = item.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
                 if row["quantity"] > remaining_quantity:
