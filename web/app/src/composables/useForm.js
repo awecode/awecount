@@ -137,14 +137,14 @@ export default (endpoint, config) => {
           message = 'Server Error! Please contact us with the problem.'
         } else if (data.status === 422) {
           $q.dialog({
-            title: `<span class="text-orange">${data.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!"}Fifo Inconsistency!</span>`,
+            title: `<span class="text-orange">${ humanizeWord(data.data?.code)}!</span>`,
             message:
               `<span class="text-grey-8">Reason: ${data.data.detail}` +
               '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
             cancel: true,
             html: true,
           }).onOk(() => {
-            useApi(postEndpoint + '?fifo_inconsistency=true', {
+            useApi(postEndpoint + `?${response.data?.code}=true`, {
               method: isEdit.value ? 'PATCH' : 'POST',
               body: { ...fields.value, status: originalStatus },
             })
@@ -177,7 +177,7 @@ export default (endpoint, config) => {
           $q.notify({
             color: 'orange',
             // message: data.data?.code,
-            message: data.data?.code == 'fifo_inconsistency' ? "FIFO Inconsistency!" : "Negative Inventory!",
+            message: `${humanizeWord(data.data?.code)}!`,
             icon: 'report_problem',
           })
         } else {
