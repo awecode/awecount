@@ -41,7 +41,7 @@ export default function useGeneratePdf(
         hideRowQuantity ? 'display: none' : ''
       }">${row.rate}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
-        formatNumberWithComma(row.quantity * row.rate)
+        formatNumberWithComma((row.quantity * row.rate), 2)
       }</th>
     </tr>
     `
@@ -201,20 +201,20 @@ export default function useGeneratePdf(
         voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount)}</div>`
+      <div>${numberToText(invoiceInfo.total_amount, 2)}</div>`
       }
       </div>
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #c3c3c3; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #c3c3c3;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #c3c3c3;">
@@ -223,11 +223,11 @@ export default function useGeneratePdf(
               ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
                 `${invoiceInfo.rows[0].tax_scheme.rate} %`
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
           }</span>
         </div>
       </div>

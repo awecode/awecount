@@ -1,11 +1,14 @@
-function formatNumberWithCommas(number) {
+function formatNumberWithCommas(number, toFixed) {
   if (!number || isNaN(number) || number === 'NaN') {
     number = 0
   }
   if (typeof number !== 'number') {
     number = parseFloat(number)
   }
-  const roundNumber = Math.round((number + Number.EPSILON) * 100) / 100
+  let roundNumber = Math.round((number + Number.EPSILON) * 100) / 100
+  if (toFixed !== undefined) {
+        roundNumber = (roundNumber).toFixed(toFixed)
+      }
   // Convert the number to a string
   const numStr = roundNumber.toString();
 
