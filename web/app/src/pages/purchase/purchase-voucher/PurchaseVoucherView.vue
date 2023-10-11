@@ -94,7 +94,7 @@ import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
-import useHandleCancelFifoInconsistency from 'src/composables/useHandleCancelFifoInconsistency'
+import useHandleCancelInconsistencyError from 'src/composables/useHandleCancelInconsistencyError'
 interface Fields {
   status: string
   voucher_no: string
@@ -150,7 +150,7 @@ export default {
         })
         .catch((data) => {
           if (data.status === 422) {
-            useHandleCancelFifoInconsistency(endpoint, data, body, $q).then((data) => {
+            useHandleCancelInconsistencyError(endpoint, data, body, $q).then((data) => {
               if (fields.value) {
                 fields.value.status = status
                 if (status === 'Cancelled') {
