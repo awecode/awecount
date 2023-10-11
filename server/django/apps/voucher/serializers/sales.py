@@ -264,15 +264,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
                     return data
+            if not request.data.get("invoices"):
+                item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
             else:
-                if not request.data.get("invoices"):
-                    item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
-                else:
-                    item_ids = [row["item_id"] for row in request.data.get("rows")]
-                date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
-                sales_vouchers = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
-                if sales_vouchers.exists():
-                    raise UnprocessableException(detail="This may cause inconsistencies in FIFO", code="fifo_inconsistency")
+                item_ids = [row["item_id"] for row in request.data.get("rows")]
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+            sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
+            challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
+            if sales_rows.exists() or challan_rows.exists():
+                raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
