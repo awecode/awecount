@@ -89,7 +89,7 @@ export default function useGeneratePdf(
       }</h1>
       <div style="display: flex; justify-content: center; flex-direction: column;">
         <div>${compayInfo.address}</div>
-        <div>Tax Reg. No. <strong>${
+        <div>VAT No. <strong>${
           compayInfo.tax_registration_number
         }</strong></div>
       </div>
