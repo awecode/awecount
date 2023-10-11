@@ -62,7 +62,7 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
     class Meta:
         model = SalesSetting
-        exclude = ('company',)
+        exclude = ('company', 'enable_sales_date_edit')
 
     def get_mode(self, obj):
         if not obj.mode in ['Cash', 'Credit']:
