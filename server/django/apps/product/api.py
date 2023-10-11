@@ -1,5 +1,8 @@
 from datetime import datetime
+from openpyxl import load_workbook
 
+from django.db import IntegrityError
+from django.db import transaction
 from django.conf import settings
 from django.db.models import Sum, Q
 from django_filters import rest_framework as filters
@@ -7,6 +10,7 @@ from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
 
 from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
@@ -28,6 +32,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['name', 'code', 'description', 'search_data', 'selling_price', 'cost_price', ]
     filterset_class = ItemFilterSet
+    parser_classes = [JSONParser, MultiPartParser]
 
     collections = (
         ('brands', Brand, BrandSerializer),
@@ -75,6 +80,102 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         queryset = self.get_queryset().filter(can_be_sold=True)
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=["POST"], url_path="import")
+    def import_from_file(self, request):
+        file = request.FILES["file"]
+        wb = load_workbook(file)
+        ws = wb.active
+        ws.delete_rows(1)
+        items = []
+
+        def get_bool_for_txt(value):
+            if not value:
+                return False
+            elif value.upper()=="F":
+                return False
+            elif value.upper()=="T":
+                return True
+            else:
+                raise ValueError("Invalid value detected.")
+            
+        def get_category(value):
+            if not value:
+                return None
+            else:
+                qs = Category.objects.filter(name__iexact=value, company_id=request.company.id)
+                if qs.exists():
+                    return qs.first()
+                else:
+                    if request.data.get("create_new_category") == "true":
+                        cat = Category.objects.create(name=value, company_id=request.company.id)
+                        return cat
+                    return None
+                    
+            
+        for row in ws.iter_rows(values_only=True):
+            item = {
+                "company_id":request.company.id,
+                "name":row[0],
+                "code":row[1],
+                "category":get_category(row[2]),
+                "cost_price":row[3],
+                "selling_price":row[4],
+                "can_be_purchased":get_bool_for_txt(row[5]),
+                "can_be_sold":get_bool_for_txt(row[6]),
+                "track_inventory":False
+            }
+            item_obj = Item(**item)
+            items.append(item_obj)
+
+        with transaction.atomic():
+            try:
+                Item.objects.bulk_create(items, batch_size=1000)
+                # items = Item.objects.bulk_create(items)
+                accounts_to_create = []
+                items_to_update = []
+                for i, item in enumerate(items):
+                    # print(i)
+                    if item.can_be_purchased:
+                        name = item.name + ' (Purchase)'
+                        purchase_account = Account(name=name, company=item.company)
+                        purchase_account.add_category('Purchase')
+                        purchase_account.suggest_code(item)
+                        accounts_to_create.append(purchase_account)
+                        item.purchase_account = purchase_account
+
+                        name = 'Discount Received - ' + item.name
+                        discount_received_acc = Account(name=name, company=item.company)
+                        discount_received_acc.add_category('Discount Income')
+                        discount_received_acc.suggest_code(item)
+                        accounts_to_create.append(discount_received_acc)
+                        item.discount_received_account = discount_received_acc
+
+                    if item.can_be_sold:
+                        name = item.name + ' (Sales)'
+                        sales_account = Account(name=name, company=item.company)
+                        sales_account.add_category('Sales')
+                        sales_account.suggest_code(item)
+                        accounts_to_create.append(sales_account)
+                        item.sales_account = sales_account
+
+                        name = 'Discount Allowed - ' + item.name
+                        discount_allowed_account = Account(name=name, company=item.company)
+                        discount_allowed_account.add_category('Discount Expenses')
+                        discount_allowed_account.suggest_code(item)
+                        accounts_to_create.append(discount_allowed_account)
+                        item.discount_allowed_account = discount_allowed_account
+
+                    items_to_update.append(item)
+
+                Account.objects.bulk_create(accounts_to_create, batch_size=1000)
+                Item.objects.bulk_update(items_to_update, fields=["purchase_account", "sales_account", "discount_received_account", "discount_allowed_account"])
+
+            except IntegrityError as e:
+                code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
+                res_msg = f"Duplicate items with code {code} detected."
+                return Response({"details": res_msg}, status=400)        
+        return Response({}, status=200)
 
 
 class ItemOpeningBalanceViewSet(CRULViewSet):

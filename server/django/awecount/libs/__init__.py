@@ -39,7 +39,7 @@ def decimalize(obj):
     if obj is None or obj == '':
         return Decimal(0)
     else:
-        return Decimal(obj)
+        return Decimal(str(obj))
 
 
 def none_for_zero(obj):

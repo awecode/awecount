@@ -177,6 +177,10 @@ class ChequeIssue(models.Model):
     def get_voucher_no(self):
         return self.cheque_no
 
+    @property
+    def voucher_no(self):
+        return self.cheque_no
+
     def get_source_id(self):
         return self.id
 

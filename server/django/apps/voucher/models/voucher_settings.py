@@ -27,6 +27,8 @@ class SalesSetting(models.Model):
     enable_amount_entry = models.BooleanField(default=False)
     show_rate_quantity_in_voucher = models.BooleanField(default=True)
     invoice_footer_text = models.CharField(max_length=255, null=True, blank=True)
+    persist_pos_items = models.BooleanField(default=False)
+    enable_sales_date_edit = models.BooleanField(default=False)
 
     @property
     def fields(self):
@@ -46,7 +48,9 @@ class SalesSetting(models.Model):
             'enable_due_date_in_voucher': self.enable_due_date_in_voucher,
             'enable_import_challan': self.enable_import_challan,
             'enable_amount_entry': self.enable_amount_entry,
-            'show_rate_quantity_in_voucher': self.show_rate_quantity_in_voucher
+            'show_rate_quantity_in_voucher': self.show_rate_quantity_in_voucher,
+            'persist_pos_items': self.persist_pos_items,
+            'enable_sales_date_edit': self.enable_sales_date_edit
         }
 
     def __str__(self):
@@ -119,3 +123,4 @@ def handle_company_creation(sender, **kwargs):
     company = kwargs.get('company')
     SalesSetting.objects.create(company=company)
     PurchaseSetting.objects.create(company=company)
+    InventorySetting.objects.create(company=company)

@@ -46,6 +46,7 @@ class TransactionInline(admin.TabularInline):
 class JournalEntryAdmin(admin.ModelAdmin):
     list_display = ('date', 'content_type', 'object_id')
     inlines = [TransactionInline]
+    list_filter = ('date', 'content_type', 'type')
 
 
 admin.site.register(Account, AccountAdmin)

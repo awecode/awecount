@@ -286,7 +286,10 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
 
         # qs = qs[: self.POS_ITEMS_SIZE]
         # data['items'] = {'results': ItemPOSSerializer(qs, many=True).data, 'pagination': {'page': 1, 'size': settings.POS_ITEMS_SIZE}}
-
+        return data
+    
+    def get_create_defaults(self, request=None):
+        data = SalesCreateSettingSerializer(request.company.sales_setting).data
         return data
 
     def perform_create(self, serializer):

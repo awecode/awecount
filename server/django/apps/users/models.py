@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
+from django.contrib.postgres.fields import ArrayField
 
 from apps.users.signals import company_creation
 from awecount.libs.fields import ChoiceArrayField
@@ -35,11 +36,20 @@ class FiscalYear(models.Model):
 
 
 class Company(models.Model):
+
+    TEMPLATE_CHOICES = [
+        (1, "Template 1"),
+        (2, "Template 2"),
+        # (3, "Template 3"),
+        # (4, "Template 4")
+    ]
+
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
     logo = models.ImageField(blank=True, null=True, upload_to='logos/')
     contact_no = models.CharField(max_length=25)
-    email = models.EmailField()
+    # email = models.EmailField()
+    emails = ArrayField(models.EmailField(), default=list, blank=True)
     website = models.URLField(blank=True, null=True)
     organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default='private_limited')
     tax_registration_number = models.IntegerField()
@@ -53,6 +63,7 @@ class Company(models.Model):
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
     current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='companies')
     config_template = models.CharField(max_length=255, default='np')
+    invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
 
     def __str__(self):
         return self.name

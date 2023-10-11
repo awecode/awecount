@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
+from awecount.libs import decimalize
 from ..models import JournalVoucherRow, JournalVoucher
 from awecount.libs.serializers import DisableCancelEditMixin
 
@@ -26,20 +29,20 @@ class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSe
             cr_amt = row.get("cr_amount")
             if not bool(dr_amt) and not bool(cr_amt):
                 raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
-        
+
         # Raise error if debit and credit totals differ
-        dr_total = 0
-        cr_total = 0
+        dr_total = Decimal(0)
+        cr_total = Decimal(0)
         for row in attrs.get("rows"):
             dr = row.get("dr_amount")
             cr = row.get("cr_amount")
             if dr:
-                dr_total += dr
+                dr_total += decimalize(dr)
             if cr:
-                cr_total += cr
+                cr_total += decimalize(cr)
         if not (dr_total == cr_total):
             raise ValidationError({"detail": "Debit and Credit totals do not match."})
-        
+
         return super().validate(attrs)
 
     def create(self, validated_data):

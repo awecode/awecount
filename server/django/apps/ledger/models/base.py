@@ -78,7 +78,7 @@ class Category(MPTTModel):
 
     class Meta:
         verbose_name_plural = u'Categories'
-        unique_together = ('code', 'company')
+        unique_together = [['code', 'company']]
 
 
 class Account(models.Model):
@@ -340,6 +340,8 @@ class JournalEntry(models.Model):
     object_id = models.PositiveIntegerField()
     source = GenericForeignKey('content_type', 'object_id')
     type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
+    source_voucher_no = models.CharField(max_length=50, blank=True, null=True)
+    source_voucher_id = models.PositiveIntegerField(blank=True, null=True)
 
     def __str__(self):
         return str(self.content_type) + ': ' + str(self.object_id) + ' [' + str(self.date) + ']'
@@ -363,7 +365,7 @@ class Transaction(models.Model):
     current_cr = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='transactions', null=True)
-    type = models.CharField(TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
+    type = models.CharField(choices=TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0])
 
     def get_amount(self):
         return self.dr_amount - self.cr_amount
@@ -392,18 +394,33 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
     """
     if isinstance(date, str):
         date = datetime.strptime(date, '%Y-%m-%d')
-    journal_entry, created = JournalEntry.objects.get_or_create(
-        content_type=ContentType.objects.get_for_model(submodel), object_id=submodel.id,
-        defaults={
-            'date': date
-        })
+
+    content_type = ContentType.objects.get_for_model(submodel)
+
+    created = False
+    try:
+        journal_entry = JournalEntry.objects.get(content_type=content_type, object_id=submodel.id)
+    except JournalEntry.DoesNotExist:
+
+        if hasattr(submodel, 'voucher_id'):
+            voucher_id = submodel.voucher_id
+            voucher_no = submodel.voucher.voucher_no
+        else:
+            voucher_id = submodel.id
+            voucher_no = submodel.voucher_no
+
+        journal_entry = JournalEntry(content_type=content_type, object_id=submodel.id, date=date,
+                                     source_voucher_id=voucher_id, source_voucher_no=voucher_no)
+        journal_entry.save()
+        created = True
+
     dr_total = 0
     cr_total = 0
     all_accounts = []
     all_transaction_ids = []
     for arg in entries:
         # transaction = Transaction(account=arg[1], dr_amount=arg[2])
-        matches = journal_entry.transactions.filter(account=arg[1])
+        matches = journal_entry.transactions.filter(account=arg[1])  if not created else []
         # with localcontext() as ctx:
         #     ctx.rounding = ROUND_HALF_UP
         #     val = round(decimalize(arg[2]), 2)
@@ -799,6 +816,9 @@ class AccountOpeningBalance(models.Model):
         if not self.fiscal_year_id:
             self.fiscal_year_id = self.company.current_fiscal_year_id
         super().save(*args, **kwargs)
+        # self.account.opening_dr = self.opening_dr
+        # self.account.opening_cr = self.opening_cr
+        # self.account.save()
         opening_balance_difference = Account.objects.get(company=self.company, name='Opening Balance Difference',
                                                          default=True)
         dr_entries = [
@@ -818,6 +838,10 @@ class AccountOpeningBalance(models.Model):
         return self.account.name
 
     def get_voucher_no(self):
+        return self.pk
+
+    @property
+    def voucher_no(self):
         return self.pk
 
     def get_source_id(self):

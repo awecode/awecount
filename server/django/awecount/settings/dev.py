@@ -49,32 +49,32 @@ CORS_ALLOWED_ORIGINS = (
 
 BASE_URL = 'http://localhost:8080/'
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    'formatters': {
-        'standard': {
-            'format': "[%(asctime)s] %(levelname)s %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        }
-    },
-    "handlers": {
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": "./debug.log",
-            'formatter': 'standard'
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "INFO",
-            "propagate": True,
-            'formatter': 'standard'
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     'formatters': {
+#         'standard': {
+#             'format': "[%(asctime)s] %(levelname)s %(message)s",
+#             'datefmt': "%d/%b/%Y %H:%M:%S"
+#         }
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "DEBUG",
+#             "class": "logging.FileHandler",
+#             "filename": "./debug.log",
+#             'formatter': 'standard'
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["file"],
+#             "level": "INFO",
+#             "propagate": True,
+#             'formatter': 'standard'
+#         },
+#     },
+# }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

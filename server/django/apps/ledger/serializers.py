@@ -76,8 +76,9 @@ class PartySerializer(serializers.ModelSerializer):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
         for representative in representatives:
-            if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
-                    'position'):
+            if representative.get('name') or representative.get('phone') or representative.get(
+                    'email') or representative.get(
+                'position'):
                 representative['party_id'] = instance.id
                 PartyRepresentative.objects.create(**representative)
         return instance
@@ -87,8 +88,9 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
-            if representative.get('name') or representative.get('phone') or representative.get('email') or representative.get(
-                    'position'):
+            if representative.get('name') or representative.get('phone') or representative.get(
+                    'email') or representative.get(
+                'position'):
                 representative['party_id'] = instance.id
                 try:
                     PartyRepresentative.objects.update_or_create(
@@ -113,42 +115,6 @@ class PartyListSerializer(serializers.ModelSerializer):
         model = Party
         fields = (
             'id', 'name', 'address', 'contact_no', 'email', 'tax_registration_number', 'dr', 'cr', 'balance')
-
-
-class TransactionEntrySerializer(serializers.ModelSerializer):
-    date = serializers.ReadOnlyField(source='journal_entry.date')
-    source_type = serializers.SerializerMethodField()
-    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
-    dr_amount = RoundedField()
-    cr_amount = RoundedField()
-
-    # voucher_no is too expensive on DB -
-    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
-
-    accounts = serializers.SerializerMethodField()
-
-    def get_accounts(self, obj):
-        # TODO Optimize
-        accounts = []
-        for transaction in obj.journal_entry.transactions.all():
-            accounts.append({'id': transaction.account_id, 'name': transaction.account.name})
-        return accounts
-        # return obj.journal_entry.transactions.values('account_id', 'account__name')
-
-    def get_source_type(self, obj):
-        v_type = obj.journal_entry.content_type.name
-        if v_type[-4:] == ' row':
-            v_type = v_type[:-3]
-        if v_type[-11:] == ' particular':
-            v_type = v_type[:-10]
-        if v_type == 'account':
-            return 'Opening Balance'
-        return v_type.strip().title()
-
-    class Meta:
-        model = Transaction
-        fields = (
-            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'source_id', 'voucher_no', 'accounts')
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -341,61 +307,75 @@ class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
         fields = ('id', 'account', 'opening_dr', 'opening_cr')
 
 
-class TransactionEntrySerializer(serializers.ModelSerializer):
-    date = serializers.ReadOnlyField(source='journal_entry.date')
+class TransactionEntrySerializer(serializers.Serializer):
+    date = serializers.ReadOnlyField()
     source_type = serializers.SerializerMethodField()
-    source_id = serializers.ReadOnlyField(source='journal_entry.source.get_source_id')
-    dr_amount = RoundedField()
-    cr_amount = RoundedField()
-    account_name = serializers.StringRelatedField(source='account')
+    dr_amount = RoundedField(source='total_dr_amount')
+    cr_amount = RoundedField(source='total_cr_amount')
+    # account_name = serializers.StringRelatedField(source='account')
+    # accounts = serializers.SerializerMethodField()
 
-    # voucher_no is too expensive on DB -
-    voucher_no = serializers.ReadOnlyField(source='journal_entry.source.get_voucher_no')
+    account_ids = serializers.ReadOnlyField()  # New field for the aggregated account IDs
+    account_names = serializers.ReadOnlyField()
 
-    accounts = serializers.SerializerMethodField()
+    source_id = serializers.ReadOnlyField()
+    count = serializers.ReadOnlyField()
+    # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
 
-    def get_accounts(self, obj):
-        # TODO Optimize
-        accounts = []
-        for transaction in obj.journal_entry.transactions.all():
-            accounts.append(
-                {'id': transaction.account_id,
-                 'name': transaction.account.name,
-                 'source_type':self.get_source_type(transaction)
-                 }
-            )
-        return accounts
+    def xget_accounts(self, obj):
+        # Split the comma-separated strings and create a list of dictionaries
+        names = obj.account_names.split(',')
+        ids = [int(id) for id in obj.account_ids.split(',')]
+        return [{'id': id, 'name': name} for id, name in zip(ids, names)]
+
+    # def get_accounts(self, obj):
+    #     # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
+    #     accounts = []
+    #     for transaction in obj.journal_entry.transactions.all():
+    #         accounts.append(
+    #             {'id': transaction.account_id,
+    #              'name': transaction.account.name,
+    #              'source_type': self.get_source_type(transaction)
+    #              }
+    #         )
+    #     return accounts
         # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
-        v_type = obj.journal_entry.content_type.name
+        from django.apps import apps
+
+        v_type = obj.content_type_model
+        # ctype = ContentType.objects.get(model=v_type)
+        m = apps.get_model(obj.content_type_app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
             v_type = v_type[:-10]
         if v_type == 'account':
             return 'Opening Balance'
-        return v_type.strip().title()
+        # FIXME: remove 'row' from the name properly
+        # return v_type.strip().title()
+        return m._meta.verbose_name.title().replace('Row', '').strip()
     
-    class Meta:
-        model = Transaction
-        fields = (
-            'id', 'dr_amount', 'cr_amount', 'date', 'source_type', 'account_id', 'account_name', 'source_id', 'voucher_no', 'journal_entry', 'accounts')
-        
+    # class Meta:
+    #     model = Transaction
+    #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
+
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+
     class Meta:
         model = ContentType
         fields = ('id', 'name', 'model')
 
     def get_name(self, obj):
         return obj.name.capitalize()
-    
+
 
 class ParamSerializer(serializers.Serializer):
     account = serializers.ListField(child=serializers.IntegerField())
-        
+
 
 class AggregatorSerializer(serializers.Serializer):
     label = serializers.CharField(required=False)
@@ -407,6 +387,7 @@ class AggregatorSerializer(serializers.Serializer):
 class AccountClosingSerializer(serializers.ModelSerializer):
     # fiscal_period = serializers.StringRelatedField()
     company = serializers.StringRelatedField()
+
     class Meta:
         model = AccountClosing
         fields = ["company", "fiscal_period", "status"]

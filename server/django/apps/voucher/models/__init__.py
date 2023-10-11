@@ -876,6 +876,10 @@ class PaymentReceipt(TransactionModel):
     clearing_date = models.DateField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
+    @property
+    def voucher_no(self):
+        return self.id
+
     def apply_transactions(self):
         if self.status == 'Cancelled':
             self.cancel_transactions()
