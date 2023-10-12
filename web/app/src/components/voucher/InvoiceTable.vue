@@ -36,7 +36,6 @@
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-right">Discount</div>
               <div class="col-6 q-pl-md">
-                <!-- {{ totalDataComputed.discount }} -->
                 {{ $nf(totalDataComputed.discount) }}
               </div>
             </div>
@@ -70,7 +69,6 @@ import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 import InvoiceRow from './InvoiceRow.vue'
 import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
       type: Array,
@@ -229,25 +227,6 @@ export default {
             props.discountOptions
           ) || 0
 
-        // preventing from mainDiscount amount from being added Twice
-
-        // checking if tax is selected manually
-        // if (item.tax_scheme_id) {
-        //   let rowTax = 0
-        //   if (props.mainDiscount.discount_type === 'Amount') {
-        //     rowTax =
-        //       (rowTotal -
-        //         (rowDiscount || 0) -
-        //         props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   } else {
-        //     rowTax =
-        //       (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   }
-        //   data.totalTax = data.totalTax + rowTax
-        // }
-        // checking if tax is selected coming automaticaly with item
         if (item.taxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
@@ -285,22 +264,6 @@ export default {
         data.taxName = 'Tax'
         data.taxRate = null
       }
-      // if (props.mainDiscount.discount_type === 'Amount') {
-      //   modalValue.value.forEach((item, index) => {
-      //     console.log(data.subTotal, index)
-      //     // const rowTotal = (())
-      //   })
-      // }
-      // data.totalTax = data.subTotal - data.discount *
-      // clac total discount
-      // data.discount =
-      //   (data.discount || 0) +
-      //   (useCalcDiscount(
-      //     props.mainDiscount.discount_type,
-      //     data.subTotal - data.discount,
-      //     props.mainDiscount.discount,
-      //     props.discountOptions
-      //   ) || 0)
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
