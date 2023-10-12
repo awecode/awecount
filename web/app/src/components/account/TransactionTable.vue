@@ -243,7 +243,7 @@ export default {
             .replace(' ', '')
           const key = `${sourceType}-${transaction.source_id}`
           if (key in dct && dct[key].date === transaction.date) {
-            dct[key].accounts.push('agvsghvasgcvag')
+            // dct[key].accounts.push('agvsghvasgcvag')
             if (transaction.dr_amount) {
               dct[key].dr_amount =
                 parseFloat(transaction.dr_amount) +
