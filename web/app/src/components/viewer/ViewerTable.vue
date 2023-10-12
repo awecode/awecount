@@ -29,10 +29,12 @@
           {{ index + 1 }}
         </q-td>
         <q-td>
-          {{ row.item_name }} <br> <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">{{ `(${row.description})` }}</span>
+          {{ row.item_name }} <br> <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">{{
+            `(${row.description})` }}</span>
         </q-td>
         <q-td>
-          <span v-if="props.showRateQuantity">{{ row.quantity }} <span class="text-grey-9"> ({{row.unit_name}})</span></span>
+          <span v-if="props.showRateQuantity">{{ row.quantity }} <span class="text-grey-9">
+              ({{ row.unit_name }})</span></span>
         </q-td>
         <q-td> <span v-if="props.showRateQuantity">{{ row.rate }}</span> </q-td>
         <q-td> {{ row?.discount }} {{ row.discount ? row.discount_type == 'Amount' ? '-/' : '%' : '' }} </q-td>
@@ -62,7 +64,8 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Tax </q-td><q-td class="text-right">{{ formatNumberWithComma(fields?.meta_tax)
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> {{ getTaxname }} </q-td><q-td class="text-right">{{
+          formatNumberWithComma(fields?.meta_tax)
         }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -99,11 +102,35 @@ export default {
     },
   },
   setup(props) {
+    const getTaxname = computed(() => {
+      let sameScheme = null
+      let tax_scheme = null
+      if (props.fields.rows && props.fields.rows.length) {
+        props.fields.rows.forEach(item => {
+          if (sameScheme !== false && item.tax_scheme) {
+            if (sameScheme === null && item.tax_scheme) {
+              sameScheme = item.tax_scheme.id
+              tax_scheme = item.tax_scheme
+            } else if (sameScheme === item.tax_scheme?.id || item.tax_scheme.rate === 0) {
+            } else sameScheme = false
+          }
+        });
+        if (typeof sameScheme === 'number' && tax_scheme) {
+          return (`${tax_scheme.friendly_name || ''}` +
+            ' @ ' +
+            `${tax_scheme.rate || ''}` +
+            '%')
+        } else {
+          return 'Tax'
+        }
+      } else return ''
+    })
     return {
       props,
       // columns,
       numberToText,
-      formatNumberWithComma
+      formatNumberWithComma,
+      getTaxname
     }
   },
 }
