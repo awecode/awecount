@@ -671,8 +671,7 @@ class Item(models.Model):
     
     @property
     def available_stock_data(self):
-        dct = self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
-        return dct
+        return self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
 
     class Meta:
         unique_together = ('code', 'company',)
