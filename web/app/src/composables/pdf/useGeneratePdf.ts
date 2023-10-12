@@ -91,7 +91,7 @@ export default function useGeneratePdf(
       <div style="font-size: 14px;">
           <div style="display: flex; justify-content: center; flex-direction: column;">
           <div style="display: flex; align-items: center; justify-content: center;">
-          <span>Email: ${compayInfo.emails.join(',&nbsp;')}</span>
+          <span>Email: ${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
         </div>
         <div style="display: flex; align-items: center; justify-content: center;">
           <span>Tel: ${compayInfo.contact_no}</span>
@@ -172,7 +172,7 @@ export default function useGeneratePdf(
           src="/icons/envelope-fill.svg"
           alt="Call"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.emails.join(',')}</span>
+        /><span style="color: skyblue">${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
       </div>
     </div>
   </div>
