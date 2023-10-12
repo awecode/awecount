@@ -216,7 +216,7 @@ export default {
           if (data.sameScheme === null && item.taxObj) {
             data.sameScheme = item.taxObj.id
             data.taxObj = item.taxObj
-          } else if (data.sameScheme === item.taxObj?.id) {
+          } else if (data.sameScheme === item.taxObj?.id || item.taxObj.rate === 0) {
           } else data.sameScheme = false
         }
         let mainDiscountAmount =
