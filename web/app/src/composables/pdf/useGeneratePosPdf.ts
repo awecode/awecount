@@ -94,7 +94,7 @@ export default function useGeneratePosPdf(
       <div style="font-size: 14px;">
           <div style="display: flex; justify-content: center; flex-direction: column;">
           <div style="display: flex; align-items: center; justify-content: center;">
-          <span>Email: ${compayInfo.emails.join(',&nbsp;')}</span>
+          <span>Email: ${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
         </div>
         <div style="display: flex; align-items: center; justify-content: center;">
           <span>Tel: ${compayInfo.contact_no}</span>
@@ -165,15 +165,15 @@ export default function useGeneratePosPdf(
       <div style="display: flex; align-items: center">
         <img
           src="/icons/telephone-fill.svg"
-          alt="Email"
+          alt="Call"
           style="margin-right: 10px; width: 14px"
         />
-        <span style="color: skyblue">${compayInfo.contact_no}</span>
+        <span style="color: skyblue">${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
       </div>
       <div style="display: flex; align-items: center">
         <img
           src="/icons/envelope-fill.svg"
-          alt="Call"
+          alt="Email"
           style="margin-right: 10px; width: 14px"
         /><span style="color: skyblue">${compayInfo.email}</span>
       </div>
