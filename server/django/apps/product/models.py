@@ -668,6 +668,11 @@ class Item(models.Model):
     @property
     def remaining_stock(self):
         return self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+    
+    @property
+    def available_stock_data(self):
+        dct = self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
+        return dct
 
     class Meta:
         unique_together = ('code', 'company',)

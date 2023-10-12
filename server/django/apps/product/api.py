@@ -176,6 +176,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 res_msg = f"Duplicate items with code {code} detected."
                 return Response({"details": res_msg}, status=400)        
         return Response({}, status=200)
+    
+    @action(detail=True, methods=["GET"], url_path="available-stock")
+    def available_stock_data(self, request, pk=None):
+        item = self.get_object()
+        return Response(item.available_stock_data, status=200)
 
 
 class ItemOpeningBalanceViewSet(CRULViewSet):
