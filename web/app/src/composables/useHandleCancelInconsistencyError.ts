@@ -22,7 +22,7 @@ export default (
       .onOk(() => {
         useApi(url + `?${response.data?.code}=true`, {
           method: method,
-          body: body?.body,
+          body,
         }).then((data) => {
           resolve(data)
         })
