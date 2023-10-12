@@ -17,12 +17,12 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
-          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
-            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
-            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" />
+            <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
+              :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
+              :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
+              @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+                " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
+              :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" :itemPurchaseData="itemPurchaseData" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -296,6 +296,9 @@ export default {
         )
       modalValue.value.splice(index, 1)
     }
+    // For purchase rows Data of Items
+      const itemPurchaseData = ref(null)
+    // For purchase rows Data of Items
     return {
       props,
       modalValue,
@@ -307,6 +310,7 @@ export default {
       InvoiceRow,
       useCalcDiscount,
       rowEmpty,
+      itemPurchaseData
     }
   },
 }

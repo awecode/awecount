@@ -97,6 +97,7 @@
         </q-input>
       </div>
     </div>
+    {{ itemPriceComputed }}
   </div>
 </template>
 
@@ -192,6 +193,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    itemPurchaseData: {
+      type: Object,
+      default: () => null
+    }
   },
 
   emits: ['update:modelValue', 'deleteRow'],
@@ -203,7 +208,6 @@ export default {
       () => Math.round(((modalValue.value.rate || 0) * (modalValue.value.quantity || 0)) * 100) / 100
     )
     const selectedItem = ref(null)
-
     const updateTaxObj = () => {
       const taxindex = props.taxOptions.findIndex(
         (item) => item.id === props.modelValue.tax_scheme_id
@@ -286,6 +290,9 @@ export default {
         modalValue.value.rate = amount / modalValue.value.quantity
       }
     }
+    const itemPriceComputed = computed(() => {
+      return 'hafsyhas'
+    })
     return {
       ItemAdd,
       expandedState,
@@ -295,7 +302,8 @@ export default {
       selectedTax,
       deleteRow,
       checkPermissions,
-      onAmountInput
+      onAmountInput,
+      itemPriceComputed
     }
   },
 }
