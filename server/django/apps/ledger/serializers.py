@@ -312,40 +312,17 @@ class TransactionEntrySerializer(serializers.Serializer):
     source_type = serializers.SerializerMethodField()
     dr_amount = RoundedField(source='total_dr_amount')
     cr_amount = RoundedField(source='total_cr_amount')
-    # account_name = serializers.StringRelatedField(source='account')
-    # accounts = serializers.SerializerMethodField()
-
-    account_ids = serializers.ReadOnlyField()  # New field for the aggregated account IDs
-    account_names = serializers.ReadOnlyField()
-
+    accounts = serializers.ReadOnlyField()
     source_id = serializers.ReadOnlyField()
     count = serializers.ReadOnlyField()
+
     # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
-
-    def xget_accounts(self, obj):
-        # Split the comma-separated strings and create a list of dictionaries
-        names = obj.account_names.split(',')
-        ids = [int(id) for id in obj.account_ids.split(',')]
-        return [{'id': id, 'name': name} for id, name in zip(ids, names)]
-
-    # def get_accounts(self, obj):
-    #     # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
-    #     accounts = []
-    #     for transaction in obj.journal_entry.transactions.all():
-    #         accounts.append(
-    #             {'id': transaction.account_id,
-    #              'name': transaction.account.name,
-    #              'source_type': self.get_source_type(transaction)
-    #              }
-    #         )
-    #     return accounts
-        # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
         from django.apps import apps
 
         v_type = obj.content_type_model
-        # ctype = ContentType.objects.get(model=v_type)
+
         m = apps.get_model(obj.content_type_app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
@@ -353,8 +330,6 @@ class TransactionEntrySerializer(serializers.Serializer):
             v_type = v_type[:-10]
         if v_type == 'account':
             return 'Opening Balance'
-        # FIXME: remove 'row' from the name properly
-        # return v_type.strip().title()
         return m._meta.verbose_name.title().replace('Row', '').strip()
     
     # class Meta:
