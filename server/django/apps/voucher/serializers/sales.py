@@ -593,25 +593,28 @@ class ChallanCreateSerializer(StatusReversionMixin,
 
         inventory_settings = request.company.inventory_setting
         if inventory_settings.enable_fifo:
-            if request.query_params.get("fifo_inconsistency"):
+            if not request.query_params.get("fifo_inconsistency"):
+                rows = data["rows"]
+                # validate back date entry
+                item_ids = [row["item_id"] for row in rows]
+                date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
+                sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
+                challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
+                if sales_rows.exists() or challan_rows.exists():
+                    raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
+            else:
                 return data
-
-            rows = data["rows"]
-            # validate back date entry
-            item_ids = [row["item_id"] for row in rows]
-            date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
-            sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
-            challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
-            if sales_rows.exists() or challan_rows.exists():
-                raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
-
+            
             # Check Negative Stock
             if inventory_settings.enable_negative_stock_check:
-                for row in rows:
-                    # TODO: Improve queries
-                    item = Item.objects.get(id=row["item_id"])
-                    if item.remaining_stock < row["quantity"]:
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
+                if not request.query_params.get("negative_stock"):
+                    for row in rows:
+                        # TODO: Improve queries
+                        item = Item.objects.get(id=row["item_id"])
+                        if item.remaining_stock < row["quantity"]:
+                            raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
+                else:
+                    return data
         return data
 
     def create(self, validated_data):

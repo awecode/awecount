@@ -479,6 +479,25 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     detail="This action might create inconsistencies in FIFO.",
                     code="fifo_inconsistency",
                 )
+            
+            # Negative stock check
+            if request.company.inventory_setting.enable_negative_stock_check:
+                if request.query_params["negative_stock"]:
+                    purchase_voucher.cancel()
+                    self.fifo_update_sales_rows(purchase_voucher)
+                purchase_rows = purchase_voucher.rows.all()
+                for row in purchase_rows:
+                    sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
+                    challan_rows = ChallanRow.objects.filter(sold_items__has_key=str(row.id))
+                    sold_items_challan = list(challan_rows.values_list("sold_items", flat=True))
+                    sold_items_sales = list(sales_rows.values_list("sold_items", flat=True))
+                    sold_items = sold_items_challan + sold_items_sales
+                    sum = 0
+                    for item in sold_items:
+                        sum += item[str(row.id)]
+                    remaining_quantity = row.item.remaining_stock - row.quantity
+                    if remaining_quantity <= 0:
+                        raise UnprocessableException(detail="Negative Stock Warning!", code="negative_stock")
             purchase_voucher.cancel()
             self.fifo_update_sales_rows(purchase_voucher)
             return Response({})
