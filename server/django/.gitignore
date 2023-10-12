@@ -7,3 +7,4 @@ env/
 *.xlsx
 
 temp.*
+.vscode/
