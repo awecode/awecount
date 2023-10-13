@@ -82,6 +82,7 @@ class TransactionsViewMixin(object):
                 SELECT
                     je.id AS journal_entry_id,
                     je.source_voucher_id,
+                    je.source_voucher_no,
                     je.date,
                     ct.model AS content_type_model,
                     ct.app_label AS content_type_app_label,
@@ -104,6 +105,7 @@ class TransactionsViewMixin(object):
             SELECT
                 SUM(t.id) as id,
                 aa.source_voucher_id as source_id,
+                aa.source_voucher_no as voucher_no,
                 aa.content_type_model as content_type_model,
                 aa.content_type_app_label as content_type_app_label,
                 SUM(t.dr_amount) AS total_dr_amount,
@@ -118,6 +120,7 @@ class TransactionsViewMixin(object):
                 t.account_id IN ({account_id_list_str})
             GROUP BY
                 aa.source_voucher_id,
+                aa.source_voucher_no,
                 aa.date,
                 aa.content_type_model,
                 aa.content_type_app_label,
@@ -126,6 +129,7 @@ class TransactionsViewMixin(object):
         SELECT 
             SUM(sa.id) AS id,
             sa.source_id,
+            sa.voucher_no,
             SUM(sa.total_dr_amount) AS total_dr_amount,
             SUM(sa.total_cr_amount) AS total_cr_amount,
             sa.content_type_model,
@@ -136,6 +140,7 @@ class TransactionsViewMixin(object):
             SourceAggregation AS sa
         GROUP BY
             sa.source_id,
+            sa.voucher_no,
             sa.content_type_model,
             sa.content_type_app_label,
             sa.date

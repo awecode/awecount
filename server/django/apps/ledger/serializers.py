@@ -315,6 +315,7 @@ class TransactionEntrySerializer(serializers.Serializer):
     accounts = serializers.ReadOnlyField()
     source_id = serializers.ReadOnlyField()
     count = serializers.ReadOnlyField()
+    voucher_no = serializers.ReadOnlyField()
 
     # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
 
