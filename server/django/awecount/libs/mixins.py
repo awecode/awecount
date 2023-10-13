@@ -68,16 +68,15 @@ class TransactionsViewMixin(object):
         #     count=Count('journal_entry__source_voucher_id'))
 
         # FIXME: upgrade postgres and add this query back inside rawquery
-        # - CREATE OR REPLACE AGGREGATE jsonb_concat(jsonb) ( SFUNC = merge_jsonb_agg, STYPE = jsonb, INITCOND = '[]' );
+        # -- CREATE OR REPLACE FUNCTION merge_jsonb_agg(jsonb, jsonb)
+        #     RETURNS jsonb AS $$
+        #         BEGIN
+        #             RETURN (SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(COALESCE($1, '[]') || COALESCE($2, '[]')) AS value);
+        #         END;
+        # $$ LANGUAGE plpgsql;
+        # -- CREATE OR REPLACE AGGREGATE jsonb_concat(jsonb) ( SFUNC = merge_jsonb_agg, STYPE = jsonb, INITCOND = '[]' );
         
         raw_query = f"""
-        CREATE OR REPLACE FUNCTION merge_jsonb_agg(jsonb, jsonb)
-            RETURNS jsonb AS $$
-                BEGIN
-                    RETURN (SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(COALESCE($1, '[]') || COALESCE($2, '[]')) AS value);
-                END;
-        $$ LANGUAGE plpgsql;
-
         WITH SourceAggregation AS (
             WITH AccountAggregation AS (
                 SELECT
