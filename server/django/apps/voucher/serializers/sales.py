@@ -8,6 +8,7 @@ from django.db.models import Sum
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
+from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import SalesAgent, PaymentReceipt, Challan, ChallanRow
 from awecount.libs.exception import UnprocessableException
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -193,34 +194,6 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
             del data['item_obj']
 
         return data
-    
-
-def update_purchase_rows(request, row):
-    if request.company.inventory_setting.enable_fifo:
-        item_id = row.get("item_id")
-        quantity = row.get("quantity")
-        purchase_rows = PurchaseVoucherRow.objects.filter(
-            item_id=item_id,
-            remaining_quantity__gt=0
-        ).order_by("voucher__date", "id")
-        sold_items = {}
-        for purchase_row in purchase_rows:
-            if purchase_row.remaining_quantity == quantity:
-                purchase_row.remaining_quantity = 0
-                purchase_row.save()
-                sold_items[purchase_row.id] = quantity
-                break
-            elif purchase_row.remaining_quantity > quantity:
-                purchase_row.remaining_quantity -= quantity
-                purchase_row.save()
-                sold_items[purchase_row.id] = quantity
-                break
-            else:
-                quantity -= purchase_row.remaining_quantity
-                sold_items[purchase_row.id] = purchase_row.remaining_quantity
-                purchase_row.remaining_quantity = 0
-                purchase_row.save()
-        return sold_items
 
 
 class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -264,10 +237,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
                     return data
-            if not request.data.get("invoices"):
-                item_ids = [row["itemObj"]["id"] for row in request.data.get("rows")]
-            else:
-                item_ids = [row["item_id"] for row in request.data.get("rows")]
+            item_ids = [row["item_id"] for row in request.data.get("rows")]
             date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
             sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
             challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
@@ -302,7 +272,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
         if due_date < timezone.now().date():
             raise ValidationError("Due date cannot be before deposit date.")
-        
+                
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
@@ -320,8 +290,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
-            if not request.data.get("invoices"):
-                sold_items = update_purchase_rows(request, row)
+            if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
+                sold_items = fifo_handle_sales_create(request, row)
                 row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
@@ -338,6 +308,13 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         return instance
 
     def update(self, instance, validated_data):
+        request = self.context["request"]
+        if request.company.inventory_setting.enable_fifo:
+            if request.query_params.get("fifo_inconsistency"):       
+                res = fifo_cancel_sales(instance, False)
+            else:
+                raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
+
         if validated_data['status']=='Issued':
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
@@ -359,7 +336,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            if request.company.inventory_setting.enable_fifo:
+                sold_items = fifo_handle_sales_create(request, row)
+                row["sold_items"] = sold_items
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+            # if not request.data.get("invoices"):
 
         if challans:
             instance.challans.clear()
@@ -626,7 +607,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         validated_data['user_id'] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            sold_items = update_purchase_rows(request, row)
+            sold_items = fifo_handle_sales_create(request, row)
             row["sold_items"] = sold_items
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
