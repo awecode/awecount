@@ -177,7 +177,7 @@
         </td>
         <td>{{ transaction.source_type }}</td>
         <td>
-          <account-list :account_ids="transaction.account_ids" :account_names="transaction.account_names"></account-list>
+          <account-list :accounts="transaction.accounts"></account-list>
           <!-- <div v-for="(id, index) in transaction.account_ids" :key="id">
             <router-link :to="`/account/${id}/view/`"
               style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${transaction.account_names}`">
