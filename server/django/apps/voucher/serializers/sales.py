@@ -336,7 +336,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo:
+            if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
                 sold_items = fifo_handle_sales_create(request, row)
                 row["sold_items"] = sold_items
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
@@ -607,8 +607,9 @@ class ChallanCreateSerializer(StatusReversionMixin,
         validated_data['user_id'] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            sold_items = fifo_handle_sales_create(request, row)
-            row["sold_items"] = sold_items
+            if request.company.inventory_setting.enable_fifo:
+                sold_items = fifo_handle_sales_create(request, row)
+                row["sold_items"] = sold_items
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
         # TODO: Sync with CBMS
@@ -616,12 +617,21 @@ class ChallanCreateSerializer(StatusReversionMixin,
         return instance
 
     def update(self, instance, validated_data):
+        request = self.context["request"]
+        if request.company.inventory_setting.enable_fifo:
+            if request.query_params.get("fifo_inconsistency"):       
+                res = fifo_cancel_sales(instance, False)
+            else:
+                raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
         rows_data = validated_data.pop('rows')
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
         Challan.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
+            if request.company.inventory_setting.enable_fifo:
+                sold_items = fifo_handle_sales_create(request, row)
+                row["sold_items"] = sold_items
             ChallanRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         instance.apply_inventory_transactions()
