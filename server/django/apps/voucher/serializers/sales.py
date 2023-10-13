@@ -291,7 +291,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
             if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
-                sold_items = fifo_handle_sales_create(request, row)
+                sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
@@ -625,7 +625,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
             #     res = fifo_cancel_sales(instance, False)
             # else:
             #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
-            
+
         rows_data = validated_data.pop('rows')
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
