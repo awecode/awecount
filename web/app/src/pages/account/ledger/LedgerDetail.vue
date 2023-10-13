@@ -68,18 +68,39 @@ const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
 watch(
-  route,
-  () => {
-    if (route.params.id) {
-      const url = `/v1/accounts/${route.params.id}/transactions/?`
-      const updatedEndpoint = withQuery(url, route.query)
-      endpoint.value = updatedEndpoint
+  () => route.query,
+  (newQuery, oldQuery) => {
+    if (route.params.id && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      if (oldQuery.page !== newQuery.page) {
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.pageSize !== newQuery.pageSize) {
+        const updatedQuery = newQuery.page = null
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
+        const updatedQuery = newQuery.page = null
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
     }
   },
   {
     deep: true,
   }
 )
+watch(
+  () => route.params.id,
+  (newid, oldid) => {
+    if (newid && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      const updatedEndpoint = withQuery(url, {})
+      endpoint.value = updatedEndpoint
+    }
+  })
 const startDate = ref(null)
 const endDate = ref(null)
 const resetDate = () => {
