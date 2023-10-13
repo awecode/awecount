@@ -310,10 +310,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     def update(self, instance, validated_data):
         request = self.context["request"]
         if request.company.inventory_setting.enable_fifo:
-            if request.query_params.get("fifo_inconsistency"):       
-                res = fifo_cancel_sales(instance, False)
-            else:
-                raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
+            res = fifo_cancel_sales(instance, False)
+            # if request.query_params.get("fifo_inconsistency"):       
+            #     res = fifo_cancel_sales(instance, False)
+            # else:
+            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
 
         if validated_data['status']=='Issued':
             if not instance.company.current_fiscal_year == instance.fiscal_year:
@@ -619,10 +620,12 @@ class ChallanCreateSerializer(StatusReversionMixin,
     def update(self, instance, validated_data):
         request = self.context["request"]
         if request.company.inventory_setting.enable_fifo:
-            if request.query_params.get("fifo_inconsistency"):       
-                res = fifo_cancel_sales(instance, False)
-            else:
-                raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
+            res = fifo_cancel_sales(instance, False)
+            # if request.query_params.get("fifo_inconsistency"):       
+            #     res = fifo_cancel_sales(instance, False)
+            # else:
+            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
+            
         rows_data = validated_data.pop('rows')
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
