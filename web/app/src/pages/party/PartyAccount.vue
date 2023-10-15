@@ -102,7 +102,7 @@
           <q-btn @click="filter" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter" color="blue"></q-btn>
         </span>
       </div>
-      <TransactionTable v-if="fields.transactions" :fields="fields">
+      <TransactionTable v-if="fields?.transactions.results?.length > 0" :fields="fields">
         <TablePagination :fields="fields"></TablePagination>
       </TransactionTable>
     </q-card>
@@ -147,6 +147,7 @@ export default {
       withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query)
     )
     function fetchData() {
+      if (fields?.value?.transactions.results) fields.value.transactions.results = null
       useApi(endpoint.value, { method: 'GET' })
         .then((data) => {
           fields.value = data
@@ -172,12 +173,12 @@ export default {
             endpoint.value = updatedEndpoint
           }
           if (oldQuery.pageSize !== newQuery.pageSize) {
-            const updatedQuery = newQuery.page = null
+            newQuery.page = undefined
             const updatedEndpoint = withQuery(url, newQuery)
             endpoint.value = updatedEndpoint
           }
           if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
-            const updatedQuery = newQuery.page = null
+            newQuery.page = undefined
             const updatedEndpoint = withQuery(url, newQuery)
             endpoint.value = updatedEndpoint
           }

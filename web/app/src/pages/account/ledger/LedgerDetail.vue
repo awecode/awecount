@@ -14,7 +14,7 @@
       </div>
       <div>
         <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block" title="Code">[Code: {{
-          fields.code }}]</span>
+          fields?.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
@@ -53,7 +53,7 @@
           </div>
         </div>
       </div>
-      <transaction-table :fields="fields">
+      <transaction-table :fields="fields" v-if="fields?.transactions.results?.length > 0">
         <TablePagination :fields="fields"></TablePagination>
       </transaction-table>
     </div>
@@ -77,12 +77,12 @@ watch(
         endpoint.value = updatedEndpoint
       }
       if (oldQuery.pageSize !== newQuery.pageSize) {
-        const updatedQuery = newQuery.page = null
+        newQuery.page = undefined
         const updatedEndpoint = withQuery(url, newQuery)
         endpoint.value = updatedEndpoint
       }
       if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
-        const updatedQuery = newQuery.page = null
+        newQuery.page = undefined
         const updatedEndpoint = withQuery(url, newQuery)
         endpoint.value = updatedEndpoint
       }
@@ -124,7 +124,8 @@ const filter = () => {
 const endpoint = ref(
   withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query)
 )
-const getData = () =>
+const getData = () => {
+  if (fields?.value?.transactions.results) fields.value.transactions.results = null
   useApi(endpoint.value).then((data) => {
     fields.value = data
     const metaData = {
@@ -132,6 +133,7 @@ const getData = () =>
     }
     useMeta(metaData)
   })
+}
 getData()
 watch(endpoint, () => getData())
 onMounted(() => {
