@@ -299,7 +299,7 @@ export default {
       document.body.appendChild(ifram)
       const pri = ifram.contentWindow
       pri.document.open()
-      pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher))
+      pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows))
       pri.document.close()
       pri.focus()
       setTimeout(() => pri.print(), 100)

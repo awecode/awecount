@@ -6,19 +6,24 @@ export default function useGeneratePosPdf(
   invoiceInfo: object,
   tax_scheme_obj: object | null,
   partyObj: object | null,
-  hideRowQuantity: boolean
+  hideRowQuantity: boolean,
+  clientRows: Array<string, any> | null
 ): string {
   const loginStore: Record<string, string | number | object> = useLoginStore()
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
+  let taxIndex : number | null = null
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        if (isTaxSame !== false) {
-          if (index === 0) isTaxSame = row.tax_scheme_id
+        if (isTaxSame !== false && clientRows[index].taxObj.rate != 0) {
+          if (isTaxSame === null) {
+            isTaxSame = clientRows[index].taxObj.id
+            taxIndex = index
+          }
           else {
-            if (isTaxSame !== row.tax_scheme_id) isTaxSame = false
+            if (isTaxSame !== clientRows[index].taxObj.id) isTaxSame = false
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
@@ -218,7 +223,8 @@ export default function useGeneratePosPdf(
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? compayInfo.invoice_template === 2 ? (`${tax_scheme_obj.rate} % ` + `${tax_scheme_obj.name}`) : (`${tax_scheme_obj.name} ` + `${tax_scheme_obj.rate} %`)
+              ? compayInfo.invoice_template === 2 ? (`${clientRows[taxIndex].taxObj.rate} % ` + `${clientRows[taxIndex].taxObj.name}`) : (`${clientRows[taxIndex].taxObj.name} ` +
+                `${clientRows[taxIndex].taxObj.rate} %`)
               : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
         </div>
