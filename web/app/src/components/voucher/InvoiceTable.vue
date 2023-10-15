@@ -63,7 +63,6 @@
         </div>
       </div>
     </q-card>
-    {{ COGSData }}--COGSDATA-------------- {{ itemPurchaseData }}
   </q-card-section>
 </template>
 

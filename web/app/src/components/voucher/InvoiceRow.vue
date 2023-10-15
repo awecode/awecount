@@ -55,7 +55,7 @@
         <!-- {{ props }} -->
         <div class="col-5">Cost Of Goods Sold:</div>
         <div class="col-2"></div>
-        <div class="col-2 q-pl-sm">12</div>
+        <div class="col-2 q-pl-sm">{{ $nf(COGSData[index] / modalValue.quantity) }}</div>
         <div class="col-2 text-center">{{ COGSData[index]}}</div>
       </div>
       <div v-else class="row text-orange-5">
@@ -301,7 +301,6 @@ export default {
         modalValue.value.rate = amount / modalValue.value.quantity
       }
     }
-    console.log(props.isFifo)
     if (props.isFifo && props.usedIn === 'sales' && !route.params.id) {
       watch(() => modalValue.value.item_id, (newValue) => {
         if (modalValue.value.item_id) emit('onItemIdUpdate', newValue)
