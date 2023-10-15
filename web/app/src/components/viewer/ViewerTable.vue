@@ -108,7 +108,7 @@ export default {
       if (props.fields.rows && props.fields.rows.length) {
         props.fields.rows.forEach(item => {
           if (sameScheme !== false && item.tax_scheme) {
-            if (sameScheme === null && item.tax_scheme) {
+            if (sameScheme === null && item.tax_scheme && item.tax_scheme.rate != 0) {
               sameScheme = item.tax_scheme.id
               tax_scheme = item.tax_scheme
             } else if (sameScheme === item.tax_scheme?.id || item.tax_scheme.rate === 0) {

@@ -211,7 +211,7 @@ export default {
             props.discountOptions
           ) || 0
         if (data.sameScheme !== false && item.taxObj) {
-          if (data.sameScheme === null && item.taxObj) {
+          if (data.sameScheme === null && item.taxObj && item.taxObj.rate != 0) {
             data.sameScheme = item.taxObj.id
             data.taxObj = item.taxObj
           } else if (data.sameScheme === item.taxObj?.id || item.taxObj.rate === 0) {
