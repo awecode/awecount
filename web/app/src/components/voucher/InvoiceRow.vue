@@ -50,11 +50,20 @@
         </q-btn>
       </div>
     </div>
-    <div v-if="isFifo" class="row text-blue-4">
-      <div class="col-5">Cost Of Goods Sold:</div>
-      <div class="col-2"></div>
-      <div class="col-2 q-pl-sm">12</div>
-      <div class="col-2 text-center">12,000</div>
+    <div v-if="isFifo && COGSData?.hasOwnProperty(index)">
+      <div v-if="COGSData[index].status != 'error'" class="row text-blue-4">
+        <!-- {{ props }} -->
+        <div class="col-5">Cost Of Goods Sold:</div>
+        <div class="col-2"></div>
+        <div class="col-2 q-pl-sm">12</div>
+        <div class="col-2 text-center">{{ COGSData[index]}}</div>
+      </div>
+      <div v-else class="row text-orange-5">
+        <!-- {{ props }} -->
+        <div class="col-5">Error:</div>
+        <div class="col-1"></div>
+        <div class="col-5 q-pl-sm text-right">{{ COGSData[index].message }}</div>
+      </div>
     </div>
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
@@ -92,7 +101,8 @@
               " />
         </div>
       </div>
-      <div v-if="$route.params.id ? ((!!modalValue.item_id || !!modalValue.itemObj ) && enableRowDescription) : (!!modalValue.itemObj && enableRowDescription)">
+      <div
+        v-if="$route.params.id ? ((!!modalValue.item_id || !!modalValue.itemObj) && enableRowDescription) : (!!modalValue.itemObj && enableRowDescription)">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg">
         </q-input>
       </div>
@@ -193,14 +203,15 @@ export default {
       type: Boolean,
       default: () => false,
     },
-    itemPurchaseData: {
+    COGSData: {
       type: Object,
       default: () => null
     }
   },
 
-  emits: ['update:modelValue', 'deleteRow'],
+  emits: ['update:modelValue', 'deleteRow', 'onItemIdUpdate'],
   setup(props, { emit }) {
+    const route = useRoute()
     const expandedState = ref(false)
     const modalValue = ref(props.modelValue)
     const selectedTax = ref(null)
@@ -290,9 +301,15 @@ export default {
         modalValue.value.rate = amount / modalValue.value.quantity
       }
     }
-    const itemPriceComputed = computed(() => {
-      return 'hafsyhas'
-    })
+    console.log(props.isFifo)
+    if (props.isFifo && props.usedIn === 'sales' && !route.params.id) {
+      watch(() => modalValue.value.item_id, (newValue) => {
+        if (modalValue.value.item_id) emit('onItemIdUpdate', newValue)
+      })
+      watch(() => modalValue.value.quantity, (newValue) => {
+        if (modalValue.value.item_id) emit('onItemIdUpdate')
+      })
+    }
     return {
       ItemAdd,
       expandedState,
@@ -302,8 +319,7 @@ export default {
       selectedTax,
       deleteRow,
       checkPermissions,
-      onAmountInput,
-      itemPriceComputed
+      onAmountInput
     }
   },
 }

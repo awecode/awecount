@@ -17,12 +17,14 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
-            <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
-              :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
-              :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
-              @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-                " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-              :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" :itemPurchaseData="itemPurchaseData" />
+          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
+            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
+            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
+            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
+            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
+            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
+            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -61,6 +63,7 @@
         </div>
       </div>
     </q-card>
+    {{ COGSData }}--COGSDATA-------------- {{ itemPurchaseData }}
   </q-card-section>
 </template>
 
@@ -297,7 +300,43 @@ export default {
       modalValue.value.splice(index, 1)
     }
     // For purchase rows Data of Items
-      const itemPurchaseData = ref(null)
+    const itemPurchaseData = ref({})
+    const COGSData = ref(null)
+    const onItemIdUpdate = async (itemId) => {
+      if (itemId && !itemPurchaseData.hasOwnProperty(itemId)) {
+        try {
+          const data = await useApi(`/v1/items/${itemId}/available-stock/`)
+          itemPurchaseData.value[itemId] = data
+        } catch (err) { console.log(err) }
+      }
+      const localPurchaseData = JSON.parse(JSON.stringify(itemPurchaseData.value))
+      const COGSRows = {}
+      modalValue.value.forEach((row, index) => {
+        const currentItemId = row.item_id
+        let currentCOGS = 0
+        let quantity = row.quantity
+        for (let i = 0; quantity >= 0; i++) {
+          const currentRow = localPurchaseData[currentItemId][i]
+          if (currentRow.remaining_quantity > quantity) {
+            currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
+            currentCOGS = currentCOGS + (quantity * currentRow.rate)
+            break
+          } else if (currentRow.remaining_quantity <= quantity) {
+            quantity = quantity - currentRow.remaining_quantity
+            currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
+            localPurchaseData[currentItemId][i].remaining_quantity = 0
+            console.log(i)
+            if ((i + 1) === localPurchaseData[currentItemId].length) {
+              currentCOGS = {status: 'error', message: 'The provided quantity exceeded the avaliable quantity'}
+              break
+            }
+          }
+        }
+        COGSRows[index] = currentCOGS
+      })
+      COGSData.value = COGSRows
+      console.log('-------------------------------------------------------------------------------------')
+    }
     // For purchase rows Data of Items
     return {
       props,
@@ -310,7 +349,9 @@ export default {
       InvoiceRow,
       useCalcDiscount,
       rowEmpty,
-      itemPurchaseData
+      itemPurchaseData,
+      onItemIdUpdate,
+      COGSData
     }
   },
 }
