@@ -50,10 +50,10 @@
         </q-btn>
       </div>
     </div>
-    <div v-if="isFifo && COGSData?.hasOwnProperty(index)">
+    <div v-if="isFifo && COGSData?.hasOwnProperty(index)" class="pb-2">
       <div v-if="COGSData[index].status != 'error'" class="row text-blue-4">
         <!-- {{ props }} -->
-        <div class="col-5">Cost Of Goods Sold:</div>
+        <div class="col-5">Average Cost:</div>
         <div class="col-2"></div>
         <div class="col-2 q-pl-sm">{{ $nf(COGSData[index] / modalValue.quantity) }}</div>
         <div class="col-2 text-center">{{ COGSData[index]}}</div>

@@ -23,8 +23,8 @@
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
               " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
             :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
-            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
-            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" />
+            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
+            :COGSData="COGSData" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -314,27 +314,31 @@ export default {
         const currentItemId = row.item_id
         let currentCOGS = 0
         let quantity = row.quantity
-        for (let i = 0; quantity >= 0; i++) {
-          const currentRow = localPurchaseData[currentItemId][i]
-          if (currentRow.remaining_quantity > quantity) {
-            currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
-            currentCOGS = currentCOGS + (quantity * currentRow.rate)
-            break
-          } else if (currentRow.remaining_quantity <= quantity) {
-            quantity = quantity - currentRow.remaining_quantity
-            currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
-            localPurchaseData[currentItemId][i].remaining_quantity = 0
-            console.log(i)
-            if ((i + 1) === localPurchaseData[currentItemId].length) {
-              currentCOGS = {status: 'error', message: 'The provided quantity exceeded the avaliable quantity'}
+        if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
+          for (let i = 0; quantity >= 0; i++) {
+            const currentRow = localPurchaseData[currentItemId][i]
+            if (currentRow.remaining_quantity > quantity) {
+              currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
+              currentCOGS = currentCOGS + (quantity * currentRow.rate)
               break
+            } else if (currentRow.remaining_quantity <= quantity) {
+              quantity = quantity - currentRow.remaining_quantity
+              currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
+              localPurchaseData[currentItemId][i].remaining_quantity = 0
+              if (((i + 1) === localPurchaseData[currentItemId].length)) {
+                if (quantity > 0) {
+                  currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+                  break
+                } else break
+              }
             }
           }
+        } else {
+          currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
         }
         COGSRows[index] = currentCOGS
       })
       COGSData.value = COGSRows
-      console.log('-------------------------------------------------------------------------------------')
     }
     // For purchase rows Data of Items
     return {
