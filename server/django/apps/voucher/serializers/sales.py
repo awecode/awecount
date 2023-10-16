@@ -270,7 +270,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     def validate_due_date(self, due_date):
         if isinstance(due_date, str):
             due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
-        if due_date < timezone.now().date():
+        validation_date = self.instance.due_date if self.instance else timezone.now().date()
+        if due_date < validation_date:
             raise ValidationError("Due date cannot be before deposit date.")
                 
     def create(self, validated_data):
@@ -332,7 +333,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         validated_data['company_id'] = self.context['request'].company_id
         validated_data['fiscal_year_id'] = instance.fiscal_year_id
         self.validate_invoice_date(validated_data, voucher_no=instance.voucher_no)
-        # self.validate_due_date(validated_data['due_date'])
+        # self.validate_due_date(validated_data['due_date'], instance=instance)
         SalesVoucher.objects.filter(pk=instance.id).update(**validated_data)
 
         for index, row in enumerate(rows_data):
