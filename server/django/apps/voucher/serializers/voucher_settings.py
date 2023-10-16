@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from apps.voucher.models import SalesSetting, PurchaseSetting
-from apps.voucher.models.voucher_settings import InventorySetting
 
 
 class SalesCreateSettingSerializer(serializers.ModelSerializer):
@@ -68,9 +67,3 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
         if not obj.mode in ['Cash', 'Credit']:
             return int(obj.mode)
         return obj.mode
-
-
-class InventorySettingCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InventorySetting
-        exclude = ['company']

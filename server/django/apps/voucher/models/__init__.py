@@ -83,6 +83,14 @@ class Challan(TransactionModel, InvoiceModel):
                 ['cr', row.item.account, int(row.quantity)],
             )
 
+    def mark_as_resolved(self):
+        if self.status == 'Issued':
+            self.status = "Resolved"
+            self.rows.update(sold_items={})
+            self.save()
+        else:
+            raise ValueError('This voucher cannot be mark as resolved!')
+
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
 
@@ -93,6 +101,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    sold_items = models.JSONField(blank=True, null=True)
 
     # Model key for module based permission
     key = 'Challan'
@@ -243,7 +252,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             else:
                 entries.append(['dr', dr_acc, row_total])
             
-
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
@@ -526,18 +534,20 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
         from django_q.tasks import async_task
         if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
             return
-        existing_rate = self.item.purchase_rows.order_by("-id").first().rate 
-        if existing_rate != self.rate:
-            status = "increased" if existing_rate<self.rate else "decreased" 
-            message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
-            to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
-            async_task(
-                'django.core.mail.send_mail',
-                "Item purchase rate change alert.",
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                to_emails
-            )
+        rows = self.item.purchase_rows.order_by("-id")
+        if rows.exists():
+            existing_rate = rows.first().rate 
+            if existing_rate != self.rate:
+                status = "increased" if existing_rate<self.rate else "decreased" 
+                message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
+                to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
+                async_task(
+                    'django.core.mail.send_mail',
+                    "Item purchase rate change alert.",
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    to_emails
+                )
 
 
 CREDIT_NOTE_STATUSES = (

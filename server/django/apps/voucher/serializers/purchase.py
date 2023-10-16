@@ -4,9 +4,11 @@ from apps.product.models import Item
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
-from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher
+from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher, SalesVoucherRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
+from ..fifo_functions import fifo_handle_purchase_update
 
 
 class PurchaseDiscountSerializer(serializers.ModelSerializer):
@@ -47,10 +49,17 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        return data
-    
-    # def validate(self, date):
-    #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)
+        request = self.context["request"]
+
+        if request.query_params.get("fifo_inconsistency"):
+            return data
+        else:
+            if request.company.inventory_setting.enable_fifo:
+                item_ids = [x.get("item_id") for x in data.get("rows")]
+                date = data["date"]
+                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+                    raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+            return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
@@ -64,7 +73,6 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo:
-                # TODO: use this from request data
                 item = Item.objects.get(id=row["item_id"])
                 if item.track_inventory:
                     row["remaining_quantity"] = row["quantity"]
@@ -75,12 +83,15 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            if request.company.inventory_setting.enable_fifo:
+                fifo_handle_purchase_update(instance, row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)

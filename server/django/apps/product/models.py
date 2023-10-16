@@ -665,5 +665,23 @@ class Item(models.Model):
             # prevents recursion
             self.save(post_save=False)
 
+    @property
+    def remaining_stock(self):
+        return self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+    
+    @property
+    def available_stock_data(self):
+        return self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
+
     class Meta:
         unique_together = ('code', 'company',)
+
+
+class InventorySetting(models.Model):
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='inventory_setting')
+
+    enable_fifo = models.BooleanField(default=False)
+    enable_negative_stock_check = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return 'Inventory Setting - {}'.format(self.company.name)
