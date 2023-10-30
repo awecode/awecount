@@ -82,7 +82,7 @@ class Category(MPTTModel):
 
 
 class Account(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255)
     # current_dr and current_cr may not always be exact
     current_dr = models.FloatField(null=True, blank=True)
