@@ -326,7 +326,8 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         aggregate = {}
         if start_date or end_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            # TODO: if only start date is given, raise error or process some other way?
+            end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date != 'null' else datetime.today()
             if start_date == end_date:
                 transactions = transactions.filter(journal_entry__date=start_date)
             else:
