@@ -286,7 +286,7 @@ const setCategory = () => {
         fields.value.sales_account = selected.sales_account
       }
       if (selected.items_sales_account_type === "global") {
-        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
       }
     }
     if (
@@ -297,7 +297,7 @@ const setCategory = () => {
         fields.value.purchase_account = selected.purchase_account
       }
       if (selected.items_purchase_account_type === "global") {
-        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.purchase_accounts, "Purchase Account")
       }
     }
     if (
@@ -319,7 +319,7 @@ const setCategory = () => {
         fields.value.discount_received_account = selected.discount_received_account
       }
       if (selected.items_discount_received_account_type === "global") {
-        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_account, "Discount Income")
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_accounts, "Discount Income")
       }
     }
 
