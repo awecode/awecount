@@ -245,12 +245,13 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #     )
 
     def validate_due_date(self, due_date):
-        if isinstance(due_date, str):
-            due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
-        validation_date = self.instance.due_date if self.instance else timezone.now().date()
-        if due_date < validation_date:
-            raise ValidationError("Due date cannot be before deposit date.")
-        
+        if due_date:
+            if isinstance(due_date, str):
+                due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
+            validation_date = self.instance.due_date if self.instance else timezone.now().date()
+            if due_date < validation_date:
+                raise ValidationError("Due date cannot be before invoice date.")
+
     def update_purchase_rows(self, request, row):
         if request.company.inventory_setting.enable_fifo:
             item_id = row.get("item_id")
