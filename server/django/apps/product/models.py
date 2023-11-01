@@ -638,6 +638,7 @@ class Item(models.Model):
                 self.search_data = search_text
 
             if self.category:
+                # TODO: Why is this required???
                 # this triggers account category update
                 self.category.save()
             else:
