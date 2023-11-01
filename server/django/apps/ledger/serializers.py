@@ -323,9 +323,9 @@ class TransactionEntrySerializer(serializers.Serializer):
     def get_source_type(self, obj):
         from django.apps import apps
 
-        v_type = obj.content_type_model
+        v_type = obj.journal_entry.content_type.model
 
-        m = apps.get_model(obj.content_type_app_label, v_type)
+        m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
@@ -337,6 +337,40 @@ class TransactionEntrySerializer(serializers.Serializer):
     # class Meta:
     #     model = Transaction
     #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
+
+
+class TransactionReportSerializer(serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField(source="journal_entry.source_voucher_no")
+    date = serializers.ReadOnlyField(source="journal_entry.date")
+    # account = AccountMinSerializer()
+    account = AccountMinSerializer()
+    source_type = serializers.SerializerMethodField()
+    account_name = serializers.ReadOnlyField(source="account.name")
+    category_id = serializers.ReadOnlyField(source="account.category.id")
+
+    # account_id = serializers.SerializerMethodField()
+
+    # def get_account_id(self, obj):
+    #     pass
+
+
+
+    def get_source_type(self, obj):
+        from django.apps import apps
+
+        v_type = obj.journal_entry.content_type.model
+
+        m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return m._meta.verbose_name.title().replace('Row', '').strip()
+    class Meta:
+        model = Transaction
+        fields = ["voucher_no", "date", "account", "source_type", "dr_amount", "cr_amount", "account_name", "category_id"]
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):

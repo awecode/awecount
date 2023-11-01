@@ -16,7 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from apps.aggregator.views import qs_to_xls
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
-from apps.ledger.models.base import AccountClosing
+from apps.ledger.models.base import AccountClosing, Transaction
 from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
 from apps.users.models import FiscalYear
@@ -30,7 +30,7 @@ from .serializers import AccountClosingSerializer, AggregatorSerializer, Content
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
     AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, \
-    TransactionEntrySerializer
+    TransactionEntrySerializer, TransactionReportSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -294,10 +294,10 @@ class CustomerClosingView(APIView):
 
 class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
     company_id_attr = 'journal_entry__company_id'
-    serializer_class = TransactionEntrySerializer
-    # filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
+    serializer_class = TransactionReportSerializer
+    filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
-    # search_fields = ['journal_entry__source__get_voucher_no']
+    search_fields = ['account__name', 'account__category__name']
     journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
     collections = [
         ('accounts', Account),
@@ -311,7 +311,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         return super().get_serializer_class()
 
     def get_queryset(self):
-        qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
+        qs = Transaction.objects.prefetch_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         accounts = list(filter(None, self.request.GET.getlist('account')))
@@ -330,6 +330,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             qs = qs.filter(journal_entry__content_type_id__in=sources)
         if group_by:
             qs = self.aggregate(qs, group_by)
+        # import ipdb; ipdb.set_trace()
         return qs
 
     def aggregate(self, qs, group_by):
