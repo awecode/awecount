@@ -47,10 +47,23 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        
+        voucher_no = data.get("voucher_no")
+        party = data.get("party")
+        fiscal_year = self.context["request"].company.current_fiscal_year
+        if self.Meta.model.objects.filter(voucher_no=voucher_no, party=party, fiscal_year=fiscal_year).exists():
+            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
         return data
-    
-    # def validate(self, date):
-    #     if PurchaseVoucherRow.objects.filter(voucher__date__gt=date)
+
+        # if request.query_params.get("fifo_inconsistency"):
+        #     return data
+        # else:
+        #     if request.company.inventory_setting.enable_fifo:
+        #         item_ids = [x.get("item_id") for x in data.get("rows")]
+        #         date = data["date"]
+        #         if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+        #             raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+        #     return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
