@@ -393,7 +393,6 @@ def set_inventory_transactions(model, date, *args, clear=True):
             voucher_no = model.voucher.voucher_no
         else:
             voucher_id = model.id
-            # FIXME: assign voucher_no if model doesn't have voucher_no attribute 
             voucher_no = model.voucher_no
 
         journal_entry = JournalEntry(content_type=content_type, object_id=model.id, date=date,
@@ -443,7 +442,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
 
 class Item(models.Model):
-    voucher_no = models.IntegerField()
+    voucher_no = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
