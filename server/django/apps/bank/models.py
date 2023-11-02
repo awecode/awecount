@@ -76,7 +76,7 @@ class ChequeDeposit(TransactionModel):
         ('Cleared', 'Cleared'),
         ('Cancelled', 'Cancelled'),
     )
-    voucher_no = models.IntegerField(blank=True, null=True, default=None)
+    voucher_no = models.PositiveIntegerField(blank=True, null=True, default=None)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     date = models.DateField()
     clearing_date = models.DateField(blank=True, null=True)

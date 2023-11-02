@@ -342,18 +342,10 @@ class TransactionEntrySerializer(serializers.Serializer):
 class TransactionReportSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField(source="journal_entry.source_voucher_no")
     date = serializers.ReadOnlyField(source="journal_entry.date")
-    # account = AccountMinSerializer()
     account = AccountMinSerializer()
     source_type = serializers.SerializerMethodField()
     account_name = serializers.ReadOnlyField(source="account.name")
     category_id = serializers.ReadOnlyField(source="account.category.id")
-
-    # account_id = serializers.SerializerMethodField()
-
-    # def get_account_id(self, obj):
-    #     pass
-
-
 
     def get_source_type(self, obj):
         from django.apps import apps
