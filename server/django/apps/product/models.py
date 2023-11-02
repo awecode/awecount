@@ -394,7 +394,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
         else:
             voucher_id = model.id
             # FIXME: assign voucher_no if model doesn't have voucher_no attribute 
-            voucher_no = model.voucher_no if hasattr(model, 'voucher_no') else model.id
+            voucher_no = model.voucher_no
 
         journal_entry = JournalEntry(content_type=content_type, object_id=model.id, date=date,
                                      source_voucher_id=voucher_id, source_voucher_no=voucher_no)
@@ -443,6 +443,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
 
 class Item(models.Model):
+    voucher_no = models.IntegerField()
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
@@ -523,6 +524,8 @@ class Item(models.Model):
         super().save(*args, **kwargs)
 
         if post_save:
+            if not self.voucher_no:
+                self.voucher_no = self.pk
 
             if self.can_be_sold:
                 name = self.name + ' (Sales)'
