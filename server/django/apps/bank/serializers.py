@@ -19,10 +19,10 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
     # clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
 
-    def validate_voucher_no(self, attr):
+    # def validate_voucher_no(self, attr):
         # 0 to 214748364
-        if attr > 214748364:
-            raise ValidationError("Voucher Number should be a number between 0 to 214748364.")
+        # if attr > 214748364:
+        #     raise ValidationError("Voucher Number should be a number between 0 to 214748364.")
 
     def create(self, validated_data):
         cheque_deposit = ChequeDeposit.objects.create(**validated_data)
