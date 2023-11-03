@@ -69,10 +69,10 @@ const account_types = props.usedInCategoryForm ? [
     { value: 'dedicated', label: 'Use An Existing Account' },
     { value: 'global', label: 'Use Global Account' },
 ] : [
-    { value: 'create', label: 'Create New Account' },
-    { value: 'dedicated', label: 'Use An Existing Account' },
-    { value: 'category', label: "Use Category's Account" },
     { value: 'global', label: 'Use Global Account' },
+    { value: 'category', label: "Use Category's Account" },
+    { value: 'dedicated', label: 'Use An Dedicated Account' },
+    { value: 'existing', label: 'Use An Existing Account' },
 ]
 const getOptionCollection = (collections, name) => {
     if (collections) {
