@@ -5,10 +5,10 @@
                 map-options emit-value v-model="type" :options="account_types" :error="false"/>
         </div>
         <div>
-            <n-auto-complete v-if="type === 'dedicated'" class="q-full-width" :label="`${label} Account`"
+            <n-auto-complete v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
                 v-model="modalValue" :options="props.options"
                 :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
-            <div v-else-if="type === 'create'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
+            <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <q-icon name="info" size="sm" color="grey-7"></q-icon>
                 <div class="text-grey-7">A new {{ props.label }} Account will be created for the Item</div>
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
@@ -66,13 +66,13 @@ const modalValue = ref(props.modelValue)
 // const options
 const account_types = props.usedInCategoryForm ? [
     { value: 'create', label: 'Create New Account' },
-    { value: 'dedicated', label: 'Use An Existing Account' },
+    { value: 'dedicated', label: 'Use an Existing Account' },
     { value: 'global', label: 'Use Global Account' },
 ] : [
     { value: 'global', label: 'Use Global Account' },
     { value: 'category', label: "Use Category's Account" },
-    { value: 'dedicated', label: 'Use An Dedicated Account' },
-    { value: 'existing', label: 'Use An Existing Account' },
+    { value: 'dedicated', label: 'Use a Dedicated Account' },
+    { value: 'existing', label: 'Use an Existing Account' },
 ]
 const getOptionCollection = (collections, name) => {
     if (collections) {
@@ -126,8 +126,8 @@ watch(
     () => modalValue.value, (newValue) => emits('update:modelValue', newValue)
 )
 const globalAccountName = {
-    Sales: 'Sales Account',
-    Purchase: 'Purchase Account',
+    'Sales': 'Sales Account',
+    'Purchase': 'Purchase Account',
     'Discount Allowed': 'Discount Expenses',
     'Discount Received': 'Discount Income'
 }
