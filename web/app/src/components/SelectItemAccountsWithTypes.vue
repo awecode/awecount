@@ -10,7 +10,7 @@
                 :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount" class="w-full">
-                  <q-input class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
+                  <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
                 </div>
                 <div v-else class="flex gap-2 items-center">
                   <q-icon name="info" size="sm" color="grey-7"></q-icon>
@@ -140,8 +140,8 @@ const globalAccountName = {
     'Discount Received': 'Discount Income'
 }
 const dedicatedAccountName = computed(() => {
-  if (props.label === 'Sales') return (props.itemName + '(Sales)')
-  else if (props.label === 'Purchase') return (props.itemName + '(Purchase)')
+  if (props.label === 'Sales') return (props.itemName + ' (Sales)')
+  else if (props.label === 'Purchase') return (props.itemName + ' (Purchase)')
   else if (props.label === 'Discount Allowed') return ('Discount Allowed - ' + props.itemName)
   else if (props.label === 'Discount Received') return ('Discount Received - ' + props.itemName)
   else return ''
