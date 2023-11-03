@@ -101,6 +101,12 @@ class Category(models.Model):
     items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
     items_discount_received_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
 
+    dedicated_sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='sales_categories_dedicated')
+    dedicated_purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='purchase_categories_dedicated')
+    dedicated_discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_allowed_categories_dedicated')
+    dedicated_discount_receivd_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_received_categories_dedicated') 
+
+
     # type = models.CharField(max_length=20, choices=ITEM_TYPES)
     track_inventory = models.BooleanField(default=True)
     can_be_sold = models.BooleanField(default=True)
