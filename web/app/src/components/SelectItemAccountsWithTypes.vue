@@ -10,7 +10,7 @@
                 :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount" class="w-full">
-                  <q-input class="w-full" disable :error="false" v-model="itemNameProp"></q-input>
+                  <q-input class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
                 </div>
                 <div v-else class="flex gap-2 items-center">
                   <q-icon name="info" size="sm" color="grey-7"></q-icon>
@@ -72,14 +72,6 @@ const props = defineProps({
 const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
-const itemNameProp = ref(props.itemName)
-// const options
-// const account_types = [
-//     { value: 'global', label: 'Use Global Account' },
-//     { value: 'category', label: "Use Category's Account" },
-//     { value: 'dedicated', label: 'Use a Dedicated Account' },
-//     { value: 'existing', label: 'Use an Existing Account' },
-// ]
 const account_types = props.usedInCategoryForm ? [
     { value: 'global', label: 'Use Global Account' },
     { value: 'dedicated', label: 'Use a Dedicated Account' },
@@ -130,12 +122,6 @@ watch(
     }
 )
 watch(
-    () => props.itemName,
-    (newValue) => {
-        itemNameProp.value = newValue
-    }
-)
-watch(
     () => props.typeModelValue,
     (newValue) => {
         type.value = newValue
@@ -153,4 +139,11 @@ const globalAccountName = {
     'Discount Allowed': 'Discount Expenses',
     'Discount Received': 'Discount Income'
 }
+const dedicatedAccountName = computed(() => {
+  if (props.label === 'Sales') return (props.itemName + '(Sales)')
+  else if (props.label === 'Purchase') return (props.itemName + '(Purchase)')
+  else if (props.label === 'Discount Allowed') return ('Discount Allowed - ' + props.itemName)
+  else if (props.label === 'Discount Received') return ('Discount Received - ' + props.itemName)
+  else return ''
+})
 </script>
