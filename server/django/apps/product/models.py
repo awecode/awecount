@@ -37,11 +37,17 @@ class Unit(models.Model):
         unique_together = ('short_name', 'company')
 
 
-LEDGER_TYPES = (
+# LEDGER_TYPES = (
+#     ('dedicated', 'Use Dedicated Ledger'),
+#     ('category', 'Use Category\'s Ledger'),
+#     ('global', 'Use Global Ledger'),
+# )
+
+LEDGER_TYPES = [
     ('dedicated', 'Use Dedicated Ledger'),
-    ('category', 'Use Category\'s Ledger'),
     ('global', 'Use Global Ledger'),
-)
+    ('existing', 'Use Existing Ledger'),
+]
 
 ITEM_TYPES = (
     ('Tangible Sellable', 'Tangible Sellable'),
@@ -96,10 +102,10 @@ class Category(models.Model):
                                                           on_delete=models.SET_NULL,
                                                           related_name='indirect_expense_account_category')
 
-    items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_discount_received_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_discount_received_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
 
     dedicated_sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='sales_categories_dedicated')
     dedicated_purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='purchase_categories_dedicated')
@@ -550,7 +556,6 @@ class Item(models.Model):
         super().save(*args, **kwargs)
 
         if post_save:
-
             if self.can_be_sold:
                 name = self.name + ' (Sales)'
                 if not self.sales_account_id:
