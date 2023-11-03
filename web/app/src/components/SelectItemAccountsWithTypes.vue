@@ -64,10 +64,16 @@ const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
 // const options
+// const account_types = [
+//     { value: 'global', label: 'Use Global Account' },
+//     { value: 'category', label: "Use Category's Account" },
+//     { value: 'dedicated', label: 'Use a Dedicated Account' },
+//     { value: 'existing', label: 'Use an Existing Account' },
+// ]
 const account_types = props.usedInCategoryForm ? [
-    { value: 'create', label: 'Create New Account' },
-    { value: 'dedicated', label: 'Use an Existing Account' },
     { value: 'global', label: 'Use Global Account' },
+    { value: 'dedicated', label: 'Use a Dedicated Account' },
+    { value: 'existing', label: 'Use an Existing Account' },
 ] : [
     { value: 'global', label: 'Use Global Account' },
     { value: 'category', label: "Use Category's Account" },
