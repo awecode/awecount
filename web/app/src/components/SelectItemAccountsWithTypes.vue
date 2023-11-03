@@ -9,8 +9,13 @@
                 v-model="modalValue" :options="props.options"
                 :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
-                <q-icon name="info" size="sm" color="grey-7"></q-icon>
-                <div class="text-grey-7">A new {{ props.label }} Account will be created for the Item</div>
+                <div v-if="dedicatedAccount" class="w-full">
+                  <q-input class="w-full" disable :error="false" v-model="itemNameProp"></q-input>
+                </div>
+                <div v-else class="flex gap-2 items-center">
+                  <q-icon name="info" size="sm" color="grey-7"></q-icon>
+                  <div class="text-grey-7">A new {{ props.label }} Account will be created for the Item</div>
+                </div>
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
             <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
@@ -58,11 +63,16 @@ const props = defineProps({
     usedInCategoryForm: {
         type: Boolean,
         default: () => false
+    },
+    dedicatedAccount: {
+      type: Number || null,
+      default: () => null
     }
 })
 const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
+const itemNameProp = ref(props.itemName)
 // const options
 // const account_types = [
 //     { value: 'global', label: 'Use Global Account' },
@@ -117,6 +127,12 @@ watch(
     () => props.modelValue,
     (newValue) => {
         modalValue.value = newValue
+    }
+)
+watch(
+    () => props.itemName,
+    (newValue) => {
+        itemNameProp.value = newValue
     }
 )
 watch(
