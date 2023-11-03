@@ -74,7 +74,7 @@
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
-                v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
+                v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" />
@@ -292,10 +292,13 @@ const setCategory = () => {
       if (selected.items_sales_account_type === "category") {
         fields.value.sales_account = selected.sales_account
       }
-      if (selected.items_sales_account_type === "global") {
+      else if (selected.items_sales_account_type === "global") {
         fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
       }
-      fields.value.items_sales_account_type = selected.items_sales_account_type
+      else if (selected.items_sales_account_type === "existing") {
+        fields.value.sales_account = fields.value.sales_account = selected.sales_account
+      }
+      fields.value.sales_account_type = selected.items_sales_account_type
     }
     if (
       !fields.value.purchase_account && !fields.value.items_purchase_account_type &&
@@ -304,10 +307,13 @@ const setCategory = () => {
       if (selected.items_purchase_account_type === "category") {
         fields.value.purchase_account = selected.purchase_account
       }
-      if (selected.items_purchase_account_type === "global") {
+      else if (selected.items_purchase_account_type === "global") {
         fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.purchase_accounts, "Purchase Account")
       }
-      fields.value.items_purchase_account_type = selected.items_purchase_account_type
+      else if (selected.items_purchase_account_type === "existing") {
+        fields.value.purchase_account = selected.purchase_account
+      }
+      fields.value.purchase_account_type = selected.items_purchase_account_type
     }
     if (
       !fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type &&
@@ -316,10 +322,13 @@ const setCategory = () => {
       if (selected.items_discount_allowed_account_type === "category") {
         fields.value.discount_allowed_account = selected.discount_allowed_account
       }
-      if (selected.items_discount_allowed_account_type === "global") {
+      else if (selected.items_discount_allowed_account_type === "global") {
         fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
       }
-      fields.value.items_discount_allowed_account_type = selected.items_discount_allowed_account_type
+      else if (selected.items_discount_allowed_account_type === "existing") {
+        fields.value.discount_allowed_account = selected.discount_allowed_account
+      }
+      fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
     }
     if (
       !fields.value.discount_received_account && !fields.value.items_discount_received_account_type &&
@@ -328,10 +337,13 @@ const setCategory = () => {
       if (selected.items_discount_received_account_type === "category") {
         fields.value.discount_received_account = selected.discount_received_account
       }
-      if (selected.items_discount_received_account_type === "global") {
+      else if (selected.items_discount_received_account_type === "global") {
         fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_account, "Discount Income")
       }
-      fields.value.items_discount_received_account_type = selected.items_discount_received_account_type
+      else if (selected.items_discount_received_account_type === "existing") {
+        fields.value.discount_received_account = selected.discount_received_account
+      }
+      fields.value.discount_received_account_type = selected.items_discount_received_account_type
     }
 
     if (selected.hasOwnProperty("track_inventory")) {
