@@ -79,6 +79,7 @@ class Category(MPTTModel):
     class Meta:
         verbose_name_plural = u'Categories'
         unique_together = [['code', 'company']]
+        ordering = ['-id']
 
 
 class Account(models.Model):
