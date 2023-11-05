@@ -72,7 +72,7 @@ class Brand(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     default_unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     default_tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='categories',
@@ -525,7 +525,7 @@ class Item(models.Model):
     ]
 
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=True, null=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL, related_name='items')
     description = models.TextField(blank=True, null=True)
