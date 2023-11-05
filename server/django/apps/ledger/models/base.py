@@ -209,7 +209,8 @@ class Account(models.Model):
 
     class Meta:
         unique_together = ('code', 'company')
-        ordering = ('order',)
+        # ordering = ('order',)
+        ordering = ['-id']
 
 
 class Party(models.Model):
