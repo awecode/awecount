@@ -67,6 +67,9 @@ class BankAccount(models.Model):
 
     def __str__(self):
         return self.short_name or self.bank_name or self.account_number
+    
+    class Meta:
+        ordering = ['-id']
 
 
 class ChequeDeposit(TransactionModel):

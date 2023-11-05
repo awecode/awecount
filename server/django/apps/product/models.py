@@ -35,6 +35,7 @@ class Unit(models.Model):
 
     class Meta:
         unique_together = ('short_name', 'company')
+        ordering = ['-id']
 
 
 LEDGER_TYPES = (
@@ -58,6 +59,9 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['-id']
 
 
 class Category(models.Model):
@@ -279,6 +283,9 @@ class InventoryAccount(models.Model):
         if not self.account_no:
             self.account_no = self.get_next_account_no()
         super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-id']
 
 
 class JournalEntry(models.Model):
