@@ -258,7 +258,7 @@ class Category(models.Model):
                 Account.objects.filter(purchase_item__category=self).update(category=account_category)
                 account_category = self.get_account_category('Discount Income', prefix='Discount Received')
                 self.discount_received_account_category = account_category
-                Account.objects.filter(discount_allowed_item__category=self).update(category=account_category)
+                Account.objects.filter(discount_received_item__category=self).update(category=account_category)
 
             if self.direct_expense:
                 account_category = self.get_account_category('Direct Expenses')
