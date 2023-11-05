@@ -13,6 +13,7 @@ class SalesAgent(models.Model):
     
     class Meta:
         unique_together = ('name', 'company')
+        ordering = ['-id']
         
     def save(self, *args, **kwargs):
         self.validate_unique()

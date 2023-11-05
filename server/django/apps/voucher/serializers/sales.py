@@ -18,6 +18,7 @@ class SalesDiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesDiscount
         exclude = ('company',)
+        ordering = ['-id']
 
 
 class SalesDiscountMinSerializer(serializers.ModelSerializer):
