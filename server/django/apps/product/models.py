@@ -38,11 +38,17 @@ class Unit(models.Model):
         ordering = ['-id']
 
 
-LEDGER_TYPES = (
+# LEDGER_TYPES = (
+#     ('dedicated', 'Use Dedicated Ledger'),
+#     ('category', 'Use Category\'s Ledger'),
+#     ('global', 'Use Global Ledger'),
+# )
+
+LEDGER_TYPES = [
     ('dedicated', 'Use Dedicated Ledger'),
-    ('category', 'Use Category\'s Ledger'),
     ('global', 'Use Global Ledger'),
-)
+    ('existing', 'Use Existing Ledger'),
+]
 
 ITEM_TYPES = (
     ('Tangible Sellable', 'Tangible Sellable'),
@@ -100,10 +106,16 @@ class Category(models.Model):
                                                           on_delete=models.SET_NULL,
                                                           related_name='indirect_expense_account_category')
 
-    items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
-    items_discount_received_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, default='dedicated')
+    items_sales_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_purchase_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_discount_allowed_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+    items_discount_received_account_type = models.CharField(max_length=100, choices=LEDGER_TYPES, null=True, blank=True)
+
+    dedicated_sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='sales_categories_dedicated')
+    dedicated_purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='purchase_categories_dedicated')
+    dedicated_discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_allowed_categories_dedicated')
+    dedicated_discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_received_categories_dedicated') 
+
 
     # type = models.CharField(max_length=20, choices=ITEM_TYPES)
     track_inventory = models.BooleanField(default=True)
@@ -162,30 +174,85 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
         if post_save:
-            if not self.sales_account:
-                ledger = Account(name=self.name + ' (Sales)', company=self.company)
-                ledger.add_category('Sales')
-                ledger.suggest_code(self, prefix='C')
-                ledger.save()
-                self.sales_account = ledger
-            if not self.purchase_account:
-                ledger = Account(name=self.name + ' (Purchase)', company=self.company)
-                ledger.add_category('Purchase')
-                ledger.suggest_code(self, prefix='C')
-                ledger.save()
-                self.purchase_account = ledger
-            if not self.discount_allowed_account:
-                discount_allowed_account = Account(name='Discount Allowed - ' + self.name, company=self.company)
-                discount_allowed_account.add_category('Discount Expenses')
-                discount_allowed_account.suggest_code(self, prefix='C')
-                discount_allowed_account.save()
-                self.discount_allowed_account = discount_allowed_account
-            if not self.discount_received_account:
-                discount_received_account = Account(name='Discount Received - ' + self.name, company=self.company)
-                discount_received_account.add_category('Discount Income')
-                discount_received_account.suggest_code(self, prefix='C')
-                discount_received_account.save()
-                self.discount_received_account = discount_received_account
+            sales_account_name = self.name + ' (Sales)'
+            discount_allowed_account_name = 'Discount Allowed - ' + self.name
+            purchase_account_name = self.name + ' (Purchase)'
+            discount_received_account_name = 'Discount Received - ' + self.name
+
+            # Update dedicated accounts
+            if self.dedicated_sales_account:
+                if not self.dedicated_sales_account.name == sales_account_name:
+                    self.dedicated_sales_account.name = sales_account_name
+                    self.dedicated_sales_account.save()
+            
+            if self.dedicated_purchase_account:
+                if not self.dedicated_purchase_account.name == purchase_account_name:
+                    self.dedicated_purchase_account.name = purchase_account_name
+                    self.dedicated_purchase_account.save()
+
+            if self.dedicated_discount_allowed_account:
+                if not self.dedicated_discount_allowed_account.name == discount_allowed_account_name:
+                    self.dedicated_discount_allowed_account.name = discount_allowed_account_name
+                    self.dedicated_discount_allowed_account.save()
+
+            if self.dedicated_discount_received_account:
+                if not self.dedicated_discount_received_account.name == discount_received_account_name:
+                    self.dedicated_discount_received_account.name = discount_received_account_name
+                    self.dedicated_discount_received_account.save()
+
+            if self.can_be_sold:
+                if not self.sales_account:
+                    if not self.dedicated_sales_account:
+                        ledger = Account(name=sales_account_name, company=self.company)
+                        ledger.add_category('Sales')
+                        # account_category = self.get_account_category("Sales", prefix="Sales")
+                        # ledger.category = account_category
+                        ledger.suggest_code(self, prefix='C')
+                        ledger.save()
+                        self.sales_account = ledger
+                        self.dedicated_sales_account = ledger
+                    else:
+                        self.sales_account = self.dedicated_sales_account
+
+                if not self.discount_allowed_account:
+                    if not self.dedicated_discount_allowed_account:
+                        discount_allowed_account = Account(name=discount_allowed_account_name, company=self.company)
+                        discount_allowed_account.add_category('Discount Expenses')
+                        # account_category = self.get_account_category('Discount Expenses', prefix='Discount Allowed')
+                        # discount_allowed_account.category = account_category
+                        discount_allowed_account.suggest_code(self, prefix='C')
+                        discount_allowed_account.save()
+                        self.discount_allowed_account = discount_allowed_account
+                        self.dedicated_discount_allowed_account = discount_allowed_account
+                    else:
+                        self.discount_allowed_account = self.dedicated_discount_allowed_account
+
+            if self.can_be_purchased:                 
+                if not self.purchase_account:
+                    if not self.dedicated_purchase_account:
+                        ledger = Account(name=purchase_account_name, company=self.company)
+                        ledger.add_category('Purchase')
+                        # account_category = self.get_account_category('Purchase', prefix='Purchase')
+                        # ledger.category = account_category
+                        ledger.suggest_code(self, prefix='C')
+                        ledger.save()
+                        self.purchase_account = ledger
+                        self.dedicated_purchase_account = ledger
+                    else:
+                        self.purchase_account = self.dedicated_purchase_account
+            
+                if not self.discount_received_account:
+                    if not self.dedicated_discount_received_account:
+                        discount_received_account = Account(name=discount_received_account_name, company=self.company)
+                        discount_received_account.add_category('Discount Income')
+                        # account_category = self.get_account_category('Discount Income', prefix='Discount Received')
+                        # discount_received_account.category = account_category
+                        discount_received_account.suggest_code(self, prefix='C')
+                        discount_received_account.save()
+                        self.discount_received_account = discount_received_account
+                        self.dedicated_discount_received_account = discount_received_account
+                    else:
+                        self.discount_received_account = self.dedicated_discount_received_account
 
             # Set/Update account categories
 
@@ -203,7 +270,7 @@ class Category(models.Model):
                 Account.objects.filter(purchase_item__category=self).update(category=account_category)
                 account_category = self.get_account_category('Discount Income', prefix='Discount Received')
                 self.discount_received_account_category = account_category
-                Account.objects.filter(discount_allowed_item__category=self).update(category=account_category)
+                Account.objects.filter(discount_received_item__category=self).update(category=account_category)
 
             if self.direct_expense:
                 account_category = self.get_account_category('Direct Expenses')
@@ -449,7 +516,14 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
 
 class Item(models.Model):
-    voucher_no = models.IntegerField(null=True, blank=True)
+
+    ACCOUNT_TYPE_CHOICES = [
+        ('Global', 'Global'),
+        ('Dedicated', 'Dedicated'),
+        ('Category', 'Category'),
+        ('Existing', 'Existing')
+    ]
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
@@ -468,11 +542,25 @@ class Item(models.Model):
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
     sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
+    sales_account_type = models.CharField(max_length=16, null=True, blank=True)
+    dedicated_sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item_dedicated')
+
     purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
+    purchase_account_type = models.CharField(max_length=16, null=True, blank=True)
+    dedicated_purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item_dedicated')
+    
     discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_allowed_item')
+    discount_allowed_account_type = models.CharField(max_length=16, null=True, blank=True)
+    dedicated_discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                                 related_name='discount_allowed_item_dedicated')
+    
     discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                   related_name='discount_received_item')
+    discount_received_account_type = models.CharField(max_length=16, null=True, blank=True)
+    dedicated_discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
+                                                  related_name='discount_received_item_dedicated')
+    
     expense_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='expense_item')
     fixed_asset_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
@@ -533,64 +621,90 @@ class Item(models.Model):
             if not self.voucher_no:
                 self.voucher_no = self.pk
 
-            if self.can_be_sold:
-                name = self.name + ' (Sales)'
-                if not self.sales_account_id:
-                    account = Account(name=name, company=self.company)
-                    if self.category and self.category.sales_account_category_id:
-                        account.category = self.category.sales_account_category
-                    else:
-                        account.add_category('Sales')
-                    account.suggest_code(self)
-                    account.save()
-                    self.sales_account = account
-                # elif self.sales_account.name != name:
-                #     self.sales_account.name = name
-                #     self.sales_account.save()
+            sales_account_name = self.name + ' (Sales)'
+            discount_allowed_account_name = 'Discount Allowed - ' + self.name
+            purchase_account_name = self.name + ' (Purchase)'
+            discount_received_account_name = 'Discount Received - ' + self.name
 
-                name = 'Discount Allowed - ' + self.name
-                if not self.discount_allowed_account_id:
-                    discount_allowed_account = Account(name=name, company=self.company)
-                    if self.category and self.category.discount_allowed_account_category_id:
-                        discount_allowed_account.category = self.category.discount_allowed_account_category
+            # Update dedicated accounts
+            if self.dedicated_sales_account:
+                if not self.dedicated_sales_account.name == sales_account_name:
+                    self.dedicated_sales_account.name = sales_account_name
+                    self.dedicated_sales_account.save()
+            
+            if self.dedicated_purchase_account:
+                if not self.dedicated_purchase_account.name == purchase_account_name:
+                    self.dedicated_purchase_account.name = purchase_account_name
+                    self.dedicated_purchase_account.save()
+
+            if self.dedicated_discount_allowed_account:
+                if not self.dedicated_discount_allowed_account.name == discount_allowed_account_name:
+                    self.dedicated_discount_allowed_account.name = discount_allowed_account_name
+                    self.dedicated_discount_allowed_account.save()
+
+            if self.dedicated_discount_received_account:
+                if not self.dedicated_discount_received_account.name == discount_received_account_name:
+                    self.dedicated_discount_received_account.name = discount_received_account_name
+                    self.dedicated_discount_received_account.save()
+
+            if self.can_be_sold:
+                if not self.sales_account_id:
+                    if not self.dedicated_sales_account:
+                        account = Account(name=sales_account_name, company=self.company)
+                        if self.category and self.category.sales_account_category_id:
+                            account.category = self.category.sales_account_category
+                        else:
+                            account.add_category('Sales')
+                        account.suggest_code(self)
+                        account.save()
+                        self.dedicated_sales_account = account
                     else:
-                        discount_allowed_account.add_category('Discount Expenses')
-                    discount_allowed_account.suggest_code(self)
-                    discount_allowed_account.save()
+                        account = self.dedicated_sales_account
+                    self.sales_account = account
+      
+                if not self.discount_allowed_account_id:
+                    if not self.dedicated_discount_allowed_account:
+                        discount_allowed_account = Account(name=discount_allowed_account_name, company=self.company)
+                        if self.category and self.category.discount_allowed_account_category_id:
+                            discount_allowed_account.category = self.category.discount_allowed_account_category
+                        else:
+                            discount_allowed_account.add_category('Discount Expenses')
+                        discount_allowed_account.suggest_code(self)
+                        discount_allowed_account.save()
+                        self.dedicated_discount_allowed_account = discount_allowed_account
+                    else:
+                        discount_allowed_account = self.dedicated_discount_allowed_account
                     self.discount_allowed_account = discount_allowed_account
-                # elif self.discount_allowed_account.name != name:
-                #     self.discount_allowed_account.name = name
-                #     self.discount_allowed_account.save()
 
             if self.can_be_purchased:
-                name = self.name + ' (Purchase)'
                 if not self.purchase_account_id:
-                    account = Account(name=name, company=self.company)
-                    if self.category and self.category.purchase_account_category_id:
-                        account.category = self.category.purchase_account_category
+                    if not self.dedicated_purchase_account:
+                        account = Account(name=purchase_account_name, company=self.company)
+                        if self.category and self.category.purchase_account_category_id:
+                            account.category = self.category.purchase_account_category
+                        else:
+                            account.add_category('Purchase')
+                        account.suggest_code(self)
+                        account.save()
+                        self.dedicated_purchase_account = account
                     else:
-                        account.add_category('Purchase')
-                    account.suggest_code(self)
-                    account.save()
+                        account = self.dedicated_purchase_account
                     self.purchase_account = account
-                # elif self.=.name != name:
-                #     self.purchase_account.name = name
-                #     self.purchase_account.save()
 
             if self.can_be_purchased or self.fixed_asset or self.expense:
-                name = 'Discount Received - ' + self.name
                 if not self.discount_received_account_id:
-                    discount_received_acc = Account(name=name, company=self.company)
-                    if self.category and self.category.discount_received_account_category_id:
-                        discount_received_acc.category = self.category.discount_received_account_category
+                    if not self.dedicated_discount_received_account:
+                        discount_received_acc = Account(name=discount_received_account_name, company=self.company)
+                        if self.category and self.category.discount_received_account_category_id:
+                            discount_received_acc.category = self.category.discount_received_account_category
+                        else:
+                            discount_received_acc.add_category('Discount Income')
+                        discount_received_acc.suggest_code(self)
+                        discount_received_acc.save()
+                        self.dedicated_discount_received_account = discount_received_acc
                     else:
-                        discount_received_acc.add_category('Discount Income')
-                    discount_received_acc.suggest_code(self)
-                    discount_received_acc.save()
+                        discount_received_acc = self.dedicated_discount_received_account
                     self.discount_received_account = discount_received_acc
-                # elif self.discount_received_account.name != name:
-                #     self.discount_received_account.name = name
-                #     self.discount_received_account.save()
 
             if self.direct_expense or self.indirect_expense:
                 if not self.expense_account_id:

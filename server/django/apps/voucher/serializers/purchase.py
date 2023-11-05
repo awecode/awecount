@@ -45,6 +45,8 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             )
 
     def validate(self, data):
+        company = self.context["request"].company
+            
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
