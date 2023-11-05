@@ -201,6 +201,8 @@ class Category(models.Model):
                     if not self.dedicated_sales_account:
                         ledger = Account(name=sales_account_name, company=self.company)
                         ledger.add_category('Sales')
+                        # account_category = self.get_account_category("Sales", prefix="Sales")
+                        # ledger.category = account_category
                         ledger.suggest_code(self, prefix='C')
                         ledger.save()
                         self.sales_account = ledger
@@ -212,6 +214,8 @@ class Category(models.Model):
                     if not self.dedicated_discount_allowed_account:
                         discount_allowed_account = Account(name=discount_allowed_account_name, company=self.company)
                         discount_allowed_account.add_category('Discount Expenses')
+                        # account_category = self.get_account_category('Discount Expenses', prefix='Discount Allowed')
+                        # discount_allowed_account.category = account_category
                         discount_allowed_account.suggest_code(self, prefix='C')
                         discount_allowed_account.save()
                         self.discount_allowed_account = discount_allowed_account
@@ -224,6 +228,8 @@ class Category(models.Model):
                     if not self.dedicated_purchase_account:
                         ledger = Account(name=purchase_account_name, company=self.company)
                         ledger.add_category('Purchase')
+                        # account_category = self.get_account_category('Purchase', prefix='Purchase')
+                        # ledger.category = account_category
                         ledger.suggest_code(self, prefix='C')
                         ledger.save()
                         self.purchase_account = ledger
@@ -235,6 +241,8 @@ class Category(models.Model):
                     if not self.dedicated_discount_received_account:
                         discount_received_account = Account(name=discount_received_account_name, company=self.company)
                         discount_received_account.add_category('Discount Income')
+                        # account_category = self.get_account_category('Discount Income', prefix='Discount Received')
+                        # discount_received_account.category = account_category
                         discount_received_account.suggest_code(self, prefix='C')
                         discount_received_account.save()
                         self.discount_received_account = discount_received_account
