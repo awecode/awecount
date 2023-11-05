@@ -12,7 +12,7 @@
           <div class="row q-col-gutter-md">
             <q-input class="col-12 col-md-6" v-model="fields.name" label="Name *" :error-message="errors.name"
               :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code *" class="col-12 col-md-6" :error-message="errors.code"
+            <q-input v-model="fields.code" label="Code" class="col-12 col-md-6" :error-message="errors.code"
               :error="!!errors.code" />
           </div>
           <div class="row q-col-gutter-md">
@@ -57,28 +57,6 @@
                   :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
             </div>
-            <div>
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
-                v-model:typeModelValue="fields.sales_account_type" label="Sales"
-                :options="formDefaults.collections?.sales_accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" />
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
-                v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
-                :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" />
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
-                v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
-                :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" />
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
-                v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
-                :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" />
-            </div>
             <div class="row q-gutter-y-lg q-mt-lg">
               <div class="col-md-6 col-12 col-lg-4">
                 <q-checkbox v-model="fields.track_inventory" label="Track Inventory"
@@ -108,6 +86,28 @@
                   :error-message="errors.indirect_expense" :error="!!errors.indirect_expense"
                   @click="toggleExpenses('direct_expense')" />
               </div>
+            </div>
+            <div class="mt-4">
+              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
+                v-model:typeModelValue="fields.sales_account_type" label="Sales"
+                :options="formDefaults.collections?.sales_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" />
+              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
+                v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
+                :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" />
+              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
+                v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
+                :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" />
+              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
+                v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
+                :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
+                :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" />
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
