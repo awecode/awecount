@@ -338,7 +338,7 @@ const setCategory = () => {
         fields.value.discount_received_account = selected.discount_received_account
       }
       else if (selected.items_discount_received_account_type === "global") {
-        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_account, "Discount Income")
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_accounts, "Discount Income")
       }
       else if (selected.items_discount_received_account_type === "existing") {
         fields.value.discount_received_account = selected.discount_received_account
