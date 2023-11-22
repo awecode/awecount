@@ -69,7 +69,7 @@
 
         <q-card-section class="q-mb-md">
           <div class="q-mt-lg q-mx-md">
-            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12">
+            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12" autofocus type="number">
             </q-input>
             <div class="q-mx-0 q-my-md">
               <q-checkbox v-model="invoiceFormData.tax_deducted_at_source" label="Tax Deducted at Source?" />
@@ -190,7 +190,7 @@ export default {
     formData.fields.value.cheque_date = formData.today
     formData.fields.value.mode = 'Cheque'
     formData.fields.value.invoices = []
-    // formData.fields.value.invoice_nos invoice_nos.value 
+    // formData.fields.value.invoice_nos invoice_nos.value
     formData.fields.value.tds_amount = 0
     formData.fields.value.cleared = false
     return {
