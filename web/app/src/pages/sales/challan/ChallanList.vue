@@ -72,7 +72,7 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
-              class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/challan/${props.row.voucher_no}/`" />
+              class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/challan/${props.row.id}/`" />
           </div>
           <!-- {{ props }} -->
         </q-td>
