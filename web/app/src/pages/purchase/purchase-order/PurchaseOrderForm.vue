@@ -13,11 +13,11 @@
                     <div class="row q-col-gutter-md">
                         <div class="col-md-6 col-12">
                             <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties"
-                                label="Party" :error="errors?.party ? errors?.party : null"
+                                label="Party *" :error="errors?.party ? errors?.party : null"
                                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                             <div></div>
                         </div>
-                        <DatePicker class="col-md-6 col-12" label="Date*" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
+                        <DatePicker class="col-md-6 col-12" label="Date *" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
                     </div>
                 </q-card-section>
             </q-card>
@@ -58,7 +58,7 @@
         </q-dialog>
     </q-form>
 </template>
-  
+
 <script>
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
@@ -169,4 +169,3 @@ export default {
     // onmounted: () => console.log('mounted'),
 }
 </script>
-  
