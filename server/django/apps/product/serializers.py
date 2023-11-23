@@ -13,7 +13,7 @@ from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryA
 
 class ItemSerializer(serializers.ModelSerializer):
     tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
-    unit_id = serializers.IntegerField(required=False)
+    unit_id = serializers.IntegerField(required=False, allow_null=True)
     extra_fields = serializers.ReadOnlyField(source='category.extra_fields')
     front_image = Base64FileField(required=False, allow_null=True)
     back_image = Base64FileField(required=False, allow_null=True)
