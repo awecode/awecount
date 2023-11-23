@@ -158,10 +158,10 @@ export default {
         .then(() => {
           $q.notify({
             color: 'positive',
-            message: 'Marked As Resloved',
+            message: 'Marked As Resolved',
             icon: 'check_circle',
           })
-          fields.value.status = 'Resloved'
+          formData.fields.value.status = 'Resolved'
         })
         .catch(() => {
           $q.notify({
