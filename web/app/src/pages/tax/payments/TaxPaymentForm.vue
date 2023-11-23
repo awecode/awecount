@@ -26,7 +26,7 @@
           <div class="row q-col-gutter-md">
             <q-select v-model="fields.cr_account" label="Paid From/By *" class="col-12 col-md-6"
               :options="formDefaults.collections?.cr_accounts" option-value="id" option-label="name" map-options
-              emit-value :error="!!errors.tax_scheme" :error-message="errors.tax_scheme"></q-select>
+              emit-value :error="!!errors.cr_account" :error-message="errors.cr_account"></q-select>
           </div>
           <q-input v-model="fields.remarks" type="textarea" autogrow label="Remarks" class="col-12 q-mt-sm"
             :error="!!errors.remarks" :error-message="errors.remarks" />
