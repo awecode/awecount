@@ -86,7 +86,6 @@ class Category(MPTTModel):
     class Meta:
         verbose_name_plural = u'Categories'
         unique_together = [['code', 'company']]
-        ordering = ['-id']
 
 
 class Account(models.Model):
@@ -217,7 +216,7 @@ class Account(models.Model):
     class Meta:
         unique_together = ('code', 'company')
         # ordering = ('order',)
-        ordering = ['-id']
+        ordering = ['name']
 
 
 class Party(models.Model):
