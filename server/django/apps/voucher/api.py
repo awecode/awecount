@@ -1288,11 +1288,11 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True, methods=['POST'])
     def resolve(self, request, pk):
         challan = self.get_object()
-        try:
-            challan.mark_as_resolved()
+        if challan.status == "Issued":
+            challan.status = "Resolved"
+            challan.save()
             return Response({})
-        except Exception as e:
-            raise APIException(str(e))
+        return Response({"message": "Cannot resolve the challan."})
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):

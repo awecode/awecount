@@ -15,6 +15,9 @@ class PurchaseDiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseDiscount
         exclude = ('company',)
+        extra_kwargs = {
+            "name": {"required": True}
+        }
 
 
 class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):

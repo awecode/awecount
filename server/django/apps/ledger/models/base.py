@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
+from rest_framework.exceptions import ValidationError as RestValidationError
 
 from dateutil.utils import today
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import F, Q, ProtectedError, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -59,8 +60,14 @@ class Category(MPTTModel):
 
     def save(self, *args, **kwargs):
         if not self.default and not self.parent:
-            raise ValidationError('Requires Parent', code='parent')
-        super().save(*args, **kwargs)
+            raise RestValidationError({'parent': ['Requires Parent']})
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError as e:
+            if "ledger_category_code_company_id" in e.__str__():
+                raise RestValidationError({'code': ['Category with this code already exists.']})
+            raise('Some error occured.')
+
 
     @classmethod
     def get(cls, name, company):
@@ -79,7 +86,6 @@ class Category(MPTTModel):
     class Meta:
         verbose_name_plural = u'Categories'
         unique_together = [['code', 'company']]
-        ordering = ['-id']
 
 
 class Account(models.Model):
@@ -210,7 +216,7 @@ class Account(models.Model):
     class Meta:
         unique_together = ('code', 'company')
         # ordering = ('order',)
-        ordering = ['-id']
+        ordering = ['name']
 
 
 class Party(models.Model):
