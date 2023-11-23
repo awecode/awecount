@@ -23,7 +23,7 @@ class Category(MPTTModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey('self', null=True, related_name='children', on_delete=models.SET_NULL)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20, null=True, blank=True)
     default = models.BooleanField(default=False, editable=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_categories')
 
