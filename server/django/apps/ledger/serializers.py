@@ -70,17 +70,18 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
 
 class PartySerializer(serializers.ModelSerializer):
-    representative = PartyRepresentativeSerializer(many=True)
+    representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
-        for representative in representatives:
-            if representative.get('name') or representative.get('phone') or representative.get(
-                    'email') or representative.get(
-                'position'):
-                representative['party_id'] = instance.id
-                PartyRepresentative.objects.create(**representative)
+        if representatives:
+            for representative in representatives:
+                if representative.get('name') or representative.get('phone') or representative.get(
+                        'email') or representative.get(
+                    'position'):
+                    representative['party_id'] = instance.id
+                    PartyRepresentative.objects.create(**representative)
         return instance
 
     def update(self, instance, validated_data):
