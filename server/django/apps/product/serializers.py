@@ -19,11 +19,11 @@ class ItemSerializer(serializers.ModelSerializer):
     back_image = Base64FileField(required=False, allow_null=True)
 
     def validate_cost_price(self, attr):
-        if attr<0:
+        if attr and attr<0:
             raise ValidationError("Cost price cannot be negative.")
     
     def validate_selling_price(self, attr):
-        if attr<0:
+        if attr and attr<0:
             raise ValidationError("Selling price cannot be negative.")
 
     @staticmethod
