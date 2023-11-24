@@ -21,10 +21,12 @@ class ItemSerializer(serializers.ModelSerializer):
     def validate_cost_price(self, attr):
         if attr and attr<0:
             raise ValidationError("Cost price cannot be negative.")
+        return attr
     
     def validate_selling_price(self, attr):
         if attr and attr<0:
             raise ValidationError("Selling price cannot be negative.")
+        return attr
 
     @staticmethod
     def base64_check(validated_data, attributes):
