@@ -295,9 +295,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     )
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
         voucher_no = request.data.get('voucher_no', None)
         party_id = request.data.get('party', None)
         fiscal_year =  request.company.current_fiscal_year
