@@ -330,6 +330,9 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
 
         aggregate = {}
         if start_date or end_date:
+            if start_date == 'null':
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError("Either start date or both dates are required to filter.")
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             # TODO: if only start date is given, raise error or process some other way?
             end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date != 'null' else datetime.today()
