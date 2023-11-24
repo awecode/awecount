@@ -50,12 +50,6 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        
-        voucher_no = data.get("voucher_no")
-        party = data.get("party")
-        fiscal_year = self.context["request"].company.current_fiscal_year
-        if self.Meta.model.objects.filter(voucher_no=voucher_no, party=party, fiscal_year=fiscal_year).exists():
-            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
         return data
 
         # if request.query_params.get("fifo_inconsistency"):

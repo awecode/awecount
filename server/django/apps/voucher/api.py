@@ -316,6 +316,24 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     #                 return Response({"msg": "FIFO inconsistency error.", "type": "fifo_inconsistency"}, status=422)
     #     return super().create(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        voucher_no = request.data.get('voucher_no', None)
+        party_id = request.data.get('party', None)
+        fiscal_year =  request.company.current_fiscal_year
+        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exists():
+            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        voucher_no = request.data.get('voucher_no', None)
+        party_id = request.data.get('party', None)
+        fiscal_year =  request.company.current_fiscal_year
+        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exclude(id=obj.id).exists():
+            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
+        return super().update(request, *args, **kwargs)
+
+
     def get_create_defaults(self, request=None):
         return PurchaseCreateSettingSerializer(request.company.purchase_setting).data
 
