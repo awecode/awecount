@@ -37,7 +37,10 @@
               ({{ row.unit_name }})</span></span>
         </q-td>
         <q-td> <span v-if="props.showRateQuantity">{{ row.rate }}</span> </q-td>
-        <q-td> {{ row.discount_amount || 0 }} </q-td>
+        <q-td>
+          <span v-if="row.discount_obj"> {{ row.discount_obj.value }} {{ row.discount_obj.type === 'Percent' ? '%' : '-/'}} </span>
+          <span v-else-if="row.discount_type">{{ row.discount }} {{ row.discount_type === 'Percent' ? '%' : '-/'}}</span>
+        </q-td>
         <!-- <q-td> {{ row.discount }} </q-td> -->
         <q-td class="text-right">
           {{ row.tax_scheme.rate }}% (<span class="text-uppercase">{{
