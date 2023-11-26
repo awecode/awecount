@@ -61,12 +61,7 @@ class Category(MPTTModel):
     def save(self, *args, **kwargs):
         if not self.default and not self.parent:
             raise RestValidationError({'parent': ['Requires Parent']})
-        try:
-            super().save(*args, **kwargs)
-        except IntegrityError as e:
-            if "ledger_category_code_company_id" in e.__str__():
-                raise RestValidationError({'code': ['Category with this code already exists.']})
-            raise('Some error occured.')
+        super().save(*args, **kwargs)
 
 
     @classmethod
