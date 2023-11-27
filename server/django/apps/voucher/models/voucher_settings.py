@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.contrib.postgres.fields import ArrayField
 
 from apps.bank.models import BankAccount
+from apps.product.models import InventorySetting
 from apps.users.models import Company
 from apps.users.signals import company_creation
 
@@ -108,15 +109,6 @@ class PurchaseSetting(models.Model):
     def __str__(self):
         return 'Purchase Setting - {}'.format(self.company.name)
     
-
-class InventorySetting(models.Model):
-    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='inventory_setting')
-
-    enable_fifo = models.BooleanField(default=False)
-    enable_negative_stock_check = models.BooleanField(default=False)
-
-    def __str__(self) -> str:
-        return 'Inventory Setting - {}'.format(self.company.name)
 
 
 @receiver(company_creation)

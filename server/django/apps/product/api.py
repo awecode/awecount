@@ -21,7 +21,7 @@ from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
 from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .serializers import InventorySettingCreateSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
     ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
@@ -176,6 +176,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 res_msg = f"Duplicate items with code {code} detected."
                 return Response({"details": res_msg}, status=400)        
         return Response({}, status=200)
+    
+    @action(detail=True, methods=["GET"], url_path="available-stock")
+    def available_stock_data(self, request, pk=None):
+        item = self.get_object()
+        return Response(item.available_stock_data, status=200)
 
 
 class ItemOpeningBalanceViewSet(CRULViewSet):
@@ -359,3 +364,14 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 .values('id', 'name', 'item__category_id', 'od', 'oc', 'cd', 'cc').exclude(od=None, oc=None, cd=None, cc=None)
             return Response(list(qq))
         return Response({})
+
+
+class InventorySettingsViewSet(CRULViewSet):
+    serializer_class = InventorySettingCreateSerializer
+
+    def get_defaults(self, request=None):
+        i_setting = self.request.company.inventory_setting
+        data = {
+            'fields': self.get_serializer(i_setting).data
+        }
+        return data

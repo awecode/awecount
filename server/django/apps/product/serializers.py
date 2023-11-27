@@ -7,7 +7,7 @@ from apps.ledger.serializers import AccountBalanceSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
-from .models import Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, \
+from .models import InventorySetting, Item, Unit, Category as InventoryCategory, Brand, InventoryAccount, JournalEntry, Category, \
     Transaction
 
 
@@ -250,3 +250,9 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id',
             'voucher_no')
+
+
+class InventorySettingCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventorySetting
+        exclude = ['company']
