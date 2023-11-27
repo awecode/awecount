@@ -42,7 +42,8 @@ class WidgetViewSet(CRULViewSet):
         return Response(WidgetSerializer(qs, many=True).data)
 
     def get_queryset(self):
-        return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
+        # return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
+        return Widget.objects.filter(user=self.request.user).order_by('-pk')
 
     @action(detail=True, methods=['POST'])
     def delete(self, request, pk):
