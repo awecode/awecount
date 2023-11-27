@@ -58,3 +58,6 @@ class Widget(models.Model):
         self.name = '{} for last {} '.format(self.widget, self.count)
         self.name += self.group_by if self.count == 1 else self.group_by + 's'
         super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-id']

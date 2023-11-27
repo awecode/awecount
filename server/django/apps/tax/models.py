@@ -66,6 +66,7 @@ class TaxScheme(models.Model):
 
     class Meta:
         unique_together = ('short_name', 'company')
+        ordering = ['-id']
 
 
 STATUSES = (

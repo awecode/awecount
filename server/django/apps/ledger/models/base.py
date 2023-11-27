@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
+from rest_framework.exceptions import ValidationError as RestValidationError
 
 from dateutil.utils import today
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import F, Q, ProtectedError, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -22,7 +23,7 @@ class Category(MPTTModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey('self', null=True, related_name='children', on_delete=models.SET_NULL)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20, null=True, blank=True)
     default = models.BooleanField(default=False, editable=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='ledger_categories')
 
@@ -59,8 +60,9 @@ class Category(MPTTModel):
 
     def save(self, *args, **kwargs):
         if not self.default and not self.parent:
-            raise ValidationError('Requires Parent', code='parent')
+            raise RestValidationError({'parent': ['Requires Parent']})
         super().save(*args, **kwargs)
+
 
     @classmethod
     def get(cls, name, company):
@@ -82,7 +84,7 @@ class Category(MPTTModel):
 
 
 class Account(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255)
     # current_dr and current_cr may not always be exact
     current_dr = models.FloatField(null=True, blank=True)
@@ -208,7 +210,8 @@ class Account(models.Model):
 
     class Meta:
         unique_together = ('code', 'company')
-        ordering = ('order',)
+        # ordering = ('order',)
+        ordering = ['name']
 
 
 class Party(models.Model):

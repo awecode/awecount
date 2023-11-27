@@ -14,10 +14,13 @@ from awecount.libs.serializers import StatusReversionMixin
 from ..models import PurchaseVoucherRow, SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
 
 
-class SalesDiscountSerializer(serializers.ModelSerializer):
+class SalesDiscountSerializer(serializers.ModelSerializer):    
     class Meta:
         model = SalesDiscount
         exclude = ('company',)
+        extra_kwargs = {
+            "name": {"required": True}
+        }
 
 
 class SalesDiscountMinSerializer(serializers.ModelSerializer):

@@ -21,6 +21,7 @@ class Discount(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['-id']
 
 
 class SalesDiscount(Discount):
