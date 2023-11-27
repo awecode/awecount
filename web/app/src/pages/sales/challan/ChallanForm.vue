@@ -151,6 +151,7 @@ export default {
     //   }
     // })
     const onResolvedClick = () => {
+      formData.loading.value = true
       useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
         method: 'POST',
         body: {},
@@ -162,6 +163,7 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Resolved'
+          formData.loading.value = false
         })
         .catch(() => {
           $q.notify({
@@ -169,9 +171,11 @@ export default {
             message: 'error',
             icon: 'report_problem',
           })
+          formData.loading.value = false
         })
     }
     const onCancelClick = () => {
+      formData.loading.value = true
       useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
         method: 'POST',
         body: {
@@ -186,6 +190,7 @@ export default {
           })
           formData.fields.value.status = 'Cancelled'
           isDeleteOpen.value = false
+          formData.loading.value = false
         })
         .catch((err) => {
           let message = 'error'
@@ -197,6 +202,7 @@ export default {
             message,
             icon: 'report_problem',
           })
+          formData.loading.value = false
         })
     }
     watch(
