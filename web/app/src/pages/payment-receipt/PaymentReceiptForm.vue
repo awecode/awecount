@@ -168,10 +168,10 @@ export default {
                 position: 'top-right',
               })
             }
-            if (err.status === 400 && err.data?.detail === 'Invoice has already been paid for!') {
+            if (err.status === 400 && err.data?.detail) {
               $q.notify({
                 color: 'red-6',
-                message: 'Invoice has already been paid for!',
+                message: err.data?.detail,
                 icon: 'report_problem',
                 position: 'top-right',
               })
