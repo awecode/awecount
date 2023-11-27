@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.exceptions import APIException
 from apps.ledger.models.base import AccountClosing
 
@@ -125,6 +126,11 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         exclude = ('company',)
 
+    def create(self, validated_data):
+        try:
+            return super().create(validated_data)
+        except IntegrityError:
+            raise ValidationError({"code": ["Category with this code already exists."]})
 
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:
