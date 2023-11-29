@@ -57,14 +57,14 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="orange-5" label="Edit" icon="edit"
             :to="`/purchase-voucher/${fields?.id}/`" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('PurchaseVoucherModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid" :loading="isLoading"
             icon="mdi-check-all" />
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" />
+            @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading" />
         </div>
         <div v-else class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" />
+            @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading"/>
         </div>
         <div>
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
@@ -123,7 +123,9 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
+    const isLoading:Ref<boolean> = ref(false)
     const submitChangeStatus = (id: number, status: string) => {
+      isLoading.value = true
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
@@ -151,6 +153,7 @@ export default {
               })
             }
           }
+          isLoading.value = false
         })
         .catch(() => {
           // TODO: Properly Parse Error and show
@@ -158,6 +161,7 @@ export default {
             color: 'red-6',
             message: 'Something Went Wrong!',
           })
+          isLoading.value = false
         })
     }
     const getDate = computed(() => {
@@ -195,7 +199,8 @@ export default {
       isDeleteOpen,
       deleteMsg,
       getDate,
-      checkPermissions
+      checkPermissions,
+      isLoading
     }
   },
   created() {
