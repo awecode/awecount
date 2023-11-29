@@ -48,7 +48,7 @@
         <div class="row q-col-gutter-md">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
           <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" :disabled="!(startDate && endDate)" />
           </div>
         </div>
       </div>
