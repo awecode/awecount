@@ -145,6 +145,10 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.party_id:
             return self.party.name
         return self.customer_name
+    
+    @property
+    def challan_voucher_numbers(self):
+        return self.challans.values_list("voucher_no", flat=True)
 
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
