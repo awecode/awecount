@@ -177,7 +177,7 @@ export default {
     const importChallanModal = ref(false)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: loginStore.companyInfo.current_fiscal_year_id || null
     })
     const staticOptions = {
       discount_types: discount_types,
