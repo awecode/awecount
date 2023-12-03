@@ -48,10 +48,12 @@
           {{ fields?.bank_account_name }}
         </div>
       </div>
-      <!-- <div class="col-12 col-md-6 row">
-        <div class="col-6">Party</div>
-        <div class="col-6">{{ fields?.status }}</div>
-      </div> -->
+      <div v-if="fields.challan_numbers && fields.challan_numbers.length > 0" class="col-12 col-md-6 row">
+        <div class="col-6">Challan Voucher No.</div>
+        <div class="col-6">
+          {{ fields.challan_numbers.join(',') }}
+        </div>
+      </div>
     </div>
     <q-dialog v-model="isChangeOpen">
       <q-card style="min-width: min(40vw, 500px)">

@@ -14,8 +14,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
               <q-btn color="blue" @click="importChallanModal = true" label="Import challan(s)"></q-btn>
-              <div v-if="fields.invoices">
-                <q-input dense v-model="voucherArray" disable label="Import challan(s)"></q-input>
+              <div v-if="fields.challans">
+                <q-input dense v-model="fields.challan_numbers" disable label="Import challan(s)"></q-input>
               </div>
               <q-dialog v-model="importChallanModal">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -31,7 +31,7 @@
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
-                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields)"></q-btn>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -175,7 +175,6 @@ export default {
     // TODO: temp
     const $q = useQuasar()
     const importChallanModal = ref(false)
-    const voucherArray = ref([])
     const referenceFormData = ref({
       invoice_no: null,
       fiscal_year: null,
@@ -228,14 +227,14 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
 
-    const fetchInvoice = async (fields, voucherArray) => {
+    const fetchInvoice = async (fields) => {
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
       ) {
         if (
-          fields.invoices &&
-          fields.invoices.includes(referenceFormData.value.invoice_no)
+          fields.challans &&
+          fields.challans.includes(referenceFormData.value.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -251,7 +250,7 @@ export default {
           )
             .then((data) => {
               const response = { ...data }
-              if (fields.invoices) {
+              if (fields.challans) {
                 if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
                   $q.notify({
                     color: 'red-6',
@@ -261,9 +260,11 @@ export default {
                   })
                   return
                 }
-                fields.invoices.push(data.id)
-              } else fields.invoices = [data.id]
-              voucherArray.push(response.voucher_no)
+                fields.challans.push(data.id)
+              } else fields.challans = [data.id]
+              if (fields.challan_numbers) {
+                fields.challan_numbers.push(response.voucher_no)
+              } else fields.challan_numbers = [response.voucher_no]
               const removeArr = [
                 'id',
                 'date',
@@ -369,7 +370,6 @@ export default {
       referenceFormData,
       fetchInvoice,
       checkPermissions,
-      voucherArray,
       loginStore,
       onPartyChange,
       // TODO: temp
