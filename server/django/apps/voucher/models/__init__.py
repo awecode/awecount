@@ -396,6 +396,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
+    purchase_orders = models.ManyToManyField(PurchaseOrder, related_name='purchases', blank=True)
 
     @property
     def item_names(self):
@@ -411,6 +412,10 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
+        
+    @property
+    def purchase_order_numbers(self):
+        return self.purchase_orders.values_list('voucher_no', flat=True)
 
     def find_invalid_transaction(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(

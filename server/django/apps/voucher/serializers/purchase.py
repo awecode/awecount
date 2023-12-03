@@ -35,6 +35,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                                       ModeCumBankSerializerMixin,
                                       serializers.ModelSerializer):
     rows = PurchaseVoucherRowSerializer(many=True)
+    purchase_order_numbers = serializers.ReadOnlyField()
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -79,6 +80,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
+        purchase_orders = validated_data.pop('purchase_orders')
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
@@ -92,6 +94,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 if item.track_inventory:
                     row["remaining_quantity"] = row["quantity"]
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
+        if purchase_orders:
+            instance.purchase_orders.clear()
+            instance.purchase_orders.set(purchase_orders)
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
         return instance
@@ -153,6 +158,7 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
     rows = PurchaseVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
     enable_row_description = serializers.ReadOnlyField(source='company.purchase_setting.enable_row_description')
+    purchase_order_numbers = serializers.ReadOnlyField()
 
     class Meta:
         model = PurchaseVoucher
@@ -201,7 +207,10 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseOrder
-        exclude = ['company', 'user', 'fiscal_year']
+        exclude = ['company', 'user']
+        extra_kwargs = {
+            'fiscal_year': {'read_only': True}
+        }
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
