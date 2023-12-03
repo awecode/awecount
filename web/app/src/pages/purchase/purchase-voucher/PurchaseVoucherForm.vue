@@ -150,9 +150,11 @@ import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountF
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const store = useLoginStore()
     const endpoint = '/v1/purchase-vouchers/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
@@ -167,7 +169,7 @@ export default {
     const importPurchaseOrder = ref(false)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: store.companyInfo.current_fiscal_year_id || null,
     })
     useMeta(() => {
       return {
