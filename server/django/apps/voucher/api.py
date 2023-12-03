@@ -1416,6 +1416,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         voucher_number = request.query_params.get('invoice_no')
         fiscal_year=request.query_params.get('fiscal_year')
         instance = get_object_or_404(voucher_no=voucher_number, fiscal_year_id=fiscal_year, queryset=qs)
+        if instance.purchases.exclude(status__iexact='cancelled').exists():
+            return Response({'detail': 'The purchase order has already been used.'}, status=400)
+
         if instance.status == 'Cancelled':
             return Response({'detail': 'The selected purchase order can not be used.'}, status=400)
         return Response(PurchaseOrderCreateSerializer(instance).data)
