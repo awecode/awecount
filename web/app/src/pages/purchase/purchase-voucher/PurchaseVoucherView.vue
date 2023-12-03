@@ -39,6 +39,12 @@
               <div class="col-6">{{ discountComputed }}</div>
             </div>
           </div>
+          <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0" class="col-12 col-md-6 q-gutter-y-lg">
+            <div class="col-12 col-md-6 row">
+              <div class="col-6">Purchase Order(s)</div>
+              <div class="col-6">{{ fields.purchase_order_numbers.join(',') }}</div>
+            </div>
+          </div>
         </q-card>
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
@@ -110,6 +116,7 @@ interface Fields {
   discount_obj: null | Record<string, string | number>
   discount: null | number
   discount_type: null | 'Amount' | 'Percent'
+  purchase_order_numbers: Array<number>
 }
 export default {
   setup() {
