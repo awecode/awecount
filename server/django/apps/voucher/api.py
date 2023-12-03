@@ -1335,6 +1335,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         challan = get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
                                                       queryset=qs)
+        if challan.sales.exclude(status__iexact="cancelled").exists():
+            return Response({'detail': 'Challan has already been used.'}, status=400)
         if challan.status != 'Issued':
             return Response({'detail': 'The challan can not be used.'}, status=400)
         return Response(

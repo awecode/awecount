@@ -205,6 +205,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -302,7 +303,6 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             if row.get("id"):
                 row.pop('id')
             SalesVoucherRow.objects.create(voucher=instance, **row)
-
         if challans:
             instance.challans.clear()
             instance.challans.add(*challans)
@@ -410,6 +410,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
     fiscal_year = serializers.StringRelatedField()
     invoice_footer_text = serializers.ReadOnlyField(source="company.sales_setting.invoice_footer_text")
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def get_payment_receipts(self, obj):
         receipts = []
