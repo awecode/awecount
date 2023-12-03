@@ -30,7 +30,7 @@
                     :error="!!errors?.remarks" :error-message="errors?.remarks" />
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-                <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${1}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+                <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     color="blue" label="Issue Purchase Voucher" :loading="loading" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />

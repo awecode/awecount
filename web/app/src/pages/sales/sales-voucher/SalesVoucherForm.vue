@@ -14,7 +14,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
               <q-btn color="blue" @click="importChallanModal = true" label="Import challan(s)"></q-btn>
-              <div v-if="fields.challans">
+              <div v-if="fields.challans && fields.challans.length > 0">
                 <q-input dense v-model="fields.challan_numbers" disable label="Import challan(s)"></q-input>
               </div>
               <q-dialog v-model="importChallanModal">

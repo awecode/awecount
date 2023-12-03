@@ -12,8 +12,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_purchase_order_import">
               <q-btn color="blue" @click="importPurchaseOrder = true" label="Import purchase order(s)"></q-btn>
-              <div v-if="fields.invoices">
-                <q-input dense v-model="voucherArray" disable label="Purchase Order(s)"></q-input>
+              <div v-if="fields.purchase_orders && fields.purchase_orders.length > 0">
+                <q-input dense v-model="fields.purchase_order_numbers" disable label="Purchase Order(s)"></q-input>
               </div>
               <q-dialog v-model="importPurchaseOrder">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -169,7 +169,6 @@ export default {
       invoice_no: null,
       fiscal_year: null,
     })
-    const voucherArray = ref([])
     useMeta(() => {
       return {
         title:
@@ -215,8 +214,8 @@ export default {
         fetchData.fiscal_year
       ) {
         if (
-          formData.fields.value.invoices &&
-          formData.fields.value.invoices.includes(fetchData.invoice_no)
+          formData.fields.value.purchase_orders &&
+          formData.fields.value.purchase_orders.includes(fetchData.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -232,7 +231,7 @@ export default {
           )
             .then((data) => {
               const response = { ...data }
-              if (formData.fields.value.invoices) {
+              if (formData.fields.value.purchase_orders) {
                 if (formData.fields.value.party && formData.fields.value.party !== response.party) {
                   $q.notify({
                     color: 'red-6',
@@ -242,9 +241,11 @@ export default {
                   })
                   return
                 }
-                formData.fields.value.invoices.push(data.id)
-              } else formData.fields.value.invoices = [data.id]
-              voucherArray.value.push(response.voucher_no)
+                formData.fields.value.purchase_orders.push(data.id)
+              } else formData.fields.value.purchase_orders = [data.id]
+              if (formData.fields.value.purchase_order_numbers) {
+                formData.fields.value.purchase_order_numbers.push(response.voucher_no)
+              } else formData.fields.value.purchase_order_numbers = [response.voucher_no]
               const removeArr = [
                 'id',
                 'date',
@@ -321,8 +322,7 @@ export default {
       checkPermissions,
       importPurchaseOrder,
       referenceFormData,
-      fetchInvoice,
-      voucherArray,
+      fetchInvoice
     }
   },
 }
