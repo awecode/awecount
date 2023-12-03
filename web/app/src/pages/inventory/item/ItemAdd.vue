@@ -16,9 +16,9 @@
               :error="!!errors.code" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input class="col-12 col-md-6" v-model="fields.cost_price" label="Cost Price" type="number"
+            <q-input class="col-12 col-md-6" v-model.number="fields.cost_price" label="Cost Price" type="number"
               :error-message="errors.cost_price" :error="!!errors.cost_price" />
-            <q-input v-model="fields.selling_price" label="Selling Price" class="col-12 col-md-6"
+            <q-input v-model.number="fields.selling_price" label="Selling Price" class="col-12 col-md-6"
               :error-message="errors.selling_price" :error="!!errors.selling_price" type="number" />
           </div>
           <div class="row q-col-gutter-md">
@@ -151,9 +151,9 @@
           </div>
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
-          <q-btn :loading="loading" v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="submitForm" color="green" label="Create"
+          <q-btn :loading="loading" v-if="checkPermissions('ItemCreate') && !isEdit" @click.prevent="onSumbitClick" color="green" label="Create"
             class="q-ml-auto q-px-xl" type="submit" />
-          <q-btn :loading="loading" v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="submitForm" color="green" label="Update"
+          <q-btn :loading="loading" v-if="checkPermissions('ItemModify') && isEdit" @click.prevent="onSumbitClick" color="green" label="Update"
             class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
@@ -182,6 +182,15 @@ const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(en
   getDefaults: true,
   successRoute: '/items/list/',
 })
+const onSumbitClick = async() => {
+  if (fields.value.selling_price === '') {
+    fields.value.selling_price = null
+  }
+  if (fields.value.cost_price === '') {
+    fields.value.cost_price = null
+  }
+  await submitForm()
+}
 useMeta(() => {
   return {
     title: (isEdit?.value ? 'Items Update' : 'Items Add') + ' | Awecount',
