@@ -16,6 +16,7 @@ from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
+from apps.voucher.models import ChallanRow, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow, SalesVoucherRow
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
@@ -55,6 +56,43 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         if self.action == 'list':
             return ItemListSerializer
         return self.serializer_class
+    
+    def merge_items(self, item_ids):
+
+        items = Item.objects.filter(id__in=item_ids)
+
+        # Select one item from the items
+        item = items[0]
+
+        # Set the select item in purchase_vouchers, sales_vouchers, challans and purchase orders
+        purchase_voucher_rows = PurchaseVoucherRow.objects.filter(item__id__in=item_ids)
+        # update = [row.update(item=item) for row in purchase_voucher_rows]
+        purchase_voucher_rows.update(item=item)
+
+        sales_voucher_rows = SalesVoucherRow.objects.filter(item__id__in=item_ids)
+        # update = [row.update(item=item) for row in sales_voucher_rows]
+        sales_voucher_rows.update(item=item)
+
+        challan_rows = ChallanRow.objects.filter(item__id__in=item_ids)
+        # update = [row.update(item=item) for row in challan_rows]
+        challan_rows.update(item=item)
+
+        purchase_order_rows = PurchaseOrderRow.objects.filter(item__id__in=item_ids)
+        # update = [row.update(item=item) for row in purchase_order_rows]
+        purchase_order_rows.update(item=item)
+
+        # Delete other items
+        remaining_items = items - item
+        remaining_items.delete()
+        return
+    
+
+    @action(detail=False, methods=['POST'])
+    def merge(self, request):
+        item_ids = request.data.get('item_ids')
+        self.merge_items(item_ids)
+        return Response(status=200)
+
 
     @action(detail=True)
     def details(self, request, pk=None):
