@@ -22,7 +22,7 @@ from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
 from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .serializers import ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
     ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
@@ -55,6 +55,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return ItemListSerializer
+        if self.action == 'list_items':
+            return ItemListMinSerializer
         return self.serializer_class
     
     def merge_items(self, item_ids):
@@ -85,6 +87,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         remaining_items = items - item
         remaining_items.delete()
         return
+    
+    @action(detail=False, url_path="list")
+    def list_items(self, request):
+        qs = super().get_queryset().order_by("-id")
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
     
 
     @action(detail=False, methods=['POST'])
