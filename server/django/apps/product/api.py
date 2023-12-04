@@ -16,7 +16,7 @@ from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from apps.voucher.models import ChallanRow, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow, SalesVoucherRow
+from apps.voucher.models import ChallanRow, CreditNoteRow, DebitNoteRow, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow, SalesVoucherRow
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
@@ -59,48 +59,51 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return ItemListMinSerializer
         return self.serializer_class
     
-    def merge_items(self, item_ids):
-
+    def merge_items(self, item_ids, config):
         items = Item.objects.filter(id__in=item_ids)
 
-        # Select one item from the items
-        item = items[0]
+        # Select one item from the items list
+        if config["defaultItem"]:
+            item = items.get(id=config["defaultItem"])
+        else:
+            item = items[0]
 
-        # Set the select item in purchase_vouchers, sales_vouchers, challans and purchase orders
+        # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
         purchase_voucher_rows = PurchaseVoucherRow.objects.filter(item__id__in=item_ids)
-        # update = [row.update(item=item) for row in purchase_voucher_rows]
         purchase_voucher_rows.update(item=item)
 
         sales_voucher_rows = SalesVoucherRow.objects.filter(item__id__in=item_ids)
-        # update = [row.update(item=item) for row in sales_voucher_rows]
         sales_voucher_rows.update(item=item)
 
         challan_rows = ChallanRow.objects.filter(item__id__in=item_ids)
-        # update = [row.update(item=item) for row in challan_rows]
         challan_rows.update(item=item)
 
         purchase_order_rows = PurchaseOrderRow.objects.filter(item__id__in=item_ids)
-        # update = [row.update(item=item) for row in purchase_order_rows]
         purchase_order_rows.update(item=item)
 
+        credit_note_rows = CreditNoteRow.objects.filter(item__id__in=item_ids)
+        credit_note_rows.update(item=item)
+
+        debit_note_rows = DebitNoteRow.objects.filter(item__id__in=item_ids)
+        debit_note_rows.update(item=item)
+
         # Delete other items
-        remaining_items = items - item
+        remaining_items = items.exclude(id=item.id)
         remaining_items.delete()
         return
     
     @action(detail=False, url_path="list")
     def list_items(self, request):
-        qs = super().get_queryset().order_by("-id")
+        qs = super().get_queryset().order_by("name")
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
     
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
-        item_ids = request.data.get('item_ids')
-        self.merge_items(item_ids)
+        for item in request.data:
+            self.merge_items(item["items"], item["config"])
         return Response(status=200)
-
 
     @action(detail=True)
     def details(self, request, pk=None):

@@ -174,6 +174,10 @@ class ItemListSerializer(serializers.ModelSerializer):
 
 
 class ItemListMinSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return f'{obj.name} ({obj.code})'
     class Meta:
         model = Item
         fields = ["id", "name", "code"]
