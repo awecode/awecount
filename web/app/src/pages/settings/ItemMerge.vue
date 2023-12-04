@@ -7,22 +7,15 @@
         </div>
       </q-card-section>
       <q-card-section class="q-pa-lg">
-        <div class="grid lg:grid-cols-2">
-          <div class="flex flex-col gap-3">
-            <div v-for="(modalValue, index) in modalValueArray" :key="index" class="flex gap-2 items-end">
-              <q-select v-model="modalValueArray[index]" :options="itemOptions" option-value="id" option-label="name"
-                map-options emit-value label="Item" class="grow-1"></q-select>
-              <q-btn color="red-5" outline icon="delete" :disable="modalValueArray.length < 2"
-                @click="removeItem(index)"></q-btn>
-            </div>
-          </div>
+        <div v-for="(modalValue, index) in modalValueArray" :key="index + Math.random()" class="mb-8">
+          <h5 class="m-0">Group {{ index + 1 }}</h5>
+          <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)">
+          </ItemMergeGroup>
         </div>
-        <div class="flex">
-          <q-btn outline color="green" class="mt-8" @click="addItem">
-            Add Items
+        <div class="flex justify-between">
+          <q-btn color="green" class="mt-8" @click="addGroup">
+            Add New Group
           </q-btn>
-        </div>
-        <div class="flex justify-end">
           <q-btn color="green" class="mt-8" @click="onSubmit">
             Merge Items
           </q-btn>
@@ -33,18 +26,29 @@
 </template>
 
 <script setup lang="ts">
-const modalValueArray = ref([null, null])
+const modalValueArray = ref([{
+  items: [null, null],
+  config: {
+    defaultItem: null
+  }
+}])
 const $q = useQuasar()
 const itemOptions = ref([])
 useApi('v1/items/list/').then((data) => {
   itemOptions.value = data
 })
-const removeItem = (index: number) => {
-  if (modalValueArray.value.length < 2) return
+const removeGroup = (index: number) => {
+  console.log('before', [...modalValueArray.value])
   modalValueArray.value.splice(index, 1)
+  console.log('after', [...modalValueArray.value])
 }
-const addItem = () => {
-  modalValueArray.value.push(null)
+const addGroup = () => {
+  modalValueArray.value.push({
+    items: [null, null],
+    config: {
+      defaultItem: null
+    }
+  })
 }
 const onSubmit = () => {
   let filteredArray = modalValueArray.value.filter((item) => item !== null)
