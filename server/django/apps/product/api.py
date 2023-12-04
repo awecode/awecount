@@ -98,6 +98,25 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
     
+    @action(detail=False, url_path='similar-items')
+    def similar_items(self, request):
+        from thefuzz import fuzz
+        qs = super().get_queryset()
+        res = {}
+        items = qs.values_list('id', 'name', 'code')
+        res = {}
+        for item in items:
+            sim = []
+            for id, name, code in items:
+                if fuzz.ratio(item[1], name)>80:
+                    sim.append({
+                        "id": id,
+                        "name": name,
+                        "code": code
+                    })
+            if len(sim)>1:
+                res[item[1]] = sim
+        return Response(res)
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
