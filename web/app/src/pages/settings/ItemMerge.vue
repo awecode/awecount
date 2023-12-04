@@ -1,121 +1,80 @@
 <template>
   <div>
-    Item merge
+    <q-card class="q-ma-md">
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span>Items Merge</span>
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pa-lg">
+        <div class="grid lg:grid-cols-2">
+          <div class="flex flex-col gap-3">
+            <div v-for="(modalValue, index) in modalValueArray" :key="index" class="flex gap-2 items-end">
+              <q-select v-model="modalValueArray[index]" :options="itemOptions" option-value="id" option-label="name"
+                map-options emit-value label="Item" class="grow-1"></q-select>
+              <q-btn color="red-5" outline icon="delete" :disable="modalValueArray.length < 2"
+                @click="removeItem(index)"></q-btn>
+            </div>
+          </div>
+        </div>
+        <div class="flex">
+          <q-btn outline color="green" class="mt-8" @click="addItem">
+            Add Items
+          </q-btn>
+        </div>
+        <div class="flex justify-end">
+          <q-btn color="green" class="mt-8" @click="onSubmit">
+            Merge Items
+          </q-btn>
+        </div>
+      </q-card-section>
+    </q-card>
   </div>
 </template>
 
-<script setup>
-
-const itemOptions = [
-  {
-    'id': 486,
-    'name': 'Dwandwa ko Awasan',
-    'unit_id': 1,
-    'rate': 260,
-    'tax_scheme_id': 2,
-    'code': '9789937918633',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 6,
-    'name': 'Radha',
-    'unit_id': 1,
-    'rate': 500,
-    'tax_scheme_id': 2,
-    'code': '9789937541275',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 407,
-    'name': 'The Fountainhead',
-    'unit_id': 1,
-    'rate': 640,
-    'tax_scheme_id': 2,
-    'code': '9780451191151',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 524,
-    'name': 'Prometheus',
-    'unit_id': 1,
-    'rate': 205,
-    'tax_scheme_id': 2,
-    'code': '9789993326403',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 433,
-    'name': "Man's Search for Meaning",
-    'unit_id': 1,
-    'rate': 480,
-    'tax_scheme_id': 2,
-    'code': '9781846041242',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 1587,
-    'name': 'Chanakya Neeti',
-    'unit_id': 1,
-    'rate': 225,
-    'tax_scheme_id': 2,
-    'code': '9789937044158',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 437,
-    'name': 'Selected Short Stories',
-    'unit_id': 1,
-    'rate': 500,
-    'tax_scheme_id': 2,
-    'code': '9781792998393',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 543,
-    'name': 'Purpala',
-    'unit_id': 1,
-    'rate': 315,
-    'tax_scheme_id': 2,
-    'code': '9789937910132',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 1156,
-    'name': 'Maharani',
-    'unit_id': 1,
-    'rate': 450,
-    'tax_scheme_id': 2,
-    'code': '9789937934459',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 1620,
-    'name': 'Hindu Sanskritiko Parisheelan',
-    'unit_id': 1,
-    'rate': 418,
-    'tax_scheme_id': 2,
-    'code': 'hsp_mmd',
-    'description': null,
-    'is_trackable': true
-  },
-  {
-    'id': 461,
-    'name': 'Social Science',
-    'unit_id': null,
-    'rate': 950,
-    'tax_scheme_id': null,
-    'code': 'ss_xyz',
-    'description': null,
-    'is_trackable': true
+<script setup lang="ts">
+const modalValueArray = ref([null, null])
+const $q = useQuasar()
+const itemOptions = ref([])
+useApi('v1/items/list/').then((data) => {
+  itemOptions.value = data
+})
+const removeItem = (index: number) => {
+  if (modalValueArray.value.length < 2) return
+  modalValueArray.value.splice(index, 1)
+}
+const addItem = () => {
+  modalValueArray.value.push(null)
+}
+const onSubmit = () => {
+  let filteredArray = modalValueArray.value.filter((item) => item !== null)
+  filteredArray = [...new Set(filteredArray)]
+  if (filteredArray.length < 2) {
+    $q.notify({
+      color: 'red-6',
+      message: 'Please Select at least two unique items.',
+      icon: 'report_problem',
+      position: 'top-right',
+    })
+    return
   }
-]
+  useApi('v1/items/merge/', {
+    method: 'POST',
+    body: modalValueArray.value
+  }).then(() => {
+    $q.notify({
+      color: 'green-6',
+      message: 'Items Merged!',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+  }).catch((error) => {
+    $q.notify({
+      color: 'red-6',
+      message: error,
+      icon: 'report_problem',
+      position: 'top-right',
+    })
+  })
+}
 </script>
