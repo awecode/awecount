@@ -9,7 +9,7 @@
       <q-card-section class="q-pa-lg">
         <div v-for="(modalValue, index) in modalValueArray" :key="index + Math.random()" class="mb-8">
           <h5 class="m-0">Group {{ index + 1 }}</h5>
-          <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)">
+          <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)" :selectedItems="selectedItems">
           </ItemMergeGroup>
         </div>
         <div class="flex justify-between">
@@ -81,4 +81,11 @@ const onSubmit = () => {
     })
   })
 }
+const selectedItems = computed(() => {
+  const arrays:Array<Array<number | null>> = modalValueArray.value.map((value) => {
+    return [...value.items]
+  })
+  const filteredArray = arrays.flat()
+  return filteredArray.filter((id) => id !== null) as number[]
+})
 </script>
