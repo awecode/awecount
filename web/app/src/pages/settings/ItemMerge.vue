@@ -51,20 +51,20 @@ const addGroup = () => {
   })
 }
 const onSubmit = () => {
-  let filteredArray = modalValueArray.value.filter((item) => item !== null)
-  filteredArray = [...new Set(filteredArray)]
-  if (filteredArray.length < 2) {
-    $q.notify({
-      color: 'red-6',
-      message: 'Please Select at least two unique items.',
-      icon: 'report_problem',
-      position: 'top-right',
-    })
-    return
-  }
+  // let filteredArray = modalValueArray.value.filter((item) => item !== null)
+  // filteredArray = [...new Set(filteredArray)]
+  // if (filteredArray.length) {
+  //   $q.notify({
+  //     color: 'red-6',
+  //     message: 'Please Select at least two unique items.',
+  //     icon: 'report_problem',
+  //     position: 'top-right',
+  //   })
+  //   return
+  // }
   useApi('v1/items/merge/', {
     method: 'POST',
-    body: filteredArray
+    body: modalValueArray.value
   }).then(() => {
     $q.notify({
       color: 'green-6',
@@ -75,7 +75,7 @@ const onSubmit = () => {
   }).catch((error) => {
     $q.notify({
       color: 'red-6',
-      message: error,
+      message: error.status === 500 ? 'Some Went Wrong, Please contact us!' : '',
       icon: 'report_problem',
       position: 'top-right',
     })
