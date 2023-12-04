@@ -64,7 +64,7 @@ const onSubmit = () => {
   }
   useApi('v1/items/merge/', {
     method: 'POST',
-    body: modalValueArray.value
+    body: filteredArray
   }).then(() => {
     $q.notify({
       color: 'green-6',
