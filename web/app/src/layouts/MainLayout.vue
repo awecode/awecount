@@ -457,6 +457,12 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/settings/account-closing/',
         hide: !checkPermissions('AccountClosingCreate')
       },
+      {
+        title: 'Item Merge',
+        icon: 'mdi-call-merge',
+        link: '/settings/item-merge/',
+        // hide: !checkPermissions('AccountClosingCreate')
+      },
     ],
   },
   {
