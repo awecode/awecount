@@ -103,6 +103,16 @@ const selectedItems = computed(() => {
 const onSimilarFetch = () => {
   loading.value = true
   useApi('v1/items/similar-items/').then((data) => {
+    if (data.length < 1) {
+      $q.notify({
+        color: 'red-6',
+        message: 'No matches Found!',
+        icon: 'report_problem',
+        position: 'top-right',
+      })
+      loading.value = false
+      return
+    }
     modalValueArray.value = data
     loading.value = false
   }).catch((error) => {
