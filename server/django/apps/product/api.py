@@ -102,7 +102,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def similar_items(self, request):
         from thefuzz import fuzz
         qs = super().get_queryset()
-        res = {}
         items = qs.values_list('id', 'name', 'code')
         res = []
         for item in items:
@@ -112,16 +111,36 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 if fuzz.ratio(item[1], name)>80:
                     similar_items.append({
                         "id": id,
-                        "name": name,
+                        "name": f"{name} ({code})",
                         "code": code,
-                        "match": fuzz.ratio(item[1], name)
+                        # "match": fuzz.ratio(item[1], name)
                     })
             if len(similar_items)>1:
                 obj['items'] = similar_items
                 obj['config'] = {}
                 # res[item[1]] = sim
                 res.append(obj)
-        return Response(res)
+        
+        # Remove duplicate items
+        unique_data = []
+        for dct in res:
+            if dct not in unique_data:
+                unique_data.append(dct)
+
+        item_ids = []
+        for dct in unique_data:
+            for index, item in enumerate(dct["items"]):
+                if item["id"] in item_ids:
+                    dct["items"].pop(index)
+                    continue
+                item_ids.append(item["id"])
+
+        for index, obj in enumerate(unique_data):
+            if len(obj["items"])<2:
+                unique_data.pop(index)
+
+        print("\n\n" + str(len(unique_data)) + "\n\n")
+        return Response(unique_data)
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
