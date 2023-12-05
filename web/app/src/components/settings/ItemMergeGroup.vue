@@ -11,7 +11,7 @@
               @click="() => removeItem(index)"></q-btn>
           </div>
           <div class="w-36 flex items-end">
-            <q-radio v-if="modalValue.items[index]" v-model="modalValue.defaultItem" :val="modalValue.items[index]"
+            <q-radio v-if="modalValue.items[index]" v-model="modalValue.config.defaultItem" :val="modalValue.items[index]"
             label="Default Item" />
           </div>
         </div>
