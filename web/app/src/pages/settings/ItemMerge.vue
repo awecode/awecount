@@ -7,9 +7,13 @@
         </div>
       </q-card-section>
       <q-card-section class="q-pa-lg">
+        <div class="flex justify-end">
+          <q-btn color="blue" :loading="loading" @click="onSimilarFetch">Fetch Similar Groups</q-btn>
+        </div>
         <div v-for="(modalValue, index) in modalValueArray" :key="index + Math.random()" class="mb-8">
           <h5 class="m-0">Group {{ index + 1 }}</h5>
-          <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)" :selectedItems="selectedItems">
+          <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)"
+            :selectedItems="selectedItems">
           </ItemMergeGroup>
         </div>
         <div class="flex justify-between">
@@ -26,21 +30,21 @@
 </template>
 
 <script setup lang="ts">
+const router = useRouter()
 const modalValueArray = ref([{
   items: [null, null],
   config: {
     defaultItem: null
   }
 }])
+const loading = ref(false)
 const $q = useQuasar()
 const itemOptions = ref([])
 useApi('v1/items/list/').then((data) => {
   itemOptions.value = data
 })
 const removeGroup = (index: number) => {
-  console.log('before', [...modalValueArray.value])
   modalValueArray.value.splice(index, 1)
-  console.log('after', [...modalValueArray.value])
 }
 const addGroup = () => {
   modalValueArray.value.push({
@@ -51,20 +55,27 @@ const addGroup = () => {
   })
 }
 const onSubmit = () => {
-  // let filteredArray = modalValueArray.value.filter((item) => item !== null)
-  // filteredArray = [...new Set(filteredArray)]
-  // if (filteredArray.length) {
-  //   $q.notify({
-  //     color: 'red-6',
-  //     message: 'Please Select at least two unique items.',
-  //     icon: 'report_problem',
-  //     position: 'top-right',
-  //   })
-  //   return
-  // }
+  let filteredArray: Array<Record<string, Array<number> | Record<string, boolean>>> = []
+  modalValueArray.value.forEach((group) => {
+    const filterredItems = group.items.filter((item) => item !== null) as unknown as number[]
+    const obj = { ...group }
+    obj.items = filterredItems
+    if (filterredItems.length > 1) {
+      filteredArray.push(obj)
+    }
+  })
+  if (filteredArray.length < 1) {
+    $q.notify({
+      color: 'red-6',
+      message: 'Please Select at least two unique items in a Group.',
+      icon: 'report_problem',
+      position: 'top-right',
+    })
+    return
+  }
   useApi('v1/items/merge/', {
     method: 'POST',
-    body: modalValueArray.value
+    body: filteredArray
   }).then(() => {
     $q.notify({
       color: 'green-6',
@@ -72,6 +83,7 @@ const onSubmit = () => {
       icon: 'check_circle',
       position: 'top-right',
     })
+    router.push('/items/list/')
   }).catch((error) => {
     $q.notify({
       color: 'red-6',
@@ -82,10 +94,25 @@ const onSubmit = () => {
   })
 }
 const selectedItems = computed(() => {
-  const arrays:Array<Array<number | null>> = modalValueArray.value.map((value) => {
+  const arrays: Array<Array<number | null>> = modalValueArray.value.map((value) => {
     return [...value.items]
   })
   const filteredArray = arrays.flat()
   return filteredArray.filter((id) => id !== null) as number[]
 })
+const onSimilarFetch = () => {
+  loading.value = true
+  useApi('v1/items/similar-items/').then((data) => {
+    modalValueArray.value = data
+    loading.value = false
+  }).catch((error) => {
+    $q.notify({
+      color: 'red-6',
+      message: error.status === 500 ? 'Some Went Wrong, Please contact us!' : '',
+      icon: 'report_problem',
+      position: 'top-right',
+    })
+    loading.value = false
+  })
+}
 </script>

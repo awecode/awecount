@@ -29,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-const router = useRouter()
 const $q = useQuasar()
 const props = defineProps({
   'modelValue': {
