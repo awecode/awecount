@@ -104,18 +104,23 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         qs = super().get_queryset()
         res = {}
         items = qs.values_list('id', 'name', 'code')
-        res = {}
+        res = []
         for item in items:
-            sim = []
+            obj = {}
+            similar_items = []
             for id, name, code in items:
                 if fuzz.ratio(item[1], name)>80:
-                    sim.append({
+                    similar_items.append({
                         "id": id,
                         "name": name,
-                        "code": code
+                        "code": code,
+                        "match": fuzz.ratio(item[1], name)
                     })
-            if len(sim)>1:
-                res[item[1]] = sim
+            if len(similar_items)>1:
+                obj['items'] = similar_items
+                obj['config'] = {}
+                # res[item[1]] = sim
+                res.append(obj)
         return Response(res)
 
     @action(detail=False, methods=['POST'])
