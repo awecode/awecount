@@ -20,8 +20,7 @@
             <!------------------------------------------ Month, year switcher -------------------------------------->
             <div class="q-date__navigation row items-center no-wrap">
               <div class="row items-center q-date__arrow"><button
-                  :disabled="(year < 2002 && month == 1) || disablePreviousBtns.month"
-                  @click="decMonth"
+                  :disabled="(year < 2002 && month == 1) || disablePreviousBtns.month" @click="decMonth"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
@@ -44,7 +43,8 @@
                       class="q-icon" aria-hidden="true" role="img"><svg viewBox="0 0 24 24">
                         <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
                       </svg></span></span></button></div>
-              <div class="row items-center q-date__arrow"><button :disabled="year < 2002 || disablePreviousBtns.year" @click="decYear"
+              <div class="row items-center q-date__arrow"><button :disabled="year < 2002 || disablePreviousBtns.year"
+                  @click="decYear"
                   class="q-btn q-btn-item non-selectable no-outline q-btn--flat q-btn--round q-btn--actionable q-focusable q-hoverable q-btn--dense"
                   tabindex="0" type="button" style="font-size: 10px;"><span class="q-focus-helper"></span><span
                     class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
@@ -236,6 +236,9 @@ watch(() => bsDate.value, (newVal) => {
 })
 
 const onDateClick = (data) => {
+  if (!props.modelValue && bsDate.value) {
+    emit('update:modelValue', DateConverter.bs2ad(bsDate.value))
+  }
   if (props.toLimit) {
     const selectedDate = `${year.value}-${month.value < 10 ? `0${month.value}` : `${month.value}`}-${data < 10 ? `0${data}` : `${data}`}`
     const toLimitConverted = DateConverter.ad2bs(props.toLimit)
@@ -312,7 +315,7 @@ const disablePreviousBtns = computed(() => {
     const toLimitConverted = DateConverter.ad2bs(props.toLimit)
     const limitMonth = toLimitConverted.split('-')[1]
     const limitYear = toLimitConverted.split('-')[0]
-    
+
     if (limitYear >= year.value) {
       data.year = true
       if (limitMonth >= month.value) data.month = true
@@ -325,4 +328,5 @@ const disablePreviousBtns = computed(() => {
 <style scoped>
 button.day-selector:disabled {
   opacity: 0.3 !important;
-}</style>
+}
+</style>

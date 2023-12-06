@@ -114,9 +114,11 @@ import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountF
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const store = useLoginStore()
     const endpoint = '/v1/debit-note/'
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
@@ -124,7 +126,7 @@ export default {
     const partyChoices = ref(null)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: store.companyInfo?.current_fiscal_year_id ||  null,
     })
     const $q = useQuasar()
     const staticOptions = {
