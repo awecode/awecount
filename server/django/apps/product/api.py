@@ -133,7 +133,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     unique_ids[item_id] = True
                     unique_items.append(item)
             if unique_items:
-                filtered_data.append({"items": unique_items, "config": group["config"]})
+                filtered_data.append({"items": [x["id"] for x in unique_items], "config": group["config"]})
 
         return Response(filtered_data)
 
