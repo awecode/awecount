@@ -66,7 +66,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
-        purchase_orders = validated_data.pop('purchase_orders')
+        purchase_orders = validated_data.pop('purchase_orders', None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)

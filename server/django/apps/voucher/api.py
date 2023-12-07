@@ -1176,7 +1176,7 @@ class PaymentReceiptViewSet(CRULViewSet):
         if not (start_date and end_date):
             raise ValidationError('Start and end dates are required.')
 
-        qs = PaymentReceipt.objects.filter(status__in=['Cleared']).filter(date__gte=start_date, date__lte=end_date)
+        qs = PaymentReceipt.objects.filter(company=request.company, status__in=['Cleared']).filter(date__gte=start_date, date__lte=end_date)
 
         excluded_ids = qs.annotate(cnt=Count('invoices__sales_agent_id', distinct=True)).filter(cnt__gte=2).values_list(
             'id',
