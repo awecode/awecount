@@ -59,7 +59,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return ItemListMinSerializer
         return self.serializer_class
     
-    def merge_items(self, item_ids, config):
+    def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
         flag = False
         for item in items:
@@ -69,7 +69,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return True
 
         # Select one item from the items list
-        if config["defaultItem"]:
+        if config and config.get("defaultItem"):
             item = items.get(id=config["defaultItem"])
         else:
             item = items[0]
@@ -147,7 +147,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def merge(self, request):
         flag = False
         for item in request.data:
-            ret = self.merge_items(item["items"], item["config"])
+            if item.get("config"):
+                ret = self.merge_items(item["items"], item["config"])
+            else:
+                ret = self.merge_items(item["items"])
             flag = True if ret else False
         if flag:
             return Response("Some items could not be merged.", status=209)
