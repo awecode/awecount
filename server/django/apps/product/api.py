@@ -61,6 +61,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     
     def merge_items(self, item_ids, config):
         items = Item.objects.filter(id__in=item_ids)
+        flag = False
+        for item in items:
+            if (item.can_be_purchased or item.can_be_sold or item.fixed_asset) and (item.direct_expense or item.indirect_expense):
+                flag = True
+        if flag:
+            return True
 
         # Select one item from the items list
         if config["defaultItem"]:
@@ -90,7 +96,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         # Delete other items
         remaining_items = items.exclude(id=item.id)
         remaining_items.delete()
-        return
+        return False
     
     @action(detail=False, url_path="list")
     def list_items(self, request):
@@ -139,8 +145,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
+        flag = False
         for item in request.data:
-            self.merge_items(item["items"], item["config"])
+            ret = self.merge_items(item["items"], item["config"])
+            flag = True if ret else False
+        if flag:
+            return Response("Some items could not be merged.", status=209)
         return Response(status=200)
 
     @action(detail=True)
