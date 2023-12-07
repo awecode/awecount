@@ -120,27 +120,22 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 obj['config'] = {}
                 # res[item[1]] = sim
                 res.append(obj)
-        
-        # Remove duplicate items
-        unique_data = []
-        for dct in res:
-            if dct not in unique_data:
-                unique_data.append(dct)
 
-        item_ids = []
-        for dct in unique_data:
-            for index, item in enumerate(dct["items"]):
-                if item["id"] in item_ids:
-                    dct["items"].pop(index)
-                    continue
-                item_ids.append(item["id"])
+        unique_ids = {}
 
-        for index, obj in enumerate(unique_data):
-            if len(obj["items"])<2:
-                unique_data.pop(index)
+        # Filter out duplicate items
+        filtered_data = []
+        for group in res:
+            unique_items = []
+            for item in group["items"]:
+                item_id = item["id"]
+                if item_id not in unique_ids:
+                    unique_ids[item_id] = True
+                    unique_items.append(item)
+            if unique_items:
+                filtered_data.append({"items": unique_items, "config": group["config"]})
 
-        print("\n\n" + str(len(unique_data)) + "\n\n")
-        return Response(unique_data)
+        return Response(filtered_data)
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
