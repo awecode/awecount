@@ -239,7 +239,7 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Ledger',
         icon: 'mdi-notebook-multiple',
-        link: '/account/',
+        link: '/account/?has_balance=true',
         hide: !checkPermissions('AccountView')
       },
       {
