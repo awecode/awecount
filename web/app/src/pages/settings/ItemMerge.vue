@@ -76,14 +76,28 @@ const onSubmit = () => {
   useApi('v1/items/merge/', {
     method: 'POST',
     body: filteredArray
-  }).then(() => {
-    $q.notify({
-      color: 'green-6',
-      message: 'Items Merged!',
-      icon: 'check_circle',
-      position: 'top-right',
-    })
-    router.push('/items/list/')
+  }).then((data) => {
+    if (data.error) {
+      if (data.error.items && data.error.items.length > 0) {
+        modalValueArray.value = data.error.items
+      }
+      if (data.error.message) {
+        $q.notify({
+          color: 'warning',
+          message: data.error.message,
+          icon: 'report_problem',
+          position: 'top-right',
+        })
+      }
+    } else {
+      $q.notify({
+        color: 'green-6',
+        message: 'Items Merged!',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+      router.push('/items/list/')
+    }
   }).catch((error) => {
     $q.notify({
       color: 'red-6',
