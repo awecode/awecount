@@ -173,7 +173,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 for item in group["items"]:
                     items_not_merged.append(item)
             # flag = True if ret else False
-        if res:
+        if ret:
             res = {
                 "error": {
                     "message" : f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
