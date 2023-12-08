@@ -161,7 +161,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     @action(detail=False, methods=['POST'])
     def merge(self, request):
-        flag = False
         groups_not_merged = []
         items_not_merged = []
         for index, group in enumerate(request.data):
@@ -173,8 +172,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 groups_not_merged.append(index+1)
                 for item in group["items"]:
                     items_not_merged.append(item)
-            flag = True if ret else False
-        if flag:
+            # flag = True if ret else False
+        if res:
             res = {
                 "error": {
                     "message" : f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
