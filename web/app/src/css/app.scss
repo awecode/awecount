@@ -74,3 +74,15 @@
     box-shadow: none;
   }
 }
+
+.search-bar {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.f-open-btn {
+  width: 80px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}

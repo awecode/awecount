@@ -1,20 +1,20 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" />
+      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
       <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales"
-        icon-right="add" />
+        icon-right="add" class="add-btn" />
     </div>
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -38,8 +38,8 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md l-view-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters" class="l-edit-btn"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -115,12 +115,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import usedownloadFile from 'src/composables/usedownloadFile'
-import MultiSelectChip from 'src/components/filter/MultiSelectChip.vue'
-import DateRangePicker from 'src/components/date/DateRangePicker.vue'
-import checkPermissions from 'src/composables/checkPermissions'
-// import { useMeta } from 'quasar'
 export default {
   setup() {
     const metaData = {
@@ -193,21 +187,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 80px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>
