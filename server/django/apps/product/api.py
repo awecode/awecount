@@ -75,6 +75,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         else:
             item = items[0]
 
+        remaining_items = items.exclude(id = item.id)
+
         # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
         purchase_voucher_rows = PurchaseVoucherRow.objects.filter(item__id__in=item_ids)
         purchase_voucher_rows.update(item=item)
@@ -93,6 +95,16 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         debit_note_rows = DebitNoteRow.objects.filter(item__id__in=item_ids)
         debit_note_rows.update(item=item)
+
+        # Update Inventory account for inventory transactions
+        if not item.track_inventory:
+            item.track_inventory = True
+        inventory_account = InventoryAccount.objects.get_or_create(company=item.company, code=item.code, name=self.name)
+
+        names = [x.name for x in remaining_items]
+        remaining_items_inventory_accounts = InventoryAccount.objects.filter(name__in=names, company=item.company)
+        inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
+        inventory_transactions.update(account=inventory_account)
 
         # Delete other items
         remaining_items = items.exclude(id=item.id)
