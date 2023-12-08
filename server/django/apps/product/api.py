@@ -181,7 +181,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     "items": items_not_merged
                 } 
             }
-            return Response("Some items could not be merged.", status=209)
+            return Response(res, status=209)
         return Response(status=200)
 
     @action(detail=True)
