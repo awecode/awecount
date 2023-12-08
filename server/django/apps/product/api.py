@@ -62,10 +62,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
         flag = False
-        for item in items:
-            if (item.can_be_purchased or item.can_be_sold or item.fixed_asset) and (item.direct_expense or item.indirect_expense):
+        for i in range(len(items-1)):
+            item1 = items[i]
+            item2 = items[i+1]
+            if ((item1.can_be_purchased or item1.can_be_sold or item1.fixed_asset) and (item2.direct_expense or item2.indirect_expense)) or ((item2.can_be_purchased or item2.can_be_sold or item2.fixed_asset) and (item1.direct_expense or item1.indirect_expense)):
                 flag = True
-                
+                break
+                    
         if flag:
             return True
 
