@@ -99,7 +99,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         # Update Inventory account for inventory transactions
         if not item.track_inventory:
             item.track_inventory = True
-        inventory_account = InventoryAccount.objects.get_or_create(company=item.company, code=item.code, name=self.name)
+        inventory_account = InventoryAccount.objects.get_or_create(company=item.company, code=item.code, name=self.name)[0]
 
         names = [x.name for x in remaining_items]
         remaining_items_inventory_accounts = InventoryAccount.objects.filter(name__in=names, company=item.company)
