@@ -65,6 +65,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         for item in items:
             if (item.can_be_purchased or item.can_be_sold or item.fixed_asset) and (item.direct_expense or item.indirect_expense):
                 flag = True
+                
         if flag:
             return True
 
@@ -146,13 +147,25 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=False, methods=['POST'])
     def merge(self, request):
         flag = False
-        for item in request.data:
-            if item.get("config"):
-                ret = self.merge_items(item["items"], item["config"])
+        groups_not_merged = []
+        items_not_merged = []
+        for index, group in enumerate(request.data):
+            if group.get("config"):
+                ret = self.merge_items(group["items"], group["config"])
             else:
-                ret = self.merge_items(item["items"])
+                ret = self.merge_items(group["items"])
+            if ret:
+                groups_not_merged.append(index+1)
+                for item in group["items"]:
+                    items_not_merged.append(item["id"])
             flag = True if ret else False
         if flag:
+            res = {
+                "error": {
+                    "message" : f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
+                    "items": items_not_merged
+                } 
+            }
             return Response("Some items could not be merged.", status=209)
         return Response(status=200)
 
