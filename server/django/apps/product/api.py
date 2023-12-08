@@ -61,16 +61,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     
     def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
-        flag = False
         for i in range(len(items)-1):
             item1 = items[i]
             item2 = items[i+1]
             if ((item1.can_be_purchased or item1.can_be_sold or item1.fixed_asset) and (item2.direct_expense or item2.indirect_expense)) or ((item2.can_be_purchased or item2.can_be_sold or item2.fixed_asset) and (item1.direct_expense or item1.indirect_expense)):
-                flag = True
-                break
-                    
-        if flag:
-            return True
+                return True
 
         # Select one item from the items list
         if config and config.get("defaultItem"):
@@ -163,17 +158,18 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def merge(self, request):
         groups_not_merged = []
         items_not_merged = []
+        flag = False
         for index, group in enumerate(request.data):
             if group.get("config"):
                 ret = self.merge_items(group["items"], group["config"])
             else:
                 ret = self.merge_items(group["items"])
             if ret:
+                flag = True
                 groups_not_merged.append(index+1)
                 for item in group["items"]:
                     items_not_merged.append(item)
-            # flag = True if ret else False
-        if ret:
+        if flag:
             res = {
                 "error": {
                     "message" : f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
