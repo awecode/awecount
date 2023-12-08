@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row" v-if="checkPermissions('AccountOpeningBalanceCreate')">
-      <q-btn color="green" to="/items/opening/add" label="New Opening Balance" class="q-ml-auto" icon-right="add" />
+      <q-btn color="green" to="/items/opening/add" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
     </div>
     <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -15,7 +15,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn v-if="checkPermissions('AccountOpeningBalanceModify')" color="orange-6"
-            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" label="EDIT"
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="EDIT"
             :to="`/items/opening/${props.row.id}/`" />
         </q-td>
       </template>

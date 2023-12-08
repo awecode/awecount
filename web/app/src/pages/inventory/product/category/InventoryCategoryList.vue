@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end" v-if="checkPermissions('CategoryCreate')">
-      <q-btn color="green" to="/inventory-category/add/" label="New Category" class="q-ml-lg" icon-right="add" />
+      <q-btn color="green" to="/inventory-category/add/" label="New Category" class="q-ml-lg add-btn" icon-right="add" />
     </div>
     <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">

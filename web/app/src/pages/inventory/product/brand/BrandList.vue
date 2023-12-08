@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div class="row justify-between">
       <div></div>
-      <q-btn v-if="checkPermissions('BrandCreate')" color="green" to="/brand/add/" label="New brand" class="q-ml-lg"
+      <q-btn v-if="checkPermissions('BrandCreate')" color="green" to="/brand/add/" label="New brand" class="q-ml-lg add-btn"
         icon-right="add" />
     </div>
     <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"

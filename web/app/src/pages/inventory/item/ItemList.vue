@@ -48,9 +48,9 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md list-view-btn"
+          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px" label="View" :to="`/items/details/${props.row.id}/`"/>
-          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm list-edit-btn"
+          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px" label="edit" :to="`/items/${props.row.id}/`" />
         </q-td>
       </template>
