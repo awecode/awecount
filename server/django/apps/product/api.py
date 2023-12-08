@@ -167,8 +167,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             if ret:
                 flag = True
                 groups_not_merged.append(index+1)
-                for item in group["items"]:
-                    items_not_merged.append(group)
+                items_not_merged.append(group)
         if flag:
             res = {
                 "error": {
