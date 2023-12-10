@@ -77,8 +77,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         remaining_items = items.exclude(id=item.id)
 
         has_inventory_account = False
-        item_names = [x.name for x in items]
-        inventory_accounts = InventoryAccount.objects.filter(name__in=item_names, company=item.company)
+        # item_account_ids = [x.name for x in items]
+        inventory_accounts = items.values_list("account", flat=True)
+        # inventory_accounts = InventoryAccount.objects.filter(name__in=item_names, company=item.company)
         if inventory_accounts.exists():
             has_inventory_account = True
 
@@ -113,12 +114,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             names = [x.name for x in remaining_items]
             remaining_items_inventory_accounts = InventoryAccount.objects.filter(name__in=names, company=item.company)
             inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
-    # for tr in inventory_transactions:
-    #     if tr.dr_amount:
-    #         inventory_account.current_balance += tr.dr_amount
-    #     elif tr.cr_amount:
-    #         inventory_account.current_balance -= tr.cr_amount
-    #     inventory_account.save()
+
+            # for tr in inventory_transactions:
+            #     if tr.dr_amount:
+            #         inventory_account.current_balance += tr.dr_amount
+            #     elif tr.cr_amount:
+            #         inventory_account.current_balance -= tr.cr_amount
+            #     inventory_account.save()
             
             inventory_transactions.update(account=inventory_account)
             for item in remaining_items_inventory_accounts:
