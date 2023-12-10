@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
+from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account, Category as AccountCategory
 from apps.ledger.serializers import AccountMinSerializer
@@ -348,6 +349,9 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         account = get_object_or_404(InventoryAccount, item__id=data.get('item_id'), opening_balance=0, company=request.company)
+        opening_balance = data.get('opening_balance', None)
+        if not opening_balance:
+            raise ValidationError({'opening_balance': ['Opening balance is required.']})
         account.opening_balance = data.get('opening_balance')
         account.save()
         fiscal_year = self.request.company.current_fiscal_year
