@@ -79,8 +79,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         has_inventory_account = False
         item_names = [x.name for x in items]
         inventory_accounts = InventoryAccount.objects.filter(name__in=item_names, company=item.company)
-        if not inventory_accounts.exists():
-            has_inventory_account = False
+        if inventory_accounts.exists():
+            has_inventory_account = True
 
         # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
         # if has_inventory_account:
