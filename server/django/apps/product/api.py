@@ -73,7 +73,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         else:
             item = items[0]
 
-        remaining_items = items.exclude(id = item.id)
+        remaining_items = items.exclude(id=item.id)
 
         # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
         purchase_voucher_rows = PurchaseVoucherRow.objects.filter(item__id__in=item_ids)
@@ -95,17 +95,28 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         debit_note_rows.update(item=item)
 
         # Update Inventory account for inventory transactions
+        # import ipdb; ipdb.set_trace()
         if not item.track_inventory:
             item.track_inventory = True
-        inventory_account = InventoryAccount.objects.get_or_create(company=item.company, code=item.code, name=self.name)[0]
+            item.save()
+        inventory_account = InventoryAccount.objects.get(company=item.company, code=item.code, name=item.name)
 
         names = [x.name for x in remaining_items]
         remaining_items_inventory_accounts = InventoryAccount.objects.filter(name__in=names, company=item.company)
         inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
+        # for tr in inventory_transactions:
+        #     if tr.dr_amount:
+        #         inventory_account.current_balance += tr.dr_amount
+        #     elif tr.cr_amount:
+        #         inventory_account.current_balance -= tr.cr_amount
+        #     inventory_account.save()
+            
         inventory_transactions.update(account=inventory_account)
+        for item in remaining_items_inventory_accounts:
+            inventory_account.current_balance += item.current_balance
 
         # Delete other items
-        remaining_items = items.exclude(id=item.id)
+        remaining_items_inventory_accounts.delete()
         remaining_items.delete()
         return False
     
