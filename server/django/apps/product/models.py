@@ -451,6 +451,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 class Item(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
+    voucher_no = models.PositiveBigIntegerField(null=True, blank=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL, related_name='items')
     description = models.TextField(blank=True, null=True)
@@ -529,7 +530,8 @@ class Item(models.Model):
         super().save(*args, **kwargs)
 
         if post_save:
-
+            if not self.voucher_no:
+                self.voucher_no = self.pk
             if self.can_be_sold:
                 name = self.name + ' (Sales)'
                 if not self.sales_account_id:
