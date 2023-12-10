@@ -76,7 +76,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         remaining_items = items.exclude(id=item.id)
 
         has_inventory_account = False
-        item_names = [x.name for x in item]
+        item_names = [x.name for x in items]
         inventory_accounts = InventoryAccount.objects.get(name__in=item_names, company=item.company)
         if not inventory_accounts.exists():
             has_inventory_account = False
