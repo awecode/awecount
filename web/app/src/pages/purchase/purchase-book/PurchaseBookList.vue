@@ -23,16 +23,16 @@
               v-model:endDate="filters.end_date"
               :hideBtns="true"
             />
-            <div class="row items-center">
+            <div class="flex gap-4 items-center">
               <q-btn
-                class="q-mr-md"
+                class="f-submit-btn"
                 label="Filter"
                 color="green"
                 @click="onFilterUpdate"
               ></q-btn>
               <q-btn
                 v-if="filters.start_date || filters.end_date"
-                class="q-mr-md"
+                class="f-reset-btn"
                 icon="close"
                 color="red"
                 @click="resetFilters"
@@ -55,7 +55,7 @@
           <div class="row align-center">
             <router-link
               style="font-weight: 500; text-decoration: none"
-              class="text-blue"
+              class="text-blue l-view-btn"
               :to="`/purchase-voucher/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
@@ -121,7 +121,6 @@
 </template>
 
 <script lang="ts">
-import useList from '/src/composables/useList'
 export default {
   setup() {
     const metaData = {
@@ -218,21 +217,3 @@ export default {
   },
 }
 </script>
-
-<style scoped lang="scss">
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>
