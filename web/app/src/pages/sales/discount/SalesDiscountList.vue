@@ -1,18 +1,18 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('SalesDiscountDelete')">
-      <q-btn color="green" to="/sales-discount/add/" label="New sales discount" icon-right="add" />
+      <q-btn color="green" to="/sales-discount/add/" label="New sales discount" icon-right="add" class="add-btn" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -27,9 +27,9 @@
                       :false-value="null"></q-checkbox>
                   </div>
                 </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -49,7 +49,7 @@
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <q-btn v-if="checkPermissions('SalesDiscountModify')" color="orange-6" label="Edit"
-            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/sales-discount/${props.row.id}/`" />
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/sales-discount/${props.row.id}/`" />
         </q-td>
       </template>
     </q-table>
@@ -102,21 +102,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>
