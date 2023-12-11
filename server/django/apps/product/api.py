@@ -105,6 +105,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         # Update Inventory account for inventory transactions
         # import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         if has_inventory_account:
             if not item.track_inventory:
                 item.track_inventory = True
@@ -128,22 +129,23 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             
             inventory_transactions.update(account=inventory_account)
             for obj in remaining_items_inventory_accounts:
-                inventory_account.current_balance += obj.current_balance
+                # inventory_account.current_balance += obj.current_balance
                 inventory_account.opening_balance += obj.opening_balance
                 inventory_account.save()
             
             # remaining_items_transaction_ids = remaining_items.values_list("transactions")
             # journal_ids = item.account.transactions.values_list("journal_entry", flat=True)
             # journals = JournalEntry.objects.filter(id__in=journal_ids)
+            
             for je in journal_entries:
                 if je.content_type.name == "item":
                     je.delete()
 
             item.update_opening_balance(item.company.current_fiscal_year)
 
-    # Delete other items
             remaining_items_inventory_accounts.delete()
 
+        # Delete other items
         remaining_items.delete()
         return False
     
