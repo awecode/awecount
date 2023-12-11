@@ -28,7 +28,7 @@
                       :false-value="null"></q-checkbox>
                   </div>
                 </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
                 </div>
