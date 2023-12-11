@@ -38,8 +38,8 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md l-view-btn" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters" class="l-edit-btn"></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -80,7 +80,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
-            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View" class="q-py-none q-px-md font-size-sm"
+            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View" class="q-py-none q-px-md font-size-sm l-view-btn"
               style="font-size: 12px" :to="`/sales-voucher/${props.row.id}/view/`" />
           </div>
         </q-td>
