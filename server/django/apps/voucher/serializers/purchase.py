@@ -90,6 +90,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
 
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
+        purchase_orders = validated_data.pop('purchase_orders', None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
@@ -97,6 +98,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        if purchase_orders:
+            instance.purchase_orders.clear()
+            instance.purchase_orders.set(purchase_orders)
         instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
