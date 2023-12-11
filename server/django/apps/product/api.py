@@ -186,6 +186,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         # Filter out duplicate items
         filtered_data = []
+        index = 0
         for group in res:
             unique_items = []
             for item in group["items"]:
@@ -194,7 +195,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     unique_ids[item_id] = True
                     unique_items.append(item)
             if unique_items:
-                filtered_data.append({"items": [x["id"] for x in unique_items], "config": group["config"]})
+                index += 1
+                filtered_data.append({"items": [x["id"] for x in unique_items], "config": group["config"], "index": index})
 
         return Response(filtered_data)
 
