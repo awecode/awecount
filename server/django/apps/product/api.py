@@ -127,9 +127,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             journal_entries = JournalEntry.objects.filter(transactions__in=inventory_transaction_ids)
             
             inventory_transactions.update(account=inventory_account)
-            for item in remaining_items_inventory_accounts:
-                inventory_account.current_balance += item.current_balance
-                inventory_account.opening_balance += item.opening_balance
+            for obj in remaining_items_inventory_accounts:
+                inventory_account.current_balance += obj.current_balance
+                inventory_account.opening_balance += obj.opening_balance
                 inventory_account.save()
             
             # remaining_items_transaction_ids = remaining_items.values_list("transactions")
@@ -139,7 +139,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 if je.content_type.name == "item":
                     je.delete()
 
-            item.account.update_opening_balance(item.company.current_fiscal_year)
+            item.update_opening_balance(item.company.current_fiscal_year)
 
     # Delete other items
             remaining_items_inventory_accounts.delete()
