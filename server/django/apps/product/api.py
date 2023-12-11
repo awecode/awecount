@@ -136,7 +136,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
             inventory_transactions.update(account=inventory_account)
             for obj in remaining_items_inventory_accounts:
-                # inventory_account.current_balance += obj.current_balance
+                inventory_account.current_balance += obj.current_balance
                 inventory_account.opening_balance += obj.opening_balance
                 inventory_account.save()
             
