@@ -10,7 +10,7 @@
         <div class="flex justify-end">
           <q-btn color="blue" :loading="loading" @click="onSimilarFetch">Fetch Similar Groups</q-btn>
         </div>
-        <div v-for="(modalValue, index) in modalValueArray" :key="index + Math.random()" class="mb-8">
+        <div v-for="(modalValue, index) in modalValueArray" :key="modalValue.index" class="mb-8">
           <h5 class="m-0">Group {{ index + 1 }}</h5>
           <ItemMergeGroup v-model="modalValueArray[index]" :itemOptions="itemOptions" @removeGroup="removeGroup(index)"
             :selectedItems="selectedItems">
@@ -35,7 +35,8 @@ const modalValueArray = ref([{
   items: [null, null],
   config: {
     defaultItem: null
-  }
+  },
+  index: 1 + Math.random()
 }])
 const loading = ref(false)
 const $q = useQuasar()
@@ -51,7 +52,8 @@ const addGroup = () => {
     items: [null, null],
     config: {
       defaultItem: null
-    }
+    },
+    index: 1 + modalValueArray.value[-1].index + Math.random()
   })
 }
 const onSubmit = () => {
