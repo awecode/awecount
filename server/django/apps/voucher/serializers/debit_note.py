@@ -28,7 +28,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
     voucher_no = serializers.ReadOnlyField()
     rows = DebitNoteRowSerializer(many=True)
 
-    def assign_voucher_number(self, validated_data, instance):
+    def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
             return
         if validated_data.get('status') in ['Draft', 'Cancelled']:
@@ -66,8 +66,8 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         request = self.context['request']
-        self.assign_fiscal_year(validated_data, instance=None)
-        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_fiscal_year(validated_data)
+        self.assign_voucher_number(validated_data)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
@@ -85,7 +85,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         self.validate_voucher_status(validated_data, instance)
-        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         DebitNote.objects.filter(pk=instance.id).update(**validated_data)
