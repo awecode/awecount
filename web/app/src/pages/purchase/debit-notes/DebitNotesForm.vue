@@ -87,7 +87,7 @@
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
-        :usedIn="'creditNote'"></invoice-table>
+        :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12"
           :error="!!errors?.remarks" :error-message="errors?.remarks" />
@@ -205,6 +205,9 @@ export default {
             })
             data.rows.forEach(row => {
               delete row["id"]
+              if (row.discount_type === "") {
+                row.discount_type = null
+              }
             });
             for (const key in data) {
               fields[key] = data[key]
@@ -241,6 +244,16 @@ export default {
     formData.fields.value.party = ''
     formData.fields.value.discount_type = null
     formData.fields.value.trade_discount = false
+
+    // to update voucher meta in Credit and debit Notes
+    const updateVoucherMeta = (data) => {
+      formData.fields.value.discount = data.discount
+      formData.fields.value.meta_discount = data.discount
+      formData.fields.value.meta_sub_total = data.subTotal
+      formData.fields.value.meta_tax = data.totalTax
+      formData.fields.value.total_amount = data.total
+    }
+
     return {
       ...formData,
       CategoryForm,
@@ -258,7 +271,8 @@ export default {
       referenceFormData,
       discountField,
       partyChoices,
-      checkPermissions
+      checkPermissions,
+      updateVoucherMeta
     }
   },
   created() {

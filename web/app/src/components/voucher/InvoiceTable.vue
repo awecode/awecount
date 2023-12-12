@@ -153,7 +153,7 @@ export default {
       default: () => true,
     }
   },
-  emits: ['update:modelValue', 'deleteRowErr'],
+  emits: ['update:modelValue', 'deleteRowErr', 'updateVoucherMeta'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
@@ -329,6 +329,14 @@ export default {
         )
       modalValue.value.splice(index, 1)
     }
+
+    // to update voucher meta in Credit and debit Notes
+    if (props.usedIn === "creditNote") {
+      watch(totalDataComputed, (newValue) => {
+        emit('updateVoucherMeta', newValue)
+      })
+    }
+
     return {
       props,
       modalValue,

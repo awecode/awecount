@@ -24,7 +24,7 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" ></q-input>
+                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
@@ -86,7 +86,7 @@
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
-        :usedIn="'creditNote'"></invoice-table>
+        :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -313,6 +313,15 @@ export default {
     formData.fields.value.party = ''
     formData.fields.value.discount_type = null
     formData.fields.value.trade_discount = false
+
+    // to update voucher meta in Credit and debit Notes
+    const updateVoucherMeta = (data) => {
+      formData.fields.value.discount = data.discount
+      formData.fields.value.meta_discount = data.discount
+      formData.fields.value.meta_sub_total = data.subTotal
+      formData.fields.value.meta_tax = data.totalTax
+      formData.fields.value.total_amount = data.total
+    }
     return {
       ...formData,
       CategoryForm,
@@ -329,7 +338,8 @@ export default {
       fetchInvoice,
       referenceFormData,
       discountField,
-      checkPermissions
+      checkPermissions,
+      updateVoucherMeta
     }
   },
 }
