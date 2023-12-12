@@ -11,8 +11,8 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12" v-if="fields.voucher_no">
-              <q-input v-model="fields.voucher_no" disable label="Reference Invoice(s)"></q-input>
+            <div class="col-md-6 col-12" v-if="fields.invoice_data && fields.invoice_data.length > 0">
+              <q-input v-model="fields.invoice_data[0].voucher_no" disable label="Reference Invoice(s)"></q-input>
             </div>
             <div v-else class="col-md-6 col-12">
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
@@ -185,9 +185,10 @@ export default {
             if (fields.invoices) {
               fields.invoices.push(data.id)
             } else fields.invoices = [data.id]
-            if (fields.voucher_no) {
-              fields.voucher_no.push(data.voucher_no)
-            } else fields.voucher_no = [data.voucher_no]
+            fields.invoice_data = [{
+              id: data.id,
+              voucher_no: data.voucher_no
+            }]
             const removeArr = [
               'id',
               'date',
