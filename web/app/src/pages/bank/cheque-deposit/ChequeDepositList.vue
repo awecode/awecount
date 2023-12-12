@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn v-if="checkPermissions('ChequeDepositCreate')" color="green" to="/cheque-deposit/add/"
-        label="New Cheque Deposit" class="q-ml-lg add-btn" icon-right="add" />
+        label="New Cheque Deposit" class="add-btn" icon-right="add" />
     </div>
 
     <q-table title="Cheque Deposits" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
