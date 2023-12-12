@@ -103,7 +103,7 @@ export default function useGeneratePdf(
       </div>
       </div>
   </div>
-    </div> 
+    </div>
     <div style="display: flex; justify-content: end; font-family: Arial, Helvetica, sans-serif;">
     <div
       style="
@@ -125,8 +125,8 @@ export default function useGeneratePdf(
       </div>
     </div>
   </div>
-    </div>  
-    
+    </div>
+
   <hr style="margin: 20px 0" />`
     } else {
       header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
@@ -286,7 +286,7 @@ export default function useGeneratePdf(
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count
     })
-  </div> 
+  </div>
   <div style="display: flex; justify-content: space-between">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <div style="font-weight: 600; color: grey;">Billed To:</div>
@@ -418,7 +418,7 @@ ${table}
         <div style="${
           voucherType === 'debitNote' ? 'display: none;' : ''
         }" style="font-weight: 600">Ref. Invoice No.: #${
-      invoiceInfo.voucher_no
+          invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : ''
     }</div>
     <div style="${
       voucherType === 'debitNote' ? '' : 'display: none;'
