@@ -24,7 +24,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
 
-    def assign_voucher_number(self, validated_data, instance):
+    def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
             return
         if validated_data.get('status') in ['Draft', 'Cancelled']:
@@ -74,7 +74,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         self.validate_voucher_status(validated_data, instance)
-        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         CreditNote.objects.filter(pk=instance.id).update(**validated_data)
