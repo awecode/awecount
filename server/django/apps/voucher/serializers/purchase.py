@@ -29,7 +29,8 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
         extra_kwargs = {
-            "discount": {"allow_null": True, "required": False}
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
         }
 
 
@@ -71,7 +72,14 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for row in rows:
             if not row.get("discount"):
                 row["discount"] = 0
+            if row.get("discount_type") == "":
+                row["discount_type"] = None
         return rows
+    
+    # def validate_discount_type(self, attr):
+    #     if not attr:
+    #         attr = 0
+    #     return attr
     
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
