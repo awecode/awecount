@@ -533,6 +533,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return CreditNoteListSerializer
+        if self.action == 'retrieve':
+            return CreditNoteDetailSerializer
         return CreditNoteCreateSerializer
 
     def get_defaults(self, request=None):
@@ -663,6 +665,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return DebitNoteListSerializer
+        elif self.action == 'retrieve':
+            return DebitNoteDetailSerializer
         return DebitNoteCreateSerializer
 
     def get_defaults(self, request=None):

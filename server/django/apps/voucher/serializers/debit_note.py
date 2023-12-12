@@ -121,6 +121,15 @@ class DebitNoteDetailSerializer(serializers.ModelSerializer):
     rows = PurchaseVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
 
+    invoice_data = serializers.SerializerMethodField()
+
+    def get_invoice_data(self, obj):
+        data = []
+        for invoice in obj.invoices.all():
+            data.append({'id': invoice.id, 'voucher_no': invoice.voucher_no})
+        return data
+
+
     class Meta:
         model = DebitNote
-        exclude = ('company', 'user', 'bank_account',)
+        exclude = ('company', 'user', 'bank_account', 'invoices')
