@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="fields">
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
