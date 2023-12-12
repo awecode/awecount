@@ -30,6 +30,11 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         model = PurchaseVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
+
 
 class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin,
                                       ModeCumBankSerializerMixin,
@@ -77,6 +82,19 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         #             raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
         #     return data
 
+    def validate_rows(self, rows):
+        for row in rows:
+            if not row.get("discount"):
+                row["discount"] = 0
+            if row.get("discount_type") == "":
+                row["discount_type"] = None
+        return rows
+    
+    # def validate_discount_type(self, attr):
+    #     if not attr:
+    #         attr = 0
+    #     return attr
+    
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
@@ -104,6 +122,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context["request"]
+        purchase_orders = validated_data.pop('purchase_orders', None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
@@ -113,6 +132,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             if request.company.inventory_setting.enable_fifo:
                 fifo_handle_purchase_update(instance, row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        if purchase_orders:
+            instance.purchase_orders.clear()
+            instance.purchase_orders.set(purchase_orders)
         instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)

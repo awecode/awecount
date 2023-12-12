@@ -17,6 +17,10 @@ class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mode
     class Meta:
         model = DebitNoteRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -49,6 +53,14 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                 {'party': ['Party is required for a credit issue.']},
             )
         return data
+    
+    def validate_rows(self, rows):
+        for row in rows:
+            if not row.get("discount"):
+                row["discount"] = 0
+            if row.get("discount_type") == "":
+                row["discount_type"] = None
+        return rows
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
