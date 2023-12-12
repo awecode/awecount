@@ -10,7 +10,7 @@
       <ViewerHeader :fields="fields" />
     </q-card>
     <div class="q-ma-lg text-subtitle2">
-      Ref. Invoice No.: #{{ fields?.voucher_no }}
+      Ref. Invoice No.: #{{ fields?.invoice_data[0]?.voucher_no }}
     </div>
     <q-card class="q-mx-lg">
       <q-card-section>
