@@ -28,6 +28,10 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         model = PurchaseVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False}
+        }
+
 
 class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin,
                                       ModeCumBankSerializerMixin,
@@ -63,6 +67,12 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         #             raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
         #     return data
 
+    def validate_rows(self, rows):
+        for row in rows:
+            if not row.get("discount"):
+                row["discount"] = 0
+        return rows
+    
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']

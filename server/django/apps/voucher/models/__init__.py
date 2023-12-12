@@ -597,6 +597,8 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         voucher_meta = self.get_voucher_meta()
+
+        # import ipdb; ipdb.set_trace()
         if self.total_amount != voucher_meta['grand_total']:
             self.total_amount = voucher_meta['grand_total']
             self.save()
