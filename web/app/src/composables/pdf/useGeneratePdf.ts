@@ -415,13 +415,11 @@ ${table}
         <div><span style="font-weight: 600; color: dimgray;">Date:</span> ${
           invoiceInfo.date
         }</div>
-        <div style="${
-          voucherType === 'debitNote' ? 'display: none;' : ''
-        }" style="font-weight: 600">Ref. Invoice No.: #${
-          invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : ''
+        <div style="font-weight: 600">Ref. Invoice No.: #${
+          invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : '-'
     }</div>
     <div style="${
-      voucherType === 'debitNote' ? '' : 'display: none;'
+      voucherType === 'debitNote' && invoiceInfo?.tax_registration_number ? '' : 'display: none;'
     }"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${
       invoiceInfo.tax_registration_number || '-'
     }</div>
