@@ -281,7 +281,7 @@ export default function useGeneratePdf(
     invoiceInfo.print_count > 1 &&
     ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status)
       ? ''
-      : `display: none`
+      : 'display: none'
   }">
     COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count
@@ -381,7 +381,7 @@ ${table}
         invoiceInfo.print_count > 1 &&
         ['Issued', 'Paid', 'Partially Paid'].includes(invoiceInfo.status)
           ? ''
-          : `display: none`
+          : 'display: none'
       }">
         COPY ${invoiceInfo.print_count - 1} OF ORIGINAL (PRINT COUNT:${
       invoiceInfo.print_count
@@ -390,39 +390,47 @@ ${table}
 
 
     </div>
-    <div>
+    <div style="display: flex; justify-content: space-between;">
       <div style="display: flex; flex-direction: column; gap: 5px">
         <div><span style="font-weight: 600; color: dimgray;">${
-          voucherType === 'creditNote' ? 'Credit Note No:' : 'Debit Note No:'
-        }</span>  (${invoiceInfo.voucher_no || '-'})</div>
+              voucherType === 'creditNote' ? 'Credit Note No:' : 'Debit Note No:'
+            }</span>  ${invoiceInfo.voucher_no || '-'}</div>
+            <div style="${
+              invoiceInfo.party_name ? '' : 'display: none;'
+            }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
+          invoiceInfo.party_name
+        }
+        </div>
         <div style="${
-          invoiceInfo.party_name ? '' : 'display: none;'
-        }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
-      invoiceInfo.party_name
-    }
-    </div>
-    <div style="${
-      invoiceInfo.address ? '' : 'display: none;'
-    }"><span style="font-weight: 600; color: dimgray;">Party:</span> ${
-      invoiceInfo.address
-    }
-</div>
+              invoiceInfo.customer_name ? '' : 'display: none;'
+            }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
+          invoiceInfo.customer_name
+        }
+        </div>
         <div style="${
-          invoiceInfo.customer_name ? '' : 'display: none;'
-        }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
-      invoiceInfo.customer_name
-    }</div>
-        <div><span style="font-weight: 600; color: dimgray;">Date:</span> ${
-          invoiceInfo.date
+          invoiceInfo.address ? '' : 'display: none;'
+        }"><span style="font-weight: 600; color: dimgray;">Address:</span> ${
+          invoiceInfo.address
+        }
+        </div>
+            <div style="${
+              invoiceInfo.customer_name ? '' : 'display: none;'
+            }"><span style="font-weight: 600; color: dimgray;">Customer:</span> ${
+          invoiceInfo.customer_name
         }</div>
-        <div style="font-weight: 600">Ref. Invoice No.: #${
-          invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : '-'
-    }</div>
-    <div style="${
-      voucherType === 'debitNote' && invoiceInfo?.tax_registration_number ? '' : 'display: none;'
-    }"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${
-      invoiceInfo.tax_registration_number || '-'
-    }</div>
+        <div style="${
+          invoiceInfo?.tax_registration_number ? '' : 'display: none;'
+        }"><span style="font-weight: 600; color: dimgray;">Tax Reg.:</span> ${
+          invoiceInfo.tax_registration_number || '-'
+        }</div>
+        <div style="font-weight: 600">Ref. Invoice No.: # ${
+              invoiceInfo?.invoice_data?.length > 0 ? invoiceInfo.invoice_data[0]?.voucher_no : '-'
+        }</div>
+    </div>
+      <div>
+      <div><span style="font-weight: 600; color: dimgray;">Date:</span> ${
+        invoiceInfo.date
+      }</div>
       </div>
     </div>
   </div>
