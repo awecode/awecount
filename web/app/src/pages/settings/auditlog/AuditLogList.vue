@@ -6,6 +6,7 @@
         label="Export"
         icon-right="download"
         @click="onDownloadXls"
+        class="export-btn"
       />
     </div>
     <q-table
@@ -26,7 +27,7 @@
             <q-btn
               class="q-py-none q-px-md font-size-sm"
               style="font-size: 12px"
-              color="blue"
+              color="blue l-view-btn"
               label="Detail"
               :to="`/audit-log/${props.row.id}/`"
             />
@@ -38,8 +39,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import usedownloadFile from 'src/composables/usedownloadFile'
 export default {
   setup() {
     const metaData = {
