@@ -1,14 +1,14 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('PartyCreate')" color="green" to="/party/add/" label="New party" class="q-ml-lg"
+      <q-btn v-if="checkPermissions('PartyCreate')" color="green" to="/party/add/" label="New party" class="add-btn"
         icon-right="add" />
     </div>
 
     <q-table title="Accounts" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
-        <q-input class="full-width" dense debounce="500" v-model="searchQuery" placeholder="Search">
+        <q-input class="full-width search-input" dense debounce="500" v-model="searchQuery" placeholder="Search">
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -22,9 +22,9 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('PartyModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm"
+          <q-btn v-if="checkPermissions('PartyModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn"
             style="font-size: 12px" label="edit" :to="`/party/${props.row.id}/`" />
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm" style="font-size: 12px" label="Account"
+          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Account"
             :to="`/parties/account/${props.row.id}/`" />
         </q-td>
       </template>
@@ -33,8 +33,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
