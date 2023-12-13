@@ -2,8 +2,8 @@
   <q-card class="q-ma-md q-px-md">
     <q-card-section>
       <div>
-        <div class="row q-gutter-x-md items-center">
-          <div class="q-mx-md">
+        <div class="flex gap-8 items-center">
+          <div>
             <DateRangePicker
               v-model:startDate="fields.start_date"
               v-model:endDate="fields.end_date"
@@ -15,12 +15,14 @@
             color="red"
             icon="close"
             @click="fields = { start_date: null, end_date: null }"
+            class="f-reset-btn"
           ></q-btn>
           <q-btn
             :disable="!fields.start_date && !fields.end_date ? true : false"
             color="green"
             label="fetch"
             @click="fetchData"
+            class="f-submit-btn"
           ></q-btn>
         </div>
       </div>

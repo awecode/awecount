@@ -1,27 +1,20 @@
 <template>
     <div class="q-pa-md">
         <div class="row q-gutter-x-md justify-end">
-            <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" />
+            <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" class="export-btn"/>
         </div>
         <q-table title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id"
             @request="onRequest" v-model:pagination="pagination" class="q-mt-md" :rows-per-page-options="[20]">
             <template v-slot:top>
-                <div class="search-bar">
-                    <!-- <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
-                        <template v-slot:append>
-                            <q-icon name="search" />
-                        </template>
-                    </q-input> -->
-                    <div class="flex items-end q-gutter-md">
-                        <DatePicker label="Date" v-model="date"></DatePicker>
-                        <q-btn color="green" label="Filter" class="q-mr-md" @click="onUpdate"></q-btn>
-                    </div>
-                </div>
+              <div class="flex items-end gap-6">
+                  <DatePicker label="Date" v-model="date"></DatePicker>
+                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onUpdate"></q-btn>
+              </div>
             </template>
             <template v-slot:body-cell-party="props">
                 <q-td :props="props">
                     <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none"
-                        class="text-blue" :to="`/parties/account/${props.row.party_id}/`">{{ props.row.party_name
+                        class="text-blue l-view-btn" :to="`/parties/account/${props.row.party_id}/`">{{ props.row.party_name
                         }}</router-link>
                     <span v-else>{{ props.row.party_name }}</span>
                 </q-td>
@@ -32,7 +25,6 @@
 
 
 <script>
-import checkPermissions from 'src/composables/checkPermissions'
 import { withQuery } from 'ufo'
 export default {
     setup() {
@@ -41,7 +33,7 @@ export default {
         const reportData = ref([])
         const loading = ref(false)
         const pagination = ref(null)
-        // const 
+        // const
         const date = ref(route.query.date || null)
         const metaData = {
             title: 'Customer Ageing Report | Awecount',
@@ -146,21 +138,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.search-bar {
-    display: flex;
-    width: 100%;
-    column-gap: 20px;
-}
-
-.search-bar-wrapper {
-    width: 100%;
-}
-
-.filterbtn {
-    width: min(300px, 90%);
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-</style>
