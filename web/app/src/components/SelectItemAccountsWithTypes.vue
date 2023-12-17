@@ -18,6 +18,19 @@
                 </div>
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
+            <div v-else-if="type === 'category'" class="flex items-center h-full">
+              <div v-if="usedInCategoryForm" class="flex gap-2">
+                <q-icon name="info" size="sm" color="grey-7"></q-icon>
+                <div class="text-grey-7">Category's {{ props.label }} Account will be used for the Item</div>
+              </div>
+              <div v-else>
+                asjgashga
+              </div>
+            </div>
+            <div v-else-if="type === 'creation'" class="flex items-center gap-2 h-full">
+              <q-icon name="info" size="sm" color="grey-7"></q-icon>
+              <div class="text-grey-7">You will be able to choose options while creating item.</div>
+            </div>
             <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
                 v-model="modalValue" disable :options="props.options" :error="!!error" :error-message="error"></q-select>
         </div>
@@ -73,14 +86,16 @@ const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
 const account_types = props.usedInCategoryForm ? [
-    { value: 'global', label: 'Use Global Account' },
-    { value: 'dedicated', label: 'Use a Dedicated Account' },
-    { value: 'existing', label: 'Use an Existing Account' },
+    { value: 'dedicated', label: 'Use a dedicated account for the item' },
+    { value: 'global', label: 'Use global account' },
+    { value: 'category', label: 'Use category-specific account' },
+    { value: 'existing', label: 'Choose an existing account' },
+    { value: 'creation', label: 'Choose during item creation' },
 ] : [
-    { value: 'global', label: 'Use Global Account' },
-    { value: 'category', label: "Use Category's Account" },
-    { value: 'dedicated', label: 'Use a Dedicated Account' },
-    { value: 'existing', label: 'Use an Existing Account' },
+    { value: 'dedicated', label: 'Use a dedicated account' },
+    { value: 'global', label: 'Use global account' },
+    { value: 'category', label: "Use category's account" },
+    { value: 'existing', label: 'Use an existing account' },
 ]
 const getOptionCollection = (collections, name) => {
     if (collections) {
