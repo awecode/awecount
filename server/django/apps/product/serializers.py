@@ -139,9 +139,11 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
             ("item_sdiscount_allowed_account_type", "discount_allowed_account"),
         ]
 
+        id_required = ["global", "existing"]
+
         for obj in type_account_tuples:
             if attrs.get(obj[0]):
-                if attrs.get(obj[0]).lower() == "existing" and not attrs.get(obj[1]):
+                if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
                     raise ValidationError({obj[1]: ["This field cannot be empty."]})
         # if attrs.get("items_sales_account_type").lower() == "existing" and not attrs.get("sales_account"):
         #     raise ValidationError({"sales_account": ["This field cannot be empty."]})
