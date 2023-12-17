@@ -9,7 +9,7 @@
                 v-model="modalValue" :options="props.options"
                 :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
-                <div v-if="dedicatedAccount" class="w-full">
+                <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
                   <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
                 </div>
                 <div v-else class="flex gap-2 items-center">
@@ -27,7 +27,7 @@
                 asjgashga
               </div>
             </div>
-            <div v-else-if="type === 'creation'" class="flex items-center gap-2 h-full">
+            <div v-else-if="type === 'creation' && usedInCategoryForm" class="flex items-center gap-2 h-full">
               <q-icon name="info" size="sm" color="grey-7"></q-icon>
               <div class="text-grey-7">You will be able to choose options while creating item.</div>
             </div>
