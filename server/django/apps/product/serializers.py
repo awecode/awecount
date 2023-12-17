@@ -145,17 +145,6 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
             if attrs.get(obj[0]):
                 if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
                     raise ValidationError({obj[1]: ["This field cannot be empty."]})
-        # if attrs.get("items_sales_account_type").lower() == "existing" and not attrs.get("sales_account"):
-        #     raise ValidationError({"sales_account": ["This field cannot be empty."]})
-        
-        # if attrs.get("items_purchase_account_type").lower() == "existing" and not attrs.get("purchase_account"):
-        #     raise ValidationError({"purchase_account": ["This field cannot be empty."]})
-        
-        # if attrs.get("items_discount_received_account_type").lower() == "existing" and not attrs.get("discount_received_account"):
-        #     raise ValidationError({"discount_received_account": ["This field cannot be empty."]})
-        
-        # if attrs.get("items_discount_allowed_account_type").lower() == "existing" and not attrs.get("discount_allowed_account"):
-        #     raise ValidationError({"discount_allowed_account": ["This field cannot be empty."]})
         
         return attrs
 
