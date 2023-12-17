@@ -72,7 +72,7 @@ class Brand(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=50, null=True, blank=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     default_unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     default_tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, related_name='categories',
@@ -526,6 +526,7 @@ class Item(models.Model):
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
+    voucher_no = models.PositiveBigIntegerField(null=True, blank=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL, related_name='items')
     description = models.TextField(blank=True, null=True)
@@ -623,6 +624,22 @@ class Item(models.Model):
             discount_allowed_account_name = 'Discount Allowed - ' + self.name
             purchase_account_name = self.name + ' (Purchase)'
             discount_received_account_name = 'Discount Received - ' + self.name
+            if not self.voucher_no:
+                self.voucher_no = self.pk
+            if self.can_be_sold:
+                name = self.name + ' (Sales)'
+                if not self.sales_account_id:
+                    account = Account(name=name, company=self.company)
+                    if self.category and self.category.sales_account_category_id:
+                        account.category = self.category.sales_account_category
+                    else:
+                        account.add_category('Sales')
+                    account.suggest_code(self)
+                    account.save()
+                    self.sales_account = account
+                # elif self.sales_account.name != name:
+                #     self.sales_account.name = name
+                #     self.sales_account.save()
 
             # Update dedicated accounts
             if self.dedicated_sales_account:

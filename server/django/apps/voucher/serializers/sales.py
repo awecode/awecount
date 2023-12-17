@@ -14,11 +14,13 @@ from awecount.libs.serializers import StatusReversionMixin
 from ..models import PurchaseVoucherRow, SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
 
 
-class SalesDiscountSerializer(serializers.ModelSerializer):
+class SalesDiscountSerializer(serializers.ModelSerializer):    
     class Meta:
         model = SalesDiscount
         exclude = ('company',)
-        ordering = ['-id']
+        extra_kwargs = {
+            "name": {"required": True}
+        }
 
 
 class SalesDiscountMinSerializer(serializers.ModelSerializer):
@@ -200,6 +202,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -302,7 +305,6 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 row.pop('id')
             row["sold_items"] = sold_items
             SalesVoucherRow.objects.create(voucher=instance, **row)
-
         if challans:
             instance.challans.clear()
             instance.challans.add(*challans)
@@ -398,6 +400,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
     fiscal_year = serializers.StringRelatedField()
     invoice_footer_text = serializers.ReadOnlyField(source="company.sales_setting.invoice_footer_text")
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def get_payment_receipts(self, obj):
         receipts = []

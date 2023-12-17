@@ -7,6 +7,7 @@ class CompanySerializer(serializers.ModelSerializer):
     request = None
     logo_url = serializers.SerializerMethodField()
     current_fiscal_year = serializers.ReadOnlyField(source='current_fiscal_year.name')
+    current_fiscal_year_id = serializers.ReadOnlyField(source='current_fiscal_year.id')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

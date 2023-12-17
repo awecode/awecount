@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.exceptions import APIException
 from apps.ledger.models.base import AccountClosing
 
@@ -70,17 +71,18 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
 
 class PartySerializer(serializers.ModelSerializer):
-    representative = PartyRepresentativeSerializer(many=True)
+    representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
-        for representative in representatives:
-            if representative.get('name') or representative.get('phone') or representative.get(
-                    'email') or representative.get(
-                'position'):
-                representative['party_id'] = instance.id
-                PartyRepresentative.objects.create(**representative)
+        if representatives:
+            for representative in representatives:
+                if representative.get('name') or representative.get('phone') or representative.get(
+                        'email') or representative.get(
+                    'position'):
+                    representative['party_id'] = instance.id
+                    PartyRepresentative.objects.create(**representative)
         return instance
 
     def update(self, instance, validated_data):
@@ -124,6 +126,11 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         exclude = ('company',)
 
+    def create(self, validated_data):
+        try:
+            return super().create(validated_data)
+        except IntegrityError:
+            raise ValidationError({"code": ["Category with this code already exists."]})
 
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:

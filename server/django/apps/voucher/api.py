@@ -316,6 +316,24 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     #                 return Response({"msg": "FIFO inconsistency error.", "type": "fifo_inconsistency"}, status=422)
     #     return super().create(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        voucher_no = request.data.get('voucher_no', None)
+        party_id = request.data.get('party', None)
+        fiscal_year =  request.company.current_fiscal_year
+        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exists():
+            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        voucher_no = request.data.get('voucher_no', None)
+        party_id = request.data.get('party', None)
+        fiscal_year =  request.company.current_fiscal_year
+        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exclude(id=obj.id).exists():
+            raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
+        return super().update(request, *args, **kwargs)
+
+
     def get_create_defaults(self, request=None):
         return PurchaseCreateSettingSerializer(request.company.purchase_setting).data
 
@@ -498,6 +516,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return CreditNoteListSerializer
+        if self.action == 'retrieve':
+            return CreditNoteDetailSerializer
         return CreditNoteCreateSerializer
 
     def get_defaults(self, request=None):
@@ -628,6 +648,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return DebitNoteListSerializer
+        elif self.action == 'retrieve':
+            return DebitNoteDetailSerializer
         return DebitNoteCreateSerializer
 
     def get_defaults(self, request=None):
@@ -1158,7 +1180,7 @@ class PaymentReceiptViewSet(CRULViewSet):
         if not (start_date and end_date):
             raise ValidationError('Start and end dates are required.')
 
-        qs = PaymentReceipt.objects.filter(status__in=['Cleared']).filter(date__gte=start_date, date__lte=end_date)
+        qs = PaymentReceipt.objects.filter(company=request.company, status__in=['Cleared']).filter(date__gte=start_date, date__lte=end_date)
 
         excluded_ids = qs.annotate(cnt=Count('invoices__sales_agent_id', distinct=True)).filter(cnt__gte=2).values_list(
             'id',
@@ -1277,13 +1299,13 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     
 
     @action(detail=True, methods=['POST'])
-    def mark_as_paid(self, request, pk):
+    def resolve(self, request, pk):
         challan = self.get_object()
-        try:
-            challan.mark_as_resolved(status='Paid')
+        if challan.status == "Issued":
+            challan.status = "Resolved"
+            challan.save()
             return Response({})
-        except Exception as e:
-            raise APIException(str(e))
+        return Response({"message": "Cannot resolve the challan."})
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
@@ -1312,6 +1334,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         challan = get_object_or_404(voucher_no=request.query_params.get('invoice_no'),
                                                       fiscal_year_id=request.query_params.get('fiscal_year'),
                                                       queryset=qs)
+        if challan.sales.exclude(status__iexact="cancelled").exists():
+            return Response({'detail': 'Challan has already been used.'}, status=400)
         if challan.status != 'Issued':
             return Response({'detail': 'The challan can not be used.'}, status=400)
         return Response(
@@ -1396,6 +1420,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         voucher_number = request.query_params.get('invoice_no')
         fiscal_year=request.query_params.get('fiscal_year')
         instance = get_object_or_404(voucher_no=voucher_number, fiscal_year_id=fiscal_year, queryset=qs)
+        if instance.purchases.exclude(status__iexact='cancelled').exists():
+            return Response({'detail': 'The purchase order has already been used.'}, status=400)
+
         if instance.status == 'Cancelled':
             return Response({'detail': 'The selected purchase order can not be used.'}, status=400)
         return Response(PurchaseOrderCreateSerializer(instance).data)
