@@ -45,9 +45,11 @@ class Unit(models.Model):
 # )
 
 LEDGER_TYPES = [
-    ('dedicated', 'Use Dedicated Ledger'),
-    ('global', 'Use Global Ledger'),
-    ('existing', 'Use Existing Ledger'),
+    ('dedicated', 'Use dedicated account'),
+    ('global', 'Use global account'),
+    ('existing', 'Use existing account'),
+    ('category', 'Use category specific account'),
+    ('create', 'Choose during item creation'),
 ]
 
 ITEM_TYPES = (
