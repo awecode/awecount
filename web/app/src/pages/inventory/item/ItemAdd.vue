@@ -92,22 +92,22 @@
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
                 v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" />
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" />
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
@@ -169,13 +169,12 @@ import InventoryCategoryForm from 'src/pages/inventory/product/category/Inventor
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-const emit = defineEmits([])
-const accountTypeValues = ref({
-  sales_account: 'dedicated',
-  purchase_account: 'dedicated',
-  discount_allowed_account: 'dedicated',
-  discount_received_account: 'dedicated'
-})
+// const accountTypeValues = ref({
+//   sales_account: 'dedicated',
+//   purchase_account: 'dedicated',
+//   discount_allowed_account: 'dedicated',
+//   discount_received_account: 'dedicated'
+// })
 
 const toggleExpenses = (type) => {
   fields.value[type] = false
@@ -189,6 +188,10 @@ const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(en
   getDefaults: true,
   successRoute: '/items/list/',
 })
+fields.value.sales_account_type = 'dedicated'
+fields.value.purchase_account_type = 'dedicated'
+fields.value.discount_allowed_account_type = 'dedicated'
+fields.value.discount_received_account_type = 'dedicated'
 useMeta(() => {
   return {
     title: (isEdit?.value ? 'Items Update' : 'Items Add') + ' | Awecount',
@@ -327,7 +330,7 @@ const setCategory = () => {
         fields.value.discount_allowed_account = selected.dedicated_discount_allowed_account
       }
       else if (selected.items_discount_allowed_account_type === "global") {
-        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
+        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Expenses")
       }
       else if (selected.items_discount_allowed_account_type === "existing") {
         fields.value.discount_allowed_account = selected.discount_allowed_account
@@ -344,7 +347,7 @@ const setCategory = () => {
         fields.value.discount_received_account = selected.dedicated_discount_received_account
       }
       else if (selected.items_discount_received_account_type === "global") {
-        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_accounts, "Discount Income")
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Income")
       }
       else if (selected.items_discount_received_account_type === "existing") {
         fields.value.discount_received_account = selected.discount_received_account

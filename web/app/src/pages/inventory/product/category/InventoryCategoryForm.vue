@@ -71,27 +71,27 @@
             <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
               v-model:typeModelValue="fields.items_sales_account_type" label="Sales"
               :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_sales_account" />
+              :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" />
           </div>
           <div>
             <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
               v-model:typeModelValue="fields.items_purchase_account_type" label="Purchase"
               :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_purchase_account" />
+              :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" />
           </div>
           <div>
             <select-item-accounts-with-types v-if="fields.can_be_sold"
               v-model:modelValue="fields.discount_allowed_account"
               v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
               :options="formDefaults.collections?.accounts" :itemName="fields.name"
-              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_allowed_account" />
+              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_allowed_account" :error="errors.discount_allowed_account" />
           </div>
           <div class="col-12 col-lg-6">
             <select-item-accounts-with-types v-if="fields.can_be_purchased"
               v-model:modelValue="fields.discount_received_account"
               v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
               :options="formDefaults.collections?.accounts" :itemName="fields.name"
-              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_received_account" />
+              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_received_account" :error="errors.discount_received_account" />
           </div>
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">
@@ -152,6 +152,10 @@ const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(en
   getDefaults: true,
   successRoute: '/inventory-category/list/',
 })
+fields.value.sales_account_type = 'dedicated'
+fields.value.purchase_account_type = 'dedicated'
+fields.value.discount_allowed_account_type = 'dedicated'
+fields.value.discount_received_account_type = 'dedicated'
 useMeta(() => {
   return {
     title:
