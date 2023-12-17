@@ -112,7 +112,7 @@ const getOptionCollection = (collections, name) => {
 }
 watch(() => type.value, (newValue) => {
     if (newValue === "category") {
-        if (props.activeCategory) {
+        if (props.activeCategory && !props.usedInCategoryForm) {
             const selected = props.inventory_categories.find(item => {
                 if (item.id === props.activeCategory) {
                     return item;
@@ -121,10 +121,9 @@ watch(() => type.value, (newValue) => {
             const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
             if (selected) modalValue.value = selected[fieldType]
             else modalValue.value = null
-        }else modalValue.value = null
+        } else modalValue.value = null
     }
     else if (newValue === "global") {
-        // const globalAccountName = props.label
         modalValue.value = getOptionCollection(props.options, globalAccountName[props.label])
     }
     else {
