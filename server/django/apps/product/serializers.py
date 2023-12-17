@@ -126,6 +126,8 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
         
         if attrs.get("items_discount_allowed_account_type").lower() == "existing" and not attrs.get("discount_allowed_account"):
             raise ValidationError({"discount_allowed_account": ["This field cannot be empty."]})
+        
+        return attrs
 
     class Meta:
         model = InventoryCategory
