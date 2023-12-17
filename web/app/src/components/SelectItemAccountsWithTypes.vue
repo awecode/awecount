@@ -7,7 +7,7 @@
         <div>
             <n-auto-complete v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
                 v-model="modalValue" :options="props.options"
-                :modal-component="checkPermissions('AccountCreate') ? AccountForm : null" :error="error" />
+                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
                   <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
@@ -19,12 +19,13 @@
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
             <div v-else-if="type === 'category'" class="flex items-center h-full">
-              <div v-if="usedInCategoryForm" class="flex gap-2">
+              <div v-if="usedInCategoryForm" class="flex gap-2 items-end">
                 <q-icon name="info" size="sm" color="grey-7"></q-icon>
                 <div class="text-grey-7">Category's {{ props.label }} Account will be used for the Item</div>
               </div>
-              <div v-else>
-                asjgashga
+              <div v-else class="w-full">
+                <q-select :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
+                v-model="modalValue" disable :options="props.options" :error="!!error" :error-message="error"></q-select>
               </div>
             </div>
             <div v-else-if="type === 'creation' && usedInCategoryForm" class="flex items-center gap-2 h-full">
@@ -39,7 +40,7 @@
 
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
-import AccountForm from 'src/pages/bank/account/AccountForm.vue'
+import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
 const props = defineProps({
     label: {
         type: String,
@@ -120,7 +121,7 @@ watch(() => type.value, (newValue) => {
             const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
             if (selected) modalValue.value = selected[fieldType]
             else modalValue.value = null
-        } else modalValue.value = null
+        }else modalValue.value = null
     }
     else if (newValue === "global") {
         // const globalAccountName = props.label

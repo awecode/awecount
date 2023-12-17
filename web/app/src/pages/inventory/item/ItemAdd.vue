@@ -290,37 +290,41 @@ const setCategory = () => {
       selected.hasOwnProperty("items_sales_account_type")
     ) {
       if (selected.items_sales_account_type === "category") {
-        fields.value.sales_account = selected.sales_account
+        fields.value.sales_account = selected.dedicated_sales_account
       }
       else if (selected.items_sales_account_type === "global") {
-        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
       }
       else if (selected.items_sales_account_type === "existing") {
-        fields.value.sales_account = fields.value.sales_account = selected.sales_account
+        fields.value.sales_account = selected.sales_account
       }
-      fields.value.sales_account_type = selected.items_sales_account_type
+      if (selected.items_sales_account_type !== "creation") {
+        fields.value.sales_account_type = selected.items_sales_account_type
+      }
     }
     if (
       !fields.value.purchase_account && !fields.value.items_purchase_account_type &&
       selected.hasOwnProperty("items_purchase_account_type")
     ) {
       if (selected.items_purchase_account_type === "category") {
-        fields.value.purchase_account = selected.purchase_account
+        fields.value.purchase_account = selected.dedicated_purchase_account
       }
       else if (selected.items_purchase_account_type === "global") {
-        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.purchase_accounts, "Purchase Account")
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
       }
       else if (selected.items_purchase_account_type === "existing") {
         fields.value.purchase_account = selected.purchase_account
       }
-      fields.value.purchase_account_type = selected.items_purchase_account_type
+      if (selected.items_purchase_account_type !== "creation") {
+        fields.value.purchase_account_type = selected.items_purchase_account_type
+      }
     }
     if (
       !fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type &&
       selected.hasOwnProperty("items_discount_allowed_account_type")
     ) {
       if (selected.items_discount_allowed_account_type === "category") {
-        fields.value.discount_allowed_account = selected.discount_allowed_account
+        fields.value.discount_allowed_account = selected.dedicated_discount_allowed_account
       }
       else if (selected.items_discount_allowed_account_type === "global") {
         fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.discount_allowed_accounts, "Discount Expenses")
@@ -328,14 +332,16 @@ const setCategory = () => {
       else if (selected.items_discount_allowed_account_type === "existing") {
         fields.value.discount_allowed_account = selected.discount_allowed_account
       }
-      fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
+      if (selected.items_discount_allowed_account_type !== "creation") {
+        fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
+      }
     }
     if (
       !fields.value.discount_received_account && !fields.value.items_discount_received_account_type &&
       selected.hasOwnProperty("items_discount_received_account_type")
     ) {
       if (selected.items_discount_received_account_type === "category") {
-        fields.value.discount_received_account = selected.discount_received_account
+        fields.value.discount_received_account = selected.dedicated_discount_received_account
       }
       else if (selected.items_discount_received_account_type === "global") {
         fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.discount_received_accounts, "Discount Income")
@@ -343,7 +349,9 @@ const setCategory = () => {
       else if (selected.items_discount_received_account_type === "existing") {
         fields.value.discount_received_account = selected.discount_received_account
       }
-      fields.value.discount_received_account_type = selected.items_discount_received_account_type
+      if (selected.items_discount_received_account_type !== "creation") {
+        fields.value.discount_received_account_type = selected.items_discount_received_account_type
+      }
     }
 
     if (selected.hasOwnProperty("track_inventory")) {
@@ -366,25 +374,25 @@ const setCategory = () => {
     }
   }
 }
-watch(() => accountTypeValues.value.sales_account, (newValue) => {
-  // debugger
-  if (accountTypeValues.value.sales_account === "category") {
-    if (fields.value.category) {
-      const selected = formDefaults.value.collections.inventory_categories.find(item => {
-        if (item.id === fields.value.category) {
-          return item;
-        }
-      })
-      if (selected) fields.value.sales_account = selected.sales_account
-    }
-  }
-  else if (accountTypeValues.value.sales_account === "global") {
-    fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
-  }
-  else {
-    fields.value.sales_account = null
-  }
-})
+// watch(() => accountTypeValues.value.sales_account, (newValue) => {
+//   // debugger
+//   if (accountTypeValues.value.sales_account === "category") {
+//     if (fields.value.category) {
+//       const selected = formDefaults.value.collections.inventory_categories.find(item => {
+//         if (item.id === fields.value.category) {
+//           return item;
+//         }
+//       })
+//       if (selected) fields.value.sales_account = selected.sales_account
+//     }
+//   }
+//   else if (accountTypeValues.value.sales_account === "global") {
+//     fields.value.sales_account = getOptionCollection(formDefaults.value.collections.sales_accounts, "Sales Account")
+//   }
+//   else {
+//     fields.value.sales_account = null
+//   }
+// })
 </script>
 
 <style scoped>
