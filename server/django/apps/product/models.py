@@ -49,7 +49,7 @@ LEDGER_TYPES = [
     ('global', 'Use global account'),
     ('existing', 'Use existing account'),
     ('category', 'Use category specific account'),
-    ('create', 'Choose during item creation'),
+    ('creation', 'Choose during item creation'),
 ]
 
 ITEM_TYPES = (
