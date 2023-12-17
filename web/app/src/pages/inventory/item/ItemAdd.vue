@@ -90,22 +90,22 @@
             <div class="mt-4">
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
-                :options="formDefaults.collections?.sales_accounts" :itemName="fields.name"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
                 v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
-                :options="formDefaults.collections?.purchase_accounts" :itemName="fields.name"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" />
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
-                :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
-                :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" />
             </div>
