@@ -42,6 +42,8 @@ class ItemSerializer(serializers.ModelSerializer):
             if attrs.get(obj[0]):
                 if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
                     raise ValidationError({obj[1]: ["This field cannot be empty."]})
+                
+        return attrs
 
     @staticmethod
     def base64_check(validated_data, attributes):
