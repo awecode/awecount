@@ -27,6 +27,21 @@ class ItemSerializer(serializers.ModelSerializer):
         if attr and attr<0:
             raise ValidationError("Selling price cannot be negative.")
         return attr
+    
+    def validate(self, attrs):
+        type_account_tuples = [
+            ("sales_account_type", "sales_account"),
+            ("purchase_account_type", "purchase_account"),
+            ("discount_received_account_type", "discount_received_account"),
+            ("discount_allowed_account_type", "discount_allowed_account"),
+        ]
+
+        id_required = ["global", "category", "existing"]
+
+        for obj in type_account_tuples:
+            if attrs.get(obj[0]):
+                if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
+                    raise ValidationError({obj[1]: ["This field cannot be empty."]})
 
     @staticmethod
     def base64_check(validated_data, attributes):
