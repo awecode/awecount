@@ -115,17 +115,27 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
     default_tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate(self, attrs):
-        if attrs.get("items_sales_account_type").lower() == "existing" and not attrs.get("sales_account"):
-            raise ValidationError({"sales_account": ["This field cannot be empty."]})
+        type_account_tuples = [
+            ("items_sales_account_type", "sales_account"),
+            ("items_purchase_account_type", "purchase_account"),
+            ("item_discount_received_account_type", "discount_received_account"),
+            ("item_sdiscount_allowed_account_type", "discount_allowed_account"),
+        ]
+
+        for obj in type_account_tuples:
+            if attrs.get(obj[0]).lower() == "existing" and not attrs.get(obj[1]):
+                raise ValidationError({obj[1]: ["This field cannot be empty."]})
+        # if attrs.get("items_sales_account_type").lower() == "existing" and not attrs.get("sales_account"):
+        #     raise ValidationError({"sales_account": ["This field cannot be empty."]})
         
-        if attrs.get("items_purchase_account_type").lower() == "existing" and not attrs.get("purchase_account"):
-            raise ValidationError({"purchase_account": ["This field cannot be empty."]})
+        # if attrs.get("items_purchase_account_type").lower() == "existing" and not attrs.get("purchase_account"):
+        #     raise ValidationError({"purchase_account": ["This field cannot be empty."]})
         
-        if attrs.get("items_discount_received_account_type").lower() == "existing" and not attrs.get("discount_received_account"):
-            raise ValidationError({"discount_received_account": ["This field cannot be empty."]})
+        # if attrs.get("items_discount_received_account_type").lower() == "existing" and not attrs.get("discount_received_account"):
+        #     raise ValidationError({"discount_received_account": ["This field cannot be empty."]})
         
-        if attrs.get("items_discount_allowed_account_type").lower() == "existing" and not attrs.get("discount_allowed_account"):
-            raise ValidationError({"discount_allowed_account": ["This field cannot be empty."]})
+        # if attrs.get("items_discount_allowed_account_type").lower() == "existing" and not attrs.get("discount_allowed_account"):
+        #     raise ValidationError({"discount_allowed_account": ["This field cannot be empty."]})
         
         return attrs
 

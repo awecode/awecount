@@ -249,7 +249,9 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
     serializer_class = InventoryCategorySerializer
     collections = (
         ('units', Unit, UnitSerializer),
-        ('accounts', Account, AccountMinSerializer),
+        # ('accounts', Account, AccountMinSerializer),
+        ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
+        ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer),
