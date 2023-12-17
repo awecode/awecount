@@ -628,20 +628,21 @@ class Item(models.Model):
             discount_received_account_name = 'Discount Received - ' + self.name
             if not self.voucher_no:
                 self.voucher_no = self.pk
-            if self.can_be_sold:
-                name = self.name + ' (Sales)'
-                if not self.sales_account_id:
-                    account = Account(name=name, company=self.company)
-                    if self.category and self.category.sales_account_category_id:
-                        account.category = self.category.sales_account_category
-                    else:
-                        account.add_category('Sales')
-                    account.suggest_code(self)
-                    account.save()
-                    self.sales_account = account
-                # elif self.sales_account.name != name:
-                #     self.sales_account.name = name
-                #     self.sales_account.save()
+            # if self.can_be_sold:
+            #     name = self.name + ' (Sales)'
+            #     if not self.sales_account_id:
+            #         account = Account(name=name, company=self.company)
+            #         if self.category and self.category.sales_account_category_id:
+            #             account.category = self.category.sales_account_category
+            #         else:
+            #             account.add_category('Sales')
+            #         account.suggest_code(self)
+            #         account.save()
+            #         self.sales_account = account
+            #         self.dedicated_sales_account = account
+            #     # elif self.sales_account.name != name:
+            #     #     self.sales_account.name = name
+            #     #     self.sales_account.save()
 
             # Update dedicated accounts
             if self.dedicated_sales_account:
