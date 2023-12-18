@@ -170,6 +170,10 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     class Meta:
         model = SalesVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
