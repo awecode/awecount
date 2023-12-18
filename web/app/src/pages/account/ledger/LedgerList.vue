@@ -84,6 +84,7 @@ export default {
     const metaData = {
       title: 'Accounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const newColumn = [
       {
@@ -134,7 +135,30 @@ export default {
         align: 'center',
       },
     ]
-    return { ...useList(endpoint), newColumn, checkPermissions }
+    const listData = useList(endpoint)
+    watch(() => route.query, () => {
+      if (route.path === '/account/') {
+        // console.log(filters)
+
+        let cleanedFilterValues = Object.fromEntries(
+          Object.entries(route.query).map(([k, v]) => {
+            if (v === 'true') {
+              return [k, true]
+            } else if (v === 'false') {
+              return [k, false]
+            } else if (k === 'search' && typeof v === 'string') {
+              // TODO: added as an temproary solution need to confirm with dipesh sir
+              return [k, isNaN(v) ? v : parseFloat(v)]
+            }
+            return [k, isNaN(v) ? v : parseFloat(v)]
+          })
+        )
+        listData.filters.value = cleanedFilterValues
+      }
+    }, {
+      deep: true
+    })
+    return { ...listData, newColumn, checkPermissions }
   },
 }
 </script>
