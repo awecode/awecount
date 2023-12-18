@@ -234,6 +234,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):

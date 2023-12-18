@@ -52,6 +52,8 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
         return data
     
     def validate_rows(self, rows):
