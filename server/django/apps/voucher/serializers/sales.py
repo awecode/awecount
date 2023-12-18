@@ -160,6 +160,13 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
 
+    def validate_discount(self, value):
+        if not value:
+                value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount cannot be negative.")
+        return value
+
     class Meta:
         model = SalesVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
@@ -249,6 +256,13 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #     raise ValidationError(
                 #         {'date': ['Invoice with later date already exists!']},
                 #     )
+
+    def validate_rows(self, rows):
+        for row in rows:
+            row_serializer = SalesVoucherRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
+        return rows
 
     def validate_due_date(self, due_date):
         if due_date:

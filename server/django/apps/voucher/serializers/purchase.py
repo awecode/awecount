@@ -24,6 +24,13 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
 
+    def validate_discount(self, value):
+        if not value:
+                value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount can't be negative.")
+        return value
+
     class Meta:
         model = PurchaseVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
@@ -57,7 +64,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 {'party': ['Party is required for a credit issue.']},
             )
         
-        if data.get("discount") < 0:
+        if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
         return data
@@ -74,10 +81,11 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
 
     def validate_rows(self, rows):
         for row in rows:
-            if not row.get("discount"):
-                row["discount"] = 0
             if row.get("discount_type") == "":
                 row["discount_type"] = None
+            row_serializer = PurchaseVoucherRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
         return rows
     
     # def validate_discount_type(self, attr):

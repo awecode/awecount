@@ -366,7 +366,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
-    voucher_no = models.CharField(max_length=25)
+    voucher_no = models.CharField(max_length=25, null=True, blank=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
