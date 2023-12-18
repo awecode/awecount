@@ -25,6 +25,7 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
     unit_id = serializers.IntegerField(required=False)
 
     def validate_discount(self, value):
+        print(f"Validating discount: {value}")
         if not value:
                 value = 0
         elif value < 0:
@@ -36,7 +37,7 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
 
         extra_kwargs = {
-            "discount": {"allow_null": True, "required": False},
+            "discount": {"required": False, "allow_null": True},
             "discount_type": {"allow_null": True, "required": False}
         }
 

@@ -16,7 +16,7 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
 
     def validate_discount(self, value):
         if not value:
-                value = 0
+            value = 0
         elif value < 0:
             raise serializers.ValidationError("Discount can't be negative.")
         return value
@@ -24,6 +24,10 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
     class Meta:
         model = CreditNoteRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
