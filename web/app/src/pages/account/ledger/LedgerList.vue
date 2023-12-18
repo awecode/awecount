@@ -138,17 +138,17 @@ export default {
     const listData = useList(endpoint)
     watch(() => route.query, () => {
       if (route.path === '/account/') {
-        // console.log(filters)
-
+        const queryParams = {...route.query}
+        if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
+          listData.searchQuery.value = queryParams.search
+        } else listData.searchQuery.value = null
+        delete queryParams.search
         let cleanedFilterValues = Object.fromEntries(
-          Object.entries(route.query).map(([k, v]) => {
+          Object.entries(queryParams).map(([k, v]) => {
             if (v === 'true') {
               return [k, true]
             } else if (v === 'false') {
               return [k, false]
-            } else if (k === 'search' && typeof v === 'string') {
-              // TODO: added as an temproary solution need to confirm with dipesh sir
-              return [k, isNaN(v) ? v : parseFloat(v)]
             }
             return [k, isNaN(v) ? v : parseFloat(v)]
           })
