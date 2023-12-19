@@ -317,15 +317,15 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             for row in items_list:
                 challan_items.append(row)
                 if row[0] not in voucher_items_ids:
-                    raise serializers.ValidationError({"rows": "You cannot delete an item."})
+                    raise serializers.ValidationError({"detail": "You cannot delete an item."})
                 desired_tuple = next((tup for tup in voucher_items if tup[0] == row[0]), None)
                 if not desired_tuple:
-                    raise serializers.ValidationError({"rows": "You cannot add an item."})
+                    raise serializers.ValidationError({"detail": "You cannot add an item."})
                 if desired_tuple[1] != row[1]:
-                    raise serializers.ValidationError({"rows": "The quantity cannot be changed."})
+                    raise serializers.ValidationError({"detail": "The quantity cannot be changed."})
         
         if len(challan_items) < len(voucher_items):
-            raise serializers.ValidationError({"rows": "You cannot add an item."})
+            raise serializers.ValidationError({"detail": "You cannot add an item."})
         return
         
     def create(self, validated_data):
