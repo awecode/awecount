@@ -22,7 +22,7 @@
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
               " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" />
+            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -58,7 +58,7 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
+          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan">Add Row</q-btn>
         </div>
       </div>
     </q-card>
@@ -151,6 +151,10 @@ export default {
     showRateQuantity: {
       type: Boolean,
       default: () => true,
+    },
+    hasChallan: {
+      type: Boolean,
+      default: () => false
     }
   },
   emits: ['update:modelValue', 'deleteRowErr', 'updateVoucherMeta'],
