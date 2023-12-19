@@ -96,8 +96,8 @@
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">
               <q-checkbox v-model="fields.use_account_subcategory" :label="fields.id
-                ? 'Use Account Subcategory?'
-                : 'Create Account Subcategory?'
+                ? 'Use corresponding category in chart of accounts for ledger accounts of items in this category?'
+                : 'Create corresponding category in chart of accounts for ledger accounts of items in this category?'
                 " :error-message="errors.indirect_expense" :error="!!errors.indirect_expense" />
             </div>
           </div>
