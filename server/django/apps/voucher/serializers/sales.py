@@ -247,6 +247,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             )
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
+
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
@@ -302,10 +303,36 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             return sold_items
+    
+    def check_challans(self, challans, rows):
+        voucher_items = []
+        challan_items = []
+        for row in rows:
+            voucher_items.append((row.get("item_id"), row.get("quantity")))
+        
+        voucher_items_ids = [x[0] for x in voucher_items]
+        for challan in challans:
+            rows = challan.rows.values_list("item_id", "quantity")
+            items_list = [x for x in rows]
+            for row in items_list:
+                challan_items.append(row)
+                if row[0] not in voucher_items_ids:
+                    raise serializers.ValidationError({"rows": "You cannot delete an item."})
+                desired_tuple = next((tup for tup in voucher_items if tup[0] == row[0]), None)
+                if not desired_tuple:
+                    raise serializers.ValidationError({"rows": "You cannot add an item."})
+                if desired_tuple[1] != row[1]:
+                    raise serializers.ValidationError({"rows": "The quantity cannot be changed."})
+        
+        if len(challan_items) < len(voucher_items):
+            raise serializers.ValidationError({"rows": "You cannot add an item."})
+        return
         
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
+        if challans:
+            self.check_challans(challans, rows_data)
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
