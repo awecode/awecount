@@ -13,6 +13,11 @@ export default function useGeneratePdf(
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
   let taxIndex : number | null = null
+  const formatRowDescription = (str:string) => {
+    const dataArray = str.split('\n')
+    const htmlArray = dataArray.map((data) => `<div>${data}</div>`)
+    return htmlArray.join(' ')
+  }
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
@@ -32,9 +37,9 @@ export default function useGeneratePdf(
       }</th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${
         row.item_name
-      }<br><span style="font-size: 12px; ${
+      }<br><div style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
-        }" class="text-grey-8; padding:5px">(${row.description})</span></th>
+        }" class="text-grey-8; padding:5px">${row.description ? formatRowDescription(row.description) :''}</div></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
         hideRowQuantity ? 'display: none' : ''
       }">${
