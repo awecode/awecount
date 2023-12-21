@@ -78,11 +78,19 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         remaining_items = items.exclude(id=item.id)
 
         has_inventory_account = False
+        has_purchase_account = False
+        has_sales_account = False
+        has_discount_received_account = False
+        has_discount_allowed_account = False
         # item_account_ids = [x.name for x in items]
-        inventory_account_ids = items.values_list("account", flat=True)
-        inventory_accounts = InventoryAccount.objects.filter(id__in=inventory_account_ids)
-        if inventory_accounts.exists():
+        # inventory_account_ids = items.values_list("account", flat=True)
+        # inventory_accounts = InventoryAccount.objects.filter(id__in=inventory_account_ids)
+        if items.values_list("account").exists():
             has_inventory_account = True
+        if items.values_list("purchase_account").exists():
+            has_purchase_account = True
+        if items.values_list("sales_account").exists():
+            has_sales_account = True
 
         # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
         # if has_inventory_account:
@@ -104,13 +112,23 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         debit_note_rows = DebitNoteRow.objects.filter(item__id__in=item_ids)
         debit_note_rows.update(item=item)
 
+   
+
+        if has_inventory_account or has_purchase_account or has_sales_account:
+            if has_inventory_account:
+                if not item.track_inventory:
+                    item.track_inventory = True
+            if has_purchase_account:
+                if not item.can_be_purchased:
+                    item.can_be_purchased = True
+            if has_sales_account:
+                if not item.can_be_sold:
+                    item.can_be_sold = True
+            item.save()
+
+
         # Update Inventory account for inventory transactions
-        # import ipdb; ipdb.set_trace()
-        # import ipdb; ipdb.set_trace()
         if has_inventory_account:
-            if not item.track_inventory:
-                item.track_inventory = True
-                item.save()
             # inventory_account = InventoryAccount.objects.get(company=item.company, code=item.code, name=item.name)
             inventory_account = item.account
 
@@ -149,6 +167,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 item.update_opening_balance(item.company.current_fiscal_year)
 
             remaining_items_inventory_accounts.delete()
+        if has_purchase_account:
+            if not item.can_be_purchased:
+                item.can_be_purchased = True
+                item.save()
+        
+        if has_sales_account:
+            if not item.can_be_sold:
+                item.can_be_sold = True
+                item.save()
 
         # Delete other items
         remaining_items.delete()
