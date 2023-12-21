@@ -207,6 +207,16 @@ class ItemListSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'category', 'cost_price', 'selling_price', 'code')
 
 
+class ItemListMinSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return f'{obj.name} ({obj.code})'
+    class Meta:
+        model = Item
+        fields = ["id", "name", "code"]
+
+
 class JournalEntrySerializer(serializers.ModelSerializer):
     dr_amount = serializers.SerializerMethodField()
     cr_amount = serializers.SerializerMethodField()
