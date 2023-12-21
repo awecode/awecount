@@ -14,9 +14,20 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False, allow_null=True)
 
+    def validate_discount(self, value):
+        if not value:
+            value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount can't be negative.")
+        return value
+
     class Meta:
         model = CreditNoteRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -48,7 +59,18 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
         return data
+    
+    def validate_rows(self, rows):
+        for row in rows:
+            # if row.get("discount_type") == "":
+            #     row["discount_type"] = None
+            row_serializer = CreditNoteRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
+        return rows
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
