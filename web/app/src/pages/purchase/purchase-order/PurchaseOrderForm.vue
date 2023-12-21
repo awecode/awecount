@@ -13,11 +13,11 @@
                     <div class="row q-col-gutter-md">
                         <div class="col-md-6 col-12">
                             <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties"
-                                label="Party" :error="errors?.party ? errors?.party : null"
+                                label="Party *" :error="errors?.party ? errors?.party : null"
                                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
                             <div></div>
                         </div>
-                        <DatePicker class="col-md-6 col-12" label="Date*" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
+                        <DatePicker class="col-md-6 col-12" label="Date *" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
                     </div>
                 </q-card-section>
             </q-card>
@@ -30,7 +30,7 @@
                     :error="!!errors?.remarks" :error-message="errors?.remarks" />
             </div>
             <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-                <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${1}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+                <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     color="blue" label="Issue Purchase Voucher" :loading="loading" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
@@ -58,7 +58,7 @@
         </q-dialog>
     </q-form>
 </template>
-  
+
 <script>
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
@@ -169,4 +169,3 @@ export default {
     // onmounted: () => console.log('mounted'),
 }
 </script>
-  

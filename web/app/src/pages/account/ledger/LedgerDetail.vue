@@ -9,20 +9,12 @@
         <!-- <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9" title="Code">{{
         fields.code
       }}</span> -->
-        <span
-          v-if="fields?.category_name"
-          class="q-ml-md text-h6 text-grey-7"
-          title="Category"
-          >({{ fields?.category_name || '-' }})</span
-        >
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7" title="Category">({{ fields?.category_name
+          || '-' }})</span>
       </div>
       <div>
-        <span
-          v-if="fields?.code"
-          class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block"
-          title="Code"
-          >[Code: {{ fields.code }}]</span
-        >
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block" title="Code">[Code: {{
+          fields?.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
@@ -52,89 +44,17 @@
       </q-card> -->
       <div class="mt-8 px-2">
         <div class="row q-col-gutter-md print-hide">
-          <DateRangePicker
-            v-model:startDate="startDate"
-            v-model:endDate="endDate"
-            :hide-btns="true"
-          />
+          <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
-            <q-btn
-              @click.prevent="resetDate"
-              square
-              color="red"
-              icon="fa-solid fa-xmark"
-              class="q-mt-md"
-            />
+            <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />
           </div>
           <div>
-            <q-btn
-              @click.prevent="filter"
-              color="primary"
-              label="FILTER"
-              class="q-mt-md"
-            />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
           </div>
         </div>
       </div>
-      <transaction-table :fields="fields">
-        <div
-          class="row justify-end items-center"
-          v-if="fields.transactions?.pagination.pages > 0"
-        >
-          <div class="q-mr-sm">
-            <span>
-              {{ (fields.transactions?.pagination.page - 1) * 20 + 1 }} -
-              {{
-                fields.transactions?.pagination.page ===
-                fields.transactions?.pagination.pages
-                  ? fields.transactions?.pagination.count
-                  : (fields.transactions?.pagination.page - 1) * 20 +
-                    fields.transactions?.pagination.size
-              }}
-            </span>
-            <span
-              >&nbsp; of &nbsp;{{ fields.transactions?.pagination.count }}</span
-            >
-          </div>
-          <q-btn
-            icon="first_page"
-            dense
-            flat
-            round
-            :disable="fields.transactions?.pagination.page === 1"
-            @click="() => goToPage(1)"
-          ></q-btn>
-          <q-btn
-            icon="chevron_left"
-            dense
-            flat
-            round
-            :disable="fields.transactions?.pagination.page === 1"
-            @click="() => goToPage(fields.transactions?.pagination.page - 1)"
-          ></q-btn>
-          <q-btn
-            icon="chevron_right"
-            dense
-            flat
-            round
-            :disable="
-              fields.transactions?.pagination.page ===
-              fields.transactions?.pagination.pages
-            "
-            @click="() => goToPage(fields.transactions?.pagination.page + 1)"
-          ></q-btn>
-          <q-btn
-            icon="last_page"
-            dense
-            flat
-            round
-            :disable="
-              fields.transactions?.pagination.page ===
-              fields.transactions?.pagination.pages
-            "
-            @click="() => goToPage(fields.transactions?.pagination.pages)"
-          ></q-btn>
-        </div>
+      <transaction-table :fields="fields" v-if="fields?.transactions.results?.length > 0">
+        <TablePagination :fields="fields"></TablePagination>
       </transaction-table>
     </div>
   </div>
@@ -147,23 +67,40 @@ const fields = ref(null)
 const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
-const metaData = {
-  title: 'Account Detail | Awecount',
-}
-useMeta(metaData)
 watch(
-  route,
-  () => {
-    if (route.params.id) {
-      const url = `/v1/accounts/${route.params.id}/transactions/?`
-      const updatedEndpoint = withQuery(url, route.query)
-      endpoint.value = updatedEndpoint
+  () => route.query,
+  (newQuery, oldQuery) => {
+    if (route.params.id && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      if (oldQuery.page !== newQuery.page) {
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.pageSize !== newQuery.pageSize) {
+        newQuery.page = undefined
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
+        newQuery.page = undefined
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
     }
   },
   {
     deep: true,
   }
 )
+watch(
+  () => route.params.id,
+  (newid, oldid) => {
+    if (newid && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      const updatedEndpoint = withQuery(url, {})
+      endpoint.value = updatedEndpoint
+    }
+  })
 const startDate = ref(null)
 const endDate = ref(null)
 const resetDate = () => {
@@ -187,16 +124,18 @@ const filter = () => {
 const endpoint = ref(
   withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query)
 )
-const getData = () =>
+const getData = () => {
+  if (fields?.value?.transactions.results) fields.value.transactions.results = null
   useApi(endpoint.value).then((data) => {
     fields.value = data
+    const metaData = {
+      title: `${fields.value.name} | Account Detail | Awecount`,
+    }
+    useMeta(metaData)
   })
+}
 getData()
 watch(endpoint, () => getData())
-function goToPage(pageNo) {
-  let newQuery = Object.assign({ ...route.query }, { page: pageNo })
-  router.push(withQuery(`/account/${route.params.id}/view/`, newQuery))
-}
 onMounted(() => {
   if (route.query.start_date) {
     startDate.value = route.query.start_date
@@ -213,6 +152,7 @@ hr {
 }
 
 @media print {
+
   td,
   th {
     padding: 5px;
@@ -220,6 +160,7 @@ hr {
     font-size: 12px !important;
     height: inherit !important;
   }
+
   .q-card {
     box-shadow: none;
   }

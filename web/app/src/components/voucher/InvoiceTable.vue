@@ -30,14 +30,14 @@
             <div class="row q-pb-md">
               <div class="col-6 text-right">Sub Total</div>
               <div class="col-6 q-pl-md">
-                {{ Math.round(totalDataComputed.subTotal * 100) / 100 }}
+                {{ $nf(totalDataComputed.subTotal) }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-right">Discount</div>
               <div class="col-6 q-pl-md">
                 <!-- {{ totalDataComputed.discount }} -->
-                {{ Math.round(totalDataComputed.discount * 100) / 100 }}
+                {{ $nf(totalDataComputed.discount) }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
@@ -45,13 +45,13 @@
                 {{ totalDataComputed.taxName }}
               </div>
               <div class="col-6 q-pl-md">
-                {{ Math.round(totalDataComputed.totalTax * 100) / 100 }}
+                {{ $nf(totalDataComputed.totalTax) }}
               </div>
             </div>
             <div class="row q-pb-md">
               <div class="col-6 text-right">Total</div>
               <div class="col-6 q-pl-md">
-                {{ Math.round(totalDataComputed.total * 100) / 100 }}
+                {{ $nf(totalDataComputed.total) }}
               </div>
             </div>
           </div>
@@ -211,10 +211,10 @@ export default {
             props.discountOptions
           ) || 0
         if (data.sameScheme !== false && item.taxObj) {
-          if (data.sameScheme === null && item.taxObj) {
+          if (data.sameScheme === null && item.taxObj && item.taxObj.rate != 0) {
             data.sameScheme = item.taxObj.id
             data.taxObj = item.taxObj
-          } else if (data.sameScheme === item.taxObj?.id) {
+          } else if (data.sameScheme === item.taxObj?.id || item.taxObj.rate === 0) {
           } else data.sameScheme = false
         }
         let mainDiscountAmount =

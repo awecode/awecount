@@ -29,7 +29,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn color="blue" class="q-py-none q-px-md font-size-sm" style="font-size: 12px" label="Tax Account"
-            :to="`/taxes/account/${props.row.id}/`" />
+            :to="`/taxes/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-bankwallet_name="props">

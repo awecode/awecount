@@ -1,5 +1,5 @@
 <template>
-  <h6 class="q-mt-lg q-mb-md">Contact Person</h6>
+  <h6 class="q-mt-lg q-mb-md" v-if="modalValue && modalValue.length > 0">Contact Person</h6>
   <q-card
     v-for="(representative, index) in modalValue"
     :key="index"

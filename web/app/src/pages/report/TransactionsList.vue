@@ -56,7 +56,7 @@
             <template v-slot:body-cell-account="props">
                 <q-td :props="props">
                     <RouterLink style="text-decoration: none" target="_blank"
-                        :to="`/account/?has_balance=true&category=${props.row.account_id}`" class="text-blue-6">{{
+                        :to="`/account/?has_balance=true&category=${props.row.category_id}`" class="text-blue-6">{{
                             props.row.account_name
                         }}
                     </RouterLink>

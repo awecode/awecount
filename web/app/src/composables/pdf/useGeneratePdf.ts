@@ -12,43 +12,57 @@ export default function useGeneratePdf(
   const loginStore: Record<string, string | number | object> = useLoginStore()
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
+  let taxIndex : number | null = null
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        if (isTaxSame !== false) {
-          if (index === 0) isTaxSame = row.tax_scheme.id
+        if (isTaxSame !== false && row.tax_scheme.rate != 0) {
+          if (isTaxSame === null) {
+            isTaxSame = row.tax_scheme.id
+            taxIndex = index
+          }
           else {
             if (isTaxSame !== row.tax_scheme.id) isTaxSame = false
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;">${index + 1}</th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;">${row.item_name}<br><span style="font-size: 12px; ${
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${
+        index + 1
+      }</th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${
+        row.item_name
+      }<br><span style="font-size: 12px; ${
           row.description ? '' : 'display: none;'
         }" class="text-grey-8; padding:5px">(${row.description})</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
+        hideRowQuantity ? 'display: none' : ''
+      }">${
           row.quantity +
           `<span style="font-size:13px; color: gray; margin-left: 2px;">${row.unit_name}</span>`
         }</span></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"><span style="${hideRowQuantity ? 'display: none' : ''}">${
-          row.rate
-        }</span></th>
-      <th style="text-align: right; font-weight: 400; padding:5px;">${row.quantity * row.rate}</th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
+        hideRowQuantity ? 'display: none' : ''
+      }">${row.rate}</span></th>
+      <th style="text-align: right; font-weight: 400; padding:5px;">${
+        formatNumberWithComma((row.quantity * row.rate), 2)
+      }</th>
     </tr>
     `
       }
-    ) 
+    )
     sameTax = isTaxSame
     return htmlRows.join('')
   }
   const emptyRows = () => {
     const number = 5 - invoiceInfo.rows.length
     return `<tr style="color: grey; font-weight: 400;">
-      <th style="width: 20px; height:${80 * number}px; padding: 10px 0; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
-      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: LightGrey solid 1px;"></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
-      <th style="text-align: left; font-weight: 400; padding:5px; border-right: LightGrey solid 1px;"></th>
+      <th style="width: 20px; height:${
+        80 * number
+      }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: right; font-weight: 400; padding:5px;"></th>
     </tr>
     `
@@ -59,13 +73,14 @@ export default function useGeneratePdf(
     if (compayInfo.invoice_template === 2) {
       header = `
     <div>
-    <div style="display:flex; align-items: center; position: relative; margin-bottom: 10px;">
+    <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 60px; max-width: 200px; object-fit: contain; ${
-    compayInfo.logo_url ? '' : 'display: none;'
-  }"/>
-    <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%);">${
+    }" alt="Compony Logo" style="height: 110px; object-fit: contain; position: absolute ${
+        compayInfo.logo_url ? '' : 'display: none;'
+      }"/>
+  <div style="text-align:center; padding-left: 10px;">
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
       compayInfo.name
     } ${
         compayInfo.organization_type === 'private_limited'
@@ -76,37 +91,37 @@ export default function useGeneratePdf(
           ? 'Ltd.'
           : ''
       }</h1>
-    </div> 
-    <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
-    <div>
       <div>${compayInfo.address}</div>
-      <div>Tax Reg. No. <strong>${
-        compayInfo.tax_registration_number
-      }</strong></div>
-    </div>
-
+      <div style="font-size: 14px;">
+          <div style="display: flex; justify-content: center; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Email: ${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span>Tel: ${compayInfo.contact_no}</span>
+        </div>
+      </div>
+      </div>
+  </div>
+    </div> 
+    <div style="display: flex; justify-content: end; font-family: Arial, Helvetica, sans-serif;">
     <div
       style="
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         align-items: flex-end;
       "
     >
-      <div style="display: flex; align-items: center">
+      <div style="font-size: 14px;" >VAT No. <strong>${
+        compayInfo.tax_registration_number
+      }</strong></div>
+      <div style="display: ${compayInfo.website ? 'flex': 'none'}; align-items: center">
         <img
-          src="/icons/telephone-fill.svg"
-          alt="Email"
+          src="/icons/web-fill.svg"
+          alt="Website"
           style="margin-right: 10px; width: 14px"
-        />
-        <span style="color: skyblue">${compayInfo.contact_no}</span>
-      </div>
-      <div style="display: flex; align-items: center">
-        <img
-          src="/icons/envelope-fill.svg"
-          alt="Call"
-          style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
+        /><span style="color: skyblue">${compayInfo.website}</span>
       </div>
     </div>
   </div>
@@ -161,7 +176,7 @@ export default function useGeneratePdf(
           src="/icons/envelope-fill.svg"
           alt="Call"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">${compayInfo.email}</span>
+        /><span style="color: skyblue">${compayInfo.emails && compayInfo.emails.length ?  compayInfo.emails.join(',&nbsp;') : ''}</span>
       </div>
     </div>
   </div>
@@ -170,13 +185,13 @@ export default function useGeneratePdf(
     html = html.concat(header)
   }
   const table = `<div>
-  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey;">
+  <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
     <tr style="color: grey; font-weight: 500;">
-      <th style="width: 40px; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">SN</th>
-      <th style="width: 40%; text-align:left; padding-left:20px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Particular</th>
-      <th style="text-align: left; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Qty</th>
-      <th style="text-align: left; padding:5px; border-right: LightGrey solid 1px; border-bottom: LightGrey solid 1px;">Rate</th>
-      <th style="text-align: right; padding:5px; border-bottom: LightGrey solid 1px;">Amount(${
+      <th style="width: 40px; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">SN</th>
+      <th style="width: 40%; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Particular</th>
+      <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Qty</th>
+      <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Rate</th>
+      <th style="text-align: right; padding:5px; border-bottom: #b9b9b9 solid 2px;">Amount(${
         compayInfo.config_template === 'np' ? 'NRS' : 'N/A'
       })</th>
 
@@ -184,39 +199,39 @@ export default function useGeneratePdf(
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
     ${compayInfo.invoice_template === 2 ? `${emptyRows()}` : ''}
   </table>
-  <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 1px solid LightGrey; border-top: none; padding: 20px; padding-top: 0;">
+  <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
       ${
         voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount)}</div>`
+      <div>${numberToText(invoiceInfo.total_amount, 2)}</div>`
       }
       </div>
-      <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 1px solid LightGrey; margin-top: 15px;">
-        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid LightGrey;">
+      <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            invoiceInfo.voucher_meta.sub_total
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
-        }; justify-content: space-between; margin: 5px 0; border-bottom: 1px solid LightGrey;">
+        }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            invoiceInfo.voucher_meta.discount
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
           }</span>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid LightGrey;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? `${invoiceInfo.rows[0].tax_scheme.name} ` +
-                `${invoiceInfo.rows[0].tax_scheme.rate} %`
+              ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
+                `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`)
               : 'TAX'
-          }</span> <span>${invoiceInfo.meta_tax}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            invoiceInfo.voucher_meta.grand_total
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
           }</span>
         </div>
       </div>
@@ -413,7 +428,7 @@ ${table}
       </div>
     </div>
   </div>
-  <hr style="border: 0.5px solid lightgrey; height: 0; margin: 20px 0" />
+  <hr style="border: 0.5px solid #b9b9b9; height: 0; margin: 20px 0" />
   ${table}
   <div style="font-size: 14px; text-align: right">
     <div style="margin-bottom: 5px">

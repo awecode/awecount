@@ -24,7 +24,7 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*"></q-input>
+                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" ></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
@@ -35,7 +35,7 @@
                 </q-card>
               </q-dialog>
             </div>
-            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date"></date-picker>
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error="!!errors.date" :error-message="errors.date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -44,7 +44,7 @@
                 ? 'col-4'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors.discount_type"
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
                   :error-message="errors.discount_type" :options="formDefaults.collections
                     ? staticOptions.discount_types.concat(
                       formDefaults?.collections.discounts
@@ -63,7 +63,7 @@
               </div>
             </div>
             <div class="row col-md-6 col-12">
-              <q-select v-model="fields.mode" label="Mode" class="col-12" :error-message="errors.mode"
+              <q-select v-model="fields.mode" label="Mode *" class="col-12" :error-message="errors.mode"
                 :error="!!errors.mode" :options="staticOptions.modes.concat(
                   formDefaults.collections?.bank_accounts
                 )
@@ -125,16 +125,18 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const store = useLoginStore()
     const endpoint = '/v1/credit-note/'
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: store.companyInfo?.current_fiscal_year_id || null,
     })
     const $q = useQuasar()
     const staticOptions = {

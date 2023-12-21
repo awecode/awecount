@@ -16,9 +16,9 @@
               :error="!!errors.code" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input class="col-12 col-md-6" v-model="fields.cost_price" label="Cost Price" type="number"
-              :error-message="errors.cost_price" :error="!!errors.cost_pcoderice" />
-            <q-input v-model="fields.selling_price" label="Selling Price" class="col-12 col-md-6"
+            <q-input class="col-12 col-md-6" v-model.number="fields.cost_price" label="Cost Price" type="number"
+              :error-message="errors.cost_price" :error="!!errors.cost_price" />
+            <q-input v-model.number="fields.selling_price" label="Selling Price" class="col-12 col-md-6"
               :error-message="errors.selling_price" :error="!!errors.selling_price" type="number" />
           </div>
           <div class="row q-col-gutter-md">

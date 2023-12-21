@@ -1242,6 +1242,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Account Closing'],
         },
       },
+      {
+        path: 'item-merge/',
+        component: () => import('src/pages/settings/ItemMerge.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Item Merge'],
+        },
+      },
     ],
   },
   {

@@ -11,7 +11,7 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12 row no-wrap">
-              <span style="flex-grow: 1"><q-input v-model="fields.invoice_nos" label="For Invoice(s)" disable
+              <span style="flex-grow: 1"><q-input v-model="fields.invoice_nos" label="For Invoice(s) *" disable
                   :error-message="errors.invoices" :error="!!errors.invoices">
                 </q-input></span>
               <span class="row items-center q-ml-sm" style="flex-grow: 0; flex-shrink: 0"><q-btn icon="add" color="blue"
@@ -27,13 +27,13 @@
               :error="!!errors.mode" :options="['Cheque', 'Cash', 'Bank Deposit']"></q-select>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input class="col-md-6 col-12" label="Amount" type="number" v-model="fields.amount"
+            <q-input class="col-md-6 col-12" label="Amount *" type="number" v-model="fields.amount"
               :error-message="errors.amount" :error="!!errors.amount"></q-input>
             <q-input class="col-md-6 col-12" label="TDS Amount" v-model="fields.tds_amount"
               :error-message="errors.tds_amount" :error="!!errors.tds_amount" type="number"></q-input>
           </div>
           <div v-if="fields.mode === 'Bank Deposit' || fields.mode === 'Cheque'" class="row q-col-gutter-md">
-            <q-select class="col-md-6 col-12" label="Bank Accounts" v-model="fields.bank_account"
+            <q-select class="col-md-6 col-12" label="Bank Account *" v-model="fields.bank_account"
               :error-message="errors.bank_account" :error="!!errors.bank_account"
               :options="formDefaults.collections?.bank_accounts" option-value="id" option-label="name" map-options
               emit-value></q-select>
@@ -41,7 +41,7 @@
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">
               <DatePicker class="col-md-6 col-12" label="Cheque Date" v-model="fields.cheque_date"></DatePicker>
-              <q-input class="col-md-6 col-12" label="Cheque Number" v-model="fields.cheque_number"
+              <q-input class="col-md-6 col-12" label="Cheque Number *" v-model="fields.cheque_number"
                 :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number"></q-input>
             </div>
             <q-input v-model="fields.drawee_bank" label="Drawee Bank" type="textarea" autogrow class="col-12 col-md-10"
@@ -69,7 +69,7 @@
 
         <q-card-section class="q-mb-md">
           <div class="q-mt-lg q-mx-md">
-            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12">
+            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12" autofocus type="number">
             </q-input>
             <div class="q-mx-0 q-my-md">
               <q-checkbox v-model="invoiceFormData.tax_deducted_at_source" label="Tax Deducted at Source?" />
@@ -168,10 +168,10 @@ export default {
                 position: 'top-right',
               })
             }
-            if (err.status === 400 && err.data?.detail === 'Invoice has already been paid for!') {
+            if (err.status === 400 && err.data?.detail) {
               $q.notify({
                 color: 'red-6',
-                message: 'Invoice has already been paid for!',
+                message: err.data?.detail,
                 icon: 'report_problem',
                 position: 'top-right',
               })
@@ -190,7 +190,7 @@ export default {
     formData.fields.value.cheque_date = formData.today
     formData.fields.value.mode = 'Cheque'
     formData.fields.value.invoices = []
-    // formData.fields.value.invoice_nos invoice_nos.value 
+    // formData.fields.value.invoice_nos invoice_nos.value
     formData.fields.value.tds_amount = 0
     formData.fields.value.cleared = false
     return {

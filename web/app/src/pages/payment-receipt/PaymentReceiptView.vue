@@ -80,7 +80,7 @@
               </span>
               {{ fields.party_name }}, {{ fields.party_address }}</span>
             <span><span class="text-weight-medium text-grey-8">Amount: </span> NRS
-              {{ Math.round(fields.amount * 100) / 100 }}</span>
+              {{ $nf(fields.amount) }}</span>
             <span><span class="text-weight-medium text-grey-8">In words: </span>
               {{ numberToText(fields.amount) }}</span>
           </div>
@@ -201,7 +201,7 @@
               </div>
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">Amount</span>
-                <span>Rs. {{ Math.round(fields.amount * 100) / 100 }}</span>
+                <span>Rs. {{ $nf(fields.amount) }}</span>
               </div>
             </div>
             <div class="row q-gutter-y-md">
@@ -212,7 +212,7 @@
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium text-grey-8 col-6">
                   TDS Amount</span>
-                <span>{{ Math.round(fields.tds_amount * 100) / 100 }}</span>
+                <span>{{ $nf(fields.tds_amount) }}</span>
               </div>
             </div>
           </div>
@@ -231,9 +231,9 @@
               :to="`/payment-receipt/${fields.id}/`" />
             <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
-              icon="mdi-check-all" />
+              icon="mdi-check-all" :loading="isLoading" />
             <q-btn v-if="checkPermissions('PaymentReceiptCancel')" @click.prevent="() => (isDeleteOpen = true)"
-              color="red" label="cancel" icon="cancel" />
+              color="red" label="cancel" icon="cancel" :loading="isLoading" />
           </span>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end print-hide">
@@ -304,7 +304,9 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
+    const isLoading = ref(false)
     const submitChangeStatus = (id: number, status: string) => {
+      isLoading.value = true
       let endpoint = ''
       let body: null | object = null
       if (status === 'Cleared') {
@@ -323,8 +325,12 @@ export default {
           if (status === 'Cancelled') {
             isDeleteOpen.value = false
           }
+          isLoading.value = false
         })
-        .catch((err) => console.log('err from the api', err))
+        .catch((err) => {
+          console.log('err from the api', err)
+          isLoading.value = false
+        })
     }
     const getDate = computed(() => {
       return DateConverter.getRepresentation(fields.value?.date, 'bs')
@@ -344,7 +350,8 @@ export default {
       numberToText,
       getDate,
       loginStore,
-      checkPermissions
+      checkPermissions,
+      isLoading
     }
   },
   created() {

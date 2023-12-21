@@ -14,8 +14,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
               <q-btn color="blue" @click="importChallanModal = true" label="Import challan(s)"></q-btn>
-              <div v-if="fields.invoices">
-                <q-input dense v-model="voucherArray" disable label="Import challan(s)"></q-input>
+              <div v-if="fields.challans && fields.challans.length > 0">
+                <q-input dense v-model="fields.challan_numbers" disable label="Import challan(s)"></q-input>
               </div>
               <q-dialog v-model="importChallanModal">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -26,12 +26,12 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*" autofocus type="number"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
-                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields)"></q-btn>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -55,7 +55,10 @@
               </div>
               <div></div>
             </div>
-            <DateInputDisabled :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
+            <date-picker v-if="formDefaults.options?.enable_sales_date_edit" label="Invoice Date*"
+              v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
+              :error-message="errors?.date"></date-picker>
+            <DateInputDisabled v-else :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
             <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
               :error="!!errors.address"></q-input>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
@@ -66,7 +69,7 @@
                 ? 'col-6'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount*"
+                <n-auto-complete v-model="fields.discount_type" label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null" :options="formDefaults.collections
                     ? staticOptions.discount_types.concat(
                       formDefaults?.collections.discounts
@@ -95,7 +98,7 @@
           </div>
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode"
+            <q-select v-model="fields.mode" label="Mode *" class="col-12 col-md-6" :error-message="errors.mode"
               :error="!!errors.mode" :options="staticOptions.modes.concat(
                 formDefaults.collections?.bank_accounts
               )
@@ -172,10 +175,9 @@ export default {
     // TODO: temp
     const $q = useQuasar()
     const importChallanModal = ref(false)
-    const voucherArray = ref([])
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: loginStore.companyInfo.current_fiscal_year_id || null
     })
     const staticOptions = {
       discount_types: discount_types,
@@ -225,14 +227,14 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
 
-    const fetchInvoice = async (fields, voucherArray) => {
+    const fetchInvoice = async (fields) => {
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
       ) {
         if (
-          fields.invoices &&
-          fields.invoices.includes(referenceFormData.value.invoice_no)
+          fields.challans &&
+          fields.challans.includes(referenceFormData.value.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -248,7 +250,7 @@ export default {
           )
             .then((data) => {
               const response = { ...data }
-              if (fields.invoices) {
+              if (fields.challans) {
                 if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
                   $q.notify({
                     color: 'red-6',
@@ -258,9 +260,11 @@ export default {
                   })
                   return
                 }
-                fields.invoices.push(data.id)
-              } else fields.invoices = [data.id]
-              voucherArray.push(response.voucher_no)
+                fields.challans.push(data.id)
+              } else fields.challans = [data.id]
+              if (fields.challan_numbers) {
+                fields.challan_numbers.push(response.voucher_no)
+              } else fields.challan_numbers = [response.voucher_no]
               const removeArr = [
                 'id',
                 'date',
@@ -366,7 +370,6 @@ export default {
       referenceFormData,
       fetchInvoice,
       checkPermissions,
-      voucherArray,
       loginStore,
       onPartyChange,
       // TODO: temp
