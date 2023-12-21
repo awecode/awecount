@@ -126,22 +126,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     item.can_be_sold = True
             item.save()
 
+        remaining_items_inventory_accounts = None
 
         # Update Inventory account for inventory transactions
         if has_inventory_account:
-            # inventory_account = InventoryAccount.objects.get(company=item.company, code=item.code, name=item.name)
             inventory_account = item.account
 
             remaining_items_inventory_account_ids = remaining_items.values_list("account", flat=True)
             remaining_items_inventory_accounts = InventoryAccount.objects.filter(id__in=remaining_items_inventory_account_ids)
             inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
-
-            # for tr in inventory_transactions:
-            #     if tr.dr_amount:
-            #         inventory_account.current_balance += tr.dr_amount
-            #     elif tr.cr_amount:
-            #         inventory_account.current_balance -= tr.cr_amount
-            #     inventory_account.save()
 
             inventory_transaction_ids = inventory_transactions.values_list("id", flat=True)
             journal_entries = JournalEntry.objects.filter(transactions__in=inventory_transaction_ids)
@@ -159,14 +152,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 inventory_account.opening_balance += obj.opening_balance
                 inventory_account.save()
             
-            # remaining_items_transaction_ids = remaining_items.values_list("transactions")
-            # journal_ids = item.account.transactions.values_list("journal_entry", flat=True)
-            # journals = JournalEntry.objects.filter(id__in=journal_ids)
-            
             if inventory_account.opening_balance != current_opening_balance:
                 item.update_opening_balance(item.company.current_fiscal_year)
-
-            remaining_items_inventory_accounts.delete()
         
         if has_purchase_account:
 
@@ -187,12 +174,6 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_discount_received_account_ids = remaining_items.values_list("discount_received_account", flat=True)
             remaining_items_discount_received_accounts = Account.objects.filter(id__in=remaining_items_discount_received_account_ids)
             discount_received_transactions = Ledger.objects.filter(account__in=remaining_items_discount_received_accounts)
-            # discount_received_transactions_ids = discount_received_transactions.values_list("id", flat=True)
-            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
-            # for je in journals:
-            #     if je.content_type.name == "purchase voucher row":
-            #         je.transactions.all().delete()
-            #         je.delete()
             discount_received_transactions.update(account=discount_received_account)            
             remaining_items_discount_received_accounts.delete()
 
@@ -215,16 +196,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_discount_allowed_account_ids = remaining_items.values_list("discount_allowed_account", flat=True)
             remaining_items_discount_allowed_accounts = Account.objects.filter(id__in=remaining_items_discount_allowed_account_ids)
             discount_allowed_transactions = Ledger.objects.filter(account__in=remaining_items_discount_allowed_accounts)
-            # discount_allowed_transactions_ids = discount_allowed_transactions.values_list("id", flat=True)
-            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
-            # for je in journals:
-            #     if je.content_type.name == "purchase voucher row":
-            #         je.transactions.all().delete()
-            #         je.delete()
             discount_allowed_transactions.update(account=discount_allowed_account)            
             remaining_items_discount_allowed_accounts.delete()
 
         # Delete other items
+        if remaining_items_inventory_accounts:
+            remaining_items_inventory_accounts.delete()
         remaining_items.delete()
         return False
     
