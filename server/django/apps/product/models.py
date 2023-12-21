@@ -655,6 +655,7 @@ class Item(models.Model):
                         account.suggest_code(self)
                         account.save()
                         self.dedicated_sales_account = account
+                        self.sales_account_type = "Dedicated"
                     else:
                         account = self.dedicated_sales_account
                     self.sales_account = account
@@ -669,6 +670,7 @@ class Item(models.Model):
                         discount_allowed_account.suggest_code(self)
                         discount_allowed_account.save()
                         self.dedicated_discount_allowed_account = discount_allowed_account
+                        self.discount_allowed_account_type = "Dedicated"
                     else:
                         discount_allowed_account = self.dedicated_discount_allowed_account
                     self.discount_allowed_account = discount_allowed_account
@@ -684,6 +686,7 @@ class Item(models.Model):
                         account.suggest_code(self)
                         account.save()
                         self.dedicated_purchase_account = account
+                        self.purchase_account_type = "Dedicated"
                     else:
                         account = self.dedicated_purchase_account
                     self.purchase_account = account
@@ -699,6 +702,7 @@ class Item(models.Model):
                         discount_received_acc.suggest_code(self)
                         discount_received_acc.save()
                         self.dedicated_discount_received_account = discount_received_acc
+                        self.discount_received_account_type = "Dedicated"
                     else:
                         discount_received_acc = self.dedicated_discount_received_account
                     self.discount_received_account = discount_received_acc

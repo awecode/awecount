@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
 from rest_framework.exceptions import ValidationError
 
-from apps.ledger.models import Account, Category as AccountCategory
+from apps.ledger.models import Account, Category as AccountCategory, Transaction as Ledger, JournalEntry as AccountJournal
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
@@ -167,15 +167,62 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 item.update_opening_balance(item.company.current_fiscal_year)
 
             remaining_items_inventory_accounts.delete()
-        if has_purchase_account:
-            if not item.can_be_purchased:
-                item.can_be_purchased = True
-                item.save()
         
+        if has_purchase_account:
+
+            purchase_account = item.purchase_account
+            remaining_items_purchase_account_ids = remaining_items.values_list("purchase_account", flat=True)
+            remaining_items_purchase_accounts = Account.objects.filter(id__in=remaining_items_purchase_account_ids)
+            purchase_transactions = Ledger.objects.filter(account__in=remaining_items_purchase_accounts)
+            purchase_transactions_ids = purchase_transactions.values_list("id", flat=True)
+            journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
+            for je in journals:
+                if je.content_type.name == "purchase voucher row":
+                    je.transactions.all().delete()
+                    je.delete()
+            purchase_transactions.update(account=purchase_account)            
+            remaining_items_purchase_accounts.delete()
+
+            discount_received_account = item.discount_received_account
+            remaining_items_discount_received_account_ids = remaining_items.values_list("discount_received_account", flat=True)
+            remaining_items_discount_received_accounts = Account.objects.filter(id__in=remaining_items_discount_received_account_ids)
+            discount_received_transactions = Ledger.objects.filter(account__in=remaining_items_discount_received_accounts)
+            # discount_received_transactions_ids = discount_received_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "purchase voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
+            discount_received_transactions.update(account=discount_received_account)            
+            remaining_items_discount_received_accounts.delete()
+
         if has_sales_account:
-            if not item.can_be_sold:
-                item.can_be_sold = True
-                item.save()
+
+            sales_account = item.sales_account
+            remaining_items_sales_account_ids = remaining_items.values_list("sales_account", flat=True)
+            remaining_items_sales_accounts = Account.objects.filter(id__in=remaining_items_sales_account_ids)
+            sales_transactions = Ledger.objects.filter(account__in=remaining_items_sales_accounts)
+            sales_transactions_ids = sales_transactions.values_list("id", flat=True)
+            journals = AccountJournal.objects.filter(transactions__in=sales_transactions_ids)
+            for je in journals:
+                if je.content_type.name == "sales voucher row":
+                    je.transactions.all().delete()
+                    je.delete()
+            sales_transactions.update(account=sales_account)            
+            remaining_items_sales_accounts.delete()
+
+            discount_allowed_account = item.discount_allowed_account
+            remaining_items_discount_allowed_account_ids = remaining_items.values_list("discount_allowed_account", flat=True)
+            remaining_items_discount_allowed_accounts = Account.objects.filter(id__in=remaining_items_discount_allowed_account_ids)
+            discount_allowed_transactions = Ledger.objects.filter(account__in=remaining_items_discount_allowed_accounts)
+            # discount_allowed_transactions_ids = discount_allowed_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "purchase voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
+            discount_allowed_transactions.update(account=discount_allowed_account)            
+            remaining_items_discount_allowed_accounts.delete()
 
         # Delete other items
         remaining_items.delete()
