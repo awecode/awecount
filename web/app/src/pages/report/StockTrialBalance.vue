@@ -1,19 +1,19 @@
 <template>
     <div class="q-pa-md">
         <div class="q-px-md q-pb-md">
-            <div class="flex items-center justify-between q-gutter-x-md q-gutter-y-xs">
-                <div class="flex items-center q-gutter-x-md q-gutter-y-xs">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex gap-x-6 gap-y-2 items-center">
                     <div>
                         <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date"
                             :hide-btns="true" :focuOnMount="true" />
                     </div>
                     <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
-                        @click="fields = { start_date: null, end_date: null }"></q-btn>
+                        @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
                     <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
-                        @click="fetchData"></q-btn>
+                        @click="fetchData" class="f-submit-btn"></q-btn>
                 </div>
-                <div class="flex q-gutter-x-md q-gutter-y-xs" v-if="showData">
-                    <q-btn class="filterbtn" icon="settings" title="Config">
+                <div class="flex gap-6" v-if="showData">
+                    <q-btn icon="settings" title="Config">
                         <q-menu>
                             <div class="menu-wrapper" style="width: min(300px, 90vw)">
                                 <div style="border-bottom: 1px solid lightgrey">
@@ -34,7 +34,7 @@
                             </div>
                         </q-menu>
                     </q-btn>
-                    <q-btn color="green" label="Export Xls" icon-right="download" @click="onDownloadXls" />
+                    <q-btn color="blue" label="Export Xls" icon-right="download" @click="onDownloadXls" class="export-btn"/>
                 </div>
             </div>
         </div>
@@ -269,7 +269,7 @@
         </div>
     </div>
 </template>
-  
+
 <script>
 // import { utils, writeFile } from 'xlsx'
 // import XLSX from "xlsx-js-style"

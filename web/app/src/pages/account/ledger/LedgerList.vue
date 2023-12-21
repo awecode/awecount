@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="q-ml-lg"
+      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="add-btn"
         icon-right="add" />
     </div>
 
@@ -9,12 +9,12 @@
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -32,9 +32,9 @@
                       label="Category" />
                   </div>
                 </div>
-                <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn color="green" label="Filter" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                <div class="q-mx-md flex gap-4 q-mb-md">
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -44,10 +44,10 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
-          <q-btn v-if="checkPermissions('AccountView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md"
+          <q-btn v-if="checkPermissions('AccountView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px" label="View" :to="`/account/${props.row.id}/view/`" />
           <q-btn v-if="checkPermissions('AccountModify')" label="Edit" color="orange-6"
-            class="q-py-none q-px-md font-size-sm" style="font-size: 12px" :to="`/account/${props.row.id}/edit/`" />
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/account/${props.row.id}/edit/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
@@ -78,14 +78,13 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const endpoint = '/v1/accounts/'
     const metaData = {
       title: 'Accounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const newColumn = [
       {
@@ -136,25 +135,30 @@ export default {
         align: 'center',
       },
     ]
-    return { ...useList(endpoint), newColumn, checkPermissions }
+    const listData = useList(endpoint)
+    watch(() => route.query, () => {
+      if (route.path === '/account/') {
+        const queryParams = {...route.query}
+        if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
+          listData.searchQuery.value = queryParams.search
+        } else listData.searchQuery.value = null
+        delete queryParams.search
+        let cleanedFilterValues = Object.fromEntries(
+          Object.entries(queryParams).map(([k, v]) => {
+            if (v === 'true') {
+              return [k, true]
+            } else if (v === 'false') {
+              return [k, false]
+            }
+            return [k, isNaN(v) ? v : parseFloat(v)]
+          })
+        )
+        listData.filters.value = cleanedFilterValues
+      }
+    }, {
+      deep: true
+    })
+    return { ...listData, newColumn, checkPermissions }
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 80px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>

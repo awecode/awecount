@@ -46,9 +46,9 @@
               color="orange-5" label="Edit" icon="edit" :to="`/sales-voucher/${fields?.id}/`" />
             <q-btn v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
-              icon="mdi-check-all" />
+              icon="mdi-check-all" :loading="loading" />
             <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
-              icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+              icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
@@ -93,10 +93,8 @@
 
 <script lang="ts">
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
-import useApi from 'src/composables/useApi'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
-import checkPermissions from 'src/composables/checkPermissions'
 
 interface Fields {
   status: string
@@ -113,10 +111,12 @@ export default {
     }
     useMeta(metaData)
     const fields: Ref<Fields | null> = ref(null)
+    const loading: Ref<boolean> = ref(false)
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const submitChangeStatus = (id: number, status: string) => {
+      loading.value = true
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
@@ -135,8 +135,12 @@ export default {
           if (status === 'Cancelled') {
             isDeleteOpen.value = false
           }
+          loading.value = false
         })
-        .catch((err) => console.log('err from the api', err))
+        .catch((err) => {
+          console.log('err from the api', err)
+          loading.value = false
+        })
     }
     const updateMode = (newValue: number) => {
       if (fields.value) {
@@ -187,7 +191,8 @@ export default {
       modeOptions,
       onPrintclick,
       checkPermissions,
-      useGeneratePdf
+      useGeneratePdf,
+      loading
     }
   },
   created() {
@@ -218,30 +223,6 @@ export default {
     width: none;
   }
 
-  // .sales-invoice {
-  //   // background-image: url("http://localhost:8080/img/invoice_bg.png");
-  //   height: 100%;
-  //   // background-position: center;
-  //   // background-repeat: no-repeat;
-  //   background-size: cover;
-  //   // height: 297mm;
-  //   width: 210mm;
-  //   padding: 0 5mm;
-  //   .v-data-table,
-  //   .v-card,
-  //   thead,
-  //   tr,
-  //   th {
-  //     background-color: transparent !important;
-  //   }
-  //   th,
-  //   td {
-  //     padding: 0.7em 0 !important;
-  //     border-bottom: none !important;
-  //   }
-  //   th {
-  //     padding-bottom: 1.5em !important;
-  //   }
-  // }
+
 }
 </style>

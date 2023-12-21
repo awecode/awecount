@@ -2,19 +2,19 @@
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn v-if="checkPermissions('ChequeDepositCreate')" color="green" to="/cheque-deposit/add/"
-        label="New Cheque Deposit" class="q-ml-lg" icon-right="add" />
+        label="New Cheque Deposit" class="add-btn" icon-right="add" />
     </div>
 
     <q-table title="Cheque Deposits" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -26,15 +26,15 @@
                       label="Bank Account" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Draft', 'Cleared', 'Cancelled']" /> 
+                    <MultiSelectChip v-model="filters.status" :options="['Issued', 'Draft', 'Cleared', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -58,7 +58,7 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn label="View" color="blue" class="q-py-none q-px-md font-size-sm" style="font-size: 12px"
+          <q-btn label="View" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
             :to="`/cheque-deposit/${props.row.id}/view/`" />
         </q-td>
       </template>
@@ -67,8 +67,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -113,21 +111,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 80px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>

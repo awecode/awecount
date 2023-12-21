@@ -1,34 +1,18 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('PaymentReceiptCreate')">
-      <q-btn color="green" to="/payment-receipt/add/" label="New Receipt" icon-right="add" />
+      <q-btn color="green" to="/payment-receipt/add/" label="New Receipt" icon-right="add" class="add-btn" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <!-- <template v-slot:top>
-        <div class="search-bar">
-          <q-input
-            dense
-            debounce="500"
-            v-model="searchQuery"
-            placeholder="Search"
-            class="search-bar-wrapper"
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="filterbtn">filters</q-btn>
-        </div>
-      </template> -->
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -54,8 +38,8 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -121,7 +105,7 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('PaymentReceiptView')" color="blue" label="View"
-              class="q-py-none q-px-md font-size-sm" style="font-size: 12px"
+              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
               :to="`/payment-receipt/${props.row.id}/view`" />
           </div>
         </q-td>
@@ -197,21 +181,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>

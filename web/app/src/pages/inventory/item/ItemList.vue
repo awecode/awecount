@@ -7,18 +7,18 @@
     </q-dialog>
     <div class="row justify-end q-gutter-md" v-if="checkPermissions('ItemCreate')">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true"></q-btn>
-      <q-btn color="green" to="/items/add/" label="Add Item" icon-right="add" />
+      <q-btn color="green" class="add-btn" to="/items/add/" label="Add Item" icon-right="add" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="w-full search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -38,8 +38,8 @@
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">
-                  <q-btn color="green" label="Filter" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                  <q-btn color="green" class="f-submit-btn" label="Filter" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" class="f-reset-btn" icon="close" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -48,12 +48,11 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md"
-            style="font-size: 12px" label="View" :to="`/items/details/${props.row.id}/`" />
-          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm"
+          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+            style="font-size: 12px" label="View" :to="`/items/details/${props.row.id}/`"/>
+          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px" label="edit" :to="`/items/${props.row.id}/`" />
         </q-td>
-        <!-- TODO: add modals -->
       </template>
       <template v-slot:body-cell-category="props">
         <q-td :props="props">
@@ -64,7 +63,6 @@
           </router-link>
           <span v-else>{{ props.row.category?.name }}</span>
         </q-td>
-        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>
@@ -75,13 +73,6 @@ import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
 const endpoint = '/v1/items'
-// console.log(useList(endpoint))
-// export default {
-//   setup() {
-//     const endpoint = '/v1/category/'
-//     return { ...useList(endpoint) }
-//   },
-// }
 const metaData = {
   title: 'Items | Awecount',
 }
@@ -98,8 +89,6 @@ const {
   onFilterUpdate,
   resetFilters,
 } = useList(endpoint)
-// filters.value.can_be_sold = false
-// filters.value.can_be_purchased = false
 </script>
 
 <style>
@@ -109,11 +98,7 @@ const {
   column-gap: 20px;
 }
 
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
+.f-open-btn {
   width: 80px;
   flex-grow: 0;
   flex-shrink: 0;

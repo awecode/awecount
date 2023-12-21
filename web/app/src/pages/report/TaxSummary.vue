@@ -7,8 +7,8 @@
             <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
           </div>
           <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
-            @click="fields = { start_date: null, end_date: null }"></q-btn>
-          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch"
+            @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn"
             @click="fetchData"></q-btn>
         </div>
       </div>

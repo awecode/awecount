@@ -111,7 +111,12 @@ export default (endpoint, config) => {
           context.emit('modalSignal', data)
         } else {
           if (config.successRoute) {
-            router.push(config.successRoute)
+            const lastRoute = router.getRoutes()[0]
+            if (lastRoute && lastRoute.path === config.successRoute) {
+              router.go(-1)
+            } else {
+              router.push(config.successRoute)
+            }
           } else {
             router.push(removeLastUrlSegment(route.path))
           }

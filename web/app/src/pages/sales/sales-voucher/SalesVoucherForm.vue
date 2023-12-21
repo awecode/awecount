@@ -121,7 +121,8 @@
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"></invoice-table>
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
+      :hasChallan="!!(fields.challans && fields.challans.length > 0)"  ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -147,24 +148,22 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft"
-          type="submit" />
+          type="submit" class="issue-btn" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" label="Save Draft"
-          type="submit" />
+          type="submit" class="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" />
+          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
       </div>
     </q-card>
   </q-form>
 </template>
 <script>
-import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

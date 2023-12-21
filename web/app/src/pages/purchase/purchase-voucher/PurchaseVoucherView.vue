@@ -150,12 +150,14 @@ export default {
             if (status === 'Cancelled') {
               $q.notify({
                 color: 'green-6',
+                icon: 'check_circle',
                 message: 'Voucher has been cancelled.',
               })
               isDeleteOpen.value = false
             } else if (status === 'Paid') {
               $q.notify({
                 color: 'green-6',
+                icon: 'check_circle',
                 message: 'Voucher Marked as paid.',
               })
             }
@@ -167,6 +169,7 @@ export default {
           $q.notify({
             color: 'red-6',
             message: 'Something Went Wrong!',
+            icon: 'report_problem',
           })
           isLoading.value = false
         })

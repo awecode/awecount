@@ -2,18 +2,18 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn v-if="checkPermissions('PurchaseDiscountCreate')" color="green" to="/purchase-discount/add/"
-        label="New Purchase Discount" icon-right="add" />
+        label="New Purchase Discount" icon-right="add" class="add-btn" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -28,9 +28,9 @@
                       :false-value="null"></q-checkbox>
                   </div>
                 </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -42,7 +42,7 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center">
             <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit"
-              :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm"
+              :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn"
               style="font-size: 12px" />
           </div>
         </q-td>
@@ -61,9 +61,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import usedownloadFile from 'src/composables/usedownloadFile'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {
@@ -107,21 +104,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.search-bar {
-  display: flex;
-  width: 100%;
-  column-gap: 20px;
-}
-
-.search-bar-wrapper {
-  width: 100%;
-}
-
-.filterbtn {
-  width: 100px;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-</style>

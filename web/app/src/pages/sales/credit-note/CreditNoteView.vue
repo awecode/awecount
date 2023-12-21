@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="fields">
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -10,7 +10,7 @@
       <ViewerHeader :fields="fields" />
     </q-card>
     <div class="q-ma-lg text-subtitle2">
-      Ref. Invoice No.: #{{ fields?.voucher_no }}
+      Ref. Invoice No.: #{{ fields?.invoice_data[0]?.voucher_no }}
     </div>
     <q-card class="q-mx-lg">
       <q-card-section>

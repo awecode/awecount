@@ -29,8 +29,12 @@
           {{ index + 1 }}
         </q-td>
         <q-td>
-          {{ row.item_name }} <br> <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">{{
-            `(${row.description})` }}</span>
+          {{ row.item_name }} <br>
+          <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">
+            <div v-for="(des, index) in row.description.split('\n')" :key="index">
+              {{ des }}
+            </div>
+          </span>
         </q-td>
         <q-td>
           <span v-if="props.showRateQuantity">{{ row.quantity }} <span class="text-grey-9">

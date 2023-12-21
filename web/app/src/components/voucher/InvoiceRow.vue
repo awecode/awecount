@@ -6,8 +6,8 @@
           <!-- TODO: solve error -->
           <n-auto-complete v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null"
-            :modal-component="usedInPos ? false : (checkPermissions('InventoryAccountCreate') ? ItemAdd : null)"
-            :disabled="usedInPos" />
+            :modal-component="usedInPos || hasChallan ? false : (checkPermissions('InventoryAccountCreate') ? ItemAdd : null)"
+            :disabled="usedInPos || hasChallan" />
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null">
@@ -18,7 +18,7 @@
         <span v-if="showRateQuantity">
           <q-input v-model.number="modalValue.quantity" label="Quantity"
             :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-            type="number"></q-input>
+            type="number" :disable="hasChallan" ></q-input>
         </span>
       </div>
       <div class="col-2">
@@ -40,7 +40,7 @@
         <q-btn flat class="q-pa-sm focus-highLight" color="transparent" @click="() => (expandedState = !expandedState)">
           <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"></q-icon>
         </q-btn>
-        <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent">
+        <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent" :disable="hasChallan">
           <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
         </q-btn>
       </div>
@@ -176,6 +176,10 @@ export default {
     showRateQuantity: {
       type: Boolean,
       default: () => true,
+    },
+    hasChallan: {
+      type: Boolean,
+      default: () => false
     }
   },
 
