@@ -92,22 +92,22 @@
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
                 v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" />
+                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
@@ -175,7 +175,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 //   discount_allowed_account: 'dedicated',
 //   discount_received_account: 'dedicated'
 // })
-
+const $q = useQuasar()
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
@@ -396,6 +396,19 @@ const setCategory = () => {
 //     fields.value.sales_account = null
 //   }
 // })
+const onTypeUpdate = (key, selectedType) => {
+  if (errors.value && errors.value.hasOwnProperty(key)) {
+    delete errors.value[key]
+  }
+  if (selectedType === 'category' && !fields.value.category) {
+    $q.notify({
+        color: 'orange-6',
+        message: 'Please select a category first!',
+        icon: 'report_problem',
+        position: 'top-right',
+    })
+  }
+}
 </script>
 
 <style scoped>

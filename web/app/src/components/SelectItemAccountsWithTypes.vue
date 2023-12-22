@@ -83,6 +83,7 @@ const props = defineProps({
       default: () => null
     }
 })
+const $q = useQuasar()
 const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
@@ -120,7 +121,15 @@ watch(() => type.value, (newValue) => {
             })
             const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
             if (selected) modalValue.value = selected[fieldType]
-            else modalValue.value = null
+            else {
+              modalValue.value = null
+              $q.notify({
+                  color: 'orange-6',
+                  message: `Selected Category Has no ${fieldType.replaceAll('_', ' ')} !`,
+                  icon: 'report_problem',
+                  position: 'top-right',
+              })
+            }
         } else modalValue.value = null
     }
     else if (newValue === "global") {
