@@ -37,15 +37,15 @@ class ItemSerializer(serializers.ModelSerializer):
         return attr
 
     def validate(self, attrs):
-        if (
-            attrs.get("purchase_account_type") == "Category"
-            or attrs.get("sales_account_type") == "Category"
-            or attrs.get("discount_received_account_type") == "Category"
-            or attrs.get("discount_allowed_account_type") == "Category"
-        ) and not attrs.get("category"):
-            raise serializers.ValidationError(
-                {"category": ["Category must be selected to use category account."]}
-            )
+        # if (
+        #     attrs.get("purchase_account_type") == "Category"
+        #     or attrs.get("sales_account_type") == "Category"
+        #     or attrs.get("discount_received_account_type") == "Category"
+        #     or attrs.get("discount_allowed_account_type") == "Category"
+        # ) and not attrs.get("category"):
+        #     raise serializers.ValidationError(
+        #         {"category": ["Category must be selected to use category account."]}
+        #     )
 
         type_account_tuples = [
             ("sales_account_type", "sales_account"),
