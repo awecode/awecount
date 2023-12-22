@@ -161,12 +161,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_purchase_account_ids = remaining_items.values_list("purchase_account", flat=True)
             remaining_items_purchase_accounts = Account.objects.filter(id__in=remaining_items_purchase_account_ids)
             purchase_transactions = Ledger.objects.filter(account__in=remaining_items_purchase_accounts)
-            purchase_transactions_ids = purchase_transactions.values_list("id", flat=True)
-            journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
-            for je in journals:
-                if je.content_type.name == "purchase voucher row":
-                    je.transactions.all().delete()
-                    je.delete()
+            # purchase_transactions_ids = purchase_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "purchase voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
             purchase_transactions.update(account=purchase_account)            
             remaining_items_purchase_accounts.delete()
 
@@ -183,12 +183,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_sales_account_ids = remaining_items.values_list("sales_account", flat=True)
             remaining_items_sales_accounts = Account.objects.filter(id__in=remaining_items_sales_account_ids)
             sales_transactions = Ledger.objects.filter(account__in=remaining_items_sales_accounts)
-            sales_transactions_ids = sales_transactions.values_list("id", flat=True)
-            journals = AccountJournal.objects.filter(transactions__in=sales_transactions_ids)
-            for je in journals:
-                if je.content_type.name == "sales voucher row":
-                    je.transactions.all().delete()
-                    je.delete()
+            # sales_transactions_ids = sales_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=sales_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "sales voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
             sales_transactions.update(account=sales_account)            
             remaining_items_sales_accounts.delete()
 
