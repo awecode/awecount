@@ -612,6 +612,7 @@ class Item(models.Model):
         self.validate_unique()
 
         post_save = kwargs.pop('post_save', True)
+        import ipdb; ipdb.set_trace();
         super().save(*args, **kwargs)
 
         if post_save:
