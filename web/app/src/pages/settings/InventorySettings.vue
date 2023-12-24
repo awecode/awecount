@@ -13,6 +13,10 @@
                 <q-checkbox v-model="fields.enable_fifo" label="Enable FIFO?">
                 </q-checkbox>
               </div>
+              <div>
+                <q-checkbox v-model="fields.enable_negative_stock_check" label="Enable Negative Stock Alert?">
+                </q-checkbox>
+              </div>
             </div>
           </div>
         </q-card-section>
@@ -22,7 +26,7 @@
       </q-card>
     </q-form>
   </template>
-  
+
   <script>
   import useForm from '/src/composables/useForm'
   export default {
@@ -71,4 +75,3 @@
     },
   }
   </script>
-  
