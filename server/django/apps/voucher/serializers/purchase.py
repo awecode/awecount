@@ -82,6 +82,22 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
                     raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
                 return data
+    
+        party = data.get("party")
+        fiscal_year = self.context["request"].company.current_fiscal_year
+        voucher_no = data.get("voucher_no")
+
+        if not company.purchase_setting.enable_empty_voucher_no:
+            if not voucher_no:
+                raise ValidationError(
+                    {"voucher_no": ["This field cannot be empty."]}
+                )
+            if self.Meta.model.objects.filter(voucher_no=voucher_no, party=party, fiscal_year=fiscal_year).exists():
+                raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
+        
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+
         return data
 
         # if request.query_params.get("fifo_inconsistency"):

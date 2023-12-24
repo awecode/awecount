@@ -13,16 +13,17 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
 from rest_framework.exceptions import ValidationError
 
-from apps.ledger.models import Account, Category as AccountCategory
+from apps.ledger.models import Account, Category as AccountCategory, Transaction as Ledger, JournalEntry as AccountJournal
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
+from apps.voucher.models import ChallanRow, CreditNoteRow, DebitNoteRow, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow, SalesVoucherRow
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
 from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import InventorySettingCreateSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .serializers import InventorySettingCreateSerializer, ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
     ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
@@ -39,8 +40,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ('brands', Brand, BrandSerializer),
         ('inventory_categories', InventoryCategory, InventoryCategorySerializer),
         ('units', Unit, UnitSerializer),
-        ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
-        ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
+        ('accounts', Account, AccountMinSerializer),
+        # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
+        # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer)
@@ -55,7 +57,224 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return ItemListSerializer
+        if self.action == 'list_items':
+            return ItemListMinSerializer
         return self.serializer_class
+    
+    def merge_items(self, item_ids, config=None):
+        items = Item.objects.filter(id__in=item_ids)
+        for i in range(len(items)-1):
+            item1 = items[i]
+            item2 = items[i+1]
+            if ((item1.can_be_purchased or item1.can_be_sold or item1.fixed_asset) and (item2.direct_expense or item2.indirect_expense)) or ((item2.can_be_purchased or item2.can_be_sold or item2.fixed_asset) and (item1.direct_expense or item1.indirect_expense)):
+                return True
+
+        # Select one item from the items list
+        if config and config.get("defaultItem"):
+            item = items.get(id=config["defaultItem"])
+        else:
+            item = items[0]
+
+        remaining_items = items.exclude(id=item.id)
+
+        has_inventory_account = False
+        has_purchase_account = False
+        has_sales_account = False
+        has_discount_received_account = False
+        has_discount_allowed_account = False
+        # item_account_ids = [x.name for x in items]
+        # inventory_account_ids = items.values_list("account", flat=True)
+        # inventory_accounts = InventoryAccount.objects.filter(id__in=inventory_account_ids)
+        if items.values_list("account").exists():
+            has_inventory_account = True
+        if items.values_list("purchase_account").exists():
+            has_purchase_account = True
+        if items.values_list("sales_account").exists():
+            has_sales_account = True
+
+        # Set the selected item in purchase rows, sales rows, challan rows, purchase order rows, debit_rows and credit rows
+        # if has_inventory_account:
+        purchase_voucher_rows = PurchaseVoucherRow.objects.filter(item__id__in=item_ids)
+        purchase_voucher_rows.update(item=item)
+
+        sales_voucher_rows = SalesVoucherRow.objects.filter(item__id__in=item_ids)
+        sales_voucher_rows.update(item=item)
+
+        challan_rows = ChallanRow.objects.filter(item__id__in=item_ids)
+        challan_rows.update(item=item)
+
+        purchase_order_rows = PurchaseOrderRow.objects.filter(item__id__in=item_ids)
+        purchase_order_rows.update(item=item)
+
+        credit_note_rows = CreditNoteRow.objects.filter(item__id__in=item_ids)
+        credit_note_rows.update(item=item)
+
+        debit_note_rows = DebitNoteRow.objects.filter(item__id__in=item_ids)
+        debit_note_rows.update(item=item)
+
+   
+
+        if has_inventory_account or has_purchase_account or has_sales_account:
+            if has_inventory_account:
+                if not item.track_inventory:
+                    item.track_inventory = True
+            if has_purchase_account:
+                if not item.can_be_purchased:
+                    item.can_be_purchased = True
+            if has_sales_account:
+                if not item.can_be_sold:
+                    item.can_be_sold = True
+            item.save()
+
+        remaining_items_inventory_accounts = None
+
+        # Update Inventory account for inventory transactions
+        if has_inventory_account:
+            inventory_account = item.account
+
+            remaining_items_inventory_account_ids = remaining_items.values_list("account", flat=True)
+            remaining_items_inventory_accounts = InventoryAccount.objects.filter(id__in=remaining_items_inventory_account_ids)
+            inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
+
+            inventory_transaction_ids = inventory_transactions.values_list("id", flat=True)
+            journal_entries = JournalEntry.objects.filter(transactions__in=inventory_transaction_ids)
+            
+            for je in journal_entries:
+                if je.content_type.name == "item":
+                    je.transactions.all().delete()
+                    je.delete()
+
+            current_opening_balance = inventory_account.opening_balance
+
+            inventory_transactions.update(account=inventory_account)
+            for obj in remaining_items_inventory_accounts:
+                inventory_account.current_balance += obj.current_balance
+                inventory_account.opening_balance += obj.opening_balance
+                inventory_account.save()
+            
+            if inventory_account.opening_balance != current_opening_balance:
+                item.update_opening_balance(item.company.current_fiscal_year)
+        
+        if has_purchase_account:
+
+            purchase_account = item.purchase_account
+            remaining_items_purchase_account_ids = remaining_items.values_list("purchase_account", flat=True)
+            remaining_items_purchase_accounts = Account.objects.filter(id__in=remaining_items_purchase_account_ids)
+            purchase_transactions = Ledger.objects.filter(account__in=remaining_items_purchase_accounts)
+            # purchase_transactions_ids = purchase_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "purchase voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
+            purchase_transactions.update(account=purchase_account)            
+            remaining_items_purchase_accounts.delete()
+
+            discount_received_account = item.discount_received_account
+            remaining_items_discount_received_account_ids = remaining_items.values_list("discount_received_account", flat=True)
+            remaining_items_discount_received_accounts = Account.objects.filter(id__in=remaining_items_discount_received_account_ids)
+            discount_received_transactions = Ledger.objects.filter(account__in=remaining_items_discount_received_accounts)
+            discount_received_transactions.update(account=discount_received_account)            
+            remaining_items_discount_received_accounts.delete()
+
+        if has_sales_account:
+
+            sales_account = item.sales_account
+            remaining_items_sales_account_ids = remaining_items.values_list("sales_account", flat=True)
+            remaining_items_sales_accounts = Account.objects.filter(id__in=remaining_items_sales_account_ids)
+            sales_transactions = Ledger.objects.filter(account__in=remaining_items_sales_accounts)
+            # sales_transactions_ids = sales_transactions.values_list("id", flat=True)
+            # journals = AccountJournal.objects.filter(transactions__in=sales_transactions_ids)
+            # for je in journals:
+            #     if je.content_type.name == "sales voucher row":
+            #         je.transactions.all().delete()
+            #         je.delete()
+            sales_transactions.update(account=sales_account)            
+            remaining_items_sales_accounts.delete()
+
+            discount_allowed_account = item.discount_allowed_account
+            remaining_items_discount_allowed_account_ids = remaining_items.values_list("discount_allowed_account", flat=True)
+            remaining_items_discount_allowed_accounts = Account.objects.filter(id__in=remaining_items_discount_allowed_account_ids)
+            discount_allowed_transactions = Ledger.objects.filter(account__in=remaining_items_discount_allowed_accounts)
+            discount_allowed_transactions.update(account=discount_allowed_account)            
+            remaining_items_discount_allowed_accounts.delete()
+
+        # Delete other items
+        if remaining_items_inventory_accounts:
+            remaining_items_inventory_accounts.delete()
+        remaining_items.delete()
+        return False
+    
+    @action(detail=False, url_path="list")
+    def list_items(self, request):
+        qs = super().get_queryset().order_by("name")
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, url_path='similar-items')
+    def similar_items(self, request):
+        from thefuzz import fuzz
+        qs = super().get_queryset()
+        items = qs.values_list('id', 'name', 'code')
+        res = []
+        for item in items:
+            obj = {}
+            similar_items = []
+            for id, name, code in items:
+                if fuzz.ratio(item[1], name)>80:
+                    similar_items.append({
+                        "id": id,
+                        "name": f"{name} ({code})",
+                        "code": code,
+                        # "match": fuzz.ratio(item[1], name)
+                    })
+            if len(similar_items)>1:
+                obj['items'] = similar_items
+                obj['config'] = {}
+                # res[item[1]] = sim
+                res.append(obj)
+
+        unique_ids = {}
+
+        # Filter out duplicate items
+        filtered_data = []
+        index = 0
+        for group in res:
+            unique_items = []
+            for item in group["items"]:
+                item_id = item["id"]
+                if item_id not in unique_ids:
+                    unique_ids[item_id] = True
+                    unique_items.append(item)
+            if unique_items:
+                index += 1
+                filtered_data.append({"items": [x["id"] for x in unique_items], "config": group["config"], "index": index})
+
+        return Response(filtered_data)
+
+    @action(detail=False, methods=['POST'])
+    def merge(self, request):
+        groups_not_merged = []
+        items_not_merged = []
+        flag = False
+        for index, group in enumerate(request.data):
+            if group.get("config"):
+                ret = self.merge_items(group["items"], group["config"])
+            else:
+                ret = self.merge_items(group["items"])
+            if ret:
+                flag = True
+                groups_not_merged.append(index+1)
+                items_not_merged.append(group)
+        if flag:
+            res = {
+                "error": {
+                    "message" : f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
+                    "items": items_not_merged
+                } 
+            }
+            return Response(res, status=209)
+        return Response(status=200)
 
     @action(detail=True)
     def details(self, request, pk=None):
@@ -255,6 +474,8 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
     collections = (
         ('units', Unit, UnitSerializer),
         ('accounts', Account, AccountMinSerializer),
+        # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
+        # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ('tax_scheme', TaxScheme, TaxSchemeMinSerializer),
         ('discount_allowed_accounts', Account.objects.filter(category__name='Discount Expenses'), AccountMinSerializer),
         ('discount_received_accounts', Account.objects.filter(category__name='Discount Income'), AccountMinSerializer),
