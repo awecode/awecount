@@ -302,7 +302,7 @@ export default {
     const itemPurchaseData = ref({})
     const COGSData = ref(null)
     const onItemIdUpdate = async (itemId) => {
-      if (itemId && !itemPurchaseData.hasOwnProperty(itemId)) {
+      if (itemId && !itemPurchaseData.value.hasOwnProperty(itemId)) {
         try {
           const data = await useApi(`/v1/items/${itemId}/available-stock/`)
           itemPurchaseData.value[itemId] = data
