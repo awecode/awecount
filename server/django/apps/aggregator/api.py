@@ -38,11 +38,12 @@ class WidgetViewSet(CRULViewSet):
 
     @action(detail=False)
     def data(self, request):
-        qs = self.get_queryset().filter(is_active=True)
+        qs = self.get_queryset().filter(is_active=True).order_by('-id')
         return Response(WidgetSerializer(qs, many=True).data)
 
     def get_queryset(self):
-        return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
+        # return Widget.objects.filter(user=self.request.user).order_by('order', 'pk')
+        return Widget.objects.filter(user=self.request.user).order_by('-pk')
 
     @action(detail=True, methods=['POST'])
     def delete(self, request, pk):

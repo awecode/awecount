@@ -17,10 +17,13 @@ from awecount.libs.serializers import StatusReversionMixin
 from ..models import PurchaseVoucherRow, SalesVoucherRow, SalesVoucher, InvoiceDesign, SalesDiscount, PurchaseVoucher
 
 
-class SalesDiscountSerializer(serializers.ModelSerializer):
+class SalesDiscountSerializer(serializers.ModelSerializer):    
     class Meta:
         model = SalesDiscount
         exclude = ('company',)
+        extra_kwargs = {
+            "name": {"required": True}
+        }
 
 
 class SalesDiscountMinSerializer(serializers.ModelSerializer):
@@ -160,9 +163,20 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
 
+    def validate_discount(self, value):
+        if not value:
+                value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount cannot be negative.")
+        return value
+
     class Meta:
         model = SalesVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
@@ -202,6 +216,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
     print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -253,6 +268,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     # if item.negative_stock(row["quantity"]):
                     if item.remaining_stock < row["quantity"]:
                         raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
@@ -267,15 +285,77 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 #         {'date': ['Invoice with later date already exists!']},
                 #     )
 
+    def validate_rows(self, rows):
+        for row in rows:
+            row_serializer = SalesVoucherRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
+        return rows
+
     def validate_due_date(self, due_date):
-        if isinstance(due_date, str):
-            due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
-        if due_date < timezone.now().date():
-            raise ValidationError("Due date cannot be before deposit date.")
-                
+        if due_date:
+            if isinstance(due_date, str):
+                due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d').date()
+            validation_date = self.instance.due_date if self.instance else timezone.now().date()
+            if due_date < validation_date:
+                raise ValidationError("Due date cannot be before invoice date.")
+
+    def update_purchase_rows(self, request, row):
+        if request.company.inventory_setting.enable_fifo:
+            item_id = row.get("item_id")
+            quantity = row.get("quantity")
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=item_id,
+                remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
+            sold_items = {}
+            for purchase_row in purchase_rows:
+                if purchase_row.remaining_quantity == quantity:
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+                    sold_items[purchase_row.id] = quantity
+                    break
+                elif purchase_row.remaining_quantity > quantity:
+                    purchase_row.remaining_quantity -= quantity
+                    purchase_row.save()
+                    sold_items[purchase_row.id] = quantity
+                    break
+                else:
+                    quantity -= purchase_row.remaining_quantity
+                    sold_items[purchase_row.id] = purchase_row.remaining_quantity
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+            return sold_items
+    
+    def check_challans(self, challans, rows):
+        voucher_items = []
+        challan_items = []
+        for row in rows:
+            voucher_items.append((row.get("item_id"), row.get("quantity")))
+        
+        voucher_items_ids = [x[0] for x in voucher_items]
+        for challan in challans:
+            rows = challan.rows.values_list("item_id", "quantity")
+            items_list = [x for x in rows]
+            for row in items_list:
+                challan_items.append(row)
+                if row[0] not in voucher_items_ids:
+                    raise serializers.ValidationError({"detail": "Items cannot be deleted while importing challan."})
+                desired_tuple = next((tup for tup in voucher_items if tup[0] == row[0]), None)
+                if not desired_tuple:
+                    raise serializers.ValidationError({"detail": "Items cannot be added while importing challan."})
+                if desired_tuple[1] != row[1]:
+                    raise serializers.ValidationError({"detail": "The quantity cannot be changed while importing challan."})
+        
+        if len(challan_items) < len(voucher_items):
+            raise serializers.ValidationError({"detail": "Items cannot be added while importing challan."})
+        return
+        
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         challans = validated_data.pop('challans', None)
+        if challans:
+            self.check_challans(challans, rows_data)
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
@@ -297,7 +377,6 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             if row.get("id"):
                 row.pop('id')
             SalesVoucherRow.objects.create(voucher=instance, **row)
-
         if challans:
             instance.challans.clear()
             instance.challans.add(*challans)
@@ -405,6 +484,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
     fiscal_year = serializers.StringRelatedField()
     invoice_footer_text = serializers.ReadOnlyField(source="company.sales_setting.invoice_footer_text")
+    challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def get_payment_receipts(self, obj):
         receipts = []

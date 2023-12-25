@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.exceptions import APIException
 from apps.ledger.models.base import AccountClosing
 
@@ -70,17 +71,18 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
 
 class PartySerializer(serializers.ModelSerializer):
-    representative = PartyRepresentativeSerializer(many=True)
+    representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
         instance = super().create(validated_data)
-        for representative in representatives:
-            if representative.get('name') or representative.get('phone') or representative.get(
-                    'email') or representative.get(
-                'position'):
-                representative['party_id'] = instance.id
-                PartyRepresentative.objects.create(**representative)
+        if representatives:
+            for representative in representatives:
+                if representative.get('name') or representative.get('phone') or representative.get(
+                        'email') or representative.get(
+                    'position'):
+                    representative['party_id'] = instance.id
+                    PartyRepresentative.objects.create(**representative)
         return instance
 
     def update(self, instance, validated_data):
@@ -124,6 +126,11 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         exclude = ('company',)
 
+    def create(self, validated_data):
+        try:
+            return super().create(validated_data)
+        except IntegrityError:
+            raise ValidationError({"code": ["Category with this code already exists."]})
 
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:
@@ -312,40 +319,18 @@ class TransactionEntrySerializer(serializers.Serializer):
     source_type = serializers.SerializerMethodField()
     dr_amount = RoundedField(source='total_dr_amount')
     cr_amount = RoundedField(source='total_cr_amount')
-    # account_name = serializers.StringRelatedField(source='account')
-    # accounts = serializers.SerializerMethodField()
-
-    account_ids = serializers.ReadOnlyField()  # New field for the aggregated account IDs
-    account_names = serializers.ReadOnlyField()
-
+    accounts = serializers.ReadOnlyField()
     source_id = serializers.ReadOnlyField()
     count = serializers.ReadOnlyField()
+    voucher_no = serializers.ReadOnlyField()
+
     # voucher_no = serializers.ReadOnlyField(source='journal_entry.source_voucher_no')
-
-    def xget_accounts(self, obj):
-        # Split the comma-separated strings and create a list of dictionaries
-        names = obj.account_names.split(',')
-        ids = [int(id) for id in obj.account_ids.split(',')]
-        return [{'id': id, 'name': name} for id, name in zip(ids, names)]
-
-    # def get_accounts(self, obj):
-    #     # TODO Optimize - Maybe cache the accounts in transaction or journal entry model instance
-    #     accounts = []
-    #     for transaction in obj.journal_entry.transactions.all():
-    #         accounts.append(
-    #             {'id': transaction.account_id,
-    #              'name': transaction.account.name,
-    #              'source_type': self.get_source_type(transaction)
-    #              }
-    #         )
-    #     return accounts
-        # return obj.journal_entry.transactions.values('account_id', 'account__name')
 
     def get_source_type(self, obj):
         from django.apps import apps
 
         v_type = obj.content_type_model
-        # ctype = ContentType.objects.get(model=v_type)
+
         m = apps.get_model(obj.content_type_app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
@@ -353,13 +338,37 @@ class TransactionEntrySerializer(serializers.Serializer):
             v_type = v_type[:-10]
         if v_type == 'account':
             return 'Opening Balance'
-        # FIXME: remove 'row' from the name properly
-        # return v_type.strip().title()
         return m._meta.verbose_name.title().replace('Row', '').strip()
     
     # class Meta:
     #     model = Transaction
     #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
+
+
+class TransactionReportSerializer(serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField(source="journal_entry.source_voucher_no")
+    date = serializers.ReadOnlyField(source="journal_entry.date")
+    account = AccountMinSerializer()
+    source_type = serializers.SerializerMethodField()
+    account_name = serializers.ReadOnlyField(source="account.name")
+    category_id = serializers.ReadOnlyField(source="account.category.id")
+
+    def get_source_type(self, obj):
+        from django.apps import apps
+
+        v_type = obj.journal_entry.content_type.model
+
+        m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
+        if v_type[-4:] == ' row':
+            v_type = v_type[:-3]
+        if v_type[-11:] == ' particular':
+            v_type = v_type[:-10]
+        if v_type == 'account':
+            return 'Opening Balance'
+        return m._meta.verbose_name.title().replace('Row', '').strip()
+    class Meta:
+        model = Transaction
+        fields = ["voucher_no", "date", "account", "source_type", "dr_amount", "cr_amount", "account_name", "category_id"]
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):

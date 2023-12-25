@@ -154,6 +154,10 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.party_id:
             return self.party.name
         return self.customer_name
+    
+    @property
+    def challan_voucher_numbers(self):
+        return self.challans.values_list("voucher_no", flat=True)
 
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
@@ -370,7 +374,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
 
 
 class PurchaseVoucher(TransactionModel, InvoiceModel):
-    voucher_no = models.CharField(max_length=25)
+    voucher_no = models.CharField(max_length=25, null=True, blank=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
@@ -392,6 +396,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_vouchers')
     fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='purchase_vouchers')
+    purchase_orders = models.ManyToManyField(PurchaseOrder, related_name='purchases', blank=True)
 
     @property
     def item_names(self):
@@ -407,6 +412,10 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
+        
+    @property
+    def purchase_order_numbers(self):
+        return self.purchase_orders.values_list('voucher_no', flat=True)
 
     def find_invalid_transaction(self):
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
@@ -598,6 +607,8 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def apply_transactions(self):
         voucher_meta = self.get_voucher_meta()
+
+        # import ipdb; ipdb.set_trace()
         if self.total_amount != voucher_meta['grand_total']:
             self.total_amount = voucher_meta['grand_total']
             self.save()

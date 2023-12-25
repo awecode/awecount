@@ -26,7 +26,7 @@ admin.site.register(PartyRepresentative, PartyRepresentativeAdmin)
 
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'category', 'parent', 'default')
+    list_display = ('name', 'code', 'category', 'parent', 'default', 'order')
     search_fields = ('company__name', 'code', 'name')
     list_filter = ('company', 'default', 'category')
     # readonly_fields = ('default',)

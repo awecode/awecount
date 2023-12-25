@@ -1,4 +1,5 @@
 import datetime
+from rest_framework.exceptions import ValidationError as RestValidatoinError
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -24,12 +25,14 @@ class BankAccount(models.Model):
     def save(self, *args, **kwargs):
         if self.is_wallet:
             if not self.bank_name:
-                raise ValidationError('Wallet name is required!')
+                raise RestValidatoinError({'bank_name': ['Wallet name is required!']})
         else:
             if not self.account_number:
-                raise ValidationError('Account Number is required!')
-            if not self.next_cheque_no or not self.next_cheque_no.isdigit():
-                raise ValidationError('Cheque No. can only contain digits!')
+                raise RestValidatoinError({'account_number': ['Account Number is required!']})
+            if not self.next_cheque_no:
+                raise RestValidatoinError({'next_cheque_no': ['Cheque No. can not be empty value!']})
+            elif not self.next_cheque_no.isdigit():
+                raise RestValidatoinError({'next_cheque_no': ['Cheque No. can only contain digits!']})
         super().save(*args, **kwargs)
         post_save = False
         if self.is_wallet and self.transaction_commission_percent and not self.commission_account_id:
@@ -67,6 +70,9 @@ class BankAccount(models.Model):
 
     def __str__(self):
         return self.short_name or self.bank_name or self.account_number
+    
+    class Meta:
+        ordering = ['-id']
 
 
 class ChequeDeposit(TransactionModel):
@@ -76,7 +82,7 @@ class ChequeDeposit(TransactionModel):
         ('Cleared', 'Cleared'),
         ('Cancelled', 'Cancelled'),
     )
-    voucher_no = models.IntegerField(blank=True, null=True, default=None)
+    voucher_no = models.PositiveIntegerField(blank=True, null=True, default=None)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     date = models.DateField()
     clearing_date = models.DateField(blank=True, null=True)

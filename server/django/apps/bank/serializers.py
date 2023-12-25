@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from awecount.libs.serializers import StatusReversionMixin
 from .models import BankAccount, ChequeDeposit, ChequeIssue, BankCashDeposit, FundTransfer, FundTransferTemplate
@@ -17,6 +18,11 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
     benefactor_name = serializers.ReadOnlyField(source='benefactor.name')
     # clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_voucher_no(self, attr):
+        if attr and attr > 214748364:
+            raise ValidationError("Voucher Number should be a number between 0 to 214748364.")
+        return attr
 
     def create(self, validated_data):
         cheque_deposit = ChequeDeposit.objects.create(**validated_data)

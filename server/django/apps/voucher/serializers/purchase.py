@@ -15,6 +15,9 @@ class PurchaseDiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseDiscount
         exclude = ('company',)
+        extra_kwargs = {
+            "name": {"required": True}
+        }
 
 
 class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
@@ -23,15 +26,29 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
 
+    def validate_discount(self, value):
+        print(f"Validating discount: {value}")
+        if not value:
+                value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount can't be negative.")
+        return value
+
     class Meta:
         model = PurchaseVoucherRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+
+        extra_kwargs = {
+            "discount": {"required": False, "allow_null": True},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin,
                                       ModeCumBankSerializerMixin,
                                       serializers.ModelSerializer):
     rows = PurchaseVoucherRowSerializer(many=True)
+    purchase_order_numbers = serializers.ReadOnlyField()
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -59,11 +76,41 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 date = data["date"]
                 if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
                     raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
-            return data
+                return data
+        
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
 
+        return data
+
+        # if request.query_params.get("fifo_inconsistency"):
+        #     return data
+        # else:
+        #     if request.company.inventory_setting.enable_fifo:
+        #         item_ids = [x.get("item_id") for x in data.get("rows")]
+        #         date = data["date"]
+        #         if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+        #             raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+        #     return data
+
+    def validate_rows(self, rows):
+        for row in rows:
+            if row.get("discount_type") == "":
+                row["discount_type"] = None
+            row_serializer = PurchaseVoucherRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
+        return rows
+    
+    # def validate_discount_type(self, attr):
+    #     if not attr:
+    #         attr = 0
+    #     return attr
+    
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context['request']
+        purchase_orders = validated_data.pop('purchase_orders', None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
@@ -77,6 +124,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
                 if item.track_inventory:
                     row["remaining_quantity"] = row["quantity"]
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
+        if purchase_orders:
+            instance.purchase_orders.clear()
+            instance.purchase_orders.set(purchase_orders)
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
         return instance
@@ -84,6 +134,7 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def update(self, instance, validated_data):
         rows_data = validated_data.pop('rows')
         request = self.context["request"]
+        purchase_orders = validated_data.pop('purchase_orders', None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
@@ -93,6 +144,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             if request.company.inventory_setting.enable_fifo:
                 fifo_handle_purchase_update(instance, row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
+        if purchase_orders:
+            instance.purchase_orders.clear()
+            instance.purchase_orders.set(purchase_orders)
         instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
@@ -138,6 +192,7 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
     rows = PurchaseVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
     enable_row_description = serializers.ReadOnlyField(source='company.purchase_setting.enable_row_description')
+    purchase_order_numbers = serializers.ReadOnlyField()
 
     class Meta:
         model = PurchaseVoucher
@@ -186,7 +241,10 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseOrder
-        exclude = ['company', 'user', 'fiscal_year']
+        exclude = ['company', 'user']
+        extra_kwargs = {
+            'fiscal_year': {'read_only': True}
+        }
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:

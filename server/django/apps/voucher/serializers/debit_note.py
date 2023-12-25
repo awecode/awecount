@@ -14,9 +14,20 @@ class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mode
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False, allow_null=True)
 
+    def validate_discount(self, value):
+        if not value:
+                value = 0
+        elif value < 0:
+            raise serializers.ValidationError("Discount can't be negative.")
+        return value
+
     class Meta:
         model = DebitNoteRow
         exclude = ('item', 'tax_scheme', 'voucher', 'unit', 'discount_obj')
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False}
+        }
 
 
 class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin,
@@ -24,7 +35,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
     voucher_no = serializers.ReadOnlyField()
     rows = DebitNoteRowSerializer(many=True)
 
-    def assign_voucher_number(self, validated_data, instance):
+    def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
             return
         if validated_data.get('status') in ['Draft', 'Cancelled']:
@@ -48,14 +59,25 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
         return data
+    
+    def validate_rows(self, rows):
+        for row in rows:
+            if row.get("discount_type") == "":
+                row["discount_type"] = None
+            row_serializer = DebitNoteRowSerializer(data=row)
+            if not row_serializer.is_valid():
+                raise serializers.ValidationError(row_serializer.errors)
+        return rows
 
     def create(self, validated_data):
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         request = self.context['request']
-        self.assign_fiscal_year(validated_data, instance=None)
-        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_fiscal_year(validated_data)
+        self.assign_voucher_number(validated_data)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         validated_data['company_id'] = request.company_id
@@ -73,7 +95,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         self.validate_voucher_status(validated_data, instance)
-        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
         self.assign_mode(validated_data)
         DebitNote.objects.filter(pk=instance.id).update(**validated_data)
@@ -109,6 +131,15 @@ class DebitNoteDetailSerializer(serializers.ModelSerializer):
     rows = PurchaseVoucherRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
 
+    invoice_data = serializers.SerializerMethodField()
+
+    def get_invoice_data(self, obj):
+        data = []
+        for invoice in obj.invoices.all():
+            data.append({'id': invoice.id, 'voucher_no': invoice.voucher_no})
+        return data
+
+
     class Meta:
         model = DebitNote
-        exclude = ('company', 'user', 'bank_account',)
+        exclude = ('company', 'user', 'bank_account', 'invoices')

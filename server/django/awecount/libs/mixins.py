@@ -67,57 +67,85 @@ class TransactionsViewMixin(object):
         # 'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
         #     count=Count('journal_entry__source_voucher_id'))
 
+        # FIXME: upgrade postgres and add this query back inside rawquery
+        # -- CREATE OR REPLACE FUNCTION merge_jsonb_agg(jsonb, jsonb)
+        #     RETURNS jsonb AS $$
+        #         BEGIN
+        #             RETURN (SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(COALESCE($1, '[]') || COALESCE($2, '[]')) AS value);
+        #         END;
+        # $$ LANGUAGE plpgsql;
+        # -- CREATE OR REPLACE AGGREGATE jsonb_concat(jsonb) ( SFUNC = merge_jsonb_agg, STYPE = jsonb, INITCOND = '[]' );
+        
         raw_query = f"""
-        WITH AccountAggregation AS (
-        SELECT
-            je.id AS journal_entry_id,
-            je.source_voucher_id,
-            je.date,
-            ct.model AS content_type_model,
-            ct.app_label AS content_type_app_label,
-            ARRAY_AGG(DISTINCT t.account_id) AS account_ids,
-            STRING_AGG(DISTINCT acc.name, '\u0283') AS account_names
-        FROM
-            ledger_transaction AS t
-        JOIN
-            ledger_journalentry AS je ON t.journal_entry_id = je.id
-        JOIN
-            ledger_account AS acc ON t.account_id = acc.id
-        JOIN
-            django_content_type AS ct ON je.content_type_id = ct.id
-        WHERE
-            t.account_id NOT IN ({account_id_list_str})
-            {"AND je.date >= '" + start_date + "'" if start_date else ''}
-            {"AND je.date <= '" + end_date + "'" if end_date else ''}
+        WITH SourceAggregation AS (
+            WITH AccountAggregation AS (
+                SELECT
+                    je.id AS journal_entry_id,
+                    je.source_voucher_id,
+                    je.source_voucher_no,
+                    je.date,
+                    ct.model AS content_type_model,
+                    ct.app_label AS content_type_app_label,
+                    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT('id', acc.id, 'name', acc.name)) AS accounts
+                FROM
+                    ledger_transaction AS t
+                JOIN
+                    ledger_journalentry AS je ON t.journal_entry_id = je.id
+                JOIN
+                    ledger_account AS acc ON t.account_id = acc.id
+                JOIN
+                    django_content_type AS ct ON je.content_type_id = ct.id
+                WHERE
+                    t.account_id NOT IN ({account_id_list_str})
+                    {"AND je.date >= '" + start_date + "'" if start_date else ''}
+                    {"AND je.date <= '" + end_date + "'" if end_date else ''}
+                GROUP BY
+                    je.id, je.source_voucher_id, je.date, ct.model, ct.app_label
+            )
+            SELECT
+                SUM(t.id) as id,
+                aa.source_voucher_id as source_id,
+                aa.source_voucher_no as voucher_no,
+                aa.content_type_model as content_type_model,
+                aa.content_type_app_label as content_type_app_label,
+                SUM(t.dr_amount) AS total_dr_amount,
+                SUM(t.cr_amount) AS total_cr_amount,
+                aa.date,
+                aa.accounts AS accounts
+            FROM
+                ledger_transaction AS t
+            JOIN
+                AccountAggregation AS aa ON t.journal_entry_id = aa.journal_entry_id
+            WHERE
+                t.account_id IN ({account_id_list_str})
+            GROUP BY
+                aa.source_voucher_id,
+                aa.source_voucher_no,
+                aa.date,
+                aa.content_type_model,
+                aa.content_type_app_label,
+                aa.accounts
+        ) 
+        SELECT 
+            SUM(sa.id) AS id,
+            sa.source_id,
+            sa.voucher_no,
+            SUM(sa.total_dr_amount) AS total_dr_amount,
+            SUM(sa.total_cr_amount) AS total_cr_amount,
+            sa.content_type_model,
+            sa.content_type_app_label,
+            JSONB_CONCAT(sa.accounts)::json as accounts,
+            sa.date
+        FROM 
+            SourceAggregation AS sa
         GROUP BY
-            je.id, je.source_voucher_id, je.date, ct.model, ct.app_label
-    )
-
-    SELECT
-        SUM(t.id) as id,
-        aa.source_voucher_id as source_id,
-        aa.content_type_model as content_type_model,
-        aa.content_type_app_label as content_type_app_label,
-        SUM(t.dr_amount) AS total_dr_amount,
-        SUM(t.cr_amount) AS total_cr_amount,
-        aa.account_ids,
-        aa.account_names,
-        aa.date
-    FROM
-        ledger_transaction AS t
-    JOIN
-        AccountAggregation AS aa ON t.journal_entry_id = aa.journal_entry_id
-    WHERE
-        t.account_id IN ({account_id_list_str})
-    GROUP BY
-        aa.source_voucher_id,
-        aa.date,
-        aa.content_type_model,
-        aa.content_type_app_label,
-        aa.account_ids,
-        aa.account_names
-    ORDER BY
-        aa.date DESC
+            sa.source_id,
+            sa.voucher_no,
+            sa.content_type_model,
+            sa.content_type_app_label,
+            sa.date
+        ORDER BY
+            sa.date DESC
         """
 
         transactions = Transaction.objects.raw(raw_query)
@@ -127,51 +155,61 @@ class TransactionsViewMixin(object):
         if start_date or end_date:
             if start_date:
                 opening_transaction_query = f"""
-                     WITH AccountAggregation AS (
-                     SELECT
-                         je.id AS journal_entry_id,
-                         je.source_voucher_id,
-                         je.date,
-                         ct.model AS content_type_model,
-                         ct.app_label AS content_type_app_label,
-                         ARRAY_AGG(DISTINCT t.account_id) AS account_ids,
-                         STRING_AGG(DISTINCT acc.name, ',') AS account_names
-                     FROM
-                         ledger_transaction AS t
-                     JOIN
-                         ledger_journalentry AS je ON t.journal_entry_id = je.id
-                     JOIN
-                         ledger_account AS acc ON t.account_id = acc.id
-                     JOIN
-                         django_content_type AS ct ON je.content_type_id = ct.id
-                     WHERE
-                         t.account_id NOT IN ({account_id_list_str})
-                         {"AND je.date < '" + start_date + "'" if start_date else ''}
-                     GROUP BY
-                         je.id, je.source_voucher_id, je.date, ct.model, ct.app_label
-                 )
-
-                 SELECT
-                     SUM(t.id) as id,
-                     SUM(t.dr_amount) AS total_dr_amount,
-                     SUM(t.cr_amount) AS total_cr_amount
-                 FROM
-                     ledger_transaction AS t
-                 JOIN
-                     AccountAggregation AS aa ON t.journal_entry_id = aa.journal_entry_id
-                 WHERE
-                     t.account_id IN ({account_id_list_str})
-                 GROUP BY
-                     aa.source_voucher_id,
-                     aa.date,
-                     aa.content_type_model,
-                     aa.content_type_app_label,
-                     aa.account_ids,
-                     aa.account_names
-                 ORDER BY
-                     aa.date DESC
-                     """
+                    WITH SourceAggregation AS (
+                        WITH AccountAggregation AS (
+                            SELECT
+                                je.id AS journal_entry_id,
+                                je.source_voucher_id,
+                                je.date,
+                                ct.model AS content_type_model,
+                                ct.app_label AS content_type_app_label,
+                                JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT('id', acc.id, 'name', acc.name)) AS accounts
+                            FROM
+                                ledger_transaction AS t
+                            JOIN
+                                ledger_journalentry AS je ON t.journal_entry_id = je.id
+                            JOIN
+                                ledger_account AS acc ON t.account_id = acc.id
+                            JOIN
+                                django_content_type AS ct ON je.content_type_id = ct.id
+                            WHERE
+                                t.account_id NOT IN ({account_id_list_str})
+                                {"AND je.date < '" + start_date + "'" if start_date else ''}
+                            GROUP BY
+                                je.id, je.source_voucher_id, je.date, ct.model, ct.app_label
+                        )
+                        SELECT
+                            SUM(t.id) as id,
+                            aa.source_voucher_id as source_id,
+                            SUM(t.dr_amount) AS total_dr_amount,
+                            SUM(t.cr_amount) AS total_cr_amount,
+                            aa.date
+                        FROM
+                            ledger_transaction AS t
+                        JOIN
+                            AccountAggregation AS aa ON t.journal_entry_id = aa.journal_entry_id
+                        WHERE
+                            t.account_id IN ({account_id_list_str})
+                        GROUP BY
+                            aa.source_voucher_id,
+                            aa.date,
+                            aa.accounts
+                    ) 
+                    SELECT 
+                        SUM(sa.id) AS id,
+                        sa.source_id,
+                        SUM(sa.total_dr_amount) AS total_dr_amount,
+                        SUM(sa.total_cr_amount) AS total_cr_amount
+                    FROM 
+                        SourceAggregation AS sa
+                    GROUP BY
+                        sa.source_id,
+                        sa.date
+                    ORDER BY
+                        sa.date DESC
+                    """
                 opening_transaction = Transaction.objects.raw(opening_transaction_query)
+
             aggregate['opening'] = {
                 'dr': sum([t.total_dr_amount for t in opening_transaction if t.total_dr_amount is not None]),
                 'cr': sum([t.total_cr_amount for t in opening_transaction if t.total_cr_amount is not None])

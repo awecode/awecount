@@ -30,7 +30,7 @@ from .serializers import AccountClosingSerializer, AggregatorSerializer, Content
     JournalEntrySerializer, \
     PartyMinSerializer, PartyAccountSerializer, CategoryTreeSerializer, AccountOpeningBalanceSerializer, \
     AccountOpeningBalanceListSerializer, AccountFormSerializer, PartyListSerializer, AccountListSerializer, \
-    TransactionEntrySerializer
+    TransactionEntrySerializer, TransactionReportSerializer
 
 
 class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
@@ -107,7 +107,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
             qs = qs.annotate(
                 dr=Coalesce(Sum('transactions__dr_amount'), 0.0),
                 cr=Coalesce(Sum('transactions__cr_amount'), 0.0)).annotate(
-                computed_balance=F('dr') - F('cr'))
+                computed_balance=F('dr') - F('cr')).order_by("-id")
         return qs
 
     def get_accounts_by_category_name(self, category_name):
@@ -294,10 +294,10 @@ class CustomerClosingView(APIView):
 
 class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
     company_id_attr = 'journal_entry__company_id'
-    serializer_class = TransactionEntrySerializer
-    # filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
+    serializer_class = TransactionReportSerializer
+    filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
-    # search_fields = ['journal_entry__source__get_voucher_no']
+    search_fields = ['account__name', 'account__category__name']
     journal_entry_content_type = JournalEntry.objects.values_list('content_type', flat=True).distinct()
     collections = [
         ('accounts', Account),
