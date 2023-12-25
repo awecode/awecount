@@ -7,3 +7,5 @@ env/
 *.xlsx
 
 temp.*
+.vscode/
+*.sql
