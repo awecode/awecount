@@ -243,35 +243,34 @@ const getYear = (last = false) => {
 }
 const getFY = (last = false) => {
   const today = new Date()
+  let fy_start
+  let fy_end
   if (store.companyInfo.config_template === 'np') {
     const bs_month = DateConverter.getBSMonth(today)
     let bs_year = DateConverter.getBSYear(today)
     if (bs_month < 4) {
       bs_year = bs_year - 1
     }
-    activeDate.value = last ? 'lastFY' : 'thisFy'
     bs_year = bs_year - (last ? 1 : 0)
-    const fy_start = `${bs_year}-04-01`
-    const fy_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
+    bs_start = `${bs_year}-04-01`
+    bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
       bs_year + 1,
       3
     )}`
-    setDateRange(DateConverter.bs2ad(fy_start), DateConverter.bs2ad(fy_end))
+    fy_start = DateConverter.bs2ad(fy_start)
+    fy_end = DateConverter.bs2ad(fy_end)
   } else {
     const ad_month = today.getMonth()
-    let ad_year = today.getYear()
+    let ad_year = today.getFullYear()
     if (ad_month < 9) {
       ad_year = ad_year + 1
     }
-    activeDate.value = last ? 'lastFY' : 'thisFy'
     ad_year = ad_year - (last ? 1 : 0)
-    const fy_start = `${ad_year}-04-01`
-    const fy_end = `${ad_year + 1}-03-${DateConverter.getMonthDays(
-      bs_year + 1,
-      3
-    )}`
-    setDateRange(fy_start, fy_end)
+    fy_start = `${ad_year}-10-01`
+    fy_end = `${ad_year + 1}-09-30`
   }
+  activeDate.value = last ? 'lastFY' : 'thisFY'
+  setDateRange(fy_start, fy_end)
 }
 const getMonth = (last = false) => {
   const today = new Date()
