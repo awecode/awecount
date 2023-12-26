@@ -68,6 +68,9 @@ const onLoginSubmit = async () => {
       loginStore.companyInfo = data.company
       loginStore.userInfo = data.user
       loginStore.companyInfo.logo_url = data.company.logo_url || '/img/stockCompany.png'
+      if (data.company.config_template !== 'np') {
+        loginStore.isCalendarInAD = true
+      }
       router.push('/dashboard')
     })
     .catch((err) => {
