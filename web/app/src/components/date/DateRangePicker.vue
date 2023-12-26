@@ -252,13 +252,13 @@ const getFY = (last = false) => {
       bs_year = bs_year - 1
     }
     bs_year = bs_year - (last ? 1 : 0)
-    bs_start = `${bs_year}-04-01`
-    bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
+    const bs_start = `${bs_year}-04-01`
+    const bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
       bs_year + 1,
       3
     )}`
-    fy_start = DateConverter.bs2ad(fy_start)
-    fy_end = DateConverter.bs2ad(fy_end)
+    fy_start = DateConverter.bs2ad(bs_start)
+    fy_end = DateConverter.bs2ad(bs_end)
   } else {
     const ad_month = today.getMonth()
     let ad_year = today.getFullYear()
