@@ -267,7 +267,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     item = Item.objects.get(id=row["item_id"])
                     # if item.negative_stock(row["quantity"]):
                     if item.remaining_stock and item.remaining_stock < row["quantity"]:
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else ''}", code="negative_stock")
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}", code="negative_stock")
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
