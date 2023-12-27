@@ -596,6 +596,33 @@ class CreditNote(TransactionModel, InvoiceModel):
     class Meta:
         unique_together = ('company', 'voucher_no', 'fiscal_year')
 
+    def cancel(self):
+        if self.company.inventory_setting.enable_fifo:
+            rows = self.rows.all()
+            sales_vouchers = self.invoices.all()
+            for voucher in sales_vouchers:
+                sales_rows = voucher.rows.all()
+                for row in sales_rows:
+                    credit_note_row = rows.get(item=row.item)
+                    sold_items = row.sold_items
+                    purchase_row_ids = [key for key, value in sold_items.items()]
+                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
+                    quantity = credit_note_row.quantity
+                    for purchase_row in purchase_voucher_rows:
+                        can_be_reduced = purchase_row.remaining_quantity
+                        diff = self.quantity - can_be_reduced
+                        if diff > 0:
+                            purchase_row.remaining_quantity -= can_be_reduced
+                            purchase_row.save()
+                            quantity -= can_be_reduced
+                            continue
+                        else:
+                            purchase_row.remaining_quantity -= quantity
+                            purchase_row.save()
+                            continue
+        super().cancel()
+
+
     def apply_inventory_transaction(voucher):
         for row in voucher.rows.filter(is_returned=True).filter(
                 Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
