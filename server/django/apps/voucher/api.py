@@ -422,7 +422,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     if str(purchase_row.id) in sold_items.keys():
                         sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
                     else:
-                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantitynegati
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             row.sold_items = sold_items
@@ -471,7 +471,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             
             # Negative stock check
             if request.company.inventory_setting.enable_negative_stock_check:
-                if request.query_params["negative_stock"]:
+                if request.query_params.get("negative_stock"):
                     purchase_voucher.cancel()
                     self.fifo_update_sales_rows(purchase_voucher)
                 purchase_rows = purchase_voucher.rows.all()
