@@ -604,6 +604,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
+        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
+            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
         obj = self.get_object()
         try:
             obj.cancel()
@@ -733,6 +735,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
+        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
+            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
         obj = self.get_object()
         try:
             obj.cancel()

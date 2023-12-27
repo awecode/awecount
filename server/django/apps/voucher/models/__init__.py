@@ -619,7 +619,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                         else:
                             purchase_row.remaining_quantity -= quantity
                             purchase_row.save()
-                            continue
+                            break
         super().cancel()
 
 
