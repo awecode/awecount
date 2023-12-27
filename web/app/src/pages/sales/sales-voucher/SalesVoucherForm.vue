@@ -14,8 +14,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_import_challan">
               <q-btn color="blue" @click="importChallanModal = true" label="Import challan(s)"></q-btn>
-              <div v-if="fields.invoices">
-                <q-input dense v-model="voucherArray" disable label="Import challan(s)"></q-input>
+              <div v-if="fields.challans && fields.challans.length > 0">
+                <q-input dense v-model="fields.challan_numbers" disable label="Import challan(s)"></q-input>
               </div>
               <q-dialog v-model="importChallanModal">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -26,12 +26,12 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Challan No.*" autofocus type="number"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
-                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields, voucherArray)"></q-btn>
+                      <q-btn color="green" label="Add" size="md" @click="fetchInvoice(fields)"></q-btn>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -121,7 +121,9 @@
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher" :isFifo="formDefaults.options?.enable_fifo" usedIn="sales"></invoice-table>
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry"
+        :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher" :isFifo="formDefaults.options?.enable_fifo" usedIn="sales"
+        :hasChallan="!!(fields.challans && fields.challans.length > 0)"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -147,24 +149,22 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft"
-          type="submit" />
+          type="submit" class="issue-btn" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" label="Save Draft"
-          type="submit" />
+          type="submit" class="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" />
+          color="green" :label="isEdit ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
       </div>
     </q-card>
   </q-form>
 </template>
 <script>
-import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -175,10 +175,9 @@ export default {
     // TODO: temp
     const $q = useQuasar()
     const importChallanModal = ref(false)
-    const voucherArray = ref([])
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: loginStore.companyInfo.current_fiscal_year_id || null
     })
     const staticOptions = {
       discount_types: discount_types,
@@ -228,14 +227,14 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
 
-    const fetchInvoice = async (fields, voucherArray) => {
+    const fetchInvoice = async (fields) => {
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
       ) {
         if (
-          fields.invoices &&
-          fields.invoices.includes(referenceFormData.value.invoice_no)
+          fields.challans &&
+          fields.challans.includes(referenceFormData.value.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -251,7 +250,7 @@ export default {
           )
             .then((data) => {
               const response = { ...data }
-              if (fields.invoices) {
+              if (fields.challans) {
                 if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
                   $q.notify({
                     color: 'red-6',
@@ -261,9 +260,11 @@ export default {
                   })
                   return
                 }
-                fields.invoices.push(data.id)
-              } else fields.invoices = [data.id]
-              voucherArray.push(response.voucher_no)
+                fields.challans.push(data.id)
+              } else fields.challans = [data.id]
+              if (fields.challan_numbers) {
+                fields.challan_numbers.push(response.voucher_no)
+              } else fields.challan_numbers = [response.voucher_no]
               const removeArr = [
                 'id',
                 'date',
@@ -369,7 +370,6 @@ export default {
       referenceFormData,
       fetchInvoice,
       checkPermissions,
-      voucherArray,
       loginStore,
       onPartyChange,
       // TODO: temp

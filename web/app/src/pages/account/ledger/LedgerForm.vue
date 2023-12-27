@@ -13,7 +13,7 @@
           <div class="row q-col-gutter-md">
             <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name"
               :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code *" class="col-6" :error-message="errors.code"
+            <q-input v-model="fields.code" label="Code" class="col-6" :error-message="errors.code"
               :error="!!errors.code" />
           </div>
           <div class="row q-col-gutter-md">

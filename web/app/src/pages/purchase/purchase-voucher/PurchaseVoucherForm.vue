@@ -12,8 +12,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12" v-if="formDefaults.options?.enable_purchase_order_import">
               <q-btn color="blue" @click="importPurchaseOrder = true" label="Import purchase order(s)"></q-btn>
-              <div v-if="fields.invoices">
-                <q-input dense v-model="voucherArray" disable label="Purchase Order(s)"></q-input>
+              <div v-if="fields.purchase_orders && fields.purchase_orders.length > 0">
+                <q-input dense v-model="fields.purchase_order_numbers" disable label="Purchase Order(s)"></q-input>
               </div>
               <q-dialog v-model="importPurchaseOrder">
                 <q-card style="min-width: min(60vw, 400px)">
@@ -24,7 +24,7 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
@@ -150,9 +150,11 @@ import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountF
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const store = useLoginStore()
     const endpoint = '/v1/purchase-vouchers/'
     const openDatePicker = ref(false)
     const $q = useQuasar()
@@ -167,9 +169,8 @@ export default {
     const importPurchaseOrder = ref(false)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: store.companyInfo.current_fiscal_year_id || null,
     })
-    const voucherArray = ref([])
     useMeta(() => {
       return {
         title:
@@ -215,8 +216,8 @@ export default {
         fetchData.fiscal_year
       ) {
         if (
-          formData.fields.value.invoices &&
-          formData.fields.value.invoices.includes(fetchData.invoice_no)
+          formData.fields.value.purchase_orders &&
+          formData.fields.value.purchase_orders.includes(fetchData.invoice_no)
         ) {
           $q.notify({
             color: 'red-6',
@@ -232,7 +233,7 @@ export default {
           )
             .then((data) => {
               const response = { ...data }
-              if (formData.fields.value.invoices) {
+              if (formData.fields.value.purchase_orders) {
                 if (formData.fields.value.party && formData.fields.value.party !== response.party) {
                   $q.notify({
                     color: 'red-6',
@@ -242,9 +243,11 @@ export default {
                   })
                   return
                 }
-                formData.fields.value.invoices.push(data.id)
-              } else formData.fields.value.invoices = [data.id]
-              voucherArray.value.push(response.voucher_no)
+                formData.fields.value.purchase_orders.push(data.id)
+              } else formData.fields.value.purchase_orders = [data.id]
+              if (formData.fields.value.purchase_order_numbers) {
+                formData.fields.value.purchase_order_numbers.push(response.voucher_no)
+              } else formData.fields.value.purchase_order_numbers = [response.voucher_no]
               const removeArr = [
                 'id',
                 'date',
@@ -321,8 +324,7 @@ export default {
       checkPermissions,
       importPurchaseOrder,
       referenceFormData,
-      fetchInvoice,
-      voucherArray,
+      fetchInvoice
     }
   },
 }

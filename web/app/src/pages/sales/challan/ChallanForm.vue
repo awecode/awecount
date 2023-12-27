@@ -243,6 +243,7 @@ export default {
     //   }
     // })
     const onResolvedClick = () => {
+      formData.loading.value = true
       useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
         method: 'POST',
         body: {},
@@ -250,10 +251,11 @@ export default {
         .then(() => {
           $q.notify({
             color: 'positive',
-            message: 'Marked As Resloved',
+            message: 'Marked As Resolved',
             icon: 'check_circle',
           })
-          formData.fields.value.status = 'Resloved'
+          formData.fields.value.status = 'Resolved'
+          formData.loading.value = false
         })
         .catch(() => {
           $q.notify({
@@ -261,6 +263,7 @@ export default {
             message: 'error',
             icon: 'report_problem',
           })
+          formData.loading.value = false
         })
     }
     const onCancelClick = () => {
@@ -268,7 +271,8 @@ export default {
       const body = {
         message: deleteMsg.value,
       }
-      useApi(url, {
+      formData.loading.value = true
+      useApi(url,{
         method: 'POST',
         body,
       })
@@ -280,6 +284,7 @@ export default {
           })
           formData.fields.value.status = 'Cancelled'
           isDeleteOpen.value = false
+          formData.loading.value = false
         })
         .catch((err) => {
           let message = 'error'
@@ -313,6 +318,7 @@ export default {
               icon: 'report_problem',
             })
           }
+          formData.loading.value = false
         })
     }
     watch(

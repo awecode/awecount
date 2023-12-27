@@ -16,7 +16,7 @@
           <div class="col-2 text-center">Amount</div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-for="(row, index) in modalValue" :key="index">
+        <div v-for="(row, index) in modalValue" :key="row">
           <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
             :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
@@ -24,7 +24,7 @@
               " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
             :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
             :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
-            :COGSData="COGSData" />
+            :COGSData="COGSData" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center"></div>
@@ -59,7 +59,7 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms">Add Row</q-btn>
+          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan">Add Row</q-btn>
         </div>
       </div>
     </q-card>
@@ -156,8 +156,12 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    hasChallan: {
+      type: Boolean,
+      default: () => false
+    }
   },
-  emits: ['update:modelValue', 'deleteRowErr'],
+  emits: ['update:modelValue', 'deleteRowErr', 'updateVoucherMeta'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue)
     const rowEmpty = ref(false)
@@ -215,7 +219,7 @@ export default {
             props.discountOptions
           ) || 0
         if (data.sameScheme !== false && item.taxObj) {
-          if (data.sameScheme === null && item.taxObj) {
+          if (data.sameScheme === null && item.taxObj && item.taxObj.rate != 0) {
             data.sameScheme = item.taxObj.id
             data.taxObj = item.taxObj
           } else if (data.sameScheme === item.taxObj?.id || item.taxObj.rate === 0) {
@@ -341,6 +345,14 @@ export default {
       COGSData.value = COGSRows
     }
     // For purchase rows Data of Items
+
+    // to update voucher meta in Credit and debit Notes
+    if (props.usedIn === "creditNote") {
+      watch(totalDataComputed, (newValue) => {
+        emit('updateVoucherMeta', newValue)
+      })
+    }
+
     return {
       props,
       modalValue,

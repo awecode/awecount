@@ -69,14 +69,14 @@
               {{
                 $nf((fields.supplier_account.amounts.dr ||
                   0) + (fields.customer_account.amounts.dr ||
-                  0), 2)
+                    0), 2)
               }}
             </th>
             <th class="text-left">
               {{
                 $nf((fields.supplier_account.amounts.cr ||
                   0) + (fields.customer_account.amounts.cr ||
-                  0), 2)
+                    0), 2)
               }}
             </th>
             <th class="text-left">
@@ -99,11 +99,10 @@
         <span class="row items-end q-gutter-y-sm">
           <q-btn v-if="dateRef.start_date && dateRef.end_date" @click="resetDate" color="red" icon="close"
             class="q-mr-sm"></q-btn>
-          <q-btn @click="filter" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter"
-            color="blue"></q-btn>
+          <q-btn @click="filter" :disable="!(dateRef.start_date && dateRef.end_date)" label="filter" color="blue"></q-btn>
         </span>
       </div>
-      <TransactionTable v-if="fields.transactions" :fields="fields">
+      <TransactionTable v-if="fields?.transactions.results?.length > 0" :fields="fields">
         <TablePagination :fields="fields"></TablePagination>
       </TransactionTable>
     </q-card>
@@ -148,6 +147,7 @@ export default {
       withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query)
     )
     function fetchData() {
+      if (fields?.value?.transactions.results) fields.value.transactions.results = null
       useApi(endpoint.value, { method: 'GET' })
         .then((data) => {
           fields.value = data
@@ -164,18 +164,39 @@ export default {
     }
     watch(endpoint, () => fetchData())
     watch(
-      route,
-      () => {
-        if (route.params.id) {
+      () => route.query,
+      (newQuery, oldQuery) => {
+        if (route.params.id && route.path.includes('/parties/account/')) {
           const url = `/v1/parties/${route.params.id}/transactions/?`
-          const updatedEndpoint = withQuery(url, route.query)
-          endpoint.value = updatedEndpoint
+          if (oldQuery.page !== newQuery.page) {
+            const updatedEndpoint = withQuery(url, newQuery)
+            endpoint.value = updatedEndpoint
+          }
+          if (oldQuery.pageSize !== newQuery.pageSize) {
+            newQuery.page = undefined
+            const updatedEndpoint = withQuery(url, newQuery)
+            endpoint.value = updatedEndpoint
+          }
+          if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
+            newQuery.page = undefined
+            const updatedEndpoint = withQuery(url, newQuery)
+            endpoint.value = updatedEndpoint
+          }
         }
       },
       {
         deep: true,
       }
     )
+    watch(
+      () => route.params.id,
+      (newid, oldid) => {
+        if (newid && route.path.includes('/parties/account/')) {
+          const url = `/v1/parties/${newid}/transactions/?`
+          const updatedEndpoint = withQuery(url, {})
+          endpoint.value = updatedEndpoint
+        }
+      })
     const filter = () => {
       if (!dateRef.value.start_date || !dateRef.value.end_date) {
         $q.notify({

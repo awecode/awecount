@@ -12,7 +12,7 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-6">
-              <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account"
+              <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account *"
                 :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
             </div>
           </div>

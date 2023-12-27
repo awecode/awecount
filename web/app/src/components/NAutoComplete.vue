@@ -30,7 +30,7 @@
       />
     </div>
   </div>
-  <q-dialog v-model="isModalOpen">
+  <q-dialog v-model="isModalOpen" transition-hide="none">
     <q-card style="min-width: 80vw">
       <component
         :is="modalComponent"

@@ -3,6 +3,9 @@
     <q-input :model-value="getDateValue" @onClick="this.select()" :error="props.error" :error-message="props.errorMessage"
       :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable" @update:model-value="onDateInput"
       :label="props.label" type="text" class="full-width">
+      <template v-slot:append v-if="notRequired && !!getDateValue">
+        <q-icon class="cursor-pointer" name="close" @click="onDateInput('')"/>
+      </template>
     </q-input>
     <q-menu v-if="!props.disable" :no-focus="true">
       <q-date v-if="isCalendarInAD" v-model="date" mask="YYYY-MM-DD" :options="toDateValidation" />
@@ -26,6 +29,7 @@ const props = defineProps([
   'placeholder',
   'disable',
   'dateType',
+  'notRequired'
 ])
 const date = ref(props.modelValue)
 const error = ref(props.error)
@@ -41,7 +45,9 @@ const isCalendarInAD = computed(() => {
 })
 
 watch(date, (val) => {
-  if (isCalendarInAD.value) {
+  if (val === null && props.notRequired) {
+  }
+  else if (isCalendarInAD.value) {
     if (DateConverter.isValidAD(val)) {
       error.value = false
       errorMessage.value = null
@@ -72,6 +78,10 @@ const getDateValue = computed(() => {
 
 const onDateInput = (text) => {
   text = DateConverter.parseText(text)
+  if (text === '' && props.notRequired) {
+    date.value = null
+    return
+  }
   error.value = false
   errorMessage.value = null
   if (isCalendarInAD.value) {

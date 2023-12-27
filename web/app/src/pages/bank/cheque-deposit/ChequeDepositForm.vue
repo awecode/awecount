@@ -28,7 +28,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <date-picker v-model="fields.cheque_date" class="col-md-6 col-12" label="Cheque Date"
-              :error-message="errors.cheque_date" :error="!!errors.cheque_date"></date-picker>
+              :error-message="errors.cheque_date" :error="!!errors.cheque_date" :notRequired="true"></date-picker>
             <q-input v-model="fields.cheque_number" label="Cheque Number" class="col-6"
               :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number" />
           </div>

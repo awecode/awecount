@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn v-if="checkPermissions('TaxSchemeCreate')" color="green" to="/taxes/add/" label="New Tax Scheme"
-        class="q-ml-lg" icon-right="add" />
+        class="add-btn" icon-right="add" />
     </div>
 
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
@@ -28,8 +28,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm" style="font-size: 12px" label="Tax Account"
-            :to="`/taxes/account/${props.row.id}/`" />
+          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Tax Account"
+            :to="`/taxes/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-bankwallet_name="props">
@@ -44,8 +44,6 @@
 </template>
 
 <script>
-import useList from '/src/composables/useList'
-import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const metaData = {

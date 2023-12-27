@@ -10,8 +10,8 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <div class="col-md-6 col-12" v-if="fields.voucher_no">
-              <q-input v-model="fields.voucher_no" disable label="Reference Invoice(s)"></q-input>
+            <div class="col-md-6 col-12" v-if="fields.invoice_data && fields.invoice_data.length > 0">
+              <q-input v-model="fields.invoice_data[0].voucher_no" disable label="Reference Invoice(s)"></q-input>
             </div>
             <div v-else class="col-md-6 col-12">
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
@@ -24,7 +24,7 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*"></q-input>
+                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
@@ -86,7 +86,7 @@
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
-        :usedIn="'creditNote'"></invoice-table>
+        :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -125,16 +125,18 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const store = useLoginStore()
     const endpoint = '/v1/credit-note/'
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: null,
+      fiscal_year: store.companyInfo?.current_fiscal_year_id || null,
     })
     const $q = useQuasar()
     const staticOptions = {
@@ -213,9 +215,10 @@ export default {
             if (fields.invoices) {
               fields.invoices.push(data.id)
             } else fields.invoices = [data.id]
-            if (fields.voucher_no) {
-              fields.voucher_no.push(data.voucher_no)
-            } else fields.voucher_no = [data.voucher_no]
+            fields.invoice_data = [{
+              id: data.id,
+              voucher_no: data.voucher_no
+            }]
             const removeArr = [
               'id',
               'date',
@@ -310,6 +313,15 @@ export default {
     formData.fields.value.party = ''
     formData.fields.value.discount_type = null
     formData.fields.value.trade_discount = false
+
+    // to update voucher meta in Credit and debit Notes
+    const updateVoucherMeta = (data) => {
+      formData.fields.value.discount = data.discount
+      formData.fields.value.meta_discount = data.discount
+      formData.fields.value.meta_sub_total = data.subTotal
+      formData.fields.value.meta_tax = data.totalTax
+      formData.fields.value.total_amount = data.total
+    }
     return {
       ...formData,
       CategoryForm,
@@ -326,7 +338,8 @@ export default {
       fetchInvoice,
       referenceFormData,
       discountField,
-      checkPermissions
+      checkPermissions,
+      updateVoucherMeta
     }
   },
 }

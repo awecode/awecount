@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div v-if="checkPermissions('UnitCreate')" class="row justify-between">
       <div></div>
-      <q-btn color="green" to="/units/add/" label="New Unit" class="q-ml-lg" icon-right="add" />
+      <q-btn color="green" to="/units/add/" label="New Unit" class="q-ml-lg add-btn" icon-right="add" />
     </div>
 
     <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"

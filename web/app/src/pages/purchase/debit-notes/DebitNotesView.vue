@@ -40,6 +40,9 @@
         </div>
       </q-card>
     </q-card>
+    <div class="q-ma-lg text-subtitle2">
+      Ref. Invoice No.: # {{ fields?.invoice_data && fields?.invoice_data[0]?.voucher_no }}
+    </div>
     <q-card class="q-mx-lg" id="to_print">
       <q-card-section>
         <ViewerTable :fields="fields" />

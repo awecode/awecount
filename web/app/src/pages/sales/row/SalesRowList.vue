@@ -4,12 +4,12 @@
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-btn class="filterbtn" icon="mdi-filter-variant">
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
@@ -46,9 +46,9 @@
                     ]" v-model="filters.status" />
                   </div>
                 </div>
-                <div class="q-mx-md row q-mb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters"></q-btn>
                 </div>
               </div>
             </q-menu>
@@ -60,7 +60,7 @@
         <q-td :props="props">
           <div class="row align-center">
             <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
-              class="text-blue" :to="`/sales-voucher/${props.row.voucher_id}/view`">
+              class="text-blue l-view-btn" :to="`/sales-voucher/${props.row.voucher_id}/view`">
               {{ props.row.voucher__voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher__voucher_no }}</span>

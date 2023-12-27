@@ -79,12 +79,12 @@
         <q-btn :to="`/cheque-deposit/${id}/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
       <div v-if="fields?.status === 'Issued' && checkPermissions('ChequeDepositModify')">
-        <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared"
+        <q-btn @click.prevent="onClearedClick" color="green" icon="done_all" label="Mark as cleared" :loading="loading"
           class="text-h7 q-py-sm" />
       </div>
       <div v-if="fields?.status !== 'Cancelled' && checkPermissions('ChequeDepositCancel')">
         <q-btn @click.prevent="() => (isDeleteOpen = true)" color="red" icon="block" label="Cancel"
-          class="text-h7 q-py-sm" />
+          class="text-h7 q-py-sm" :loading="loading"/>
       </div>
       <div class="q-ml-auto" v-if="fields?.status === 'Cleared'">
         <q-btn :to="`/journal-entries/cheque-deposits/${fields.id}/`" color="blue" icon="library_books"
@@ -120,6 +120,7 @@ import useApi from 'src/composables/useApi'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions';
+const loading = ref(false)
 const store = useLoginStore()
 const metaData = {
   title: 'Cheque Deposit View | Awecount',
@@ -146,24 +147,26 @@ const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
-const getData = () =>
-  useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
+const getData = async() =>
+  await useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })
 getData()
 
 const onClearedClick = () => {
+  loading.value = true
   useApi(`/v1/cheque-deposits/${props.id}/mark_as_cleared/`, {
     method: 'POST',
     body: {},
   })
-    .then(() => {
-      getData()
+    .then(async () => {
+      await getData()
       $q.notify({
         color: 'positive',
         message: 'Success',
         icon: 'check_circle',
       })
+      loading.value = false
     })
     .catch(() => {
       $q.notify({
@@ -171,10 +174,12 @@ const onClearedClick = () => {
         message: 'error',
         icon: 'report_problem',
       })
+      loading.value = false
     })
 }
 
 const cancel = () => {
+  loading.value = true
   useApi(`/v1/cheque-deposits/${props.id}/cancel/`, {
     method: 'POST',
     body: {},
@@ -187,6 +192,7 @@ const cancel = () => {
       })
       fields.value.status = 'Cancelled'
       isDeleteOpen.value = false
+      loading.value = false
     })
     .catch(() => {
       $q.notify({
@@ -194,6 +200,7 @@ const cancel = () => {
         message: 'error',
         icon: 'report_problem',
       })
+      loading.value = false
     })
 }
 </script>

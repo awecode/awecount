@@ -14,7 +14,7 @@
       </div>
       <div>
         <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block" title="Code">[Code: {{
-          fields.code }}]</span>
+          fields?.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
@@ -53,7 +53,7 @@
           </div>
         </div>
       </div>
-      <transaction-table :fields="fields">
+      <transaction-table :fields="fields" v-if="fields?.transactions.results?.length > 0">
         <TablePagination :fields="fields"></TablePagination>
       </transaction-table>
     </div>
@@ -68,18 +68,39 @@ const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
 watch(
-  route,
-  () => {
-    if (route.params.id) {
-      const url = `/v1/accounts/${route.params.id}/transactions/?`
-      const updatedEndpoint = withQuery(url, route.query)
-      endpoint.value = updatedEndpoint
+  () => route.query,
+  (newQuery, oldQuery) => {
+    if (route.params.id && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      if (oldQuery.page !== newQuery.page) {
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.pageSize !== newQuery.pageSize) {
+        newQuery.page = undefined
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
+      if (oldQuery.start_date !== newQuery.start_date || oldQuery.end_date !== newQuery.end_date) {
+        newQuery.page = undefined
+        const updatedEndpoint = withQuery(url, newQuery)
+        endpoint.value = updatedEndpoint
+      }
     }
   },
   {
     deep: true,
   }
 )
+watch(
+  () => route.params.id,
+  (newid, oldid) => {
+    if (newid && route.path.includes('/view/')) {
+      const url = `/v1/accounts/${route.params.id}/transactions/`
+      const updatedEndpoint = withQuery(url, {})
+      endpoint.value = updatedEndpoint
+    }
+  })
 const startDate = ref(null)
 const endDate = ref(null)
 const resetDate = () => {
@@ -103,7 +124,8 @@ const filter = () => {
 const endpoint = ref(
   withQuery(`/v1/accounts/${route.params.id}/transactions/`, route.query)
 )
-const getData = () =>
+const getData = () => {
+  if (fields?.value?.transactions.results) fields.value.transactions.results = null
   useApi(endpoint.value).then((data) => {
     fields.value = data
     const metaData = {
@@ -111,6 +133,7 @@ const getData = () =>
     }
     useMeta(metaData)
   })
+}
 getData()
 watch(endpoint, () => getData())
 onMounted(() => {

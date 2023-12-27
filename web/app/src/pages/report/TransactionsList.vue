@@ -1,18 +1,18 @@
 <template>
     <div class="q-pa-md">
         <div class="row q-gutter-x-md justify-end">
-            <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" />
+            <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
         </div>
         <q-table :rows="rows" :columns="rows[0]?.label ? newColumnTwo : newColumn" :loading="loading" :filter="searchQuery"
             v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
             <template v-slot:top>
                 <div class="search-bar">
-                    <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="search-bar-wrapper">
+                    <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
                         <template v-slot:append>
                             <q-icon name="search" />
                         </template>
                     </q-input>
-                    <q-btn class="filterbtn" icon="mdi-filter-variant">
+                    <q-btn class="f-open-btn" icon="mdi-filter-variant">
                         <q-menu>
                             <div class="menu-wrapper" style="width: min(550px, 90vw); height: min(700px, 60vh)">
                                 <div style="border-bottom: 1px solid lightgrey">
@@ -45,8 +45,8 @@
                                         v-model:endDate="filters.end_date" />
                                 </div>
                                 <div class="q-mx-md row q-pb-md q-mt-lg">
-                                    <q-btn color="green" label="Filter" class="q-mr-md" @click="onFilterUpdate"></q-btn>
-                                    <q-btn color="red" icon="close" @click="resetFilters"></q-btn>
+                                    <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
+                                    <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
                                 </div>
                             </div>
                         </q-menu>
@@ -56,7 +56,7 @@
             <template v-slot:body-cell-account="props">
                 <q-td :props="props">
                     <RouterLink style="text-decoration: none" target="_blank"
-                        :to="`/account/?has_balance=true&category=${props.row.account_id}`" class="text-blue-6">{{
+                        :to="`/account/?has_balance=true&category=${props.row.category_id}`" class="text-blue-6">{{
                             props.row.account_name
                         }}
                     </RouterLink>
@@ -78,7 +78,7 @@
         </q-card> -->
     </div>
 </template>
-  
+
 <script>
 import useList from '/src/composables/useList'
 // import usedownloadFile from 'src/composables/usedownloadFile'
@@ -256,22 +256,3 @@ export default {
     },
 }
 </script>
-  
-<style>
-.search-bar {
-    display: flex;
-    width: 100%;
-    column-gap: 20px;
-}
-
-.search-bar-wrapper {
-    width: 100%;
-}
-
-.filterbtn {
-    width: 80px;
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-</style>
-  
