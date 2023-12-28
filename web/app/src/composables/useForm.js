@@ -110,19 +110,16 @@ export default (endpoint, config) => {
         if (isModal) {
           context.emit('modalSignal', data)
         } else {
-          // if (config.successRoute) {
-          //   const lastRoute = router.getRoutes()[0]
-          //   if (lastRoute && lastRoute.path === config.successRoute) {
-          //     router.go(-1)
-          //   } else {
-          //     router.push(config.successRoute)
-          //   }
-          // } else {
-          //   router.push(removeLastUrlSegment(route.path))
-          // }
           if (config.successRoute) {
-                router.push(config.successRoute)
-          } else router.push(removeLastUrlSegment(route.path))
+            const lastRoute = router.getRoutes()[0]
+            if (lastRoute && lastRoute.path === config.successRoute) {
+              router.go(-1)
+            } else {
+              router.push(config.successRoute)
+            }
+          } else {
+            router.push(removeLastUrlSegment(route.path))
+          }
         }
       })
       .catch((data) => {

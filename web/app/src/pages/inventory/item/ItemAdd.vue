@@ -179,6 +179,7 @@ const $q = useQuasar()
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
+const emit = defineEmits([])
 const images = ref({
   front_image: null,
   back_image: null,
