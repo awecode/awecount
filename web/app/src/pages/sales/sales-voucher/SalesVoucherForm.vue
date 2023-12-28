@@ -118,7 +118,6 @@
               class="col-md-6 col-12"
               :error="!!errors?.date"
               :error-message="errors?.date"
-              data-testid="invoice-date"
             ></date-picker>
             <DateInputDisabled
               v-else
@@ -142,7 +141,6 @@
               :error="!!errors?.due_date"
               :error-message="errors?.due_date"
               :toLimit="fields.date"
-              data-testid="due-date"
             ></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div
