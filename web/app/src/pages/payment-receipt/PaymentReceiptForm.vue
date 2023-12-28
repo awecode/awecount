@@ -40,7 +40,7 @@
           </div>
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">
-              <DatePicker class="col-md-6 col-12" label="Cheque Date" v-model="fields.cheque_date" :notRequired="true"></DatePicker>
+              <DatePicker class="col-md-6 col-12" label="Cheque Date" v-model="fields.cheque_date" :notRequired="true" :error="!!errors?.cheque_date" :error-message="errors?.cheque_date"></DatePicker>
               <q-input class="col-md-6 col-12" label="Cheque Number *" v-model="fields.cheque_number"
                 :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number"></q-input>
             </div>
