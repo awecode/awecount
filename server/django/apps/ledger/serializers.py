@@ -75,6 +75,8 @@ class PartySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
+        if validated_data.get("party") == "":
+            validated_data["party"] = None
         instance = super().create(validated_data)
         if representatives:
             for representative in representatives:
