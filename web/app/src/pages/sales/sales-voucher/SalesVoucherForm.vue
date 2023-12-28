@@ -67,7 +67,7 @@
                         label="Add"
                         size="md"
                         @click="fetchInvoice(fields)"
-                        data-testid="add-invoice-btn"
+                        data-testid="add-reference-btn"
                       ></q-btn>
                     </div>
                   </q-card-section>
@@ -96,10 +96,16 @@
                       checkPermissions('PartyCreate') ? PartyForm : null
                     "
                     @update:modelValue="onPartyChange"
+                    data-testid="party-name-input"
                   />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
-                  <q-btn flat size="md" @click="() => switchMode(fields)">
+                  <q-btn
+                    flat
+                    size="md"
+                    @click="() => switchMode(fields)"
+                    data-testid="switch-account-group-btn"
+                  >
                     <q-icon name="mdi-account-group"></q-icon>
                   </q-btn>
                 </div>
