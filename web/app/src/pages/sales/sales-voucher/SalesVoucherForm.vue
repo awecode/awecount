@@ -96,7 +96,6 @@
                       checkPermissions('PartyCreate') ? PartyForm : null
                     "
                     @update:modelValue="onPartyChange"
-                    data-testid="party-name-input"
                   />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
