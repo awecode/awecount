@@ -109,7 +109,6 @@ export default {
         .catch((data) => {
           if (data.status === 422) {
             useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
-              debugger
               if (fields.value) {
                 fields.value.status = status
               }
