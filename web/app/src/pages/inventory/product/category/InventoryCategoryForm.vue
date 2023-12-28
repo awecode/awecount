@@ -136,7 +136,7 @@ import NAutoComplete from 'src/components/NAutoComplete.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-// const emit = defineEmits([])
+const emit = defineEmits([])
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },
   { value: 'Number', label: 'Number' },
