@@ -85,7 +85,7 @@
           class="q-pa-sm focus-highLight"
           color="transparent"
           :disable="hasChallan"
-          data-testid="delete-row-btn"
+          data-testid="row-delete-btn"
         >
           <q-icon
             name="delete"
