@@ -90,14 +90,16 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const endpoint = '/v1/payment-receipt/'
     const $q = useQuasar()
+    const store = useLoginStore()
     const addInoviceModal = ref(false)
     const invoiceFormData = ref({
-      fiscal_year: null,
+      fiscal_year: store.companyInfo?.current_fiscal_year_id || null,
       invoice_no: null,
       tax_deducted_at_source: true,
     })
