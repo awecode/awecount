@@ -605,6 +605,8 @@ class CreditNote(TransactionModel, InvoiceModel):
                 for row in sales_rows:
                     credit_note_row = rows.get(item=row.item)
                     sold_items = row.sold_items
+                    if not sold_items:
+                        break
                     purchase_row_ids = [key for key, value in sold_items.items()]
                     purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
                     quantity = credit_note_row.quantity
