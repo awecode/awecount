@@ -83,6 +83,7 @@ export default {
       title: 'Credit Note | Awecount',
     }
     useMeta(metaData)
+    const $q = useQuasar()
     const fields = ref(null)
     const isDeleteOpen = ref(false)
     const submitChangeStatus = (id, status) => {
@@ -105,7 +106,31 @@ export default {
             isDeleteOpen.value = false
           }
         })
-        .catch((err) => console.log('err from the api', err))
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
+              debugger
+              if (fields.value) {
+                fields.value.status = status
+              }
+              if (status === 'Cancelled') {
+                isDeleteOpen.value = false
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+            })
+          } else $q.notify({
+              color: 'negative',
+              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              icon: 'report_problem',
+            })
+        })
     }
     const print = (bodyOnly) => {
       let ifram = document.createElement('iframe')
