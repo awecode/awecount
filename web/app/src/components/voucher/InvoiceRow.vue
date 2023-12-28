@@ -58,7 +58,7 @@
               ? 'col-5'
               : 'col-12'
               ">
-              <n-auto-complete v-model="modalValue.discount_type" label="Discount*" :options="discountOptions">
+              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions">
               </n-auto-complete>
             </div>
             <div :class="showRowTradeDiscount ? 'col-3' : 'col-6'" v-if="modalValue.discount_type === 'Amount' ||
