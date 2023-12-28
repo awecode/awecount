@@ -610,7 +610,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                     quantity = credit_note_row.quantity
                     for purchase_row in purchase_voucher_rows:
                         can_be_reduced = purchase_row.remaining_quantity
-                        diff = self.quantity - can_be_reduced
+                        diff = quantity - can_be_reduced
                         if diff > 0:
                             purchase_row.remaining_quantity -= can_be_reduced
                             purchase_row.save()
