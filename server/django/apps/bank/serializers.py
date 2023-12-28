@@ -11,12 +11,6 @@ class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         exclude = ('company',)
-    
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        if not ret["account_name"]:
-            ret["account_name"] = f"{instance.bank_name}-{instance.account_number}" if instance.bank_name else instance.account_number
-        return ret
 
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
