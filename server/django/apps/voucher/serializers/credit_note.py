@@ -82,7 +82,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                 row_data = next((item for item in rows_data if item['id'] == row.id), None)
                 sold_items = row.sold_items
                 purchase_row_ids = [key for key, value in sold_items.items()]
-                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
+                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
                 quantity = row_data["quantity"]
                 for purchase_row in purchase_voucher_rows:
                     can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
@@ -90,11 +90,15 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                     if diff <= can_be_added:
                         purchase_row.remaining_quantity += quantity
                         purchase_row.save()
+                        row.sold_items[str(purchase_row.id)] -= quantity
+                        row.save()
                         break
                     else:
                         purchase_row.remaining_quantity += can_be_added
                         purchase_row.save()
                         quantity -= can_be_added
+                        row.sold_items.pop(str(purchase_row.id))
+                        row.save()
                         continue
 
     def create(self, validated_data):

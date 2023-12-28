@@ -615,10 +615,14 @@ class CreditNote(TransactionModel, InvoiceModel):
                             purchase_row.remaining_quantity -= can_be_reduced
                             purchase_row.save()
                             quantity -= can_be_reduced
+                            row.sold_items[str(purchase_row.id)] += can_be_reduced
+                            row.save()
                             continue
                         else:
                             purchase_row.remaining_quantity -= quantity
                             purchase_row.save()
+                            row.sold_items[str(purchase_row.id)] += quantity
+                            row.save()
                             break
         super().cancel()
 
