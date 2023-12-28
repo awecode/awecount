@@ -24,10 +24,12 @@
                     </div>
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"></q-input>
-                    <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
-                      option-value="id" option-label="name" map-options emit-value></q-select>
-                    <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
+                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"></q-input>
+                    <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices">
+                    </n-auto-complete>
+                    <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
+                      option-value="id" option-label="name" map-options emit-value></q-select> -->
+                    <q-select label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value></q-select>
                     <div class="row justify-end q-mt-lg">
