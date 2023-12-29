@@ -45,12 +45,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
-                  :error-message="errors.discount_type" :options="formDefaults.collections
-                    ? staticOptions.discount_types.concat(
-                      formDefaults?.collections.discounts
-                    )
-                    : staticOptions.discount_types
-                    " :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
+                  :error-message="errors.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||
@@ -77,12 +72,7 @@
       </q-card>
       <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="formDefaults.collections
-    ? staticOptions.discount_types.concat(
-      formDefaults?.collections.discounts
-    )
-    : staticOptions.discount_types
-    " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
@@ -324,6 +314,13 @@ export default {
       formData.fields.value.meta_tax = data.totalTax
       formData.fields.value.total_amount = data.total
     }
+    const discountOptionsComputed = computed(() => {
+      if (formData?.formDefaults.value?.collections?.discounts) {
+        return staticOptions.discount_types.concat(
+          formData.formDefaults.value.collections.discounts
+        )
+      } else return staticOptions.discount_types
+    })
     return {
       ...formData,
       CategoryForm,
@@ -341,7 +338,8 @@ export default {
       referenceFormData,
       discountField,
       checkPermissions,
-      updateVoucherMeta
+      updateVoucherMeta,
+      discountOptionsComputed
     }
   },
 }
