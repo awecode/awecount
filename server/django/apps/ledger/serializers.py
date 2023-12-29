@@ -71,10 +71,15 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
 
 class PartySerializer(serializers.ModelSerializer):
+    tax_registration_number = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
     representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
         representatives = validated_data.pop('representative', None)
+        if validated_data.get("tax_registration_number") == "":
+            validated_data["tax_registration_number"] = None
+        # else:
+        #     validated_data["part"]
         instance = super().create(validated_data)
         if representatives:
             for representative in representatives:
@@ -87,6 +92,8 @@ class PartySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         representatives = validated_data.pop('representative', None)
+        if validated_data.get("tax_registration_number") == "":
+            validated_data["tax_registration_number"] = None
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):

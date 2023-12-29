@@ -183,4 +183,4 @@ class DebitNoteDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DebitNote
-        exclude = ('company', 'user', 'bank_account', 'invoices')
+        exclude = ('company', 'user', 'bank_account')
