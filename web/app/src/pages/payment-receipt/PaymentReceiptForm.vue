@@ -40,7 +40,7 @@
           </div>
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">
-              <DatePicker class="col-md-6 col-12" label="Cheque Date" v-model="fields.cheque_date"></DatePicker>
+              <DatePicker class="col-md-6 col-12" label="Cheque Date" v-model="fields.cheque_date" :notRequired="true" :error="!!errors?.cheque_date" :error-message="errors?.cheque_date"></DatePicker>
               <q-input class="col-md-6 col-12" label="Cheque Number *" v-model="fields.cheque_number"
                 :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number"></q-input>
             </div>
@@ -90,14 +90,16 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const endpoint = '/v1/payment-receipt/'
     const $q = useQuasar()
+    const store = useLoginStore()
     const addInoviceModal = ref(false)
     const invoiceFormData = ref({
-      fiscal_year: null,
+      fiscal_year: store.companyInfo?.current_fiscal_year_id || null,
       invoice_no: null,
       tax_deducted_at_source: true,
     })

@@ -332,7 +332,7 @@ const essentialLinks: EssentialLinkProps[] = [
     icon: 'mdi-bank',
     children: [
       {
-        title: 'Accounts',
+        title: 'Bank Accounts',
         icon: 'mdi-bank',
         link: '/bank-accounts/list/',
         hide: !checkPermissions('BankAccountView')
