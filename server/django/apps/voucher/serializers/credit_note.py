@@ -134,6 +134,10 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
 
     invoice_data = serializers.SerializerMethodField()
+    # invoices = serializers.SerializerMethodField()
+
+    # def get_invoices(self, obj):
+    #     return obj.invoices.values_list("id", flat=True)
 
     def get_invoice_data(self, obj):
         data = []
@@ -143,4 +147,4 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreditNote
-        exclude = ('company', 'user', 'bank_account', 'invoices')
+        exclude = ('company', 'user', 'bank_account')
