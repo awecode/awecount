@@ -243,6 +243,7 @@ export default {
                 fields.rows = []
                 response.rows.forEach((row) => {
                   delete row.id
+                  row.taxObj = row.tax_scheme
                   fields.rows.push(row)
                 })
               }
