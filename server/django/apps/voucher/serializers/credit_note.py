@@ -34,7 +34,6 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                                  serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
-    invoices = serializers.SerializerMethodField()
 
     def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
@@ -94,6 +93,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         return instance
 
     def update(self, instance, validated_data):
+        import ipdb; ipdb.set_trace()
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         self.validate_voucher_status(validated_data, instance)
