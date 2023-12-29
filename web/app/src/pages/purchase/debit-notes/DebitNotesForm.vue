@@ -48,12 +48,7 @@
                 ? 'col-4'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount" :options="formDefaults.collections
-                  ? staticOptions.discount_types.concat(
-                    formDefaults?.collections.discounts
-                  )
-                  : staticOptions.discount_types
-                  " :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||
@@ -80,12 +75,7 @@
       </q-card>
       <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="formDefaults.collections
-    ? staticOptions.discount_types.concat(
-      formDefaults?.collections.discounts
-    )
-    : staticOptions.discount_types
-    " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
@@ -102,7 +92,7 @@
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
           :disable="fields.invoices ? false : true" type="submit" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" :loading="loading" color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
+          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
@@ -257,7 +247,13 @@ export default {
       formData.fields.value.meta_tax = data.totalTax
       formData.fields.value.total_amount = data.total
     }
-
+    const discountOptionsComputed = computed(() => {
+      if (formData?.formDefaults.value?.collections?.discounts) {
+        return staticOptions.discount_types.concat(
+          formData.formDefaults.value.collections.discounts
+        )
+      } else return staticOptions.discount_types
+    })
     return {
       ...formData,
       CategoryForm,
@@ -276,7 +272,8 @@ export default {
       discountField,
       partyChoices,
       checkPermissions,
-      updateVoucherMeta
+      updateVoucherMeta,
+      discountOptionsComputed
     }
   },
   created() {

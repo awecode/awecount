@@ -80,7 +80,7 @@ export default function useGeneratePosPdf(
     <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 110px; object-fit: contain; position: absolute ${
+    }" alt="Compony Logo" style="height: 110px; max-width:190px; object-fit: contain; position: absolute ${
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
   <div style="text-align:center; padding-left: 10px;">
@@ -107,7 +107,7 @@ export default function useGeneratePosPdf(
       </div>
       </div>
   </div>
-    </div> 
+    </div>
     <div style="display: flex; justify-content: end; font-family: Arial, Helvetica, sans-serif;">
     <div
       style="
@@ -129,8 +129,8 @@ export default function useGeneratePosPdf(
       </div>
     </div>
   </div>
-    </div>  
-    
+    </div>
+
   <hr style="margin: 20px 0" />`
   } else {
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
