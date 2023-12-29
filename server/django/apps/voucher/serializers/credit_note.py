@@ -93,7 +93,6 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         return instance
 
     def update(self, instance, validated_data):
-        import ipdb; ipdb.set_trace()
         rows_data = validated_data.pop('rows')
         invoices = validated_data.pop('invoices')
         self.validate_voucher_status(validated_data, instance)
