@@ -197,7 +197,6 @@ export default {
               delete data[item]
             })
             data.rows.forEach(row => {
-              delete row["id"]
               row.taxObj = row.tax_scheme
               if (row.discount_type === "") {
                 row.discount_type = null
