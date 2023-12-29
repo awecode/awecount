@@ -111,7 +111,7 @@
         <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft') " :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" :loading="loading"
-          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
+          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>

@@ -102,7 +102,7 @@
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
           :disable="fields.invoices ? false : true" type="submit" />
         <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" :loading="loading" color="green-8"
-          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoices && fields.invoices.length > 0)" />
+          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
