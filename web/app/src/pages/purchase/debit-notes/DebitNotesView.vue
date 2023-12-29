@@ -132,10 +132,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
-        endpoint = `/v1/purchase-vouchers/${id}/mark_as_paid/`
+        endpoint = `/v1/debit-note/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/purchase-vouchers/${id}/cancel/`
+        endpoint = `/v1/debit-note/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)
@@ -160,13 +160,31 @@ export default {
         .catch((err) => {
           // TODO: Properly Parse Error and show
           let message = null
-          if (err.status === 500 && err.data.detail) {
-            message = err.data.detail
+          if (err.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
+              if (fields.value) {
+                fields.value.status = status
+              }
+              if (status === 'Cancelled') {
+                isDeleteOpen.value = false
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+            })
           }
-          $q.notify({
-            color: 'red-6',
-            message: message || 'Something Went Wrong!',
-          })
+          else {
+            message = err?.data?.detail
+            $q.notify({
+              color: 'red-6',
+              message: message || 'Something Went Wrong!',
+            })
+          }
         })
     }
     const getDate = computed(() => {
