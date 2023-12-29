@@ -34,6 +34,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                                  serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
+    invoices = serializers.SerializerMethodField()
 
     def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
@@ -134,10 +135,10 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
     tax_registration_number = serializers.ReadOnlyField(source='party.tax_registration_number')
 
     invoice_data = serializers.SerializerMethodField()
-    invoice_ids = serializers.SerializerMethodField()
+    # invoices = serializers.SerializerMethodField()
 
-    def get_invoice_ids(self, obj):
-        return obj.invoices.values_list("id", flat=True)
+    # def get_invoices(self, obj):
+    #     return obj.invoices.values_list("id", flat=True)
 
     def get_invoice_data(self, obj):
         data = []
@@ -147,4 +148,4 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreditNote
-        exclude = ('company', 'user', 'bank_account', 'invoices')
+        exclude = ('company', 'user', 'bank_account')
