@@ -79,11 +79,24 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             purchase_rows = voucher.rows.all()
             for row in purchase_rows:
                 row_data = next((item for item in rows_data if item['id'] == row.id), None)
-                # row.quantity -= row_data["quantity"]
                 if row.remaining_quantity < row_data["quantity"] and not self.context["request"].query_params.get("fifo_inconsistency"):
                     raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconcistency")
-                row.remaining_quantity -= row_data["quantity"]
-                row.save()
+                if row_data["quantity"] > row.item.remaining_quantity and not self.context["request"].query_params.get("negative_stock"):
+                    raise UnprocessableException(detail="This can cause inconsistency in fifo.", code="negative_stock")
+                if row.remaining_quantity < row_data["quantity"]:
+                    diff = row_data["quantity"] - row.remaining_quantity
+                    row.remaining_quantity -= 0
+                    available_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("-voucher__date", "-id")
+                    for row in available_rows:
+                        if row.available_quantity > diff:
+                            row.remaining_quantity -= diff
+                            row.save()
+                            break
+                        else:
+                            diff -= row.remaining_quantity
+                            row.remaining_quantity = 0
+                            row.save()
+                            continue
                 # sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
                 # for sales_row in sales_rows:
                 #     sold_qt = sales_row.sold_items.get(str(row.id))
