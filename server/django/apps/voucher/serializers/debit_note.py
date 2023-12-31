@@ -81,7 +81,7 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                 row_data = next((item for item in rows_data if item['id'] == row.id), None)
                 if row.remaining_quantity < row_data["quantity"] and not self.context["request"].query_params.get("fifo_inconsistency"):
                     raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconcistency")
-                if row_data["quantity"] > row.item.remaining_quantity and not self.context["request"].query_params.get("negative_stock"):
+                if row_data["quantity"] > row.item.remaining_stock and not self.context["request"].query_params.get("negative_stock"):
                     raise UnprocessableException(detail="This can cause inconsistency in fifo.", code="negative_stock")
                 if row.remaining_quantity < row_data["quantity"]:
                     diff = row_data["quantity"] - row.remaining_quantity
@@ -97,32 +97,6 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                             row.remaining_quantity = 0
                             row.save()
                             continue
-                # sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
-                # for sales_row in sales_rows:
-                #     sold_qt = sales_row.sold_items.get(str(row.id))
-                #     if sold_qt 
-                # import ipdb; ipdb.set_trace()
-                # sales_row_id = rows_data[row.id]
-                # sold_items = row.sold_items
-                # purchase_row_ids = [key for key, value in sold_items.items()]
-                # purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
-                # quantity = row_data["quantity"]
-                # for purchase_row in purchase_voucher_rows:
-                #     can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
-                #     diff = quantity - purchase_row.quantity
-                #     if diff <= can_be_added:
-                #         purchase_row.remaining_quantity += quantity
-                #         purchase_row.save()
-                #         row.sold_items[str(purchase_row.id)] -= quantity
-                #         row.save()
-                #         break
-                #     else:
-                #         purchase_row.remaining_quantity += can_be_added
-                #         purchase_row.save()
-                #         quantity -= can_be_added
-                #         row.sold_items.pop(str(purchase_row.id))
-                #         row.save()
-                #         continue
 
     def create(self, validated_data):
         from copy import deepcopy
