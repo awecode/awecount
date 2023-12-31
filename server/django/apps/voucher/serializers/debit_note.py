@@ -1,3 +1,4 @@
+from awecount.libs.exception import UnprocessableException
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -78,8 +79,10 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             purchase_rows = voucher.rows.all()
             for row in purchase_rows:
                 row_data = next((item for item in rows_data if item['id'] == row.id), None)
-                row.quantity -= row_data["quantity"]
-                # row.remaining_quantity -= row_data["quantity"]
+                # row.quantity -= row_data["quantity"]
+                if row.remaining_quantity < row_data["quantity"] and not self.context["request"].query_params.get("fifo_inconsistency"):
+                    raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconcistency")
+                row.remaining_quantity -= row_data["quantity"]
                 row.save()
                 # sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
                 # for sales_row in sales_rows:
