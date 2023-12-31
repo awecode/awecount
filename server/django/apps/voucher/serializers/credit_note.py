@@ -5,7 +5,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
-from ..models import CreditNoteRow, CreditNote
+from ..models import CreditNoteRow, CreditNote, PurchaseVoucherRow
 
 
 class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
@@ -71,9 +71,40 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
+    
+    def cancel_sales(self, instance, rows_data):
+        sales_vouchers = instance.invoices.all()
+        for voucher in sales_vouchers:
+            sales_rows = voucher.rows.all()
+            for row in sales_rows:
+                # import ipdb; ipdb.set_trace()
+                # sales_row_id = rows_data[row.id]
+                row_data = next((item for item in rows_data if item['id'] == row.id), None)
+                sold_items = row.sold_items
+                purchase_row_ids = [key for key, value in sold_items.items()]
+                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
+                quantity = row_data["quantity"]
+                for purchase_row in purchase_voucher_rows:
+                    can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
+                    diff = quantity - purchase_row.quantity
+                    if diff <= can_be_added:
+                        purchase_row.remaining_quantity += quantity
+                        purchase_row.save()
+                        row.sold_items[str(purchase_row.id)] -= quantity
+                        row.save()
+                        break
+                    else:
+                        purchase_row.remaining_quantity += can_be_added
+                        purchase_row.save()
+                        quantity -= can_be_added
+                        row.sold_items.pop(str(purchase_row.id))
+                        row.save()
+                        continue
 
     def create(self, validated_data):
+        from copy import deepcopy
         rows_data = validated_data.pop('rows')
+        rows_data_copy = deepcopy(rows_data)
         invoices = validated_data.pop('invoices')
         request = self.context['request']
         self.assign_fiscal_year(validated_data, instance=None)
@@ -83,12 +114,16 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         validated_data['company_id'] = request.company_id
         validated_data['user_id'] = request.user.id
         instance = CreditNote.objects.create(**validated_data)
+        # sales_row_ids = []
         for index, row in enumerate(rows_data):
+            row.pop("id")
             row = self.assign_discount_obj(row)
             CreditNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
+        if self.context["request"].company.inventory_setting.enable_fifo:
+            self.cancel_sales(instance, rows_data_copy)
         # instance.synchronize()
         return instance
 

@@ -38,7 +38,7 @@ from apps.voucher.serializers.voucher_settings import PurchaseSettingCreateSeria
     SalesUpdateSettingSerializer, PurchaseUpdateSettingSerializer, PurchaseSettingSerializer, SalesSettingsSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales
 # from awecount.libs.db import DistinctSum
-from awecount.libs import get_next_voucher_no
+from awecount.libs import get_next_voucher_no, zero_for_none
 from awecount.libs.CustomViewSet import CRULViewSet, CollectionViewSet, CompanyViewSetMixin, GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
@@ -412,7 +412,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     if str(purchase_row.id) in sold_items.keys():
                         sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
                     else:
-                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantitynegati
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             row.sold_items = sold_items
@@ -461,7 +461,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             
             # Negative stock check
             if request.company.inventory_setting.enable_negative_stock_check:
-                if request.query_params["negative_stock"]:
+                if request.query_params.get("negative_stock"):
                     purchase_voucher.cancel()
                     self.fifo_update_sales_rows(purchase_voucher)
                 purchase_rows = purchase_voucher.rows.all()
@@ -474,7 +474,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     sum = 0
                     for item in sold_items:
                         sum += item[str(row.id)]
-                    remaining_quantity = row.item.remaining_stock - row.quantity
+                    remaining_quantity = zero_for_none(row.item.remaining_stock) - row.quantity
                     if remaining_quantity <= 0:
                         raise UnprocessableException(detail="Negative Stock Warning!", code="negative_stock")
             purchase_voucher.cancel()
@@ -594,6 +594,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
+        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
+            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
         obj = self.get_object()
         try:
             obj.cancel()
@@ -723,6 +725,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk):
+        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
+            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
         obj = self.get_object()
         try:
             obj.cancel()

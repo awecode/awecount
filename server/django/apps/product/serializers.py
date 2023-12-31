@@ -379,14 +379,4 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 class InventorySettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventorySetting
-        exclude = ['company'
-            "id",
-            "dr_amount",
-            "cr_amount",
-            "current_balance",
-            "date",
-            "source_type",
-            "account_id",
-            "source_id",
-            "voucher_no",
-        ]
+        exclude = ['company']

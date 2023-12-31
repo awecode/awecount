@@ -249,6 +249,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+        
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
                     return data
@@ -268,9 +272,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     # if item.negative_stock(row["quantity"]):
                     if item.remaining_stock < row["quantity"]:
                         raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name}", code="negative_stock")
-        if data.get("discount") and data.get("discount") < 0:
-            raise ValidationError({"discount": ["Discount cannot be negative."]})
-
+                    if not request.query_params.get("negative_stock") and item.remaining_stock and item.remaining_stock < row["quantity"]:
+                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}", code="negative_stock")
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):

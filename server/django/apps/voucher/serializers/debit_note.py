@@ -1,3 +1,4 @@
+from awecount.libs.exception import UnprocessableException
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -71,9 +72,42 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
+    
+    def cancel_purchase(self, instance, rows_data):
+        purchase_vouchers = instance.invoices.all()
+        for voucher in purchase_vouchers:
+            purchase_rows = voucher.rows.all()
+            for row in purchase_rows:
+                row_data = next((item for item in rows_data if item['id'] == row.id), None)
+                if row.remaining_quantity < row_data["quantity"] and not self.context["request"].query_params.get("fifo_inconsistency"):
+                    raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconcistency")
+                if row_data["quantity"] > row.item.remaining_stock and not self.context["request"].query_params.get("negative_stock"):
+                    raise UnprocessableException(detail="This can cause inconsistency in fifo.", code="negative_stock")
+                # import ipdb; ipdb.set_trace()
+                if row.remaining_quantity < row_data["quantity"]:
+                    diff = row_data["quantity"] - row.remaining_quantity
+                    row.remaining_quantity = 0
+                    row.save()
+                    available_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("-voucher__date", "-id")
+                    for row in available_rows:
+                        if row.available_quantity > diff:
+                            row.remaining_quantity -= diff
+                            row.save()
+                            break
+                        else:
+                            diff -= row.remaining_quantity
+                            row.remaining_quantity = 0
+                            row.save()
+                            continue
+                else:
+                    row.remaining_quantity -= row_data["quantity"]
+                    row.save()
+
 
     def create(self, validated_data):
+        from copy import deepcopy
         rows_data = validated_data.pop('rows')
+        rows_data_copy = deepcopy(rows_data)
         invoices = validated_data.pop('invoices')
         request = self.context['request']
         self.assign_fiscal_year(validated_data)
@@ -84,11 +118,14 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         validated_data['user_id'] = request.user.id
         instance = DebitNote.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
+            row.pop("id")
             row = self.assign_discount_obj(row)
             DebitNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
+        if self.context["request"].company.inventory_setting.enable_fifo:
+            self.cancel_purchase(instance, rows_data_copy)
         return instance
 
     def update(self, instance, validated_data):
