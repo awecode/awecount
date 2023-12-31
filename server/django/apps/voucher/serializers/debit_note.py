@@ -83,9 +83,11 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                     raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconcistency")
                 if row_data["quantity"] > row.item.remaining_stock and not self.context["request"].query_params.get("negative_stock"):
                     raise UnprocessableException(detail="This can cause inconsistency in fifo.", code="negative_stock")
+                # import ipdb; ipdb.set_trace()
                 if row.remaining_quantity < row_data["quantity"]:
                     diff = row_data["quantity"] - row.remaining_quantity
-                    row.remaining_quantity -= 0
+                    row.remaining_quantity = 0
+                    row.save()
                     available_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("-voucher__date", "-id")
                     for row in available_rows:
                         if row.available_quantity > diff:
@@ -97,6 +99,10 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                             row.remaining_quantity = 0
                             row.save()
                             continue
+                else:
+                    row.remaining_quantity -= row_data["quantity"]
+                    row.save()
+
 
     def create(self, validated_data):
         from copy import deepcopy
