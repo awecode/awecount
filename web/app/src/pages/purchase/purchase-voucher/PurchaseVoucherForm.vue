@@ -49,12 +49,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
-                  :error-message="errors.discount_type" :options="formDefaults.collections
-                    ? staticOptions.discount_types.concat(
-                      formDefaults?.collections.discounts
-                    )
-                    : staticOptions.discount_types
-                    " :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                  :error-message="errors.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -98,12 +93,7 @@
       </q-card>
       <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="formDefaults.collections
-    ? staticOptions.discount_types.concat(
-      formDefaults?.collections.discounts
-    )
-    : staticOptions.discount_types
-    " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
@@ -129,14 +119,14 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft" type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
           type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue' : 'Update'" />
       </div>
     </q-card>
   </q-form>
@@ -311,6 +301,13 @@ export default {
         formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
       }
     })
+    const discountOptionsComputed = computed(() => {
+      if (formData?.formDefaults.value?.collections?.discounts) {
+        return staticOptions.discount_types.concat(
+          formData.formDefaults.value.collections.discounts
+        )
+      } else return staticOptions.discount_types
+    })
     return {
       ...formData,
       CategoryForm,
@@ -324,7 +321,8 @@ export default {
       checkPermissions,
       importPurchaseOrder,
       referenceFormData,
-      fetchInvoice
+      fetchInvoice,
+      discountOptionsComputed
     }
   },
 }

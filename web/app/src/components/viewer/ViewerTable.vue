@@ -31,7 +31,7 @@
         <q-td>
           {{ row.item_name }} <br>
           <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">
-            <div v-for="(des, index) in row.description.split('\n')" :key="index">
+            <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
               {{ des }}
             </div>
           </span>

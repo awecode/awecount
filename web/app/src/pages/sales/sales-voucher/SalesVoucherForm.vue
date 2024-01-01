@@ -12,7 +12,6 @@
           >
         </div>
       </q-card-section>
-
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -143,31 +142,13 @@
               :toLimit="fields.date"
             ></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
-              <div
-                :class="
-                  ['Percent', 'Amount'].includes(fields.discount_type)
-                    ? 'col-6'
-                    : 'col-12'
-                "
-                data-testid="overall-discount-type-div"
-              >
-                <n-auto-complete
-                  v-model="fields.discount_type"
-                  label="Discount"
-                  :error="errors?.discount_type ? errors?.discount_type : null"
-                  :options="
-                    formDefaults.collections
-                      ? staticOptions.discount_types.concat(
-                          formDefaults?.collections.discounts
-                        )
-                      : staticOptions.discount_types
-                  "
-                  :modal-component="
-                    checkPermissions('SalesDiscountCreate')
-                      ? SalesDiscountForm
-                      : null
-                  "
-                >
+              <div :class="['Percent', 'Amount'].includes(fields.discount_type)
+                ? 'col-6'
+                : 'col-12'
+                " data-testid="overall-discount-type-div">
+                <n-auto-complete v-model="fields.discount_type" label="Discount"
+                  :error="errors?.discount_type ? errors?.discount_type : null" :options="discountOptionsComputed"
+                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -236,36 +217,15 @@
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table
-        :itemOptions="
-          formDefaults.collections ? formDefaults.collections.items : null
-        "
-        :unitOptions="
-          formDefaults.collections ? formDefaults.collections.units : null
-        "
-        :discountOptions="
-          formDefaults.collections
-            ? staticOptions.discount_types.concat(
-                formDefaults?.collections.discounts
-              )
-            : staticOptions.discount_types
-        "
-        :taxOptions="formDefaults.collections?.tax_schemes"
-        v-model="fields.rows"
-        :mainDiscount="{
-          discount_type: fields.discount_type,
-          discount: fields.discount,
-        }"
-        :errors="!!errors.rows ? errors.rows : null"
-        @deleteRowErr="
-          (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-        "
-        :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"
-        :inputAmount="formDefaults.options?.enable_amount_entry"
-        :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
-        :hasChallan="!!(fields.challans && fields.challans.length > 0)"
-      ></invoice-table>
+      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+        " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+    discount_type: fields.discount_type,
+    discount: fields.discount,
+  }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+  " :enableRowDescription="formDefaults.options?.enable_row_description"
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
+      :hasChallan="!!(fields.challans && fields.challans.length > 0)"  ></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -312,40 +272,14 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn
-          v-if="!isEdit && checkPermissions('SalesCreate')"
-          :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-          color="orange-8"
-          label="Draft"
-          type="submit"
-          class="issue-btn"
-        />
-        <q-btn
-          v-if="
-            isEdit &&
-            fields.status === 'Draft' &&
-            checkPermissions('SalesModify')
-          "
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-          :loading="loading"
-          color="orange-8"
-          label="Save Draft"
-          type="submit"
-          class="draft-btn"
-        />
-        <q-btn
-          v-if="checkPermissions('SalesCreate')"
-          :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green"
-          :label="
-            isEdit
-              ? 'Update'
-              : `Issue # ${formDefaults.options?.voucher_no || 1}`
-          "
-          class="issue-btn"
-        />
+        <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
+          type="submit" class="issue-btn" />
+        <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" :label=" isEdit ? 'Update Draft' : 'Save Draft'"
+          type="submit" class="draft-btn" />
+        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
+          color="green" :label="isEdit ? fields?.status === 'Issued' ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}` : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
       </div>
     </q-card>
   </q-form>
@@ -368,7 +302,7 @@ export default {
     const importChallanModal = ref(false)
     const referenceFormData = ref({
       invoice_no: null,
-      fiscal_year: loginStore.companyInfo.current_fiscal_year_id || null,
+      fiscal_year: loginStore.companyInfo.current_fiscal_year_id || null
     })
     const staticOptions = {
       discount_types: discount_types,
@@ -410,9 +344,7 @@ export default {
       fields.status = status
       if (!partyMode.value) fields.customer_name = null
       else fields.party = null
-      try {
-        await submitForm()
-      } catch (err) {
+      try { await submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -439,20 +371,15 @@ export default {
           const url = 'v1/challan/by-voucher-no/'
           useApi(
             url +
-              `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
+            `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
           )
             .then((data) => {
               const response = { ...data }
               if (fields.challans) {
-                if (
-                  (fields.party && fields.party !== response.party) ||
-                  (fields.customer_name &&
-                    fields.customer_name !== response.customer_name)
-                ) {
+                if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
                   $q.notify({
                     color: 'red-6',
-                    message:
-                      'A single challan can be issued to a single party/customer only',
+                    message: 'A single challan can be issued to a single party/customer only',
                     icon: 'report_problem',
                     position: 'top-right',
                   })
@@ -507,11 +434,11 @@ export default {
             })
             .catch((err) => {
               $q.notify({
-                color: 'red-6',
-                message: err.data?.detail || 'Error',
-                icon: 'report_problem',
-                position: 'top-right',
-              })
+                  color: 'red-6',
+                  message: err.data?.detail || 'Error',
+                  icon: 'report_problem',
+                  position: 'top-right',
+                })
             })
         }
       } else {
@@ -526,41 +453,40 @@ export default {
     const onPartyChange = (value) => {
       let index
       if (!!value && !!formData.formDefaults.value.collections) {
-        index = formData.formDefaults.value.collections.parties.findIndex(
-          (option) => option.id === value
-        )
+        index =
+          formData.formDefaults.value.collections.parties.findIndex(
+            (option) => option.id === value
+          )
         formData.fields.value.address =
           formData.formDefaults.value.collections.parties[index].address
         if (index) {
-          formData.fields.value.mode = 'Credit'
+          formData.fields.value.mode = "Credit"
         }
-      } else if (!index) formData.fields.value.mode = 'Cash'
+      } else if (!index) formData.fields.value.mode = "Cash"
     }
-    watch(
-      () => formData.formDefaults.value,
-      () => {
-        if (
-          formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')
-        ) {
-          formData.fields.value.trade_discount =
-            formData.formDefaults.value.fields?.trade_discount
-        }
-        if (formData.isEdit.value) {
-          if (formData.fields.value.customer_name) partyMode.value = true
-        } else {
-          if (formData.formDefaults.value.fields?.mode) {
-            if (isNaN(formData.formDefaults.value.fields?.mode)) {
-              formData.fields.value.mode =
-                formData.formDefaults.value.fields.mode
-            } else {
-              formData.fields.value.mode = Number(
-                formData.formDefaults.value.fields.mode
-              )
-            }
-          } else formData.fields.value.mode = 'Credit'
-        }
+    watch(() => formData.formDefaults.value, () => {
+      if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
+        formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
       }
-    )
+      if (formData.isEdit.value) {
+        if (formData.fields.value.customer_name) partyMode.value = true
+      } else {
+        if (formData.formDefaults.value.fields?.mode) {
+          if (isNaN(formData.formDefaults.value.fields?.mode)) {
+            formData.fields.value.mode = formData.formDefaults.value.fields.mode
+          } else {
+            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
+          }
+        } else formData.fields.value.mode = 'Credit'
+      }
+    })
+    const discountOptionsComputed = computed(() => {
+      if (formData?.formDefaults.value?.collections?.discounts) {
+        return staticOptions.discount_types.concat(
+          formData.formDefaults.value.collections.discounts
+        )
+      } else return staticOptions.discount_types
+    })
     return {
       ...formData,
       CategoryForm,
@@ -580,6 +506,7 @@ export default {
       onPartyChange,
       // TODO: temp
       show_row_column_in_voucher_row,
+      discountOptionsComputed
     }
   },
 }

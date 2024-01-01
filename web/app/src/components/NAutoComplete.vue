@@ -19,7 +19,11 @@
       :error="!!props?.error"
       clearable
       clear-icon="close"
-    />
+    >
+    <template #no-option>
+      <div class="py-3 px-4 bg-slate-1">No Results Found</div>
+    </template>
+    </q-select>
     <div>
       <q-btn
         v-if="modalComponent"
