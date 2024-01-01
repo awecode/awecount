@@ -26,6 +26,8 @@
             </div>
             <q-input v-model="fields.opening_balance" label="Opening Balance *" class="col-12 col-md-6"
               :error-message="errors.opening_balance" :error="!!errors.opening_balance" type="number" />
+              <q-input v-model="fields.opening_balance_rate" label="Rate" class="col-12 col-md-6"
+              :error-message="errors.opening_balance_rate" :error="!!errors.opening_balance_rate" type="number" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
