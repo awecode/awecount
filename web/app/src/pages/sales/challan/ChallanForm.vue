@@ -54,7 +54,7 @@
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft' ? 'Issue' : 'Update'"/>
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"/>
       </div>
     </q-card>
     <q-dialog v-model="isDeleteOpen">
