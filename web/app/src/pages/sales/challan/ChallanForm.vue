@@ -50,11 +50,11 @@
         <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')" :loading="loading"
           @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Draft" type="submit" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" :label=" isEdit ? 'Update Draft' : 'Save Draft'" type="submit" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
+          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft' ? 'Issue' : 'Update'"/>
       </div>
     </q-card>
     <q-dialog v-model="isDeleteOpen">

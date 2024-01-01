@@ -99,9 +99,9 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft') " :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Draft" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green-8" :loading="loading"
-          :label="isEdit ? 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" :label=" isEdit ? 'Update Draft' : 'Save Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
+        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :loading="loading"
+          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : 'Issue' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
