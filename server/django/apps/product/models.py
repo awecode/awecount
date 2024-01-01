@@ -677,7 +677,10 @@ class Item(models.Model):
 
     @property
     def remaining_stock(self):
-        return self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+        remaining = self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+        if self.account:
+            remaining += zero_for_none(self.account.opening_balance)
+        return remaining
     
     @property
     def available_stock_data(self):
