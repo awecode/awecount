@@ -60,7 +60,7 @@ class ItemOpeningSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryAccount
-        fields = ('id', 'name', 'item_id', 'opening_balance',)
+        fields = ('id', 'name', 'item_id', 'opening_balance', 'opening_balance_rate')
 
 
 class ItemPOSSerializer(serializers.ModelSerializer):
