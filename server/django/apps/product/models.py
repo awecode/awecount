@@ -677,14 +677,19 @@ class Item(models.Model):
 
     @property
     def remaining_stock(self):
-        remaining = self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+        remaining = self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"] or 0
         if self.account:
             remaining += zero_for_none(self.account.opening_balance)
         return remaining
     
     @property
     def available_stock_data(self):
-        return self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
+        data = dict(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
+        if self.account:
+            ob = self.account.opening_balance
+            if ob:
+                data["ob"] = ob
+        return data
 
     class Meta:
         unique_together = ('code', 'company',)
