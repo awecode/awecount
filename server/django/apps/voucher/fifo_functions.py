@@ -59,11 +59,26 @@ def fifo_cancel_sales(voucher, allow_fifo_inconsistency: bool = False):
 def fifo_handle_sales_create(row):
     item_id = row.get("item_id")
     quantity = row.get("quantity")
+    sold_items = {}
+
+    inv_account = Item.objects.get(id=row["item_id"]).account
+    if inv_account and inv_account.opening_balance:
+        if quantity > inv_account.opening_balance:
+            inv_account.opening_balance = 0
+            inv_account.save()
+            quantity -= inv_account.opening_balance
+            sold_items["OB"] = quantity
+        else:
+            inv_account.opening_balance -= quantity
+            inv_account.save()
+            sold_items["OB"] = quantity
+            return sold_items
+        
     purchase_rows = PurchaseVoucherRow.objects.filter(
         item_id=item_id,
         remaining_quantity__gt=0
     ).order_by("voucher__date", "id")
-    sold_items = {}
+        
     for purchase_row in purchase_rows:
         if purchase_row.remaining_quantity == quantity:
             purchase_row.remaining_quantity = 0
