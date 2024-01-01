@@ -249,6 +249,7 @@ class InventoryAccount(models.Model):
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
+    opening_balance_rate = models.FloatField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='inventory')
 
     def __str__(self):

@@ -214,6 +214,7 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
         if not opening_balance:
             raise ValidationError({'opening_balance': ['Opening balance is required.']})
         account.opening_balance = data.get('opening_balance')
+        account.opening_balance_rate = data.get('opening_balance_rate')
         account.save()
         fiscal_year = self.request.company.current_fiscal_year
         account.item.update_opening_balance(fiscal_year)
