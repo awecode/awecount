@@ -48,7 +48,7 @@ export default function useGeneratePdf(
         }</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
         hideRowQuantity ? 'display: none' : ''
-      }">${row.rate}</span></th>
+      }">${$nf(row.rate)}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
         formatNumberWithComma((row.quantity * row.rate), 2)
       }</th>

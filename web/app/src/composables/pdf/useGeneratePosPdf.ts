@@ -46,7 +46,7 @@ export default function useGeneratePosPdf(
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
       }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
-          row.rate
+          $nf(row.rate)
         }</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
