@@ -684,11 +684,14 @@ class Item(models.Model):
     
     @property
     def available_stock_data(self):
-        data = dict(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
+        data = list(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
         if self.account:
             ob = self.account.opening_balance
             if ob:
-                data["ob"] = ob
+                data.append({
+                    "remaining_quantity":  ob,
+                    "rate": self.account.opening_balance_rate
+                })
         return data
 
     class Meta:
