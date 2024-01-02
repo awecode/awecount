@@ -1,5 +1,6 @@
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <div>
+    <q-form class="q-pa-lg print-hide" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -60,18 +61,12 @@
           <div class="col-grow">Total</div>
           <div class="col-2">
             {{
-              fields?.rows?.reduce(
-                (accum, item) => accum + Number(item.dr_amount),
-                0
-              ) || 0
+              $nf(getTotalDrAmount)
             }}
           </div>
           <div class="col-2">
             {{
-              fields?.rows?.reduce(
-                (accum, item) => accum + Number(item.cr_amount),
-                0
-              ) || 0
+              $nf(getTotalCrAmount)
             }}
           </div>
         </div>
@@ -98,6 +93,121 @@
       </div>
     </div>
   </q-form>
+  <div class="print-only mt-1">
+    <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
+    <div>
+      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">{{
+        store?.companyInfo.name
+      }} </h1>
+      <div>{{store?.companyInfo.address}}</div>
+      <div>Tax Reg. No. <strong>{{ store.companyInfo.tax_registration_number }}</strong></div>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-end;
+      "
+    >
+      <div style="margin-bottom: 5px;">
+        <img v-if="store?.companyInfo.logo_url" :src="store?.companyInfo.logo_url" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain;"/>
+      </div>
+      <div style="display: flex; align-items: center">
+        <img
+          src="/icons/telephone-fill.svg"
+          alt="Email"
+          style="margin-right: 10px; width: 14px"
+        />
+        <span style="color: skyblue">{{store?.companyInfo.contact_no}}</span>
+      </div>
+      <div style="display: flex; align-items: center" v-if="store?.companyInfo?.emails?.length > 0">
+        <img
+          src="/icons/envelope-fill.svg"
+          alt="Call"
+          style="margin-right: 10px; width: 14px"
+        /><span style="color: skyblue">{{store?.companyInfo.emails && store.companyInfo.emails.length ?  companyInfo.emails.join(',&nbsp;') : ''}}</span>
+      </div>
+    </div>
+  </div>
+  <hr style="margin: 20px 0" />
+      <div class="text-center text-bold text-subtitle1 q-mb-md">
+          Journal Voucher (Income)
+      </div>
+      <div class="row justify-between">
+        <div>Date: {{ fields?.date || '-' }}</div>
+        <div>J.V. No.: {{ fields?.voucher_no }}</div>
+      </div>
+      <table class="w-full text-center text-xs">
+        <thead>
+          <tr class="text-bold">
+            <th class="col-one">SN</th>
+            <th class="col-two">Type</th>
+            <th class="col-three">Code</th>
+            <th class="col-four">Account</th>
+            <th class="col-five">Acc. Sheet No</th>
+            <th class="col-six">Debit</th>
+            <th class="col-seven">Credit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(row, index) in fields?.rows"
+            :key="row.id"
+            class="q-my-md"
+          >
+            <td>{{ index + 1 }}</td>
+            <td>{{ row.type + ' ' }}</td>
+            <td>{{ row?.account_code }}</td>
+            <td>
+              <router-link :to="`/account/${row.account_id}/view/`">
+                {{ row.account_name }}
+              </router-link>
+            </td>
+            <td>{{ row.account_id }}</td>
+            <td>{{ row.dr_amount || '-' }}</td>
+            <td>{{ row.cr_amount || '-' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="text-bold q-mt-md">
+            <td colspan="5">Total</td>
+
+            <td>{{ $nf(getTotalDrAmount) }}</td>
+            <td>{{ $nf(getTotalCrAmount) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="q-mt-xs narration" v-if="fields?.narration">
+        <span class="text-bold">Narration:&nbsp;</span>
+        <span>{{ fields?.narration }}</span>
+      </div>
+
+      <div class="row q-mt-md">
+        <div class="col" style="line-height: 160%">
+          <div class="underline">Prepared By</div>
+          <div>Name : {{ store?.userInfo.fullName }}</div>
+          <div>Designation:</div>
+          <div>Date : {{ today }}</div>
+        </div>
+        <div class="col" style="line-height: 160%">
+          <div class="underline">Checked By</div>
+          <div>Name:</div>
+          <div>Designation:</div>
+          <div>Date:</div>
+        </div>
+
+        <div class="col" style="line-height: 160%">
+          <div class="underline">Approved By</div>
+          <div>Name:</div>
+          <div>Designation:</div>
+          <div>Date:</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -162,16 +272,114 @@ function prompt() {
       // console.log('I am triggered on both OK and Cancel')
     })
 }
+const getTotalCrAmount = computed(
+  () =>
+    fields.value?.rows?.reduce(
+      (accum, item) => accum + Number(item.cr_amount),
+      0
+    ) || 0
+)
+
+const getTotalDrAmount = computed(
+  () =>
+    fields.value?.rows?.reduce(
+      (accum, item) => accum + Number(item.dr_amount),
+      0
+    ) || 0
+)
+const today = DateConverter.getRepresentation(
+  new Date().toISOString().slice(0, 10),
+  store.isCalendarInAD ? 'ad' : 'bs'
+)
 </script>
 
 <style scoped>
 @media print {
-
-  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
-
   .q-card {
     box-shadow: none;
+    border: 1px solid gray;
+    border-radius: 0;
+  }
+  .q-markup-table,
+  .q-markup-table {
+    box-shadow: none;
+  }
+  hr {
+    margin: 0px;
+  }
+  .q-col-gutter-y-md > *,
+  .q-col-gutter-md > * {
+    padding: 0px;
+  }
+  .q-col-gutter-y-md,
+  .q-col-gutter-md {
+    margin-top: 0px;
+    padding: 8px 20px;
+  }
+  .q-my-md {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+  a {
+    text-decoration: none;
+    color: black;
+  }
+  .q-card__section--vert {
+    padding: 10px 16px;
+  }
+  .narration {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .narration-selection-card {
     padding: 0;
   }
+  .underline {
+    text-underline-offset: 0.3em;
+    text-decoration: underline;
+  }
+  .col-one,
+  .col-two {
+    width: 10% !important;
+  }
+  .col-three {
+    width: 12%;
+  }
+  .col-four {
+    width: 27% !important;
+  }
+  .col-five {
+    width: 17% !important;
+  }
+  .col-six,
+  .col-seven {
+    width: 12% !important;
+  }
+}
+
+.col-one,
+.col-two,
+.col-three {
+  width: 12%;
+}
+.col-four {
+  width: 34%;
+}
+.col-five {
+  width: 0%;
+}
+.col-six,
+.col-seven {
+  width: 15%;
+}
+table,
+th,
+td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+td {
+  padding: 3px;
 }
 </style>
