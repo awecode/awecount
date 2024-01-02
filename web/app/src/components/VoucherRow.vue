@@ -57,6 +57,7 @@
             :disable="voucher.type == 'Dr' || voucher.type == null"
             :error-message="props.errors?.mismatch"
             :error="!!props.errors?.mismatch"
+            @focusout="focusOut"
           />
         </div>
         <div
