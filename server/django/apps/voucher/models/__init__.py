@@ -613,7 +613,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                         inv_account = row.item.account
                         ob = sold_items.pop("OB")
                         if quantity > ob:
-                            inv_account.opening_balance -= 0
+                            inv_account.opening_balance = 0
                             inv_account.save()
                             quantity -= ob
                             inv_account.save()
