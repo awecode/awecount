@@ -44,8 +44,8 @@
                   <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
                     row.account.name }}</router-link>
                 </div>
-                <div class="col-3">{{ row.dr_amount || null }}</div>
-                <div class="col-3">{{ row.cr_amount || null }}</div>
+                <div class="col-3">{{ $nf(row.dr_amount) || null }}</div>
+                <div class="col-3">{{ $nf(row.cr_amount) || null }}</div>
               </div>
             </template>
           </div>
@@ -53,10 +53,10 @@
             style="margin-left: -20px; margin-right: -20px">
             <div class="col-grow">Total</div>
             <div class="col-3">
-              {{ sameTransactionsData.total_dr }}
+              {{ $nf(sameTransactionsData.total_dr) }}
             </div>
             <div class="col-3">
-              {{ sameTransactionsData.total_cr }}
+              {{ $nf(sameTransactionsData.total_cr) }}
             </div>
           </div>
         </q-card-section>
@@ -106,18 +106,18 @@
                 <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
                   row.account.name }}</router-link>
               </div>
-              <div class="col-3">{{ row.dr_amount || null }}</div>
-              <div class="col-3">{{ row.cr_amount || null }}</div>
+              <div class="col-3">{{ $nf(row.dr_amount) || null }}</div>
+              <div class="col-3">{{ $nf(row.cr_amount) || null }}</div>
             </div>
           </div>
           <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
             style="margin-left: -20px; margin-right: -20px">
             <div class="col-grow">Sub Total</div>
             <div class="col-3">
-              {{ getAmount?.voucherTally[index].dr_amount }}
+              {{ $nf(getAmount?.voucherTally[index].dr_amount) }}
             </div>
             <div class="col-3">
-              {{ getAmount?.voucherTally[index].cr_amount }}
+              {{ $nf(getAmount?.voucherTally[index].cr_amount) }}
             </div>
           </div>
         </q-card-section>
@@ -159,18 +159,18 @@
         <div class="row text-bold">
           <div class="col-grow">Total</div>
           <div class="col-3">
-            {{ getAmount?.totalAmount.total_dr }}
+            {{ $nf(sameTransactionsData.total_dr) }}
           </div>
           <div class="col-3">
-            {{ getAmount?.totalAmount.total_cr }}
+            {{ $nf(sameTransactionsData.total_cr) }}
           </div>
         </div>
       </q-card-section></q-card>
   </template>
-  <template v-if="sameTransactionsData && fields?.length > 1">
+  <template v-if="sameTransactionsData">
     <div class="q-ma-md flex justify-end">
       <q-btn @click="seprateTransactions = !seprateTransactions"
-        :label="seprateTransactions ? 'View Merged Transactions' : 'View Separate Transactions'" color="green"></q-btn>
+        :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green"></q-btn>
     </div>
   </template>
 </template>
@@ -264,10 +264,7 @@ export default {
         })
         let newTransactionObj
         if (status) {
-          newTransactionObj = {
-            total_dr: 0,
-            total_cr: 0
-          }
+          newTransactionObj = {}
           const fieldsConst = JSON.parse(JSON.stringify(fields.value))
           fieldsConst.forEach((parent) => {
             parent.transactions.forEach(transaction => {
@@ -291,15 +288,32 @@ export default {
               }
             })
           })
-          // calculate net amount
-          newTransactionObj.total_cr = 0
-          newTransactionObj.total_dr = 0
+          let drIndex = 1
+          let crIndex = 99999999999999
+          let totalDrAmount = 0
+          let totalCrAmount = 0
           for (const [key, value] of Object.entries(newTransactionObj)) {
-            if (!['total_cr', 'total_dr'].includes(key)) {
-              newTransactionObj.total_cr += value.cr_amount || 0
-              newTransactionObj.total_dr += value.dr_amount || 0
+            if (!(value.dr_amount || value.cr_amount)) {
+              // Remove this object from newTransactionObj
+              delete newTransactionObj[key]
+              continue
             }
+            if (value.dr_amount) {
+              const newData = newTransactionObj[key]
+              delete newTransactionObj[key]
+              newTransactionObj[drIndex] = newData
+              drIndex++
+            } else if (value.cr_amount) {
+              const newData = newTransactionObj[key]
+              delete newTransactionObj[key]
+              newTransactionObj[crIndex] = newData
+              crIndex--
+            }
+            totalDrAmount += value.cr_amount || 0
+            totalCrAmount += value.dr_amount || 0
           }
+          newTransactionObj.total_dr = totalDrAmount
+          newTransactionObj.total_cr = totalCrAmount
         }
         return newTransactionObj || false
       }
