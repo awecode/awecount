@@ -16,6 +16,8 @@ from awecount.libs.exception import UnprocessableException
 def fifo_update_purchase_rows(rows):
     for row in rows:
         sold_items = row.sold_items
+        if sold_items.get("OB"):
+            sold_items.pop("OB")
         updates = [
             PurchaseVoucherRow.objects.filter(id=key).update(
                 remaining_quantity=F("remaining_quantity") + value
@@ -26,18 +28,30 @@ def fifo_update_purchase_rows(rows):
         row.save()
 
 
+def update_opening_balance(sold_item):
+    dct = sold_item.get("sold_items")
+    if dct.get("OB"):
+        ob = dct.pop("OB")
+        item = Item.objects.get(id=sold_item.get("item_id"))
+        item.account.opening_balance = ob
+        item.account.save()
+
+
 def fifo_cancel_sales(voucher, allow_fifo_inconsistency: bool = False):
     rows = voucher.rows.all()
+    sold_items = rows.values("item_id", "sold_items")
     if allow_fifo_inconsistency:
+        if sold_items:
+            for sold_item in sold_items:
+                update_opening_balance(sold_item)
         fifo_update_purchase_rows(rows)
         return Response({})
     else:
-        sold_item_dicts = rows.values_list("sold_items", flat=True)
-        sold_item_dicts = [x for x in sold_item_dicts if x]
         keys = []
-        if sold_item_dicts:
-            for dct in sold_item_dicts:
-                for k, v in dct.items():
+        if sold_items:
+            for sold_item in sold_items:
+                update_opening_balance(sold_item)
+                for k, v in sold_item["sold_items"].items():
                     if int(k) not in keys:
                         keys.append(int(k))
             row_class_map = {SalesVoucher: SalesVoucherRow, Challan: ChallanRow}
@@ -64,10 +78,10 @@ def fifo_handle_sales_create(row):
     inv_account = Item.objects.get(id=row["item_id"]).account
     if inv_account and inv_account.opening_balance:
         if quantity > inv_account.opening_balance:
+            sold_items["OB"] = inv_account.opening_balance
             quantity -= inv_account.opening_balance
             inv_account.opening_balance = 0
             inv_account.save()
-            sold_items["OB"] = quantity
         else:
             inv_account.opening_balance -= quantity
             inv_account.save()
