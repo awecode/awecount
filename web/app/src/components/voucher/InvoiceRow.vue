@@ -107,7 +107,6 @@
         </q-input>
       </div>
     </div>
-    {{ itemPriceComputed }}
   </div>
 </template>
 
