@@ -64,9 +64,9 @@ def fifo_handle_sales_create(row):
     inv_account = Item.objects.get(id=row["item_id"]).account
     if inv_account and inv_account.opening_balance:
         if quantity > inv_account.opening_balance:
+            quantity -= inv_account.opening_balance
             inv_account.opening_balance = 0
             inv_account.save()
-            quantity -= inv_account.opening_balance
             sold_items["OB"] = quantity
         else:
             inv_account.opening_balance -= quantity
