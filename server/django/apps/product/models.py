@@ -688,10 +688,12 @@ class Item(models.Model):
         if self.account:
             ob = self.account.opening_balance
             if ob:
-                data.append({
+                obj = {
                     "remaining_quantity":  ob,
                     "rate": self.account.opening_balance_rate
-                })
+                }
+                data.insert(0, obj)
+
         return data
 
     class Meta:
