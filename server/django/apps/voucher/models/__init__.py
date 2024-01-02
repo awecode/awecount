@@ -605,11 +605,28 @@ class CreditNote(TransactionModel, InvoiceModel):
                 for row in sales_rows:
                     credit_note_row = rows.get(item=row.item)
                     sold_items = row.sold_items
+                    quantity = credit_note_row.quantity
+                    import ipdb; ipdb.set_trace()
                     if not sold_items:
                         break
+                    if sold_items.get("OB"):
+                        inv_account = row.item.account
+                        ob = sold_items.pop("OB")
+                        if quantity > ob:
+                            inv_account.opening_balance -= 0
+                            inv_account.save()
+                            quantity -= ob
+                            inv_account.save()
+                            # row.sold_items["OB"] += ob
+                            # row.save()
+                        else:
+                            inv_account.opening_balance -= quantity
+                            inv_account.save()
+                            # row.sold_items["OB"] += quantity
+                            # row.save()
+                            return
                     purchase_row_ids = [key for key, value in sold_items.items()]
                     purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    quantity = credit_note_row.quantity
                     for purchase_row in purchase_voucher_rows:
                         can_be_reduced = purchase_row.remaining_quantity
                         diff = quantity - can_be_reduced
