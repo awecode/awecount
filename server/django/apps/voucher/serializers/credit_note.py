@@ -77,7 +77,6 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         for voucher in sales_vouchers:
             sales_rows = voucher.rows.all()
             for row in sales_rows:
-                # import ipdb; ipdb.set_trace()
                 # sales_row_id = rows_data[row.id]
                 row_data = next((item for item in rows_data if item['id'] == row.id), None)
                 sold_items = row.sold_items
@@ -89,11 +88,12 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                 purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
                 for purchase_row in purchase_voucher_rows:
                     can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
-                    diff = quantity - purchase_row.quantity
+                    diff = quantity - can_be_added
                     if diff >= can_be_added:
-                        purchase_row.remaining_quantity += quantity
+                        purchase_row.remaining_quantity += can_be_added
                         purchase_row.save()
-                        row.sold_items[str(purchase_row.id)] -= quantity
+                        row.sold_items[str(purchase_row.id)] -= can_be_added
+                        quantity -= can_be_added
                         row.save()
                         break
                     else:
