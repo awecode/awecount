@@ -606,7 +606,6 @@ class CreditNote(TransactionModel, InvoiceModel):
                     credit_note_row = rows.get(item=row.item)
                     sold_items = row.sold_items
                     quantity = credit_note_row.quantity
-                    import ipdb; ipdb.set_trace()
                     if not sold_items:
                         break
                     if sold_items.get("OB"):
