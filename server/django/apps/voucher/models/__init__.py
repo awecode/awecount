@@ -606,43 +606,78 @@ class CreditNote(TransactionModel, InvoiceModel):
                     credit_note_row = rows.get(item=row.item)
                     sold_items = row.sold_items
                     quantity = credit_note_row.quantity
-                    import ipdb; ipdb.set_trace()
                     if not sold_items:
                         break
+                    opening = None
                     if sold_items.get("OB"):
                         inv_account = row.item.account
                         ob = sold_items.pop("OB")
-                        if quantity > ob:
+                        if quantity > inv_account.opening_balance:
+                            opening = ob + inv_account.opening_balance
                             inv_account.opening_balance = 0
                             inv_account.save()
                             quantity -= ob
                             inv_account.save()
-                            # row.sold_items["OB"] += ob
+                            # import ipdb; ipdb.set_trace()
+                            # if not row.sold_items.get("OB"): 
                             # row.save()
                         else:
                             inv_account.opening_balance -= quantity
                             inv_account.save()
-                            # row.sold_items["OB"] += quantity
-                            # row.save()
+                            opening = ob + quantity
+                            row.sold_items["OB"] = opening
+                            row.save()
                             return
                     purchase_row_ids = [key for key, value in sold_items.items()]
                     purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    for purchase_row in purchase_voucher_rows:
-                        can_be_reduced = purchase_row.remaining_quantity
-                        diff = quantity - can_be_reduced
-                        if diff > 0:
-                            purchase_row.remaining_quantity -= can_be_reduced
-                            purchase_row.save()
-                            quantity -= can_be_reduced
-                            row.sold_items[str(purchase_row.id)] += can_be_reduced
-                            row.save()
-                            continue
-                        else:
-                            purchase_row.remaining_quantity -= quantity
-                            purchase_row.save()
-                            row.sold_items[str(purchase_row.id)] += quantity
-                            row.save()
-                            break
+                    if purchase_voucher_rows.exists():
+                        for purchase_row in purchase_voucher_rows:
+                            # can_be_reduced = purchase_row.remaining_quantity
+                            # diff = quantity - can_be_reduced
+                            if quantity > purchase_row.remaining_quantity:
+                                purchase_row.remaining_quantity = 0
+                                purchase_row.save()
+                                quantity -= purchase_row.remaining_quantity
+                                # if not row.sold_items.get(str(purchase_row.id)):
+                                row.sold_items[str(purchase_row.id)] = purchase_row.quantity
+                                # else:
+                                #     row.sold_items[str(purchase_row.id)] += can_be_reduced
+                                row.save()
+                                continue
+                            else:
+                                purchase_row.remaining_quantity -= quantity
+                                purchase_row.save()
+                                # if not row.sold_items.get(str(purchase_row.id)):
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                # else:
+                                #     row.sold_items[str(purchase_row.id)] += quantity
+                                row.save()
+                                break
+                    if quantity>0:
+                        purchase_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("voucher__date", "id")
+                        for purchase_row in purchase_rows:
+                            if purchase_row.remaining_quantity == quantity:
+                                purchase_row.remaining_quantity = 0
+                                purchase_row.save()
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.save()
+                                break
+                            elif purchase_row.remaining_quantity > quantity:
+                                purchase_row.remaining_quantity -= quantity
+                                purchase_row.save()
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.save()
+                                break
+                            else:
+                                quantity -= purchase_row.remaining_quantity
+                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                purchase_row.remaining_quantity = 0
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                purchase_row.save()
+                                row.save()
+                    if opening:
+                        row.sold_items["OB"] = opening
+                        row.save()
         return super().cancel()
 
 
