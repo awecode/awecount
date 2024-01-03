@@ -132,7 +132,7 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
-        endpoint = `/v1/debit-note/${id}/mark_as_paid/`
+        endpoint = `/v1/debit-note/${id}/mark_as_resolved/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
         endpoint = `/v1/debit-note/${id}/cancel/`
