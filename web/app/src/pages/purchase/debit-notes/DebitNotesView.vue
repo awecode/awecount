@@ -59,10 +59,10 @@
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn v-if="checkPermissions('DebitNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
             :to="`/debit-note/${fields.id}`" color="orange-6" label="Edit" icon="edit" />
-          <q-btn v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
+          <q-btn :loading="isLoading" v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')" color="green-6" label="mark as resolved"
             icon="mdi-check-all" />
-          <q-btn v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
+          <q-btn :loading="isLoading" v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
@@ -102,6 +102,7 @@ import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
+import { F } from 'app/src-capacitor/android/app/src/main/assets/public/assets/format.4ffa39ec'
 interface Fields {
   status: string
   voucher_no: string
@@ -128,6 +129,7 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
+    const isLoading = ref(false)
     const submitChangeStatus = (id: number, status: string) => {
       let endpoint = ''
       let body: null | object = null
@@ -138,6 +140,7 @@ export default {
         endpoint = `/v1/debit-note/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
+      isLoading.value = true
       useApi(endpoint, body)
         .then(() => {
           // if (fields.value)
@@ -156,6 +159,7 @@ export default {
               })
             }
           }
+          isLoading.value = false
         })
         .catch((err) => {
           // TODO: Properly Parse Error and show
@@ -176,6 +180,7 @@ export default {
                   icon: 'report_problem',
                 })
               }
+              isLoading.value = false
             })
           }
           else {
@@ -185,6 +190,7 @@ export default {
               message: message || 'Something Went Wrong!',
             })
           }
+          isLoading.value = false
         })
     }
     const getDate = computed(() => {
@@ -248,7 +254,8 @@ export default {
       deleteMsg,
       onPrintclick,
       getDate,
-      checkPermissions
+      checkPermissions,
+      isLoading
     }
   },
   created() {
