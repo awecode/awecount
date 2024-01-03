@@ -60,7 +60,7 @@
           <q-btn v-if="checkPermissions('DebitNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
             :to="`/debit-note/${fields.id}`" color="orange-6" label="Edit" icon="edit" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as resolved"
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')" color="green-6" label="mark as resolved"
             icon="mdi-check-all" />
           <q-btn v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" />
@@ -71,7 +71,7 @@
           :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
           @click="onPrintclick(false)" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Paid'" color="blue-7" label="Journal Entries"
+        <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Resolved'" color="blue-7" label="Journal Entries"
           icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
       </div>
     </div>
@@ -131,7 +131,7 @@ export default {
     const submitChangeStatus = (id: number, status: string) => {
       let endpoint = ''
       let body: null | object = null
-      if (status === 'Paid') {
+      if (status === 'Resolved') {
         endpoint = `/v1/debit-note/${id}/mark_as_resolved/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
@@ -149,10 +149,10 @@ export default {
                 message: 'Voucher has been cancelled.',
               })
               isDeleteOpen.value = false
-            } else if (status === 'Paid') {
+            } else if (status === 'Resolved') {
               $q.notify({
                 color: 'green-6',
-                message: 'Voucher Marked as paid.',
+                message: 'Voucher Marked as Resolved.',
               })
             }
           }
