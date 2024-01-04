@@ -52,20 +52,27 @@
         <q-btn label="Print" @click="onPrintclick" icon="print" />
       </div>
       <q-dialog v-model="isDeleteOpen">
-        <q-card style="min-width: min(40vw, 500px)">
-          <q-card-section class="bg-red-6">
-            <div class="text-h6 text-white">
-              <span class="q-mx-md">Are you sure?</span>
-            </div>
-          </q-card-section>
-          <q-card-section class="q-ma-md">
-            <div class="text-right q-mt-lg row justify-between q-mx-lg">
-              <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
-              <q-btn label="Deny" @click="() => (isDeleteOpen = false)"></q-btn>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
+          <q-card style="min-width: min(40vw, 400px)">
+            <q-card-section class="bg-red-6 q-py-md">
+              <div class="text-h6 text-white">
+                <span>Cancel Conformation?</span>
+              </div>
+            </q-card-section>
+            <q-separator inset />
+            <q-card-section>
+              <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+                Are you sure?
+              </div>
+              <div class=" text-blue">
+                <div class="row justify-end">
+                  <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+                  <q-btn flat class="text-red" label="Yes"
+                    @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
     </div>
   </div>
 </template>
