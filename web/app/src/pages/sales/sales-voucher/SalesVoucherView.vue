@@ -141,7 +141,6 @@ export default {
           loading.value = false
         })
         .catch((err) => {
-          console.log('err from the api', err)
           const parsedError = useHandleFormError(err)
           errors.value = parsedError.errors
           $q.notify({

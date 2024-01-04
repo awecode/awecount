@@ -57,7 +57,7 @@
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"/>
       </div>
     </q-card>
-    <q-dialog v-model="isDeleteOpen">
+    <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-red-6">
           <div class="text-h6 text-white">
@@ -66,7 +66,7 @@
         </q-card-section>
 
         <q-card-section class="q-ma-md">
-          <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+          <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick"></q-btn>
           </div>
@@ -189,17 +189,20 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Cancelled'
+          formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
           isDeleteOpen.value = false
           formData.loading.value = false
         })
         .catch((err) => {
-          let message = 'error'
-          if (err.data?.message) {
-            message = err.data?.message
-          }
+          // let message = 'error'
+          // if (err.data?.message) {
+          //   message = err.data?.message
+          // }
+          const parsedError = useHandleFormError(err)
+          formData.errors.value = parsedError.errors
           $q.notify({
             color: 'negative',
-            message,
+            message: parsedError.message,
             icon: 'report_problem',
           })
           formData.loading.value = false
