@@ -106,12 +106,12 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                 if ob and quantity>0:
                     inv_account = row.item.account
                     if quantity > ob:
-                        inv_account.opening_balance = ob
+                        inv_account.opening_quantity = ob
                         quantity -= ob
                         inv_account.save()
                         row.save()
                     else:
-                        inv_account.opening_balance = quantity
+                        inv_account.opening_quantity = quantity
                         inv_account.save()
                         row.sold_items["OB"] = ob - quantity
                         row.save()

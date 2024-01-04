@@ -612,9 +612,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                     if sold_items.get("OB"):
                         inv_account = row.item.account
                         ob = sold_items.pop("OB")
-                        if quantity > inv_account.opening_balance:
-                            opening = ob + inv_account.opening_balance
-                            inv_account.opening_balance = 0
+                        if quantity > inv_account.opening_quantity:
+                            opening = ob + inv_account.opening_quantity
+                            inv_account.opening_quantity = 0
                             inv_account.save()
                             quantity -= ob
                             inv_account.save()
@@ -622,7 +622,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                             # if not row.sold_items.get("OB"): 
                             # row.save()
                         else:
-                            inv_account.opening_balance -= quantity
+                            inv_account.opening_quantity -= quantity
                             inv_account.save()
                             opening = ob + quantity
                             row.sold_items["OB"] = opening

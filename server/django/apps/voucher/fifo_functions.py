@@ -33,7 +33,7 @@ def update_opening_balance(sold_item):
     if dct.get("OB"):
         ob = dct.pop("OB")
         item = Item.objects.get(id=sold_item.get("item_id"))
-        item.account.opening_balance = ob
+        item.account.opening_quantity = ob
         item.account.save()
 
 
@@ -76,14 +76,14 @@ def fifo_handle_sales_create(row):
     sold_items = {}
 
     inv_account = Item.objects.get(id=row["item_id"]).account
-    if inv_account and inv_account.opening_balance:
-        if quantity > inv_account.opening_balance:
-            sold_items["OB"] = inv_account.opening_balance
-            quantity -= inv_account.opening_balance
-            inv_account.opening_balance = 0
+    if inv_account and inv_account.opening_quantity:
+        if quantity > inv_account.opening_quantity:
+            sold_items["OB"] = inv_account.opening_quantity
+            quantity -= inv_account.opening_quantity
+            inv_account.opening_quantity = 0
             inv_account.save()
         else:
-            inv_account.opening_balance -= quantity
+            inv_account.opening_quantity -= quantity
             inv_account.save()
             sold_items["OB"] = quantity
             return sold_items
