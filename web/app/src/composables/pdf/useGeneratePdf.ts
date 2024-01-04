@@ -210,7 +210,7 @@ export default function useGeneratePdf(
         voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount)}</div>`
+      <div>${numberToText(invoiceInfo.voucher_meta.grand_total)}</div>`
       }
       </div>
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
@@ -232,11 +232,11 @@ export default function useGeneratePdf(
               ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
                 `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.total_amount)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>

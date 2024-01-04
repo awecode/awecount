@@ -226,7 +226,7 @@ export default function useGeneratePosPdf(
               ? compayInfo.invoice_template === 2 ? (`${clientRows[taxIndex].taxObj.rate} % ` + `${clientRows[taxIndex].taxObj.name}`) : (`${clientRows[taxIndex].taxObj.name} ` +
                 `${clientRows[taxIndex].taxObj.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax) }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
