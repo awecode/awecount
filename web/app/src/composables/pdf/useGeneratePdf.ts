@@ -236,7 +236,7 @@ export default function useGeneratePdf(
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
+            formatNumberWithComma(invoiceInfo.total_amount)
           }</span>
         </div>
       </div>
