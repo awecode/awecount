@@ -136,6 +136,7 @@ export default {
           }
           if (status === 'Cancelled') {
             isDeleteOpen.value = false
+            fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
           }
           loading.value = false
         })
