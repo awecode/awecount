@@ -77,7 +77,7 @@
             label="Journal Entries" icon="books" :to="`/journal-entries/purchase-vouchers/${fields?.id}/`" />
         </div>
       </div>
-      <q-dialog v-model="isDeleteOpen">
+      <q-dialog v-model="isDeleteOpen" @before-hide="errors = null">
         <q-card style="min-width: min(40vw, 500px)">
           <q-card-section class="bg-red-6">
             <div class="text-h6 text-white">
@@ -86,7 +86,7 @@
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
             </div>
@@ -131,6 +131,7 @@ export default {
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const isLoading:Ref<boolean> = ref(false)
+    const errors = ref(null)
     const submitChangeStatus = (id: number, status: string) => {
       isLoading.value = true
       let endpoint = ''
@@ -153,6 +154,7 @@ export default {
                 icon: 'check_circle',
                 message: 'Voucher has been cancelled.',
               })
+              fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
               isDeleteOpen.value = false
             } else if (status === 'Paid') {
               $q.notify({
@@ -164,11 +166,12 @@ export default {
           }
           isLoading.value = false
         })
-        .catch(() => {
-          // TODO: Properly Parse Error and show
+        .catch((err) => {
+          const parsedError = useHandleFormError(err)
+          errors.value = parsedError.errors
           $q.notify({
-            color: 'red-6',
-            message: 'Something Went Wrong!',
+            color: 'negative',
+            message: parsedError.message,
             icon: 'report_problem',
           })
           isLoading.value = false
@@ -210,7 +213,8 @@ export default {
       deleteMsg,
       getDate,
       checkPermissions,
-      isLoading
+      isLoading,
+      errors
     }
   },
   created() {
