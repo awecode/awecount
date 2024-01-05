@@ -266,7 +266,6 @@ const onCancelClick = () => {
       isDeleteOpen.value = false
     })
     .catch((err) => {
-      debugger
       const parsedError = useHandleFormError(err)
       errors.value = parsedError.errors
       $q.notify({
