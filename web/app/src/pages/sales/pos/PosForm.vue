@@ -176,7 +176,7 @@ export default {
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
         .then((data) => {
-          this.errors = null
+          this.errors = {}
           $q.notify({
             color: 'green',
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',

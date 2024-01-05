@@ -1,6 +1,6 @@
 const useHandleFormError = (data) => {
   let message = ''
-  let errors
+  let errors = {}
   if (data.status == 400) {
     message = 'Please fill out the form correctly.'
     if (data.data?.detail) {

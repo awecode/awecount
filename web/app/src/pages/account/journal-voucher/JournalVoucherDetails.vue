@@ -207,7 +207,7 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="isDeleteOpen" @before-hide="errors = null">
+    <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}">
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-red-6">
           <div class="text-h6 text-white">
