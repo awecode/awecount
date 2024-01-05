@@ -89,7 +89,7 @@
           :to="`/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
       </div>
       <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherCancel')">
-        <q-btn @click.prevent="prompt" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
+        <q-btn @click.prevent="isDeleteOpen = true" color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" />
       </div>
     </div>
   </q-form>
@@ -207,6 +207,21 @@
         </div>
       </div>
     </div>
+    <q-dialog v-model="isDeleteOpen" @before-hide="errors = null">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-red-6">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancelation?</span>
+          </div>
+        </q-card-section>
+        <q-card-section class="q-ma-md">
+          <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
+          <div class="text-right q-mt-lg">
+            <q-btn label="Confirm" @click="onCancelClick"></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -222,6 +237,10 @@ const $q = useQuasar()
 const metaData = {
   title: 'Journal Voucher | Awecount',
 }
+const deleteMsg = ref(null)
+const isDeleteOpen = ref(false)
+const loading = ref(false)
+const errors = ref(null)
 useMeta(metaData)
 const getData = () =>
   useApi(`/v1/journal-voucher/${props.id}/`).then((data) => {
@@ -229,10 +248,11 @@ const getData = () =>
   })
 getData()
 
-const cancel = (data) => {
+const onCancelClick = () => {
+  loading.value = true
   useApi(`/v1/journal-voucher/${props.id}/cancel/`, {
     method: 'POST',
-    body: { message: data },
+    body: { message:  deleteMsg.value},
   })
     .then(() => {
       fields.value?.status ? (fields.value.status = 'Cancelled') : ''
@@ -241,37 +261,44 @@ const cancel = (data) => {
         message: 'Success',
         icon: 'check_circle',
       })
+      fields.value.narration = `${fields.value.narration}` + ('\nReason for cancellation: ' + deleteMsg.value)
+      loading.value = false
+      isDeleteOpen.value = false
     })
-    .catch(() => {
+    .catch((err) => {
+      debugger
+      const parsedError = useHandleFormError(err)
+      errors.value = parsedError.errors
       $q.notify({
         color: 'negative',
-        message: 'error',
+        message: parsedError.message,
         icon: 'report_problem',
       })
+      loading.value = false
     })
 }
 
-function prompt() {
-  $q.dialog({
-    title: 'Confirm Cancelation?',
-    message: 'Reason for cancelation?',
-    prompt: {
-      model: '',
-      type: 'text', // optional
-    },
-    cancel: true,
-    persistent: true,
-  })
-    .onOk((data) => {
-      cancel(data)
-    })
-    .onCancel(() => {
-      // console.log('>>>> Cancel')
-    })
-    .onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
-}
+// function prompt() {
+//   $q.dialog({
+//     title: 'Confirm Cancelation?',
+//     message: 'Reason for cancelation?',
+//     prompt: {
+//       model: '',
+//       type: 'text', // optional
+//     },
+//     cancel: true,
+//     persistent: true,
+//   })
+//     .onOk((data) => {
+//       cancel(data)
+//     })
+//     .onCancel(() => {
+//       // console.log('>>>> Cancel')
+//     })
+//     .onDismiss(() => {
+//       // console.log('I am triggered on both OK and Cancel')
+//     })
+// }
 const getTotalCrAmount = computed(
   () =>
     fields.value?.rows?.reduce(
