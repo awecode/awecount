@@ -47,12 +47,34 @@
                 submitForm
               )
               " color="green-6" :label="'Update'" class="q-px-lg q-mb-sm" :loading="loading" />
-            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="onCancelClick" color="red-6" label="Cancel" :loading="loading"
+            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="isDeleteOpen = true" color="red-6" label="Cancel" :loading="loading"
               icon="cancel" class="q-px-lg q-mb-sm" />
           </span>
         </div>
       </q-card>
     </q-card>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancellation?</span>
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
+          </div>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="submitWithStatus('Cancelled')"></q-btn>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -77,6 +99,7 @@ export default {
           ' | Awecount',
       }
     })
+    const isDeleteOpen = ref(false)
     formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
     async function submitWithStatus(status, submitForm) {
@@ -86,21 +109,11 @@ export default {
         formData.fields.value.status = originalStatus
       }
     }
-    const onCancelClick = async () => {
-      $q.dialog({
-        title: '<span class="text-red">Delete?</span>',
-        message: 'Are you sure you want to delete?',
-        cancel: true,
-        html: true,
-      }).onOk(() => {
-        submitWithStatus('Cancelled')
-      })
-    }
     return {
       ...formData,
       submitWithStatus,
       checkPermissions,
-      onCancelClick
+      isDeleteOpen
     }
   },
 }
