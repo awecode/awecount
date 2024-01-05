@@ -185,32 +185,30 @@ export default {
         .catch((err) => {
           // TODO: Properly Parse Error and show
           let message = null
-          if (err.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
-              if (fields.value) {
-                fields.value.status = status
-              }
-              if (status === 'Cancelled') {
-                isDeleteOpen.value = false
-              }
-            }).catch((error) => {
-              if (error.status !== 'cancel') {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Something went Wrong!',
-                  icon: 'report_problem',
-                })
-              }
-              isLoading.value = false
-            })
-          }
-          else {
-            message = err?.data?.detail
-            $q.notify({
-              color: 'red-6',
-              message: message || 'Something Went Wrong!',
-            })
-          }
+          // if (err.status === 422) {
+          //   useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
+          //     if (fields.value) {
+          //       fields.value.status = status
+          //     }
+          //     if (status === 'Cancelled') {
+          //       isDeleteOpen.value = false
+          //     }
+          //   }).catch((error) => {
+          //     if (error.status !== 'cancel') {
+          //       $q.notify({
+          //         color: 'negative',
+          //         message: 'Something went Wrong!',
+          //         icon: 'report_problem',
+          //       })
+          //     }
+          //     isLoading.value = false
+          //   })
+          // }
+          message = err?.data?.detail
+          $q.notify({
+            color: 'red-6',
+            message: message || 'Something Went Wrong!',
+          })
           isLoading.value = false
         })
     }
