@@ -53,7 +53,7 @@
               <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
                 color="green" outline class="q-px-lg q-py-sm" style="display: inline-block;" label="Print Cheque"></q-btn>
               <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
-                @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+                @click.prevent="isDeleteOpen = true" icon="block" color="red" label="Cancel" class="q-ml-md" />
             </div>
             <div>
               <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
@@ -84,6 +84,28 @@
         </div>
       </div>
     </div>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancellation?</span>
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
+          </div>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="cancelForm"></q-btn>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -104,6 +126,7 @@ export default {
       getDefaults: true,
       successRoute: '/cheque-issue/list/',
     })
+    const isDeleteOpen = ref(false)
     useMeta(() => {
       return {
         title:
@@ -223,7 +246,8 @@ export default {
       updateBankAccount,
       onChequePrint,
       amtArrayComputed,
-      formatNumberWithCommas
+      formatNumberWithCommas,
+      isDeleteOpen
     }
   },
 }
