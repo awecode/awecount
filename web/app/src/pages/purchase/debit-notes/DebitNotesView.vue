@@ -75,7 +75,7 @@
           icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
       </div>
     </div>
-    <q-dialog v-model="isDeleteOpen">
+    <!-- <q-dialog v-model="isDeleteOpen">
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-red-6">
           <div class="text-h6 text-white">
@@ -87,6 +87,28 @@
           <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog> -->
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md">
+          <div class="text-h6 text-white">
+            <span>Cancel Conformation?</span>
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
+          </div>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+            </div>
           </div>
         </q-card-section>
       </q-card>
@@ -102,7 +124,6 @@ import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
-import { F } from 'app/src-capacitor/android/app/src/main/assets/public/assets/format.4ffa39ec'
 interface Fields {
   status: string
   voucher_no: string

@@ -68,10 +68,6 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading" />
         </div>
-        <div v-else class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading"/>
-        </div>
         <div>
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/purchase-vouchers/${fields?.id}/`" />
