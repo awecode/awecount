@@ -211,7 +211,7 @@
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-red-6">
           <div class="text-h6 text-white">
-            <span>Confirm Cancelation?</span>
+            <span>Confirm Cancellation?</span>
           </div>
         </q-card-section>
         <q-card-section class="q-ma-md">

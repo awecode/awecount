@@ -55,7 +55,7 @@
           <q-card style="min-width: min(40vw, 400px)">
             <q-card-section class="bg-red-6 q-py-md">
               <div class="text-h6 text-white">
-                <span>Cancel Confirmation?</span>
+                <span>Confirm Cancellation?</span>
               </div>
             </q-card-section>
             <q-separator inset />
