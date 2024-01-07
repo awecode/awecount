@@ -182,6 +182,13 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
+          console.log(data, '--------------------------------------------')
+          console.log(getTaxObj, '--------------------------------------------')
+          console.log(gePartyObj, '--------------------------------------------')
+          console.log(getTaxObj(), '--------------------------------------------')
+          console.log(gePartyObj(), '--------------------------------------------')
+          console.log(!formData.formDefaults.value.options.show_rate_quantity_in_voucher, '--------------------------------------------')
+          console.log(formData.fields.value.rows, '--------------------------------------------')
           const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows)
           console.log('useGeneratePosPdf', printData)
           printPdf(printData)
