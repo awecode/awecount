@@ -16,7 +16,7 @@
             </div>
             <div v-else class="col-md-6 col-12">
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
-              <q-dialog v-model="addRefrence">
+              <q-dialog v-model="addRefrence" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no && delete errors?.party">
                 <q-card style="min-width: min(60vw, 400px)">
                   <q-card-section class="bg-grey-4">
                     <div class="text-h6">
@@ -24,14 +24,14 @@
                     </div>
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
-                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"></q-input>
-                    <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices">
+                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
+                    <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party">
                     </n-auto-complete>
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->
                     <q-select label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
-                      emit-value></q-select>
+                      emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" ></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
                     </div>
@@ -39,7 +39,7 @@
                 </q-card>
               </q-dialog>
             </div>
-            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date *" :error="!!errors.date" :error-message="errors.date"></date-picker>
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Start Date *" :error="!!errors?.date" :error-message="errors?.date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -48,21 +48,21 @@
                 ? 'col-4'
                 : 'col-12'
                 ">
-                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||
                 fields.discount_type === 'Percent'
                 ">
-                <q-input class="col-6" v-model.number="fields.discount" label="Discount" :error-message="errors.discount"
-                  :error="!!errors.discount"></q-input>
+                <q-input class="col-6" v-model.number="fields.discount" label="Discount" :error-message="errors?.discount"
+                  :error="!!errors?.discount"></q-input>
                 <q-checkbox v-model="fields.trade_discount" label="Trade Discount?" class="col-6">
                 </q-checkbox>
               </div>
             </div>
             <div class="row col-md-6 col-12">
-              <q-select v-model="fields.mode" label="Mode *" class="col-12" :error-message="errors.mode"
-                :error="!!errors.mode" :options="staticOptions.modes.concat(
+              <q-select v-model="fields.mode" label="Mode *" class="col-12" :error-message="errors?.mode"
+                :error="!!errors?.mode" :options="staticOptions.modes.concat(
                   formDefaults.collections?.bank_accounts
                 )
                   " option-value="id" option-label="name" map-options emit-value>
@@ -78,7 +78,7 @@
     " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
-  }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
+  }" :errors="!!errors?.rows ? errors?.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
         :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12"
@@ -163,6 +163,10 @@ export default {
       }
     }
     const fetchInvoice = (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
+      delete formData.errors.value.party
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year &&
@@ -213,17 +217,26 @@ export default {
             addRefrence.value = false
           })
           .catch((err) => {
-            if (err.status === 404) {
-              $q.notify({
-                color: 'red-6',
-                message: 'Invoice not found!',
-                icon: 'report_problem',
-                position: 'top-right',
-              })
-            }
-            // addRefrence.value = false
+            let message
+            if (err.status === 404) message = 'Invoice Not Found!'
+            else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
+            $q.notify({
+              color: 'red-6',
+              message: message,
+              icon: 'report_problem',
+              position: 'top-right',
+            })
           })
       } else {
+        if (!referenceFormData.value.invoice_no) {
+          formData.errors.value.invoice_no = "Invoice Number is required!"
+        }
+        if (!referenceFormData.value.party) {
+          formData.errors.value.party = "Party is required!"
+        }
+        if (!referenceFormData.value.fiscal_year) {
+          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+        }
         $q.notify({
           color: 'red-6',
           message: 'Please fill in the form completely!',

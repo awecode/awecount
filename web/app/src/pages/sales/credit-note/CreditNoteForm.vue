@@ -239,14 +239,12 @@ export default {
             else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
             $q.notify({
               color: 'red-6',
-              message: message || 'Error',
+              message: message,
               icon: 'report_problem',
               position: 'top-right',
             })
-            formData.errors.value = {}
           })
       } else {
-        if (!formData?.errors?.value) formData.errors.value = {}
         if (!referenceFormData.value.invoice_no) {
           formData.errors.value.invoice_no = "Invoice Number is required!"
         }
