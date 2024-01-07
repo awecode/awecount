@@ -28,7 +28,7 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Tax Account"
+          <q-btn color="orange" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Edit"
             :to="`/taxes/${props.row.id}/`" />
         </q-td>
       </template>
