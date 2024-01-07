@@ -172,6 +172,7 @@ export default {
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
     const onSubmitClick = (status, fields, useGeneratePosPdf) => {
+      console.log('useGeneratePosPdf', useGeneratePosPdf)
       formData.fields.value.status = status
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
@@ -207,7 +208,7 @@ export default {
     formData.fields.value.due_date = formData.today
     // handle Search
     const fetchResults = async () => {
-      const data = await useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
+      useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
         .then((data) => {
           (searchResults.value = data)
           if (enterClicked.value) {
