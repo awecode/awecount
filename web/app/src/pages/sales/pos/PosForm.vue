@@ -334,7 +334,7 @@ export default {
       checkPermissions,
       store,
       discountOptionsComputed,
-
+      useGeneratePosPdf
     }
   },
   created() {
