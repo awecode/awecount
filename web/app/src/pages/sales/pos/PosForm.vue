@@ -284,6 +284,7 @@ export default {
       } else return null
     }
     const print = (data) => {
+      debugger
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
