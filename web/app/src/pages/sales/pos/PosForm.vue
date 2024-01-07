@@ -182,6 +182,7 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
+          console.log('useGeneratePosPdf', useGeneratePosPdf)
           printPdf(data, useGeneratePosPdf)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
