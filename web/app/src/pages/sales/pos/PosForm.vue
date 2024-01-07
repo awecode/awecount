@@ -183,7 +183,7 @@ export default {
             icon: 'check',
           })
           debugger
-          print(data, useGeneratePosPdf)
+          printPdf(data, useGeneratePosPdf)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
         })
@@ -284,7 +284,7 @@ export default {
         return partyChoices.value[index]
       } else return null
     }
-    const print = (data, useGeneratePosPdf) => {
+    const printPdf = (data, useGeneratePosPdf) => {
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
@@ -326,7 +326,7 @@ export default {
       searchResults,
       onAddItem,
       partyChoices,
-      print,
+      printPdf,
       $router,
       hasItemModifyAccess,
       enterClicked,
