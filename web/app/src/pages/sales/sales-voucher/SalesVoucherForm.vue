@@ -234,6 +234,7 @@ export default {
             icon: 'report_problem',
             position: 'top-right',
           })
+          formData.errors.value.invoice_no = "The invoice has already been added!"
         } else {
           const url = 'v1/challan/by-voucher-no/'
           useApi(
@@ -306,11 +307,10 @@ export default {
               else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
               $q.notify({
                 color: 'red-6',
-                message: message || 'Error',
+                message: message,
                 icon: 'report_problem',
                 position: 'top-right',
               })
-              formData.errors.value = {}
             })
         }
       } else {
