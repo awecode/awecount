@@ -129,7 +129,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props) {
+  setup(props, { emit }) {
     const metaData = {
       title: 'POS | Awecount',
     }
