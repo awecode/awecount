@@ -217,6 +217,9 @@ export default {
     formData.fields.value.is_export = false
 
     const fetchInvoice = async (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
@@ -317,8 +320,6 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
-        delete formData.errors.value.fiscal_year
-        delete formData.errors.value.invoice_no
         if (!formData?.errors?.value) formData.errors.value = {}
         if (!referenceFormData.value.invoice_no) {
           formData.errors.value.invoice_no = "Invoice Number is required!"

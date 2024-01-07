@@ -24,10 +24,10 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
-                      emit-value></q-select>
+                      emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="fetchInvoice()"></q-btn>
                     </div>
@@ -200,6 +200,9 @@ export default {
       }
     })
     const fetchInvoice = async (data) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
       if (
         fetchData.invoice_no &&
@@ -287,6 +290,13 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
+        if (!formData?.errors?.value) formData.errors.value = {}
+        if (!referenceFormData.value.invoice_no) {
+          formData.errors.value.invoice_no = "Invoice Number is required!"
+        }
+        if (!referenceFormData.value.fiscal_year) {
+          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+        }
       }
     }
     onMounted(() => {

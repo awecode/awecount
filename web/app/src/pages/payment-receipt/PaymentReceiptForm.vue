@@ -121,6 +121,9 @@ export default {
       submitForm()
     }
     const fetchInvoice = async (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       if (
         invoiceFormData.value.invoice_no &&
         invoiceFormData.value.fiscal_year
@@ -139,8 +142,6 @@ export default {
                 icon: 'report_problem',
                 position: 'top-right',
               })
-              delete formData.errors.value.fiscal_year
-              delete formData.errors.value.invoice_no
               formData.errors.value.invoice_no = "The invoice has already been added!"
             } else if (fields.party_id === data.party_id) {
               if (!fields.invoice_nos) fields.invoice_nos = []
@@ -189,9 +190,6 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
-        delete formData.errors.value.fiscal_year
-        delete formData.errors.value.invoice_no
-        if (!formData?.errors?.value) formData.errors.value = {}
         if (!invoiceFormData.value.invoice_no) {
           formData.errors.value.invoice_no = "Invoice Number is required!"
         }

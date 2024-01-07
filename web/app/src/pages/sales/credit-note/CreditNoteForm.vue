@@ -178,6 +178,9 @@ export default {
       }
     )
     const fetchInvoice = async (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
