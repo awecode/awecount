@@ -333,7 +333,8 @@ export default {
       currentPage,
       checkPermissions,
       store,
-      discountOptionsComputed
+      discountOptionsComputed,
+      useGeneratePosPdf
     }
   },
   created() {
