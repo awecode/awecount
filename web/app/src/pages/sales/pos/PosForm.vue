@@ -192,7 +192,7 @@ export default {
             this.errors = err.data
             $q.notify({
               color: 'negative',
-              message: 'Error',
+              message: 'Please fill out the form correctly.',
               icon: 'report_problem',
             })
           }
