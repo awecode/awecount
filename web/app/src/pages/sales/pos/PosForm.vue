@@ -182,6 +182,7 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
+          debugger
           print(data)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
