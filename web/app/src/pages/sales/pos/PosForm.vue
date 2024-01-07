@@ -182,8 +182,9 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
-          console.log('useGeneratePosPdf', useGeneratePosPdf)
-          printPdf(data, useGeneratePosPdf)
+          const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows)
+          console.log('useGeneratePosPdf', printData)
+          printPdf(printData)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
         })
@@ -284,13 +285,13 @@ export default {
         return partyChoices.value[index]
       } else return null
     }
-    const printPdf = (data, useGeneratePosPdf) => {
+    const printPdf = (data) => {
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
       const pri = ifram.contentWindow
       pri.document.open()
-      pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows))
+      pri.document.write(data)
       pri.document.close()
       pri.focus()
       setTimeout(() => pri.print(), 100)
