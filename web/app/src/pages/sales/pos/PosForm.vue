@@ -171,25 +171,25 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    function onSubmitClick(status, fields) {
-      this.fields.status = status
+    const onSubmitClick = (status, fields) => {
+      formData.fields.value.status = status
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
         .then((data) => {
-          this.errors = {}
+          formData.errors.value = {}
           $q.notify({
             color: 'green',
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
           print(data)
-          setTimeout(() => this.$router.go(), 100)
-          this.fields.rows = []
+          setTimeout(() => window.history.go(0), 100)
+          formData.fields.value.rows = []
         })
         .catch((err) => {
           fields.status = null
           if (err.status === 400) {
-            this.errors = err.data
+            formData.errors.value = err.data
             $q.notify({
               color: 'negative',
               message: 'Please fill out the form correctly.',
@@ -284,7 +284,6 @@ export default {
       } else return null
     }
     const print = (data) => {
-      debugger
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
@@ -334,7 +333,7 @@ export default {
       checkPermissions,
       store,
       discountOptionsComputed,
-      useGeneratePosPdf
+
     }
   },
   created() {
