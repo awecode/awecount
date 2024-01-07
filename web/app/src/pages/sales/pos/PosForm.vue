@@ -107,8 +107,8 @@
           </div>
 
           <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
-            <q-btn @click.prevent="onSubmitClick('Draft', fields)" color="orange-6" label="Save Draft" type="submit" />
-            <q-btn @click.prevent="onSubmitClick('Issued', fields)" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
+            <q-btn @click.prevent="onSubmitClick('Draft', fields, useGeneratePosPdf)" color="orange-6" label="Save Draft" type="submit" />
+            <q-btn @click.prevent="onSubmitClick('Issued', fields, useGeneratePosPdf)" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
               type="submit" />
           </div>
         </q-card>
@@ -171,7 +171,7 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    const onSubmitClick = (status, fields) => {
+    const onSubmitClick = (status, fields, useGeneratePosPdf) => {
       formData.fields.value.status = status
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
@@ -183,7 +183,7 @@ export default {
             icon: 'check',
           })
           debugger
-          print(data)
+          print(data, useGeneratePosPdf)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
         })
@@ -284,7 +284,7 @@ export default {
         return partyChoices.value[index]
       } else return null
     }
-    const print = (data) => {
+    const print = (data, useGeneratePosPdf) => {
       let ifram = document.createElement('iframe')
       ifram.style = 'display:none; margin: 20px'
       document.body.appendChild(ifram)
