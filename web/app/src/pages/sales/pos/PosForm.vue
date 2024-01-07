@@ -172,7 +172,6 @@ export default {
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
     const onSubmitClick = (status, fields, useGeneratePosPdf) => {
-      console.log('useGeneratePosPdf', useGeneratePosPdf)
       formData.fields.value.status = status
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
@@ -183,7 +182,6 @@ export default {
             message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
             icon: 'check',
           })
-          debugger
           printPdf(data, useGeneratePosPdf)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
