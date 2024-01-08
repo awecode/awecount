@@ -179,9 +179,7 @@ const onSubmitClick = (status) => {
         message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
         icon: 'check',
       })
-      console.log(useGeneratePosPdf)
-      const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, fields.value.rows)
-      console.log('printData', printData)
+      const printData = useGeneratePosPdf(data, gePartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, fields.value.rows, formDefaults.value.collections.tax_schemes)
       printPdf(printData)
       setTimeout(() => window.history.go(0), 100)
       fields.value.rows = []
@@ -223,7 +221,6 @@ const fetchResults = async () => {
       enterClicked.value = false
     })
     .catch(() => {
-      console.log('Error Fetching Search Results')
       enterClicked.value = false
     })
 }

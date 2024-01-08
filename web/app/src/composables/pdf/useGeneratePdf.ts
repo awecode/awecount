@@ -13,7 +13,6 @@ export default function useGeneratePdf(
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
   let taxIndex : number | null = null
-  console.log('---------------------------------------------------------------start------------------------------------------------------------------------------------------------------------')
   const formatRowDescription = (str:string) => {
     const dataArray = str.split('\n')
     const htmlArray = dataArray.map((data) => `<div>${data}</div>`)
@@ -190,7 +189,6 @@ export default function useGeneratePdf(
     }
     html = html.concat(header)
   }
-  console.log('line ------192', html)
   const table = `<div>
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
     <tr style="color: grey; font-weight: 500;">
@@ -256,7 +254,6 @@ export default function useGeneratePdf(
   <div style="margin-top: 20px">
   </div>
   `
-  console.log('line ------258', html)
   let body = ''
   if (voucherType === 'salesVoucher') {
     body = `<div style="${
@@ -465,6 +462,5 @@ ${table}
   </div>
 `
   }
-  console.log('line ------467', html)
   return html.concat(body)
 }
