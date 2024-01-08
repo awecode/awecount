@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md w-full">
     <div class="row justify-end">
       <q-btn v-if="checkPermissions('BankAccountCreate')" color="green" to="/bank-accounts/add/" label="New Account"
         class="q-ml-lg add-btn" icon-right="add" />
@@ -33,18 +33,21 @@ export default {
         label: 'Account Name',
         align: 'left',
         field: 'account_name',
+        style: 'text-wrap: wrap;'
       },
       {
         name: 'account_number',
         label: 'Account Number',
         align: 'left',
         field: 'account_number',
+        style: 'text-wrap: wrap;'
       },
       {
         name: 'bank_name',
         label: 'Bank/Wallet Name',
         align: 'left',
         field: 'bank_name',
+        style: 'text-wrap: wrap;' 
       },
       {
         name: 'actions',
