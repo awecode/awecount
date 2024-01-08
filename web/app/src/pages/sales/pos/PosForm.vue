@@ -190,9 +190,9 @@ export default {
           console.log(!formData.formDefaults.value.options.show_rate_quantity_in_voucher, '--------------------------------------------')
           console.log(formData.fields.value.rows, '--------------------------------------------')
           console.log(useGeneratePosPdf, '--------------------useGeneratePosPdf------------------------')
-          const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows)
           console.log('useGeneratePosPdf', printData)
           console.log('printPdf', printPdf)
+          const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows)
           printPdf(printData)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
