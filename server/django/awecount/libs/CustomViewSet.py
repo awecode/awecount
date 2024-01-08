@@ -93,12 +93,18 @@ class CollectionViewSet(object):
                         qs = qs.filter(company_id=request.company_id)
 
                     if len(collection) > 2:
-                        serializer = collection[2]
-                        data = serializer(qs, many=True).data
+                        serializer_class = collection[2]
+                        page = self.paginate_queryset(qs)
+                        serializer = serializer_class(page, many=True)
+                        paginated_response = self.get_paginated_response(serializer.data)
+                        data = paginated_response.data
                         collections_data[key] = data
                     else:
-                        serializer = GenericSerializer
-                        data = serializer(qs, many=True).data
+                        serializer_class = GenericSerializer
+                        page = self.paginate_queryset(qs)
+                        serializer = serializer_class(page, many=True)
+                        paginated_response = self.get_paginated_response(serializer.data)
+                        data = paginated_response.data
                         collections_data[key] = data
             return collections_data
 
