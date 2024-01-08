@@ -107,8 +107,8 @@
           </div>
 
           <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
-            <q-btn @click.prevent="onSubmitClick('Draft', fields, useGeneratePosPdf, getTaxObj, gePartyObj)" color="orange-6" label="Save Draft" type="submit" />
-            <q-btn @click.prevent="onSubmitClick('Issued', fields, useGeneratePosPdf, getTaxObj, gePartyObj)" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
+            <q-btn @click.prevent="onSubmitClick('Draft', fields, useGeneratePosPdf, getTaxObj, gePartyObj, printPdf)" color="orange-6" label="Save Draft" type="submit" />
+            <q-btn @click.prevent="onSubmitClick('Issued', fields, useGeneratePosPdf, getTaxObj, gePartyObj, printPdf)" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
               type="submit" />
           </div>
         </q-card>
@@ -171,7 +171,7 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    const onSubmitClick = (status, fields, useGeneratePosPdf, getTaxObj, gePartyObj) => {
+    const onSubmitClick = (status, fields, useGeneratePosPdf, getTaxObj, gePartyObj, printPdf) => {
       formData.fields.value.status = status
       if (!partyMode.value) fields.customer_name = null
       useApi('/v1/pos/', { method: 'POST', body: fields })
@@ -192,7 +192,7 @@ export default {
           console.log(useGeneratePosPdf, '--------------------useGeneratePosPdf------------------------')
           const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows)
           console.log('useGeneratePosPdf', printData)
-          console.log('useGeneratePosPdf', printPdf)
+          console.log('printPdf', printPdf)
           printPdf(printData)
           setTimeout(() => window.history.go(0), 100)
           formData.fields.value.rows = []
