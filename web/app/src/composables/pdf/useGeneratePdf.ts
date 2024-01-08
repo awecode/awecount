@@ -13,6 +13,7 @@ export default function useGeneratePdf(
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
   let taxIndex : number | null = null
+  console.log('---------------------------------------------------------------start------------------------------------------------------------------------------------------------------------')
   const formatRowDescription = (str:string) => {
     const dataArray = str.split('\n')
     const htmlArray = dataArray.map((data) => `<div>${data}</div>`)
