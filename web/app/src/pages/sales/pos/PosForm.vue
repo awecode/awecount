@@ -179,6 +179,7 @@ const onSubmitClick = (status) => {
         message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
         icon: 'check',
       })
+      console.log(useGeneratePosPdf)
       const printData = useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, fields.value.rows)
       console.log('printData', printData)
       printPdf(printData)
