@@ -76,7 +76,7 @@ import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 const $q = useQuasar()
 
-const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focuOnMount'])
+const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focusOnMount'])
 
 const menuDom = ref(null)
 const value0 = ref(props.startDate)
@@ -307,7 +307,7 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 onMounted(() => {
-  if (props.focuOnMount && (!value0.value && !value1.value)) {
+  if (props.focusOnMount && (!value0.value && !value1.value)) {
     value0.value = store.dateRange.start_date
     value1.value = store.dateRange.end_date
     menuDom.value.show()

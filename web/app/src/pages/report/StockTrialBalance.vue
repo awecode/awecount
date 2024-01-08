@@ -5,7 +5,7 @@
                 <div class="flex gap-x-6 gap-y-2 items-center">
                     <div>
                         <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date"
-                            :hide-btns="true" :focuOnMount="true" />
+                            :hide-btns="true" :focusOnMount="true" />
                     </div>
                     <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
                         @click="fields = { start_date: null, end_date: null }" class="f-reset-btn"></q-btn>
@@ -299,7 +299,7 @@ export default {
         const computedTreeData = ref(null)
         const unCatogarizedData = ref([])
         const fields = ref({
-            start_date: null,
+          start_date: null,
             end_date: null,
         })
         const calculateNet = (obj, type) => {
