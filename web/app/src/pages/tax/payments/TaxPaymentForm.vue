@@ -35,7 +35,7 @@
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Draft', submitForm)"
               color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" type="submit" :loading="loading" />
-            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')" @click.prevent="onCancelClick"
+            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')" @click.prevent="isDeleteOpen = true"
               color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm" :loading="loading" />
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Paid', submitForm)"
               color="green-6" :label="'Mark as paid'" class="q-px-lg q-mb-sm" :loading="loading" />
