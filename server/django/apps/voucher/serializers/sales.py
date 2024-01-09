@@ -420,7 +420,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
-                sold_items = fifo_handle_sales_create(request, row)
+                sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
             SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
             # if not request.data.get("invoices"):

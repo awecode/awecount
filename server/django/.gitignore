@@ -7,9 +7,5 @@ env/
 *.xlsx
 
 temp.*
-<<<<<<< HEAD
-.vscode/
-=======
 .vscode/
 *.sql
->>>>>>> main
