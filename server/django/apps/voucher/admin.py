@@ -147,6 +147,7 @@ admin.site.register(Challan, ChallanAdmin)
 
 class PurchaseVoucherRowAdmin(admin.ModelAdmin):
     raw_id_fields = ('item',)
+    readonly_fields = ["id"]
 
 
 admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)

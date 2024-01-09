@@ -605,27 +605,76 @@ class CreditNote(TransactionModel, InvoiceModel):
                 for row in sales_rows:
                     credit_note_row = rows.get(item=row.item)
                     sold_items = row.sold_items
+                    quantity = credit_note_row.quantity
                     if not sold_items:
                         break
+                    opening = None
+                    if sold_items.get("OB"):
+                        inv_account = row.item.account
+                        ob = sold_items.pop("OB")
+                        if quantity > inv_account.opening_quantity:
+                            opening = ob + inv_account.opening_quantity
+                            quantity -= inv_account.opening_quantity
+                            inv_account.opening_quantity = 0
+                            inv_account.save()
+                            inv_account.save()
+                        else:
+                            inv_account.opening_quantity -= quantity
+                            inv_account.save()
+                            opening = ob + quantity
+                            row.sold_items["OB"] = opening
+                            row.save()
+                            return
                     purchase_row_ids = [key for key, value in sold_items.items()]
                     purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    quantity = credit_note_row.quantity
-                    for purchase_row in purchase_voucher_rows:
-                        can_be_reduced = purchase_row.remaining_quantity
-                        diff = quantity - can_be_reduced
-                        if diff > 0:
-                            purchase_row.remaining_quantity -= can_be_reduced
-                            purchase_row.save()
-                            quantity -= can_be_reduced
-                            row.sold_items[str(purchase_row.id)] += can_be_reduced
-                            row.save()
-                            continue
-                        else:
-                            purchase_row.remaining_quantity -= quantity
-                            purchase_row.save()
-                            row.sold_items[str(purchase_row.id)] += quantity
-                            row.save()
-                            break
+                    if purchase_voucher_rows.exists():
+                        for purchase_row in purchase_voucher_rows:
+                            # can_be_reduced = purchase_row.remaining_quantity
+                            # diff = quantity - can_be_reduced
+                            if quantity > purchase_row.remaining_quantity:
+                                purchase_row.remaining_quantity = 0
+                                purchase_row.save()
+                                quantity -= purchase_row.remaining_quantity
+                                # if not row.sold_items.get(str(purchase_row.id)):
+                                row.sold_items[str(purchase_row.id)] = purchase_row.quantity
+                                # else:
+                                #     row.sold_items[str(purchase_row.id)] += can_be_reduced
+                                row.save()
+                                continue
+                            else:
+                                purchase_row.remaining_quantity -= quantity
+                                purchase_row.save()
+                                # if not row.sold_items.get(str(purchase_row.id)):
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                # else:
+                                #     row.sold_items[str(purchase_row.id)] += quantity
+                                row.save()
+                                break
+                    if quantity>0:
+                        purchase_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("voucher__date", "id")
+                        for purchase_row in purchase_rows:
+                            if purchase_row.remaining_quantity == quantity:
+                                purchase_row.remaining_quantity = 0
+                                purchase_row.save()
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.save()
+                                break
+                            elif purchase_row.remaining_quantity > quantity:
+                                purchase_row.remaining_quantity -= quantity
+                                purchase_row.save()
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.save()
+                                break
+                            else:
+                                quantity -= purchase_row.remaining_quantity
+                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                purchase_row.remaining_quantity = 0
+                                row.sold_items[str(purchase_row.id)] = quantity
+                                purchase_row.save()
+                                row.save()
+                    if opening:
+                        row.sold_items["OB"] = opening
+                        row.save()
         return super().cancel()
 
 
@@ -790,36 +839,17 @@ class DebitNote(TransactionModel, InvoiceModel):
     def cancel(self):
         if self.company.inventory_setting.enable_fifo:
             rows = self.rows.all()
-            purchase_vouchers = self.invoices.all()
-            for voucher in purchase_vouchers:
-                purchase_rows = voucher.rows.all()
-                for row in purchase_rows:
-                    debit_note_row = rows.get(item=row.item)
-                    # sold_items = row.sold_items
-                    # if not sold_items:
-                        # break
-                    row.quantity += debit_note_row.quantity
-                    row.remaining_quantity += debit_note_row.quantity
+            for row in rows:
+                purchase_row_data = row.purchase_row_data
+                if purchase_row_data == {}:
+                    return
+                keys = [int(k) for k, v in purchase_row_data.items()]
+                purchase_rows = PurchaseVoucherRow.objects.filter(id__in=keys)
+                for purchase_row in purchase_rows:
+                    purchase_row.remaining_quantity += purchase_row_data[str(purchase_row.id)]
+                    row.purchase_row_data.pop(str(purchase_row.id))
                     row.save()
-                    # purchase_row_ids = [key for key, value in sold_items.items()]
-                    # purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    # quantity = credit_note_row.quantity
-                    # for purchase_row in purchase_voucher_rows:
-                    #     can_be_reduced = purchase_row.remaining_quantity
-                    #     diff = quantity - can_be_reduced
-                    #     if diff > 0:
-                    #         purchase_row.remaining_quantity -= can_be_reduced
-                    #         purchase_row.save()
-                    #         quantity -= can_be_reduced
-                    #         row.sold_items[str(purchase_row.id)] += can_be_reduced
-                    #         row.save()
-                    #         continue
-                    #     else:
-                    #         purchase_row.remaining_quantity -= quantity
-                    #         purchase_row.save()
-                    #         row.sold_items[str(purchase_row.id)] += quantity
-                    #         row.save()
-                    #         break
+                    purchase_row.save()
         return super().cancel()
 
     def apply_inventory_transaction(self):
@@ -920,6 +950,7 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel):
                                      related_name='debit_note_rows')
 
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='debit_note_rows')
+    purchase_row_data = models.JSONField(blank=True, default=dict)
 
 
 PAYMENT_MODES = (

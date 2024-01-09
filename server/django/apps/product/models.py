@@ -312,6 +312,8 @@ class InventoryAccount(models.Model):
     account_no = models.PositiveIntegerField(blank=True, null=True)
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
+    opening_balance_rate = models.FloatField(blank=True, null=True)
+    opening_quantity = models.FloatField(default=0)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='inventory')
 
     def __str__(self):
@@ -795,11 +797,24 @@ class Item(models.Model):
 
     @property
     def remaining_stock(self):
-        return self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"]
+        remaining = self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(rem_qt=Sum("remaining_quantity"))["rem_qt"] or 0
+        if self.account:
+            remaining += zero_for_none(self.account.opening_quantity)
+        return remaining
     
     @property
     def available_stock_data(self):
-        return self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate")
+        data = list(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
+        if self.account:
+            ob = self.account.opening_quantity
+            if ob:
+                obj = {
+                    "remaining_quantity":  ob,
+                    "rate": self.account.opening_balance_rate
+                }
+                data.insert(0, obj)
+
+        return data
 
     class Meta:
         unique_together = ('code', 'company',)
