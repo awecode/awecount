@@ -127,7 +127,7 @@
           src="/icons/envelope-fill.svg"
           alt="Call"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">{{(store?.companyInfo.emails && store.companyInfo.emails.length) ?  companyInfo.emails.join(',&nbsp;') : ''}}</span>
+        /><span style="color: skyblue">{{(store?.companyInfo.emails && store.companyInfo.emails.length) ?  store.companyInfo.emails.join(',&nbsp;') : ''}}</span>
       </div>
     </div>
   </div>
