@@ -93,6 +93,8 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                         purchase_row.remaining_quantity += can_be_added
                         purchase_row.save()
                         row.sold_items[str(purchase_row.id)] -= can_be_added
+                        if row.sold_items[str(purchase_row.id)] == 0:
+                            row.sold_items.pop(str(purchase_row.id))
                         quantity -= can_be_added
                         row.save()
                         break
