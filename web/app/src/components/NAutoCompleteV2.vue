@@ -68,7 +68,7 @@ export default {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const allOptions = ref(props.options.results)
+    const allOptions = ref(props.options)
     const isModalOpen = ref(false)
     const filteredOptions = ref(props?.options?.results || [])
     const fetchLoading = ref(false)
@@ -128,7 +128,7 @@ export default {
           fetchLoading.value = false
         })
     }
-    if (props.endpoint) fetchOptions()
+    if (props.endpoint && !props.options?.results?.length > 0) fetchOptions()
     const onScroll = (scrollData) => {
       if (scrollData.direction === "increase" && scrollData.to > allOptions.value.results.length - 3 &&
           allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
