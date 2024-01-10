@@ -59,6 +59,10 @@ export default {
     endpoint: {
       type: [String, null],
       default: () => null
+    },
+    staticOptions: {
+      type: [Array, null],
+      default: () => null
     }
   },
   emits: ['update:modelValue'],
@@ -128,11 +132,13 @@ export default {
     const closeModal = () => {
       isModalOpen.value = false
     }
-    const fetchOptions = () => {
+    const fetchOptions = (staticOptions) => {
         fetchLoading.value = true
         const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
         useApi(endpoint).then((data) => {
-          allOptions.value.results.push(...data.results)
+          if (staticOptions && staticOptions.length) {
+            allOptions.value.results.push(...props.staticOptions, ...data.results)
+          } else allOptions.value.results.push(...data.results)
           Object.assign(allOptions.value.pagination, data.pagination)
           fetchLoading.value = false
         }).catch((err) => {
@@ -141,7 +147,11 @@ export default {
         })
     }
 
-    if (props.endpoint && !props.options?.results?.length > 0) fetchOptions()
+    if (props.endpoint && !props.options?.results?.length > 0) {
+      if (props.staticOptions && props.staticOptions.length) {
+        fetchOptions(props.staticOptions)
+      } else fetchOptions()
+    }
 
     const onScroll = (scrollData) => {
       if (filteredOptionsPagination.value) {
