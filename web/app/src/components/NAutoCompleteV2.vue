@@ -1,9 +1,9 @@
 <template>
   <div class="row no-wrap">
-    <q-select :autofocus="focusOnMount" v-model="modalValue" input-debounce="0" :label="label" use-input
+    <q-select :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
       :options="filteredOptions" option-value="id" option-label="name" map-options emit-value
       class="q-mr-xs col" @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error"
-      :error="!!props?.error" clearable clear-icon="close" @virtual-scroll="onScroll">
+      :error="!!props?.error" clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
       </template>
@@ -72,6 +72,8 @@ export default {
     const isModalOpen = ref(false)
     const filteredOptions = ref(props?.options?.results || [])
     const fetchLoading = ref(false)
+    const filteredOptionsPagination = ref(null)
+    const serachKeyword = ref(null)
 
     watch(
       () => props.modelValue,
@@ -89,17 +91,26 @@ export default {
     )
 
     const filterFn = (val, update) => {
+      serachKeyword.value = val
       if (val === '') {
         update(() => {
           filteredOptions.value = allOptions.value.results
+          filteredOptionsPagination.value = null
         })
         return
       }
       update(() => {
-        const needle = val.toLowerCase()
-        filteredOptions.value = allOptions.value.results.filter(
-          (v) => v.name.toLowerCase().indexOf(needle) > -1
-        )
+        const endpoint = props.endpoint + `?search=${val}`
+        useApi(endpoint).then((data) => {
+          filteredOptions.value = data.results
+          filteredOptionsPagination.value = data.pagination
+        }).catch((err) => {
+          console.log(`Error While Fetching ${err}`)
+        })
+        // const needle = val.toLowerCase()
+        // filteredOptions.value = allOptions.value.results.filter(
+        //   (v) => v.name.toLowerCase().indexOf(needle) > -1
+        // )
       })
     }
 
@@ -128,9 +139,26 @@ export default {
           fetchLoading.value = false
         })
     }
+
     if (props.endpoint && !props.options?.results?.length > 0) fetchOptions()
+
     const onScroll = (scrollData) => {
-      if (scrollData.direction === "increase" && scrollData.to > allOptions.value.results.length - 3 &&
+      if (filteredOptionsPagination.value) {
+        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 3 &&
+          !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
+          fetchLoading.value = true
+          const endpoint = props.endpoint + `?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
+          useApi(endpoint).then((data) => {
+            filteredOptions.value.push(...data.results)
+            filteredOptionsPagination.value = data.pagination
+            fetchLoading.value = false
+          }).catch((err) => {
+            console.log(`Error While Fetching ${err}`)
+            fetchLoading.value = false
+          })
+        }
+      }
+      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 &&
           allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }

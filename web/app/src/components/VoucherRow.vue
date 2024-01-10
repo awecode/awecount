@@ -25,7 +25,7 @@
             label="Account"
             :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
-            endpoint="/v1/parties/choices/"
+            endpoint="/v1/accounts/choices/"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
