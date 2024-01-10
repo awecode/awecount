@@ -19,12 +19,13 @@
           <!-- <n-auto-complete v-model="voucher.account_id" :options="props.options" label="Account" :modal-component="LedgerForm" :error="errors?.account_id" /> -->
         </div>
         <div class="col-4">
-          <n-auto-complete
+          <n-auto-complete-v2
             v-model="voucher.account_id"
             :options="props.options"
             label="Account"
             :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+            endpoint="/v1/parties/choices/"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id

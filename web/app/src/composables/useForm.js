@@ -57,11 +57,18 @@ export default (endpoint, config) => {
           if (data.fields) {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
-          formDefaults.value = data
+          delete data.collections
+          Object.assign(formDefaults.value, data)
+          Object.assign(fields.value, data.fields)
           // TODO: Check with Dipesh sir
         }
       )
     }
+    // debugger
+    if (config.collections && config.collections.length > 0) {
+      formDefaults.value.collections = config.collections.reduce((obj, entry) => ({ ...obj, [entry]: { results: [], pagination: {} } }), {})
+    }
+
   })
   const getDefaultsFetchUrl = () => {
     return joinURL(endpoint, 'create-defaults/')
