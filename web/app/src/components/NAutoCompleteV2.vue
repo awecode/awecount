@@ -115,11 +115,12 @@ export default {
     }
 
     const openModal = () => {
+      // debugger
       isModalOpen.value = true
     }
 
     const handleModalSignal = (v) => {
-      allOptions.value.push(v)
+      allOptions.value.results.push(v)
       isModalOpen.value = false
       emit('update:modelValue', v.id)
     }
