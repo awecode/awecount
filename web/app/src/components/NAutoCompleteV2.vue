@@ -1,11 +1,28 @@
 <template>
   <div class="row no-wrap">
-    <q-select :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
-      :options="filteredOptions" option-value="id" option-label="name" map-options emit-value
-      class="q-mr-xs col" @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error"
-      :error="!!props?.error" clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn">
+    <q-select :loading="fetchLoading" :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
+      :options="filteredOptions" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
+      @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error"
+      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn" virtual-scroll-slice-ratio-after="-0.05">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
+      </template>
+      <template v-if="fetchLoading" #after-options >
+        <div class="flex justify-center pb-2 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2">
+              <path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3"
+                d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z">
+                <animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0" />
+              </path>
+              <path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12">
+                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0" />
+                <animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate"
+                  values="0 12 12;360 12 12" />
+              </path>
+            </g>
+          </svg>
+        </div>
       </template>
     </q-select>
     <div>
@@ -33,7 +50,8 @@ export default {
     },
     options: {
       type: Object,
-      default: () => { return {
+      default: () => {
+        return {
           results: [],
           pagination: {}
         }
@@ -133,18 +151,18 @@ export default {
       isModalOpen.value = false
     }
     const fetchOptions = (staticOptions) => {
-        fetchLoading.value = true
-        const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
-        useApi(endpoint).then((data) => {
-          if (staticOptions && staticOptions.length) {
-            allOptions.value.results.push(...props.staticOptions, ...data.results)
-          } else allOptions.value.results.push(...data.results)
-          Object.assign(allOptions.value.pagination, data.pagination)
-          fetchLoading.value = false
-        }).catch((err) => {
-          console.log('Error While Fetching Options', err)
-          fetchLoading.value = false
-        })
+      fetchLoading.value = true
+      const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
+      useApi(endpoint).then((data) => {
+        if (staticOptions && staticOptions.length) {
+          allOptions.value.results.push(...props.staticOptions, ...data.results)
+        } else allOptions.value.results.push(...data.results)
+        Object.assign(allOptions.value.pagination, data.pagination)
+        fetchLoading.value = false
+      }).catch((err) => {
+        console.log('Error While Fetching Options', err)
+        fetchLoading.value = false
+      })
     }
 
     if (props.endpoint && !props.options?.results?.length > 0) {
@@ -170,7 +188,7 @@ export default {
         }
       }
       else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 &&
-          allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
+        allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }
     }
@@ -185,7 +203,8 @@ export default {
       handleModalSignal,
       props,
       modalValue,
-      onScroll
+      onScroll,
+      fetchLoading
     }
   },
 }
