@@ -133,7 +133,7 @@
   </div>
   <hr style="margin: 20px 0" />
       <div class="text-center text-bold text-subtitle1 q-mb-md">
-          Journal Voucher (Income)
+          Journal Voucher
       </div>
       <div class="row justify-between">
         <div>Date: {{ fields?.date || '-' }}</div>
