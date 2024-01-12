@@ -116,8 +116,7 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
-    const $q = useQuasar()
-    const errors = ref(null)
+    const errors = ref({})
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
@@ -141,16 +140,6 @@ export default {
           }
           loading.value = false
         })
-        .catch((err) => {
-          const parsedError = useHandleFormError(err)
-          errors.value = parsedError.errors
-          $q.notify({
-            color: 'negative',
-            message: parsedError.message,
-            icon: 'report_problem',
-          })
-          loading.value = false
-        })
         .catch((data) => {
           if (data.status === 422) {
             useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
@@ -160,6 +149,7 @@ export default {
               if (status === 'Cancelled') {
                 isDeleteOpen.value = false
               }
+              loading.value = false
             }).catch((error) => {
               if (error.status !== 'cancel') {
                 $q.notify({
@@ -168,12 +158,18 @@ export default {
                   icon: 'report_problem',
                 })
               }
+              loading.value = false
             })
-          } else $q.notify({
+          } else {
+            const parsedError = useHandleFormError(err)
+            errors.value = parsedError.errors
+            $q.notify({
               color: 'negative',
-              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              message: parsedError.message,
               icon: 'report_problem',
             })
+            loading.value = false
+          }
         })
     }
     const updateMode = (newValue: number) => {
