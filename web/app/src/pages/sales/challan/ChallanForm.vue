@@ -4,7 +4,12 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Challan</span>
-          <span v-else>Update Challan <span v-if="isEdit && fields?.voucher_no">| {{ fields?.status }} | # {{fields?.voucher_no}}</span></span>
+          <span v-else
+            >Update Challan
+            <span v-if="isEdit && fields?.voucher_no"
+              >| {{ fields?.status }} | # {{ fields?.voucher_no }}</span
+            ></span
+          >
         </div>
       </q-card-section>
 
@@ -14,35 +19,78 @@
             <div class="col-md-6 col-12">
               <div class="row">
                 <div class="col-10">
-                  <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name"
-                    :error="!!errors.customer_name" v-if="!partyMode || !!fields.customer_name">
+                  <q-input
+                    v-model="fields.customer_name"
+                    label="Customer Name"
+                    :error-message="errors.customer_name"
+                    :error="!!errors.customer_name"
+                    v-if="!partyMode || !!fields.customer_name"
+                  >
                   </q-input>
-                  <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                    label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
+                  <n-auto-complete
+                    v-else
+                    v-model="fields.party"
+                    :options="formDefaults.collections?.parties"
+                    label="Party"
+                    :error="errors?.party ? errors?.party : null"
+                    :modal-component="
+                      checkPermissions('PartyCreate') ? PartyForm : null
+                    "
+                  />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
-                  <q-btn flat size="md" @click="() => switchPartyMode(fields, isEdit)">
+                  <q-btn
+                    flat
+                    size="md"
+                    @click="() => switchPartyMode(fields, isEdit)"
+                  >
                     <q-icon name="mdi-account-group"></q-icon>
                   </q-btn>
                 </div>
               </div>
               <div></div>
             </div>
-            <DatePicker class="col-md-6 col-12" label="Deposit Date*" v-model="fields.date" :error="!!errors?.date" :errorMessage="errors?.date" />
+            <DatePicker
+              class="col-md-6 col-12"
+              label="Deposit Date*"
+              v-model="fields.date"
+              :error="!!errors?.date"
+              :errorMessage="errors?.date"
+            />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address"
-              :error="!!errors.address"></q-input>
+            <q-input
+              v-model="fields.address"
+              class="col-md-6 col-12"
+              label="Address"
+              :error-message="errors.address"
+              :error="!!errors.address"
+            ></q-input>
           </div>
         </q-card-section>
       </q-card>
-      <ChallanTable :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
-        " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " v-model="fields.rows" :errors="!!errors.rows ? errors.rows : null"
-        @deleteRow="(index, deleteObj) => deleteRow(index, errors, deleteObj)" :isEdit="isEdit"></ChallanTable>
+      <ChallanTable
+        :itemOptions="
+          formDefaults.collections ? formDefaults.collections.items : null
+        "
+        :unitOptions="
+          formDefaults.collections ? formDefaults.collections.units : null
+        "
+        v-model="fields.rows"
+        :errors="!!errors.rows ? errors.rows : null"
+        @deleteRow="(index, deleteObj) => deleteRow(index, errors, deleteObj)"
+        :isEdit="isEdit"
+      ></ChallanTable>
       <div class="q-px-md">
-        <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
-          :error="!!errors?.remarks" :error-message="errors?.remarks" />
+        <q-input
+          v-model="fields.remarks"
+          label="Remarks"
+          type="textarea"
+          autogrow
+          class="col-12 col-md-10"
+          :error="!!errors?.remarks"
+          :error-message="errors?.remarks"
+        />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'" :loading="loading"
@@ -83,6 +131,7 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import ChallanTable from 'src/components/challan/ChallanTable.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import useHandleCancelInconsistencyError from 'src/composables/useHandleCancelInconsistencyError'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -119,7 +168,9 @@ export default {
       fields.status = status
       if (fields.party) fields.mode = 'Credit'
       else fields.mode = 'Cash'
-      try {await submitForm() } catch (err) {
+      try {
+        await submitForm()
+      } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -175,12 +226,14 @@ export default {
         })
     }
     const onCancelClick = () => {
+      const url = `/v1/challan/${formData.fields.value.id}/cancel/`
+      const body = {
+        message: deleteMsg.value,
+      }
       formData.loading.value = true
-      useApi(`/v1/challan/${formData.fields.value.id}/cancel/`, {
+      useApi(url,{
         method: 'POST',
-        body: {
-          message: deleteMsg.value
-        },
+        body,
       })
         .then(() => {
           $q.notify({
@@ -198,13 +251,38 @@ export default {
           // if (err.data?.message) {
           //   message = err.data?.message
           // }
-          const parsedError = useHandleFormError(err)
-          formData.errors.value = parsedError.errors
-          $q.notify({
-            color: 'negative',
-            message: parsedError.message,
-            icon: 'report_problem',
-          })
+          if (err.status === 422) {
+            useHandleCancelInconsistencyError(url, err, body, $q)
+              .then(() => {
+                $q.notify({
+                  color: 'positive',
+                  message: 'Cancelled',
+                  icon: 'check_circle',
+                })
+                formData.fields.value.status = 'Cancelled'
+                isDeleteOpen.value = false
+                formData.loading.value = false
+              })
+              .catch((error) => {
+                if (error.status !== 'cancel') {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                }
+                formData.loading.value = false
+              })
+          } else {
+            const parsedError = useHandleFormError(err)
+            formData.errors.value = parsedError.errors
+            $q.notify({
+              color: 'negative',
+              message: parsedError.message,
+              icon: 'report_problem',
+            })
+            formData.loading.value = false
+          }
           formData.loading.value = false
         })
     }
@@ -239,7 +317,7 @@ export default {
       onResolvedClick,
       onCancelClick,
       isDeleteOpen,
-      deleteMsg
+      deleteMsg,
     }
   },
   // onmounted: () => console.log('mounted'),

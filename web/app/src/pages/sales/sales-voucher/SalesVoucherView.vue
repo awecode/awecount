@@ -110,6 +110,7 @@ export default {
       title: 'Sales Invoices | Awecount',
     }
     useMeta(metaData)
+    const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const loading: Ref<boolean> = ref(false)
     const modeOptions: Ref<Array<object> | null> = ref(null)
@@ -120,6 +121,7 @@ export default {
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
+      const originalStatus = fields.value?.status
       let body: null | object = null
       if (status === 'Paid') {
         endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
@@ -130,7 +132,6 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
             fields.value.status = status
           }
@@ -149,6 +150,30 @@ export default {
             icon: 'report_problem',
           })
           loading.value = false
+        })
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
+              if (fields.value) {
+                fields.value.status = status
+              }
+              if (status === 'Cancelled') {
+                isDeleteOpen.value = false
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+            })
+          } else $q.notify({
+              color: 'negative',
+              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              icon: 'report_problem',
+            })
         })
     }
     const updateMode = (newValue: number) => {
@@ -222,7 +247,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 @media print {
 
   @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");

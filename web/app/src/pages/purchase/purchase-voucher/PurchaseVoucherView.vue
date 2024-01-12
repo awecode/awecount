@@ -100,6 +100,7 @@ import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import checkPermissions from 'src/composables/checkPermissions'
+import useHandleCancelInconsistencyError from 'src/composables/useHandleCancelInconsistencyError'
 interface Fields {
   status: string
   voucher_no: string
@@ -127,7 +128,7 @@ export default {
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const isLoading:Ref<boolean> = ref(false)
-    const errors = ref(null)
+    const errors = ref({})
     const submitChangeStatus = (id: number, status: string) => {
       isLoading.value = true
       let endpoint = ''
@@ -141,7 +142,6 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
             fields.value.status = status
             if (status === 'Cancelled') {
@@ -162,14 +162,41 @@ export default {
           }
           isLoading.value = false
         })
-        .catch((err) => {
-          const parsedError = useHandleFormError(err)
-          errors.value = parsedError.errors
-          $q.notify({
-            color: 'negative',
-            message: parsedError.message,
-            icon: 'report_problem',
-          })
+        // .catch((err) => {
+        //
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then((data) => {
+              if (fields.value) {
+                fields.value.status = status
+                if (status === 'Cancelled') {
+                  $q.notify({
+                    color: 'green-6',
+                    message: 'Voucher has been cancelled.',
+                  })
+                  isDeleteOpen.value = false
+                  isLoading.value = false
+                }
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+              isLoading.value = false
+            })
+          } else {
+            const parsedError = useHandleFormError(data)
+            errors.value = parsedError.errors
+            $q.notify({
+              color: 'negative',
+              message: parsedError.message,
+              icon: 'report_problem',
+            })
+          }
           isLoading.value = false
         })
     }

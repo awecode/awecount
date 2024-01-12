@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form class="q-pa-lg" autofocus v-if="fields">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -104,15 +104,16 @@
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+      <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
     " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
-      :hasChallan="!!(fields.challans && fields.challans.length > 0)"  ></invoice-table>
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry"
+        :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher" :isFifo="formDefaults.options?.enable_fifo" usedIn="sales"
+        :hasChallan="!!(fields.challans && fields.challans.length > 0)"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input

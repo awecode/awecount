@@ -452,6 +452,11 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('PurchaseSettingView')
       },
       {
+        title: 'Inventory Settings',
+        icon: 'mdi-calendar-multiple-check',
+        link: '/settings/inventory-settings/',
+      },
+      {
         title: 'Account Closing',
         icon: 'mdi-calendar-multiple-check',
         link: '/settings/account-closing/',

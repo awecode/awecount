@@ -211,7 +211,6 @@ export default {
               'due_date',
               'date',
               'remarks',
-              'rows'
             ]
             removeArr.forEach((item) => {
               delete data[item]
@@ -223,8 +222,10 @@ export default {
             if (response.rows && response.rows.length > 0) {
                 fields.rows = []
                 response.rows.forEach((row) => {
-                  delete row.id
                   row.taxObj = row.tax_scheme
+                  if (row.discount_type === "") {
+                    row.discount_type = null
+                  }
                   fields.rows.push(row)
                 })
               }

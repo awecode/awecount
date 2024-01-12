@@ -96,6 +96,7 @@ export default (endpoint, config) => {
     } else {
       postEndpoint = endpoint
     }
+    const originalStatus = fields.value.status
     await useApi(postEndpoint, {
       method: isEdit.value ? 'PATCH' : 'POST',
       body: fields.value,
@@ -139,12 +140,58 @@ export default (endpoint, config) => {
           }
         } else if (data.status == 500) {
           message = 'Server Error! Please contact us with the problem.'
+        } else if (data.status === 422) {
+          $q.dialog({
+            title: `<span class="text-orange">${ humanizeWord(data.data?.code)}!</span>`,
+            message:
+              `<span class="text-grey-8">Reason: ${data.data.detail}` +
+              '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+            cancel: true,
+            html: true,
+          }).onOk(() => {
+            useApi(postEndpoint + `?${data.data?.code}=true`, {
+              method: isEdit.value ? 'PATCH' : 'POST',
+              body: { ...fields.value, status: originalStatus },
+            })
+              .then((data) => {
+                $q.notify({
+                  color: 'positive',
+                  message: 'Saved',
+                  icon: 'check_circle',
+                })
+                if (isModal) {
+                  context.emit('modalSignal', data)
+                } else {
+                  if (config.successRoute) {
+                    router.push(config.successRoute)
+                  } else {
+                    router.push(removeLastUrlSegment(route.path))
+                  }
+                }
+              })
+              .catch((error) => {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              })
+          })
         }
-        $q.notify({
-          color: 'negative',
-          message: message,
-          icon: 'report_problem',
-        })
+        if (data.status === 422) {
+          $q.notify({
+            color: 'orange',
+            // message: data.data?.code,
+            message: `${humanizeWord(data.data?.code)}!`,
+            icon: 'report_problem',
+          })
+        } else {
+          $q.notify({
+            color: 'negative',
+            message: message,
+            icon: 'report_problem',
+          })
+        }
         loading.value = false
         throw new Error('Api Error')
       })
@@ -199,6 +246,6 @@ export default (endpoint, config) => {
     submitForm,
     cancel,
     cancelForm,
-    loading
+    loading,
   }
 }

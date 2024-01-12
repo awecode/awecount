@@ -22,10 +22,15 @@
         </span>
       </div>
       <div class="col-2">
-        <span v-if="showRateQuantity">
-          <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
-            :error="errors?.rate ? true : false" type="number"></q-input>
-        </span>
+        <div v-if="showRateQuantity" style="display: flex; align-items: center; gap: 4px;">
+          <span v-if="showRateQuantity">
+            <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
+              :error="errors?.rate ? true : false" type="number"></q-input>
+          </span>
+          <!-- <span>asvhva</span> -->
+          <!-- <q-icon v-if="isFifo" name="info" size="28px" color="blue-3" :title="`COGS: ${'5000'}-/`">
+          </q-icon> -->
+        </div>
       </div>
       <div v-if="inputAmount" class="col-2">
         <!-- <span class="">{{ amountComputed }}</span> -->
@@ -43,6 +48,21 @@
         <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent" :disable="hasChallan">
           <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
         </q-btn>
+      </div>
+    </div>
+    <div v-if="isFifo && COGSData?.hasOwnProperty(index)" class="pb-2">
+      <div v-if="COGSData[index].status != 'error'" class="row text-blue-4">
+        <!-- {{ props }} -->
+        <div class="col-5">Average Cost:</div>
+        <div class="col-2"></div>
+        <div class="col-2 q-pl-sm">{{ $nf(COGSData[index] / modalValue.quantity) }}</div>
+        <div class="col-2 text-center">{{ COGSData[index]}}</div>
+      </div>
+      <div v-else class="row text-orange-5">
+        <!-- {{ props }} -->
+        <div class="col-5">Error:</div>
+        <div class="col-1"></div>
+        <div class="col-5 q-pl-sm text-right">{{ COGSData[index].message }}</div>
       </div>
     </div>
     <div v-if="expandedState">
@@ -81,7 +101,8 @@
               " />
         </div>
       </div>
-      <div v-if="$route.params.id ? ((!!modalValue.item_id || !!modalValue.itemObj ) && enableRowDescription) : (!!modalValue.itemObj && enableRowDescription)">
+      <div
+        v-if="$route.params.id ? ((!!modalValue.item_id || !!modalValue.itemObj) && enableRowDescription) : (!!modalValue.itemObj && enableRowDescription)">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg">
         </q-input>
       </div>
@@ -177,14 +198,23 @@ export default {
       type: Boolean,
       default: () => true,
     },
+    isFifo: {
+      type: Boolean,
+      default: () => false,
+    },
+    COGSData: {
+      type: Object,
+      default: () => null,
+    },
     hasChallan: {
       type: Boolean,
       default: () => false
     }
   },
 
-  emits: ['update:modelValue', 'deleteRow'],
+  emits: ['update:modelValue', 'deleteRow', 'onItemIdUpdate'],
   setup(props, { emit }) {
+    const route = useRoute()
     const expandedState = ref(false)
     const modalValue = ref(props.modelValue)
     const selectedTax = ref(null)
@@ -192,7 +222,6 @@ export default {
       () => Math.round(((modalValue.value.rate || 0) * (modalValue.value.quantity || 0)) * 100) / 100
     )
     const selectedItem = ref(null)
-
     const updateTaxObj = () => {
       const taxindex = props.taxOptions.findIndex(
         (item) => item.id === props.modelValue.tax_scheme_id
@@ -274,6 +303,14 @@ export default {
         if (!modalValue.value.quantity) modalValue.value.quantity = 1
         modalValue.value.rate = amount / modalValue.value.quantity
       }
+    }
+    if (props.isFifo && props.usedIn === 'sales' && !route.params.id) {
+      watch(() => modalValue.value.item_id, (newValue) => {
+        if (modalValue.value.item_id) emit('onItemIdUpdate', newValue)
+      })
+      watch(() => modalValue.value.quantity, (newValue) => {
+        if (modalValue.value.item_id) emit('onItemIdUpdate')
+      })
     }
     return {
       ItemAdd,
