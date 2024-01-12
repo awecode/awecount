@@ -127,13 +127,13 @@
           src="/icons/envelope-fill.svg"
           alt="Call"
           style="margin-right: 10px; width: 14px"
-        /><span style="color: skyblue">{{store?.companyInfo.emails && store.companyInfo.emails.length ?  companyInfo.emails.join(',&nbsp;') : ''}}</span>
+        /><span style="color: skyblue">{{(store?.companyInfo.emails && store.companyInfo.emails.length) ?  store.companyInfo.emails.join(',&nbsp;') : ''}}</span>
       </div>
     </div>
   </div>
   <hr style="margin: 20px 0" />
       <div class="text-center text-bold text-subtitle1 q-mb-md">
-          Journal Voucher (Income)
+          Journal Voucher
       </div>
       <div class="row justify-between">
         <div>Date: {{ fields?.date || '-' }}</div>
