@@ -2,9 +2,9 @@
   <div class="row q-col-gutter-md">
     <div class="row q-col-gutter-md target">
       <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
-        label="Start Date" />
+        label="Start Date" debounce="1000" mask="####-##-##" />
       <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"
-        label="End Date" />
+        label="End Date" debounce="1000" mask="####-##-##" />
     </div>
     <q-menu ref="menuDom" target=".target" :no-focus="true">
       <div class="row q-pa-md main-con">
