@@ -16,14 +16,15 @@ from awecount.libs.exception import UnprocessableException
 def fifo_update_purchase_rows(rows):
     for row in rows:
         sold_items = row.sold_items
-        if sold_items.get("OB"):
-            sold_items.pop("OB")
-        updates = [
-            PurchaseVoucherRow.objects.filter(id=key).update(
-                remaining_quantity=F("remaining_quantity") + value
-            )
-            for key, value in sold_items.items()
-        ]
+        if sold_items:
+            sold_items.pop("OB", None)
+        if sold_items:
+            updates = [
+                PurchaseVoucherRow.objects.filter(id=key).update(
+                    remaining_quantity=F("remaining_quantity") + value
+                )
+                for key, value in sold_items.items()
+            ]
         row.sold_items = {}
         row.save()
 
@@ -51,9 +52,11 @@ def fifo_cancel_sales(voucher, allow_fifo_inconsistency: bool = False):
         if sold_items:
             for sold_item in sold_items:
                 update_opening_balance(sold_item)
-                for k, v in sold_item["sold_items"].items():
-                    if int(k) not in keys:
-                        keys.append(int(k))
+                sold_item_dict = sold_item["sold_items"]
+                if sold_item_dict:
+                    for k, v in sold_item_dict.items():
+                        if int(k) not in keys:
+                            keys.append(int(k))
             row_class_map = {SalesVoucher: SalesVoucherRow, Challan: ChallanRow}
             existing_sales = row_class_map[voucher.__class__].objects.filter(
                 sold_items__has_keys=keys,
@@ -66,7 +69,6 @@ def fifo_cancel_sales(voucher, allow_fifo_inconsistency: bool = False):
                     code="fifo_inconsistency",
                 )
             else:
-                import ipdb; ipdb.set_trace();
                 fifo_update_purchase_rows(rows)
                 return Response({})
         
