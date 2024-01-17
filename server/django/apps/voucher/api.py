@@ -464,6 +464,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 if request.query_params.get("negative_stock"):
                     purchase_voucher.cancel()
                     self.fifo_update_sales_rows(purchase_voucher)
+                    return Response({})
                 purchase_rows = purchase_voucher.rows.all()
                 for row in purchase_rows:
                     sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))

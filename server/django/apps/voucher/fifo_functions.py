@@ -30,7 +30,7 @@ def fifo_update_purchase_rows(rows):
 
 def update_opening_balance(sold_item):
     dct = sold_item.get("sold_items")
-    if dct.get("OB"):
+    if dct and dct.get("OB"):
         ob = dct.pop("OB")
         item = Item.objects.get(id=sold_item.get("item_id"))
         item.account.opening_quantity = ob
@@ -66,6 +66,7 @@ def fifo_cancel_sales(voucher, allow_fifo_inconsistency: bool = False):
                     code="fifo_inconsistency",
                 )
             else:
+                import ipdb; ipdb.set_trace();
                 fifo_update_purchase_rows(rows)
                 return Response({})
         
