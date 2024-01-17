@@ -120,7 +120,6 @@ export default {
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
-      const originalStatus = fields.value?.status
       let body: null | object = null
       if (status === 'Paid') {
         endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
@@ -148,6 +147,7 @@ export default {
               }
               if (status === 'Cancelled') {
                 isDeleteOpen.value = false
+                fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
               }
               loading.value = false
             }).catch((error) => {
@@ -161,7 +161,7 @@ export default {
               loading.value = false
             })
           } else {
-            const parsedError = useHandleFormError(err)
+            const parsedError = useHandleFormError(data)
             errors.value = parsedError.errors
             $q.notify({
               color: 'negative',
