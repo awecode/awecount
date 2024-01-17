@@ -8,7 +8,7 @@ export default (
   return new Promise((resolve, reject) => {
     $q.notify({
       color: 'orange',
-      message: `${humanizeWord(response.data?.code)}!}`,
+      message: `${humanizeWord(response.data?.code)}!`,
       icon: 'report_problem',
     })
     $q.dialog({

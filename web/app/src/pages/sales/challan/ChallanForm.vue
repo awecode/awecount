@@ -244,6 +244,7 @@ export default {
                   icon: 'check_circle',
                 })
                 formData.fields.value.status = 'Cancelled'
+                formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
                 isDeleteOpen.value = false
                 formData.loading.value = false
               })
