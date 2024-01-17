@@ -62,8 +62,8 @@
           <q-btn :loading="isLoading" v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
             @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')" color="green-6" label="mark as resolved"
             icon="mdi-check-all" />
-          <q-btn :loading="isLoading" v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" />
+          <q-btn :loading="isLoading" v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel"
+            icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
       <div class="row q-mb-md q-gutter-x-md">
@@ -106,8 +106,7 @@
           <div class=" text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes"
-                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+              <q-btn flat class="text-red" label="Yes" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -123,7 +122,6 @@ import { Ref } from 'vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -164,52 +162,36 @@ export default {
       isLoading.value = true
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
-            fields.value.status = status
-            if (status === 'Cancelled') {
-              $q.notify({
-                color: 'green-6',
-                message: 'Voucher has been cancelled.',
-              })
-              isDeleteOpen.value = false
-            } else if (status === 'Resolved') {
-              $q.notify({
-                color: 'green-6',
-                message: 'Voucher Marked as Resolved.',
-              })
-            }
+            onStatusChange(status)
           }
           isLoading.value = false
         })
         .catch((err) => {
-          // TODO: Properly Parse Error and show
-          let message = null
-          // if (err.status === 422) {
-          //   useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
-          //     if (fields.value) {
-          //       fields.value.status = status
-          //     }
-          //     if (status === 'Cancelled') {
-          //       isDeleteOpen.value = false
-          //     }
-          //   }).catch((error) => {
-          //     if (error.status !== 'cancel') {
-          //       $q.notify({
-          //         color: 'negative',
-          //         message: 'Something went Wrong!',
-          //         icon: 'report_problem',
-          //       })
-          //     }
-          //     isLoading.value = false
-          //   })
-          // }
-          message = err?.data?.detail
-          $q.notify({
-            color: 'red-6',
-            message: message || 'Something Went Wrong!',
-          })
           isLoading.value = false
+          debugger
+          if (err.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
+              onStatusChange(status)
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Server Error! Please contact us with the problem.',
+                  icon: 'report_problem',
+                })
+              }
+            })
+          }
+          else {
+            let message = null
+            message = err?.data?.detail
+            $q.notify({
+              color: 'red-6',
+              message: message || 'Server Error! Please contact us with the problem.',
+            })
+            isLoading.value = false
+          }
         })
     }
     const getDate = computed(() => {
@@ -258,6 +240,21 @@ export default {
         )
       } else return false
     })
+    const onStatusChange = (status) => {
+      fields.value.status = status
+      if (status === 'Cancelled') {
+        $q.notify({
+          color: 'green-6',
+          message: 'Voucher has been cancelled.',
+        })
+        isDeleteOpen.value = false
+      } else if (status === 'Resolved') {
+        $q.notify({
+          color: 'green-6',
+          message: 'Voucher Marked as Resolved.',
+        })
+      }
+    }
     return {
       allowPrint: false,
       bodyOnly: false,

@@ -17,21 +17,8 @@
         <ViewerTable :fields="fields" />
       </q-card-section>
     </q-card>
-    <!-- <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-    <q-btn
-      @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-      color="primary"
-      label="Draft"
-    />
-    <q-btn
-      @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-      color="green-8"
-      :label="isEdit ? 'Update' : 'Issue'"
-    />
-  </div> -->
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
-        <!-- {{ fields }} -->
         <q-btn v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
           color="orange-5" label="Edit" icon="edit" :to="`/credit-note/${fields.id}/`" />
         <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
@@ -44,7 +31,6 @@
           :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
           @click="onPrintclick(false)" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <!-- <q-btn @click="onPrintclick" label="Print" icon="print" /> -->
         <q-btn color="blue-7" label="Journal Entries" icon="books"
           :to="`/journal-entries/credit-note/${this.$route.params.id}/`" />
       </div>
@@ -105,7 +91,6 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
             fields.value.status = status
           }
@@ -145,7 +130,6 @@ export default {
       const pri = ifram.contentWindow
       pri.document.open()
       pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields.value))
-      // pri.document.body.firstElementChild.prepend()
       pri.document.close()
       pri.focus()
       setTimeout(() => pri.print(), 100)
@@ -192,18 +176,6 @@ export default {
       })
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>
 
 <style>
@@ -224,8 +196,6 @@ export default {
 }
 
 @media print {
-
-  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
   .d-print-none {
     display: none;
     visibility: hidden;

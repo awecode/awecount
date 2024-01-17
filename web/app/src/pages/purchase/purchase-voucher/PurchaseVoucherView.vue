@@ -99,8 +99,6 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import checkPermissions from 'src/composables/checkPermissions'
-import useHandleCancelInconsistencyError from 'src/composables/useHandleCancelInconsistencyError'
 interface Fields {
   status: string
   voucher_no: string
@@ -142,42 +140,14 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          if (fields.value) {
-            fields.value.status = status
-            if (status === 'Cancelled') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher has been cancelled.',
-              })
-              fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
-              isDeleteOpen.value = false
-            } else if (status === 'Paid') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher Marked as paid.',
-              })
-            }
-          }
+          onStatusChange(status)
           isLoading.value = false
         })
-        // .catch((err) => {
-        //
         .catch((data) => {
           if (data.status === 422) {
             useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then((data) => {
-              if (fields.value) {
-                fields.value.status = status
-                if (status === 'Cancelled') {
-                  $q.notify({
-                    color: 'green-6',
-                    message: 'Voucher has been cancelled.',
-                  })
-                  isDeleteOpen.value = false
-                  isLoading.value = false
-                }
-              }
+              isLoading.value = false
+              onStatusChange(status)
             }).catch((error) => {
               if (error.status !== 'cancel') {
                 $q.notify({
@@ -196,8 +166,8 @@ export default {
               message: parsedError.message,
               icon: 'report_problem',
             })
+            isLoading.value = false
           }
-          isLoading.value = false
         })
     }
     const getDate = computed(() => {
@@ -221,6 +191,26 @@ export default {
         )
       } else return false
     })
+    const onStatusChange = (status: string) => {
+      if (fields.value) {
+        fields.value.status = status
+        if (status === 'Cancelled') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher has been cancelled.',
+          })
+          // fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
+          isDeleteOpen.value = false
+        } else if (status === 'Paid') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher Marked as paid.',
+          })
+        }
+      }
+    }
     return {
       allowPrint: false,
       bodyOnly: false,

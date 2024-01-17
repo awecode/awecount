@@ -130,8 +130,6 @@ import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import ChallanTable from 'src/components/challan/ChallanTable.vue'
-import checkPermissions from 'src/composables/checkPermissions'
-import useHandleCancelInconsistencyError from 'src/composables/useHandleCancelInconsistencyError'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -191,16 +189,6 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.party = ''
     formData.fields.value.customer_name = null
-    // onMounted(() => {
-    //   if (formData.isEdit.value) {
-    //     console.log(formData.fields.value)
-    //     setTimeout(() => {
-    //       if (!!formData.fields.value.customer_name) {
-    //         partyMode.value = false
-    //       }
-    //     }, 100)
-    //   }
-    // })
     const onResolvedClick = () => {
       formData.loading.value = true
       useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
@@ -247,10 +235,6 @@ export default {
           formData.loading.value = false
         })
         .catch((err) => {
-          // let message = 'error'
-          // if (err.data?.message) {
-          //   message = err.data?.message
-          // }
           if (err.status === 422) {
             useHandleCancelInconsistencyError(url, err, body, $q)
               .then(() => {
@@ -281,7 +265,6 @@ export default {
               message: parsedError.message,
               icon: 'report_problem',
             })
-            formData.loading.value = false
           }
           formData.loading.value = false
         })
@@ -298,7 +281,6 @@ export default {
             formData.fields.value.address =
               formData.formDefaults.value.collections.parties[index].address
           }
-          // const index = formDefaults.
         }
       }
     )
@@ -320,6 +302,5 @@ export default {
       deleteMsg,
     }
   },
-  // onmounted: () => console.log('mounted'),
 }
 </script>
