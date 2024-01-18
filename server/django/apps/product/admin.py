@@ -71,7 +71,7 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'description', 'selling_price', 'cost_price')
     list_filter = (
         'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense',
-        'brand')
+        'company')
     list_display = ('code', 'name', 'cost_price', 'selling_price', 'brand')
     actions = (delete_item_data, fix_book_title)
     readonly_fields = (
