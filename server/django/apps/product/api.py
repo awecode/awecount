@@ -147,9 +147,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             current_opening_balance = inventory_account.opening_balance
 
             inventory_transactions.update(account=inventory_account)
+            total_quantity = inventory_account.opening_balance + sum(obj.opening_balance for obj in remaining_items_inventory_accounts)
+            inventory_account.opening_balance_rate = (inventory_account.opening_balance / total_quantity) * (inventory_account.opening_balance_rate or 0)
             for obj in remaining_items_inventory_accounts:
                 inventory_account.current_balance += obj.current_balance
                 inventory_account.opening_balance += obj.opening_balance
+                inventory_account.opening_balance_rate += (obj.opening_balance / total_quantity) * (obj.opening_balance_rate or 0)
                 inventory_account.save()
             
             if inventory_account.opening_balance != current_opening_balance:
