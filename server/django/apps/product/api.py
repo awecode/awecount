@@ -220,6 +220,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=False, url_path='similar-items')
     def similar_items(self, request):
         from thefuzz import fuzz
+        # TODO Use postgres trigram/cosine/levenshtein distance
         qs = super().get_queryset()
         items = qs.values_list('id', 'name', 'code')
         res = []
