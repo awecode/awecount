@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from django.urls import reverse
 from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, CreditNoteRow, InvoiceDesign, \
     JournalVoucher, JournalVoucherRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, PurchaseDiscount, \
     DebitNoteRow, \
@@ -8,6 +8,7 @@ from apps.voucher.models import SalesVoucher, SalesVoucherRow, CreditNote, Credi
 
 class SaleVoucherRowTabular(admin.TabularInline):
     model = SalesVoucherRow
+    autocomplete_fields = ['item', 'tax_scheme', 'discount_obj', 'unit']
 
 
 class PurchaseVoucherRowTabular(admin.TabularInline):
@@ -37,6 +38,18 @@ class SalesVoucherAdmin(admin.ModelAdmin):
     list_filter = ('company', 'status', 'mode', 'fiscal_year')
     list_display = ('company', 'voucher_no', 'party', 'customer_name', 'status', 'total_amount')
     inlines = (SaleVoucherRowTabular,)
+    autocomplete_fields = ['party', 'company', 'discount_obj', 'sales_agent', 'bank_account',
+                           'challans', 'user']
+
+    def get_queryset(self, request):
+        qs = super(SalesVoucherAdmin, self).get_queryset(request)
+        changelist_path = reverse(
+            "admin:%s_%s_changelist"
+            % (self.model._meta.app_label, self.model._meta.model_name)
+        )
+        if request.path == changelist_path:
+            qs = qs.select_related('party', 'company', )
+        return qs
 
 
 class CreditNoteAdmin(admin.ModelAdmin):

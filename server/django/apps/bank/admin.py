@@ -16,7 +16,13 @@ class BankCashDepositAdmin(admin.ModelAdmin):
 
 admin.site.register(BankCashDeposit, BankCashDepositAdmin)
 
-admin.site.register(BankAccount)
+
+class BankAccountAdmin(admin.ModelAdmin):
+    list_filter = ('company',)
+    search_fields = ('name', 'account_number', 'bank_name', 'branch_name')
+
+
+admin.site.register(BankAccount, BankAccountAdmin)
 admin.site.register(ChequeIssue)
 
 

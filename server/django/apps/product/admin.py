@@ -100,7 +100,7 @@ admin.site.register(Item, ItemAdmin)
 admin.site.register(InventoryAccount, InventoryAccountAdmin)
 admin.site.register(JournalEntry)
 admin.site.register(Transaction)
-admin.site.register(Unit)
+admin.site.register(Unit, UnitAdmin)
 
 
 class BrandAdmin(admin.ModelAdmin):
