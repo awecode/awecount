@@ -77,6 +77,7 @@ class ItemAdmin(admin.ModelAdmin):
     readonly_fields = (
         'account', 'sales_account', 'purchase_account', 'discount_allowed_account', 'discount_received_account',
         'expense_account', 'fixed_asset_account')
+    autocomplete_fields = ('brand', 'category', 'unit', 'tax_scheme', 'company')
 
 
 class UnitAdmin(admin.ModelAdmin):
