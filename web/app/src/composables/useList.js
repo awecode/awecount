@@ -250,7 +250,6 @@ export default (endpoint, predefinedColumns = null) => {
     // router.push({ path: route.path, query: cleanedFilters })
   }
   const rows = computed(() => {
-    // debugger
     if (
       unCalculatedrows.value?.length > 0 &&
       !store.isCalendarInAD &&
