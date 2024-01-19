@@ -541,24 +541,24 @@ class Item(models.Model):
     account = models.OneToOneField(InventoryAccount, related_name='item', null=True, on_delete=models.CASCADE)
 
     sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item')
-    sales_account_type = models.CharField(max_length=16, null=True, blank=True)
-    dedicated_sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item_dedicated', choices=ACCOUNT_TYPE_CHOICES)
+    sales_account_type = models.CharField(max_length=16, null=True, blank=True, choices=ACCOUNT_TYPE_CHOICES)
+    dedicated_sales_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='sales_item_dedicated')
 
     purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item')
-    purchase_account_type = models.CharField(max_length=16, null=True, blank=True)
-    dedicated_purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item_dedicated', choices=ACCOUNT_TYPE_CHOICES)
+    purchase_account_type = models.CharField(max_length=16, null=True, blank=True, choices=ACCOUNT_TYPE_CHOICES)
+    dedicated_purchase_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name='purchase_item_dedicated')
     
     discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                  related_name='discount_allowed_item')
-    discount_allowed_account_type = models.CharField(max_length=16, null=True, blank=True)
+    discount_allowed_account_type = models.CharField(max_length=16, null=True, blank=True, choices=ACCOUNT_TYPE_CHOICES)
     dedicated_discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                 related_name='discount_allowed_item_dedicated', choices=ACCOUNT_TYPE_CHOICES)
+                                                 related_name='discount_allowed_item_dedicated')
     
     discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                                   related_name='discount_received_item')
-    discount_received_account_type = models.CharField(max_length=16, null=True, blank=True)
+    discount_received_account_type = models.CharField(max_length=16, null=True, blank=True, choices=ACCOUNT_TYPE_CHOICES)
     dedicated_discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
-                                                  related_name='discount_received_item_dedicated', choices=ACCOUNT_TYPE_CHOICES)
+                                                  related_name='discount_received_item_dedicated')
     
     expense_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,
                                         related_name='expense_item')
