@@ -16,7 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from apps.aggregator.views import qs_to_xls
 
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet, TransactionFilterSet
-from apps.ledger.models.base import AccountClosing
+from apps.ledger.models.base import AccountClosing, Transaction
 from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
 from apps.users.models import FiscalYear
@@ -311,7 +311,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         return super().get_serializer_class()
 
     def get_queryset(self):
-        qs = super().get_queryset().prefetch_related('account', 'journal_entry__content_type')
+        qs = Transaction.objects.prefetch_related('account', 'journal_entry__content_type')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         accounts = list(filter(None, self.request.GET.getlist('account')))
@@ -330,6 +330,7 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             qs = qs.filter(journal_entry__content_type_id__in=sources)
         if group_by:
             qs = self.aggregate(qs, group_by)
+        # import ipdb; ipdb.set_trace()
         return qs
 
     def aggregate(self, qs, group_by):

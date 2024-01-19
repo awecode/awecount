@@ -3,7 +3,7 @@ from django.contrib import admin, messages
 from django.db import transaction
 from django.db.models import ProtectedError
 
-from apps.product.models import Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, Brand
+from apps.product.models import InventorySetting, Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, Brand
 
 
 def merge_brands(modeladmin, request, queryset):
@@ -110,3 +110,8 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Brand, BrandAdmin)
+
+@admin.register(InventorySetting)
+class InventorySettingAdmin(admin.ModelAdmin):
+    # list_display = []
+    pass

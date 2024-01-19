@@ -107,3 +107,5 @@ python-dotenv
 whitenoise
 XlsxWriter==3.1.2
 django_q
+sentry-sdk[django]==1.32.0
+thefuzz==0.20.0

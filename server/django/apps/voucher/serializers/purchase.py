@@ -4,9 +4,11 @@ from apps.product.models import Item
 
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
-from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher
+from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucherRow, PurchaseVoucher, SalesVoucherRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
+from ..fifo_functions import fifo_handle_purchase_update
 
 
 class PurchaseDiscountSerializer(serializers.ModelSerializer):
@@ -60,10 +62,38 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             )
 
     def validate(self, data):
+        company = self.context["request"].company
+            
         if not data.get('party') and data.get('mode') == 'Credit' and data.get('status') != 'Draft':
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
+        request = self.context["request"]
+
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+
+        if request.query_params.get("fifo_inconsistency"):
+            return data
+        else:
+            if request.company.inventory_setting.enable_fifo:
+                item_ids = [x.get("item_id") for x in data.get("rows")]
+                date = data["date"]
+                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
+                    raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+                return data
+    
+        party = data.get("party")
+        fiscal_year = self.context["request"].company.current_fiscal_year
+        voucher_no = data.get("voucher_no")
+
+        if not company.purchase_setting.enable_empty_voucher_no:
+            if not voucher_no:
+                raise ValidationError(
+                    {"voucher_no": ["This field cannot be empty."]}
+                )
+            if self.Meta.model.objects.filter(voucher_no=voucher_no, party=party, fiscal_year=fiscal_year).exists():
+                raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
         
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
@@ -109,7 +139,6 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo:
-                # TODO: use this from request data
                 item = Item.objects.get(id=row["item_id"])
                 if item.track_inventory:
                     row["remaining_quantity"] = row["quantity"]
@@ -133,6 +162,8 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
+            if request.company.inventory_setting.enable_fifo:
+                fifo_handle_purchase_update(instance, row)
             PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         if purchase_orders:
             instance.purchase_orders.clear()

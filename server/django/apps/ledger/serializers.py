@@ -336,9 +336,9 @@ class TransactionEntrySerializer(serializers.Serializer):
     def get_source_type(self, obj):
         from django.apps import apps
 
-        v_type = obj.content_type_model
+        v_type = obj.journal_entry.content_type.model
 
-        m = apps.get_model(obj.content_type_app_label, v_type)
+        m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
