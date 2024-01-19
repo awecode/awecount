@@ -256,7 +256,7 @@ const setCategory = () => {
         return item;
       }
     });
-    if (selected.hasOwnProperty("extra_fields")) {
+    if (selected.hasOwnProperty('extra_fields')) {
       if (fields.value.extra_data === null) {
         fields.value.extra_data = {}
       }
@@ -274,112 +274,111 @@ const setCategory = () => {
         fields.value.extra_fields = null
       }
     }
-    if (selected.hasOwnProperty("default_unit_id")) {
+    if (selected.hasOwnProperty('default_unit_id')) {
       if (selected.default_unit_id) {
         fields.value.unit_id = selected.default_unit_id
       } else {
-        fields.value.unit_id = ""
+        fields.value.unit_id = ''
       }
     }
 
-    if (selected.hasOwnProperty("default_tax_scheme_id")) {
+    if (selected.hasOwnProperty('default_tax_scheme_id')) {
       if (selected.default_tax_scheme_id) {
         fields.value.tax_scheme_id = selected.default_tax_scheme_id
       } else {
-        fields.value.tax_scheme_id = ""
+        fields.value.tax_scheme_id = ''
       }
     }
     if (
       !fields.value.sales_account && !fields.value.items_sales_account_type &&
-      selected.hasOwnProperty("items_sales_account_type")
+      selected.hasOwnProperty('items_sales_account_type')
     ) {
-      if (selected.items_sales_account_type === "category") {
+      if (selected.items_sales_account_type === 'category') {
         fields.value.sales_account = selected.dedicated_sales_account
       }
-      else if (selected.items_sales_account_type === "global") {
-        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
+      else if (selected.items_sales_account_type === 'global') {
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, 'Sales Account')
       }
-      else if (selected.items_sales_account_type === "existing") {
+      else if (selected.items_sales_account_type === 'existing') {
         fields.value.sales_account = selected.sales_account
       }
-      if (selected.items_sales_account_type !== "creation") {
+      if (selected.items_sales_account_type !== 'creation') {
         fields.value.sales_account_type = selected.items_sales_account_type
       }
     }
     if (
       !fields.value.purchase_account && !fields.value.items_purchase_account_type &&
-      selected.hasOwnProperty("items_purchase_account_type")
+      selected.hasOwnProperty('items_purchase_account_type')
     ) {
-      if (selected.items_purchase_account_type === "category") {
+      if (selected.items_purchase_account_type === 'category') {
         fields.value.purchase_account = selected.dedicated_purchase_account
       }
-      else if (selected.items_purchase_account_type === "global") {
-        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
+      else if (selected.items_purchase_account_type === 'global') {
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, 'Purchase Account')
       }
-      else if (selected.items_purchase_account_type === "existing") {
+      else if (selected.items_purchase_account_type === 'existing') {
         fields.value.purchase_account = selected.purchase_account
       }
-      if (selected.items_purchase_account_type !== "creation") {
+      if (selected.items_purchase_account_type !== 'creation') {
         fields.value.purchase_account_type = selected.items_purchase_account_type
       }
     }
     if (
       !fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type &&
-      selected.hasOwnProperty("items_discount_allowed_account_type")
+      selected.hasOwnProperty('items_discount_allowed_account_type')
     ) {
-      if (selected.items_discount_allowed_account_type === "category") {
+      if (selected.items_discount_allowed_account_type === 'category') {
         fields.value.discount_allowed_account = selected.dedicated_discount_allowed_account
       }
-      else if (selected.items_discount_allowed_account_type === "global") {
-        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Expenses")
+      else if (selected.items_discount_allowed_account_type === 'global') {
+        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.accounts, 'Discount Expenses')
       }
-      else if (selected.items_discount_allowed_account_type === "existing") {
+      else if (selected.items_discount_allowed_account_type === 'existing') {
         fields.value.discount_allowed_account = selected.discount_allowed_account
       }
-      if (selected.items_discount_allowed_account_type !== "creation") {
+      if (selected.items_discount_allowed_account_type !== 'creation') {
         fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
       }
     }
     if (
       !fields.value.discount_received_account && !fields.value.items_discount_received_account_type &&
-      selected.hasOwnProperty("items_discount_received_account_type")
+      selected.hasOwnProperty('items_discount_received_account_type')
     ) {
-      if (selected.items_discount_received_account_type === "category") {
+      if (selected.items_discount_received_account_type === 'category') {
         fields.value.discount_received_account = selected.dedicated_discount_received_account
       }
-      else if (selected.items_discount_received_account_type === "global") {
-        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Income")
+      else if (selected.items_discount_received_account_type === 'global') {
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.accounts, 'Discount Income')
       }
-      else if (selected.items_discount_received_account_type === "existing") {
+      else if (selected.items_discount_received_account_type === 'existing') {
         fields.value.discount_received_account = selected.discount_received_account
       }
-      if (selected.items_discount_received_account_type !== "creation") {
+      if (selected.items_discount_received_account_type !== 'creation') {
         fields.value.discount_received_account_type = selected.items_discount_received_account_type
       }
     }
 
-    if (selected.hasOwnProperty("track_inventory")) {
+    if (selected.hasOwnProperty('track_inventory')) {
       fields.value.track_inventory = selected.track_inventory
     }
-    if (selected.hasOwnProperty("can_be_sold")) {
+    if (selected.hasOwnProperty('can_be_sold')) {
       fields.value.can_be_sold = selected.can_be_sold
     }
-    if (selected.hasOwnProperty("can_be_purchased")) {
+    if (selected.hasOwnProperty('can_be_purchased')) {
       fields.value.can_be_purchased = selected.can_be_purchased
     }
-    if (selected.hasOwnProperty("fixed_asset")) {
+    if (selected.hasOwnProperty('fixed_asset')) {
       fields.value.fixed_asset = selected.fixed_asset
     }
-    if (selected.hasOwnProperty("direct_expense")) {
+    if (selected.hasOwnProperty('direct_expense')) {
       fields.value.direct_expense = selected.direct_expense
     }
-    if (selected.hasOwnProperty("indirect_expense")) {
+    if (selected.hasOwnProperty('indirect_expense')) {
       fields.value.indirect_expense = selected.indirect_expense
     }
   }
 }
 // watch(() => accountTypeValues.value.sales_account, (newValue) => {
-//   // debugger
 //   if (accountTypeValues.value.sales_account === "category") {
 //     if (fields.value.category) {
 //       const selected = formDefaults.value.collections.inventory_categories.find(item => {

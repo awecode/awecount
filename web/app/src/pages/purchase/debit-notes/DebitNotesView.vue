@@ -3,11 +3,16 @@
     <q-card class="q-ma-lg q-mb-sm">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Debit Note | {{ fields?.status }} | #{{ fields?.voucher_no }}</span>
+          <span
+            >Debit Note | {{ fields?.status }} | #{{ fields?.voucher_no }}</span
+          >
         </div>
       </q-card-section>
 
-      <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2 row" style="padding-bottom: 0">
+      <q-card
+        class="q-mx-lg q-pa-lg row text-grey-8 text-body2 row"
+        style="padding-bottom: 0"
+      >
         <div class="col-12 col-md-6 column q-gutter-y-lg q-mb-lg">
           <div class="row">
             <div class="col-6">Party</div>
@@ -41,7 +46,8 @@
       </q-card>
     </q-card>
     <div class="q-ma-lg text-subtitle2">
-      Ref. Invoice No.: # {{ fields?.invoice_data && fields?.invoice_data[0]?.voucher_no }}
+      Ref. Invoice No.: #
+      {{ fields?.invoice_data && fields?.invoice_data[0]?.voucher_no }}
     </div>
     <q-card class="q-mx-lg" id="to_print">
       <q-card-section>
@@ -54,25 +60,62 @@
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
-    <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
+    <div
+      class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none"
+      v-if="fields"
+    >
       <div class="row">
-        <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('DebitNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
-            :to="`/debit-note/${fields.id}`" color="orange-6" label="Edit" icon="edit" />
-          <q-btn :loading="isLoading" v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')" color="green-6" label="mark as resolved"
-            icon="mdi-check-all" />
-          <q-btn :loading="isLoading" v-if="checkPermissions('DebitNoteCancel')" color="red-5" label="Cancel"
-            icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
+        <div
+          v-if="fields?.status !== 'Cancelled'"
+          class="row q-gutter-x-md q-gutter-y-md q-mb-md"
+        >
+          <q-btn
+            v-if="
+              checkPermissions('DebitNoteModify') &&
+              (fields.can_update_issued || fields.status === 'Draft')
+            "
+            :to="`/debit-note/${fields.id}`"
+            color="orange-6"
+            label="Edit"
+            icon="edit"
+          />
+          <q-btn
+            :loading="isLoading"
+            v-if="
+              fields?.status === 'Issued' && checkPermissions('DebitNoteModify')
+            "
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')"
+            color="green-6"
+            label="mark as resolved"
+            icon="mdi-check-all"
+          />
+          <q-btn
+            :loading="isLoading"
+            v-if="checkPermissions('DebitNoteCancel')"
+            color="red-5"
+            label="Cancel"
+            icon="cancel"
+            @click.prevent="() => (isDeleteOpen = true)"
+          />
         </div>
       </div>
       <div class="row q-mb-md q-gutter-x-md">
-        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
-          @click="onPrintclick(false)" />
+        <q-btn
+          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
+          :label="`Print ${
+            fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''
+          }`"
+          icon="print"
+          @click="onPrintclick(false)"
+        />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Resolved'" color="blue-7" label="Journal Entries"
-          icon="books" :to="`/journal-entries/debit-note/${fields?.id}/`" />
+        <q-btn
+          v-if="fields?.status === 'Issued' || fields?.status === 'Resolved'"
+          color="blue-7"
+          label="Journal Entries"
+          icon="books"
+          :to="`/journal-entries/debit-note/${fields?.id}/`"
+        />
       </div>
     </div>
     <!-- <q-dialog v-model="isDeleteOpen">
@@ -100,13 +143,26 @@
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+          <div
+            class="q-mb-md text-grey-9"
+            style="font-size: 16px; font-weight: 500"
+          >
             Are you sure?
           </div>
-          <div class=" text-blue">
+          <div class="text-blue">
             <div class="row justify-end">
-              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+              <q-btn
+                flat
+                class="q-mr-md text-blue-grey-9"
+                label="NO"
+                @click="() => (isDeleteOpen = false)"
+              ></q-btn>
+              <q-btn
+                flat
+                class="text-red"
+                label="Yes"
+                @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+              ></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -169,26 +225,28 @@ export default {
         })
         .catch((err) => {
           isLoading.value = false
-          debugger
           if (err.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, err, body.body, $q).then(() => {
-              onStatusChange(status)
-            }).catch((error) => {
-              if (error.status !== 'cancel') {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Server Error! Please contact us with the problem.',
-                  icon: 'report_problem',
-                })
-              }
-            })
-          }
-          else {
+            useHandleCancelInconsistencyError(endpoint, err, body.body, $q)
+              .then(() => {
+                onStatusChange(status)
+              })
+              .catch((error) => {
+                if (error.status !== 'cancel') {
+                  $q.notify({
+                    color: 'negative',
+                    message:
+                      'Server Error! Please contact us with the problem.',
+                    icon: 'report_problem',
+                  })
+                }
+              })
+          } else {
             let message = null
             message = err?.data?.detail
             $q.notify({
               color: 'red-6',
-              message: message || 'Server Error! Please contact us with the problem.',
+              message:
+                message || 'Server Error! Please contact us with the problem.',
             })
             isLoading.value = false
           }
@@ -271,7 +329,7 @@ export default {
       onPrintclick,
       getDate,
       checkPermissions,
-      isLoading
+      isLoading,
     }
   },
   created() {
@@ -291,7 +349,6 @@ export default {
 
 <style scoped>
 @media print {
-
   /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
   .q-card {
     box-shadow: none;
