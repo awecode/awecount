@@ -692,7 +692,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(request, row)
+                sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
@@ -716,7 +716,7 @@ class ChallanCreateSerializer(StatusReversionMixin,
         Challan.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(request, row)
+                sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
             ChallanRow.objects.update_or_create(voucher=instance, pk=row.get('id'), defaults=row)
         instance.refresh_from_db()
