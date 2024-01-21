@@ -153,6 +153,13 @@ export default {
         sortable: true
       },
       {
+        name: 'item',
+        label: 'Item',
+        align: 'left',
+        field: 'item',
+        sortable: true
+      },
+      {
         name: 'quantity',
         label: 'Quantity',
         align: 'left',
