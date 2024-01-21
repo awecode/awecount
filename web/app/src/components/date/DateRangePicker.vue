@@ -149,17 +149,17 @@ watch(
   }
 )
 
-const filter = () => {
-  if (!value0.value && !value1.value) {
-    $q.notify({
-      color: 'negative',
-      message: 'Date range is invalid',
-      icon: 'report_problem',
-    })
-    return
-  }
-  emit('filter')
-}
+// const filter = () => {
+//   if (!value0.value && !value1.value) {
+//     $q.notify({
+//       color: 'negative',
+//       message: 'Date range is invalid',
+//       icon: 'report_problem',
+//     })
+//     return
+//   }
+//   emit('filter')
+// }
 
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
