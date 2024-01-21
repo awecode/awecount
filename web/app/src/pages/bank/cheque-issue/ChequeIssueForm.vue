@@ -164,10 +164,10 @@ export default {
       setTimeout(() => pri.print(), 100)
     }
     const onChequePrint = () => {
-      import("jspdf").then(({ jsPDF }) => {
+      import('jspdf').then(({ jsPDF }) => {
         const doc = new jsPDF({
-          orientation: "landscape",
-          unit: "in",
+          orientation: 'landscape',
+          unit: 'in',
           format: [7.5, 3.5]
         })
         const amt = formData.fields.value.amount_in_words + ' only'
@@ -182,19 +182,18 @@ export default {
         if (amountArray[1]) {
           doc.text(amountArray[1], 0.75, 1.45)
         }
-        doc.save("a4.pdf")
+        doc.save('a4.pdf')
       })
     }
-    const updateBankAccount = (newValue) => {
+    const updateBankAccount = () => {
       const { bank_account } = formData.fields.value
       const bank_accounts = formData.formDefaults.value.collections.bank_accounts
       if (bank_accounts && bank_account && !formData.fields.value.id) {
         const selected = bank_accounts.find((account) => {
           return bank_account === account.id;
         });
-        if (selected.hasOwnProperty("cheque_no")) {
+        if (selected.hasOwnProperty('cheque_no')) {
           if (selected.cheque_no) {
-            // this.$set(this.fields, "cheque_no", selected.cheque_no);
             formData.fields.value.cheque_no = selected.cheque_no
           } else {
             formData.fields.value.cheque_no = ''
@@ -202,13 +201,7 @@ export default {
         }
       }
     }
-    // function splitString(str, chunkSize) {
-    //   const chunks = [];
-    //   for (let i = 0; i < str.length; i += chunkSize) {
-    //     chunks.push(str.slice(i, i + chunkSize));
-    //   }
-    //   return chunks;
-    // }
+
     function splitString(str, chunkSize) {
       const chunks = [];
       let start = 0;

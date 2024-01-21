@@ -71,7 +71,6 @@ export default {
     setup(props, { emit }) {
         const endpoint = '/v1/purchase-order/'
         const openDatePicker = ref(false)
-        const router = useRouter()
         const $q = useQuasar()
         const isDeleteOpen = ref(false)
         const deleteMsg = ref('')

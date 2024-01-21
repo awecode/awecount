@@ -39,6 +39,7 @@ export default {
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props) {
     return
   },

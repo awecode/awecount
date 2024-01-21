@@ -422,7 +422,7 @@ export default {
       )
       watch(
         () => modalValue.value.quantity,
-        (newValue) => {
+        () => {
           if (modalValue.value.item_id) emit('onItemIdUpdate')
         }
       )

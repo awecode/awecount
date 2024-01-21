@@ -136,6 +136,7 @@ import NAutoComplete from 'src/components/NAutoComplete.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits([])
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },

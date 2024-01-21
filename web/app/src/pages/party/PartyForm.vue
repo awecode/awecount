@@ -53,10 +53,10 @@ import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useRouter } from 'vue-router'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   components: {
     PartyRepresentative,
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'

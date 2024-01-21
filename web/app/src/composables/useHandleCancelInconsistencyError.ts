@@ -1,8 +1,10 @@
 export default (
   url: string,
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   response: Record<string, any>,
   body: Record<string, any> | null,
   $q: Record<string, any>,
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   method = 'POST'
 ) => {
   return new Promise((resolve, reject) => {

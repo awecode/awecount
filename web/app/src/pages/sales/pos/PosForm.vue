@@ -125,6 +125,7 @@ import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from '/src/stores/login-info.js'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits([])
 const metaData = {
   title: 'POS | Awecount',

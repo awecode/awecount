@@ -347,7 +347,7 @@ export default {
     // For purchase rows Data of Items
 
     // to update voucher meta in Credit and debit Notes
-    if (props.usedIn === "creditNote") {
+    if (props.usedIn === 'creditNote') {
       watch(totalDataComputed, (newValue) => {
         emit('updateVoucherMeta', newValue)
       })

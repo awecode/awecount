@@ -356,16 +356,8 @@ export default {
   },
   setup(props) {
     const store = useLoginStore()
-    interface Amounts {
-      dr: number
-      cr: number
-    }
     const route = useRoute()
-    // interface Fields {
-    //   customer_account: Record<string, string | number | Amounts> | null
-    //   name: string
-    //   supplier_account: Record<string, string | number | Amounts> | null
-    // }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fields: Ref<null | Record<string, any>> = ref(props.fields)
     watch(
       () => props.fields,
@@ -373,9 +365,6 @@ export default {
         fields.value = newValue
       }
     )
-    // function getEndPoint() {
-    //   return `parties/${this.$route.params.pk}/transactions/`
-    // }
     function getVoucherUrl(row: Record<string, string>) {
       if (!row.source_id) return ''
       const source_type = row.source_type

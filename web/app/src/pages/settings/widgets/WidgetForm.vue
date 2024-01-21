@@ -77,7 +77,7 @@ export default {
         useApi(`/v1/widgets/${formData.fields.value.id}/delete/`, { method: 'DELETE' }).then(() => {
           $q.notify({
               color: 'green-6',
-              message: "The widget has been deleted.",
+              message: 'The widget has been deleted.',
               icon: 'check_circle',
             })
           router.replace('/dashboard/')

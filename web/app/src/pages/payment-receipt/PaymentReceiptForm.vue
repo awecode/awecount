@@ -142,7 +142,7 @@ export default {
                 icon: 'report_problem',
                 position: 'top-right',
               })
-              formData.errors.value.invoice_no = "The invoice has already been added!"
+              formData.errors.value.invoice_no = 'The invoice has already been added!'
             } else if (fields.party_id === data.party_id) {
               if (!fields.invoice_nos) fields.invoice_nos = []
               fields.invoice_nos.push(data.voucher_no)
@@ -191,10 +191,10 @@ export default {
           position: 'top-right',
         })
         if (!invoiceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!invoiceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
       }
     }

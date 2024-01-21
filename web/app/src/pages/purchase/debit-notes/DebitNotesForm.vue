@@ -202,7 +202,7 @@ export default {
             })
             data.rows.forEach(row => {
               row.taxObj = row.tax_scheme
-              if (row.discount_type === "") {
+              if (row.discount_type === '') {
                 row.discount_type = null
               }
             });
@@ -228,13 +228,13 @@ export default {
           })
       } else {
         if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!referenceFormData.value.party) {
-          formData.errors.value.party = "Party is required!"
+          formData.errors.value.party = 'Party is required!'
         }
         if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
         $q.notify({
           color: 'red-6',

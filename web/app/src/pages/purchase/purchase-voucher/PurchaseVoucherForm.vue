@@ -218,7 +218,7 @@ export default {
             icon: 'report_problem',
             position: 'top-right',
           })
-          formData.errors.value.invoice_no = "The invoice has already been added!"
+          formData.errors.value.invoice_no = 'The invoice has already been added!'
         } else {
           const url = 'v1/purchase-order/by-voucher-no/'
           useApi(
@@ -296,10 +296,10 @@ export default {
         })
         if (!formData?.errors?.value) formData.errors.value = {}
         if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
       }
     }

@@ -29,7 +29,6 @@
 </template>
 
 <script setup>
-const $q = useQuasar()
 import checkPermissions from 'src/composables/checkPermissions'
 // const fiscal_year = ref(null)
 const endpoint = '/v1/account-closing/'
@@ -37,7 +36,7 @@ const metaData = {
       title: 'Account Closing | Awecount',
     }
 useMeta(metaData)
-const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
+const { fields, formDefaults, submitForm, loading } = useForm(endpoint, {
     getDefaults: true,
     successRoute: '/settings/account-closing/'
 

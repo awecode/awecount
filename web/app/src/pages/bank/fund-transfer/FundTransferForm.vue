@@ -82,12 +82,10 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
-import { useQuasar } from 'quasar'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/fund-transfer/'
-    const $q = useQuasar()
     const isDeleteOpen = ref(false)
     const formData = useForm(endpoint, {
       getDefaults: true,

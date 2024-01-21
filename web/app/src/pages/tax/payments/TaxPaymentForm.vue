@@ -81,12 +81,10 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
-import { useQuasar } from 'quasar'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/tax-payments/'
-    const $q = useQuasar()
     // const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
@@ -102,7 +100,7 @@ export default {
     const isDeleteOpen = ref(false)
     formData.fields.value.date = formData.today
     formData.fields.value.recoverable = false
-    async function submitWithStatus(status, submitForm) {
+    async function submitWithStatus(status) {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
       try { await formData.submitForm() } catch (err) {
