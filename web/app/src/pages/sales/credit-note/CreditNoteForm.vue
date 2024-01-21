@@ -89,7 +89,7 @@
         </div>
         <div class="col-12 col-md-6 row justify-between">
           <div>
-            <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3" :false-value="null"></q-checkbox>
+            <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
           </div>
           <q-select v-model="fields.sales_agent" label="Sales Agent" class="col-8" :error="!!errors?.sales_agent"
             :error-message="errors?.sales_agent"></q-select>
@@ -100,8 +100,8 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft') " :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" :label=" isEdit ? 'Update Draft' : 'Save Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :loading="loading"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Issue' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
+        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : 'Update' : 'Issued', fields, submitForm)" color="green" :loading="loading"
+          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>

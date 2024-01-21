@@ -126,7 +126,7 @@
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status, fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
       </div>
     </q-card>
   </q-form>

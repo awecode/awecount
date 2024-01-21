@@ -54,7 +54,7 @@
             <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit" :loading="loading"
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" type="submit" />
             <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit" :loading="loading"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" type="submit" />
+              @click.prevent="() => onSubmitClick(fields.status, fields, submitForm)" color="green" label="Update" type="submit" />
           </div>
         </q-card-section>
       </q-card>

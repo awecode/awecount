@@ -143,8 +143,8 @@
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" :label=" isEdit ? 'Update Draft' : 'Save Draft'"
           type="submit" class="draft-btn" />
-        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : `Issue # ${formDefaults.options?.voucher_no || 1}` : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
+        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)"
+          color="green" :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
       </div>
     </q-card>
   </q-form>

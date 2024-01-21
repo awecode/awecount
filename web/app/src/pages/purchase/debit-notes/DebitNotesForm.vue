@@ -91,8 +91,8 @@
         <q-btn v-if="isEdit && fields.status === 'Draft'" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
           :disable="fields.invoices ? false : true" type="submit" />
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" :loading="loading" color="green"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Issue' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
+        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)" :loading="loading" color="green"
+          :label="isEdit ? fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
