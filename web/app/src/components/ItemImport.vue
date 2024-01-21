@@ -65,29 +65,29 @@ const onSubmit = async () => {
         })
 }
 const onSampleDownload = async () => {
-    const XLSX = await import("xlsx-js-style")
+    const XLSX = await import('xlsx-js-style')
     const wb = XLSX.utils.book_new()
     const row = [
-        { v: "Name", s: { font: { bold: true } } },
-        { v: "Code", s: { font: { bold: true } } },
-        { v: "Category", s: { font: { bold: true } } },
-        { v: "Cost Price", s: { font: { bold: true } } },
-        { v: "Selling Price", s: { font: { bold: true } } },
-        { v: "Can be Purchased", s: { font: { bold: true } } },
-        { v: "Can be Sold", s: { font: { bold: true } } },
+        { v: 'Name', s: { font: { bold: true } } },
+        { v: 'Code', s: { font: { bold: true } } },
+        { v: 'Category', s: { font: { bold: true } } },
+        { v: 'Cost Price', s: { font: { bold: true } } },
+        { v: 'Selling Price', s: { font: { bold: true } } },
+        { v: 'Can be Purchased', s: { font: { bold: true } } },
+        { v: 'Can be Sold', s: { font: { bold: true } } },
     ];
     const row2 = [
-        { v: "Test Item", },
-        { v: "Code", },
-        { v: "Category_name", },
-        { v: "0", },
-        { v: "0", },
-        { v: "t", },
-        { v: "T", },
+        { v: 'Test Item', },
+        { v: 'Code', },
+        { v: 'Category_name', },
+        { v: '0', },
+        { v: '0', },
+        { v: 't', },
+        { v: 'T', },
         {v: 'Note: Remove the row and fill in your data. Please Do not remove any columns. if you don\'t want to insert data in any particular cell then leave it empty. Category column is optional. If the values of Can be Sold and Can be Purchased columns are t or T then it will be set to true, leaving the values to be something else or empty will result in those fields being false.'}
     ]
     const ws = XLSX.utils.aoa_to_sheet([row, row2])
-    XLSX.utils.book_append_sheet(wb, ws, "Items Import")
-    XLSX.writeFile(wb, "Items_import_sample.xlsx")
-} 
+    XLSX.utils.book_append_sheet(wb, ws, 'Items Import')
+    XLSX.writeFile(wb, 'Items_import_sample.xlsx')
+}
 </script>

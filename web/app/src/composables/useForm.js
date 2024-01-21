@@ -169,7 +169,7 @@ export default (endpoint, config) => {
                   }
                 }
               })
-              .catch((error) => {
+              .catch(() => {
                 $q.notify({
                   color: 'negative',
                   message: 'Something went Wrong!',

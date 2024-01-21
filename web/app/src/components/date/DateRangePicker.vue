@@ -74,7 +74,6 @@ import BsDatePicker from '/src/components/date/BsDatePicker.vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
-const $q = useQuasar()
 
 const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focusOnMount'])
 
