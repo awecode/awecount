@@ -61,10 +61,11 @@
     </q-card>
     <q-dialog v-model="addInoviceModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-grey-4">
+        <q-card-section class="bg-grey-4 flex justify-between">
           <div class="text-h6">
             <span class="q-mx-md">Add Invoice</span>
           </div>
+          <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
         </q-card-section>
 
         <q-card-section class="q-mb-md">

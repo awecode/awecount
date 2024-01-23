@@ -18,10 +18,11 @@
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
               <q-dialog v-model="addRefrence" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no && delete errors?.party">
                 <q-card style="min-width: min(60vw, 400px)">
-                  <q-card-section class="bg-grey-4">
+                  <q-card-section class="bg-grey-4 flex justify-between">
                     <div class="text-h6">
                       <span>Add Reference Invoice(s)</span>
                     </div>
+                    <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
                     <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>

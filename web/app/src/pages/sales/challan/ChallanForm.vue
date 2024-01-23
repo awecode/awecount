@@ -96,7 +96,7 @@
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'" :loading="loading"
           @click.prevent="onResolvedClick" color="green" icon="done_all" label="Mark As Resolved" />
         <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')" :loading="loading"
-          @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+          @click.prevent="isDeleteOpen = true" color="red" label="Cancel" icon="cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" :label=" isEdit ? 'Update Draft' : 'Save Draft'" type="submit" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" :loading="loading"
@@ -107,10 +107,11 @@
     </q-card>
     <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-red-6">
+        <q-card-section class="bg-red-6 flex justify-between">
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
 
         <q-card-section class="q-ma-md">

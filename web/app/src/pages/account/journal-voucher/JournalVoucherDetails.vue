@@ -209,10 +209,11 @@
     </div>
     <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-red-6">
+        <q-card-section class="bg-red-6 flex justify-between">
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section class="q-ma-md">
           <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>

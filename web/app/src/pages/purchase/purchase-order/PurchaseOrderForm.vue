@@ -33,7 +33,7 @@
                 <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     color="blue" label="Issue Purchase Voucher" :loading="loading" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
-                    @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+                    @click.prevent="isDeleteOpen = true" color="red" label="Cancel" icon="cancel" />
                 <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)" :loading="loading"
@@ -42,10 +42,11 @@
         </q-card>
         <q-dialog v-model="isDeleteOpen" @before-hide="delete errors?.message">
             <q-card style="min-width: min(40vw, 500px)">
-                <q-card-section class="bg-red-6">
+                <q-card-section class="bg-red-6 flex justify-between">
                     <div class="text-h6 text-white">
                         <span>Confirm Cancellation?</span>
                     </div>
+                    <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
                 </q-card-section>
 
                 <q-card-section class="q-ma-md">

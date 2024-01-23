@@ -36,6 +36,16 @@
   </div>
   <q-dialog v-model="isModalOpen" transition-hide="none">
     <q-card style="min-width: 80vw">
+      <q-btn
+        style="position: absolute; right: 8px; top: 8px; z-index: 50"
+        push
+        color="red"
+        text-color="white"
+        round
+        dense
+        icon="close"
+        @click="closeModal"
+      />
       <component
         :is="modalComponent"
         :is-modal="true"
