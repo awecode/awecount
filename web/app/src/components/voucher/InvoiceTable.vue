@@ -1,69 +1,73 @@
 <template>
-  <q-card-section>
-    <q-card>
-      <div class="q-pa-lg q-col-gutter-md scroll">
-        <div class="row text-subtitle2 hr q-py-sm no-wrap">
-          <div class="col-5 row">
-            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-              Particular(s)
+  <div class="overflow-y-auto -mt-4">
+    <div class="min-w-xl pt-6">
+      <q-card-section>
+        <q-card>
+          <div class="q-pa-lg q-col-gutter-md scroll">
+            <div class="row text-subtitle2 hr q-py-sm no-wrap">
+              <div class="col-5 row">
+                <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
+                  Particular(s)
+                </div>
+                <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
+                  Return
+                </div>
+              </div>
+              <div class="col-2 text-center">Qty</div>
+              <div class="col-2 text-center">Rate</div>
+              <div class="col-2 text-center">Amount</div>
+              <div class="col-1 text-center"></div>
             </div>
-            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
-              Return
+            <div v-for="(row, index) in modalValue" :key="row">
+              <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
+                :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
+                :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
+                @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+                  " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
+                :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
+                :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
+                :COGSData="COGSData" :hasChallan="hasChallan" />
+            </div>
+            <div class="row q-py-sm">
+              <div class="col-7 text-center"></div>
+              <div class="text-weight-bold text-grey-8 col-4 text-center">
+                <div class="row q-pb-md">
+                  <div class="col-6 text-right">Sub Total</div>
+                  <div class="col-6 q-pl-md">
+                    {{ $nf(totalDataComputed.subTotal) }}
+                  </div>
+                </div>
+                <div class="row q-pb-md" v-if="totalDataComputed.discount">
+                  <div class="col-6 text-right">Discount</div>
+                  <div class="col-6 q-pl-md">
+                    {{ $nf(totalDataComputed.discount) }}
+                  </div>
+                </div>
+                <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
+                  <div class="col-6 text-right">
+                    {{ totalDataComputed.taxName }}
+                  </div>
+                  <div class="col-6 q-pl-md">
+                    {{ $nf(totalDataComputed.totalTax) }}
+                  </div>
+                </div>
+                <div class="row q-pb-md">
+                  <div class="col-6 text-right">Total</div>
+                  <div class="col-6 q-pl-md">
+                    {{ $nf(totalDataComputed.total) }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-1 text-center"></div>
+            </div>
+            <div>
+              <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan">Add Row</q-btn>
             </div>
           </div>
-          <div class="col-2 text-center">Qty</div>
-          <div class="col-2 text-center">Rate</div>
-          <div class="col-2 text-center">Amount</div>
-          <div class="col-1 text-center"></div>
-        </div>
-        <div v-for="(row, index) in modalValue" :key="row">
-          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
-            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
-            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
-            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
-            :COGSData="COGSData" :hasChallan="hasChallan" />
-        </div>
-        <div class="row q-py-sm">
-          <div class="col-7 text-center"></div>
-          <div class="text-weight-bold text-grey-8 col-4 text-center">
-            <div class="row q-pb-md">
-              <div class="col-6 text-right">Sub Total</div>
-              <div class="col-6 q-pl-md">
-                {{ $nf(totalDataComputed.subTotal) }}
-              </div>
-            </div>
-            <div class="row q-pb-md" v-if="totalDataComputed.discount">
-              <div class="col-6 text-right">Discount</div>
-              <div class="col-6 q-pl-md">
-                {{ $nf(totalDataComputed.discount) }}
-              </div>
-            </div>
-            <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
-              <div class="col-6 text-right">
-                {{ totalDataComputed.taxName }}
-              </div>
-              <div class="col-6 q-pl-md">
-                {{ $nf(totalDataComputed.totalTax) }}
-              </div>
-            </div>
-            <div class="row q-pb-md">
-              <div class="col-6 text-right">Total</div>
-              <div class="col-6 q-pl-md">
-                {{ $nf(totalDataComputed.total) }}
-              </div>
-            </div>
-          </div>
-          <div class="col-1 text-center"></div>
-        </div>
-        <div>
-          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan">Add Row</q-btn>
-        </div>
-      </div>
-    </q-card>
-  </q-card-section>
+        </q-card>
+      </q-card-section>
+    </div>
+  </div>
 </template>
 
 <script>

@@ -125,9 +125,9 @@
           <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10"
             :error="!!errors?.remarks" :error-message="errors?.remarks" />
         </div>
-        <div class="col-12 col-md-6 row justify-between">
-          <div>
-            <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
+        <div class="col-12 col-md-6 row justify-between items">
+          <div class="flex">
+            <q-checkbox label="Export?" v-model="fields.is_export" class="col-3"></q-checkbox>
           </div>
           <q-select v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent" label="Sales Agent"
             class="col-8" :error="!!errors?.sales_agent" :error-message="errors?.sales_agent"
