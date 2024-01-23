@@ -80,8 +80,9 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
-            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View" class="q-py-none q-px-md font-size-sm l-view-btn"
-              style="font-size: 12px" :to="`/sales-voucher/${props.row.id}/view/`" />
+            <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View"
+              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
+              :to="`/sales-voucher/${props.row.id}/view/`" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
@@ -94,6 +95,20 @@
               #{{ id }}
             </router-link>
             <span v-else>#{{ id }}</span>
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <span v-if="checkPermissions('SalesView')">
+            <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no"
+              :to="`/sales-voucher/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none"
+              class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+          </span>
+          <span v-else>
+            {{ props.row.voucher_no }}
           </span>
         </q-td>
       </template>
