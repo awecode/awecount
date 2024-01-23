@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="mt-8">
-      <div class="grid grid-cols-3 gap-x-6">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Current Balance</div>
           <div class="q-px-md">
@@ -45,10 +45,10 @@
         </div>
       </div>
       <div class="mt-8 px-2">
-        <div class="row q-col-gutter-md">
+        <div class="flex gap-x-2 mb-4 items-center">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
           <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" :disabled="!(startDate && endDate)" />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" :disabled="!(startDate && endDate)" />
           </div>
         </div>
       </div>

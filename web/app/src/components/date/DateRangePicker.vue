@@ -1,6 +1,6 @@
 <template>
-  <div class="row q-col-gutter-md">
-    <div class="row q-col-gutter-md target">
+  <div class="flex gap-x-4 gap-y-2">
+    <div class="flex gap-x-6 gap-y-0 target">
       <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
         label="Start Date" debounce="1000" mask="####-##-##" />
       <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"

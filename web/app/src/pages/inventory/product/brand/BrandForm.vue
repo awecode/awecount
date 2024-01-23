@@ -11,7 +11,7 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name"
+            <q-input v-model="fields.name" label="Name *" class="col-12 lg:col-6" :error-message="errors.name"
               :error="!!errors.name" />
           </div>
           <div>
