@@ -5,8 +5,11 @@
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <!-- TODO: solve error -->
           <n-auto-complete
+
             v-model="modalValue.item_id"
+
             :options="itemOptions"
+
             label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null"
             :modal-component="
@@ -27,12 +30,18 @@
       <div class="col-2">
         <span v-if="showRateQuantity">
           <q-input
+
             v-model.number="modalValue.quantity"
+
             label="Quantity"
             :error-message="errors?.quantity ? errors.quantity[0] : null"
+
             :error="errors?.quantity ? true : false"
             type="number"
+
             :disable="hasChallan"
+            data-testid="quantity-input"
+
           ></q-input>
         </span>
       </div>
@@ -43,11 +52,17 @@
         >
           <span v-if="showRateQuantity">
             <q-input
+
               v-model.number="modalValue.rate"
+
               label="Rate"
+
               :error-message="errors?.rate ? errors.rate[0] : null"
               :error="errors?.rate ? true : false"
+
               type="number"
+            data-testid="rate-input"
+
             ></q-input>
           </span>
           <!-- <span>asvhva</span> -->
@@ -58,43 +73,72 @@
       <div v-if="inputAmount" class="col-2">
         <!-- <span class="">{{ amountComputed }}</span> -->
         <q-input
+
           v-model="amountComputed"
+
           label="Amount"
+
           @change="onAmountInput"
+          data-testid="amount-input"
+
         ></q-input>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div v-else class="col-2 row justify-center items-center">
-        <span class="">{{ amountComputed }}</span>
+        <span class="" data-testid="amount-input">{{ amountComputed }}</span>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
         <q-btn
+
           flat
+
           class="q-pa-sm focus-highLight"
+
           color="transparent"
+
           @click="() => (expandedState = !expandedState)"
+          data-testid="expand-btn"
+
         >
           <q-icon
+
             name="mdi-arrow-expand"
+
             size="20px"
+
             color="green"
+
             class="cursor-pointer"
+
             title="Expand"
+
           ></q-icon>
         </q-btn>
         <q-btn
+
           flat
+
           @click="() => deleteRow(index)"
+
           class="q-pa-sm focus-highLight"
+
           color="transparent"
+
           :disable="hasChallan"
+          data-testid="row-delete-btn"
+
         >
           <q-icon
+
             name="delete"
+
             size="20px"
+
             color="negative"
+
             class="cursor-pointer"
+
           ></q-icon>
         </q-btn>
       </div>
@@ -122,57 +166,90 @@
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow">
           <q-select
+
             v-model="modalValue.unit_id"
+
             :options="unitOptions"
+
             label="Unit"
+
             option-value="id"
+
             option-label="name"
             emit-value
+
             map-options
+
             :error-message="errors?.unit_id ? errors.unit_id[0] : null"
             :error="errors?.unit_id ? true : false"
+            data-testid="unit-select"
+
           />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
             <div
+
               :class="
+
                 ['Amount', 'Percent'].includes(modalValue.discount_type)
-                  ? 'col-5'
-                  : 'col-12'
+                      ? 'col-5'
+                      : 'col-12'
               "
+              data-testid="row-discount-type-div"
+
             >
               <n-auto-complete
+
                 v-model="modalValue.discount_type"
+
                 label="Discount"
+
                 :options="discountOptions"
+
               >
               </n-auto-complete>
             </div>
             <div
+
               :class="showRowTradeDiscount ? 'col-3' : 'col-6'"
+
               v-if="
+
                 modalValue.discount_type === 'Amount' ||
-                modalValue.discount_type === 'Percent'
+                  modalValue.discount_type === 'Percent'
               "
+
             >
               <q-input
+
                 v-model.number="modalValue.discount"
+
                 label="Discount"
                 :error-message="errors?.discount ? errors.discount[0] : null"
                 :error="errors?.discount ? true : false"
+                data-testid="row-discount-input"
+
               ></q-input>
             </div>
             <div
+
               class="col-3 row"
+
               v-if="
+
                 ['Amount', 'Percent'].includes(modalValue.discount_type) &&
-                showRowTradeDiscount
+                  showRowTradeDiscount
               "
+
             >
               <q-checkbox
+
                 v-model="modalValue.trade_discount"
+
                 label="Trade Discount?"
+                data-testid="row-trade-discount-checkbox"
+
               ></q-checkbox>
             </div>
           </div>
@@ -190,6 +267,7 @@
             :error-message="
               errors?.tax_scheme_id ? 'This field is required' : null
             "
+            data-testid="row-tax-select"
           />
         </div>
       </div>
@@ -206,6 +284,7 @@
           v-model="modalValue.description"
           type="textarea"
           class="q-mb-lg"
+          data-testid="row-description-input"
         >
         </q-input>
       </div>
@@ -405,10 +484,12 @@ export default {
       if (props.usedIn === 'creditNote') modalValue.value.is_returned = true
     })
     const onAmountInput = (amount) => {
+      // debugger
       if (
         amount !==
         (modalValue.value.rate || 0) * (modalValue.value.quantity || 1)
       ) {
+        // debugger
         if (!modalValue.value.quantity) modalValue.value.quantity = 1
         modalValue.value.rate = amount / modalValue.value.quantity
       }
@@ -422,7 +503,7 @@ export default {
       )
       watch(
         () => modalValue.value.quantity,
-        () => {
+        (newValue) => {
           if (modalValue.value.item_id) emit('onItemIdUpdate')
         }
       )
