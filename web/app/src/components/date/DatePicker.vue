@@ -2,7 +2,7 @@
   <div>
     <q-input :model-value="getDateValue" @onClick="this.select()" :error="props.error" :error-message="props.errorMessage"
       :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable" @update:model-value="onDateInput"
-      :label="props.label" type="text" class="full-width">
+      :label="props.label" type="text" class="full-width" mask="####-##-##" debounce="1000">
       <template v-slot:append v-if="notRequired && !!getDateValue">
         <q-icon class="cursor-pointer" name="close" @click="onDateInput('')"/>
       </template>

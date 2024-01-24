@@ -53,7 +53,7 @@
               <q-btn @click="onChequePrint" v-if="fields?.status === 'Issued' || fields?.status === 'Cleared'"
                 color="green" outline class="q-px-lg q-py-sm" style="display: inline-block;" label="Print Cheque"></q-btn>
               <q-btn v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
-                @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
+                @click.prevent="isDeleteOpen = true" icon="block" color="red" label="Cancel" class="q-ml-md" />
             </div>
             <div>
               <q-btn v-if="checkPermissions('ChequeIssueCreate') && !isEdit" @click.prevent="submitForm" color="green"
@@ -84,6 +84,29 @@
         </div>
       </div>
     </div>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancellation?</span>
+          </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
+          </div>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="cancelForm"></q-btn>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -104,6 +127,7 @@ export default {
       getDefaults: true,
       successRoute: '/cheque-issue/list/',
     })
+    const isDeleteOpen = ref(false)
     useMeta(() => {
       return {
         title:
@@ -141,10 +165,10 @@ export default {
       setTimeout(() => pri.print(), 100)
     }
     const onChequePrint = () => {
-      import("jspdf").then(({ jsPDF }) => {
+      import('jspdf').then(({ jsPDF }) => {
         const doc = new jsPDF({
-          orientation: "landscape",
-          unit: "in",
+          orientation: 'landscape',
+          unit: 'in',
           format: [7.5, 3.5]
         })
         const amt = formData.fields.value.amount_in_words + ' only'
@@ -159,19 +183,18 @@ export default {
         if (amountArray[1]) {
           doc.text(amountArray[1], 0.75, 1.45)
         }
-        doc.save("a4.pdf")
+        doc.save('a4.pdf')
       })
     }
-    const updateBankAccount = (newValue) => {
+    const updateBankAccount = () => {
       const { bank_account } = formData.fields.value
       const bank_accounts = formData.formDefaults.value.collections.bank_accounts
       if (bank_accounts && bank_account && !formData.fields.value.id) {
         const selected = bank_accounts.find((account) => {
           return bank_account === account.id;
         });
-        if (selected.hasOwnProperty("cheque_no")) {
+        if (selected.hasOwnProperty('cheque_no')) {
           if (selected.cheque_no) {
-            // this.$set(this.fields, "cheque_no", selected.cheque_no);
             formData.fields.value.cheque_no = selected.cheque_no
           } else {
             formData.fields.value.cheque_no = ''
@@ -179,13 +202,7 @@ export default {
         }
       }
     }
-    // function splitString(str, chunkSize) {
-    //   const chunks = [];
-    //   for (let i = 0; i < str.length; i += chunkSize) {
-    //     chunks.push(str.slice(i, i + chunkSize));
-    //   }
-    //   return chunks;
-    // }
+
     function splitString(str, chunkSize) {
       const chunks = [];
       let start = 0;
@@ -223,7 +240,8 @@ export default {
       updateBankAccount,
       onChequePrint,
       amtArrayComputed,
-      formatNumberWithCommas
+      formatNumberWithCommas,
+      isDeleteOpen
     }
   },
 }

@@ -35,8 +35,10 @@
             :enableRowDescription="props.enableRowDescription"
             :showRowTradeDiscount="props.showRowTradeDiscount"
             :inputAmount="props.inputAmount"
+
             :showRateQuantity="props.showRateQuantity"
-            :hasChallan="hasChallan"
+            :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
+            :COGSData="COGSData" :hasChallan="hasChallan"
           />
         </div>
         <div class="row q-py-sm">
@@ -51,7 +53,6 @@
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-right">Discount</div>
               <div class="col-6 q-pl-md" data-testid="computed-final-discount">
-                <!-- {{ totalDataComputed.discount }} -->
                 {{ $nf(totalDataComputed.discount) }}
               </div>
             </div>
@@ -94,7 +95,6 @@ import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 import InvoiceRow from './InvoiceRow.vue'
 import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
       type: Array,
@@ -175,6 +175,10 @@ export default {
     showRateQuantity: {
       type: Boolean,
       default: () => true,
+    },
+    isFifo: {
+      type: Boolean,
+      default: () => false,
     },
     hasChallan: {
       type: Boolean,
@@ -260,25 +264,6 @@ export default {
             props.discountOptions
           ) || 0
 
-        // preventing from mainDiscount amount from being added Twice
-
-        // checking if tax is selected manually
-        // if (item.tax_scheme_id) {
-        //   let rowTax = 0
-        //   if (props.mainDiscount.discount_type === 'Amount') {
-        //     rowTax =
-        //       (rowTotal -
-        //         (rowDiscount || 0) -
-        //         props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   } else {
-        //     rowTax =
-        //       (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   }
-        //   data.totalTax = data.totalTax + rowTax
-        // }
-        // checking if tax is selected coming automaticaly with item
         if (item.taxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
@@ -316,22 +301,6 @@ export default {
         data.taxName = 'Tax'
         data.taxRate = null
       }
-      // if (props.mainDiscount.discount_type === 'Amount') {
-      //   modalValue.value.forEach((item, index) => {
-      //     console.log(data.subTotal, index)
-      //     // const rowTotal = (())
-      //   })
-      // }
-      // data.totalTax = data.subTotal - data.discount *
-      // clac total discount
-      // data.discount =
-      //   (data.discount || 0) +
-      //   (useCalcDiscount(
-      //     props.mainDiscount.discount_type,
-      //     data.subTotal - data.discount,
-      //     props.mainDiscount.discount,
-      //     props.discountOptions
-      //   ) || 0)
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
@@ -364,6 +333,49 @@ export default {
         )
       modalValue.value.splice(index, 1)
     }
+    // For purchase rows Data of Items
+    const itemPurchaseData = ref({})
+    const COGSData = ref(null)
+    const onItemIdUpdate = async (itemId) => {
+      if (itemId && !itemPurchaseData.value.hasOwnProperty(itemId)) {
+        try {
+          const data = await useApi(`/v1/items/${itemId}/available-stock/`)
+          itemPurchaseData.value[itemId] = data
+        } catch (err) { console.log(err) }
+      }
+      const localPurchaseData = JSON.parse(JSON.stringify(itemPurchaseData.value))
+      const COGSRows = {}
+      modalValue.value.forEach((row, index) => {
+        const currentItemId = row.item_id
+        let currentCOGS = 0
+        let quantity = row.quantity
+        if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
+          for (let i = 0; quantity >= 0; i++) {
+            const currentRow = localPurchaseData[currentItemId][i]
+            if (currentRow.remaining_quantity > quantity) {
+              currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
+              currentCOGS = currentCOGS + (quantity * currentRow.rate)
+              break
+            } else if (currentRow.remaining_quantity <= quantity) {
+              quantity = quantity - currentRow.remaining_quantity
+              currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
+              localPurchaseData[currentItemId][i].remaining_quantity = 0
+              if (((i + 1) === localPurchaseData[currentItemId].length)) {
+                if (quantity > 0) {
+                  currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+                  break
+                } else break
+              }
+            }
+          }
+        } else {
+          currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+        }
+        COGSRows[index] = currentCOGS
+      })
+      COGSData.value = COGSRows
+    }
+    // For purchase rows Data of Items
 
     // to update voucher meta in Credit and debit Notes
     if (props.usedIn === 'creditNote') {
@@ -383,6 +395,9 @@ export default {
       InvoiceRow,
       useCalcDiscount,
       rowEmpty,
+      itemPurchaseData,
+      onItemIdUpdate,
+      COGSData
     }
   },
 }

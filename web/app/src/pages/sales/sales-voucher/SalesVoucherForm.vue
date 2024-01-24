@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form class="q-pa-lg" autofocus v-if="fields">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6" data-testid="form-title">
@@ -33,7 +33,7 @@
                   label="Import challan(s)"
                 ></q-input>
               </div>
-              <q-dialog v-model="importChallanModal">
+              <q-dialog v-model="importChallanModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
                 <q-card style="min-width: min(60vw, 400px)">
                   <q-card-section class="bg-grey-4">
                     <div class="text-h6">
@@ -46,7 +46,7 @@
                       v-model.number="referenceFormData.invoice_no"
                       label="Challan No.*"
                       autofocus
-                      type="number"
+                      type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"
                       data-testid="challan-no-input"
                     ></q-input>
                     <q-select
@@ -59,7 +59,7 @@
                       map-options
                       emit-value
                       data-testid="fiscal-year-select"
-                    ></q-select>
+                     :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" ></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn
                         color="green"
@@ -79,8 +79,8 @@
                   <q-input
                     v-model="fields.customer_name"
                     label="Customer Name"
-                    :error-message="errors.customer_name"
-                    :error="!!errors.customer_name"
+                    :error-message="errors?.customer_name"
+                    :error="!!errors?.customer_name"
                     v-if="partyMode && fields.mode !== 'Credit'"
                     data-testid="customer-name-input"
                   >
@@ -128,8 +128,8 @@
               v-model="fields.address"
               class="col-md-6 col-12"
               label="Address"
-              :error-message="errors.address"
-              :error="!!errors.address"
+              :error-message="errors?.address"
+              :error="!!errors?.address"
               data-testid="address-input"
             ></q-input>
             <date-picker
@@ -167,8 +167,8 @@
                     class="col-6"
                     v-model.number="fields.discount"
                     label="Discount"
-                    :error-message="errors.discount"
-                    :error="!!errors.discount"
+                    :error-message="errors?.discount"
+                    :error="!!errors?.discount"
                     data-testid="discount-input"
                   ></q-input>
                 </div>
@@ -194,8 +194,8 @@
               v-model="fields.mode"
               label="Mode *"
               class="col-12 col-md-6"
-              :error-message="errors.mode"
-              :error="!!errors.mode"
+              :error-message="errors?.mode"
+              :error="!!errors?.mode"
               :options="
                 staticOptions.modes.concat(
                   formDefaults.collections?.bank_accounts
@@ -217,15 +217,16 @@
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+      <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
     " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
-  }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+  }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " :enableRowDescription="formDefaults.options?.enable_row_description"
-        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry" :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher"
-      :hasChallan="!!(fields.challans && fields.challans.length > 0)"  ></invoice-table>
+        :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row" :inputAmount="formDefaults.options?.enable_amount_entry"
+        :showRateQuantity="formDefaults.options?.show_rate_quantity_in_voucher" :isFifo="formDefaults.options?.enable_fifo" usedIn="sales"
+        :hasChallan="!!(fields.challans && fields.challans.length > 0)"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -278,8 +279,8 @@
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8" :label=" isEdit ? 'Update Draft' : 'Save Draft'"
           type="submit" class="draft-btn" />
-        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-          color="green" :label="isEdit ? fields?.status === 'Issued' ? 'Update' : `Issue # ${formDefaults.options?.voucher_no || 1}` : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
+        <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)"
+          color="green" :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" class="issue-btn" />
       </div>
     </q-card>
   </q-form>
@@ -353,6 +354,9 @@ export default {
     formData.fields.value.is_export = false
 
     const fetchInvoice = async (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       if (
         referenceFormData.value.invoice_no &&
         referenceFormData.value.fiscal_year
@@ -367,6 +371,7 @@ export default {
             icon: 'report_problem',
             position: 'top-right',
           })
+          formData.errors.value.invoice_no = 'The invoice has already been added!'
         } else {
           const url = 'v1/challan/by-voucher-no/'
           useApi(
@@ -374,6 +379,7 @@ export default {
             `?invoice_no=${referenceFormData.value.invoice_no}&fiscal_year=${referenceFormData.value.fiscal_year}`
           )
             .then((data) => {
+              formData.errors.value = {}
               const response = { ...data }
               if (fields.challans) {
                 if (fields.party && fields.party !== response.party || fields.customer_name && fields.customer_name !== response.customer_name) {
@@ -433,12 +439,15 @@ export default {
               importChallanModal.value = false
             })
             .catch((err) => {
+              let message
+              if (err.status === 404) message = 'Invoice Not Found!'
+              else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
               $q.notify({
-                  color: 'red-6',
-                  message: err.data?.detail || 'Error',
-                  icon: 'report_problem',
-                  position: 'top-right',
-                })
+                color: 'red-6',
+                message: message,
+                icon: 'report_problem',
+                position: 'top-right',
+              })
             })
         }
       } else {
@@ -448,6 +457,13 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
+        if (!formData?.errors?.value) formData.errors.value = {}
+        if (!referenceFormData.value.invoice_no) {
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
+        }
+        if (!referenceFormData.value.fiscal_year) {
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
+        }
       }
     }
     const onPartyChange = (value) => {
@@ -460,9 +476,9 @@ export default {
         formData.fields.value.address =
           formData.formDefaults.value.collections.parties[index].address
         if (index) {
-          formData.fields.value.mode = "Credit"
+          formData.fields.value.mode = 'Credit'
         }
-      } else if (!index) formData.fields.value.mode = "Cash"
+      } else if (!index) formData.fields.value.mode = 'Cash'
     }
     watch(() => formData.formDefaults.value, () => {
       if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {

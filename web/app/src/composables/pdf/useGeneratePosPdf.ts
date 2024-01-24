@@ -4,26 +4,28 @@ import DateConverter from 'src/components/date/VikramSamvat.js'
 
 export default function useGeneratePosPdf(
   invoiceInfo: object,
-  tax_scheme_obj: object | null,
   partyObj: object | null,
   hideRowQuantity: boolean,
-  clientRows: Array<string, any> | null
+  clientRows: Array<string, any> | null,
+  taxOptions: Array<any>
 ): string {
   const loginStore: Record<string, string | number | object> = useLoginStore()
   const compayInfo: Record<string, string | number> = loginStore.companyInfo
   let sameTax = null
-  let taxIndex : number | null = null
+  let sameTaxObj = null
   const tableRow = (rows: Array<object>): string => {
     let isTaxSame: number | boolean | null = null
     const htmlRows = rows.map(
       (row: Record<string, number | string | object>, index: number) => {
-        if (isTaxSame !== false && clientRows[index].taxObj.rate != 0) {
+        const taxObjindex = taxOptions.findIndex((item) => item.id === row.tax_scheme_id)
+        const taxObj = taxOptions[taxObjindex]
+        if (isTaxSame !== false && taxObj.rate != 0) {
           if (isTaxSame === null) {
-            isTaxSame = clientRows[index].taxObj.id
-            taxIndex = index
+            isTaxSame = taxObj.id
+            sameTaxObj = taxObj
           }
           else {
-            if (isTaxSame !== clientRows[index].taxObj.id) isTaxSame = false
+            if (isTaxSame !== taxObj.id) isTaxSame = false
           }
         }
         return `<tr style="color: grey; font-weight: 400;">
@@ -46,11 +48,11 @@ export default function useGeneratePosPdf(
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
       }"><span style="${hideRowQuantity ? 'display: none' : ''}">${
-          row.rate
+          $nf(row.rate)
         }</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
-      }">${formatNumberWithComma((row.quantity * row.rate), 2)}</th>
+      }">${formatNumberWithComma((row.quantity * row.rate))}</th>
     </tr>
     `
       }
@@ -186,7 +188,6 @@ export default function useGeneratePosPdf(
   </div>
   <hr style="margin: 20px 0" />`
   }
-
   html = html.concat(header)
   const table = `<div style="margin-top: 20px">
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
@@ -210,27 +211,27 @@ export default function useGeneratePosPdf(
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? compayInfo.invoice_template === 2 ? (`${clientRows[taxIndex].taxObj.rate} % ` + `${clientRows[taxIndex].taxObj.name}`) : (`${clientRows[taxIndex].taxObj.name} ` +
-                `${clientRows[taxIndex].taxObj.rate} %`)
+              ? compayInfo.invoice_template === 2 ? (`${sameTaxObj.rate} % ` + `${sameTaxObj.name}`) : (`${sameTaxObj.name} ` +
+                `${sameTaxObj.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax) }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>

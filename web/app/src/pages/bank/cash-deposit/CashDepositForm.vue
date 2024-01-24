@@ -42,13 +42,36 @@
           <q-btn v-if="checkPermissions('BankCashDepositModify') && isEdit" @click.prevent="submitForm" color="green"
             label="Update" class="q-ml-auto" type="submit" :loading="loading" />
           <q-btn v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
-            @click.prevent="cancelForm" icon="block" color="red" :label="'Cancel'" class="q-ml-md" :loading="loading" />
+            @click.prevent="isDeleteOpen = true" icon="block" color="red" :label="'Cancel'" class="q-ml-md" :loading="loading" />
           <q-btn v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
             :to="`/journal-entries/bank-cash-deposits/${id}/`" color="blue" icon="library_books" label="Journal Entries"
             class="text-h7 q-py-sm q-ml-md" :loading="loading" />
         </div>
       </q-card>
     </q-card>
+    <q-dialog v-model="isDeleteOpen">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Confirm Cancellation?</span>
+          </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
+          </div>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="cancelForm"></q-btn>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -65,6 +88,7 @@ export default {
       getDefaults: true,
       successRoute: '/cash-deposit/list/',
     })
+    const isDeleteOpen = ref(false)
     useMeta(() => {
       return {
         title:
@@ -79,7 +103,8 @@ export default {
       ...formData,
       CreateAccount,
       BenefactorForm,
-      checkPermissions
+      checkPermissions,
+      isDeleteOpen
     }
   },
 }

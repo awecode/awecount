@@ -54,6 +54,16 @@
             style="font-size: 12px" label="edit" :to="`/items/${props.row.id}/`" />
         </q-td>
       </template>
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('ItemView')"
+            :to="`/items/details/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
+            class="text-blue">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else>{{ props.row.name }}</span>
+        </q-td>
+      </template>
       <template v-slot:body-cell-category="props">
         <q-td :props="props">
           <router-link v-if="props.row.category && checkPermissions('InventoryCategoryModify')"

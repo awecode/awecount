@@ -33,23 +33,24 @@
                 <q-btn :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`" v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
                     color="blue" label="Issue Purchase Voucher" :loading="loading" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
-                    @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+                    @click.prevent="isDeleteOpen = true" color="red" label="Cancel" icon="cancel" />
                 <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'" :loading="loading"
                     @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
                 <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit" @click.prevent="onSubmitClick('Issued', fields, submitForm)" :loading="loading"
                     color="green" label="Issue" />
             </div>
         </q-card>
-        <q-dialog v-model="isDeleteOpen">
+        <q-dialog v-model="isDeleteOpen" @before-hide="delete errors?.message">
             <q-card style="min-width: min(40vw, 500px)">
-                <q-card-section class="bg-red-6">
+                <q-card-section class="bg-red-6 flex justify-between">
                     <div class="text-h6 text-white">
-                        <span>Confirm Cancelation?</span>
+                        <span>Confirm Cancellation?</span>
                     </div>
+                    <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
                 </q-card-section>
 
                 <q-card-section class="q-ma-md">
-                    <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+                    <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
                     <div class="text-right q-mt-lg">
                         <q-btn label="Confirm" @click="onCancelClick"></q-btn>
                     </div>
@@ -71,7 +72,6 @@ export default {
     setup(props, { emit }) {
         const endpoint = '/v1/purchase-order/'
         const openDatePicker = ref(false)
-        const router = useRouter()
         const $q = useQuasar()
         const isDeleteOpen = ref(false)
         const deleteMsg = ref('')
@@ -107,6 +107,7 @@ export default {
         formData.fields.value.date = formData.today
         formData.fields.value.party = ''
         const onCancelClick = () => {
+            formData.loading.value = true
             useApi(`/v1/purchase-order/${formData.fields.value.id}/cancel/`, {
                 method: 'POST',
                 body: {
@@ -120,19 +121,28 @@ export default {
                         icon: 'check_circle',
                     })
                     formData.fields.value.status = 'Cancelled'
+                    formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
                     isDeleteOpen.value = false
-                    router.push('/purchase-order/list/')
+                    formData.loading.value = false
                 })
                 .catch((err) => {
-                    let message = 'error'
-                    if (err.data?.message) {
-                        message = err.data?.message
-                    }
+                    // let message = 'error'
+                    // if (err.data?.message) {
+                    //     message = err.data?.message
+                    // }
+                    // $q.notify({
+                    //     color: 'negative',
+                    //     message,
+                    //     icon: 'report_problem',
+                    // })
+                    const parsedError = useHandleFormError(err)
+                    formData.errors.value = parsedError.errors
                     $q.notify({
-                        color: 'negative',
-                        message,
-                        icon: 'report_problem',
+                      color: 'negative',
+                      message: parsedError.message,
+                      icon: 'report_problem',
                     })
+                    formData.loading.value = false
                 })
         }
         watch(

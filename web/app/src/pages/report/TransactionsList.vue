@@ -73,18 +73,12 @@
                 </q-td>
             </template>
         </q-table>
-        <!-- <q-card class="q-pa-md q-mt-md">
-            <PieChart :data="ratioData.chart_data" />
-        </q-card> -->
     </div>
 </template>
 
 <script>
 import useList from '/src/composables/useList'
-// import usedownloadFile from 'src/composables/usedownloadFile'
-import DateRangePicker from 'src/components/date/DateRangePicker.vue'
 import checkPermissions from 'src/composables/checkPermissions'
-// import { useMeta } from 'quasar'
 export default {
     setup() {
         const metaData = {
@@ -233,13 +227,6 @@ export default {
             'Tax Payment': 'TaxPaymentModify',
             'Item': 'ItemView'
         }
-        // const chartData = computed(() => {
-        //     if (listData.rows.value[0]?.label) {
-        //         console.log(listData.rows.value)
-        //         return true
-        //     }
-        //     else return null
-        // })
         return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
     },
     created() {

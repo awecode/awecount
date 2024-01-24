@@ -48,9 +48,9 @@ export default function useGeneratePdf(
         }</span></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"><span style="${
         hideRowQuantity ? 'display: none' : ''
-      }">${row.rate}</span></th>
+      }">${$nf(row.rate)}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
-        formatNumberWithComma((row.quantity * row.rate), 2)
+        formatNumberWithComma((row.quantity * row.rate))
       }</th>
     </tr>
     `
@@ -210,20 +210,20 @@ export default function useGeneratePdf(
         voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount, 2)}</div>`
+      <div>${numberToText(invoiceInfo.voucher_meta.grand_total)}</div>`
       }
       </div>
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
@@ -232,11 +232,11 @@ export default function useGeneratePdf(
               ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
                 `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>

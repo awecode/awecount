@@ -54,29 +54,30 @@
             <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit" :loading="loading"
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" type="submit" />
             <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit" :loading="loading"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" type="submit" />
+              @click.prevent="() => onSubmitClick(fields.status, fields, submitForm)" color="green" label="Update" type="submit" />
           </div>
         </q-card-section>
       </q-card>
     </q-card>
-    <q-dialog v-model="addInoviceModal">
+    <q-dialog v-model="addInoviceModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-grey-4">
+        <q-card-section class="bg-grey-4 flex justify-between">
           <div class="text-h6">
             <span class="q-mx-md">Add Invoice</span>
           </div>
+          <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
         </q-card-section>
 
         <q-card-section class="q-mb-md">
           <div class="q-mt-lg q-mx-md">
-            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12" autofocus type="number">
+            <q-input v-model="invoiceFormData.invoice_no" label="Invoice No.*" class="col-12" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no">
             </q-input>
             <div class="q-mx-0 q-my-md">
               <q-checkbox v-model="invoiceFormData.tax_deducted_at_source" label="Tax Deducted at Source?" />
             </div>
             <q-select label="Fiscal Year" v-model="invoiceFormData.fiscal_year"
               :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
-              emit-value></q-select>
+              emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
             <q-btn label="Add" color="green" class="q-mt-md" @click="() => fetchInvoice(fields)"></q-btn>
@@ -121,6 +122,9 @@ export default {
       submitForm()
     }
     const fetchInvoice = async (fields) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       if (
         invoiceFormData.value.invoice_no &&
         invoiceFormData.value.fiscal_year
@@ -139,6 +143,7 @@ export default {
                 icon: 'report_problem',
                 position: 'top-right',
               })
+              formData.errors.value.invoice_no = 'The invoice has already been added!'
             } else if (fields.party_id === data.party_id) {
               if (!fields.invoice_nos) fields.invoice_nos = []
               fields.invoice_nos.push(data.voucher_no)
@@ -186,6 +191,12 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
+        if (!invoiceFormData.value.invoice_no) {
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
+        }
+        if (!invoiceFormData.value.fiscal_year) {
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
+        }
       }
     }
     formData.fields.value.date = formData.today

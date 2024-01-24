@@ -29,14 +29,17 @@
 </template>
 
 <script setup>
-const $q = useQuasar()
 import checkPermissions from 'src/composables/checkPermissions'
 // const fiscal_year = ref(null)
 const endpoint = '/v1/account-closing/'
-const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
+const metaData = {
+      title: 'Account Closing | Awecount',
+    }
+useMeta(metaData)
+const { fields, formDefaults, submitForm, loading } = useForm(endpoint, {
     getDefaults: true,
     successRoute: '/settings/account-closing/'
-    
+
 })
 watch(() => formDefaults.value, (newVal) => {
     if (newVal.fields.current_fiscal_year_id) {

@@ -92,21 +92,23 @@
       </div>
     </div>
     <q-dialog v-model="isDeleteOpen">
-      <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-red-6">
+      <q-card style="min-width: min(40vw, 400px)">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
           <div class="text-h6 text-white">
-            <span>Confirm Cancelation?</span>
+            <span>Confirm Cancellation?</span>
           </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
-
+        <q-separator inset />
         <q-card-section>
-          <div class="q-mb-lg text-grey-8">
-            <strong>Are you sure?</strong>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
+            Are you sure?
           </div>
-          <div class="q-mx-xl text-blue">
-            <div class="row justify-center">
-              <q-btn class="q-mr-md" label="Yes" @click="cancel"></q-btn>
-              <q-btn label="No" @click="() => (isDeleteOpen = false)"></q-btn>
+          <div class=" text-blue">
+            <div class="row justify-end">
+              <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
+              <q-btn flat class="text-red" label="Yes"
+                @click="onCancelClick"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -178,7 +180,7 @@ const onClearedClick = () => {
     })
 }
 
-const cancel = () => {
+const onCancelClick = () => {
   loading.value = true
   useApi(`/v1/cheque-deposits/${props.id}/cancel/`, {
     method: 'POST',

@@ -68,7 +68,8 @@
                     : 'col-12'
                     ">
                     <n-auto-complete v-model="fields.discount_type" label="Discount*" :error="errors?.discount_type"
-                      :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
+                      :options="discountOptionsComputed"
+                      :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                     </n-auto-complete>
                   </div>
                   <div class="col-4" v-if="fields.discount_type === 'Amount' ||
@@ -94,10 +95,11 @@
             ? formDefaults.collections.items.results
             : null
             " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
-    discount_type: fields.discount_type,
-    discount: fields.discount,
-  }" :usedInPos="true" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+            v-model="fields.rows" :mainDiscount="{
+              discount_type: fields.discount_type,
+              discount: fields.discount,
+            }" :usedInPos="true" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   "></invoice-table>
           <div class="row q-px-lg">
             <div class="col-12">
@@ -107,8 +109,8 @@
           </div>
 
           <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
-            <q-btn @click.prevent="onSubmitClick('Draft', fields)" color="orange-6" label="Save Draft" type="submit" />
-            <q-btn @click.prevent="onSubmitClick('Issued', fields)" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
+            <q-btn @click.prevent="onSubmitClick('Draft')" color="orange-6" label="Save Draft" type="submit" />
+            <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
               type="submit" />
           </div>
         </q-card>
@@ -117,234 +119,192 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import useForm from '/src/composables/useForm'
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
-import PartyForm from 'src/pages/party/PartyForm.vue'
-import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
-import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from '/src/stores/login-info.js'
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props) {
-    const metaData = {
-      title: 'POS | Awecount',
-    }
-    useMeta(metaData)
-    const store = useLoginStore()
-    const endpoint = 'v1/pos/'
-    const openDatePicker = ref(false)
-    const $q = useQuasar()
-    const searchTerm = ref(null)
-    const searchResults = ref(null)
-    const $router = useRouter()
-    const enterClicked = ref(false)
-    const currentPage = ref(null)
-    const staticOptions = {
-      discount_types: discount_types,
-      modes: modes,
-    }
-    const formData = useForm(endpoint, {
-      getDefaults: true,
-      successRoute: '/pos',
-    })
-    const partyChoices = ref(false)
-    const partyMode = ref(false)
-    const switchMode = (fields) => {
-      if (fields.mode !== 'Credit') {
-        partyMode.value = !partyMode.value
-      } else
-        $q.notify({
-          color: 'orange-4',
-          message: 'Credit customer must be a party!',
-        })
-    }
-    const deleteRowErr = (index, errors, deleteObj) => {
-      if (deleteObj) {
-        if (!formData.fields.value.deleted_rows) {
-          formData.fields.value.deleted_rows = []
-        }
-        formData.fields.value.deleted_rows.push(deleteObj)
-      }
-      if (!!errors.rows) errors.rows.splice(index, 1)
-    }
-    function onSubmitClick(status, fields) {
-      this.fields.status = status
-      if (!partyMode.value) fields.customer_name = null
-      useApi('/v1/pos/', { method: 'POST', body: fields })
-        .then((data) => {
-          this.errors = null
-          $q.notify({
-            color: 'green',
-            message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
-            icon: 'check',
-          })
-          print(data)
-          setTimeout(() => this.$router.go(), 100)
-          this.fields.rows = []
-        })
-        .catch((err) => {
-          fields.status = null
-          if (err.status === 400) {
-            this.errors = err.data
-            $q.notify({
-              color: 'negative',
-              message: 'Error',
-              icon: 'report_problem',
-            })
-          }
-        })
-    }
-    formData.fields.value.date = formData.today
-    formData.fields.value.is_export = false
-    formData.fields.value.mode = 'Cash'
-    formData.fields.value.party = ''
-    formData.fields.value.rows = []
-    formData.fields.value.due_date = formData.today
-    // handle Search
-    const fetchResults = async () => {
-      const data = await useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
-        .then((data) => {
-          (searchResults.value = data)
-          if (enterClicked.value) {
-            let obj = data.results.find((item) => {
-              if (item.code === searchTerm.value) {
-                return item
-              }
-            })
-            if (obj) {
-              onAddItem(obj)
-              searchTerm.value = ''
-            }
-          }
-          enterClicked.value = false
-        })
-        .catch(() => {
-          console.log('Error Fetching Search Results')
-          enterClicked.value = false
-        })
-    }
-    watch([searchTerm, currentPage], (newVal, oldVal) => {
-      if (newVal[0] !== oldVal[0]) {
-        {
-          currentPage.value = 1
-          fetchResults()
-        }
-      }
-      else { fetchResults() }
-    }, { deep: true })
-    watch(() => formData.fields.value.rows, (newVal) => {
-      if (formData.formDefaults.value.options.persist_pos_items) {
-        store.posData = newVal
-      }
-    }, {
-      deep: true
-    })
-    // handle Search
-    const onAddItem = (itemInfo) => {
-      const index = formData.fields.value.rows.findIndex(
-        (item) => item.item_id === itemInfo.id
-      )
-      if (index >= 0) {
-        formData.fields.value.rows[index].quantity++
-      } else {
-        formData.fields.value.rows.push({
-          quantity: 1,
-          rate: itemInfo.rate,
-          item_id: itemInfo.id,
-          unit_id: itemInfo.unit_id,
-          description: '',
-          discount: 0,
-          discount_type: null,
-          tax_scheme_id: itemInfo.tax_scheme_id,
-          discount_id: null,
-        })
-      }
-    }
-    const getTaxObj = () => {
-      if (formData.fields.value.rows[0].tax_scheme_id) {
-        const index =
-          formData.formDefaults.value.collections.tax_schemes.findIndex(
-            (item) => item.id === formData.fields.value.rows[0].tax_scheme_id
-          )
-
-        return formData.formDefaults.value.collections.tax_schemes[index]
-      } else return null
-    }
-    const gePartyObj = () => {
-      // if (formData.fields.value.party && !partyMode) {
-      if (formData.fields.value.party && !partyMode.value) {
-        const index = partyChoices.value.findIndex(
-          (item) => item.id === formData.fields.value.party
-        )
-        return partyChoices.value[index]
-      } else return null
-    }
-    const print = (data) => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri = ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGeneratePosPdf(data, getTaxObj(), gePartyObj(), !formData.formDefaults.value.options.show_rate_quantity_in_voucher, formData.fields.value.rows))
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
-    }
-    const hasItemModifyAccess = computed(() => {
-      return checkPermissions('ItemModify')
-    })
-    watch(() => formData.formDefaults.value, () => {
-      if (formData.formDefaults.value.options.persist_pos_items) {
-        formData.fields.value.rows = store.posData || []
-      }
-    })
-    const discountOptionsComputed = computed(() => {
-      if (formData?.formDefaults.value?.collections?.discounts) {
-        return staticOptions.discount_types.concat(
-          formData.formDefaults.value.collections.discounts
-        )
-      } else return staticOptions.discount_types
-    })
-    return {
-      ...formData,
-      CategoryForm,
-      PartyForm,
-      SalesDiscountForm,
-      openDatePicker,
-      staticOptions,
-      InvoiceTable,
-      partyMode,
-      switchMode,
-      deleteRowErr,
-      onSubmitClick,
-      searchTerm,
-      searchResults,
-      onAddItem,
-      partyChoices,
-      print,
-      $router,
-      hasItemModifyAccess,
-      enterClicked,
-      currentPage,
-      checkPermissions,
-      store,
-      discountOptionsComputed
-    }
-  },
-  created() {
-    useApi('/v1/parties/choices/')
-      .then((res) => {
-        this.partyChoices = res
-      })
-      .catch((err) => {
-        console.log('error fetching choices due to', err)
-      })
-  },
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const emit = defineEmits([])
+const metaData = {
+  title: 'POS | Awecount',
 }
+useMeta(metaData)
+const store = useLoginStore()
+const endpoint = 'v1/pos/'
+const $q = useQuasar()
+const searchTerm = ref(null)
+const searchResults = ref(null)
+const enterClicked = ref(false)
+const currentPage = ref(null)
+const staticOptions = {
+  discount_types: discount_types,
+  modes: modes,
+}
+const { fields, errors, formDefaults, today } = useForm(endpoint, {
+  getDefaults: true,
+  successRoute: '/pos',
+})
+const partyChoices = ref([])
+useApi('/v1/parties/choices/').then((choices) => {
+  partyChoices.value = choices
+})
+const partyMode = ref(false)
+const switchMode = (fields) => {
+  if (fields.mode !== 'Credit') {
+    partyMode.value = !partyMode.value
+  } else
+    $q.notify({
+      color: 'orange-4',
+      message: 'Credit customer must be a party!',
+    })
+}
+const deleteRowErr = (index, errors, deleteObj) => {
+  if (deleteObj) {
+    if (!fields.value.deleted_rows) {
+      fields.value.deleted_rows = []
+    }
+    fields.value.deleted_rows.push(deleteObj)
+  }
+  if (!!errors.rows) errors.rows.splice(index, 1)
+}
+const onSubmitClick = (status) => {
+  fields.value.status = status
+  if (!partyMode.value) fields.value.customer_name = null
+  useApi('/v1/pos/', { method: 'POST', body: fields.value })
+    .then((data) => {
+      errors.value = {}
+      $q.notify({
+        color: 'green',
+        message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+        icon: 'check',
+      })
+      const printData = useGeneratePosPdf(data, gePartyObj(), !formDefaults.value.options.show_rate_quantity_in_voucher, fields.value.rows, formDefaults.value.collections.tax_schemes)
+      printPdf(printData)
+      setTimeout(() => window.history.go(0), 100)
+      fields.value.rows = []
+    })
+    .catch((err) => {
+      fields.value.status = null
+      if (err.status === 400) {
+        errors.value = err.data
+        $q.notify({
+          color: 'negative',
+          message: 'Please fill out the form correctly.',
+          icon: 'report_problem',
+        })
+      }
+    })
+}
+fields.value.date = today
+fields.value.is_export = false
+fields.value.mode = 'Cash'
+fields.value.party = ''
+fields.value.rows = []
+fields.value.due_date = today
+// handle Search
+const fetchResults = async () => {
+  useApi(`/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''}${`&page=${currentPage.value || 1}`}`)
+    .then((data) => {
+      (searchResults.value = data)
+      if (enterClicked.value) {
+        let obj = data.results.find((item) => {
+          if (item.code === searchTerm.value) {
+            return item
+          }
+        })
+        if (obj) {
+          onAddItem(obj)
+          searchTerm.value = ''
+        }
+      }
+      enterClicked.value = false
+    })
+    .catch(() => {
+      enterClicked.value = false
+    })
+}
+watch([searchTerm, currentPage], (newVal, oldVal) => {
+  if (newVal[0] !== oldVal[0]) {
+    {
+      currentPage.value = 1
+      fetchResults()
+    }
+  }
+  else { fetchResults() }
+}, { deep: true })
+watch(() => fields.value.rows, (newVal) => {
+  if (formDefaults.value.options.persist_pos_items) {
+    store.posData = newVal
+  }
+}, {
+  deep: true
+})
+// handle Search
+const onAddItem = (itemInfo) => {
+  const index = fields.value.rows.findIndex(
+    (item) => item.item_id === itemInfo.id
+  )
+  if (index >= 0) {
+    fields.value.rows[index].quantity++
+  } else {
+    fields.value.rows.push({
+      quantity: 1,
+      rate: itemInfo.rate,
+      item_id: itemInfo.id,
+      unit_id: itemInfo.unit_id,
+      description: '',
+      discount: 0,
+      discount_type: null,
+      tax_scheme_id: itemInfo.tax_scheme_id,
+      discount_id: null,
+    })
+  }
+}
+const getTaxObj = () => {
+  if (fields.value.rows[0].tax_scheme_id) {
+    const index =
+      formDefaults.value.collections.tax_schemes.findIndex(
+        (item) => item.id === fields.value.rows[0].tax_scheme_id
+      )
+
+    return formDefaults.value.collections.tax_schemes[index]
+  } else return null
+}
+const gePartyObj = () => {
+  // if (formData.fields.value.party && !partyMode) {
+  if (fields.value.party && !partyMode.value) {
+    const index = partyChoices.value.findIndex((item) => item.id === fields.value.party)
+    return partyChoices.value[index]
+  } else return null
+}
+const printPdf = (data) => {
+  let ifram = document.createElement('iframe')
+  ifram.style = 'display:none; margin: 20px'
+  document.body.appendChild(ifram)
+  const pri = ifram.contentWindow
+  pri.document.open()
+  pri.document.write(data)
+  pri.document.close()
+  pri.focus()
+  setTimeout(() => pri.print(), 100)
+}
+const hasItemModifyAccess = computed(() => {
+  return checkPermissions('ItemModify')
+})
+watch(() => formDefaults.value, () => {
+  if (formDefaults.value.options.persist_pos_items) {
+    fields.value.rows = store.posData || []
+  }
+})
+const discountOptionsComputed = computed(() => {
+  if (formDefaults?.value?.collections?.discounts) {
+    return staticOptions.discount_types.concat(
+      formDefaults.value.collections.discounts
+    )
+  } else return staticOptions.discount_types
+})
 </script>
 
 <style lang="scss" scoped>

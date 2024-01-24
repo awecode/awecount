@@ -5,10 +5,8 @@ function formatNumberWithCommas(number, toFixed) {
   if (typeof number !== 'number') {
     number = parseFloat(number)
   }
-  let roundNumber = Math.round((number + Number.EPSILON) * 100) / 100
-  if (toFixed !== undefined) {
-        roundNumber = (roundNumber).toFixed(toFixed)
-      }
+  const multiplier = Math.pow(10, toFixed || 2);
+  const roundNumber = Math.round(number * multiplier) / multiplier
   // Convert the number to a string
   const numStr = roundNumber.toString();
 

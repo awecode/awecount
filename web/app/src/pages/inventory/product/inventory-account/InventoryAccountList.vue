@@ -15,10 +15,11 @@
             style="font-size: 12px" label="view" :to="`/inventory-account/detail/${props.row.id}`" />
         </q-td>
       </template>
-      <template v-slot:body-cell-category="props">
+      <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link :to="`/account/category/${props.row.category.id}/edit/`">{{ props.row.category.name
+          <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/inventory-account/detail/${props.row.id}`" class="no-underline font-medium text-blue">{{ props.row.name
           }}</router-link>
+          <span v-else>{{ props.row.name}}</span>
         </q-td>
       </template>
     </q-table>
@@ -32,12 +33,6 @@ export default {
   setup() {
     const endpoint = '/v1/inventory-account/'
     const columnList = [
-      {
-        name: 'code',
-        label: 'Code.',
-        align: 'left',
-        field: 'code',
-      },
       {
         name: 'name',
         label: 'Name',
@@ -55,6 +50,12 @@ export default {
         label: 'Current Balance',
         align: 'left',
         field: 'current_balance',
+      },
+      {
+        name: 'code',
+        label: 'Code.',
+        align: 'left',
+        field: 'code',
       },
       {
         name: 'actions',

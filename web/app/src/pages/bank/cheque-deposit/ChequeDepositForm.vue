@@ -53,7 +53,7 @@
         @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square" :loading="loading"
         label="Save Draft" class="q-mr-md q-py-sm" />
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" :loading="loading" />
-      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Update" type="submit" :loading="loading"/>
+      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" color="green-6" icon="fa-solid fa-floppy-disk" :label="fields.status === 'Draft' ? 'Issue' : 'Update'" type="submit" :loading="loading"/>
     </div>
   </q-form>
 </template>

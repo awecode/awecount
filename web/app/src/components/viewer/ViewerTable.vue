@@ -40,17 +40,17 @@
           <span v-if="props.showRateQuantity">{{ row.quantity }} <span class="text-grey-9">
               ({{ row.unit_name }})</span></span>
         </q-td>
-        <q-td> <span v-if="props.showRateQuantity">{{ row.rate }}</span> </q-td>
+        <q-td> <span v-if="props.showRateQuantity">{{ $nf(row.rate) }}</span> </q-td>
         <q-td>
-          <span v-if="row.discount_obj"> {{ row.discount_obj.value }} {{ row.discount_obj.type === 'Percent' ? '%' : '-/'}} </span>
-          <span v-else-if="row.discount_type">{{ row.discount }} {{ row.discount_type === 'Percent' ? '%' : '-/'}}</span>
+          <span v-if="row.discount_obj"> {{ $nf(row.discount_obj.value) }} {{ row.discount_obj.type === 'Percent' ? '%' : '-/'}} </span>
+          <span v-else-if="row.discount_type">{{ $nf(row.discount) }} {{ row.discount_type === 'Percent' ? '%' : '-/'}}</span>
         </q-td>
         <!-- <q-td> {{ row.discount }} </q-td> -->
         <q-td class="text-right">
           {{ row.tax_scheme.rate }}% (<span class="text-uppercase">{{
             row.tax_scheme.friendly_name
           }}</span>) </q-td><q-td class="text-right">
-          {{ row.rate * row.quantity }}
+          {{ $nf(row.rate * row.quantity) }}
         </q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -58,21 +58,21 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Sub Total </q-td><q-td class="text-right">{{
-          formatNumberWithComma(fields?.meta_sub_total) }}</q-td>
+          formatNumberWithComma(fields?.voucher_meta.sub_total) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Discount </q-td><q-td class="text-right">{{
-          formatNumberWithComma(fields?.meta_discount) }}</q-td>
+          formatNumberWithComma(fields?.voucher_meta.discount) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> {{ getTaxname }} </q-td><q-td class="text-right">{{
-          formatNumberWithComma(fields?.meta_tax)
+          formatNumberWithComma(fields?.voucher_meta.tax)
         }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
@@ -80,12 +80,12 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Total </q-td><q-td class="text-right">{{
-          formatNumberWithComma(fields?.total_amount) }}</q-td>
+          formatNumberWithComma(fields?.voucher_meta.grand_total) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <td></td>
         <td colspan="6">
-          <span style="white-space: wrap;">In Words: {{ numberToText(fields?.total_amount) }} </span>
+          <span style="white-space: wrap;">In Words: {{ numberToText(fields?.voucher_meta.grand_total) }} </span>
         </td>
       </q-tr>
     </tbody>

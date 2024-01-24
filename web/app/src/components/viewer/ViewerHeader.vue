@@ -58,8 +58,9 @@
     <q-dialog v-model="isChangeOpen">
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-grey-4">
-          <div class="text-h6">
+          <div class="text-h6 flex justify-between">
             <span class="q-mx-md">Edit Mode</span>
+            <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
           </div>
         </q-card-section>
         <q-card-section class="q-mx-md">

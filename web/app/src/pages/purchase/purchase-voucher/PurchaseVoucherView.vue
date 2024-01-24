@@ -68,25 +68,22 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading" />
         </div>
-        <div v-else class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading"/>
-        </div>
         <div>
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/purchase-vouchers/${fields?.id}/`" />
         </div>
       </div>
-      <q-dialog v-model="isDeleteOpen">
+      <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}">
         <q-card style="min-width: min(40vw, 500px)">
-          <q-card-section class="bg-red-6">
+          <q-card-section class="bg-red-6 flex justify-between">
             <div class="text-h6 text-white">
-              <span>Confirm Cancelation?</span>
+              <span>Confirm Cancellation?</span>
             </div>
+            <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined> </q-input>
+            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
             </div>
@@ -103,7 +100,6 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -131,6 +127,7 @@ export default {
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const isLoading:Ref<boolean> = ref(false)
+    const errors = ref({})
     const submitChangeStatus = (id: number, status: string) => {
       isLoading.value = true
       let endpoint = ''
@@ -144,34 +141,34 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
-          if (fields.value) {
-            fields.value.status = status
-            if (status === 'Cancelled') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher has been cancelled.',
-              })
-              isDeleteOpen.value = false
-            } else if (status === 'Paid') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher Marked as paid.',
-              })
-            }
-          }
+          onStatusChange(status)
           isLoading.value = false
         })
-        .catch(() => {
-          // TODO: Properly Parse Error and show
-          $q.notify({
-            color: 'red-6',
-            message: 'Something Went Wrong!',
-            icon: 'report_problem',
-          })
-          isLoading.value = false
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then((data) => {
+              isLoading.value = false
+              onStatusChange(status)
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+              isLoading.value = false
+            })
+          } else {
+            const parsedError = useHandleFormError(data)
+            errors.value = parsedError.errors
+            $q.notify({
+              color: 'negative',
+              message: parsedError.message,
+              icon: 'report_problem',
+            })
+            isLoading.value = false
+          }
         })
     }
     const getDate = computed(() => {
@@ -195,6 +192,26 @@ export default {
         )
       } else return false
     })
+    const onStatusChange = (status: string) => {
+      if (fields.value) {
+        fields.value.status = status
+        if (status === 'Cancelled') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher has been cancelled.',
+          })
+          // fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
+          isDeleteOpen.value = false
+        } else if (status === 'Paid') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher Marked as paid.',
+          })
+        }
+      }
+    }
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -210,7 +227,8 @@ export default {
       deleteMsg,
       getDate,
       checkPermissions,
-      isLoading
+      isLoading,
+      errors
     }
   },
   created() {

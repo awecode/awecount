@@ -8,11 +8,11 @@
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue l-edit-btn" style="text-decoration: none"
+          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue l-edit-btn whitespace-normal" style="text-decoration: none"
             :to="`/sales-agent/${props.row.id}/`">
             {{ props.row.name }}
           </router-link>
-          <span v-else>{{ props.row.name }}</span>
+          <span class="whitespace-normal" v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>

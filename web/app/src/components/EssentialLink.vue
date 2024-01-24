@@ -1,8 +1,16 @@
 <template>
-  <q-expansion-item v-if="children && !hideParent" :icon="icon || 'menu_open'" :label="title">
+  <q-expansion-item
+    v-if="children && !hideParent"
+    :icon="icon || 'menu_open'"
+    :label="title"
+  >
     <template v-for="child in children" :key="child.title">
-      <EssentialLink v-if="!child.hide" :level="level + 1" v-bind="child"
-        :style="`padding-left:${level * 2 + 3}em !important`" />
+      <EssentialLink
+        v-if="!child.hide"
+        :level="level + 1"
+        v-bind="child"
+        :style="`padding-left:${level * 2 + 3}em !important`"
+      />
     </template>
   </q-expansion-item>
   <!-- <q-item v-else clickable :to="link" :style="style"> -->
@@ -19,8 +27,6 @@
 </template>
 
 <script setup lang="ts">
-// import { computed } from 'vue'
-
 export interface EssentialLinkProps {
   title: string
   caption?: string
@@ -37,7 +43,6 @@ const props = withDefaults(defineProps<EssentialLinkProps>(), {
   icon: '',
   level: 0,
 })
-const emits = defineEmits(['changeHide'])
 const hideParent = ref(false)
 if (props.level == 0 && props.children && props.children.length > 0) {
   const hideStatus = props.children.some((child) => !child.hide)

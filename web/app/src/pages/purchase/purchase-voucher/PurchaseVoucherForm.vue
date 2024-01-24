@@ -17,17 +17,18 @@
               </div>
               <q-dialog v-model="importPurchaseOrder">
                 <q-card style="min-width: min(60vw, 400px)">
-                  <q-card-section class="bg-grey-4">
+                  <q-card-section class="bg-grey-4 flex justify-between">
                     <div class="text-h6">
                       <span>Add Reference Purchase Order(s)</span>
                     </div>
+                    <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
-                      emit-value></q-select>
+                      emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="fetchInvoice()"></q-btn>
                     </div>
@@ -126,7 +127,7 @@
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue' : 'Update'" />
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status, fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
       </div>
     </q-card>
   </q-form>
@@ -200,6 +201,9 @@ export default {
       }
     })
     const fetchInvoice = async (data) => {
+      if (!formData?.errors?.value) formData.errors.value = {}
+      delete formData.errors.value.fiscal_year
+      delete formData.errors.value.invoice_no
       const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
       if (
         fetchData.invoice_no &&
@@ -215,6 +219,7 @@ export default {
             icon: 'report_problem',
             position: 'top-right',
           })
+          formData.errors.value.invoice_no = 'The invoice has already been added!'
         } else {
           const url = 'v1/purchase-order/by-voucher-no/'
           useApi(
@@ -272,9 +277,12 @@ export default {
               importPurchaseOrder.value = false
             })
             .catch((err) => {
+              let message
+              if (err.status === 404) message = 'Invoice Not Found!'
+              else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
               $q.notify({
                 color: 'red-6',
-                message: err.data?.detail || 'Error',
+                message: message,
                 icon: 'report_problem',
                 position: 'top-right',
               })
@@ -287,6 +295,13 @@ export default {
           icon: 'report_problem',
           position: 'top-right',
         })
+        if (!formData?.errors?.value) formData.errors.value = {}
+        if (!referenceFormData.value.invoice_no) {
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
+        }
+        if (!referenceFormData.value.fiscal_year) {
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
+        }
       }
     }
     onMounted(() => {

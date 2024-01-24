@@ -1,10 +1,10 @@
 <template>
-  <div class="row q-col-gutter-md">
-    <div class="row q-col-gutter-md target">
+  <div class="flex gap-x-4 gap-y-2">
+    <div class="flex gap-x-6 gap-y-0 target">
       <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
-        label="Start Date" />
+        label="Start Date" debounce="1000" mask="####-##-##" />
       <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"
-        label="End Date" />
+        label="End Date" debounce="1000" mask="####-##-##" />
     </div>
     <q-menu ref="menuDom" target=".target" :no-focus="true">
       <div class="row q-pa-md main-con">
@@ -74,9 +74,8 @@ import BsDatePicker from '/src/components/date/BsDatePicker.vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
-const $q = useQuasar()
 
-const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focuOnMount'])
+const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focusOnMount'])
 
 const menuDom = ref(null)
 const value0 = ref(props.startDate)
@@ -149,17 +148,17 @@ watch(
   }
 )
 
-const filter = () => {
-  if (!value0.value && !value1.value) {
-    $q.notify({
-      color: 'negative',
-      message: 'Date range is invalid',
-      icon: 'report_problem',
-    })
-    return
-  }
-  emit('filter')
-}
+// const filter = () => {
+//   if (!value0.value && !value1.value) {
+//     $q.notify({
+//       color: 'negative',
+//       message: 'Date range is invalid',
+//       icon: 'report_problem',
+//     })
+//     return
+//   }
+//   emit('filter')
+// }
 
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
@@ -243,19 +242,34 @@ const getYear = (last = false) => {
 }
 const getFY = (last = false) => {
   const today = new Date()
-  const bs_month = DateConverter.getBSMonth(today)
-  let bs_year = DateConverter.getBSYear(today)
-  if (bs_month < 4) {
-    bs_year = bs_year - 1
+  let fy_start
+  let fy_end
+  if (store.companyInfo.config_template === 'np') {
+    const bs_month = DateConverter.getBSMonth(today)
+    let bs_year = DateConverter.getBSYear(today)
+    if (bs_month < 4) {
+      bs_year = bs_year - 1
+    }
+    bs_year = bs_year - (last ? 1 : 0)
+    const bs_start = `${bs_year}-04-01`
+    const bs_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
+      bs_year + 1,
+      3
+    )}`
+    fy_start = DateConverter.bs2ad(bs_start)
+    fy_end = DateConverter.bs2ad(bs_end)
+  } else {
+    const ad_month = today.getMonth()
+    let ad_year = today.getFullYear()
+    if (ad_month < 9) {
+      ad_year = ad_year + 1
+    }
+    ad_year = ad_year - (last ? 1 : 0)
+    fy_start = `${ad_year}-10-01`
+    fy_end = `${ad_year + 1}-09-30`
   }
-  activeDate.value = last ? 'lastFY' : 'thisFy'
-  bs_year = bs_year - (last ? 1 : 0)
-  const fy_start = `${bs_year}-04-01`
-  const fy_end = `${bs_year + 1}-03-${DateConverter.getMonthDays(
-    bs_year + 1,
-    3
-  )}`
-  setDateRange(DateConverter.bs2ad(fy_start), DateConverter.bs2ad(fy_end))
+  activeDate.value = last ? 'lastFY' : 'thisFY'
+  setDateRange(fy_start, fy_end)
 }
 const getMonth = (last = false) => {
   const today = new Date()
@@ -292,7 +306,7 @@ const getDays = (last = 7) => {
   setDateRange(startDayStr, todayStr)
 }
 onMounted(() => {
-  if (props.focuOnMount && (!value0.value && !value1.value)) {
+  if (props.focusOnMount && (!value0.value && !value1.value)) {
     value0.value = store.dateRange.start_date
     value1.value = store.dateRange.end_date
     menuDom.value.show()
