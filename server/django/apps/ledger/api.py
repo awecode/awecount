@@ -267,7 +267,7 @@ class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
             fiscal_year=self.request.company.current_fiscal_year, company=self.request.company).order_by('-pk')
 
     collections = (
-        ('accounts', Account.objects.exclude(name__startswith='Opening Balance')),
+        ('accounts', Account.objects.exclude(name__startswith='Opening Balance').filter(account_opening_balances__isnull=True)),
     )
 
 
