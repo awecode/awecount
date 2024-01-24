@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md row-con">
+  <div class="q-pa-md lg:grid lg:grid-cols-2 gap-6">
     <div>
       <q-card>
         <q-card-section>
@@ -262,16 +262,16 @@ const onAddItem = (itemInfo) => {
     })
   }
 }
-const getTaxObj = () => {
-  if (fields.value.rows[0].tax_scheme_id) {
-    const index =
-      formDefaults.value.collections.tax_schemes.findIndex(
-        (item) => item.id === fields.value.rows[0].tax_scheme_id
-      )
+// const getTaxObj = () => {
+//   if (fields.value.rows[0].tax_scheme_id) {
+//     const index =
+//       formDefaults.value.collections.tax_schemes.findIndex(
+//         (item) => item.id === fields.value.rows[0].tax_scheme_id
+//       )
 
-    return formDefaults.value.collections.tax_schemes[index]
-  } else return null
-}
+//     return formDefaults.value.collections.tax_schemes[index]
+//   } else return null
+// }
 const gePartyObj = () => {
   // if (formData.fields.value.party && !partyMode) {
   if (fields.value.party && !partyMode.value) {
@@ -308,11 +308,6 @@ const discountOptionsComputed = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.row-con {
-  display: grid;
-  grid-template-columns: 4fr 6fr;
-  grid-gap: 1rem;
-}
 
 .add-btn {
   // background-color: aqua;
