@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn color="blue" label="Exoprt Xls" icon-right="download" @click="onDownloadXls" class="export-btn"/>
+      <q-btn color="blue" label="Exoprt Xls" icon-right="download" @click="onDownloadXls" class="export-btn" />
       <q-btn v-if="checkPermissions('CreditNoteCreate')" color="green" to="/credit-note/add/" label="New Credit Note"
         class="q-ml-lg add-btn" icon-right="add" />
     </div>
@@ -40,7 +40,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props" class="row justify center">
           <q-btn v-if="checkPermissions('CreditNoteView')" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn"
-            style="font-size: 12px" label="View" :to="`/credit-note/${props.row.id}/view`"/>
+            style="font-size: 12px" label="View" :to="`/credit-note/${props.row.id}/view`" />
         </q-td>
       </template>
       <template v-slot:body-cell-status="props">
@@ -67,6 +67,15 @@
           </div>
         </q-td>
       </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no"
+            :to="`/credit-note/${props.row.id}/view`" style="font-weight: 500; text-decoration: none"
+            class="text-blue">
+            {{ props.row.voucher_no }}
+          </router-link>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>
@@ -86,9 +95,9 @@ export default {
         field: 'voucher_no',
         sortable: true
       },
-      { name: 'party', label: 'Party', align: 'left', field: 'party'},
-      { name: 'date', label: 'Date', align: 'left', field: 'date' , sortable: true},
-      { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true},
+      { name: 'party', label: 'Party', align: 'left', field: 'party' },
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
+      { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true },
       { name: 'actions' }
     ]
     const endpoint = '/v1/credit-note/'
