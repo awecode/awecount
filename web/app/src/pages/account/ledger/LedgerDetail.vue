@@ -20,7 +20,7 @@
     <div class="mt-8">
       <!-- <q-card class="q-mt-md">
         <q-card-section> -->
-      <div class="grid grid-cols-3 gap-x-6">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Dr Amount</div>
           <div class="q-px-md">
@@ -42,14 +42,14 @@
       </div>
       <!-- </q-card-section>
       </q-card> -->
-      <div class="mt-8 px-2">
+      <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
         <div class="row q-col-gutter-md print-hide">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
             <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />
           </div>
           <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="sm:q-mt-md" />
           </div>
         </div>
       </div>

@@ -10,13 +10,13 @@
 
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
+          <div class="grid md:grid-cols-2 q-col-gutter-md">
+            <div>
               <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account *"
                 :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
             </div>
           </div>
-          <div class="row q-col-gutter-md">
+          <div class="grid md:grid-cols-2 q-col-gutter-md">
             <q-input v-model="fields.opening_dr" type="number" label="Opening Dr" class="col-6"
               :error-message="errors.opening_dr" :error="!!errors.opening_dr" />
             <q-input v-model="fields.opening_cr" type="number" label="Opening Cr" class="col-6"

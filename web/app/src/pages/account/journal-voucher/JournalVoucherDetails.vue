@@ -12,7 +12,7 @@
 
       <q-card class="q-mt-none q-ml-lg q-mr-lg text-grey-8">
         <q-card-section>
-          <div class="row q-col-gutter-md q-mb-sm">
+          <div class="grid md:grid-cols-2 q-col-gutter-md q-mb-sm">
             <div class="col-6 row">
               <div class="col-6">Voucher No</div>
               <div class="col-6">{{ fields?.voucher_no || '-' }}</div>
@@ -28,8 +28,8 @@
       </q-card>
     </q-card>
 
-    <q-card class="q-mt-sm">
-      <q-card-section class="">
+    <q-card class="q-mt-sm overflow-y-auto">
+      <q-card-section class="min-w-[650px]">
         <!-- Head -->
         <div class="row q-col-gutter-md text-grey-9">
           <div class="col-2">SN</div>

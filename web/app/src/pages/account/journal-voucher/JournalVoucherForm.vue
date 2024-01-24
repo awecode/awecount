@@ -30,8 +30,8 @@
             </div>
           </q-card>
         </q-card>
-        <q-card class="q-mt-xs">
-          <q-card-section class="q-pt-md">
+        <q-card class="q-mt-xs overflow-y-auto">
+          <q-card-section class="q-pt-md min-w-[650px]">
             <div class="row q-col-gutter-md q-py-sm">
               <div class="text-center">SN</div>
               <div class="row q-col-gutter-md" style="flex-grow: 1">
@@ -130,9 +130,6 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm'
-import VoucherRow from '/src/components/VoucherRow.vue'
-import checkPermissions from 'src/composables/checkPermissions'
 import Decimal from 'decimal.js'
 
 // Floating-point-error-safe subtraction
@@ -242,7 +239,6 @@ export default {
     }
     return {
       ...formData,
-      VoucherRow,
       updateVoucher,
       deleteVoucher,
       addNewVoucher,
