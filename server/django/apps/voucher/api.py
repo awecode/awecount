@@ -382,6 +382,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         except Exception as e:
             raise APIException(str(e))
         
+    # TODO: Optimize and refactor
     def update_rows(self, rows, row_id):
          for row in rows:
             sold_items = row.sold_items
@@ -395,24 +396,27 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
                     if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)] += quantity
+                        sold_items[str(purchase_row.id)][0] += quantity
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
                     else:
-                        sold_items[str(purchase_row.id)] = quantity
+                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                     break
                 elif purchase_row.remaining_quantity > quantity:
                     purchase_row.remaining_quantity -= quantity
                     purchase_row.save()
                     if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)] += quantity
+                        sold_items[str(purchase_row.id)][0] += quantity
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
                     else:
-                        sold_items[str(purchase_row.id)] = quantity
+                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                     break
                 else:
                     quantity -= purchase_row.remaining_quantity
                     if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)] += purchase_row.remaining_quantity
+                        sold_items[str(purchase_row.id)][0] += purchase_row.remaining_quantity
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
                     else:
-                        sold_items[str(purchase_row.id)] = purchase_row.remaining_quantitynegati
+                        sold_items[str(purchase_row.id)] = [purchase_row.remaining_quantity, purchase_row.rate]
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             row.sold_items = sold_items
@@ -474,7 +478,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     sold_items = sold_items_challan + sold_items_sales
                     sum = 0
                     for item in sold_items:
-                        sum += item[str(row.id)]
+                        sum += item[str(row.id)][0]
                     remaining_quantity = zero_for_none(row.item.remaining_stock) - row.quantity
                     if remaining_quantity <= 0:
                         raise UnprocessableException(detail="Negative Stock Warning!", code="negative_stock")

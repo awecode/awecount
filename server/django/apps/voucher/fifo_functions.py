@@ -21,7 +21,7 @@ def fifo_update_purchase_rows(rows):
         if sold_items:
             updates = [
                 PurchaseVoucherRow.objects.filter(id=key).update(
-                    remaining_quantity=F("remaining_quantity") + value
+                    remaining_quantity=F("remaining_quantity") + value[0]
                 )
                 for key, value in sold_items.items()
             ]
@@ -34,7 +34,7 @@ def update_opening_balance(sold_item):
     if dct and dct.get("OB"):
         ob = dct.pop("OB")
         item = Item.objects.get(id=sold_item.get("item_id"))
-        item.account.opening_quantity = ob
+        item.account.opening_quantity = ob[0]
         item.account.save()
 
 
@@ -81,35 +81,35 @@ def fifo_handle_sales_create(row):
     inv_account = Item.objects.get(id=row["item_id"]).account
     if inv_account and inv_account.opening_quantity:
         if quantity > inv_account.opening_quantity:
-            sold_items["OB"] = inv_account.opening_quantity
+            sold_items["OB"] = [inv_account.opening_quantity, inv_account.opening_balance_rate]
             quantity -= inv_account.opening_quantity
             inv_account.opening_quantity = 0
             inv_account.save()
         else:
             inv_account.opening_quantity -= quantity
             inv_account.save()
-            sold_items["OB"] = quantity
+            sold_items["OB"] = [quantity, inv_account.opening_balance_rate]
             return sold_items
-        
+
     purchase_rows = PurchaseVoucherRow.objects.filter(
         item_id=item_id,
         remaining_quantity__gt=0
     ).order_by("voucher__date", "id")
-        
+
     for purchase_row in purchase_rows:
         if purchase_row.remaining_quantity == quantity:
             purchase_row.remaining_quantity = 0
             purchase_row.save()
-            sold_items[purchase_row.id] = quantity
+            sold_items[purchase_row.id] = [quantity, purchase_row.rate]
             break
         elif purchase_row.remaining_quantity > quantity:
             purchase_row.remaining_quantity -= quantity
             purchase_row.save()
-            sold_items[purchase_row.id] = quantity
+            sold_items[purchase_row.id] = [quantity, purchase_row.rate]
             break
         else:
             quantity -= purchase_row.remaining_quantity
-            sold_items[purchase_row.id] = purchase_row.remaining_quantity
+            sold_items[purchase_row.id] = [purchase_row.remaining_quantity, purchase_row.rate]
             purchase_row.remaining_quantity = 0
             purchase_row.save()
     return sold_items
@@ -125,10 +125,10 @@ def handle_quantity_decrease(db_row, row, diff):
     sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.get("id"))).order_by("-id")
     for sales_row in sales_rows:
         sold_items = sales_row.sold_items
-        sold_quantity = sold_items[str(row["id"])]
+        sold_quantity = sold_items[str(row["id"])][0]
         if sold_quantity > diff:
             sold_quantity -= diff
-            sold_items[str(row["id"])] = sold_quantity
+            sold_items[str(row["id"])] = [sold_quantity, sold_items[str(row["id"])][1]]
             purchase_rows = PurchaseVoucherRow.objects.filter(
                 item_id=sales_row.item_id,
                 remaining_quantity__gt=0

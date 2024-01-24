@@ -316,16 +316,16 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 if purchase_row.remaining_quantity == quantity:
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
-                    sold_items[purchase_row.id] = quantity
+                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
                     break
                 elif purchase_row.remaining_quantity > quantity:
                     purchase_row.remaining_quantity -= quantity
                     purchase_row.save()
-                    sold_items[purchase_row.id] = quantity
+                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
                     break
                 else:
                     quantity -= purchase_row.remaining_quantity
-                    sold_items[purchase_row.id] = purchase_row.remaining_quantity
+                    sold_items[purchase_row.id] = [purchase_row.remaining_quantity, purchase_row.rate]
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             return sold_items
