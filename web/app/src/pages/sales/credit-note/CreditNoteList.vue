@@ -69,11 +69,15 @@
       </template>
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no"
-            :to="`/credit-note/${props.row.id}/view`" style="font-weight: 500; text-decoration: none"
-            class="text-blue">
-            {{ props.row.voucher_no }}
-          </router-link>
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('CreditNoteView')" :to="`/credit-note/${props.row.id}/view`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>
+              {{ props.row.voucher_no }}
+            </span>
+          </span>
         </q-td>
       </template>
     </q-table>

@@ -1,6 +1,6 @@
 <template>
-  <q-card-section>
-    <q-card>
+  <q-card-section class="overflow-y-auto -mt-4">
+    <q-card class="min-w-[600px] pt-6">
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">

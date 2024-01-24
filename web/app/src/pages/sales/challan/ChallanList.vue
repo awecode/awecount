@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end" v-if="checkPermissions('ChallanCreate')">
-      <q-btn color="green" to="/challan/add/" label="New Challan" icon-right="add" class="add-btn"/>
+      <q-btn color="green" to="/challan/add/" label="New Challan" icon-right="add" class="add-btn" />
     </div>
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -70,8 +70,20 @@
         <q-td :props="props">
           <div class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('ChallanModify')" color="orange" label="Edit"
-              class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/challan/${props.row.id}/`" />
+              class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
+              :to="`/challan/${props.row.id}/`" />
           </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('ChallanModify')" :to="`/challan/${props.row.id}/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
+          </span>
         </q-td>
       </template>
     </q-table>
@@ -103,8 +115,8 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
-      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       { name: 'actions' },
     ]
 
