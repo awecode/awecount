@@ -1,9 +1,9 @@
 <template>
   <div class="q-pa-md">
     <div class="flex gap-4 justify-end">
-      <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" class="export-btn"/>
+      <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" class="export-btn" />
       <q-btn v-if="checkPermissions('PurchaseVoucherCreate')" color="green" to="/purchase-voucher/add/"
-        label="New Purchase" icon-right="add" class="add-btn"/>
+        label="New Purchase" icon-right="add" class="add-btn" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -11,7 +11,7 @@
         <div class="search-bar">
           <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
-              <q-icon name="search"/>
+              <q-icon name="search" />
             </template>
           </q-input>
           <q-btn class="f-open-btn" icon="mdi-filter-variant">
@@ -77,12 +77,23 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div class="row q-gutter-x-md items-center">
+          <div class="row q-gutter-x-md items-center" v-if="checkPermissions('PurchaseVoucherView')">
             <q-btn color="blue" label="View" :to="`/purchase-voucher/${props.row.id}/view`"
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('PurchaseVoucherView')" :to="`/purchase-voucher/${props.row.id}/view`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
+          </span>
+        </q-td>
       </template>
     </q-table>
   </div>
@@ -124,8 +135,8 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
-      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
       {
         name: 'mode',
         label: 'Mode',
