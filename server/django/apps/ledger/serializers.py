@@ -316,9 +316,10 @@ class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
 
 
 class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='account.name')
     class Meta:
         model = AccountOpeningBalance
-        fields = ('id', 'account', 'opening_dr', 'opening_cr')
+        fields = ('id', 'account', 'name', 'opening_dr', 'opening_cr')
 
 
 class TransactionEntrySerializer(serializers.Serializer):
