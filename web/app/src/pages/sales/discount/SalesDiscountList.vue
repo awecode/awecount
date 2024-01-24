@@ -52,6 +52,15 @@
             class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/sales-discount/${props.row.id}/`" />
         </q-td>
       </template>
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('SalesDiscountModify')" :to="`/sales-discount/${props.row.id}/`"
+            style="font-weight: 500; text-decoration: none" class="text-blue">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else>{{ props.row.name }}</span>
+        </q-td>
+      </template>
     </q-table>
   </div>
 </template>

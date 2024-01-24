@@ -18,7 +18,7 @@
                   @click="() => (addInoviceModal = !addInoviceModal)">
                 </q-btn></span>
             </div>
-            <q-input class="col-md-6 col-12" label="Party" v-model="fields.party_name" disable>
+            <q-input class="col-md-6 col-12" label="Party" v-model="fields.party_name" disable :error="!!errors?.party_name" :error-message="errors.party_name">
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
