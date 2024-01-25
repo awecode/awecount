@@ -330,7 +330,8 @@ export default {
             useApi(endpoint)
                 .then((data) => {
                     unCatogarizedData.value = []
-                    const computedData = [...categoryTree.value]
+                    const categoryData = JSON.stringify(categoryTree.value)
+                    const computedData = [...JSON.parse(categoryData)]
                     const tallyTotal = { ...objFormat }
                     data.forEach((obj) => {
                         const acc = {
