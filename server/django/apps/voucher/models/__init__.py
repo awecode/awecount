@@ -608,21 +608,20 @@ class CreditNote(TransactionModel, InvoiceModel):
                     quantity = credit_note_row.quantity
                     if not sold_items:
                         break
-                    opening = None
+                    opening_qty = None
                     if sold_items.get("OB"):
                         inv_account = row.item.account
                         ob = sold_items.pop("OB")
                         if quantity > inv_account.opening_quantity:
-                            opening = ob + inv_account.opening_quantity
+                            opening_qty = ob[0] + inv_account.opening_quantity
                             quantity -= inv_account.opening_quantity
                             inv_account.opening_quantity = 0
-                            inv_account.save()
                             inv_account.save()
                         else:
                             inv_account.opening_quantity -= quantity
                             inv_account.save()
-                            opening = ob + quantity
-                            row.sold_items["OB"] = opening
+                            opening_qty = ob[0] + quantity
+                            row.sold_items["OB"] = [opening_qty, row.sold_items["OB"][1]]
                             row.save()
                             return
                     purchase_row_ids = [key for key, value in sold_items.items()]
@@ -636,7 +635,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                                 purchase_row.save()
                                 quantity -= purchase_row.remaining_quantity
                                 # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = purchase_row.quantity
+                                row.sold_items[str(purchase_row.id)] = [purchase_row.quantity, purchase_row.rate]
                                 # else:
                                 #     row.sold_items[str(purchase_row.id)] += can_be_reduced
                                 row.save()
@@ -645,7 +644,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                                 purchase_row.remaining_quantity -= quantity
                                 purchase_row.save()
                                 # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                                 # else:
                                 #     row.sold_items[str(purchase_row.id)] += quantity
                                 row.save()
@@ -656,24 +655,24 @@ class CreditNote(TransactionModel, InvoiceModel):
                             if purchase_row.remaining_quantity == quantity:
                                 purchase_row.remaining_quantity = 0
                                 purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                                 row.save()
                                 break
                             elif purchase_row.remaining_quantity > quantity:
                                 purchase_row.remaining_quantity -= quantity
                                 purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                                 row.save()
                                 break
                             else:
                                 quantity -= purchase_row.remaining_quantity
-                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                sold_items[str(purchase_row.id)] = [purchase_row.remaining_quantity, purchase_row.rate]
                                 purchase_row.remaining_quantity = 0
-                                row.sold_items[str(purchase_row.id)] = quantity
+                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
                                 purchase_row.save()
                                 row.save()
-                    if opening:
-                        row.sold_items["OB"] = opening
+                    if opening_qty:
+                        row.sold_items["OB"] = [opening_qty, row.sold_items["OB"][1]]
                         row.save()
         return super().cancel()
 

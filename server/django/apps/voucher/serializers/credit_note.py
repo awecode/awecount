@@ -62,7 +62,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
         return data
-    
+
     def validate_rows(self, rows):
         for row in rows:
             # if row.get("discount_type") == "":
@@ -71,7 +71,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
-    
+
     def cancel_sales(self, instance, rows_data):
         sales_vouchers = instance.invoices.all()
         for voucher in sales_vouchers:
@@ -92,8 +92,8 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                     if diff >= can_be_added:
                         purchase_row.remaining_quantity += can_be_added
                         purchase_row.save()
-                        row.sold_items[str(purchase_row.id)] -= can_be_added
-                        if row.sold_items[str(purchase_row.id)] == 0:
+                        row.sold_items[str(purchase_row.id)][0] -= can_be_added
+                        if row.sold_items[str(purchase_row.id)][0] == 0:
                             row.sold_items.pop(str(purchase_row.id))
                         quantity -= can_be_added
                         row.save()
@@ -107,15 +107,15 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
                         continue
                 if ob and quantity>0:
                     inv_account = row.item.account
-                    if quantity > ob:
-                        inv_account.opening_quantity = ob
-                        quantity -= ob
+                    if quantity > ob[0]:
+                        inv_account.opening_quantity = ob[0]
+                        quantity -= ob[0]
                         inv_account.save()
                         row.save()
                     else:
                         inv_account.opening_quantity = quantity
                         inv_account.save()
-                        row.sold_items["OB"] = ob - quantity
+                        row.sold_items["OB"] = [ob[0] - quantity, row.sold_items["OB"][1]]
                         row.save()
                         return
 
