@@ -220,6 +220,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     @action(detail=False, url_path='similar-items')
     def similar_items(self, request):
         from thefuzz import fuzz
+        # TODO Use postgres trigram/cosine/levenshtein distance
         qs = super().get_queryset()
         items = qs.values_list('id', 'name', 'code')
         res = []
@@ -337,7 +338,29 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         cat = Category.objects.create(name=value, company_id=request.company.id)
                         return cat
                     return None
-                    
+        
+        def get_Tax(value):
+            if not value:
+                return None
+            else:
+                qs = TaxScheme.objects.filter(name__iexact=value, company_id=request.company.id)
+                if qs.exists():
+                    return qs.first()
+                else:
+                    return None
+
+        def get_unit(value):
+            if not value:
+                return None
+            else:
+                qs = Unit.objects.filter(name__iexact=value, company_id=request.company.id)
+                if qs.exists():
+                    return qs.first()
+                else:
+                    if request.data.get("create_new_unit") == "true":
+                        new_unit = Unit.objects.create(name=value, company_id=request.company.id)
+                        return new_unit
+                    return None
             
         for row in ws.iter_rows(values_only=True):
             item = {
@@ -349,7 +372,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 "selling_price":row[4],
                 "can_be_purchased":get_bool_for_txt(row[5]),
                 "can_be_sold":get_bool_for_txt(row[6]),
-                "track_inventory":False
+                "track_inventory":get_bool_for_txt(row[7]),
+                "tax_scheme": get_Tax(row[8]),
+                "unit": get_unit(row[9])
             }
             item_obj = Item(**item)
             items.append(item_obj)

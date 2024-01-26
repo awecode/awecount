@@ -337,9 +337,10 @@ class TransactionEntrySerializer(serializers.Serializer):
     def get_source_type(self, obj):
         from django.apps import apps
 
-        v_type = obj.journal_entry.content_type.model
+        v_type = obj.content_type_model if obj.content_type_model else obj.journal_entry.content_type.model
+        app_label = obj.content_type_app_label if obj.content_type_app_label else obj.journal_entry.content_type.app_label
 
-        m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
+        m = apps.get_model(app_label, v_type)
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
@@ -347,7 +348,7 @@ class TransactionEntrySerializer(serializers.Serializer):
         if v_type == 'account':
             return 'Opening Balance'
         return m._meta.verbose_name.title().replace('Row', '').strip()
-    
+
     # class Meta:
     #     model = Transaction
     #     fields = ('source_id', 'count', 'source_type', 'date', 'dr_amount', 'cr_amount', 'account_names', 'account_ids')
@@ -365,8 +366,8 @@ class TransactionReportSerializer(serializers.ModelSerializer):
         from django.apps import apps
 
         v_type = obj.journal_entry.content_type.model
-
         m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
+
         if v_type[-4:] == ' row':
             v_type = v_type[:-3]
         if v_type[-11:] == ' particular':
@@ -374,6 +375,7 @@ class TransactionReportSerializer(serializers.ModelSerializer):
         if v_type == 'account':
             return 'Opening Balance'
         return m._meta.verbose_name.title().replace('Row', '').strip()
+
     class Meta:
         model = Transaction
         fields = ["voucher_no", "date", "account", "source_type", "dr_amount", "cr_amount", "account_name", "category_id"]

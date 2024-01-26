@@ -3,7 +3,8 @@ from django.contrib import admin, messages
 from django.db import transaction
 from django.db.models import ProtectedError
 
-from apps.product.models import InventorySetting, Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, Brand
+from apps.product.models import InventorySetting, Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, \
+    Brand
 
 
 def merge_brands(modeladmin, request, queryset):
@@ -71,12 +72,15 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'description', 'selling_price', 'cost_price')
     list_filter = (
         'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense',
-        'brand')
+        'company')
     list_display = ('code', 'name', 'cost_price', 'selling_price', 'brand')
     actions = (delete_item_data, fix_book_title)
     readonly_fields = (
         'account', 'sales_account', 'purchase_account', 'discount_allowed_account', 'discount_received_account',
         'expense_account', 'fixed_asset_account')
+    autocomplete_fields = (
+    'brand', 'category', 'unit', 'tax_scheme', 'company', 'dedicated_sales_account', 'dedicated_purchase_account',
+    'dedicated_discount_allowed_account', 'dedicated_discount_received_account')
 
 
 class UnitAdmin(admin.ModelAdmin):
@@ -100,7 +104,7 @@ admin.site.register(Item, ItemAdmin)
 admin.site.register(InventoryAccount, InventoryAccountAdmin)
 admin.site.register(JournalEntry)
 admin.site.register(Transaction)
-admin.site.register(Unit)
+admin.site.register(Unit, UnitAdmin)
 
 
 class BrandAdmin(admin.ModelAdmin):
@@ -110,6 +114,7 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Brand, BrandAdmin)
+
 
 @admin.register(InventorySetting)
 class InventorySettingAdmin(admin.ModelAdmin):
