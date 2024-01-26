@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-dialog v-model="isItemImportOpen">
       <q-card style="min-width: 80vw">
-        <ItemImport @modalClose="isItemImportOpen = false"></ItemImport>
+        <ItemImport @modalClose="isItemImportOpen = false" @updateList="isItemImportOpen = false; loadData();"></ItemImport>
       </q-card>
     </q-dialog>
     <div class="row justify-end q-gutter-md" v-if="checkPermissions('ItemCreate')">
@@ -98,6 +98,7 @@ const {
   filters,
   onFilterUpdate,
   resetFilters,
+  loadData
 } = useList(endpoint)
 </script>
 

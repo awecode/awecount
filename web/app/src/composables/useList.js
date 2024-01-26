@@ -329,5 +329,6 @@ export default (endpoint, predefinedColumns = null) => {
     confirmDeletion,
     initiallyLoaded,
     aggregate,
+    loadData
   }
 }
