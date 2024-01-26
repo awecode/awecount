@@ -75,8 +75,7 @@ class Challan(TransactionModel, InvoiceModel):
     key = 'Challan'
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -154,7 +153,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.party_id:
             return self.party.name
         return self.customer_name
-    
+
     @property
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
@@ -166,8 +165,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             challan_rows = ChallanRow.objects.filter(voucher__in=self.challans.all()).values('item_id', 'quantity')
             for challan_row in challan_rows:
                 challan_dct[challan_row.get('item_id')] = challan_row.get('quantity')
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             quantity = int(row.quantity)
             if challan_enabled and challan_dct.get(row.item_id):
                 quantity = quantity - challan_dct.get(row.item_id)
@@ -203,7 +201,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             self.status = 'Paid'
         else:
             raise ValueError('No such mode!')
-        
+
 
         self.save()
 
@@ -255,7 +253,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     entries.append(['dr', self.bank_account.commission_account, commission])
             else:
                 entries.append(['dr', dr_acc, row_total])
-            
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
@@ -338,7 +336,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     @property
     def amount_before_discount(self):
         return self.net_amount - self.tax_amount + self.discount_amount
-    
+
 
 class PurchaseOrder(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -412,7 +410,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
-        
+
     @property
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list('voucher_no', flat=True)
@@ -427,8 +425,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             )
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -538,16 +535,16 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
             self.item.save()
         self.send_rate_alert()
         super().save(*args, **kwargs)
-    
+
     def send_rate_alert(self):
         from django_q.tasks import async_task
         if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
             return
         rows = self.item.purchase_rows.order_by("-id")
         if rows.exists():
-            existing_rate = rows.first().rate 
+            existing_rate = rows.first().rate
             if existing_rate != self.rate:
-                status = "increased" if existing_rate<self.rate else "decreased" 
+                status = "increased" if existing_rate<self.rate else "decreased"
                 message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
                 to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
                 async_task(
@@ -678,8 +675,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
 
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in voucher.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -852,8 +848,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         return super().cancel()
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in self.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
