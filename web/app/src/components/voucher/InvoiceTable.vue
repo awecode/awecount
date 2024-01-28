@@ -16,7 +16,7 @@
           <div class="col-2 text-center">Amount</div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-for="(row, index) in modalValue" :key="row">
+        <div v-for="(row, index) in modalValue" :key="row" :class="usedInPos ? '-mt-2' : ''">
           <InvoiceRow
             v-if="modalValue[index]"
             :usedIn="props.usedIn"

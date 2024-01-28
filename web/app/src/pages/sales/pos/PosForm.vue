@@ -41,7 +41,7 @@
         <q-card>
           <q-card class="q-mx-lg q-pt-md">
             <q-card-section>
-              <div class="row">
+              <div class="row -mt-4">
                 <div class="col-12">
                   <div class="row">
                     <div class="col-10">
@@ -88,7 +88,6 @@
                     <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                       @click.stop.prevent="fields.mode = null" /></template></q-select>
               </div>
-              <div class="row"></div>
             </q-card-section>
           </q-card>
           <invoice-table :itemOptions="formDefaults.collections
@@ -251,6 +250,7 @@ const onAddItem = (itemInfo) => {
   } else {
     fields.value.rows.push({
       quantity: 1,
+      name: itemInfo.name,
       rate: itemInfo.rate,
       item_id: itemInfo.id,
       unit_id: itemInfo.unit_id,

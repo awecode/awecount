@@ -4,13 +4,14 @@
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <!-- TODO: solve error -->
-          <n-auto-complete v-model="modalValue.item_id" :options="itemOptions" label="Item"
+          <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null" :modal-component="usedInPos || hasChallan
                 ? false
                 : checkPermissions('InventoryAccountCreate')
                   ? ItemAdd
                   : null
               " :disabled="usedInPos || hasChallan" />
+          <q-input v-else label="Item" disable :modelValue="modelValue.name"></q-input>
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null">
