@@ -2,7 +2,7 @@
   <q-card-section class="overflow-y-auto -mt-4">
     <q-card :class="usedInPos ? 'min-w-[550px]' : 'min-w-[700px]'" class="pt-6">
       <div :class="usedInPos ? 'q-px-lg' : 'q-pa-lg'" class="q-col-gutter-md scroll">
-        <div class="row text-subtitle2 hr q-py-sm no-wrap">
+        <div class="row text-subtitle2 hr q-py-sm no-wrap" :class="usedInPos ? 'mb-2' : ''">
           <div class="col-5 row">
             <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
               Particular(s)
@@ -16,7 +16,7 @@
           <div class="col-2 text-center">Amount</div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-for="(row, index) in modalValue" :key="row" :class="usedInPos ? '-mt-2' : ''">
+        <div v-for="(row, index) in modalValue" :key="row">
           <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
             :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
