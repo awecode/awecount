@@ -41,7 +41,7 @@
         <q-card>
           <q-card class="q-mx-lg q-pt-md">
             <q-card-section>
-              <div class="row q-col-gutter-md">
+              <div class="row">
                 <div class="col-12">
                   <div class="row">
                     <div class="col-10">
@@ -102,13 +102,13 @@
             }" :usedInPos="true" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   "></invoice-table>
           <div class="row q-px-lg">
-            <div class="col-12">
+            <div class="col-12 -mt-4">
               <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow :error="!!errors?.remarks"
                 :error-message="errors?.remarks ? errors.remarks[0] : null" />
             </div>
           </div>
 
-          <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
+          <div class="q-pr-md q-pb-lg row justify-end q-gutter-x-md" v-if="fields.rows.length > 0">
             <q-btn @click.prevent="onSubmitClick('Draft')" color="orange-6" label="Save Draft" type="submit" />
             <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
               type="submit" />

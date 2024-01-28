@@ -1,7 +1,7 @@
 <template>
   <q-card-section class="overflow-y-auto -mt-4">
-    <q-card class="min-w-[700px] pt-6">
-      <div class="q-pa-lg q-col-gutter-md scroll">
+    <q-card :class="usedInPos ? 'min-w-[550px]' : 'min-w-[700px]'" class="pt-6">
+      <div :class="usedInPos ? 'q-px-lg' : 'q-pa-lg'" class="q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
             <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
@@ -73,10 +73,9 @@
           </div>
           <div class="col-1 text-center"></div>
         </div>
-        <div>
+        <div v-if="!usedInPos">
           <q-btn
             @click="addRow"
-            v-if="!usedInPos"
             color="green"
             outline
             class="q-px-lg q-py-ms"
