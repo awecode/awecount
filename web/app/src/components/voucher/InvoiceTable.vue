@@ -17,32 +17,25 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="row" :class="usedInPos ? '-mt-2' : ''">
-          <InvoiceRow
-            v-if="modalValue[index]"
-            :usedIn="props.usedIn"
-            v-model="modalValue[index]"
-            :itemOptions="itemOptions"
-            :unitOptions="unitOptions"
-            :taxOptions="taxOptions"
-            :discountOptions="discountOptions"
-            :index="index"
-            :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)"
-            :errors="
-              !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-            "
-            :usedInPos="props.usedInPos"
-            :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount"
-            :inputAmount="props.inputAmount"
-
-            :showRateQuantity="props.showRateQuantity"
-            :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
-            :COGSData="COGSData" :hasChallan="hasChallan"
-          />
+          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
+            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
+            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
+            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
+            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
+            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
+            :COGSData="COGSData" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
-          <div class="col-7 text-center"></div>
+          <div class="col-7 text-center text-left pt-2">
+            <div v-if="usedInPos">
+              <div class="font-medium text-gray-500">Rows &nbsp; {{ modalValue.length }}</div>
+              <div>Items &nbsp; {{ modalValue.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity),
+                0)
+              }}
+              </div>
+            </div>
+          </div>
           <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
               <div class="col-6 text-right">Sub Total</div>
@@ -74,15 +67,8 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-if="!usedInPos">
-          <q-btn
-            @click="addRow"
-            color="green"
-            outline
-            class="q-px-lg q-py-ms"
-            :disabled="hasChallan"
-            data-testid="add-row-btn"
-            >Add Row</q-btn
-          >
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan"
+            data-testid="add-row-btn">Add Row</q-btn>
         </div>
       </div>
     </q-card>
