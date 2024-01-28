@@ -30,7 +30,7 @@
           <div class="col-7 text-center text-left pt-2">
             <div v-if="usedInPos">
               <div class="font-medium text-gray-500">Rows &nbsp; {{ modalValue.length }}</div>
-              <div>Items &nbsp; {{ modalValue.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity),
+              <div class="font-medium text-gray-500">Items &nbsp; {{ modalValue.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity),
                 0)
               }}
               </div>
