@@ -9,6 +9,7 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
 from rest_framework.exceptions import ValidationError
@@ -434,7 +435,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response(item.available_stock_data, status=200)
 
 
-class ItemOpeningBalanceViewSet(CRULViewSet):
+class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     serializer_class = ItemOpeningSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['item__name', 'item__code', 'item__description', 'item__search_data', 'opening_balance', ]
