@@ -985,6 +985,15 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
 
+    @action(detail=False, url_path='by-category')
+    def by_category(self, request):
+        qs = self.get_queryset()
+        qs = qs.values('item__category', 'item__category__name').annotate(
+            quantity=Sum('quantity'),
+            discount_amount=Sum('discount_amount'),
+            tax_amount=Sum('tax_amount'),
+            net_amount=Sum('net_amount')).order_by('-net_amount')
+        return Response(qs)
 
 class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = PurchaseBookSerializer
