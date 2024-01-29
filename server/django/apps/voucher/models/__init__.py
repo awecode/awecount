@@ -595,82 +595,52 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def cancel(self):
         if self.company.inventory_setting.enable_fifo:
-            rows = self.rows.all()
+            credit_note_rows = self.rows.all().values('sales_row_data__id', 'quantity')
             sales_vouchers = self.invoices.all()
+
+            credit_note_rows_dict = {row['sales_row_data__id']: row['quantity'] for row in credit_note_rows}
+
             for voucher in sales_vouchers:
-                sales_rows = voucher.rows.all()
+                sales_rows = voucher.rows.filter(sold_items__isnull=False)
                 for row in sales_rows:
-                    credit_note_row = rows.get(item=row.item)
+                    if row.id not in credit_note_rows_dict:
+                        continue
+
                     sold_items = row.sold_items
-                    quantity = credit_note_row.quantity
-                    if not sold_items:
-                        break
-                    opening_qty = None
-                    if sold_items.get("OB"):
+                    quantity = credit_note_rows_dict[row.id]
+
+                    # handle opening stock
+                    if "OB" in sold_items:
                         inv_account = row.item.account
-                        ob = sold_items.pop("OB")
-                        if quantity > inv_account.opening_quantity:
-                            opening_qty = ob[0] + inv_account.opening_quantity
-                            quantity -= inv_account.opening_quantity
-                            inv_account.opening_quantity = 0
-                            inv_account.save()
-                        else:
-                            inv_account.opening_quantity -= quantity
-                            inv_account.save()
-                            opening_qty = ob[0] + quantity
-                            row.sold_items["OB"] = [opening_qty, row.sold_items["OB"][1]]
-                            row.save()
-                            return
-                    purchase_row_ids = [key for key, value in sold_items.items()]
-                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    if purchase_voucher_rows.exists():
-                        for purchase_row in purchase_voucher_rows:
-                            # can_be_reduced = purchase_row.remaining_quantity
-                            # diff = quantity - can_be_reduced
-                            if quantity > purchase_row.remaining_quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                quantity -= purchase_row.remaining_quantity
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = [purchase_row.quantity, purchase_row.rate]
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += can_be_reduced
-                                row.save()
-                                continue
-                            else:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += quantity
-                                row.save()
-                                break
-                    if quantity>0:
-                        purchase_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("voucher__date", "id")
-                        for purchase_row in purchase_rows:
-                            if purchase_row.remaining_quantity == quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                                row.save()
-                                break
-                            elif purchase_row.remaining_quantity > quantity:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                                row.save()
-                                break
-                            else:
-                                quantity -= purchase_row.remaining_quantity
-                                sold_items[str(purchase_row.id)] = [purchase_row.remaining_quantity, purchase_row.rate]
-                                purchase_row.remaining_quantity = 0
-                                row.sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                                purchase_row.save()
-                                row.save()
-                    if opening_qty:
-                        row.sold_items["OB"] = [opening_qty, row.sold_items["OB"][1]]
-                        row.save()
+                        ob_qty, ob_rate = sold_items.pop("OB")
+                        used_quantity = min(quantity - ob_qty, inv_account.opening_quantity)
+
+                        inv_account.opening_quantity -= used_quantity
+                        inv_account.save(update_fields=["opening_quantity"])
+
+                        row.sold_items["OB"] = [ob_qty + used_quantity, ob_rate]
+                        row.save(update_fields=["sold_items"])
+
+                        quantity -= used_quantity
+
+                        if quantity <= 0:
+                            continue
+
+                    # handle purchase rows
+                    purchase_row_ids = [id for id in sold_items.keys() if id != "OB"]
+                    for purchase_row in PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id"):
+                        if quantity <= 0:
+                            break
+                        p_qty = sold_items[str(purchase_row.id)][0]
+                        used_quantity = min(quantity - p_qty, purchase_row.remaining_quantity)
+
+                        purchase_row.remaining_quantity -= used_quantity
+                        purchase_row.save(update_fields=["remaining_quantity"])
+
+                        row.sold_items[str(purchase_row.id)] = [p_qty + used_quantity, purchase_row.rate]
+                        row.save(update_fields=["sold_items"])
+
+                        quantity -= used_quantity
         return super().cancel()
 
 

@@ -3,9 +3,10 @@ from rest_framework.exceptions import ValidationError
 
 from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
+
+from ..models import CreditNote, CreditNoteRow, PurchaseVoucherRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
-from ..models import CreditNoteRow, CreditNote, PurchaseVoucherRow
 
 
 class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
@@ -74,50 +75,44 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
 
     def cancel_sales(self, instance, rows_data):
         sales_vouchers = instance.invoices.all()
-        for voucher in sales_vouchers:
-            sales_rows = voucher.rows.all()
-            for row in sales_rows:
-                # sales_row_id = rows_data[row.id]
-                row_data = next((item for item in rows_data if item['id'] == row.id), None)
-                sold_items = row.sold_items
+
+        for sales_voucher in sales_vouchers:
+            sales_rows = sales_voucher.rows.all()
+
+            for sales_row in sales_rows:
+                row_data = next((row for row in rows_data if row["id"] == sales_row.id), None)
+                if not row_data:
+                    continue
+
+                sold_items = sales_row.sold_items
                 quantity = row_data["quantity"]
-                ob = None
-                if sold_items.get("OB"):
-                    ob = sold_items.pop("OB")
-                purchase_row_ids = [key for key, value in sold_items.items()]
+
+                ob = sold_items.pop("OB", None)
+                purchase_row_ids = sold_items.keys()
                 purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
+
+                # handle purchase rows
                 for purchase_row in purchase_voucher_rows:
-                    can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
-                    diff = quantity - can_be_added
-                    if diff >= can_be_added:
-                        purchase_row.remaining_quantity += can_be_added
-                        purchase_row.save()
-                        row.sold_items[str(purchase_row.id)][0] -= can_be_added
-                        if row.sold_items[str(purchase_row.id)][0] == 0:
-                            row.sold_items.pop(str(purchase_row.id))
-                        quantity -= can_be_added
-                        row.save()
+                    sold_item_quantity = sold_items[str(purchase_row.id)][0]
+                    can_be_added = min(purchase_row.quantity - purchase_row.remaining_quantity, sold_item_quantity)
+                    purchase_row.remaining_quantity += can_be_added
+                    purchase_row.save(update_fields=["remaining_quantity"])
+
+                    sales_row.sold_items[str(purchase_row.id)][0] -= can_be_added
+                    sales_row.save(update_fields=["sold_items"])
+
+                    quantity -= can_be_added
+                    if quantity <= 0:
                         break
-                    else:
-                        purchase_row.remaining_quantity += can_be_added
-                        purchase_row.save()
-                        quantity -= can_be_added
-                        row.sold_items.pop(str(purchase_row.id))
-                        row.save()
-                        continue
-                if ob and quantity>0:
-                    inv_account = row.item.account
-                    if quantity > ob[0]:
-                        inv_account.opening_quantity = ob[0]
-                        quantity -= ob[0]
-                        inv_account.save()
-                        row.save()
-                    else:
-                        inv_account.opening_quantity = quantity
-                        inv_account.save()
-                        row.sold_items["OB"] = [ob[0] - quantity, row.sold_items["OB"][1]]
-                        row.save()
-                        return
+
+                # handle opening stock
+                if ob and quantity > 0:
+                    inv_account = sales_row.item.account
+                    opening_quantity = min(ob[0], quantity)
+                    inv_account.opening_quantity += opening_quantity
+                    inv_account.save(update_fields=['opening_quantity'])
+                    sales_row.sold_items["OB"] = [ob[0] - opening_quantity, ob[1]]
+                    sales_row.save(update_fields=['sold_items'])
 
     def create(self, validated_data):
         from copy import deepcopy
@@ -134,7 +129,7 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         instance = CreditNote.objects.create(**validated_data)
         # sales_row_ids = []
         for index, row in enumerate(rows_data):
-            row.pop("id")
+            row["sales_row_data"] = { "id": row.pop("id") }
             row = self.assign_discount_obj(row)
             CreditNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
