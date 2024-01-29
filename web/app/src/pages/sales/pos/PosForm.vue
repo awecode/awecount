@@ -244,14 +244,13 @@ const onSubmitClick = (status, noPrint) => {
         icon: 'check',
       })
       if (status === 'Issued' && !noPrint) {
-        // const printData = useGeneratePosPdf(
-        //   data,
-        //   getPartyObj(),
-        //   !formDefaults.value.options.show_rate_quantity_in_voucher,
-        //   fields.value.rows,
-        //   formDefaults.value.collections.tax_schemes
-        // )
-        // printPdf(printData)
+        const printData = useGeneratePosPdf(
+          data,
+          getPartyObj(),
+          !formDefaults.value.options.show_rate_quantity_in_voucher,
+          formDefaults.value.collections.tax_schemes
+        )
+        printPdf(printData)
       }
       setTimeout(() => window.history.go(0), 100)
       fields.value.rows = []
