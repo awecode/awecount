@@ -821,6 +821,13 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Customer Ageing Report'],
         },
       },
+      {
+        path: 'sales-by-category/',
+        component: () => import('src/pages/report/SalesByCategory.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales By Category'],
+        },
+      },
     ],
   },
   {
