@@ -45,9 +45,9 @@
             discount: fields.discount,
           }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " @updateTableData="(val) => totalTableData = val" ></PosInvoiceTable>
-        <q-page-sticky position="bottom-right" :offset="[8, 8]">
-          <q-card>
-            <div class="py-4 px-6">
+        <q-card class="fixed sm:w-[calc(75%-76px)] w-[100%] sm:right-4 right-0 bottom-4 border border-solid border-gray-200">
+          <div style="width: 100%;">
+            <div class="py-4 px-6 w-full bg-white">
               <div class="row justify-between">
                 <div class="text-center text-left pt-2">
                   <div v-if="fields.rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)">
@@ -163,8 +163,9 @@
                 </div>
               </div>
             </div>
-          </q-card>
-        </q-page-sticky>
+          </div>
+        </q-card>
+        <div class="h-[180px]"></div>
       </q-form>
     </div>
   </div>
