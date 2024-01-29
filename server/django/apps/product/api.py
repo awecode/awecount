@@ -9,6 +9,7 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FileUploadParser
 from rest_framework.exceptions import ValidationError
@@ -23,7 +24,7 @@ from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
 from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import InventorySettingCreateSerializer, ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .serializers import InventorySettingCreateSerializer, ItemCreateDefaultSerializer, ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
     ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
@@ -434,14 +435,14 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response(item.available_stock_data, status=200)
 
 
-class ItemOpeningBalanceViewSet(CRULViewSet):
+class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     serializer_class = ItemOpeningSerializer
     filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
     search_fields = ['item__name', 'item__code', 'item__description', 'item__search_data', 'opening_balance', ]
     filterset_class = InventoryAccountFilterSet
 
     collections = (
-        ('items', Item.objects.filter(track_inventory=True, account__opening_balance=0), ItemListSerializer),
+        ('items', Item.objects.values("id", "name").filter(track_inventory=True, account__opening_balance=0), ItemCreateDefaultSerializer),
     )
 
     def get_queryset(self, company_id=None):
@@ -476,6 +477,16 @@ class ItemOpeningBalanceViewSet(CRULViewSet):
         fiscal_year = self.request.company.current_fiscal_year
         serializer.instance.item.update_opening_balance(fiscal_year)
 
+    def destroy(self, request, *args, **kwargs):
+        account = self.get_object()
+        account.opening_balance = 0
+        account.opening_quantity = 0
+        account.opening_balance_rate = 0
+        account.save()
+        fiscal_year = self.request.company.current_fiscal_year
+        account.item.update_opening_balance(fiscal_year)
+        JournalEntry.objects.filter(content_type__model='item', content_type__app_label='product', object_id=account.item.id).delete()
+        return Response({})
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
     collections = (
