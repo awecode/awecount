@@ -1,38 +1,22 @@
 <template>
-  <div class="md:flex">
-    <div class="border border-r border-black">
+  <div class="md:grid md:grid-cols-12">
+    <div class="border border-r border-black col-span-3">
       <div>
-        <q-input
-          v-model="searchTerm"
-          autofocus
-          debounce="500"
-          label="&nbsp;&nbsp;Search Items..."
-          @keypress.enter="enterClicked = true"
-        ></q-input>
+        <q-input v-model="searchTerm" autofocus debounce="500" label="&nbsp;&nbsp;Search Items..."
+          @keypress.enter="enterClicked = true"></q-input>
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
             </div> -->
-        <div
-          class="row"
-          style="
+        <div class="row" style="
             border-bottom: 1px lightgrey solid;
             padding: 8px 16px 6px 16px;
             font-size: 13px;
-          "
-          v-for="item in searchResults?.results ||
-          formDefaults.collections?.items.results"
-          :key="item.id"
-        >
+          " v-for="item in searchResults?.results ||
+            formDefaults.collections?.items.results" :key="item.id">
           <div class="col-8">
-            <router-link
-              v-if="hasItemModifyAccess"
-              style="text-decoration: none"
-              class="text-blue"
-              target="_blank"
-              :title="item.code"
-              :to="`/items/${item.id}/`"
-            >
+            <router-link v-if="hasItemModifyAccess" style="text-decoration: none" class="text-blue" target="_blank"
+              :title="item.code" :to="`/items/${item.id}/`">
               {{ item.name }}
             </router-link>
             <span v-else>{{ item.name }}</span>
@@ -41,197 +25,146 @@
             <span class="row items-center">
               <span class="col-9" title="Rate">{{ item.rate }}</span>
               <span class="col-3">
-                <q-icon
-                  name="add"
-                  class="add-btn"
-                  @click="onAddItem(item)"
-                  tabindex="0"
-                ></q-icon>
+                <q-icon name="add" class="add-btn" @click="onAddItem(item)" tabindex="0"></q-icon>
               </span>
             </span>
           </div>
         </div>
       </div>
-      <PaginateList
-        class="q-mt-md"
-        @update-page="(page) => (currentPage = page)"
-        v-if="formDefaults.collections?.items.pagination"
-        :pagination="
-          searchResults?.pagination ||
+      <PaginateList class="q-mt-md" @update-page="(page) => (currentPage = page)"
+        v-if="formDefaults.collections?.items.pagination" :pagination="searchResults?.pagination ||
           formDefaults.collections?.items.pagination
-        "
-      ></PaginateList>
+          "></PaginateList>
     </div>
-    <div class="flex-grow">
+    <div class="col-span-9">
       <q-form>
-        <invoice-table
-          :itemOptions="
-            formDefaults.collections
-              ? formDefaults.collections.items.results
-              : null
-          "
-          :unitOptions="
-            formDefaults.collections ? formDefaults.collections.units : null
-          "
-          :discountOptions="discountOptionsComputed"
-          :taxOptions="formDefaults.collections?.tax_schemes"
-          v-model="fields.rows"
-          :mainDiscount="{
+        <PosInvoiceTable :unitOptions="formDefaults.collections ? formDefaults.collections.units : null"
+          :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+          v-model="fields.rows" :mainDiscount="{
             discount_type: fields.discount_type,
             discount: fields.discount,
-          }"
-          :usedInPos="true"
-          :errors="!!errors?.rows ? errors.rows : null"
-          @deleteRowErr="
-            (index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-          "
-        ></invoice-table>
-        <div class="q-pa-md">
-          <div class="flex -my-2 items-center gap-8">
-            <div class="flex-grow">
-              <q-select
-                v-model="fields.mode"
-                label="Mode"
-                class="col-12 col-md-6"
-                :error-message="errors?.mode ? errors.mode[0] : null"
-                :error="!!errors?.mode"
-                :options="
-                  ['Cash'].concat(formDefaults.collections?.bank_accounts)
-                "
-                option-value="id"
-                option-label="name"
-                map-options
-                emit-value
-              >
-                <template v-slot:append>
-                  <q-icon
-                    v-if="fields.mode !== null"
-                    class="cursor-pointer"
-                    name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template
-              ></q-select>
-            </div>
-            <div class="flex items-center">
-              <q-btn class="f-open-btn" icon="mdi-menu">
-                <q-menu>
-                  <div class="q-ma-lg config-options">
-                    <div class="row -mt-4">
-                      <div class="col-12">
-                        <div class="row">
-                          <div class="col-10">
-                            <q-input
-                              v-model="fields.customer_name"
-                              label="Customer Name"
-                              :error-message="
-                                errors.customer_name
-                                  ? errors.customer_name[0]
-                                  : null
-                              "
-                              :error="!!errors?.customer_name"
-                              v-if="partyMode && fields.mode !== 'Credit'"
-                            >
-                            </q-input>
-                            <n-auto-complete
-                              v-else
-                              v-model="fields.party"
-                              :options="partyChoices"
-                              label="Party"
-                              :error="errors?.party ? errors?.party[0] : null"
-                              :modal-component="
-                                checkPermissions('PartyCreate')
-                                  ? PartyForm
-                                  : null
-                              "
-                            />
-                          </div>
-                          <div class="col-2 row justify-center q-py-md">
-                            <q-btn
-                              flat
-                              size="md"
-                              @click="() => switchMode(fields)"
-                            >
-                              <q-icon name="mdi-account-group"></q-icon>
-                            </q-btn>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row q-col-gutter-md">
-                      <div class="col-12 row q-col-gutter-md">
-                        <div
-                          :class="
-                            fields.discount_type === 'Amount' ||
-                            fields.discount_type === 'Percent'
-                              ? 'col-8'
-                              : 'col-12'
-                          "
-                        >
-                          <n-auto-complete
-                            v-model="fields.discount_type"
-                            label="Discount*"
-                            :error="errors?.discount_type"
-                            :options="discountOptionsComputed"
-                            :modal-component="
-                              checkPermissions('SalesDiscountCreate')
-                                ? SalesDiscountForm
-                                : null
-                            "
-                          >
-                          </n-auto-complete>
-                        </div>
-                        <div
-                          class="col-4"
-                          v-if="
-                            fields.discount_type === 'Amount' ||
-                            fields.discount_type === 'Percent'
-                          "
-                        >
-                          <q-input
-                            v-model.number="fields.discount"
-                            label="Discount"
-                            :error-message="
-                              errors?.discount ? errors.discount[0] : null
-                            "
-                            :error="!!errors?.discount"
-                          ></q-input>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-12 -mt-4">
-                      <q-input
-                        v-model="fields.remarks"
-                        label="Remarks"
-                        type="textarea"
-                        autogrow
-                        :error="!!errors?.remarks"
-                        :error-message="
-                          errors?.remarks ? errors.remarks[0] : null
-                        "
-                      />
+          }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+  " @updateTableData="(val) => totalTableData = val" ></PosInvoiceTable>
+        <q-page-sticky position="bottom-right" :offset="[8, 8]">
+          <q-card>
+            <div class="py-4 px-6">
+              <div class="row justify-between">
+                <div class="text-center text-left pt-2">
+                  <div v-if="fields.rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)">
+                    <div class="font-medium text-gray-500">Rows &nbsp; {{ fields.rows.length }}</div>
+                    <div class="font-medium text-gray-500">Items &nbsp;
+                      {{ fields.rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)
+                      }}
                     </div>
                   </div>
-                </q-menu>
-              </q-btn>
-              <div
-                class="q-pr-md q-pb-lg row justify-end q-gutter-x-md"
-                v-if="fields.rows.length > 0"
-              >
-                <q-btn
-                  @click.prevent="onSubmitClick('Draft')"
-                  color="orange-6"
-                  label="Save Draft"
-                  type="submit"
-                />
-                <q-btn
-                  @click.prevent="onSubmitClick('Issued')"
-                  color="green-8"
-                  :label="isEdit ? 'Update' : 'Issue'"
-                  type="submit"
-                />
+                </div>
+                <div class="text-weight-bold text-grey-8 min-w-[250px]">
+                  <div class="row mb-1">
+                    <div class="col-6 text-right">Sub Total</div>
+                    <div class="col-6 q-pl-md" data-testid="computed-subtotal">
+                      {{ $nf(totalTableData.subTotal) }}
+                    </div>
+                  </div>
+                  <div class="row mb-1" v-if="totalTableData.discount">
+                    <div class="col-6 text-right">Discount</div>
+                    <div class="col-6 q-pl-md" data-testid="computed-final-discount">
+                      {{ $nf(totalTableData.discount) }}
+                    </div>
+                  </div>
+                  <div class="row mb-1" v-if="totalTableData.totalTax">
+                    <div class="col-6 text-right" data-testid="computed-tax-name">
+                      {{ totalTableData.taxName }}
+                    </div>
+                    <div class="col-6 q-pl-md" data-testid="computed-total-tax">
+                      {{ $nf(totalTableData.totalTax) }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-6 text-right">Total</div>
+                    <div class="col-6 q-pl-md" data-testid="computed-total">
+                      {{ $nf(totalTableData.total) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="flex -my-2 items-center gap-x-8">
+                  <div class="flex-grow min-w-[225px]">
+                    <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6"
+                      :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="['Cash'].concat(formDefaults.collections?.bank_accounts)
+                        " option-value="id" option-label="name" map-options emit-value>
+                      <template v-slot:append>
+                        <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                          @click.stop.prevent="fields.mode = null" /></template></q-select>
+                  </div>
+                  <div class="flex items-center gap-x-8 gap-y-4">
+                    <q-btn class="f-open-btn" icon="mdi-menu">
+                      <q-menu>
+                        <div class="q-ma-lg config-options">
+                          <div class="row -mt-4">
+                            <div class="col-12">
+                              <div class="row">
+                                <div class="col-10">
+                                  <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name
+                                    ? errors.customer_name[0]
+                                    : null
+                                    " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
+                                  </q-input>
+                                  <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
+                                    :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate')
+                                      ? PartyForm
+                                      : null
+                                      " />
+                                </div>
+                                <div class="col-2 row justify-center q-py-md">
+                                  <q-btn flat size="md" @click="() => switchMode(fields)">
+                                    <q-icon name="mdi-account-group"></q-icon>
+                                  </q-btn>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row q-col-gutter-md">
+                            <div class="col-12 row q-col-gutter-md">
+                              <div :class="fields.discount_type === 'Amount' ||
+                                fields.discount_type === 'Percent'
+                                ? 'col-8'
+                                : 'col-12'
+                                ">
+                                <n-auto-complete v-model="fields.discount_type" label="Discount*"
+                                  :error="errors?.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate')
+                                    ? SalesDiscountForm
+                                    : null
+                                    ">
+                                </n-auto-complete>
+                              </div>
+                              <div class="col-4" v-if="fields.discount_type === 'Amount' ||
+                                fields.discount_type === 'Percent'
+                                ">
+                                <q-input v-model.number="fields.discount" label="Discount" :error-message="errors?.discount ? errors.discount[0] : null
+                                  " :error="!!errors?.discount"></q-input>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-12 -mt-4">
+                            <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow
+                              :error="!!errors?.remarks" :error-message="errors?.remarks ? errors.remarks[0] : null
+                                " />
+                          </div>
+                        </div>
+                      </q-menu>
+                    </q-btn>
+                    <div class="flex items-center justify-end gap-4" v-if="fields.rows.length > 0">
+                      <q-btn @click.prevent="onSubmitClick('Draft')" color="orange-6" label="Save Draft" type="submit" />
+                      <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
+                        type="submit" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </q-card>
+        </q-page-sticky>
       </q-form>
     </div>
   </div>
@@ -248,6 +181,16 @@ const emit = defineEmits([])
 const metaData = {
   title: 'POS | Awecount',
 }
+const totalTableData = ref({
+  'subTotal': 0,
+  'discount': 0,
+  'total': 0,
+  'totalTax': 0,
+  'taxName': 'Tax',
+  'taxRate': null,
+  'taxableAmount': 0,
+  'addTotal': 0
+})
 useMeta(metaData)
 const store = useLoginStore()
 const endpoint = 'v1/pos/'
@@ -300,7 +243,7 @@ const onSubmitClick = (status) => {
       })
       const printData = useGeneratePosPdf(
         data,
-        gePartyObj(),
+        getPartyObj(),
         !formDefaults.value.options.show_rate_quantity_in_voucher,
         fields.value.rows,
         formDefaults.value.collections.tax_schemes
@@ -330,8 +273,7 @@ fields.value.due_date = today
 // handle Search
 const fetchResults = async () => {
   useApi(
-    `/v1/items/pos/?${
-      searchTerm.value ? `search=${searchTerm.value}` : ''
+    `/v1/items/pos/?${searchTerm.value ? `search=${searchTerm.value}` : ''
     }${`&page=${currentPage.value || 1}`}`
   )
     .then((data) => {
@@ -400,18 +342,8 @@ const onAddItem = (itemInfo) => {
     })
   }
 }
-// const getTaxObj = () => {
-//   if (fields.value.rows[0].tax_scheme_id) {
-//     const index =
-//       formDefaults.value.collections.tax_schemes.findIndex(
-//         (item) => item.id === fields.value.rows[0].tax_scheme_id
-//       )
+const getPartyObj = () => {
 
-//     return formDefaults.value.collections.tax_schemes[index]
-//   } else return null
-// }
-const gePartyObj = () => {
-  // if (formData.fields.value.party && !partyMode) {
   if (fields.value.party && !partyMode.value) {
     const index = partyChoices.value.findIndex(
       (item) => item.id === fields.value.party
