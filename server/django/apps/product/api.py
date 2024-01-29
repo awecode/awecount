@@ -477,6 +477,16 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
         fiscal_year = self.request.company.current_fiscal_year
         serializer.instance.item.update_opening_balance(fiscal_year)
 
+    def destroy(self, request, *args, **kwargs):
+        account = self.get_object()
+        account.opening_balance = 0
+        account.opening_quantity = 0
+        account.opening_balance_rate = 0
+        account.save()
+        fiscal_year = self.request.company.current_fiscal_year
+        account.item.update_opening_balance(fiscal_year)
+        JournalEntry.objects.filter(content_type__model='item', content_type__app_label='product', object_id=account.item.id).delete()
+        return Response({})
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
     collections = (
