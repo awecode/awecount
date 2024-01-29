@@ -243,15 +243,15 @@ const onSubmitClick = (status, noPrint) => {
         message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
         icon: 'check',
       })
-      if (status === 'Issued') {
-        const printData = useGeneratePosPdf(
-          data,
-          getPartyObj(),
-          !formDefaults.value.options.show_rate_quantity_in_voucher,
-          fields.value.rows,
-          formDefaults.value.collections.tax_schemes
-        )
-        if (!noPrint) printPdf(printData)
+      if (status === 'Issued' && !noPrint) {
+        // const printData = useGeneratePosPdf(
+        //   data,
+        //   getPartyObj(),
+        //   !formDefaults.value.options.show_rate_quantity_in_voucher,
+        //   fields.value.rows,
+        //   formDefaults.value.collections.tax_schemes
+        // )
+        // printPdf(printData)
       }
       setTimeout(() => window.history.go(0), 100)
       fields.value.rows = []
@@ -386,14 +386,16 @@ const discountOptionsComputed = computed(() => {
 })
 
 const handleKeyDown = (event) => {
-  event.preventDefault()
   if (event.ctrlKey && event.keyCode === 68) {
+    event.preventDefault()
     onSubmitClick('Draft', true)
   }
   else if (event.ctrlKey && event.keyCode === 83) {
+    event.preventDefault()
     onSubmitClick('Issued', true)
   }
   else if (event.ctrlKey && event.keyCode === 73) {
+    event.preventDefault()
     onSubmitClick('Issued')
   }
 }
