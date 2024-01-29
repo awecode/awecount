@@ -44,8 +44,9 @@
             discount_type: fields.discount_type,
             discount: fields.discount,
           }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-  " @updateTableData="(val) => totalTableData = val" ></PosInvoiceTable>
-        <q-card class="fixed sm:w-[calc(75%-76px)] w-[100%] sm:right-4 right-0 bottom-4 border border-solid border-gray-200">
+  " @updateTableData="(val) => totalTableData = val"></PosInvoiceTable>
+        <q-card
+          class="fixed sm:w-[calc(75%-76px)] w-[100%] sm:right-4 right-0 bottom-4 border border-solid border-gray-200">
           <div style="width: 100%;">
             <div class="py-4 px-6 w-full bg-white">
               <div class="row justify-between">
@@ -231,7 +232,7 @@ const deleteRowErr = (index, errors, deleteObj) => {
   }
   if (!!errors.rows) errors.rows.splice(index, 1)
 }
-const onSubmitClick = (status) => {
+const onSubmitClick = (status, noPrint) => {
   fields.value.status = status
   if (!partyMode.value) fields.value.customer_name = null
   useApi('/v1/pos/', { method: 'POST', body: fields.value })
@@ -242,14 +243,16 @@ const onSubmitClick = (status) => {
         message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
         icon: 'check',
       })
-      const printData = useGeneratePosPdf(
-        data,
-        getPartyObj(),
-        !formDefaults.value.options.show_rate_quantity_in_voucher,
-        fields.value.rows,
-        formDefaults.value.collections.tax_schemes
-      )
-      printPdf(printData)
+      if (status === 'Issued') {
+        const printData = useGeneratePosPdf(
+          data,
+          getPartyObj(),
+          !formDefaults.value.options.show_rate_quantity_in_voucher,
+          fields.value.rows,
+          formDefaults.value.collections.tax_schemes
+        )
+        if (!noPrint) printPdf(printData)
+      }
       setTimeout(() => window.history.go(0), 100)
       fields.value.rows = []
     })
@@ -380,6 +383,24 @@ const discountOptionsComputed = computed(() => {
       formDefaults.value.collections.discounts
     )
   } else return staticOptions.discount_types
+})
+
+const handleKeyDown = (event) => {
+  event.preventDefault()
+  if (event.ctrlKey && event.keyCode === 68) {
+    onSubmitClick('Draft', true)
+  }
+  else if (event.ctrlKey && event.keyCode === 83) {
+    onSubmitClick('Issued', true)
+  }
+  else if (event.ctrlKey && event.keyCode === 73) {
+    onSubmitClick('Issued')
+  }
+}
+onMounted(() => {
+  if (window) {
+    window.addEventListener('keydown', handleKeyDown)
+  }
 })
 </script>
 

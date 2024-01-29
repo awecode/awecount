@@ -126,7 +126,6 @@ export default {
         data.addTotal = data.addTotal + (item.rate || 0) * (item.quantity || 0);
       });
       modalValue.value.forEach((item, index) => {
-        console.log(item)
         const rowTotal = (item.rate || 0) * (item.quantity || 0);
         data.subTotal = data.subTotal + rowTotal;
         const rowDiscount = useCalcDiscount(item.discount_type, rowTotal, item.discount, props.discountOptions) || 0;
