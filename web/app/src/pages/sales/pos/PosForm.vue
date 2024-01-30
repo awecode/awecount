@@ -2,9 +2,9 @@
   <div class="md:grid md:grid-cols-12">
     <div class="border border-r border-black col-span-3">
       <div>
-        <!-- bg-red-200 focus:bg-green-200 -->
+        <!-- bg-red-200 focus:bg-green-200  color="green-8" -->
         <q-input v-model="searchTerm" autofocus debounce="500" label="&nbsp;&nbsp;Search Items..." input-class="pl-2"
-          @keypress.enter="enterClicked = true" class="search-input" color="green-8"></q-input>
+          @keypress.enter="enterClicked = true" class="search-input"></q-input>
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
