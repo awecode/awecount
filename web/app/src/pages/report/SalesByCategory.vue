@@ -3,8 +3,7 @@
     <div class="flex items-center justify-between gap-2">
       <div class="flex gap-x-6 gap-y-2 items-center">
         <div>
-          <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true"
-            :focusOnMount="true" />
+          <DateRangePicker v-model:startDate="fields.start_date" v-model:endDate="fields.end_date" :hide-btns="true" />
         </div>
         <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close"
           @click="fields = { start_date: '', end_date: '' }; updateRouteUrl(); fetchData()" class="f-reset-btn"></q-btn>

@@ -280,7 +280,7 @@ const essentialLinks: EssentialLinkProps[] = [
       },
       {
         title: 'Sales By Category',
-        icon: 'mdi-file-tree',
+        icon: 'mdi-shape',
         link: '/report/sales-by-category/',
       },
       {
