@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn color="blue" label="Exoprt Xls" icon-right="download" @click="onDownloadXls" class="export-btn" />
+      <q-btn color="blue" label="Export Xls" icon-right="download" @click="onDownloadXls" class="export-btn" />
       <q-btn v-if="checkPermissions('CreditNoteCreate')" color="green" to="/credit-note/add/" label="New Credit Note"
         class="q-ml-lg add-btn" icon-right="add" />
     </div>
