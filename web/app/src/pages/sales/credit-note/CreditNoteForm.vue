@@ -4,7 +4,8 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Credit Note | Draft</span>
-          <span v-else>Update Credit Note | <span v-if="isEdit"> {{ fields?.status }} | <span v-if="fields?.voucher_no"> # {{fields?.voucher_no}}</span></span></span>
+          <span v-else>Update Credit Note | <span v-if="isEdit"> {{ fields?.status }} | <span v-if="fields?.voucher_no"> #
+                {{ fields?.voucher_no }}</span></span></span>
         </div>
       </q-card-section>
       <q-card class="q-mx-lg q-pt-md">
@@ -15,7 +16,8 @@
             </div>
             <div v-else class="col-md-6 col-12">
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
-              <q-dialog v-model="addRefrence" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
+              <q-dialog v-model="addRefrence"
+                @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
                 <q-card style="min-width: min(60vw, 400px)">
                   <q-card-section class="bg-grey-4 flex justify-between">
                     <div class="text-h6">
@@ -25,10 +27,11 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
+                    <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"
+                      :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
-                      emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" ></q-select>
+                      emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
                     </div>
@@ -36,7 +39,8 @@
                 </q-card>
               </q-dialog>
             </div>
-            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error="!!errors?.date" :error-message="errors?.date"></date-picker>
+            <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error="!!errors?.date"
+              :error-message="errors?.date"></date-picker>
           </div>
           <div class="row q-col-gutter-xl">
             <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -46,7 +50,8 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount_type"
-                  :error-message="errors?.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
+                  :error-message="errors?.discount_type" :options="discountOptionsComputed"
+                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-8 row" v-if="fields.discount_type === 'Amount' ||
@@ -73,10 +78,11 @@
       </q-card>
       <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
-    discount_type: fields.discount_type,
-    discount: fields.discount,
-  }" :errors="!!errors?.rows ? errors?.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+        v-model="fields.rows" :mainDiscount="{
+          discount_type: fields.discount_type,
+          discount: fields.discount,
+        }" :errors="!!errors?.rows ? errors?.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
         :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -99,10 +105,15 @@
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft') " :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" :label=" isEdit ? 'Update Draft' : 'Save Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)" type="submit"/>
-        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : 'Update' : 'Issued', fields, submitForm)" color="green" :loading="loading"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
+        <q-btn v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft')"
+          :loading="loading" @click.prevent="() => onSubmitClick('Draft')" color="orange"
+          :label="isEdit ? 'Update Draft' : 'Save Draft'" :disabled="!(fields.invoices && fields.invoices.length > 0)"
+          type="submit" />
+        <q-btn
+          @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')"
+          color="green" :loading="loading"
+          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'"
+          :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
@@ -165,10 +176,10 @@ export default {
       if (!!errors.rows) errors.rows.splice(index, 1)
       // errors.rows.splice(index, 1)
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await formData.submitForm() } catch (err) {
+      try { await formData.submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -221,15 +232,15 @@ export default {
               // if (key === )
             }
             if (response.rows && response.rows.length > 0) {
-                fields.rows = []
-                response.rows.forEach((row) => {
-                  row.taxObj = row.tax_scheme
-                  if (row.discount_type === "") {
-                    row.discount_type = null
-                  }
-                  fields.rows.push(row)
-                })
-              }
+              fields.rows = []
+              response.rows.forEach((row) => {
+                row.taxObj = row.tax_scheme
+                if (row.discount_type === '') {
+                  row.discount_type = null
+                }
+                fields.rows.push(row)
+              })
+            }
             if (data.discount_obj && data.discount_obj.id) {
               fields.discount_type = data.discount_obj.id
             }
@@ -248,10 +259,10 @@ export default {
           })
       } else {
         if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
         $q.notify({
           color: 'red-6',

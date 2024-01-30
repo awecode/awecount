@@ -138,12 +138,12 @@ const columnList = [
 
 function loadData() {
   loading.value = true
-  const field = fields.value.transactions.results.value
-    ? Object.keys(fields.value?.transactions?.results[0])?.filter(
-      (f) => f !== 'id'
-    )
-    : null
-
+  // const field = fields.value.transactions.results.value
+  //   ? Object.keys(fields.value?.transactions?.results[0])?.filter(
+  //     (f) => f !== 'id'
+  //   )
+  //   : null
+  
   // columnList.value = field?.map((f) => {
   //   return {
   //     name: f,

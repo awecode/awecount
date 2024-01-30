@@ -94,7 +94,7 @@ watch(
 )
 watch(
   () => route.params.id,
-  (newid, oldid) => {
+  (newid) => {
     if (newid && route.path.includes('/view/')) {
       const url = `/v1/accounts/${route.params.id}/transactions/`
       const updatedEndpoint = withQuery(url, {})

@@ -120,7 +120,7 @@
         </div>
     </div>
 </template>
-  
+
 <script>
 // import { utils, writeFile } from 'xlsx'
 import DateConverter from '/src/components/date/VikramSamvat.js'
@@ -207,7 +207,7 @@ export default {
         }
         const onDownloadXls = async () => {
             // TODO: add download xls link
-            const XLSX = await import("xlsx-js-style")
+            const XLSX = await import('xlsx-js-style')
             const elt = document.getElementById('tableRef').children[0]
             const baseUrl = window.location.origin
             replaceHrefAttribute(elt, baseUrl)
@@ -240,10 +240,6 @@ export default {
             worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
             const workbook = XLSX.utils.book_new()
             XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
-            const excelBuffer = XLSX.write(workbook, {
-                type: 'buffer',
-                cellStyles: true,
-            });
             // download Excel
             XLSX.writeFileXLSX(workbook, 'TrialBalance.xls')
         }
@@ -260,8 +256,8 @@ export default {
             }
         }
         const onAddColumn = () => {
-            const addIndex = accounts.value.length ? accounts.value.length : 0
-            const data = fetchData(fields.value.start_date, fields.value.end_date, addIndex)
+            // const addIndex = accounts.value.length ? accounts.value.length : 0
+            // const data = fetchData(fields.value.start_date, fields.value.end_date, addIndex)
             timePeriodArray.value.push({ ...fields.value })
         }
         const onRemoveColumn = (index) => {
@@ -307,7 +303,7 @@ export default {
     },
 }
 </script>
-  
+
   <!-- <style scoped>
   .q-table thead tr,
   .q-table tbody td {
@@ -315,4 +311,3 @@ export default {
     background-color: black !important;
   }
   </style> -->
-  
