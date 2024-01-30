@@ -2,8 +2,9 @@
   <div class="md:grid md:grid-cols-12">
     <div class="border border-r border-black col-span-3">
       <div>
-        <q-input v-model="searchTerm" autofocus debounce="500" label="&nbsp;&nbsp;Search Items..."
-          @keypress.enter="enterClicked = true"></q-input>
+        <!-- bg-red-200 focus:bg-green-200 -->
+        <q-input v-model="searchTerm" autofocus debounce="500" label="&nbsp;&nbsp;Search Items..." input-class="pl-2"
+          @keypress.enter="enterClicked = true" class="search-input" color="green-8"></q-input>
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
@@ -12,8 +13,10 @@
             border-bottom: 1px lightgrey solid;
             padding: 8px 16px 6px 16px;
             font-size: 13px;
-          " v-for="item in searchResults?.results ||
-            formDefaults.collections?.items.results" :key="item.id">
+          " v-for=" item  in
+  searchResults?.results ||
+    formDefaults.collections?.items.results
+" :key="item.id">
           <div class="col-8">
             <router-link v-if="hasItemModifyAccess" style="text-decoration: none" class="text-blue" target="_blank"
               :title="item.code" :to="`/items/${item.id}/`">
@@ -43,8 +46,9 @@
           v-model="fields.rows" :mainDiscount="{
             discount_type: fields.discount_type,
             discount: fields.discount,
-          }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-  " @updateTableData="(val) => totalTableData = val"></PosInvoiceTable>
+          }
+            " :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+    " @updateTableData="(val) => totalTableData = val"></PosInvoiceTable>
         <q-card
           class="fixed md:w-[calc(75%-32px)] lg:w-[calc(75%-76px)] w-[100%] md:right-4 right-0 bottom-4 border border-solid border-gray-200">
           <div style="width: 100%;">
@@ -420,5 +424,13 @@ onMounted(() => {
 
 .config-options {
   min-width: min(450px, 90vw);
+}
+
+.search-input input {
+  // padding-left: 4px;
+}
+
+.q-field__control-container {
+  background-color: black;
 }
 </style>
