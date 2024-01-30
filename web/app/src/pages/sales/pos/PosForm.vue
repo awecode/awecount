@@ -46,7 +46,7 @@
           }" :errors="!!errors?.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
   " @updateTableData="(val) => totalTableData = val"></PosInvoiceTable>
         <q-card
-          class="fixed sm:w-[calc(75%-76px)] w-[100%] sm:right-4 right-0 bottom-4 border border-solid border-gray-200">
+          class="fixed md:w-[calc(75%-32px)] lg:w-[calc(75%-76px)] w-[100%] md:right-4 right-0 bottom-4 border border-solid border-gray-200">
           <div style="width: 100%;">
             <div class="py-4 px-6 w-full bg-white">
               <div class="row justify-between">
