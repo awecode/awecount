@@ -1,11 +1,13 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import openpyxl
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q, Sum, Avg, Count, Case, When, F
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from openpyxl.writer.excel import save_virtual_workbook
 from rest_framework import filters as rf_filters, mixins, viewsets
@@ -237,8 +239,10 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     ]
 
     def get_item_queryset(self, company_id):
-        return Item.objects.filter(can_be_sold=True, company_id=company_id).only('name', 'unit_id', 'selling_price',
-                                                                                 'tax_scheme_id', 'code')
+        return Item.objects.filter(can_be_sold=True, company_id=company_id)\
+                           .annotate(sold_qty=Coalesce(Sum('sales_rows__quantity', filter=Q(sales_rows__voucher__date__gte = timezone.now() - timedelta(days=30))), 0))\
+                           .only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code')\
+                           .order_by('-sold_qty')
 
     def get_collections(self, request=None):
         data = super().get_collections(request)
