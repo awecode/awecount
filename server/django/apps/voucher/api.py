@@ -1,11 +1,13 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import openpyxl
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch, Q, Sum, Avg, Count, Case, When, F
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from openpyxl.writer.excel import save_virtual_workbook
 from rest_framework import filters as rf_filters, mixins, viewsets
@@ -237,8 +239,10 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
     ]
 
     def get_item_queryset(self, company_id):
-        return Item.objects.filter(can_be_sold=True, company_id=company_id).only('name', 'unit_id', 'selling_price',
-                                                                                 'tax_scheme_id', 'code')
+        return Item.objects.filter(can_be_sold=True, company_id=company_id)\
+                           .annotate(sold_qty=Coalesce(Sum('sales_rows__quantity', filter=Q(sales_rows__voucher__date__gte = timezone.now() - timedelta(days=30))), 0))\
+                           .only('name', 'unit_id', 'selling_price', 'tax_scheme_id', 'code')\
+                           .order_by('-sold_qty')
 
     def get_collections(self, request=None):
         data = super().get_collections(request)
@@ -251,7 +255,7 @@ class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.Crea
         # qs = qs[: self.POS_ITEMS_SIZE]
         # data['items'] = {'results': ItemPOSSerializer(qs, many=True).data, 'pagination': {'page': 1, 'size': settings.POS_ITEMS_SIZE}}
         return data
-    
+
     def get_create_defaults(self, request=None):
         data = SalesCreateSettingSerializer(request.company.sales_setting).data
         return data
@@ -301,7 +305,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exists():
             raise ValidationError({'voucher_no': ["Purchase with the bill number for the chosen party already exists."]})
         return super().create(request, *args, **kwargs)
-    
+
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
         voucher_no = request.data.get('voucher_no', None)
@@ -334,7 +338,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == 'list' or self.action in ('choices',):
             return PurchaseVoucherListSerializer
         return PurchaseVoucherCreateSerializer
-    
+
     def get_defaults(self, request=None):
         return {
             'options': {
@@ -368,8 +372,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                                                               party_id=request.query_params.get('party'),
                                                               fiscal_year_id=request.query_params.get('fiscal_year'),
                                                               queryset=qs)
-        
-        
+
+
         return Response(
             PurchaseVoucherDetailSerializer(voucher).data)
 
@@ -381,7 +385,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         except Exception as e:
             raise APIException(str(e))
-        
+
     # TODO: Optimize and refactor
     def update_rows(self, rows, row_id):
          for row in rows:
@@ -421,7 +425,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     purchase_row.save()
             row.sold_items = sold_items
             row.save()
-        
+
     def fifo_update_sales_rows(self, purchase_voucher):
         rows = purchase_voucher.rows.select_related("item").all()
 
@@ -438,7 +442,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 # Update challan rows
                 challan_rows = ChallanRow.objects.filter(sold_items__has_key=str(row.id))
                 self.update_rows(challan_rows, row.id)
-               
+
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
@@ -462,7 +466,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     detail="This action might create inconsistencies in FIFO.",
                     code="fifo_inconsistency",
                 )
-            
+
             # Negative stock check
             if request.company.inventory_setting.enable_negative_stock_check:
                 if request.query_params.get("negative_stock"):
@@ -987,7 +991,13 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
 
     @action(detail=False, url_path='by-category')
     def by_category(self, request):
+        start_date = request.query_params.get('start_date', None)
+        end_date = request.query_params.get('end_date', None)
         qs = self.get_queryset()
+        if start_date:
+            qs = qs.filter(voucher__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(voucher__date__lte=end_date)
         qs = qs.values('item__category', 'item__category__name').annotate(
             quantity=Sum('quantity'),
             discount_amount=Sum('discount_amount'),
@@ -1095,7 +1105,7 @@ class PurchaseSettingsViewSet(CRULViewSet):
             'fields': PurchaseSettingSerializer(p_setting).data
         }
         return data
-    
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         update_data = request.data
@@ -1320,7 +1330,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             }
         }
         return data
-    
+
 
     @action(detail=True, methods=['POST'])
     def resolve(self, request, pk):
@@ -1392,7 +1402,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     serializer_class = PurchaseOrderCreateSerializer
     model = PurchaseOrder
     row = PurchaseOrderRow
-    
+
     collections = [
         ('parties', Party, PartyMinSerializer),
         ('units', Unit),
@@ -1418,12 +1428,12 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         elif self.action == 'list':
             qs = qs.select_related('party')
         return qs.order_by('-pk')
-    
+
     def get_serializer_class(self):
         if self.action == 'list':
             return PurchaseOrderListSerializer
         return PurchaseOrderCreateSerializer
-    
+
     @action(detail=True, methods=['POST'])
     def cancel(self, request, pk=None):
         instance = self.get_object()
@@ -1434,7 +1444,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         instance.status = 'Cancelled'
         instance.save()
         return Response({})
-    
+
     @action(detail=False, url_path='by-voucher-no')
     def by_voucher_no(self, request):
         qs = super().get_queryset().prefetch_related(
