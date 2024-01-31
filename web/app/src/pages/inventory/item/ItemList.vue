@@ -100,10 +100,6 @@ const {
   resetFilters,
   loadData
 } = useList(endpoint)
-
-onMounted(() => {
-  throw new Error('Sentry Error');
-})
 </script>
 
 <style>
