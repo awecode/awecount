@@ -74,8 +74,7 @@ export default {
       useApi(`/v1/item-opening-balance/${id}/`, { method: 'DELETE' }).then(() => {
         router.push('/items/opening/')
       }).catch((err) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { errors, message } = useHandleFormError(err)
+        const { message } = useHandleFormError(err)
         $q.notify({
           color: 'negative',
           message: message,
