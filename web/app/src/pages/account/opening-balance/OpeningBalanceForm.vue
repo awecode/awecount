@@ -12,8 +12,9 @@
         <q-card-section>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
             <div>
-              <n-auto-complete v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account *"
+              <n-auto-complete v-if="!isEdit" v-model="fields.account" :options="formDefaults.collections?.accounts" label="Account *"
                 :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="errors?.account" />
+              <q-input v-else label="Account *" disable :model-value="fields.name" class="mb-4" ></q-input>
             </div>
           </div>
           <div class="grid md:grid-cols-2 q-col-gutter-md">
