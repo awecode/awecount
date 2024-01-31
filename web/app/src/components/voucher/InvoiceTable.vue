@@ -114,7 +114,7 @@ export default {
       },
     },
     errors: {
-      type: Array || String,
+      type: [Array, String],
       default: () => {
         return null
       },

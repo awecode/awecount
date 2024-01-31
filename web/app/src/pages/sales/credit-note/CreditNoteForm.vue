@@ -50,7 +50,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount_type"
-                  :error-message="errors?.discount_type" :options="discountOptionsComputed"
+                  :options="discountOptionsComputed"
                   :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
@@ -82,8 +82,9 @@
         v-model="fields.rows" :mainDiscount="{
           discount_type: fields.discount_type,
           discount: fields.discount,
-        }" :errors="!!errors?.rows ? errors?.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
-        :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
+        }" :errors="!!errors?.rows ? errors?.rows : null"
+        @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)" :usedIn="'creditNote'"
+        @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -173,8 +174,9 @@ export default {
         }
         formData.fields.value.deleted_rows.push(deleteObj)
       }
-      if (!!errors.rows) errors.rows.splice(index, 1)
-      // errors.rows.splice(index, 1)
+      if (errors && Array.isArray(errors.rows)) {
+        errors.rows.splice(index, 1)
+      }
     }
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status

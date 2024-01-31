@@ -93,8 +93,8 @@ export default {
                 }
                 formData.fields.value.deleted_rows.push(deleteObj)
             }
-            if (errors.rows) {
-                errors.rows.splice(index, 1)
+            if (errors && Array.isArray(errors.rows)) {
+              errors.rows.splice(index, 1)
             }
         }
         const onSubmitClick = async (status, fields, submitForm) => {

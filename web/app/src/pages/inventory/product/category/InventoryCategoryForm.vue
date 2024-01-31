@@ -17,12 +17,12 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Unit" v-model="fields.default_unit_id"
+              <n-auto-complete label="Unit" v-model="fields.default_unit_id"
                 :options="formDefaults.collections?.units"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.default_unit_id" />
             </div>
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.default_tax_scheme_id"
+              <n-auto-complete label="Tax Scheme" v-model="fields.default_tax_scheme_id"
                 :options="formDefaults.collections?.tax_scheme"
                 :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
                 :error="errors.default_tax_scheme_id" />

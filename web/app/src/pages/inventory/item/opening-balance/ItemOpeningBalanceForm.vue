@@ -59,6 +59,7 @@
 </template>
 
 <script>
+import ItemAdd from '../ItemAdd.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
@@ -89,7 +90,8 @@ export default {
       }),
       checkPermissions,
       isDeleteOpen,
-      onDeleteClick
+      onDeleteClick,
+      ItemAdd
     }
   },
 }

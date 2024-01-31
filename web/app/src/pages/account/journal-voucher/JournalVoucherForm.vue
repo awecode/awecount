@@ -155,7 +155,7 @@ export default {
         }
         formData.fields.value.deleted_rows.push(formData.fields.value.rows[i])
       }
-      if (errors.rows) {
+      if (errors && Array.isArray(errors.rows)) {
         errors.rows.splice(i, 1)
       }
       formData.fields.value.rows.splice(i, 1)
