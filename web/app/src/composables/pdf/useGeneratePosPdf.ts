@@ -6,11 +6,12 @@ export default function useGeneratePosPdf(
   invoiceInfo: object,
   partyObj: object | null,
   hideRowQuantity: boolean,
-  clientRows: Array<string, any> | null,
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   taxOptions: Array<any>
+  /* eslint-disable @typescript-eslint/no-explicit-any */
 ): string {
-  const loginStore: Record<string, string | number | object> = useLoginStore()
-  const compayInfo: Record<string, string | number> = loginStore.companyInfo
+  const loginStore = useLoginStore()
+  const compayInfo = loginStore.companyInfo
   let sameTax = null
   let sameTaxObj = null
   const tableRow = (rows: Array<object>): string => {

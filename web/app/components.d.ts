@@ -30,6 +30,7 @@ declare module '@vue/runtime-core' {
     PaginateList: typeof import('./src/components/core/PaginateList.vue')['default']
     PieChart: typeof import('./src/components/report/PieChart.vue')['default']
     PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']
+    PosInvoiceTable: typeof import('./src/components/pos/PosInvoiceTable.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

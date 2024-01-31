@@ -279,6 +279,11 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('CategoryView')
       },
       {
+        title: 'Sales By Category',
+        icon: 'mdi-shape',
+        link: '/report/sales-by-category/',
+      },
+      {
         title: 'Periodic Tax Summary',
         icon: 'mdi-currency-usd-off',
         link: '/report/tax-summary/',

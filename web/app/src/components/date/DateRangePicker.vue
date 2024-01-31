@@ -162,9 +162,9 @@ watch(
 
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
-  // if (!text) {
-  //   return;
-  // }
+  if (!text) {
+    return;
+  }
   error0.value = false
   errorMessage0.value = null
   if (isCalendarInAD.value) {

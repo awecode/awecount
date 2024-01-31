@@ -1,16 +1,17 @@
 <template>
-  <div>
+  <div :class=" usedInPos ? '-mt-12' :''">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <!-- TODO: solve error -->
-          <n-auto-complete v-model="modalValue.item_id" :options="itemOptions" label="Item"
+          <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null" :modal-component="usedInPos || hasChallan
                 ? false
                 : checkPermissions('InventoryAccountCreate')
                   ? ItemAdd
                   : null
               " :disabled="usedInPos || hasChallan" />
+          <q-input v-else :label="usedInPos ? '' : 'Item'" disable :modelValue="modelValue.name"></q-input>
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
           <q-checkbox v-model="modalValue.is_returned" :false-value="null">
@@ -19,7 +20,7 @@
       </div>
       <div class="col-2">
         <span v-if="showRateQuantity">
-          <q-input v-model.number="modalValue.quantity" label="Quantity"
+          <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' :'Quantity'"
             :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
             type="number" :disable="hasChallan" data-testid="quantity-input"></q-input>
         </span>
@@ -27,7 +28,7 @@
       <div class="col-2">
         <div v-if="showRateQuantity" style="display: flex; align-items: center; gap: 4px">
           <span v-if="showRateQuantity">
-            <q-input v-model.number="modalValue.rate" label="Rate" :error-message="errors?.rate ? errors.rate[0] : null"
+            <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'" :error-message="errors?.rate ? errors.rate[0] : null"
               :error="errors?.rate ? true : false" type="number" data-testid="rate-input"></q-input>
           </span>
           <!-- <span>asvhva</span> -->

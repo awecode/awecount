@@ -188,7 +188,6 @@ import { useLoginStore } from 'src/stores/login-info'
 
 export default {
   setup() {
-    const route = useRoute()
     const metaData = {
       title: 'Journal Entries | Awecount',
     }
