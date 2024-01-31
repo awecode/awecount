@@ -23,7 +23,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Brand" v-model="fields.brand"
+              <n-auto-complete label="Brand" v-model="fields.brand"
                 :options="formDefaults.collections?.brands"
                 :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
             </div>
@@ -35,7 +35,7 @@
           <q-card class="q-pa-lg">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
+                <n-auto-complete label="Category" v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories"
                   :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
                   :error="errors.category" @update:modelValue="setCategory" />
@@ -47,12 +47,12 @@
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
+                <n-auto-complete label="Unit" v-model="fields.unit_id"
                   :options="formDefaults.collections?.units"
                   :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.unit_id" />
               </div>
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
+                <n-auto-complete label="Tax Scheme" v-model="fields.tax_scheme_id"
                   :options="formDefaults.collections?.tax_scheme"
                   :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
@@ -122,7 +122,7 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="images.front_image" class="q-full-width" :error-messages="errors.front_image"
+              <q-file v-model="images.front_image" :error-messages="errors.front_image"
                 label="Front Image" @update:model-value="
                   onFileChange(fields, $event, 'front_image')
                   ">
@@ -142,7 +142,7 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="fields.back_image" class="q-full-width" :error-messages="errors.back_image"
+              <q-file v-model="fields.back_image" :error-messages="errors.back_image"
                 label="Back Image" @update:model-value="onFileChange(fields, $event, 'back_image')">
                 <template v-slot:prepend>
                   <q-icon name="attach_file" />

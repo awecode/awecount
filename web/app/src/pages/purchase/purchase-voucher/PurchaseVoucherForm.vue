@@ -38,7 +38,7 @@
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
-                :error="errors?.party ? errors?.party : null"
+                :error="errors?.party ? errors?.party : ''"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
             </div>
             <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
@@ -50,7 +50,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
-                  :error-message="errors.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                  :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -134,13 +134,10 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
-import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -330,7 +327,6 @@ export default {
       PurchaseDiscountForm,
       openDatePicker,
       staticOptions,
-      InvoiceTable,
       deleteRowErr,
       onSubmitClick,
       checkPermissions,

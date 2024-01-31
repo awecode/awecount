@@ -5,7 +5,7 @@
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <!-- TODO: solve error -->
           <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
-            :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null" :modal-component="usedInPos || hasChallan
+            :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
                 ? false
                 : checkPermissions('InventoryAccountCreate')
                   ? ItemAdd
