@@ -205,6 +205,7 @@ const searchTerm = ref(null)
 const searchResults = ref(null)
 const enterClicked = ref(false)
 const currentPage = ref(null)
+const partyMode = ref(false)
 const staticOptions = {
   discount_types: discount_types,
   modes: modes,
@@ -217,7 +218,6 @@ const partyChoices = ref([])
 useApi('/v1/parties/choices/').then((choices) => {
   partyChoices.value = choices
 })
-const partyMode = ref(false)
 const switchMode = (fields) => {
   if (fields.mode !== 'Credit') {
     partyMode.value = !partyMode.value
@@ -412,8 +412,15 @@ const handleSubmitSuccess = (data, noPrint) => {
     printPdf(printData)
   }
   fields.value.rows = []
+  fields.value.mode = 'Cash'
+  partyMode.value = false
+  fields.value.party = ''
   delete fields.value.status
   delete fields.value.noPrint
+  delete fields.value.customer_name
+  delete fields.value.discount_type
+  delete fields.value.discount
+  delete fields.value.remarks
 }
 
 const handleKeyDown = (event) => {
@@ -452,10 +459,6 @@ onMounted(() => {
 
 .config-options {
   min-width: min(450px, 90vw);
-}
-
-.search-input input {
-  // padding-left: 4px;
 }
 
 .q-field__control-container {
