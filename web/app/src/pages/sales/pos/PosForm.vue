@@ -238,36 +238,40 @@ const deleteRowErr = (index, errors, deleteObj) => {
 }
 const onSubmitClick = (status, noPrint) => {
   fields.value.status = status
+  fields.value.noPrint = noPrint
   if (!partyMode.value) fields.value.customer_name = null
   useApi('/v1/pos/', { method: 'POST', body: fields.value })
     .then((data) => {
-      errors.value = {}
-      $q.notify({
-        color: 'green',
-        message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
-        icon: 'check',
-      })
-      if (status === 'Issued' && !noPrint) {
-        const printData = useGeneratePosPdf(
-          data,
-          getPartyObj(),
-          !formDefaults.value.options.show_rate_quantity_in_voucher,
-          formDefaults.value.collections.tax_schemes
-        )
-        printPdf(printData)
-      }
-      setTimeout(() => window.history.go(0), 100)
-      fields.value.rows = []
+      handleSubmitSuccess(data, fields.value.noPrint)
     })
     .catch((err) => {
-      fields.value.status = null
       if (err.status === 400) {
+        delete fields.value.status
+        delete fields.value.noPrint
         errors.value = err.data
         $q.notify({
           color: 'negative',
           message: 'Please fill out the form correctly.',
           icon: 'report_problem',
         })
+      }
+      else if (err.status === 422) {
+        useHandleCancelInconsistencyError('/v1/pos/', err, fields.value, $q)
+          .then((data) => {
+            handleSubmitSuccess(data, fields.value.noPrint)
+          })
+          .catch((error) => {
+            delete fields.value.status
+            delete fields.value.noPrint
+            if (error.status !== 'cancel') {
+              $q.notify({
+                color: 'negative',
+                message:
+                  'Server Error! Please contact us with the problem.',
+                icon: 'report_problem',
+              })
+            }
+          })
       }
     })
 }
@@ -387,6 +391,27 @@ const discountOptionsComputed = computed(() => {
     )
   } else return staticOptions.discount_types
 })
+
+const handleSubmitSuccess = (data, noPrint) => {
+  errors.value = {}
+  $q.notify({
+    color: 'green',
+    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+    icon: 'check',
+  })
+  if (data.status !== 'Draft' && !noPrint) {
+    const printData = useGeneratePosPdf(
+      data,
+      getPartyObj(),
+      !formDefaults.value.options.show_rate_quantity_in_voucher,
+      formDefaults.value.collections.tax_schemes
+    )
+    printPdf(printData)
+  }
+  fields.value.rows = []
+  delete fields.value.status
+  delete fields.value.noPrint
+}
 
 const handleKeyDown = (event) => {
   if (event.ctrlKey && event.keyCode === 68) {

@@ -178,14 +178,7 @@ export default (endpoint, config) => {
               })
           })
         }
-        if (data.status === 422) {
-          $q.notify({
-            color: 'orange',
-            // message: data.data?.code,
-            message: `${humanizeWord(data.data?.code)}!`,
-            icon: 'report_problem',
-          })
-        } else {
+        else {
           $q.notify({
             color: 'negative',
             message: message,
