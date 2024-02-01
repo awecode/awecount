@@ -255,7 +255,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
-                    return data
+                return data
             item_ids = [row["item_id"] for row in request.data.get("rows")]
             date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
             sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
@@ -265,6 +265,8 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             
             # Check negative stock
             if request.company.inventory_setting.enable_negative_stock_check:
+                if request.query_params.get("negative_stock"):
+                    return data
                 rows = data["rows"]
                 for row in rows:
                     # TODO: Improve queries
