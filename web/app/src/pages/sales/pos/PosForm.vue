@@ -237,6 +237,8 @@ const deleteRowErr = (index, errors, deleteObj) => {
   if (!!errors.rows) errors.rows.splice(index, 1)
 }
 const onSubmitClick = (status, noPrint) => {
+  if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
+
   fields.value.status = status
   fields.value.noPrint = noPrint
   if (!partyMode.value) fields.value.customer_name = null
