@@ -354,6 +354,7 @@ const onAddItem = (itemInfo) => {
       discount_id: null,
     })
   }
+  searchTerm.value = null
 }
 const getPartyObj = () => {
 
