@@ -334,6 +334,9 @@ export default {
       const COGSRows = {}
       modalValue.value.forEach((row, index) => {
         const currentItemId = row.item_id
+        // this calculates the total available stock for the selected item According to fifo
+        const availableStock = (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) ?
+         localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
         let currentCOGS = 0
         let quantity = row.quantity
         if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
@@ -358,7 +361,7 @@ export default {
         } else {
           currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
         }
-        COGSRows[index] = currentCOGS
+        COGSRows[index] = { totalCost :currentCOGS, availableStock}
       })
       COGSData.value = COGSRows
     }

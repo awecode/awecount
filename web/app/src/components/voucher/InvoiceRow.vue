@@ -1,15 +1,15 @@
 <template>
-  <div :class=" usedInPos ? '-mt-12' :''">
+  <div :class="usedInPos ? '-mt-12' : ''">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
           <!-- TODO: solve error -->
           <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty || null" :modal-component="usedInPos || hasChallan
-                ? false
-                : checkPermissions('InventoryAccountCreate')
-                  ? ItemAdd
-                  : null
+              ? false
+              : checkPermissions('InventoryAccountCreate')
+                ? ItemAdd
+                : null
               " :disabled="usedInPos || hasChallan" />
           <q-input v-else :label="usedInPos ? '' : 'Item'" disable :modelValue="modelValue.name"></q-input>
         </div>
@@ -20,29 +20,74 @@
       </div>
       <div class="col-2">
         <span v-if="showRateQuantity">
-          <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' :'Quantity'"
+          <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' : 'Quantity'"
             :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-            type="number" :disable="hasChallan" data-testid="quantity-input"></q-input>
+            type="number" :disable="hasChallan" data-testid="quantity-input">
+            <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
+              <q-icon v-if="COGSData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
+                <q-tooltip>
+                  {{ COGSData[index].totalCost.message }}
+                  <br>
+                  Available Quantity {{ COGSData[index].availableStock }}
+                </q-tooltip>
+              </q-icon>
+              <span v-else class="text-sm mt-4 text-blue-400">
+                <q-tooltip>
+                  Available Stock
+                </q-tooltip>
+                {{ COGSData[index].availableStock }}
+              </span>
+            </template>
+          </q-input>
         </span>
       </div>
       <div class="col-2">
         <div v-if="showRateQuantity" style="display: flex; align-items: center; gap: 4px">
           <span v-if="showRateQuantity">
-            <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'" :error-message="errors?.rate ? errors.rate[0] : null"
-              :error="errors?.rate ? true : false" type="number" data-testid="rate-input"></q-input>
+            <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'"
+              :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number"
+              data-testid="rate-input">
+              <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
+                <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
+                  <q-tooltip>
+                    Cost Rate as per Fifo.
+                  </q-tooltip>
+                  {{ $nf(COGSData[index].totalCost / modalValue.quantity) }}</span>
+                <!-- <q-icon v-else color="orange" name="mdi-alert">
+                  <q-tooltip>
+                    {{ COGSData[index].message }}
+                  </q-tooltip>
+                </q-icon> -->
+              </template>
+            </q-input>
           </span>
-          <!-- <span>asvhva</span> -->
-          <!-- <q-icon v-if="isFifo" name="info" size="28px" color="blue-3" :title="`COGS: ${'5000'}-/`">
-          </q-icon> -->
         </div>
       </div>
       <div v-if="inputAmount" class="col-2">
         <!-- <span class="">{{ amountComputed }}</span> -->
-        <q-input v-model="amountComputed" label="Amount" @change="onAmountInput" data-testid="amount-input"></q-input>
+        <q-input v-model="amountComputed" label="Amount" @change="onAmountInput" data-testid="amount-input">
+          <template v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'"
+            v-slot:append>
+            <span class="text-sm mt-4 text-blue-400">
+              <q-tooltip>
+                Total Cost Price as per Fifo.
+              </q-tooltip>
+              {{ $nf(COGSData[index].totalCost) }}</span>
+          </template>
+        </q-input>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div v-else class="col-2 row justify-center items-center">
-        <span class="" data-testid="amount-input">{{ amountComputed }}</span>
+        <span class="" data-testid="amount-input">{{ amountComputed }}
+          <span class="relative bg-red-200"
+            v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'">
+            <span class="text-sm ml-2 text-blue-400 absolute top-1/2 -right-0 -translate-y-1/2">
+              <q-tooltip>
+                Total Cost Price as per Fifo.
+              </q-tooltip>
+              {{ $nf(COGSData[index].totalCost) }}</span>
+          </span>
+        </span>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
@@ -56,9 +101,8 @@
         </q-btn>
       </div>
     </div>
-    <div v-if="isFifo && COGSData?.hasOwnProperty(index)" class="pb-2">
+    <!-- <div v-if="isFifo && COGSData?.hasOwnProperty(index)" class="pb-2">
       <div v-if="COGSData[index].status != 'error'" class="row text-blue-4">
-        <!-- {{ props }} -->
         <div class="col-5">Average Cost:</div>
         <div class="col-2"></div>
         <div class="col-2 q-pl-sm">
@@ -67,14 +111,13 @@
         <div class="col-2 text-center">{{ COGSData[index] }}</div>
       </div>
       <div v-else class="row text-orange-5">
-        <!-- {{ props }} -->
         <div class="col-5">Error:</div>
         <div class="col-1"></div>
         <div class="col-5 q-pl-sm text-right">
           {{ COGSData[index].message }}
         </div>
       </div>
-    </div>
+    </div> -->
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow">
@@ -85,8 +128,8 @@
         <div class="col-5">
           <div class="row q-col-gutter-md">
             <div :class="['Amount', 'Percent'].includes(modalValue.discount_type)
-                ? 'col-5'
-                : 'col-12'
+              ? 'col-5'
+              : 'col-12'
               " data-testid="row-discount-type-div">
               <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions">
               </n-auto-complete>
@@ -113,9 +156,9 @@
         </div>
       </div>
       <div v-if="$route.params.id
-          ? (!!modalValue.item_id || !!modalValue.itemObj) &&
-          enableRowDescription
-          : !!modalValue.itemObj && enableRowDescription
+        ? (!!modalValue.item_id || !!modalValue.itemObj) &&
+        enableRowDescription
+        : !!modalValue.itemObj && enableRowDescription
         ">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg"
           data-testid="row-description-input">
