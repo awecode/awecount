@@ -410,6 +410,20 @@ const onTypeUpdate = (key, selectedType) => {
     })
   }
 }
+
+watch(() => fields.value.can_be_purchased, (newValue) => {
+  if (newValue) {
+    fields.value.purchase_account_type || (fields.value.purchase_account_type = 'dedicated')
+    fields.value.discount_received_account_type || (fields.value.discount_received_account_type = 'dedicated')
+  }
+})
+watch(() => fields.value.can_be_sold, (newValue) => {
+  if (newValue) {
+    fields.value.sales_account_type || (fields.value.sales_account_type = 'dedicated')
+    fields.value.discount_allowed_account_type || (fields.value.discount_allowed_account_type = 'dedicated')
+  }
+})
+
 </script>
 
 <style scoped>
