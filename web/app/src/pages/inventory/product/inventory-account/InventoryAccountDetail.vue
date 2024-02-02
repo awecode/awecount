@@ -62,6 +62,11 @@
             <span v-else>{{ props.row.voucher_no }}</span>
           </q-td>
         </template>
+        <template v-slot:body-cell-voucher_type="props">
+          <q-td :props="props">
+            <span>{{ props.row.source_type === 'Item' ? 'Opening' : props.row.source_type }}</span>
+          </q-td>
+        </template>
       </q-table>
     </div>
   </div>
@@ -143,7 +148,7 @@ function loadData() {
   //     (f) => f !== 'id'
   //   )
   //   : null
-  
+
   // columnList.value = field?.map((f) => {
   //   return {
   //     name: f,
