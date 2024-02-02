@@ -395,6 +395,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         purchase_account.suggest_code(item)
                         accounts_to_create.append(purchase_account)
                         item.purchase_account = purchase_account
+                        item.purchase_account_type = 'dedicated'
+                        item.dedicated_purchase_account = purchase_account
+
 
                         name = 'Discount Received - ' + item.name
                         discount_received_acc = Account(name=name, company=item.company)
@@ -402,6 +405,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         discount_received_acc.suggest_code(item)
                         accounts_to_create.append(discount_received_acc)
                         item.discount_received_account = discount_received_acc
+                        item.discount_received_account_type = 'dedicated'
+                        item.dedicated_discount_received_account = discount_received_acc
 
                     if item.can_be_sold:
                         name = item.name + ' (Sales)'
@@ -410,6 +415,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         sales_account.suggest_code(item)
                         accounts_to_create.append(sales_account)
                         item.sales_account = sales_account
+                        item.sales_account_type = 'dedicated'
+                        item.dedicated_sales_account = sales_account
 
                         name = 'Discount Allowed - ' + item.name
                         discount_allowed_account = Account(name=name, company=item.company)
@@ -417,11 +424,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         discount_allowed_account.suggest_code(item)
                         accounts_to_create.append(discount_allowed_account)
                         item.discount_allowed_account = discount_allowed_account
+                        item.discount_allowed_account_type = 'dedicated'
+                        item.dedicated_discount_allowed_account = discount_allowed_account
 
                     items_to_update.append(item)
 
                 Account.objects.bulk_create(accounts_to_create, batch_size=1000)
-                Item.objects.bulk_update(items_to_update, fields=["purchase_account", "sales_account", "discount_received_account", "discount_allowed_account"])
+                Item.objects.bulk_update(items_to_update, fields=[
+                    "purchase_account", "sales_account", "discount_received_account", "discount_allowed_account", "purchase_account_type",
+                    "dedicated_purchase_account", "discount_received_account_type","dedicated_discount_received_account","sales_account_type",
+                    "dedicated_sales_account", "discount_allowed_account_type", "dedicated_discount_allowed_account"
+                ])
 
             except IntegrityError as e:
                 code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
