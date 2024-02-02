@@ -76,7 +76,8 @@
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
+              <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+                :error-message="errors?.message"> </q-input>
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
               </div>

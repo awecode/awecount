@@ -39,7 +39,8 @@
               <div class="col-6">{{ discountComputed }}</div>
             </div>
           </div>
-          <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0" class="col-12 col-md-6 q-gutter-y-lg">
+          <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0"
+            class="col-12 col-md-6 q-gutter-y-lg">
             <div class="col-12 col-md-6 row">
               <div class="col-6">Purchase Order(s)</div>
               <div class="col-6">{{ fields.purchase_order_numbers.join(',') }}</div>
@@ -63,8 +64,8 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="orange-5" label="Edit" icon="edit"
             :to="`/purchase-voucher/${fields?.id}/`" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('PurchaseVoucherModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid" :loading="isLoading"
-            icon="mdi-check-all" />
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            :loading="isLoading" icon="mdi-check-all" />
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading" />
         </div>
@@ -83,7 +84,8 @@
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
+            <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+              :error-message="errors?.message"> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
             </div>
@@ -126,7 +128,7 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
-    const isLoading:Ref<boolean> = ref(false)
+    const isLoading: Ref<boolean> = ref(false)
     const errors = ref({})
     const submitChangeStatus = (id: number, status: string) => {
       isLoading.value = true
