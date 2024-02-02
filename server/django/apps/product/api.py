@@ -24,7 +24,7 @@ from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 from .filters import ItemFilterSet, BookFilterSet, InventoryAccountFilterSet
 from .models import Category as InventoryCategory, InventoryAccount
 from .models import Item, JournalEntry, Category, Brand, Unit, Transaction
-from .serializers import InventorySettingCreateSerializer, ItemCreateDefaultSerializer, ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
+from .serializers import InventorySettingCreateSerializer, ItemListMinSerializer, ItemSerializer, UnitSerializer, InventoryCategorySerializer, BrandSerializer, \
     ItemDetailSerializer, InventoryAccountSerializer, JournalEntrySerializer, BookSerializer, \
     TransactionEntrySerializer, \
     ItemPOSSerializer, ItemListSerializer, ItemOpeningSerializer, InventoryCategoryTrialBalanceSerializer
@@ -455,7 +455,7 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     filterset_class = InventoryAccountFilterSet
 
     collections = (
-        ('items', Item.objects.values("id", "name").filter(track_inventory=True, account__opening_balance=0), ItemCreateDefaultSerializer),
+        ('items', Item.objects.only("id", "name").filter(track_inventory=True, account__opening_balance=0), GenericSerializer),
     )
 
     def get_queryset(self, company_id=None):

@@ -273,10 +273,6 @@ class ItemDetailSerializer(serializers.ModelSerializer):
         model = Item
         exclude = ("company",)
 
-class ItemCreateDefaultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Item
-        fields = ("id", "name")
 
 class ItemListSerializer(serializers.ModelSerializer):
     category = GenericSerializer()
