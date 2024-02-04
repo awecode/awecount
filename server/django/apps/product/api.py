@@ -459,10 +459,7 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     )
 
     def get_queryset(self, company_id=None):
-        qs = super().get_queryset()
-        if self.action == 'list':
-            qs = qs.filter(opening_balance__gt=0)
-        return qs
+        return super().get_queryset().filter(opening_balance__gt=0)
 
     def get_update_defaults(self, request=None):
         self.collections = (
