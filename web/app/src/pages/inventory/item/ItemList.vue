@@ -1,8 +1,11 @@
 <template>
   <div class="q-pa-md">
     <q-dialog v-model="isItemImportOpen">
-      <q-card style="min-width: 80vw">
-        <ItemImport @modalClose="isItemImportOpen = false" @updateList="isItemImportOpen = false; loadData();"></ItemImport>
+      <q-card style="min-width: min(80vw, 900px)">
+        <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round
+          dense icon="close" @click="isItemImportOpen = false" />
+        <ItemImport @modalClose="isItemImportOpen = false" @updateList="isItemImportOpen = false; loadData();">
+        </ItemImport>
       </q-card>
     </q-dialog>
     <div class="row justify-end q-gutter-md" v-if="checkPermissions('ItemCreate')">
@@ -48,17 +51,18 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('ItemView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
-            style="font-size: 12px" label="View" :to="`/items/details/${props.row.id}/`"/>
-          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
-            style="font-size: 12px" label="edit" :to="`/items/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('ItemView')" color="blue"
+            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
+            :to="`/items/details/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
+            :to="`/items/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('ItemView')"
-            :to="`/items/details/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
-            class="text-blue">
+          <router-link v-if="checkPermissions('ItemView')" :to="`/items/details/${props.row.id}/`"
+            style="font-weight: 500; text-decoration: none" class="text-blue">
             {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>
