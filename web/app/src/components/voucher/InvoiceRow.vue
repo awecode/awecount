@@ -6,10 +6,10 @@
           <!-- TODO: solve error -->
           <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
-                ? false
-                : checkPermissions('InventoryAccountCreate')
-                  ? ItemAdd
-                  : null
+              ? false
+              : checkPermissions('InventoryAccountCreate')
+                ? ItemAdd
+                : null
               " :disabled="usedInPos || hasChallan" />
           <q-input v-else :label="usedInPos ? '' : 'Item'" disable :modelValue="modelValue.name"></q-input>
         </div>
@@ -42,25 +42,23 @@
         </span>
       </div>
       <div class="col-2">
-        <div v-if="showRateQuantity" style="display: flex; align-items: center; gap: 4px">
-          <span v-if="showRateQuantity">
-            <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'"
-              :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number"
-              data-testid="rate-input">
-              <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
-                <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
-                  <q-tooltip>
-                    Cost Rate as per Fifo.
-                  </q-tooltip>
-                  {{ $nf(COGSData[index].totalCost / modalValue.quantity) }}</span>
-                <!-- <q-icon v-else color="orange" name="mdi-alert">
+        <div v-if="showRateQuantity">
+          <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'"
+            :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number"
+            data-testid="rate-input">
+            <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
+              <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
+                <q-tooltip>
+                  Cost Rate as per Fifo.
+                </q-tooltip>
+                {{ $nf(COGSData[index].totalCost / modalValue.quantity) }}</span>
+              <!-- <q-icon v-else color="orange" name="mdi-alert">
                   <q-tooltip>
                     {{ COGSData[index].message }}
                   </q-tooltip>
                 </q-icon> -->
-              </template>
-            </q-input>
-          </span>
+            </template>
+          </q-input>
         </div>
       </div>
       <div v-if="inputAmount" class="col-2">
