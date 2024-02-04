@@ -99,9 +99,9 @@
           <div>
             <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
           </div>
-          <q-select v-model="fields.sales_agent" label="Sales Agent" class="col-8" :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"></q-select>
-          <!-- TODO: add sales agent form -->
+          <q-input v-if="fields.sales_agent?.name" label="Sales Agent" class="col-8" disable
+            v-model="fields.sales_agent.name">
+          </q-input>
         </div>
       </div>
 
