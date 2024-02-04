@@ -75,8 +75,7 @@ class Challan(TransactionModel, InvoiceModel):
     key = 'Challan'
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -154,7 +153,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.party_id:
             return self.party.name
         return self.customer_name
-    
+
     @property
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
@@ -166,8 +165,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             challan_rows = ChallanRow.objects.filter(voucher__in=self.challans.all()).values('item_id', 'quantity')
             for challan_row in challan_rows:
                 challan_dct[challan_row.get('item_id')] = challan_row.get('quantity')
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             quantity = int(row.quantity)
             if challan_enabled and challan_dct.get(row.item_id):
                 quantity = quantity - challan_dct.get(row.item_id)
@@ -203,7 +201,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             self.status = 'Paid'
         else:
             raise ValueError('No such mode!')
-        
+
 
         self.save()
 
@@ -255,7 +253,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     entries.append(['dr', self.bank_account.commission_account, commission])
             else:
                 entries.append(['dr', dr_acc, row_total])
-            
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
@@ -338,7 +336,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     @property
     def amount_before_discount(self):
         return self.net_amount - self.tax_amount + self.discount_amount
-    
+
 
 class PurchaseOrder(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -412,7 +410,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def buyer_name(self):
         if self.party_id:
             return self.party.name
-        
+
     @property
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list('voucher_no', flat=True)
@@ -427,8 +425,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             )
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related(
-                'item__account'):
+        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -538,16 +535,16 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
             self.item.save()
         self.send_rate_alert()
         super().save(*args, **kwargs)
-    
+
     def send_rate_alert(self):
         from django_q.tasks import async_task
         if not self.voucher.company.purchase_setting.enable_item_rate_change_alert:
             return
         rows = self.item.purchase_rows.order_by("-id")
         if rows.exists():
-            existing_rate = rows.first().rate 
+            existing_rate = rows.first().rate
             if existing_rate != self.rate:
-                status = "increased" if existing_rate<self.rate else "decreased" 
+                status = "increased" if existing_rate<self.rate else "decreased"
                 message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
                 to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
                 async_task(
@@ -598,89 +595,57 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     def cancel(self):
         if self.company.inventory_setting.enable_fifo:
-            rows = self.rows.all()
+            credit_note_rows = self.rows.all().values('sales_row_data__id', 'quantity')
             sales_vouchers = self.invoices.all()
+
+            credit_note_rows_dict = {row['sales_row_data__id']: row['quantity'] for row in credit_note_rows}
+
             for voucher in sales_vouchers:
-                sales_rows = voucher.rows.all()
+                sales_rows = voucher.rows.filter(sold_items__isnull=False)
                 for row in sales_rows:
-                    credit_note_row = rows.get(item=row.item)
+                    if row.id not in credit_note_rows_dict:
+                        continue
+
                     sold_items = row.sold_items
-                    quantity = credit_note_row.quantity
-                    if not sold_items:
-                        break
-                    opening = None
-                    if sold_items.get("OB"):
+                    quantity = credit_note_rows_dict[row.id]
+
+                    # handle opening stock
+                    if "OB" in sold_items:
                         inv_account = row.item.account
-                        ob = sold_items.pop("OB")
-                        if quantity > inv_account.opening_quantity:
-                            opening = ob + inv_account.opening_quantity
-                            quantity -= inv_account.opening_quantity
-                            inv_account.opening_quantity = 0
-                            inv_account.save()
-                            inv_account.save()
-                        else:
-                            inv_account.opening_quantity -= quantity
-                            inv_account.save()
-                            opening = ob + quantity
-                            row.sold_items["OB"] = opening
-                            row.save()
-                            return
-                    purchase_row_ids = [key for key, value in sold_items.items()]
-                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
-                    if purchase_voucher_rows.exists():
-                        for purchase_row in purchase_voucher_rows:
-                            # can_be_reduced = purchase_row.remaining_quantity
-                            # diff = quantity - can_be_reduced
-                            if quantity > purchase_row.remaining_quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                quantity -= purchase_row.remaining_quantity
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = purchase_row.quantity
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += can_be_reduced
-                                row.save()
-                                continue
-                            else:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += quantity
-                                row.save()
-                                break
-                    if quantity>0:
-                        purchase_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("voucher__date", "id")
-                        for purchase_row in purchase_rows:
-                            if purchase_row.remaining_quantity == quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                row.save()
-                                break
-                            elif purchase_row.remaining_quantity > quantity:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                row.save()
-                                break
-                            else:
-                                quantity -= purchase_row.remaining_quantity
-                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
-                                purchase_row.remaining_quantity = 0
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                purchase_row.save()
-                                row.save()
-                    if opening:
-                        row.sold_items["OB"] = opening
-                        row.save()
+                        ob_qty, ob_rate = sold_items.pop("OB")
+                        used_quantity = min(quantity - ob_qty, inv_account.opening_quantity)
+
+                        inv_account.opening_quantity -= used_quantity
+                        inv_account.save(update_fields=["opening_quantity"])
+
+                        row.sold_items["OB"] = [ob_qty + used_quantity, ob_rate]
+                        row.save(update_fields=["sold_items"])
+
+                        quantity -= used_quantity
+
+                        if quantity <= 0:
+                            continue
+
+                    # handle purchase rows
+                    purchase_row_ids = [id for id in sold_items.keys() if id != "OB"]
+                    for purchase_row in PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id"):
+                        if quantity <= 0:
+                            break
+                        p_qty = sold_items[str(purchase_row.id)][0]
+                        used_quantity = min(quantity - p_qty, purchase_row.remaining_quantity)
+
+                        purchase_row.remaining_quantity -= used_quantity
+                        purchase_row.save(update_fields=["remaining_quantity"])
+
+                        row.sold_items[str(purchase_row.id)] = [p_qty + used_quantity, purchase_row.rate]
+                        row.save(update_fields=["sold_items"])
+
+                        quantity -= used_quantity
         return super().cancel()
 
 
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in voucher.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -805,6 +770,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
                                      related_name='credit_note_rows')
 
     tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name='credit_note_rows')
+    sales_row_data = models.JSONField(blank=True, default=dict)
 
 
 class DebitNote(TransactionModel, InvoiceModel):
@@ -853,8 +819,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         return super().cancel()
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(is_returned=True).filter(
-                Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related('item__account'):
+        for row in self.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
                 self.date,
