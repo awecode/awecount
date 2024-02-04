@@ -76,17 +76,14 @@
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
+              <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+                :error-message="errors?.message"> </q-input>
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
               </div>
             </q-card-section>
           </q-card>
         </q-dialog>
-      </div>
-    </div>
-    <div class="print-show">
-      <div v-html="useGeneratePdf('salesVoucher', false, fields, !fields.options.show_rate_quantity_in_voucher)">
       </div>
     </div>
   </div>
