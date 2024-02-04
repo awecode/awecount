@@ -79,8 +79,8 @@ class ItemAdmin(admin.ModelAdmin):
         'account', 'sales_account', 'purchase_account', 'discount_allowed_account', 'discount_received_account',
         'expense_account', 'fixed_asset_account')
     autocomplete_fields = (
-    'brand', 'category', 'unit', 'tax_scheme', 'company', 'dedicated_sales_account', 'dedicated_purchase_account',
-    'dedicated_discount_allowed_account', 'dedicated_discount_received_account')
+        'brand', 'category', 'unit', 'tax_scheme', 'company', 'dedicated_sales_account', 'dedicated_purchase_account',
+        'dedicated_discount_allowed_account', 'dedicated_discount_received_account')
 
 
 class UnitAdmin(admin.ModelAdmin):
@@ -102,7 +102,7 @@ class InventoryAccountAdmin(admin.ModelAdmin):
 
 admin.site.register(Item, ItemAdmin)
 admin.site.register(InventoryAccount, InventoryAccountAdmin)
-admin.site.register(JournalEntry)
+
 admin.site.register(Transaction)
 admin.site.register(Unit, UnitAdmin)
 
@@ -120,3 +120,15 @@ admin.site.register(Brand, BrandAdmin)
 class InventorySettingAdmin(admin.ModelAdmin):
     # list_display = []
     pass
+
+
+class TransactionInline(admin.TabularInline):
+    model = Transaction
+    extra = 0
+
+
+class JournalEntryAdmin(admin.ModelAdmin):
+    inlines = [TransactionInline, ]
+
+
+admin.site.register(JournalEntry, JournalEntryAdmin)

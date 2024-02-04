@@ -249,10 +249,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             raise ValidationError(
                 {'party': ['Party is required for a credit issue.']},
             )
-        
+
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
-        
+
         if request.company.inventory_setting.enable_fifo:
             if request.query_params.get("fifo_inconsistency"):
                 return data
@@ -262,7 +262,7 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
             if sales_rows.exists() or challan_rows.exists():
                 raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
-            
+
             # Check negative stock
             if request.company.inventory_setting.enable_negative_stock_check:
                 if request.query_params.get("negative_stock"):
