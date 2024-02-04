@@ -367,17 +367,7 @@ const getPartyObj = () => {
     return partyChoices.value[index]
   } else return null
 }
-const printPdf = (data) => {
-  let ifram = document.createElement('iframe')
-  ifram.style = 'display:none; margin: 20px'
-  document.body.appendChild(ifram)
-  const pri = ifram.contentWindow
-  pri.document.open()
-  pri.document.write(data)
-  pri.document.close()
-  pri.focus()
-  setTimeout(() => pri.print(), 100)
-}
+
 const hasItemModifyAccess = computed(() => {
   return checkPermissions('ItemModify')
 })
@@ -411,7 +401,7 @@ const handleSubmitSuccess = (data, noPrint) => {
       !formDefaults.value.options.show_rate_quantity_in_voucher,
       formDefaults.value.collections.tax_schemes
     )
-    printPdf(printData)
+    usePrintPdfWindow(printData)
   }
   fields.value.rows = []
   fields.value.mode = 'Cash'

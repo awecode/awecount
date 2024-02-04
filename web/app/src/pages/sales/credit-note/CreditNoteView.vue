@@ -125,15 +125,8 @@ export default {
         })
     }
     const print = (bodyOnly) => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri = ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields.value))
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
+      const printData = useGeneratePdf('creditNote', bodyOnly, fields.value)
+      usePrintPdfWindow(printData)
     }
     const onPrintclick = (noApiCall = false) => {
       if (!noApiCall) {

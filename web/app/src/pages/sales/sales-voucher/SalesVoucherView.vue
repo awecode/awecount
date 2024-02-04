@@ -192,21 +192,11 @@ export default {
           .catch((err) => console.log('err from the api', err))
       } else print(bodyOnly)
     }
-    // to print
+
     const print = (bodyOnly: boolean) => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri: Record<string, string | object | HTMLElement> =
-        ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher))
-      // pri.document.body.firstElementChild.prepend()
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
+      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher)
+      usePrintPdfWindow(printData)
     }
-    // to print
 
     return {
       allowPrint: false,

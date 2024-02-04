@@ -66,6 +66,7 @@ declare global {
   const useLink: typeof import('vue-router')['useLink']
   const useList: typeof import('./src/composables/useList.js')['default']
   const useMeta: typeof import('quasar')['useMeta']
+  const usePrintPdfWindow: typeof import('./src/composables/usePrintPdfWindow')['default']
   const useQuasar: typeof import('quasar')['useQuasar']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
