@@ -256,7 +256,7 @@ export default {
 
     // to update voucher meta in Credit and debit Notes
     const updateVoucherMeta = (data) => {
-      formData.fields.value.discount = data.discount
+      // formData.fields.value.discount = data.discount
       formData.fields.value.meta_discount = data.discount
       formData.fields.value.meta_sub_total = data.subTotal
       formData.fields.value.meta_tax = data.totalTax
