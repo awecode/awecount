@@ -48,7 +48,7 @@
       </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center justify-center">
+          <div class="row align-center justify-center" data-testid="status">
             <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
               ? 'bg-blue-2 text-blue-10'
               : props.row.status == 'Paid'
