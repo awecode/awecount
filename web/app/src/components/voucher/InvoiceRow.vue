@@ -91,7 +91,9 @@
       <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
         <q-btn flat class="q-pa-sm focus-highLight" color="transparent" @click="() => (expandedState = !expandedState)"
           data-testid="expand-btn">
-          <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"></q-icon>
+          <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer">
+            <q-tooltip>Expand</q-tooltip>
+          </q-icon>
         </q-btn>
         <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent"
           :disable="hasChallan" data-testid="row-delete-btn">

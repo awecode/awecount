@@ -1,22 +1,23 @@
 <template>
   <!-- style="height: 40px; overflow-y: hidden;" -->
   <div v-if="props.accounts.length > 2">
-    <div class="transition" :class="`${openState ? '': 'max-h-[40px]'} overflow-y-hidden accounts-con`">
+    <div class="transition" :class="`${openState ? '' : 'max-h-[40px]'} overflow-y-hidden accounts-con`">
       <div v-for="(account, index) in props.accounts" :key="index">
         <router-link :to="`/account/${account.id}/view/`" style="font-weight: 500; text-decoration: none"
-          class="text-blue block" :title="`${account.name}`">
+          class="text-blue block">
           {{ account.name }}
         </router-link>
       </div>
     </div>
     <div class="hover:bg-gray-200 text-center" @click="openState = !openState">
-      <q-icon size="sm" color="blue" name="mdi-chevron-down" class="transition-transform" :class="openState ? 'rotate-180' : ''"></q-icon>
+      <q-icon size="sm" color="blue" name="mdi-chevron-down" class="transition-transform"
+        :class="openState ? 'rotate-180' : ''"></q-icon>
     </div>
   </div>
   <div v-else>
     <div v-for="(account, index) in props.accounts" :key="index">
       <router-link :to="`/account/${account.id}/view/`" style="font-weight: 500; text-decoration: none"
-        class="text-blue block" :title="`${account.name}`">
+        class="text-blue block">
         {{ account.name }}
       </router-link>
     </div>

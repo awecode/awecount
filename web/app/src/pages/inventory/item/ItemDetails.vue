@@ -17,7 +17,7 @@
         <div class="flex pb-2">
           <div class="text-h5">
             <span class="text-bold">{{ data?.name || '-' }}</span>
-            <span v-if="data?.code" class="ml-4 text-h6 text-grey-9 text-sm p-2 inline-block" title="Code">[Code: {{
+            <span v-if="data?.code" class="ml-4 text-h6 text-grey-9 text-sm p-2 inline-block">[Code: {{
               data.code }}]</span>
           </div>
         </div>

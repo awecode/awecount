@@ -16,12 +16,17 @@
             label="Select File"></q-file>
           <div class="q-mt-md">
             <q-checkbox v-model="createNewCategory" label="Create New Category?"></q-checkbox> <q-icon color="grey-6"
-              name="info" size="sm"
-              title="Enabling this creates new category with the give name if it does not exist."></q-icon>
+              name="info" size="sm">
+              <q-tooltip>
+                Enabling this creates new category with the give name if it does not exist.
+              </q-tooltip>
+            </q-icon>
           </div>
           <div class="q-mt-md">
             <q-checkbox v-model="createNewUnit" label="Create New Unit?"></q-checkbox> <q-icon color="grey-6" name="info"
-              size="sm" title="Enabling this creates new Unit with the give name if it does not exist."></q-icon>
+              size="sm">
+              <q-tooltip>Enabling this creates new Unit with the give name if it does not exist.</q-tooltip>
+            </q-icon>
           </div>
           <q-btn :loading="loading" :disable="!file" color="green" type="submit" class="q-mt-lg">Upload</q-btn>
         </q-form>
