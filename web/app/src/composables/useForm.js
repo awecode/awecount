@@ -1,16 +1,9 @@
-// import { api } from 'boot/ofetch'
 import { withTrailingSlash, withoutTrailingSlash, joinURL } from 'ufo'
 import { getCurrentInstance } from 'vue'
 import useApi from './useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
 
-// interface UseFormConfig {
-//   getDefaults: boolean
-//   successRoute: string
-// }
-
-// export default (endpoint: string, config: UseFormConfig) => {
 export default (endpoint, config) => {
   const $q = useQuasar()
   const fields = ref({})
@@ -31,7 +24,6 @@ export default (endpoint, config) => {
   const store = useLoginStore()
   const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
-  store.isLoading = true
   const isGetDefaultLoading = ref(false)
   const isGetEditLoading = ref(false)
   const modalId = Math.floor(Math.random() * 999999999)
@@ -39,6 +31,8 @@ export default (endpoint, config) => {
   if (isModal) {
     modalFormLoading[modalId] = true
     context.emit('getModalId', modalId)
+  } else {
+    store.isLoading = true
   }
   onMounted(() => {
     // added is modal check
@@ -60,7 +54,6 @@ export default (endpoint, config) => {
             store.isLoading = false
           }
           setModalLoadingFalse()
-          // if (isModal && store.isModalFormLoading.hasOwnProperty(`${modalId}`)) delete store.isModalFormLoading[modalId]
         }
       )
         .catch((error) => {
@@ -83,13 +76,11 @@ export default (endpoint, config) => {
       isGetDefaultLoading.value = true
       useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
         (data) => {
-          // TODO: Check with Dipesh sir
           if (data.fields) {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
           formDefaults.value = data
           setTimeout(() => {
-            // TODO: Check with Dipesh sir
             isGetDefaultLoading.value = false
             if (!isGetEditLoading.value) {
               store.isLoading = false
@@ -105,7 +96,6 @@ export default (endpoint, config) => {
   }
 
   const processErrors = (responseData) => {
-    // let dct = {}
     const dct = Object.fromEntries(
       Object.entries(responseData).map(([k, v]) => {
         let val = v
