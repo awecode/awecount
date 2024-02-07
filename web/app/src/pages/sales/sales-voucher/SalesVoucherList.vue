@@ -82,7 +82,7 @@
           <div class="row q-gutter-x-md justify-start">
             <q-btn v-if="checkPermissions('SalesView')" color="blue" label="View"
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
-              :to="`/sales-voucher/${props.row.id}/view/`" />
+              :to="`/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
