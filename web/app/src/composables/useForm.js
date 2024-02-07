@@ -270,8 +270,9 @@ export default (endpoint, config) => {
     }
   }
   onUnmounted(() => {
-    store.isLoading = false
-    if (isModal && modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
+    if (isModal) {
+      if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
+    } else store.isLoading = false
   })
 
   return {
