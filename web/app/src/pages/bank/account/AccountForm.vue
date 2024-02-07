@@ -28,7 +28,7 @@
               " class="col-6" :error-message="errors.bank_name" :error="!!errors.bank_name" />
             <div class="grid sm:grid-cols-2 q-col-gutter-md">
               <q-input v-model="fields.short_name" label="Short Name" class="col-3" :error-message="errors.short_name"
-              :error="!!errors.short_name" />
+                :error="!!errors.short_name" />
               <q-input v-if="!fields.is_wallet" v-model="fields.branch_name" label="Bank Branch" class="col-3"
                 :error-message="errors.branch_name" :error="!!errors.branch_name" />
             </div>
@@ -42,10 +42,10 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BankAccountCreate') && !isEdit" color="green" label="Create" class="q-ml-auto" :loading="loading"
-            @click.prevent="submitForm" type="submit"/>
-          <q-btn v-if="checkPermissions('BankAccountModify') && isEdit" color="green" label="Update" class="q-ml-auto" :loading="loading"
-            @click.prevent="submitForm" type="submit"/>
+          <q-btn v-if="checkPermissions('BankAccountCreate') && !isEdit" color="green" label="Create" class="q-ml-auto"
+            :loading="loading" @click.prevent="submitForm" type="submit" />
+          <q-btn v-if="checkPermissions('BankAccountModify') && isEdit" color="green" label="Update" class="q-ml-auto"
+            :loading="loading" @click.prevent="submitForm" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -60,7 +60,7 @@ export default {
   setup(props, context) {
     const endpoint = '/v1/bank-account/'
     const formData = useForm(endpoint, {
-      getDefaults: true,
+      getDefaults: false,
       successRoute: '/bank-accounts/list/',
     })
     formData.fields.value.is_wallet = false

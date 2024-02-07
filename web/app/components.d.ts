@@ -19,6 +19,7 @@ declare module '@vue/runtime-core' {
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
+    FormSkeleton: typeof import('./src/components/FormSkeleton.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     ItemImport: typeof import('./src/components/ItemImport.vue')['default']

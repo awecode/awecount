@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" autofocus >
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -20,10 +20,10 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green" label="Update"
-            class="q-ml-auto" type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit"/>
+          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Update" class="q-ml-auto" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Create" class="q-ml-auto" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -43,7 +43,7 @@ export default {
     useMeta(metaData)
     return {
       ...useForm(endpoint, {
-        getDefaults: true,
+        getDefaults: false,
         successRoute: '/brand/list/',
       }), checkPermissions
     }
