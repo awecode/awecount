@@ -2,12 +2,13 @@ from collections import OrderedDict
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, IntegrityError, transaction
-from django.db.models import F, Sum, JSONField
+from django.db import IntegrityError, models, transaction
+from django.db.models import F, JSONField, Sum, Window
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
-from apps.ledger.models import Account, Category as AccountCategory
+from apps.ledger.models import Account
+from apps.ledger.models import Category as AccountCategory
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
 from awecount.libs import none_for_zero, zero_for_none
@@ -61,7 +62,7 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         ordering = ['-id']
 
@@ -110,7 +111,7 @@ class Category(models.Model):
     dedicated_sales_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='sales_categories_dedicated')
     dedicated_purchase_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='purchase_categories_dedicated')
     dedicated_discount_allowed_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_allowed_categories_dedicated')
-    dedicated_discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_received_categories_dedicated') 
+    dedicated_discount_received_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL,related_name='discount_received_categories_dedicated')
 
 
     # type = models.CharField(max_length=20, choices=ITEM_TYPES)
@@ -180,7 +181,7 @@ class Category(models.Model):
                 if not self.dedicated_sales_account.name == sales_account_name:
                     self.dedicated_sales_account.name = sales_account_name
                     self.dedicated_sales_account.save()
-            
+
             if self.dedicated_purchase_account:
                 if not self.dedicated_purchase_account.name == purchase_account_name:
                     self.dedicated_purchase_account.name = purchase_account_name
@@ -223,7 +224,7 @@ class Category(models.Model):
                 else:
                     self.discount_allowed_account = self.dedicated_discount_allowed_account
 
-            # if self.can_be_purchased:                 
+            # if self.can_be_purchased:
             if not self.purchase_account:
                 if not self.dedicated_purchase_account:
                     ledger = Account(name=purchase_account_name, company=self.company)
@@ -236,7 +237,7 @@ class Category(models.Model):
                     self.dedicated_purchase_account = ledger
                 else:
                     self.purchase_account = self.dedicated_purchase_account
-            
+
             if not self.discount_received_account:
                 if not self.dedicated_discount_received_account:
                     discount_received_account = Account(name=discount_received_account_name, company=self.company)
@@ -288,7 +289,7 @@ class Category(models.Model):
 
             # for voucher in PurchaseVoucher.objects.filter(rows__item__category=self):
             #     voucher.apply_transactions()
-            # 
+            #
             # for voucher in SalesVoucher.objects.filter(rows__item__category=self):
             #     voucher.apply_transactions()
 
@@ -381,6 +382,10 @@ class Transaction(models.Model):
     cr_amount = models.FloatField(null=True, blank=True)
     current_balance = models.FloatField(null=True, blank=True)
     journal_entry = models.ForeignKey(JournalEntry, related_name='transactions', on_delete=models.CASCADE)
+    rate = models.FloatField(null=True, blank=True)
+    remaining_quantity = models.IntegerField(null=True, blank=True)
+    consumption_data = models.JSONField(null=True, blank=True)
+    fifo_inconsistency_qty = models.IntegerField(null=True, blank=True) # This is the quantity that is not accounted for in the fif, or say which is not consumed
 
     def __str__(self):
         return str(self.account) + ' [' + str(self.dr_amount) + ' / ' + str(self.cr_amount) + ']'
@@ -484,16 +489,65 @@ def set_inventory_transactions(model, date, *args, clear=True):
             diff = zero_for_none(transaction.cr_amount)
             diff -= zero_for_none(transaction.dr_amount)
         if arg[0] == 'dr':
-            transaction.dr_amount = float(arg[2])
             transaction.cr_amount = None
+            transaction.dr_amount = float(arg[2])
+            transaction.remaining_quantity = float(arg[2])
             diff += float(arg[2])
         elif arg[0] == 'cr':
+            transaction.consumption_data = transaction.consumption_data or {}
             transaction.cr_amount = float(arg[2])
             transaction.dr_amount = None
             diff -= float(arg[2])
+
+            # Consumption data
+            req_qty = float(arg[2])
+
+            base_txn_qs = Transaction.objects.filter(account=arg[1], cr_amount=None, remaining_quantity__gt=0)\
+                            .annotate(running=Window(expression=Sum('remaining_quantity'), order_by=F('id').asc())) \
+                            .order_by('id').only('id', 'remaining_quantity')
+            
+            txn_qs = base_txn_qs.filter(running__lte=req_qty)
+            count = len(txn_qs)
+            if count:
+                updated_txns = [txn for txn in txn_qs if not setattr(txn, 'remaining_quantity', 0)]
+
+                # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
+                txn_highest = txn_qs[count-1]  # the last transaction i.e. the one with the highest running (< req_qty)
+                if txn_highest.running < req_qty:
+                    tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                    req_qty -= txn_highest.running
+                    if tx_next:
+                        tx_next.remaining_quantity -= req_qty
+                        updated_txns.append(tx_next)
+                        transaction.consumption_data[tx_next.id] : req_qty
+                    else:
+                        transaction.consumption_data["outstanding"] = req_qty
+                        # This is where we need to keep track of fifo inconsistency
+                        # handle_fifo_inconsistency(transaction)
+
+
+                for txn in txn_qs:
+                    transaction.consumption_data[txn.id] = txn.remaining_quantity
+
+                Transaction.objects.bulk_update(updated_txns, ['remaining_quantity'])
+
+            else:
+                # possibly the required quantity is lesser than any cumulative remaining quantity
+                tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                if tx_next:
+                    tx_next.remaining_quantity -= req_qty
+                    tx_next.save()
+                    transaction.consumption_data[tx_next.id] =  req_qty
+                else:
+                    transaction.consumption_data["outstanding"] = req_qty
+                    # This is where we need to keep track of fifo inconsistency
+                    # handle_fifo_inconsistency(transaction)
+
+
         elif arg[0] == 'ob':
-            transaction.dr_amount = float(arg[2])
             transaction.cr_amount = None
+            transaction.dr_amount = float(arg[2])
+            transaction.remaining_quantity = float(arg[2])
             diff += float(arg[2])
         else:
             raise Exception('Transactions can only be either "dr" or "cr".')
@@ -502,6 +556,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction.account.current_balance = float(transaction.account.current_balance)
         transaction.account.current_balance += diff
         transaction.current_balance = transaction.account.current_balance
+        transaction.rate = arg[3]
         transaction.account.save()
         journal_entry.transactions.add(transaction, bulk=False)
         alter(transaction.account, date, diff)
@@ -603,7 +658,7 @@ class Item(models.Model):
         set_inventory_transactions(
             self,
             date,
-            ['dr', self.account, self.account.opening_balance],
+            ['dr', self.account, self.account.opening_balance, self.account.opening_balance_rate],
         )
 
     def get_source_id(self):
@@ -632,7 +687,7 @@ class Item(models.Model):
                 if not self.dedicated_sales_account.name == sales_account_name:
                     self.dedicated_sales_account.name = sales_account_name
                     self.dedicated_sales_account.save()
-            
+
             if self.dedicated_purchase_account:
                 if not self.dedicated_purchase_account.name == purchase_account_name:
                     self.dedicated_purchase_account.name = purchase_account_name
@@ -663,7 +718,7 @@ class Item(models.Model):
                     else:
                         account = self.dedicated_sales_account
                     self.sales_account = account
-      
+
                 if not self.discount_allowed_account_id:
                     if not self.dedicated_discount_allowed_account:
                         discount_allowed_account = Account(name=discount_allowed_account_name, company=self.company)
@@ -801,7 +856,7 @@ class Item(models.Model):
         if self.account:
             remaining += zero_for_none(self.account.opening_quantity)
         return remaining
-    
+
     @property
     def available_stock_data(self):
         data = list(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
