@@ -15,7 +15,7 @@ export default (endpoint, config) => {
   const $q = useQuasar()
   const fields = ref({})
   const errors = ref({})
-  const loading = ref(true)
+  const loading = ref(false)
   const formDefaults = ref({})
 
   const isEdit = ref(false)
@@ -35,8 +35,8 @@ export default (endpoint, config) => {
   const isGetDefaultLoading = ref(false)
   const isGetEditLoading = ref(false)
   const modalId = Math.floor(Math.random() * 999999999)
-  // seta a unique key for modal in store.isModalFormLoading
-  if (isModal && config.getDefaults) {
+  // seta a unique key for modal in ModalFormLoading store
+  if (isModal) {
     modalFormLoading[modalId] = true
     context.emit('getModalId', modalId)
   }
@@ -45,7 +45,6 @@ export default (endpoint, config) => {
     isEdit.value = !!route.params.id && !isModal
     if ((!config.getDefaults && !isEdit.value && !isModal)) {
       store.isLoading = false
-      loading.value = false
     }
     else if (isModal && (isEdit.value || config.getDefaults)) {
       store.isLoading = false
@@ -59,7 +58,6 @@ export default (endpoint, config) => {
           isGetDefaultLoading.value = false
           if (!isGetEditLoading.value) {
             store.isLoading = false
-            loading.value = false
           }
           setModalLoadingFalse()
           // if (isModal && store.isModalFormLoading.hasOwnProperty(`${modalId}`)) delete store.isModalFormLoading[modalId]
@@ -69,7 +67,6 @@ export default (endpoint, config) => {
           isGetDefaultLoading.value = false
           if (!isGetEditLoading.value) {
             store.isLoading = false
-            loading.value = false
             setModalLoadingFalse()
           }
           if (error.status === 404) {
@@ -96,7 +93,6 @@ export default (endpoint, config) => {
             isGetDefaultLoading.value = false
             if (!isGetEditLoading.value) {
               store.isLoading = false
-              loading.value = false
               setModalLoadingFalse()
             }
           }, 1000)
