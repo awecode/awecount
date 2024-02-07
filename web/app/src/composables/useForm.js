@@ -49,15 +49,15 @@ export default (endpoint, config) => {
       useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
         (data) => {
           fields.value = data
-          isGetDefaultLoading.value = false
-          if (!isGetEditLoading.value) {
+          isGetEditLoading.value = false
+          if (!isGetDefaultLoading.value) {
             store.isLoading = false
           }
           setModalLoadingFalse()
         }
       )
         .catch((error) => {
-          isGetDefaultLoading.value = false
+          isGetEditLoading.value = false
           if (!isGetEditLoading.value) {
             store.isLoading = false
             setModalLoadingFalse()
