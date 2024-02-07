@@ -62,7 +62,7 @@ export default {
     const endpoint = '/v1/parties/'
     const router = useRouter()
     const formData = useForm(endpoint, {
-      getDefaults: true,
+      getDefaults: false,
       successRoute: '/party/list/',
     })
     useMeta(() => {
