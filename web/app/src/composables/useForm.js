@@ -80,13 +80,11 @@ export default (endpoint, config) => {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
           formDefaults.value = data
-          setTimeout(() => {
-            isGetDefaultLoading.value = false
-            if (!isGetEditLoading.value) {
-              store.isLoading = false
-              setModalLoadingFalse()
-            }
-          }, 1000)
+          isGetDefaultLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            setModalLoadingFalse()
+          }
         }
       )
     }
