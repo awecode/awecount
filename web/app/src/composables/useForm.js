@@ -2,6 +2,8 @@
 import { withTrailingSlash, withoutTrailingSlash, joinURL } from 'ufo'
 import { getCurrentInstance } from 'vue'
 import useApi from './useApi'
+import { useLoginStore } from 'src/stores/login-info'
+import { useModalFormLoading } from 'src/stores/ModalFormLoading'
 
 // interface UseFormConfig {
 //   getDefaults: boolean
@@ -13,7 +15,7 @@ export default (endpoint, config) => {
   const $q = useQuasar()
   const fields = ref({})
   const errors = ref({})
-  const loading = ref(false)
+  const loading = ref(true)
   const formDefaults = ref({})
 
   const isEdit = ref(false)
@@ -26,31 +28,62 @@ export default (endpoint, config) => {
   const context = root?.setupContext
 
   const isModal = !!root?.attrs['is-modal']
-
+  const store = useLoginStore()
+  const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
-
+  store.isLoading = true
+  const isGetDefaultLoading = ref(false)
+  const isGetEditLoading = ref(false)
+  const modalId = Math.floor(Math.random() * 999999999)
+  // seta a unique key for modal in store.isModalFormLoading
+  if (isModal && config.getDefaults) {
+    modalFormLoading[modalId] = true
+    context.emit('getModalId', modalId)
+  }
   onMounted(() => {
     // added is modal check
     isEdit.value = !!route.params.id && !isModal
+    if ((!config.getDefaults && !isEdit.value && !isModal)) {
+      store.isLoading = false
+      loading.value = false
+    }
+    else if (isModal && (isEdit.value || config.getDefaults)) {
+      store.isLoading = false
+    } else setModalLoadingFalse()
     id.value = route.params.id
     if (isEdit.value) {
+      isGetEditLoading.value = true
       useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
         (data) => {
           fields.value = data
+          isGetDefaultLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            loading.value = false
+          }
+          setModalLoadingFalse()
+          // if (isModal && store.isModalFormLoading.hasOwnProperty(`${modalId}`)) delete store.isModalFormLoading[modalId]
         }
       )
-      // .catch((error) => {
-      //   if (error.status === 404) {
-      //     // router.push('/')
-      //     $q.notify({
-      //       color: 'negative',
-      //       message: 'Not Found!',
-      //       icon: 'report_problem',
-      //     })
-      //   }
-      // })
+        .catch((error) => {
+          isGetDefaultLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            loading.value = false
+            setModalLoadingFalse()
+          }
+          if (error.status === 404) {
+            // router.push('/')
+            $q.notify({
+              color: 'negative',
+              message: 'Not Found!',
+              icon: 'report_problem',
+            })
+          }
+        })
     }
     if (config.getDefaults) {
+      isGetDefaultLoading.value = true
       useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
         (data) => {
           // TODO: Check with Dipesh sir
@@ -58,7 +91,15 @@ export default (endpoint, config) => {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
           formDefaults.value = data
-          // TODO: Check with Dipesh sir
+          setTimeout(() => {
+            // TODO: Check with Dipesh sir
+            isGetDefaultLoading.value = false
+            if (!isGetEditLoading.value) {
+              store.isLoading = false
+              loading.value = false
+              setModalLoadingFalse()
+            }
+          }, 1000)
         }
       )
     }
@@ -142,7 +183,7 @@ export default (endpoint, config) => {
           message = 'Server Error! Please contact us with the problem.'
         } else if (data.status === 422) {
           $q.dialog({
-            title: `<span class="text-orange">${ humanizeWord(data.data?.code)}!</span>`,
+            title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
             message:
               `<span class="text-grey-8">Reason: ${data.data.detail}` +
               '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
@@ -227,6 +268,15 @@ export default (endpoint, config) => {
         })
     }
   }
+  const setModalLoadingFalse = () => {
+    if (isModal && modalFormLoading.hasOwnProperty(`${modalId}`)) {
+      modalFormLoading[modalId] = false
+    }
+  }
+  onUnmounted(() => {
+    store.isLoading = false
+    if (isModal && modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
+  })
 
   return {
     fields,
