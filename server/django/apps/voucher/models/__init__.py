@@ -79,7 +79,7 @@ class Challan(TransactionModel, InvoiceModel):
             set_inventory_transactions(
                 row,
                 self.date,
-                ['cr', row.item.account, int(row.quantity)],
+                ['cr', row.item.account, int(row.quantity), 0],
             )
 
     def mark_as_resolved(self):
@@ -173,7 +173,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 set_inventory_transactions(
                     row,
                     self.date,
-                    ['cr', row.item.account, quantity],
+                    ['cr', row.item.account, quantity, row.rate],
                 )
 
     def apply_transactions(self, voucher_meta=None):
@@ -429,7 +429,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             set_inventory_transactions(
                 row,
                 self.date,
-                ['dr', row.item.account, int(row.quantity)],
+                ['dr', row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self, voucher_meta=None):
@@ -649,7 +649,7 @@ class CreditNote(TransactionModel, InvoiceModel):
             set_inventory_transactions(
                 row,
                 voucher.date,
-                ['dr', row.item.account, int(row.quantity)],
+                ['dr', row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self):
@@ -823,7 +823,7 @@ class DebitNote(TransactionModel, InvoiceModel):
             set_inventory_transactions(
                 row,
                 self.date,
-                ['cr', row.item.account, int(row.quantity)],
+                ['cr', row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self):
