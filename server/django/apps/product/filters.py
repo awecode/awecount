@@ -1,18 +1,18 @@
 from django_filters import rest_framework as filters
 
-from .models import Item, InventoryAccount
+from .models import InventoryAccount, Item
 
 
 class ItemFilterSet(filters.FilterSet):
     class Meta:
         model = Item
-        fields = ('can_be_sold', 'can_be_purchased', 'search_data', 'category')
+        fields = ("can_be_sold", "can_be_purchased", "search_data", "category")
 
 
 class InventoryAccountFilterSet(filters.FilterSet):
     class Meta:
         model = InventoryAccount
-        fields = ('opening_balance',)
+        fields = ("opening_balance",)
 
 
 class BookFilterSet(filters.FilterSet):
@@ -22,4 +22,9 @@ class BookFilterSet(filters.FilterSet):
 
     class Meta:
         model = Item
-        fields = ('can_be_sold', 'can_be_purchased', 'search_data', 'brand',)
+        fields = (
+            "can_be_sold",
+            "can_be_purchased",
+            "search_data",
+            "brand",
+        )

@@ -1,12 +1,20 @@
-from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
+from django.db import IntegrityError
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-from rest_framework.exceptions import APIException
-from apps.ledger.models.base import AccountClosing
+from rest_framework.exceptions import APIException, ValidationError
 
+from apps.ledger.models.base import AccountClosing
 from awecount.libs.drf_fields import RoundedField
-from .models import Party, Account, JournalEntry, PartyRepresentative, Category, Transaction, AccountOpeningBalance
+
+from .models import (
+    Account,
+    AccountOpeningBalance,
+    Category,
+    JournalEntry,
+    Party,
+    PartyRepresentative,
+    Transaction,
+)
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
@@ -14,19 +22,19 @@ class PartyRepresentativeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartyRepresentative
-        exclude = ('party',)
+        exclude = ("party",)
 
 
 class PartyMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
-        fields = ('id', 'name', 'address', 'tax_registration_number')
+        fields = ("id", "name", "address", "tax_registration_number")
 
 
 class CategoryMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name')
+        fields = ("id", "name")
 
 
 class AccountListSerializer(serializers.ModelSerializer):
@@ -37,7 +45,7 @@ class AccountListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('id', 'code', 'name', 'dr', 'cr', 'computed_balance', 'category')
+        fields = ("id", "code", "name", "dr", "cr", "computed_balance", "category")
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -46,19 +54,19 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        exclude = ('company', 'default')
+        exclude = ("company", "default")
 
 
 class AccountFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('id', 'name', 'code', 'parent', 'category')
+        fields = ("id", "name", "code", "parent", "category")
 
 
 class AccountBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('id', 'code', 'amounts')
+        fields = ("id", "code", "amounts")
 
 
 class PartyAccountSerializer(serializers.ModelSerializer):
@@ -67,15 +75,23 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Party
-        fields = ('id', 'name', 'tax_registration_number', 'supplier_account', 'customer_account')
+        fields = (
+            "id",
+            "name",
+            "tax_registration_number",
+            "supplier_account",
+            "customer_account",
+        )
 
 
 class PartySerializer(serializers.ModelSerializer):
-    tax_registration_number = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    tax_registration_number = serializers.CharField(
+        max_length=255, required=False, allow_null=True, allow_blank=True
+    )
     representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
-        representatives = validated_data.pop('representative', None)
+        representatives = validated_data.pop("representative", None)
         if validated_data.get("tax_registration_number") == "":
             validated_data["tax_registration_number"] = None
         # else:
@@ -83,36 +99,43 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         if representatives:
             for representative in representatives:
-                if representative.get('name') or representative.get('phone') or representative.get(
-                        'email') or representative.get(
-                    'position'):
-                    representative['party_id'] = instance.id
+                if (
+                    representative.get("name")
+                    or representative.get("phone")
+                    or representative.get("email")
+                    or representative.get("position")
+                ):
+                    representative["party_id"] = instance.id
                     PartyRepresentative.objects.create(**representative)
         return instance
 
     def update(self, instance, validated_data):
-        representatives = validated_data.pop('representative', None)
+        representatives = validated_data.pop("representative", None)
         if validated_data.get("tax_registration_number") == "":
             validated_data["tax_registration_number"] = None
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
-            if representative.get('name') or representative.get('phone') or representative.get(
-                    'email') or representative.get(
-                'position'):
-                representative['party_id'] = instance.id
+            if (
+                representative.get("name")
+                or representative.get("phone")
+                or representative.get("email")
+                or representative.get("position")
+            ):
+                representative["party_id"] = instance.id
                 try:
                     PartyRepresentative.objects.update_or_create(
-                        pk=representative.get('id'),
-                        defaults=representative
+                        pk=representative.get("id"), defaults=representative
                     )
                 except IntegrityError:
-                    raise APIException({'detail': 'Party representative already created.'})
+                    raise APIException(
+                        {"detail": "Party representative already created."}
+                    )
         return instance
 
     class Meta:
         model = Party
-        exclude = ('company',)
+        exclude = ("company",)
 
 
 class PartyListSerializer(serializers.ModelSerializer):
@@ -123,7 +146,16 @@ class PartyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
         fields = (
-            'id', 'name', 'address', 'contact_no', 'email', 'tax_registration_number', 'dr', 'cr', 'balance')
+            "id",
+            "name",
+            "address",
+            "contact_no",
+            "email",
+            "tax_registration_number",
+            "dr",
+            "cr",
+            "balance",
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -131,7 +163,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        exclude = ('company',)
+        exclude = ("company",)
 
     def create(self, validated_data):
         try:
@@ -139,10 +171,16 @@ class CategorySerializer(serializers.ModelSerializer):
         except IntegrityError:
             raise ValidationError({"code": ["Category with this code already exists."]})
 
+
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('id', 'name', 'code', 'default',)
+        fields = (
+            "id",
+            "name",
+            "code",
+            "default",
+        )
 
 
 class JournalEntrySerializer(serializers.ModelSerializer):
@@ -150,45 +188,48 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
     voucher_type = serializers.SerializerMethodField()
-    voucher_no = serializers.ReadOnlyField(source='source.get_voucher_no')
-    source_id = serializers.ReadOnlyField(source='source.get_source_id')
+    voucher_no = serializers.ReadOnlyField(source="source.get_voucher_no")
+    source_id = serializers.ReadOnlyField(source="source.get_source_id")
 
     def get_voucher_type(self, obj):
         v_type = obj.content_type.name
-        if v_type[-4:] == ' row':
+        if v_type[-4:] == " row":
             v_type = v_type[:-3]
-        if v_type[-11:] == ' particular':
+        if v_type[-11:] == " particular":
             v_type = v_type[:-10]
-        if v_type == 'account':
-            return 'Opening Balance'
+        if v_type == "account":
+            return "Opening Balance"
         return v_type.title()
 
     def transaction(self, obj):
-        account = self.context.get('account', None)
+        account = self.context.get("account", None)
         try:
-            transactions = [transaction for transaction in obj.transactions.all() if
-                            transaction.account.id == account.id]
+            transactions = [
+                transaction
+                for transaction in obj.transactions.all()
+                if transaction.account.id == account.id
+            ]
             if transactions:
                 return transactions[0]
-        except Exception as e:
+        except Exception:
             return
 
     def get_dr_amount(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.dr_amount
         return amount
 
     def get_cr_amount(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.cr_amount
         return amount
 
     def get_balance(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.get_balance()
@@ -196,7 +237,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalEntry
-        fields = '__all__'
+        fields = "__all__"
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -228,45 +269,48 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
     cr_amount = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
     voucher_type = serializers.SerializerMethodField()
-    voucher_no = serializers.ReadOnlyField(source='source.get_voucher_no')
-    source_id = serializers.ReadOnlyField(source='source.get_source_id')
+    voucher_no = serializers.ReadOnlyField(source="source.get_voucher_no")
+    source_id = serializers.ReadOnlyField(source="source.get_source_id")
 
     def get_voucher_type(self, obj):
         v_type = obj.content_type.name
-        if v_type[-4:] == ' row':
+        if v_type[-4:] == " row":
             v_type = v_type[:-3]
-        if v_type[-11:] == ' particular':
+        if v_type[-11:] == " particular":
             v_type = v_type[:-10]
-        if v_type == 'account':
-            return 'Opening Balance'
+        if v_type == "account":
+            return "Opening Balance"
         return v_type.title()
 
     def transaction(self, obj):
-        account_ids = self.context.get('account_ids', None)
+        account_ids = self.context.get("account_ids", None)
         try:
-            transactions = [transaction for transaction in obj.transactions.all() if
-                            transaction.account.id in account_ids]
+            transactions = [
+                transaction
+                for transaction in obj.transactions.all()
+                if transaction.account.id in account_ids
+            ]
             if transactions:
                 return transactions[0]
-        except Exception as e:
+        except Exception:
             return
 
     def get_dr_amount(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.dr_amount
         return amount
 
     def get_cr_amount(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.cr_amount
         return amount
 
     def get_balance(self, obj):
-        amount = '-'
+        amount = "-"
         transaction = self.transaction(obj)
         if transaction:
             amount = transaction.get_balance()
@@ -274,26 +318,40 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalEntry
-        fields = '__all__'
+        fields = "__all__"
 
 
 class AccountDetailSerializer(serializers.ModelSerializer):
     # journal_entries = serializers.SerializerMethodField()
-    closing_balance = serializers.ReadOnlyField(source='get_balance')
-    category_name = serializers.ReadOnlyField(source='category.name')
-    parent_name = serializers.ReadOnlyField(source='parent.name')
+    closing_balance = serializers.ReadOnlyField(source="get_balance")
+    category_name = serializers.ReadOnlyField(source="category.name")
+    parent_name = serializers.ReadOnlyField(source="parent.name")
 
     def get_journal_entries(self, obj):
-        entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by('pk',
-                                                                                        'date') \
-            .prefetch_related('transactions', 'content_type', 'transactions__account').select_related()
-        return JournalEntrySerializer(entries, context={'account': obj}, many=True).data
+        entries = (
+            JournalEntry.objects.filter(transactions__account_id=obj.pk)
+            .order_by("pk", "date")
+            .prefetch_related("transactions", "content_type", "transactions__account")
+            .select_related()
+        )
+        return JournalEntrySerializer(entries, context={"account": obj}, many=True).data
 
     class Meta:
         model = Account
         fields = (
-            'id', 'code', 'closing_balance', 'name', 'amounts', 'opening_dr', 'opening_cr', 'category_name', 'amounts',
-            'parent_name', 'category_id', 'parent_id')
+            "id",
+            "code",
+            "closing_balance",
+            "name",
+            "amounts",
+            "opening_dr",
+            "opening_cr",
+            "category_name",
+            "amounts",
+            "parent_name",
+            "category_id",
+            "parent_id",
+        )
 
 
 class CategoryTreeSerializer(serializers.ModelSerializer):
@@ -304,29 +362,30 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'children']
+        fields = ["id", "name", "children"]
 
 
 class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='account.name')
+    name = serializers.ReadOnlyField(source="account.name")
 
     class Meta:
         model = AccountOpeningBalance
-        fields = ('id', 'name', 'opening_dr', 'opening_cr')
+        fields = ("id", "name", "opening_dr", "opening_cr")
 
 
 class AccountOpeningBalanceSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='account.name')
+    name = serializers.ReadOnlyField(source="account.name")
+
     class Meta:
         model = AccountOpeningBalance
-        fields = ('id', 'account', 'name', 'opening_dr', 'opening_cr')
+        fields = ("id", "account", "name", "opening_dr", "opening_cr")
 
 
 class TransactionEntrySerializer(serializers.Serializer):
     date = serializers.ReadOnlyField()
     source_type = serializers.SerializerMethodField()
-    dr_amount = RoundedField(source='total_dr_amount')
-    cr_amount = RoundedField(source='total_cr_amount')
+    dr_amount = RoundedField(source="total_dr_amount")
+    cr_amount = RoundedField(source="total_cr_amount")
     accounts = serializers.ReadOnlyField()
     source_id = serializers.ReadOnlyField()
     count = serializers.ReadOnlyField()
@@ -337,17 +396,25 @@ class TransactionEntrySerializer(serializers.Serializer):
     def get_source_type(self, obj):
         from django.apps import apps
 
-        v_type = obj.content_type_model if obj.content_type_model else obj.journal_entry.content_type.model
-        app_label = obj.content_type_app_label if obj.content_type_app_label else obj.journal_entry.content_type.app_label
+        v_type = (
+            obj.content_type_model
+            if obj.content_type_model
+            else obj.journal_entry.content_type.model
+        )
+        app_label = (
+            obj.content_type_app_label
+            if obj.content_type_app_label
+            else obj.journal_entry.content_type.app_label
+        )
 
         m = apps.get_model(app_label, v_type)
-        if v_type[-4:] == ' row':
+        if v_type[-4:] == " row":
             v_type = v_type[:-3]
-        if v_type[-11:] == ' particular':
+        if v_type[-11:] == " particular":
             v_type = v_type[:-10]
-        if v_type == 'account':
-            return 'Opening Balance'
-        return m._meta.verbose_name.title().replace('Row', '').strip()
+        if v_type == "account":
+            return "Opening Balance"
+        return m._meta.verbose_name.title().replace("Row", "").strip()
 
     # class Meta:
     #     model = Transaction
@@ -368,17 +435,26 @@ class TransactionReportSerializer(serializers.ModelSerializer):
         v_type = obj.journal_entry.content_type.model
         m = apps.get_model(obj.journal_entry.content_type.app_label, v_type)
 
-        if v_type[-4:] == ' row':
+        if v_type[-4:] == " row":
             v_type = v_type[:-3]
-        if v_type[-11:] == ' particular':
+        if v_type[-11:] == " particular":
             v_type = v_type[:-10]
-        if v_type == 'account':
-            return 'Opening Balance'
-        return m._meta.verbose_name.title().replace('Row', '').strip()
+        if v_type == "account":
+            return "Opening Balance"
+        return m._meta.verbose_name.title().replace("Row", "").strip()
 
     class Meta:
         model = Transaction
-        fields = ["voucher_no", "date", "account", "source_type", "dr_amount", "cr_amount", "account_name", "category_id"]
+        fields = [
+            "voucher_no",
+            "date",
+            "account",
+            "source_type",
+            "dr_amount",
+            "cr_amount",
+            "account_name",
+            "category_id",
+        ]
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):
@@ -386,7 +462,7 @@ class ContentTypeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ContentType
-        fields = ('id', 'name', 'model')
+        fields = ("id", "name", "model")
 
     def get_name(self, obj):
         return obj.name.capitalize()
@@ -410,7 +486,4 @@ class AccountClosingSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccountClosing
         fields = ["company", "fiscal_period", "status"]
-        extra_kwargs = {
-            "status": {"read_only": True},
-            "company": {"read_only": True}
-        }
+        extra_kwargs = {"status": {"read_only": True}, "company": {"read_only": True}}

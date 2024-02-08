@@ -4,7 +4,7 @@ from apps.ledger.models import JournalEntry
 
 
 class Command(BaseCommand):
-    help = 'Delete journal entries without source transaction'
+    help = "Delete journal entries without source transaction"
 
     def handle(self, *args, **options):
         cnt = 0
@@ -13,4 +13,4 @@ class Command(BaseCommand):
                 cnt += 1
                 jv.delete()
 
-        print('{} orphan journal entries deleted!'.format(cnt))
+        print("{} orphan journal entries deleted!".format(cnt))

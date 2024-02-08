@@ -9,28 +9,47 @@ class ModuleAccessPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         model = view.get_queryset().model
-        if hasattr(model, 'key') and model.key and type(model.key) == str:
+        if hasattr(model, "key") and model.key and type(model.key) == str:
             _model_name = model.key
         else:
             _model_name = model.__name__
         modules = request.user.role_modules
 
-        list_permission = '{}View'.format(_model_name)
-        create_permission = '{}Create'.format(_model_name)
-        modify_permission = '{}Modify'.format(_model_name)
-        cancel_permission = '{}Cancel'.format(_model_name)
+        list_permission = "{}View".format(_model_name)
+        create_permission = "{}Create".format(_model_name)
+        modify_permission = "{}Modify".format(_model_name)
+        cancel_permission = "{}Cancel".format(_model_name)
 
-        if view.action == 'cancel' and request.method == 'POST' and cancel_permission in MODULES:
+        if (
+            view.action == "cancel"
+            and request.method == "POST"
+            and cancel_permission in MODULES
+        ):
             if cancel_permission not in modules:
-                raise PermissionDenied({'detail': "You don't have the permission to cancel %s." % _model_name})
+                raise PermissionDenied(
+                    {
+                        "detail": "You don't have the permission to cancel %s."
+                        % _model_name
+                    }
+                )
         else:
-            if request.method == 'GET' and list_permission not in modules:
-                raise PermissionDenied({'detail': self.message})
+            if request.method == "GET" and list_permission not in modules:
+                raise PermissionDenied({"detail": self.message})
 
-            if request.method == 'POST' and create_permission not in modules:
-                raise PermissionDenied({'detail': "You don't have the permission to create %s." % _model_name})
+            if request.method == "POST" and create_permission not in modules:
+                raise PermissionDenied(
+                    {
+                        "detail": "You don't have the permission to create %s."
+                        % _model_name
+                    }
+                )
 
-            if request.method == 'PUT' and modify_permission not in modules:
-                raise PermissionDenied({'detail': "You don't have the permission to update %s." % _model_name})
+            if request.method == "PUT" and modify_permission not in modules:
+                raise PermissionDenied(
+                    {
+                        "detail": "You don't have the permission to update %s."
+                        % _model_name
+                    }
+                )
 
         return True

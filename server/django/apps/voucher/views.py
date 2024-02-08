@@ -13,10 +13,9 @@ class SalesVoucherPdfView(PdfMixin, DetailView):
 
     def render(self):
         # retval = super(PdfResponse, self).render()
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="report.pdf"'
         pisa.CreatePDF(
-            self.rendered_content,
-            dest=response,
-            link_callback=fetch_resources)
+            self.rendered_content, dest=response, link_callback=fetch_resources
+        )
         return response
