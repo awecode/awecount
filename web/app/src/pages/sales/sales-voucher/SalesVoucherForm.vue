@@ -149,13 +149,13 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange-8" label="Save Draft"
           type="submit" class="issue-btn" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8"
+          @click.prevent="() => onSubmitClick('Draft')" :loading="loading" color="orange-8"
           :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" class="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading"
-          @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)"
+          @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')"
           color="green"
           :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`"
           class="issue-btn" />
@@ -220,12 +220,13 @@ export default {
         errors.rows.splice(index, 1)
       }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
-      fields.status = status
-      if (!partyMode.value) fields.customer_name = null
-      else fields.party = null
-      try { await submitForm() } catch (err) {
+      formData.fields.value.status = status
+      if (!partyMode.value) formData.fields.value.customer_name = null
+      else formData.fields.value.party = null
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

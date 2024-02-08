@@ -53,12 +53,12 @@
         <q-btn v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
           :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" icon="cancel" />
         <q-btn v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange"
           :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" />
         <q-btn v-if="checkPermissions('ChallanCreate') && !isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" />
+          @click.prevent="() => onSubmitClick('Issued')" color="green" label="Create" />
         <q-btn v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
-          @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status, fields, submitForm)"
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)"
           color="green" :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'" />
       </div>
     </q-card>
@@ -118,14 +118,13 @@ export default {
         errors.rows.splice(index, 1)
       }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
-      fields.status = status
-      if (fields.party) fields.mode = 'Credit'
-      else fields.mode = 'Cash'
-      try {
-        await submitForm()
-      } catch (err) {
+      formData.fields.value.status = status
+      if (formData.fields.value.party) formData.fields.value.mode = 'Credit'
+      else formData.fields.value.mode = 'Cash'
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

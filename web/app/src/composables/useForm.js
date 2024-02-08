@@ -122,7 +122,7 @@ export default (endpoint, config) => {
       postEndpoint = endpoint
     }
     const originalStatus = fields.value.status
-    await useApi(postEndpoint, {
+    return await useApi(postEndpoint, {
       method: isEdit.value ? 'PATCH' : 'POST',
       body: fields.value,
     })
@@ -211,7 +211,10 @@ export default (endpoint, config) => {
           })
         }
         loading.value = false
-        throw new Error('Api Error')
+        return {
+          error: 'Api Error'
+        }
+        // throw new Error('Api Error')
       })
   }
 

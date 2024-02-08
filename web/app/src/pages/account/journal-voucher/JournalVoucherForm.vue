@@ -1,32 +1,19 @@
 <template>
   <q-form class="q-pa-lg" autofocus>
-    <q-card class="q-pa-xs"
-      ><q-card-section>
+    <q-card class="q-pa-xs"><q-card-section>
         <q-card>
           <q-card-section class="bg-green text-white">
             <div class="text-h6">
-              <span v-if="isEdit"
-                >Update Journal Voucher | {{ fields.status }}</span
-              >
+              <span v-if="isEdit">Update Journal Voucher | {{ fields.status }}</span>
               <span v-else>New Journal Voucher</span>
             </div>
           </q-card-section>
           <q-card class="q-pt-md">
             <div class="row q-col-gutter-md q-px-md q-pb-md">
-              <q-input
-                v-model="fields.voucher_no"
-                label="Voucher No."
-                class="col-6"
-                :error-message="errors?.voucher_no"
-                :error="!!errors?.voucher_no"
-              />
-              <DatePicker
-                v-model="fields.date"
-                class="col-6"
-                label="Date"
-                :error-message="errors?.date"
-                :error="!!errors?.date"
-              ></DatePicker>
+              <q-input v-model="fields.voucher_no" label="Voucher No." class="col-6" :error-message="errors?.voucher_no"
+                :error="!!errors?.voucher_no" />
+              <DatePicker v-model="fields.date" class="col-6" label="Date" :error-message="errors?.date"
+                :error="!!errors?.date"></DatePicker>
             </div>
           </q-card>
         </q-card>
@@ -43,14 +30,9 @@
               </div>
             </div>
             <div v-for="(voucher, index) in fields.rows" :key="voucher.id">
-              <VoucherRow
-                :voucher="voucher"
-                :index="index"
-                :options="formDefaults.collections?.accounts"
-                :errors="errors?.rows ? errors.rows : null"
-                @deleteVoucher="(index) => deleteVoucher(index, errors)"
-                @checkAddVoucher="checkAddVoucher"
-              />
+              <VoucherRow :voucher="voucher" :index="index" :options="formDefaults.collections?.accounts"
+                :errors="errors?.rows ? errors.rows : null" @deleteVoucher="(index) => deleteVoucher(index, errors)"
+                @checkAddVoucher="checkAddVoucher" />
             </div>
             <div class="row q-col-gutter-md q-py-sm text-right text-bold">
               <div class="q-mr-md"></div>
@@ -64,66 +46,27 @@
               </div>
               <div class="col-2"></div>
             </div>
-            <q-btn
-              @click.prevent="addNewVoucher"
-              outline
-              style="color: green"
-              label="ADD NEW ROW"
-              class="q-mt-lg"
-            />
+            <q-btn @click.prevent="addNewVoucher" outline style="color: green" label="ADD NEW ROW" class="q-mt-lg" />
           </q-card-section>
         </q-card>
       </q-card-section>
 
       <div class="row">
-        <q-input
-          v-model="fields.narration"
-          type="textarea"
-          autogrow
-          label="Narration *"
-          class="col-12 q-pa-md q-mb-md"
-          :error-message="errors?.narration"
-          :error="!!errors?.narration"
-        />
+        <q-input v-model="fields.narration" type="textarea" autogrow label="Narration *" class="col-12 q-pa-md q-mb-md"
+          :error-message="errors?.narration" :error="!!errors?.narration" />
       </div>
       <div class="row q-ma-md justify-end">
-        <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
-          @click.prevent="onSubmitClick('Unapproved')"
-          color="orange-7"
-          icon="fa-solid fa-pen-to-square"
-          label="Draft"
-          class="q-mr-md q-py-sm"
-          type="submit"
-        />
-        <q-btn
-          v-if="
-            checkPermissions('JournalVoucherModify') &&
-            isEdit &&
-            fields.status === 'Draft'
-          "
-          @click.prevent="onSubmitClick('Unapproved')"
-          color="orange-7"
-          icon="fa-solid fa-pen-to-square"
-          label="Save Draft"
-          class="q-mr-md q-py-sm"
-          type="submit"
-        />
-        <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
-          @click.prevent="onSubmitClick('Approved')"
-          color="green-8"
-          icon="fa-solid fa-floppy-disk"
-          label="Save"
-        />
-        <q-btn
-          v-if="checkPermissions('JournalVoucherModify') && isEdit"
-          @click.prevent="onSubmitClick('Approved')"
-          color="green-8"
-          icon="fa-solid fa-floppy-disk"
-          label="Update"
-          type="submit"
-        />
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Unapproved')"
+          color="orange-7" icon="fa-solid fa-pen-to-square" label="Draft" class="q-mr-md q-py-sm" type="submit" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') &&
+          isEdit &&
+          fields.status === 'Draft'
+          " @click.prevent="onSubmitClick('Unapproved')" color="orange-7" icon="fa-solid fa-pen-to-square"
+          label="Save Draft" class="q-mr-md q-py-sm" type="submit" />
+        <q-btn v-if="checkPermissions('JournalVoucherCreate') && !isEdit" @click.prevent="onSubmitClick('Approved')"
+          color="green-8" icon="fa-solid fa-floppy-disk" label="Save" />
+        <q-btn v-if="checkPermissions('JournalVoucherModify') && isEdit" @click.prevent="onSubmitClick('Approved')"
+          color="green-8" icon="fa-solid fa-floppy-disk" label="Update" type="submit" />
       </div>
     </q-card>
   </q-form>
@@ -143,7 +86,7 @@ const add = (a, b) => {
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const endpoint = '/v1/journal-voucher/'
     const updateVoucher = (e, i) => {
       formData.fields.value.rows[i] = e
@@ -231,9 +174,8 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {
-        await formData.submitForm()
-      } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

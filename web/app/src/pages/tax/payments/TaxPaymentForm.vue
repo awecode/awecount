@@ -86,7 +86,6 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/tax-payments/'
-    // const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
@@ -104,7 +103,8 @@ export default {
     async function submitWithStatus(status) {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await formData.submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

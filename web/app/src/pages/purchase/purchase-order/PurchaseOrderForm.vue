@@ -37,9 +37,9 @@
         <q-btn v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'" :loading="loading"
           @click.prevent="isDeleteOpen = true" color="red" label="Cancel" icon="cancel" />
         <q-btn v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'" :loading="loading"
-          @click.prevent="onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" />
+          @click.prevent="onSubmitClick('Issued')" color="green" label="Update" />
         <q-btn v-if="checkPermissions('PurchaseOrderCreate') && !isEdit"
-          @click.prevent="onSubmitClick('Issued', fields, submitForm)" :loading="loading" color="green" label="Issue" />
+          @click.prevent="onSubmitClick('Issued')" :loading="loading" color="green" label="Issue" />
       </div>
     </q-card>
     <q-dialog v-model="isDeleteOpen" @before-hide="delete errors?.message">
@@ -100,10 +100,11 @@ export default {
         errors.rows.splice(index, 1)
       }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
-      fields.status = status
-      try { await submitForm() } catch (err) {
+      formData.fields.value.status = status
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

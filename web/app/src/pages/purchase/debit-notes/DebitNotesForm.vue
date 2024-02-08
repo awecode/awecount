@@ -87,12 +87,12 @@
       </div>
       <div v-if="checkPermissions('DebitNoteCreate')"
         class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange"
+        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft')" color="orange"
           label="Save Draft" :disable="fields.invoices ? false : true" type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft'" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
           :disable="fields.invoices ? false : true" type="submit" />
-        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)" :loading="loading" color="green"
+        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')" :loading="loading" color="green"
           :label="isEdit ? fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
@@ -158,10 +158,11 @@ export default {
         errors.rows.splice(index, 1)
       }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }
