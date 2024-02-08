@@ -712,9 +712,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             txn_qs = base_txn_qs.filter(running__lte=req_qty)
             count = len(txn_qs)
             if count:
-                updated_txns = [
-                    txn for txn in txn_qs if not setattr(txn, "remaining_quantity", 0)
-                ]
+                updated_txns = []
 
                 # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
 
@@ -733,6 +731,10 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
                 for txn in txn_qs:
                     transaction.consumption_data[txn.id] = txn.remaining_quantity
+
+                updated_txns += [
+                    txn for txn in txn_qs if not setattr(txn, "remaining_quantity", 0)
+                ]
 
                 Transaction.objects.bulk_update(updated_txns, ["remaining_quantity"])
 
