@@ -2,8 +2,7 @@
   <div :class="usedInPos ? '-mt-12' : ''">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
-        <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-          <!-- TODO: solve error -->
+        <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'" data-testid="item">
           <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
               ? false
