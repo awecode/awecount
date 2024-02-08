@@ -545,6 +545,12 @@ class Transaction(models.Model):
     journal_entry = models.ForeignKey(
         JournalEntry, related_name="transactions", on_delete=models.CASCADE
     )
+    rate = models.FloatField(null=True, blank=True)
+    remaining_quantity = models.IntegerField(null=True, blank=True)
+    consumption_data = models.JSONField(null=True, blank=True)
+    fifo_inconsistency_quantity = models.IntegerField(
+        null=True, blank=True
+    )  # This is the quantity that is not accounted for in the fifo, or say which is not consumed
 
     def __str__(self):
         return (
@@ -711,9 +717,10 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 ]
 
                 # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
-                txn_highest = txn_qs[
-                    count - 1
-                ]  # the last transaction i.e. the one with the highest running (< req_qty)
+
+                # the last transaction i.e. the one with the highest running (< req_qty)
+                txn_highest = txn_qs[count - 1]
+
                 if txn_highest.running < req_qty:
                     tx_next = base_txn_qs.filter(running__gt=req_qty).first()
                     req_qty -= txn_highest.running
