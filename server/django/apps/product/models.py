@@ -385,7 +385,7 @@ class Transaction(models.Model):
     rate = models.FloatField(null=True, blank=True)
     remaining_quantity = models.IntegerField(null=True, blank=True)
     consumption_data = models.JSONField(null=True, blank=True)
-    fifo_inconsistency_qty = models.IntegerField(null=True, blank=True) # This is the quantity that is not accounted for in the fif, or say which is not consumed
+    fifo_inconsistency_quantity = models.IntegerField(null=True, blank=True) # This is the quantity that is not accounted for in the fifo, or say which is not consumed
 
     def __str__(self):
         return str(self.account) + ' [' + str(self.dr_amount) + ' / ' + str(self.cr_amount) + ']'
