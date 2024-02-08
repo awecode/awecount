@@ -1,22 +1,29 @@
 import requests
 from django.contrib import admin, messages
-from django.db import transaction
-from django.db.models import ProtectedError
+from django.db import models, transaction
 
-from apps.product.models import InventorySetting, Item, Unit, Category, JournalEntry, Transaction, InventoryAccount, \
-    Brand
+from apps.product.models import (
+    Brand,
+    Category,
+    InventoryAccount,
+    InventorySetting,
+    Item,
+    JournalEntry,
+    Transaction,
+    Unit,
+)
 
 
 def merge_brands(modeladmin, request, queryset):
     count = len(queryset)
     if count < 2:
-        messages.warning(request, 'Select at least two brands.')
+        messages.warning(request, "Select at least two brands.")
     else:
         first_brand = queryset[0]
         for brand in queryset[1:]:
             Item.objects.filter(brand=brand).update(brand=first_brand)
             brand.delete()
-        messages.success(request, 'Merged {} brands'.format(count))
+        messages.success(request, "Merged {} brands".format(count))
 
 
 merge_brands.short_description = "Merge brands"
@@ -25,7 +32,7 @@ merge_brands.short_description = "Merge brands"
 def delete_item_data(modeladmin, request, queryset):
     count = len(queryset)
     if count > 1:
-        messages.warning(request, 'Please select only one item.')
+        messages.warning(request, "Please select only one item.")
     else:
         item = queryset[0]
         try:
@@ -38,9 +45,9 @@ def delete_item_data(modeladmin, request, queryset):
                 item.expense_account and item.expense_account.delete()
                 item.fixed_asset_account and item.fixed_asset_account.delete()
                 item.delete()
-                messages.success(request, 'Deleted items!'.format(count))
-        except ProtectedError:
-            messages.error(request, 'Cannot delete! Transactions exist.'.format(count))
+                messages.success(request, "Deleted items!".format())
+        except models.ProtectedError:
+            messages.error(request, "Cannot delete! Transactions exist.".format())
 
 
 delete_item_data.short_description = "Delete Full Item Data"
@@ -50,85 +57,99 @@ def fix_book_title(modeladmin, request, queryset):
     saved_cnt = 0
     skipped_cnt = 0
     for item in queryset:
-        url = 'https://tbe.thuprai.com/v1/book/isbn/{}/'.format(item.code)
+        url = "https://tbe.thuprai.com/v1/book/isbn/{}/".format(item.code)
         response = requests.get(url)
         if response.ok:
             book_detail = response.json()
-            if book_detail.get('english_title'):
-                item.name = book_detail.get('english_title')
+            if book_detail.get("english_title"):
+                item.name = book_detail.get("english_title")
                 item.save()
                 saved_cnt += 1
             else:
                 skipped_cnt += 1
         else:
             skipped_cnt += 1
-    messages.warning(request, 'Saved {} items, skipped {} items'.format(saved_cnt, skipped_cnt))
+    messages.warning(
+        request, "Saved {} items, skipped {} items".format(saved_cnt, skipped_cnt)
+    )
 
 
 fix_book_title.short_description = "Fix book title to English"
 
 
-class ItemAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'code', 'description', 'selling_price', 'cost_price')
+admin.site.register(JournalEntry)
+admin.site.register(InventorySetting)
+
+
+@admin.register(Unit)
+class UnitAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+        "short_name",
+    )
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    search_fields = ("name", "description")
+    list_filter = ("company",)
+    actions = [merge_brands]
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    search_fields = ("name", "company__name")
     list_filter = (
-        'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense',
-        'company')
-    list_display = ('code', 'name', 'cost_price', 'selling_price', 'brand')
+        "track_inventory",
+        "can_be_sold",
+        "can_be_purchased",
+        "fixed_asset",
+        "direct_expense",
+        "indirect_expense",
+    )
+
+
+@admin.register(Item)
+class ItemAdmin(admin.ModelAdmin):
+    search_fields = ("name", "code", "description", "selling_price", "cost_price")
+    list_filter = (
+        "track_inventory",
+        "can_be_sold",
+        "can_be_purchased",
+        "fixed_asset",
+        "direct_expense",
+        "indirect_expense",
+        "company",
+    )
+    list_display = ("code", "name", "cost_price", "selling_price", "brand")
     actions = (delete_item_data, fix_book_title)
     readonly_fields = (
-        'account', 'sales_account', 'purchase_account', 'discount_allowed_account', 'discount_received_account',
-        'expense_account', 'fixed_asset_account')
+        "account",
+        "sales_account",
+        "expense_account",
+        "purchase_account",
+        "fixed_asset_account",
+        "discount_allowed_account",
+        "discount_received_account",
+    )
     autocomplete_fields = (
-        'brand', 'category', 'unit', 'tax_scheme', 'company', 'dedicated_sales_account', 'dedicated_purchase_account',
-        'dedicated_discount_allowed_account', 'dedicated_discount_received_account')
+        "brand",
+        "unit",
+        "company",
+        "category",
+        "tax_scheme",
+        "dedicated_sales_account",
+        "dedicated_purchase_account",
+        "dedicated_discount_allowed_account",
+        "dedicated_discount_received_account",
+    )
 
 
-class UnitAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'short_name',)
-
-
-class CategoryAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'company__name')
-    list_filter = (
-        'track_inventory', 'can_be_sold', 'can_be_purchased', 'fixed_asset', 'direct_expense', 'indirect_expense')
-
-
-admin.site.register(Category, CategoryAdmin)
-
-
+@admin.register(InventoryAccount)
 class InventoryAccountAdmin(admin.ModelAdmin):
-    search_fields = ('code', 'name', 'account_no')
+    search_fields = ("code", "name", "account_no")
 
 
-admin.site.register(Item, ItemAdmin)
-admin.site.register(InventoryAccount, InventoryAccountAdmin)
-
-admin.site.register(Transaction)
-admin.site.register(Unit, UnitAdmin)
-
-
-class BrandAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'description')
-    list_filter = ('company',)
-    actions = [merge_brands, ]
-
-
-admin.site.register(Brand, BrandAdmin)
-
-
-@admin.register(InventorySetting)
-class InventorySettingAdmin(admin.ModelAdmin):
-    # list_display = []
-    pass
-
-
-class TransactionInline(admin.TabularInline):
-    model = Transaction
-    extra = 0
-
-
-class JournalEntryAdmin(admin.ModelAdmin):
-    inlines = [TransactionInline, ]
-
-
-admin.site.register(JournalEntry, JournalEntryAdmin)
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    raw_id_fields = ("journal_entry",)

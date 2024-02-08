@@ -1,5 +1,5 @@
 from .prod import *
-#from .dev import * # noqa
+# from .dev import * # noqa
 
 # DATABASES = {
 #     "default": {

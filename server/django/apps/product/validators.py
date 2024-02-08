@@ -14,6 +14,6 @@ class CustomUniqueTogetherValidator(UniqueTogetherValidator):
             value for field, value in attrs.items() if field in self.fields
         ]
         if qs_exists(queryset):
-            field_names = ', '.join(self.fields)
+            field_names = ", ".join(self.fields)
             message = self.message.format(field_names=field_names)
-            raise ValidationError(message, code='unique')
+            raise ValidationError(message, code="unique")
