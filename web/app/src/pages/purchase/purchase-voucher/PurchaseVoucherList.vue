@@ -79,7 +79,7 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center" v-if="checkPermissions('PurchaseVoucherView')">
             <q-btn color="blue" label="View" :to="`/purchase-voucher/${props.row.id}/view`"
-              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
+              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" data-testid="view-btn" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
