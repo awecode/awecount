@@ -81,8 +81,8 @@
               </div>
               <div class="col-6 row">
                 <div :class="formDefaults.options?.show_trade_discount_in_voucher
-                    ? 'col-6'
-                    : 'col-12'
+                  ? 'col-6'
+                  : 'col-12'
                   " v-if="fields.discount_type === 'Amount' ||
     fields.discount_type === 'Percent'
     ">
@@ -150,15 +150,14 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
-          type="submit" class="issue-btn" />
+          type="submit" data-testid="issue-btn" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8"
-          :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" class="draft-btn" />
+          :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" data-testid="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)"
           color="green"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`"
-          class="issue-btn" />
+          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" data-testid="create/update-btn" />
       </div>
     </q-card>
   </q-form>
