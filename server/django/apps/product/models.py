@@ -488,7 +488,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction = matches[0]
             diff = zero_for_none(transaction.cr_amount)
             diff -= zero_for_none(transaction.dr_amount)
-        if arg[0] == 'dr':
+        if arg[0] in ['dr', 'ob']:
             transaction.cr_amount = None
             transaction.dr_amount = float(arg[2])
             transaction.remaining_quantity = float(arg[2])
@@ -537,12 +537,6 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     transaction.consumption_data[tx_next.id] =  req_qty
                 else:
                     transaction.fifo_inconsistency_quantity = req_qty
-
-        elif arg[0] == 'ob':
-            transaction.cr_amount = None
-            transaction.dr_amount = float(arg[2])
-            transaction.remaining_quantity = float(arg[2])
-            diff += float(arg[2])
         else:
             raise Exception('Transactions can only be either "dr" or "cr".')
         transaction.account = arg[1]
