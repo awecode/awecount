@@ -503,9 +503,9 @@ def set_inventory_transactions(model, date, *args, clear=True):
             req_qty = float(arg[2])
 
             base_txn_qs = Transaction.objects.filter(account=arg[1], cr_amount=None, remaining_quantity__gt=0)\
-                            .annotate(running=Window(expression=Sum('remaining_quantity'), order_by=F('id').asc())) \
-                            .order_by('id').only('id', 'remaining_quantity')
-            
+                            .annotate(running=Window(expression=Sum('remaining_quantity'), order_by=['journal_entry__date', 'id'])) \
+                            .order_by('journal_entry__date', 'id').only('id', 'remaining_quantity')
+
             txn_qs = base_txn_qs.filter(running__lte=req_qty)
             count = len(txn_qs)
             if count:
