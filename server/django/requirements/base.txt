@@ -1,4 +1,4 @@
-Django==4.2.9
+Django==4.2.10
 psycopg[binary]==3.1.18
 Pillow
 django-rest-framework
