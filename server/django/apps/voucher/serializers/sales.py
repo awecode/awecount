@@ -7,7 +7,6 @@ from rest_framework.exceptions import ValidationError
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
-from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
@@ -484,11 +483,6 @@ class SalesVoucherCreateSerializer(
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
-            if request.company.inventory_setting.enable_fifo and not request.data.get(
-                "invoices"
-            ):
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
                 row.pop("id")
@@ -503,14 +497,6 @@ class SalesVoucherCreateSerializer(
         return instance
 
     def update(self, instance, validated_data):
-        request = self.context["request"]
-        if request.company.inventory_setting.enable_fifo:
-            res = fifo_cancel_sales(instance, False)
-            # if request.query_params.get("fifo_inconsistency"):
-            #     res = fifo_cancel_sales(instance, False)
-            # else:
-            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
-
         if validated_data["status"] == "Issued":
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
@@ -532,11 +518,6 @@ class SalesVoucherCreateSerializer(
 
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo and not request.data.get(
-                "invoices"
-            ):
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             SalesVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
@@ -906,9 +887,6 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         validated_data["user_id"] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
         # TODO: Sync with CBMS
@@ -916,23 +894,12 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         return instance
 
     def update(self, instance, validated_data):
-        request = self.context["request"]
-        if request.company.inventory_setting.enable_fifo:
-            res = fifo_cancel_sales(instance, False)
-            # if request.query_params.get("fifo_inconsistency"):
-            #     res = fifo_cancel_sales(instance, False)
-            # else:
-            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
-
         rows_data = validated_data.pop("rows")
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
         Challan.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             ChallanRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )

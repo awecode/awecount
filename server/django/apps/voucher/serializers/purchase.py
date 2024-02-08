@@ -7,7 +7,6 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
-from ..fifo_functions import fifo_handle_purchase_update
 from ..models import (
     PurchaseDiscount,
     PurchaseOrder,
@@ -189,8 +188,6 @@ class PurchaseVoucherCreateSerializer(
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo:
-                fifo_handle_purchase_update(instance, row)
             PurchaseVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )

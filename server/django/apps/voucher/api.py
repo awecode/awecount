@@ -37,7 +37,6 @@ from apps.product.serializers import (
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
-from apps.voucher.fifo_functions import fifo_cancel_sales
 from apps.voucher.filters import (
     ChallanFilterSet,
     CreditNoteFilterSet,
@@ -325,10 +324,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if not message:
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
-            )
-        if request.company.inventory_setting.enable_fifo:
-            fifo_cancel_sales(
-                sales_voucher, request.query_params.get("fifo_inconsistency")
             )
         sales_voucher.cancel(message)
         return Response({})
@@ -624,70 +619,6 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             return Response({})
         except Exception as e:
             raise APIException(str(e))
-
-    # TODO: Optimize and refactor
-    def update_rows(self, rows, row_id):
-        for row in rows:
-            sold_items = row.sold_items
-            quantity = sold_items.pop(str(row_id))
-            purchase_rows = PurchaseVoucherRow.objects.filter(
-                item_id=row.item_id, remaining_quantity__gt=0
-            ).order_by("voucher__date", "id")
-            for purchase_row in purchase_rows:
-                if purchase_row.remaining_quantity == quantity:
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-                    if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)][0] += quantity
-                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
-                    else:
-                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                    break
-                elif purchase_row.remaining_quantity > quantity:
-                    purchase_row.remaining_quantity -= quantity
-                    purchase_row.save()
-                    if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)][0] += quantity
-                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
-                    else:
-                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
-                    break
-                else:
-                    quantity -= purchase_row.remaining_quantity
-                    if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)][
-                            0
-                        ] += purchase_row.remaining_quantity
-                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
-                    else:
-                        sold_items[str(purchase_row.id)] = [
-                            purchase_row.remaining_quantity,
-                            purchase_row.rate,
-                        ]
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-            row.sold_items = sold_items
-            row.save()
-
-    def fifo_update_sales_rows(self, purchase_voucher):
-        rows = purchase_voucher.rows.select_related("item").all()
-
-        for row in rows:
-            if row.item.track_inventory:
-                row.remaining_quantity = 0
-                row.save()
-
-                # Update sales rows
-                sales_voucher_rows = SalesVoucherRow.objects.filter(
-                    sold_items__has_key=str(row.id)
-                )
-                self.update_rows(sales_voucher_rows, row.id)
-
-                # Update challan rows
-                challan_rows = ChallanRow.objects.filter(
-                    sold_items__has_key=str(row.id)
-                )
-                self.update_rows(challan_rows, row.id)
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
@@ -1870,8 +1801,6 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
             )
-        if request.company.inventory_setting.enable_fifo:
-            fifo_cancel_sales(challan, request.query_params.get("fifo_inconsistency"))
         challan.cancel(message)
         return Response({})
 

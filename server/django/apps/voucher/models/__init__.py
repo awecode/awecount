@@ -123,7 +123,6 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    sold_items = models.JSONField(blank=True, null=True)
 
     # Model key for module based permission
     key = "Challan"
@@ -418,8 +417,6 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
 
-    sold_items = models.JSONField(blank=True, null=True)
-
     # Model key for module based permission
     key = "Sales"
 
@@ -682,8 +679,6 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
         TaxScheme, blank=True, null=True, on_delete=models.SET_NULL
     )
 
-    remaining_quantity = models.FloatField(blank=True, null=True)
-
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
@@ -772,64 +767,6 @@ class CreditNote(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
     def cancel(self):
-        if self.company.inventory_setting.enable_fifo:
-            credit_note_rows = self.rows.all().values("sales_row_data__id", "quantity")
-            sales_vouchers = self.invoices.all()
-
-            credit_note_rows_dict = {
-                row["sales_row_data__id"]: row["quantity"] for row in credit_note_rows
-            }
-
-            for voucher in sales_vouchers:
-                sales_rows = voucher.rows.filter(sold_items__isnull=False)
-                for row in sales_rows:
-                    if row.id not in credit_note_rows_dict:
-                        continue
-
-                    sold_items = row.sold_items
-                    quantity = credit_note_rows_dict[row.id]
-
-                    # handle opening stock
-                    if "OB" in sold_items:
-                        inv_account = row.item.account
-                        ob_qty, ob_rate = sold_items.pop("OB")
-                        used_quantity = min(
-                            quantity - ob_qty, inv_account.opening_quantity
-                        )
-
-                        inv_account.opening_quantity -= used_quantity
-                        inv_account.save(update_fields=["opening_quantity"])
-
-                        row.sold_items["OB"] = [ob_qty + used_quantity, ob_rate]
-                        row.save(update_fields=["sold_items"])
-
-                        quantity -= used_quantity
-
-                        if quantity <= 0:
-                            continue
-
-                    # handle purchase rows
-                    purchase_row_ids = [id for id in sold_items.keys() if id != "OB"]
-                    for purchase_row in PurchaseVoucherRow.objects.filter(
-                        id__in=purchase_row_ids
-                    ).order_by("voucher__date", "id"):
-                        if quantity <= 0:
-                            break
-                        p_qty = sold_items[str(purchase_row.id)][0]
-                        used_quantity = min(
-                            quantity - p_qty, purchase_row.remaining_quantity
-                        )
-
-                        purchase_row.remaining_quantity -= used_quantity
-                        purchase_row.save(update_fields=["remaining_quantity"])
-
-                        row.sold_items[str(purchase_row.id)] = [
-                            p_qty + used_quantity,
-                            purchase_row.rate,
-                        ]
-                        row.save(update_fields=["sold_items"])
-
-                        quantity -= used_quantity
         return super().cancel()
 
     def apply_inventory_transaction(voucher):
@@ -983,7 +920,6 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     tax_scheme = models.ForeignKey(
         TaxScheme, on_delete=models.CASCADE, related_name="credit_note_rows"
     )
-    sales_row_data = models.JSONField(blank=True, default=dict)
 
 
 class DebitNote(TransactionModel, InvoiceModel):
@@ -1029,21 +965,6 @@ class DebitNote(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
     def cancel(self):
-        if self.company.inventory_setting.enable_fifo:
-            rows = self.rows.all()
-            for row in rows:
-                purchase_row_data = row.purchase_row_data
-                if purchase_row_data == {}:
-                    return
-                keys = [int(k) for k, v in purchase_row_data.items()]
-                purchase_rows = PurchaseVoucherRow.objects.filter(id__in=keys)
-                for purchase_row in purchase_rows:
-                    purchase_row.remaining_quantity += purchase_row_data[
-                        str(purchase_row.id)
-                    ]
-                    row.purchase_row_data.pop(str(purchase_row.id))
-                    row.save()
-                    purchase_row.save()
         return super().cancel()
 
     def apply_inventory_transaction(self):
