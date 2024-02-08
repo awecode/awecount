@@ -34,31 +34,31 @@ class LogEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LogEntry
-        exclude = ('timestamp', 'changes')
+        exclude = ("timestamp", "changes")
 
 
 class WidgetSerializer(serializers.ModelSerializer):
-    data = serializers.ReadOnlyField(source='get_data')
+    data = serializers.ReadOnlyField(source="get_data")
 
     class Meta:
         model = Widget
-        exclude = ('user',)
+        exclude = ("user",)
 
 
 class WidgetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = ('id', 'name', 'widget', 'order', 'group_by', 'count', 'display_type', 'is_active')
+        fields = ("id", "name", "widget", "order", "group_by", "count", "display_type", "is_active")
 
 
 class WidgetUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        if data.get('count') < 1:
+        if data.get("count") < 1:
             # TODO proper exception message
-            raise APIException({'detail': 'Count is set as 0'})
-        data['user_id'] = self.context.get('request').user.id
+            raise APIException({"detail": "Count is set as 0"})
+        data["user_id"] = self.context.get("request").user.id
         return data
 
     class Meta:
         model = Widget
-        exclude = ('user', 'name', 'order')
+        exclude = ("user", "name", "order")

@@ -1,16 +1,19 @@
 import requests
 from django import forms
 from django.contrib import admin, messages
-from django.contrib.auth.admin import UserAdmin, UserChangeForm as DjangoUserChangeForm, \
-    UserCreationForm as DjangoUserCreationForm
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserChangeForm as DjangoUserChangeForm
+from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 
 from apps.ledger.models import handle_company_creation
-from apps.voucher.models.voucher_settings import handle_company_creation as create_settings
-from apps.product.models import Unit, Category as InventoryCategory, Item, Brand
+from apps.product.models import Brand, Item, Unit
+from apps.product.models import Category as InventoryCategory
 from apps.tax.models import TaxScheme
-from .models import User, Company, Role, FiscalYear, AccessKey
+from apps.voucher.models.voucher_settings import handle_company_creation as create_settings
+
+from .models import AccessKey, Company, FiscalYear, Role, User
 
 admin.site.unregister(Group)
 
@@ -29,9 +32,8 @@ create_company_defaults.short_description = "Create company defaults"
 
 
 class UserCreationForm(DjangoUserCreationForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(
-        label='Password confirmation', widget=forms.PasswordInput)
+    password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Password confirmation", widget=forms.PasswordInput)
 
     class Meta:
         model = User
@@ -66,33 +68,67 @@ class UserChangeForm(DjangoUserChangeForm):
 
 
 class CustomUserAdmin(UserAdmin):
-    ordering = ('email',)
+    ordering = ("email",)
     form = UserChangeForm
     add_form = UserCreationForm
     filter_horizontal = ()
-    list_display_links = ('id', 'full_name', 'email', 'date_joined',)
-    list_display = ('id', 'full_name', 'email', 'date_joined', 'company', 'is_superuser',)
-    list_filter = ('is_superuser',)
-    fieldsets = ((None,
-                  {'fields': ('full_name',
-                              'email',
-                              'password',
-                              'date_joined',
-                              'last_login',
-                              'company',
-                              'roles',
-                              'is_superuser',)}),
-                 )
-    add_fieldsets = ((None,
-                      {'fields': ('full_name',
-                                  'email',
-                                  'password1',
-                                  'password2',
-                                  'company',
-                                  )}),
-                     )
-    search_fields = ('full_name', 'email', 'company__name', 'is_superuser',)
-    readonly_fields = ('is_superuser', 'date_joined', 'last_login',)
+    list_display_links = (
+        "id",
+        "full_name",
+        "email",
+        "date_joined",
+    )
+    list_display = (
+        "id",
+        "full_name",
+        "email",
+        "date_joined",
+        "company",
+        "is_superuser",
+    )
+    list_filter = ("is_superuser",)
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "full_name",
+                    "email",
+                    "password",
+                    "date_joined",
+                    "last_login",
+                    "company",
+                    "roles",
+                    "is_superuser",
+                )
+            },
+        ),
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "full_name",
+                    "email",
+                    "password1",
+                    "password2",
+                    "company",
+                )
+            },
+        ),
+    )
+    search_fields = (
+        "full_name",
+        "email",
+        "company__name",
+        "is_superuser",
+    )
+    readonly_fields = (
+        "is_superuser",
+        "date_joined",
+        "last_login",
+    )
 
 
 admin.site.register(User, CustomUserAdmin)
@@ -103,9 +139,9 @@ def setup_nepali_tax_schemes(modeladmin, request, queryset):
     for company in queryset:
         try:
             tax_schemes = TaxScheme.setup_nepali_tax_schemes(company)
-            messages.success(request, '{} tax scheme(s) created!'.format(len(tax_schemes)))
+            messages.success(request, "{} tax scheme(s) created!".format(len(tax_schemes)))
         except IntegrityError:
-            messages.error(request, 'One or more tax schemes already exist!')
+            messages.error(request, "One or more tax schemes already exist!")
 
 
 setup_nepali_tax_schemes.short_description = "Setup Nepali Tax Schemes"
@@ -115,9 +151,9 @@ def setup_basic_units(modeladmin, request, queryset):
     for company in queryset:
         try:
             units = Unit.create_default_units(company)
-            messages.success(request, '{} unit(s) created!'.format(len(units)))
+            messages.success(request, "{} unit(s) created!".format(len(units)))
         except IntegrityError:
-            messages.error(request, 'One or more units already exist!')
+            messages.error(request, "One or more units already exist!")
 
 
 setup_basic_units.short_description = "Setup Basic Units"
@@ -125,9 +161,8 @@ setup_basic_units.short_description = "Setup Basic Units"
 
 def create_book_category(modeladmin, request, queryset):
     for company in queryset:
-        unit, __ = Unit.objects.get_or_create(short_name='pcs', company=company, defaults={'name': 'Pieces'})
-        tax, __ = TaxScheme.objects.get_or_create(short_name='Taxless', company=company,
-                                                  defaults={'name': 'Taxless', 'rate': 0})
+        unit, __ = Unit.objects.get_or_create(short_name="pcs", company=company, defaults={"name": "Pieces"})
+        tax, __ = TaxScheme.objects.get_or_create(short_name="Taxless", company=company, defaults={"name": "Taxless", "rate": 0})
         extra_fields = [
             {"name": "nepali_title", "type": "Text", "enable_search": True},
             {"name": "english_subtitle", "type": "Text", "enable_search": False},
@@ -146,16 +181,13 @@ def create_book_category(modeladmin, request, queryset):
             {"name": "height", "type": "Text", "enable_search": False},
             {"name": "width", "type": "Text", "enable_search": False},
             {"name": "thickness", "type": "Text", "enable_search": False},
-            {"name": "weight", "type": "Text", "enable_search": False}
+            {"name": "weight", "type": "Text", "enable_search": False},
         ]
         try:
-            InventoryCategory.objects.create(name='Book', code='book', company=company, default_unit=unit,
-                                             default_tax_scheme=tax,
-                                             track_inventory=True, can_be_sold=True, can_be_purchased=True,
-                                             extra_fields=extra_fields)
-            messages.success(request, 'Book category created!')
+            InventoryCategory.objects.create(name="Book", code="book", company=company, default_unit=unit, default_tax_scheme=tax, track_inventory=True, can_be_sold=True, can_be_purchased=True, extra_fields=extra_fields)
+            messages.success(request, "Book category created!")
         except IntegrityError:
-            messages.error(request, 'Book category already exists!')
+            messages.error(request, "Book category already exists!")
 
 
 create_book_category.short_description = "Create Book Category"
@@ -163,32 +195,27 @@ create_book_category.short_description = "Create Book Category"
 
 def import_sold_books(modeladmin, request, queryset):
     for company in queryset:
-        url = 'https://thuprai.com/book/bestsellers.json'
+        url = "https://thuprai.com/book/bestsellers.json"
         sold_list = requests.get(url).json()
-        category = InventoryCategory.objects.get(name='Book', code='book', company=company)
+        category = InventoryCategory.objects.get(name="Book", code="book", company=company)
         for obj in sold_list:
-            item, __ = Item.objects.get_or_create(code=obj[1], company=company,
-                                                  defaults={'name': obj[0], 'selling_price': obj[2],
-                                                            'unit_id': category.default_unit_id,
-                                                            'tax_scheme_id': category.default_tax_scheme_id,
-                                                            'category': category})
+            item, __ = Item.objects.get_or_create(code=obj[1], company=company, defaults={"name": obj[0], "selling_price": obj[2], "unit_id": category.default_unit_id, "tax_scheme_id": category.default_tax_scheme_id, "category": category})
             if not item.brand_id and obj[3]:
                 brand, __ = Brand.objects.get_or_create(name=obj[3], company=company)
                 item.brand = brand
                 item.save()
 
-        messages.success(request, '{} books imported!'.format(len(sold_list)))
+        messages.success(request, "{} books imported!".format(len(sold_list)))
 
 
 import_sold_books.short_description = "Import Sold Books"
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'address', 'contact_no', 'emails', 'tax_registration_number')
-    list_display = ('name', 'address', 'contact_no', 'emails', 'tax_registration_number')
-    list_filter = ('organization_type',)
-    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category,
-               import_sold_books]
+    search_fields = ("name", "address", "contact_no", "emails", "tax_registration_number")
+    list_display = ("name", "address", "contact_no", "emails", "tax_registration_number")
+    list_filter = ("organization_type",)
+    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -198,22 +225,23 @@ admin.site.register(Company, CompanyAdmin)
 
 
 class FiscalYearAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date')
+    list_display = ("name", "start_date", "end_date")
 
     def start_date(self, obj):
-        return obj.start.strftime('%d-%m-%Y')
+        return obj.start.strftime("%d-%m-%Y")
 
     def end_date(self, obj):
-        return obj.end.strftime('%d-%m-%Y')
+        return obj.end.strftime("%d-%m-%Y")
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
 
 
 class AccessKeyAdmin(admin.ModelAdmin):
-    list_display = ('user', 'key', 'enabled')
-    list_filter = ('user', 'user__company', 'enabled')
-    readonly_fields = ('created_at',)
-    search_fields = ('user__full_name', 'user__company__name', 'key')
-    
+    list_display = ("user", "key", "enabled")
+    list_filter = ("user", "user__company", "enabled")
+    readonly_fields = ("created_at",)
+    search_fields = ("user__full_name", "user__company__name", "key")
+
+
 admin.site.register(AccessKey, AccessKeyAdmin)

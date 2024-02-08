@@ -1,52 +1,49 @@
 from django.contrib import admin, messages
-from django.contrib.contenttypes.models import ContentType
-from django.utils.timezone import now
 from mptt.admin import MPTTModelAdmin
 
-from apps.ledger.models import Party, Category, JournalEntry, Transaction, Account, PartyRepresentative, \
-    TransactionCharge, AccountOpeningBalance, AccountClosing
+from apps.ledger.models import Account, AccountClosing, AccountOpeningBalance, Category, JournalEntry, Party, PartyRepresentative, Transaction, TransactionCharge
 
 
 class PartyAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'address', 'contact_no', 'email', 'tax_registration_number', 'company__name')
-    list_display = ('name', 'address', 'contact_no', 'email', 'tax_registration_number', 'company')
-    list_filter = ('company',)
+    search_fields = ("name", "address", "contact_no", "email", "tax_registration_number", "company__name")
+    list_display = ("name", "address", "contact_no", "email", "tax_registration_number", "company")
+    list_filter = ("company",)
 
 
 admin.site.register(Party, PartyAdmin)
 
 
 class PartyRepresentativeAdmin(admin.ModelAdmin):
-    search_fields = ('name', 'phone', 'email', 'position')
-    list_display = ('__str__', 'phone', 'email', 'position')
-    list_display_links = ('__str__', 'phone', 'email', 'position')
+    search_fields = ("name", "phone", "email", "position")
+    list_display = ("__str__", "phone", "email", "position")
+    list_display_links = ("__str__", "phone", "email", "position")
 
 
 admin.site.register(PartyRepresentative, PartyRepresentativeAdmin)
 
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'category', 'parent', 'default', 'order')
-    search_fields = ('company__name', 'code', 'name')
-    list_filter = ('company', 'default', 'category')
+    list_display = ("name", "code", "category", "parent", "default", "order")
+    search_fields = ("company__name", "code", "name")
+    list_filter = ("company", "default", "category")
     # readonly_fields = ('default',)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_filter = ('account__company', 'journal_entry__content_type')
-    search_fields = ('journal_entry__date', 'journal_entry__object_id')
-    raw_id_fields = ('account', 'journal_entry')
+    list_filter = ("account__company", "journal_entry__content_type")
+    search_fields = ("journal_entry__date", "journal_entry__object_id")
+    raw_id_fields = ("account", "journal_entry")
 
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
-    raw_id_fields = ('account', 'journal_entry')
+    raw_id_fields = ("account", "journal_entry")
 
 
 class JournalEntryAdmin(admin.ModelAdmin):
-    list_display = ('date', 'content_type', 'object_id')
+    list_display = ("date", "content_type", "object_id")
     inlines = [TransactionInline]
-    list_filter = ('date', 'content_type', 'type')
+    list_filter = ("date", "content_type", "type")
 
 
 admin.site.register(Account, AccountAdmin)
@@ -55,26 +52,26 @@ admin.site.register(JournalEntry, JournalEntryAdmin)
 
 
 class CategoryAdmin(MPTTModelAdmin):
-    list_display = ('name', 'code', 'parent', 'company')
-    list_filter = ('company', 'default')
-    readonly_fields = ('default',)
-    search_fields = ('name',)
+    list_display = ("name", "code", "parent", "company")
+    list_filter = ("company", "default")
+    readonly_fields = ("default",)
+    search_fields = ("name",)
 
 
 admin.site.register(Category, CategoryAdmin)
 
 
 class TransactionChargeAdmin(admin.ModelAdmin):
-    list_filter = ('company',)
+    list_filter = ("company",)
 
 
 admin.site.register(TransactionCharge, TransactionChargeAdmin)
 
 
 class AccountOpeningBalanceAdmin(admin.ModelAdmin):
-    list_display = ('account', 'opening_dr', 'opening_cr')
-    search_fields = ('account__name', 'opening_dr', 'opening_cr')
-    list_filter = ('company', 'fiscal_year')
+    list_display = ("account", "opening_dr", "opening_cr")
+    search_fields = ("account__name", "opening_dr", "opening_cr")
+    list_filter = ("company", "fiscal_year")
 
 
 admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)
@@ -82,11 +79,11 @@ admin.site.register(AccountOpeningBalance, AccountOpeningBalanceAdmin)
 
 def run_account_closing(modeladmin, request, queryset):
     if queryset.count() != 1:
-        messages.warning(request, 'Please select exactly one account closing instance.')
+        messages.warning(request, "Please select exactly one account closing instance.")
         return
     instance: AccountClosing = queryset.first()
-    if instance.status == 'Closed':
-        messages.warning(request, 'Already closed.')
+    if instance.status == "Closed":
+        messages.warning(request, "Already closed.")
         return
     # company = instance.company
     # date = instance.fiscal_period.end
@@ -148,31 +145,31 @@ def run_account_closing(modeladmin, request, queryset):
     # instance.status = 'Closed'
     # instance.save()
     instance.close()
-    messages.success(request, 'Closed all income and expense accounts.')
+    messages.success(request, "Closed all income and expense accounts.")
 
 
 def undo_account_closing(modeladmin, request, queryset):
     if queryset.count() != 1:
-        messages.warning(request, 'Please select exactly one account closing instance.')
+        messages.warning(request, "Please select exactly one account closing instance.")
         return
     instance: AccountClosing = queryset.first()
-    if instance.status != 'Closed':
-        messages.warning(request, 'This is not closed.')
+    if instance.status != "Closed":
+        messages.warning(request, "This is not closed.")
         return
 
     journal_entry = instance.journal_entry
     instance.journal_entry = None
-    instance.status = 'Pending'
+    instance.status = "Pending"
     instance.save()
     journal_entry.delete()
-    messages.success(request, 'Reverted account closing.')
+    messages.success(request, "Reverted account closing.")
 
 
 @admin.register(AccountClosing)
 class AccountClosingAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'status')
-    list_filter = ('status', 'company')
-    search_fields = ('company__name', 'fiscal_year')
+    list_display = ("__str__", "status")
+    list_filter = ("status", "company")
+    search_fields = ("company__name", "fiscal_year")
     actions = (run_account_closing, undo_account_closing)
-    readonly_fields = ('status', 'journal_entry',)
-    ordering = ('-fiscal_period__start',)
+    readonly_fields = ("status", "journal_entry")
+    ordering = ("-fiscal_period__start",)

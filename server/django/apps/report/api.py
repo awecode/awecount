@@ -1,18 +1,18 @@
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
 import datetime
 
-from django.http import HttpResponse
 from django.db.models import (
-    Sum,
-    F,
     Case,
-    When,
-    Value,
+    F,
     Q,
+    Sum,
+    Value,
+    When,
 )
+from django.http import HttpResponse
 from django.utils import timezone
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from apps.ledger.models.base import Party
 from apps.ledger.serializers import PartySerializer
@@ -38,15 +38,11 @@ class ReportViewSet(GenericViewSet):
 
     def get_queryset(self):
         company = self.request.company
-        queryset = (
-            Party.objects.select_related("customer_account", "company")
-            .filter(company=company)
-            .filter(customer_account_id__isnull=False)
-        )
+        queryset = Party.objects.select_related("customer_account", "company").filter(company=company).filter(customer_account_id__isnull=False)
         return queryset
-    
+
     def ageing_report_data(selg, request):
-        base_date_str =  request.query_params["date"]
+        base_date_str = request.query_params["date"]
         base_date = datetime.datetime.strptime(base_date_str, "%Y-%m-%d")
         date_range_30 = [base_date - timezone.timedelta(days=30), base_date]
         date_range_60 = [
@@ -80,13 +76,7 @@ class ReportViewSet(GenericViewSet):
         )
 
         total_30 = (
-            (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
-                .filter(mode="Credit", date__range=date_range_30)
-                .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date))
-                .annotate(party_name=F("party__name"))
-                .annotate(payment_status=status_case_expr)
-            )
+            (SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"]).filter(mode="Credit", date__range=date_range_30).filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date)).annotate(party_name=F("party__name")).annotate(payment_status=status_case_expr))
             .annotate(amount_due=amount_case_expr)
             .values("party_name", "party_id")
             .annotate(total_30=Sum("total_amount"))
@@ -94,12 +84,10 @@ class ReportViewSet(GenericViewSet):
 
         total_60 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_60)
-                .filter(
-                    Q(payment_date__isnull=True)
-                    | ~Q(payment_date__lte=base_date - timezone.timedelta(days=30))
-                )
+                .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date - timezone.timedelta(days=30)))
                 .annotate(party_name=F("party__name"))
                 .annotate(payment_status=status_case_expr)
             )
@@ -110,12 +98,10 @@ class ReportViewSet(GenericViewSet):
 
         total_90 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_90)
-                .filter(
-                    Q(payment_date__isnull=True)
-                    | ~Q(payment_date__lte=base_date - timezone.timedelta(days=60))
-                )
+                .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date - timezone.timedelta(days=60)))
                 .annotate(party_name=F("party__name"))
                 .annotate(payment_status=status_case_expr)
             )
@@ -126,12 +112,10 @@ class ReportViewSet(GenericViewSet):
 
         total_120 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_120)
-                .filter(
-                    Q(payment_date__isnull=True)
-                    | ~Q(payment_date__lte=base_date - timezone.timedelta(days=90))
-                )
+                .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date - timezone.timedelta(days=90)))
                 .annotate(party_name=F("party__name"))
                 .annotate(payment_status=status_case_expr)
             )
@@ -142,12 +126,10 @@ class ReportViewSet(GenericViewSet):
 
         total_120plus = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__lte=date_120plus)
-                .filter(
-                    Q(payment_date__isnull=True)
-                    | ~Q(payment_date__lte=base_date - timezone.timedelta(days=120))
-                )
+                .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date - timezone.timedelta(days=120)))
                 .annotate(party_name=F("party__name"))
                 .annotate(payment_status=status_case_expr)
             )
@@ -178,7 +160,7 @@ class ReportViewSet(GenericViewSet):
         if page is not None:
             return self.get_paginated_response(page)
         return Response(ret_dicts)
-    
+
     @action(detail=False, methods=["GET"], url_path="export-ageing-report")
     def export_ageing_report(self, request):
         ret_dicts = self.ageing_report_data(request)
@@ -186,24 +168,9 @@ class ReportViewSet(GenericViewSet):
             dct.pop("party_id")
 
         from xlsxwriter import Workbook
-        headers = {
-            "party_name": "Party",
-            "total_30": "30 days",
-            "total_60": "60 days",
-            "total_90": "90 days",
-            "total_120": "120 days",
-            "total_120plus": "120 days +",
-            "grand_total": "Total"
-        }
-        aggregate = {
-            "party_name": "Total",
-            "total_30": 0,
-            "total_60": 0,
-            "total_90": 0,
-            "total_120": 0,
-            "total_120plus": 0,
-            "grand_total": 0
-        }
+
+        headers = {"party_name": "Party", "total_30": "30 days", "total_60": "60 days", "total_90": "90 days", "total_120": "120 days", "total_120plus": "120 days +", "grand_total": "Total"}
+        aggregate = {"party_name": "Total", "total_30": 0, "total_60": 0, "total_90": 0, "total_120": 0, "total_120plus": 0, "grand_total": 0}
         for dct in ret_dicts:
             for k, v in dct.items():
                 if not isinstance(v, str):
@@ -218,19 +185,18 @@ class ReportViewSet(GenericViewSet):
         row = 1
         for dict in ret_dicts:
             for key, value in dict.items():
-                col=headers_list.index(headers[key])
+                col = headers_list.index(headers[key])
                 ws.write(row, col, value)
             row += 1
         for k, v in aggregate.items():
             col = headers_list.index(headers[k])
             ws.write(row, col, v)
-        ws.set_row(first_row, None, wb.add_format({'bold': True}))
-        ws.set_row(row, None, wb.add_format({'bold': True}))
+        ws.set_row(first_row, None, wb.add_format({"bold": True}))
+        ws.set_row(row, None, wb.add_format({"bold": True}))
         wb.close()
         with open("ageing_report.xlsx", "rb") as excel:
             data = excel.read()
-        response = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = 'Ageing_{}.xlsx'.format(datetime.datetime.today().date())
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        response = HttpResponse(data, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        filename = "Ageing_{}.xlsx".format(datetime.datetime.today().date())
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
         return response
-

@@ -1,5 +1,5 @@
-
 from rest_framework import serializers
+
 
 class RoundedField(serializers.DecimalField):
     """Used to automatically round decimals."""
@@ -9,4 +9,3 @@ class RoundedField(serializers.DecimalField):
 
     def validate_precision(self, value):
         return value
-

@@ -5,24 +5,27 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
 from awecount.libs import decimalize
-from ..models import JournalVoucherRow, JournalVoucher
 from awecount.libs.serializers import DisableCancelEditMixin
+
+from ..models import JournalVoucher, JournalVoucherRow
 
 
 class JournalVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    account_id = serializers.IntegerField(source='account.id', required=True)
+    account_id = serializers.IntegerField(source="account.id", required=True)
 
     class Meta:
         model = JournalVoucherRow
-        exclude = ('account', 'journal_voucher',)
+        exclude = (
+            "account",
+            "journal_voucher",
+        )
 
 
 class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSerializer):
     rows = JournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
-
         #  Raise error if both dr and cr in a row are 0
         for row in attrs.get("rows"):
             dr_amt = row.get("dr_amount")
@@ -46,50 +49,50 @@ class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSe
         return super().validate(attrs)
 
     def create(self, validated_data):
-        rows_data = validated_data.pop('rows')
-        validated_data['company_id'] = self.context['request'].company_id
+        rows_data = validated_data.pop("rows")
+        validated_data["company_id"] = self.context["request"].company_id
         journal_voucher = JournalVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            account = row.pop('account')
-            row['account_id'] = account.get('id')
+            account = row.pop("account")
+            row["account_id"] = account.get("id")
             JournalVoucherRow.objects.create(journal_voucher=journal_voucher, **row)
         JournalVoucher.apply_transactions(journal_voucher)
         return journal_voucher
 
     def update(self, instance, validated_data):
-        rows_data = validated_data.pop('rows')
-        validated_data['company_id'] = self.context['request'].company_id
+        rows_data = validated_data.pop("rows")
+        validated_data["company_id"] = self.context["request"].company_id
         self.disable_cancel_edit(validated_data, instance)
         JournalVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            account = row.pop('account')
-            row['account_id'] = account.get('id')
-            row['journal_voucher'] = instance
+            account = row.pop("account")
+            row["account_id"] = account.get("id")
+            row["journal_voucher"] = instance
             try:
-                JournalVoucherRow.objects.update_or_create(pk=row.get('id'), defaults=row)
+                JournalVoucherRow.objects.update_or_create(pk=row.get("id"), defaults=row)
             except IntegrityError:
-                raise APIException({'non_field_errors': ['Voucher repeated in journal voucher.']})
+                raise APIException({"non_field_errors": ["Voucher repeated in journal voucher."]})
         instance.refresh_from_db()
         JournalVoucher.apply_transactions(instance)
         return instance
 
     class Meta:
         model = JournalVoucher
-        exclude = ('company',)
+        exclude = ("company",)
 
 
 class JournalVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalVoucher
-        fields = ('id', 'voucher_no', 'date', 'status', 'narration')
+        fields = ("id", "voucher_no", "date", "status", "narration")
 
 
 class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
-    account_name = serializers.ReadOnlyField(source='account.name')
+    account_name = serializers.ReadOnlyField(source="account.name")
 
     class Meta:
         model = JournalVoucherRow
-        fields = ('id', 'account_id', 'account_name', 'type', 'dr_amount', 'cr_amount')
+        fields = ("id", "account_id", "account_name", "type", "dr_amount", "cr_amount")
 
 
 class JournalVoucherDetailSerializer(serializers.ModelSerializer):
@@ -97,4 +100,4 @@ class JournalVoucherDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalVoucher
-        fields = ('id', 'voucher_no', 'date', 'status', 'rows', 'narration')
+        fields = ("id", "voucher_no", "date", "status", "rows", "narration")

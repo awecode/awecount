@@ -3,8 +3,8 @@ from django.db import models
 from apps.users.models import Company
 
 DISCOUNT_TYPES = (
-    ('Amount', 'Amount'),
-    ('Percent', 'Percent'),
+    ("Amount", "Amount"),
+    ("Percent", "Percent"),
 )
 
 
@@ -17,16 +17,16 @@ class Discount(models.Model):
     def __str__(self):
         if self.name:
             return self.name
-        return '{} - {}'.format(self.type, self.value)
+        return "{} - {}".format(self.type, self.value)
 
     class Meta:
         abstract = True
-        ordering = ['-id']
+        ordering = ["-id"]
 
 
 class SalesDiscount(Discount):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='sales_discounts')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="sales_discounts")
 
 
 class PurchaseDiscount(Discount):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='purchase_discounts')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="purchase_discounts")

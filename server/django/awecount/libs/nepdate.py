@@ -14,7 +14,7 @@
 # ## END LICENSE
 import datetime
 
-'''
+"""
 A module to convert Bikram Samwat (B.S.) to A.D. and vice versa.
 Usage:
 print nepdate.ad2bs((1995,9,12))
@@ -24,7 +24,7 @@ Range:
 2000 B.S. to 2089 B.S.
 bs : a dictionary that contains the number of days in each month of the B.S. year
 bs_equiv, ad_equiv  : The B.S. and A.D. equivalent dates for counting and calculation
-'''
+"""
 
 (bs_equiv, ad_equiv) = ((2000, 9, 17), (1944, 1, 1))
 
@@ -130,7 +130,7 @@ def string_from_tuple(tuple_to_convert):
     if not tuple_to_convert:
         return
     (year, month, day) = tuple_to_convert
-    return str(year) + '-' + str(month).zfill(2) + '-' + str(day).zfill(2)
+    return str(year) + "-" + str(month).zfill(2) + "-" + str(day).zfill(2)
 
 
 def tuple_from_string(string_to_convert):
@@ -138,7 +138,7 @@ def tuple_from_string(string_to_convert):
     Returns the given string as tuple in the format (year, month, day)
     string_to_convert : A tuple in the format 'YYYY-MM-DD
     """
-    return tuple([int(x) for x in string_to_convert.split('-')])
+    return tuple([int(x) for x in string_to_convert.split("-")])
 
 
 def date_from_tuple(tuple_to_convert):
@@ -244,12 +244,12 @@ def bs2ad(bs_date):
     if isinstance(bs_date, datetime.date):
         bs_date = tuple_from_date(bs_date)
     if isinstance(bs_date, str):
-        bs_date = tuple(map(int, bs_date.split('-')))
+        bs_date = tuple(map(int, bs_date.split("-")))
 
     (year, month, day) = bs_date
     if year < 2000 or year > 2090 or month < 1 or month > 12 or day < 1 or day > 32:
         # return None
-        raise ValueError('Invalid BS Date')
+        raise ValueError("Invalid BS Date")
     else:
         date_delta = count_bs_days(bs_equiv, bs_date)
         return add_ad_days(ad_equiv, date_delta)
@@ -269,7 +269,7 @@ def ad2bs(ad_date):
     (year, month, day) = ad_date
     if year < 1944 or year > 2033 or month < 1 or month > 12 or day < 1 or day > 31:
         # return None
-        raise ValueError('Invalid AD Date')
+        raise ValueError("Invalid AD Date")
     else:
         date_delta = count_ad_days(ad_equiv, ad_date)
         return add_bs_days(bs_equiv, date_delta)
@@ -291,7 +291,7 @@ def today_as_str():
     Returns today's date in B.S. as string in the format 'YYYY-MM-DD'
     """
     (year, month, day) = ad2bs(tuple_from_date(datetime.date.today()))
-    return str(year) + '-' + str(month).zfill(2) + '-' + str(day).zfill(2)
+    return str(year) + "-" + str(month).zfill(2) + "-" + str(day).zfill(2)
 
 
 def is_valid(date_as_str):
@@ -301,7 +301,7 @@ def is_valid(date_as_str):
     Returns True for valid date, False for invalid.
     """
     try:
-        (year, month, day) = [int(p) for p in date_as_str.split('-')]
+        (year, month, day) = [int(p) for p in date_as_str.split("-")]
     except ValueError:
         return False
     if not 0 < month < 13:
@@ -310,7 +310,7 @@ def is_valid(date_as_str):
         if not 0 < day <= bs[year][month - 1]:
             return False
     except:
-        raise Exception('The year ' + str(year) + ' isn\'t supported.')
+        raise Exception("The year " + str(year) + " isn't supported.")
     return True
 
 
@@ -323,4 +323,4 @@ def get_fiscal_year(ad_date=None):
 
 def get_fiscal_year_for_cbms(ad_date=None):
     fiscal_year = get_fiscal_year(ad_date)
-    return '{}.{}'.format(fiscal_year[0], str(fiscal_year[1])[1:])
+    return "{}.{}".format(fiscal_year[0], str(fiscal_year[1])[1:])

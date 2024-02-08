@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.users.models import User, Company, AccessKey
+from apps.users.models import AccessKey, Company, User
 
 
 class CompanyMiddleware(object):
@@ -8,20 +8,20 @@ class CompanyMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.META.get('HTTP_AUTHORIZATION'):
-            raw_token = request.META.get('HTTP_AUTHORIZATION').split(' ')[-1]
+        if request.META.get("HTTP_AUTHORIZATION"):
+            raw_token = request.META.get("HTTP_AUTHORIZATION").split(" ")[-1]
             try:
                 valid_data = AccessToken(raw_token)
-                user_id = valid_data['user_id']
+                user_id = valid_data["user_id"]
                 try:
-                    request.user = User.objects.prefetch_related('roles').get(pk=user_id)
+                    request.user = User.objects.prefetch_related("roles").get(pk=user_id)
                 except User.DoesNotExist:
                     pass
             except:
                 pass
 
-        elif request.META.get('HTTP_SECRET'):
-            secret = request.META.get('HTTP_SECRET')
+        elif request.META.get("HTTP_SECRET"):
+            secret = request.META.get("HTTP_SECRET")
             request.user = AccessKey.get_user(secret)
 
         if request.user and request.user.is_authenticated:
