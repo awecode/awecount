@@ -5,7 +5,6 @@ import * as Sentry from '@sentry/vue';
 // debugger
 
 export default boot(({ app, router }) => {
-  debugger
   Sentry.init({
     app,
     // dsn: 'https://51ed8b7e9bb19758cd85c6b792f9c9c8@o374601.ingest.sentry.io/4506143333154816',
