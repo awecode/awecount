@@ -709,6 +709,9 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 .only("id", "remaining_quantity")
             )
 
+            # TODO: For debit note, we can find the transactions od that purchase voucher row and then consume them
+            # But, what if the remaining quantity is already 0, i.e sales have been made for that item
+
             txn_qs = base_txn_qs.filter(running__lte=req_qty)
             count = len(txn_qs)
             if count:
