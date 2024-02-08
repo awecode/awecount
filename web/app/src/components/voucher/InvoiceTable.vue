@@ -28,15 +28,6 @@
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center text-left pt-2">
-            <div
-              v-if="usedInPos && modalValue.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)">
-              <div class="font-medium text-gray-500">Rows &nbsp; {{ modalValue.length }}</div>
-              <div class="font-medium text-gray-500">Items &nbsp; {{ modalValue.reduce((accumulator, currentDict) =>
-                (accumulator + currentDict.quantity),
-                0)
-              }}
-              </div>
-            </div>
           </div>
           <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
@@ -68,7 +59,7 @@
           </div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-if="!usedInPos">
+        <div>
           <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan"
             data-testid="add-row-btn">Add Row</q-btn>
         </div>
@@ -180,13 +171,6 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
-    )
-    watch(
-      () => props.errors,
-      (newValue) => {
-        if (newValue === 'This field is required.') rowEmpty.value = true
-        else rowEmpty.value = false
       }
     )
     watch(
@@ -334,6 +318,9 @@ export default {
       const COGSRows = {}
       modalValue.value.forEach((row, index) => {
         const currentItemId = row.item_id
+        // this calculates the total available stock for the selected item According to fifo
+        const availableStock = (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) ?
+          localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
         let currentCOGS = 0
         let quantity = row.quantity
         if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
@@ -358,7 +345,7 @@ export default {
         } else {
           currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
         }
-        COGSRows[index] = currentCOGS
+        COGSRows[index] = { totalCost: currentCOGS, availableStock }
       })
       COGSData.value = COGSRows
     }

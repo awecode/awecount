@@ -17,8 +17,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete label="Unit" v-model="fields.default_unit_id"
-                :options="formDefaults.collections?.units"
+              <n-auto-complete label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.default_unit_id" />
             </div>
             <div class="col-12 col-md-6">
@@ -83,15 +82,15 @@
             <select-item-accounts-with-types v-if="fields.can_be_sold"
               v-model:modelValue="fields.discount_allowed_account"
               v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name"
-              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_allowed_account" :error="errors.discount_allowed_account" />
+              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
+              :dedicatedAccount="fields.discount_allowed_account" :error="errors.discount_allowed_account" />
           </div>
           <div class="col-12 col-lg-6">
             <select-item-accounts-with-types v-if="fields.can_be_purchased"
               v-model:modelValue="fields.discount_received_account"
               v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name"
-              :usedInCategoryForm="true" :dedicatedAccount="fields.discount_received_account" :error="errors.discount_received_account" />
+              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
+              :dedicatedAccount="fields.discount_received_account" :error="errors.discount_received_account" />
           </div>
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">
@@ -122,9 +121,9 @@
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn v-if="checkPermissions('InventoryCategoryModify') && isEdit" :loading="loading"
-            @click.prevent="submitForm" color="green" label="Update" class="q-ml-auto q-px-xl" type="submit" />
+            @click.prevent="onSubmitClick" color="green" label="Update" class="q-ml-auto q-px-xl" type="submit" />
           <q-btn v-if="checkPermissions('InventoryCategoryCreate') && !isEdit" :loading="loading"
-            @click.prevent="submitForm" color="green" label="Create" class="q-ml-auto q-px-xl" type="submit" />
+            @click.prevent="onSubmitClick" color="green" label="Create" class="q-ml-auto q-px-xl" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -218,6 +217,13 @@ fields.value.items_discount_allowed_account_type = 'dedicated'
 fields.value.items_sales_account_type = 'dedicated'
 fields.value.items_purchase_account_type = 'dedicated'
 
+const onSubmitClick = () => {
+  if (fields.value.extra_fields && fields.value.extra_fields.length) {
+    fields.value.extra_fields = fields.value.extra_fields.filter((item) => item.name && item.type)
+  }
+  submitForm()
+}
+
 </script>
 
 <style scoped>
@@ -246,4 +252,5 @@ fields.value.items_purchase_account_type = 'dedicated'
 /* .q-checkbox.disabled {
   color: lightgrey;
   opacity: 0.5;
-} */</style>
+} */
+</style>

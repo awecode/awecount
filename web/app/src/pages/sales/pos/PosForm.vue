@@ -2,9 +2,9 @@
   <div class="md:grid md:grid-cols-12">
     <div class="border border-r border-black col-span-3">
       <div>
-        <!-- bg-red-200 focus:bg-green-200  color="green-8" -->
-        <q-input v-model="searchTerm" autofocus debounce="500" label="&nbsp;&nbsp;Search Items..." input-class="pl-2"
-          @keypress.enter="enterClicked = true" class="search-input"></q-input>
+        <q-input v-model="searchTerm" autofocus debounce="250" label="&nbsp;&nbsp;Search Items..."
+          input-class="pl-2 bg-red-200 focus:bg-green-200" @keypress.enter="enterClicked = true" class="search-input"
+          color="green-8"></q-input>
         <!-- <div class="row q-py-sm q-px-md text-subtitle2">
               <div class="col-8">Name</div>
               <div class="col-4">Rate</div>
@@ -205,6 +205,7 @@ const searchTerm = ref(null)
 const searchResults = ref(null)
 const enterClicked = ref(false)
 const currentPage = ref(null)
+const partyMode = ref(false)
 const staticOptions = {
   discount_types: discount_types,
   modes: modes,
@@ -217,7 +218,6 @@ const partyChoices = ref([])
 useApi('/v1/parties/choices/').then((choices) => {
   partyChoices.value = choices
 })
-const partyMode = ref(false)
 const switchMode = (fields) => {
   if (fields.mode !== 'Credit') {
     partyMode.value = !partyMode.value
@@ -239,37 +239,43 @@ const deleteRowErr = (index, errors, deleteObj) => {
   }
 }
 const onSubmitClick = (status, noPrint) => {
+  if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
+
   fields.value.status = status
+  fields.value.noPrint = noPrint
   if (!partyMode.value) fields.value.customer_name = null
   useApi('/v1/pos/', { method: 'POST', body: fields.value })
     .then((data) => {
-      errors.value = {}
-      $q.notify({
-        color: 'green',
-        message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
-        icon: 'check',
-      })
-      if (status === 'Issued' && !noPrint) {
-        const printData = useGeneratePosPdf(
-          data,
-          getPartyObj(),
-          !formDefaults.value.options.show_rate_quantity_in_voucher,
-          formDefaults.value.collections.tax_schemes
-        )
-        printPdf(printData)
-      }
-      setTimeout(() => window.history.go(0), 100)
-      fields.value.rows = []
+      handleSubmitSuccess(data, fields.value.noPrint)
     })
     .catch((err) => {
-      fields.value.status = null
       if (err.status === 400) {
+        delete fields.value.status
+        delete fields.value.noPrint
         errors.value = err.data
         $q.notify({
           color: 'negative',
           message: 'Please fill out the form correctly.',
           icon: 'report_problem',
         })
+      }
+      else if (err.status === 422) {
+        useHandleCancelInconsistencyError('/v1/pos/', err, fields.value, $q)
+          .then((data) => {
+            handleSubmitSuccess(data, fields.value.noPrint)
+          })
+          .catch((error) => {
+            delete fields.value.status
+            delete fields.value.noPrint
+            if (error.status !== 'cancel') {
+              $q.notify({
+                color: 'negative',
+                message:
+                  'Server Error! Please contact us with the problem.',
+                icon: 'report_problem',
+              })
+            }
+          })
       }
     })
 }
@@ -350,6 +356,7 @@ const onAddItem = (itemInfo) => {
       discount_id: null,
     })
   }
+  searchTerm.value = null
 }
 const getPartyObj = () => {
 
@@ -360,17 +367,7 @@ const getPartyObj = () => {
     return partyChoices.value[index]
   } else return null
 }
-const printPdf = (data) => {
-  let ifram = document.createElement('iframe')
-  ifram.style = 'display:none; margin: 20px'
-  document.body.appendChild(ifram)
-  const pri = ifram.contentWindow
-  pri.document.open()
-  pri.document.write(data)
-  pri.document.close()
-  pri.focus()
-  setTimeout(() => pri.print(), 100)
-}
+
 const hasItemModifyAccess = computed(() => {
   return checkPermissions('ItemModify')
 })
@@ -389,6 +386,34 @@ const discountOptionsComputed = computed(() => {
     )
   } else return staticOptions.discount_types
 })
+
+const handleSubmitSuccess = (data, noPrint) => {
+  errors.value = {}
+  $q.notify({
+    color: 'green',
+    message: data.status === 'Draft' ? 'Saved As Draft!' : 'Issued!',
+    icon: 'check',
+  })
+  if (data.status !== 'Draft' && !noPrint) {
+    const printData = useGeneratePosPdf(
+      data,
+      getPartyObj(),
+      !formDefaults.value.options.show_rate_quantity_in_voucher,
+      formDefaults.value.collections.tax_schemes
+    )
+    usePrintPdfWindow(printData)
+  }
+  fields.value.rows = []
+  fields.value.mode = 'Cash'
+  partyMode.value = false
+  fields.value.party = ''
+  delete fields.value.status
+  delete fields.value.noPrint
+  delete fields.value.customer_name
+  delete fields.value.discount_type
+  delete fields.value.discount
+  delete fields.value.remarks
+}
 
 const handleKeyDown = (event) => {
   if (event.ctrlKey && event.keyCode === 68) {
@@ -426,10 +451,6 @@ onMounted(() => {
 
 .config-options {
   min-width: min(450px, 90vw);
-}
-
-.search-input input {
-  // padding-left: 4px;
 }
 
 .q-field__control-container {

@@ -32,8 +32,8 @@
 <script setup lang="ts">
 const router = useRouter()
 const metaData = {
-      title: 'Item Merge | Awecount',
-    }
+  title: 'Item Merge | Awecount',
+}
 useMeta(metaData)
 const modalValueArray = ref([{
   items: [null, null],

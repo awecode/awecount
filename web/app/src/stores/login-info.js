@@ -14,11 +14,9 @@ export const useLoginStore = defineStore('loginStore', {
       start_date : null,
       end_date: null
     },
-    posData: null
+    posData: null,
+    isFormLoading: false,
   }),
-  getters: {
-    doubleCount: (state) => state.counter * 2,
-  },
   actions: {
     reset() {
       this.username = null

@@ -111,7 +111,6 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import useGenerateChequePdf from 'src/composables/pdf/useGenerateChequePdf'
@@ -153,16 +152,8 @@ export default {
     })
 
     const exportPDF = () => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri = ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGenerateChequePdf(formData.fields.value))
-      // pri.document.body.firstElementChild.prepend()
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
+      const printData = useGenerateChequePdf(formData.fields.value)
+      usePrintPdfWindow(printData)
     }
     const onChequePrint = () => {
       import('jspdf').then(({ jsPDF }) => {

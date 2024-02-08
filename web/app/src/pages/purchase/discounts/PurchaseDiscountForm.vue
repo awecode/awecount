@@ -20,8 +20,8 @@
               <template v-slot:append>
                 <q-icon v-if="fields.type !== null" class="cursor-pointer" name="clear"
                   @click.stop.prevent="fields.type = null" /></template></q-select>
-            <q-input v-model="fields.value" label="Value *" type="number" class="col-12 col-md-6" :error-message="errors.value"
-              :error="!!errors.value" />
+            <q-input v-model="fields.value" label="Value *" type="number" class="col-12 col-md-6"
+              :error-message="errors.value" :error="!!errors.value" />
           </div>
           <q-checkbox class="q-mt-sm" v-model="fields.trade_discount" label="Is Trade Discount?"
             :error-message="errors.trade_discount" :error="!!errors.trade_discount" />
@@ -46,7 +46,7 @@ export default {
   setup(props, context) {
     const endpoint = '/v1/purchase-discount/'
     const formData = useForm(endpoint, {
-      getDefaults: true,
+      getDefaults: false,
       successRoute: '/purchase-discount/list/',
     })
     useMeta(() => {

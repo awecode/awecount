@@ -13,34 +13,34 @@
             <div class="text-caption">Date Range</div>
             <q-list dense padding class="rounded-borders q-pr-md">
               <q-item clickable :active="activeDate == 'today'" v-ripple>
-                <q-item-section @click="getToday((last = false))">Today</q-item-section>
+                <q-item-section @click="getToday((last = false)); menuDom.hide();">Today</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-                <q-item-section @click="getToday((last = true))">Yesterday</q-item-section>
+                <q-item-section @click="getToday((last = true)); menuDom.hide();">Yesterday</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last7'" v-ripple>
-                <q-item-section @click="getDays((last = 7))">Last 7 Days</q-item-section>
+                <q-item-section @click="getDays((last = 7)); menuDom.hide();">Last 7 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last30'" v-ripple>
-                <q-item-section @click="getDays((last = 30))">Last 30 Days</q-item-section>
+                <q-item-section @click="getDays((last = 30)); menuDom.hide();">Last 30 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = false))">This Month</q-item-section>
+                <q-item-section @click="getMonth((last = false)); menuDom.hide();">This Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = true))">Last Month</q-item-section>
+                <q-item-section @click="getMonth((last = true)); menuDom.hide();">Last Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-                <q-item-section @click="getYear((last = false))">This Year</q-item-section>
+                <q-item-section @click="getYear((last = false)); menuDom.hide();">This Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-                <q-item-section @click="getYear((last = true))">Last Year</q-item-section>
+                <q-item-section @click="getYear((last = true)); menuDom.hide();">Last Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-                <q-item-section @click="getFY((last = false))">This FY</q-item-section>
+                <q-item-section @click="getFY((last = false)); menuDom.hide();">This FY</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-                <q-item-section @click="getFY((last = true))">Last FY</q-item-section>
+                <q-item-section @click="getFY((last = true)); menuDom.hide();">Last FY</q-item-section>
               </q-item>
             </q-list>
           </div>

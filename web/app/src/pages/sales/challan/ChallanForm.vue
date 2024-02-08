@@ -72,7 +72,7 @@
         </q-card-section>
 
         <q-card-section class="q-ma-md">
-          <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+          <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
             :error-message="errors?.message"> </q-input>
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick"></q-btn>
@@ -84,11 +84,9 @@
 </template>
 
 <script>
-import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
-import ChallanTable from 'src/components/challan/ChallanTable.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -253,7 +251,6 @@ export default {
       partyMode,
       deleteRow,
       onSubmitClick,
-      ChallanTable,
       switchPartyMode,
       checkPermissions,
       onResolvedClick,
