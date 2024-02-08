@@ -25,7 +25,7 @@
                     <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
-                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
+                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="text" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party">
                     </n-auto-complete>
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
