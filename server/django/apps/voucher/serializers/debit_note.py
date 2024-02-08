@@ -97,6 +97,8 @@ class DebitNoteCreateSerializer(
                 row_data = next(
                     (item for item in rows_data if item["id"] == row.id), None
                 )
+                if not row_data:
+                    continue
                 debit_note_row = instance.rows.get(item_id=row_data["item_id"])
                 if row.remaining_quantity < row_data["quantity"] and not self.context[
                     "request"
