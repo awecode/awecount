@@ -2,9 +2,29 @@ from datetime import date
 
 from django_filters import rest_framework as filters
 
-from apps.voucher.models import DISCOUNT_TYPES, PAYMENT_MODES, PAYMENT_STATUSES, Challan, DebitNote, JournalVoucher, PaymentReceipt, PurchaseDiscount, SalesDiscount, SalesVoucherRow
+from apps.voucher.models import (
+    DISCOUNT_TYPES,
+    PAYMENT_MODES,
+    PAYMENT_STATUSES,
+    Challan,
+    DebitNote,
+    PaymentReceipt,
+    PurchaseDiscount,
+    SalesDiscount,
+    SalesVoucherRow,
+)
+from apps.voucher.models.journal_vouchers import JournalVoucher
 
-from .models import CHALLAN_STATUSES, CREDIT_NOTE_STATUSES, PURCHASE_ORDER_STATUS_CHOICES, STATUSES, CreditNote, PurchaseOrder, PurchaseVoucher, SalesVoucher
+from .models import (
+    CHALLAN_STATUSES,
+    CREDIT_NOTE_STATUSES,
+    PURCHASE_ORDER_STATUS_CHOICES,
+    STATUSES,
+    CreditNote,
+    PurchaseOrder,
+    PurchaseVoucher,
+    SalesVoucher,
+)
 
 
 class DateFilterSet(filters.FilterSet):
@@ -32,7 +52,9 @@ class SalesRowFilterSet(filters.FilterSet):
     start_date = filters.DateFilter(field_name="voucher__date", lookup_expr="gte")
     end_date = filters.DateFilter(field_name="voucher__date", lookup_expr="lte")
     sales_agent = filters.CharFilter(field_name="voucher__sales_agent")
-    status = filters.MultipleChoiceFilter(field_name="voucher__status", choices=STATUSES)
+    status = filters.MultipleChoiceFilter(
+        field_name="voucher__status", choices=STATUSES
+    )
     party = filters.CharFilter(field_name="voucher__party")
     item_category = filters.CharFilter(field_name="item__category")
 

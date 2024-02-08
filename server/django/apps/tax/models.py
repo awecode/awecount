@@ -12,9 +12,23 @@ class TaxScheme(models.Model):
     recoverable = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="tax_schemes")
-    receivable = models.ForeignKey(Account, related_name="receivable_taxes", blank=True, null=True, on_delete=models.CASCADE)
-    payable = models.ForeignKey(Account, related_name="payable_taxes", blank=True, null=True, on_delete=models.CASCADE)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="tax_schemes"
+    )
+    receivable = models.ForeignKey(
+        Account,
+        related_name="receivable_taxes",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    payable = models.ForeignKey(
+        Account,
+        related_name="payable_taxes",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.short_name or self.name
@@ -51,11 +65,46 @@ class TaxScheme(models.Model):
     @staticmethod
     def setup_nepali_tax_schemes(company):
         schemes = [
-            TaxScheme(name="Value Added Tax", short_name="VAT", rate="13", recoverable=True, default=True, company=company),
-            TaxScheme(name="Taxless", short_name="Taxless", rate="0", recoverable=False, default=True, company=company),
-            TaxScheme(name="Export", short_name="Export", rate="0", recoverable=False, default=True, company=company),
-            TaxScheme(name="Tax Deduction at Source", short_name="TDS", rate="1.5", recoverable=False, default=True, company=company),
-            TaxScheme(name="TDS (Social Security Tax)", short_name="TDS-SST", rate="1", recoverable=False, default=True, company=company),
+            TaxScheme(
+                name="Value Added Tax",
+                short_name="VAT",
+                rate="13",
+                recoverable=True,
+                default=True,
+                company=company,
+            ),
+            TaxScheme(
+                name="Taxless",
+                short_name="Taxless",
+                rate="0",
+                recoverable=False,
+                default=True,
+                company=company,
+            ),
+            TaxScheme(
+                name="Export",
+                short_name="Export",
+                rate="0",
+                recoverable=False,
+                default=True,
+                company=company,
+            ),
+            TaxScheme(
+                name="Tax Deduction at Source",
+                short_name="TDS",
+                rate="1.5",
+                recoverable=False,
+                default=True,
+                company=company,
+            ),
+            TaxScheme(
+                name="TDS (Social Security Tax)",
+                short_name="TDS-SST",
+                rate="1",
+                recoverable=False,
+                default=True,
+                company=company,
+            ),
         ]
         # bulk doesn't work here because save isn't triggered and hence accounts are not created
         return [scheme.save() for scheme in schemes]
@@ -75,13 +124,19 @@ STATUSES = (
 class TaxPayment(models.Model):
     voucher_no = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField()
-    tax_scheme = models.ForeignKey(TaxScheme, related_name="payments", on_delete=models.CASCADE)
+    tax_scheme = models.ForeignKey(
+        TaxScheme, related_name="payments", on_delete=models.CASCADE
+    )
     amount = models.FloatField()
     remarks = models.TextField(blank=True, null=True)
-    cr_account = models.ForeignKey(Account, related_name="tax_payments", on_delete=models.CASCADE)
+    cr_account = models.ForeignKey(
+        Account, related_name="tax_payments", on_delete=models.CASCADE
+    )
     status = models.CharField(choices=STATUSES, max_length=10, default="Draft")
 
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="tax_payments")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="tax_payments"
+    )
 
     def get_voucher_no(self):
         return self.voucher_no
@@ -100,11 +155,16 @@ class TaxPayment(models.Model):
             self.cancel_transactions()
 
     def apply_transactions(self):
-        entries = [["dr", self.tax_scheme.payable, self.amount], ["cr", self.cr_account, self.amount]]
+        entries = [
+            ["dr", self.tax_scheme.payable, self.amount],
+            ["cr", self.cr_account, self.amount],
+        ]
         set_ledger_transactions(self, self.date, *entries, clear=True)
 
     def cancel_transactions(self):
-        JournalEntry.objects.filter(content_type__model="taxpayment", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="taxpayment", object_id=self.id
+        ).delete()
 
     def journal_entries(self):
         app_label = self._meta.app_label

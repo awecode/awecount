@@ -21,11 +21,15 @@ class JWTCustomAuthentication(ObtainJSONWebToken):
                 "token": jwt_encode_handler(payload),
             }
         else:
-            raise APIException({"non_field_errors": "You have enter wrong ID or password."})
+            raise APIException(
+                {"non_field_errors": "You have enter wrong ID or password."}
+            )
 
         # Block user without company
         if user and not user.company:
-            raise APIException({"non_field_errors": ["User not registered to any company."]})
+            raise APIException(
+                {"non_field_errors": ["User not registered to any company."]}
+            )
 
         if user and "token" in context:
             context["company"] = CompanySerializer(user.company, request=request).data
@@ -48,10 +52,14 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
 
         refresh = self.get_token(self.user)
         if self.user and not self.user.company:
-            raise APIException({"non_field_errors": ["User not registered to any company."]})
+            raise APIException(
+                {"non_field_errors": ["User not registered to any company."]}
+            )
         data["refresh"] = text_type(refresh)
         data["access"] = text_type(refresh.access_token)
-        data["company"] = CompanySerializer(self.user.company, request=self.context.get("request")).data
+        data["company"] = CompanySerializer(
+            self.user.company, request=self.context.get("request")
+        ).data
         data["user"] = UserSerializer(self.user).data
         return data
 

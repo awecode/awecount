@@ -69,7 +69,9 @@ def fix_book_title(modeladmin, request, queryset):
                 skipped_cnt += 1
         else:
             skipped_cnt += 1
-    messages.warning(request, "Saved {} items, skipped {} items".format(saved_cnt, skipped_cnt))
+    messages.warning(
+        request, "Saved {} items, skipped {} items".format(saved_cnt, skipped_cnt)
+    )
 
 
 fix_book_title.short_description = "Fix book title to English"

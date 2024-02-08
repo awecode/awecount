@@ -12,15 +12,31 @@ from apps.ledger.models import Account
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.filters import TaxPaymentFilterSet
 from apps.tax.models import TaxPayment, TaxScheme
-from apps.tax.serializers import TaxAccountSerializer, TaxPaymentJournalEntrySerializer, TaxPaymentSerializer, TaxSchemeMinSerializer, TaxSchemeSerializer
+from apps.tax.serializers import (
+    TaxAccountSerializer,
+    TaxPaymentJournalEntrySerializer,
+    TaxPaymentSerializer,
+    TaxSchemeMinSerializer,
+    TaxSchemeSerializer,
+)
 from awecount.libs.CustomViewSet import CRULViewSet
-from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin
+from awecount.libs.mixins import (
+    InputChoiceMixin,
+    ShortNameChoiceMixin,
+    TransactionsViewMixin,
+)
 
 
-class TaxSchemeViewSet(InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet):
+class TaxSchemeViewSet(
+    InputChoiceMixin, ShortNameChoiceMixin, TransactionsViewMixin, CRULViewSet
+):
     serializer_class = TaxSchemeSerializer
     extra_fields = {"rate": IntegerField}
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
 
     def get_account_ids(self, obj):
         if obj.recoverable:
@@ -46,7 +62,11 @@ class TaxPaymentViewSet(CRULViewSet):
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
     )
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     search_fields = [
         "voucher_no",
         "cr_account__name",
@@ -58,7 +78,12 @@ class TaxPaymentViewSet(CRULViewSet):
     filterset_class = TaxPaymentFilterSet
 
     def get_queryset(self, **kwargs):
-        return super().get_queryset().select_related("tax_scheme", "cr_account").order_by("-id")
+        return (
+            super()
+            .get_queryset()
+            .select_related("tax_scheme", "cr_account")
+            .order_by("-id")
+        )
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):

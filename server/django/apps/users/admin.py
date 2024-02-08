@@ -11,7 +11,9 @@ from apps.ledger.models import handle_company_creation
 from apps.product.models import Brand, Item, Unit
 from apps.product.models import Category as InventoryCategory
 from apps.tax.models import TaxScheme
-from apps.voucher.models.voucher_settings import handle_company_creation as create_settings
+from apps.voucher.models.voucher_settings import (
+    handle_company_creation as create_settings,
+)
 
 from .models import AccessKey, Company, FiscalYear, Role, User
 
@@ -33,7 +35,9 @@ create_company_defaults.short_description = "Create company defaults"
 
 class UserCreationForm(DjangoUserCreationForm):
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
-    password2 = forms.CharField(label="Password confirmation", widget=forms.PasswordInput)
+    password2 = forms.CharField(
+        label="Password confirmation", widget=forms.PasswordInput
+    )
 
     class Meta:
         model = User
@@ -139,7 +143,9 @@ def setup_nepali_tax_schemes(modeladmin, request, queryset):
     for company in queryset:
         try:
             tax_schemes = TaxScheme.setup_nepali_tax_schemes(company)
-            messages.success(request, "{} tax scheme(s) created!".format(len(tax_schemes)))
+            messages.success(
+                request, "{} tax scheme(s) created!".format(len(tax_schemes))
+            )
         except IntegrityError:
             messages.error(request, "One or more tax schemes already exist!")
 
@@ -161,8 +167,14 @@ setup_basic_units.short_description = "Setup Basic Units"
 
 def create_book_category(modeladmin, request, queryset):
     for company in queryset:
-        unit, __ = Unit.objects.get_or_create(short_name="pcs", company=company, defaults={"name": "Pieces"})
-        tax, __ = TaxScheme.objects.get_or_create(short_name="Taxless", company=company, defaults={"name": "Taxless", "rate": 0})
+        unit, __ = Unit.objects.get_or_create(
+            short_name="pcs", company=company, defaults={"name": "Pieces"}
+        )
+        tax, __ = TaxScheme.objects.get_or_create(
+            short_name="Taxless",
+            company=company,
+            defaults={"name": "Taxless", "rate": 0},
+        )
         extra_fields = [
             {"name": "nepali_title", "type": "Text", "enable_search": True},
             {"name": "english_subtitle", "type": "Text", "enable_search": False},
@@ -184,7 +196,17 @@ def create_book_category(modeladmin, request, queryset):
             {"name": "weight", "type": "Text", "enable_search": False},
         ]
         try:
-            InventoryCategory.objects.create(name="Book", code="book", company=company, default_unit=unit, default_tax_scheme=tax, track_inventory=True, can_be_sold=True, can_be_purchased=True, extra_fields=extra_fields)
+            InventoryCategory.objects.create(
+                name="Book",
+                code="book",
+                company=company,
+                default_unit=unit,
+                default_tax_scheme=tax,
+                track_inventory=True,
+                can_be_sold=True,
+                can_be_purchased=True,
+                extra_fields=extra_fields,
+            )
             messages.success(request, "Book category created!")
         except IntegrityError:
             messages.error(request, "Book category already exists!")
@@ -197,9 +219,21 @@ def import_sold_books(modeladmin, request, queryset):
     for company in queryset:
         url = "https://thuprai.com/book/bestsellers.json"
         sold_list = requests.get(url).json()
-        category = InventoryCategory.objects.get(name="Book", code="book", company=company)
+        category = InventoryCategory.objects.get(
+            name="Book", code="book", company=company
+        )
         for obj in sold_list:
-            item, __ = Item.objects.get_or_create(code=obj[1], company=company, defaults={"name": obj[0], "selling_price": obj[2], "unit_id": category.default_unit_id, "tax_scheme_id": category.default_tax_scheme_id, "category": category})
+            item, __ = Item.objects.get_or_create(
+                code=obj[1],
+                company=company,
+                defaults={
+                    "name": obj[0],
+                    "selling_price": obj[2],
+                    "unit_id": category.default_unit_id,
+                    "tax_scheme_id": category.default_tax_scheme_id,
+                    "category": category,
+                },
+            )
             if not item.brand_id and obj[3]:
                 brand, __ = Brand.objects.get_or_create(name=obj[3], company=company)
                 item.brand = brand
@@ -212,10 +246,28 @@ import_sold_books.short_description = "Import Sold Books"
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    search_fields = ("name", "address", "contact_no", "emails", "tax_registration_number")
-    list_display = ("name", "address", "contact_no", "emails", "tax_registration_number")
+    search_fields = (
+        "name",
+        "address",
+        "contact_no",
+        "emails",
+        "tax_registration_number",
+    )
+    list_display = (
+        "name",
+        "address",
+        "contact_no",
+        "emails",
+        "tax_registration_number",
+    )
     list_filter = ("organization_type",)
-    actions = [create_company_defaults, setup_nepali_tax_schemes, setup_basic_units, create_book_category, import_sold_books]
+    actions = [
+        create_company_defaults,
+        setup_nepali_tax_schemes,
+        setup_basic_units,
+        create_book_category,
+        import_sold_books,
+    ]
 
     def has_delete_permission(self, request, obj=None):
         return False

@@ -8,7 +8,11 @@ from awecount.libs import get_next_voucher_no
 
 
 class JournalVoucher(models.Model):
-    STATUSES = [("Cancelled", "Cancelled"), ("Approved", "Approved"), ("Unapproved", "Unapproved")]
+    STATUSES = [
+        ("Cancelled", "Cancelled"),
+        ("Approved", "Approved"),
+        ("Unapproved", "Unapproved"),
+    ]
 
     voucher_no = models.IntegerField()
     date = models.DateField()
@@ -62,14 +66,20 @@ class JournalVoucher(models.Model):
         self.status = "Cancelled"
         self.cancel_transactions()
         if reason:
-            self.narration = "{}\nReason for cancellation: {}".format(self.narration, reason) if self.narration else reason
+            self.narration = (
+                "{}\nReason for cancellation: {}".format(self.narration, reason)
+                if self.narration
+                else reason
+            )
         self.save()
 
     def cancel_transactions(self):
         content_type = ContentType.objects.get(model="journalvoucher")
         # row_ids = self.rows.values_list('id', flat=True)
         # JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        JournalEntry.objects.filter(content_type=content_type, object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type=content_type, object_id=self.id
+        ).delete()
 
     def save(self, *args, **kwargs):
         self.validate_unique()
@@ -79,11 +89,15 @@ class JournalVoucher(models.Model):
 class JournalVoucherRow(models.Model):
     TYPES = [("Dr", "Dr"), ("Cr", "Cr")]
     type = models.CharField(choices=TYPES, default="Dr", max_length=2)
-    account = models.ForeignKey(Account, related_name="journal_voucher_rows", on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        Account, related_name="journal_voucher_rows", on_delete=models.CASCADE
+    )
     description = models.TextField(null=True, blank=True)
     dr_amount = models.FloatField(null=True, blank=True)
     cr_amount = models.FloatField(null=True, blank=True)
-    journal_voucher = models.ForeignKey(JournalVoucher, related_name="rows", on_delete=models.CASCADE)
+    journal_voucher = models.ForeignKey(
+        JournalVoucher, related_name="rows", on_delete=models.CASCADE
+    )
 
     company_id_accessor = "journal_voucher__company_id"
 

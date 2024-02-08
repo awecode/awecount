@@ -9,7 +9,9 @@ from apps.users.signals import company_creation
 
 
 class SalesSetting(models.Model):
-    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name="sales_setting")
+    company = models.OneToOneField(
+        Company, on_delete=models.CASCADE, related_name="sales_setting"
+    )
 
     show_party_by_default = models.BooleanField(default=True)
 
@@ -19,7 +21,9 @@ class SalesSetting(models.Model):
     is_trade_discount_in_row = models.BooleanField(default=False)
     enable_due_date_in_voucher = models.BooleanField(default=False)
 
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
     mode = models.CharField(default="Credit", max_length=15)
 
     enable_row_description = models.BooleanField(default=False)
@@ -33,7 +37,10 @@ class SalesSetting(models.Model):
 
     @property
     def fields(self):
-        return {"mode": self.bank_account_id or self.mode, "trade_discount": self.is_trade_discount_in_voucher}
+        return {
+            "mode": self.bank_account_id or self.mode,
+            "trade_discount": self.is_trade_discount_in_voucher,
+        }
 
     @property
     def options(self):
@@ -56,7 +63,9 @@ class SalesSetting(models.Model):
 
 
 class PurchaseSetting(models.Model):
-    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name="purchase_setting")
+    company = models.OneToOneField(
+        Company, on_delete=models.CASCADE, related_name="purchase_setting"
+    )
 
     show_trade_discount_in_voucher = models.BooleanField(default=False)
     is_trade_discount_in_voucher = models.BooleanField(default=False)
@@ -65,7 +74,9 @@ class PurchaseSetting(models.Model):
     enable_due_date_in_voucher = models.BooleanField(default=False)
     enable_empty_voucher_no = models.BooleanField(default=False)
 
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
     mode = models.CharField(default="Credit", max_length=15)
 
     enable_row_description = models.BooleanField(default=False)
@@ -80,14 +91,19 @@ class PurchaseSetting(models.Model):
                 if update_data["bank_account"] == self.bank_account_id:
                     pass
                 else:
-                    self.bank_account_id = BankAccount.objects.get(id=update_data["bank_account"]).id
+                    self.bank_account_id = BankAccount.objects.get(
+                        id=update_data["bank_account"]
+                    ).id
             else:
                 setattr(self, key, value)
         self.save()
 
     @property
     def fields(self):
-        return {"mode": self.bank_account_id or self.mode, "trade_discount": self.is_trade_discount_in_voucher}
+        return {
+            "mode": self.bank_account_id or self.mode,
+            "trade_discount": self.is_trade_discount_in_voucher,
+        }
 
     @property
     def options(self):

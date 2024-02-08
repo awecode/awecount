@@ -27,7 +27,10 @@ class StatusReversionMixin(object):
     UNISSUED_TYPES = ["Unapproved", "Cancelled", "Draft"]
 
     def validate_voucher_status(self, validated_data, instance):
-        if instance.status not in self.UNISSUED_TYPES and validated_data.get("status") in self.UNISSUED_TYPES:
+        if (
+            instance.status not in self.UNISSUED_TYPES
+            and validated_data.get("status") in self.UNISSUED_TYPES
+        ):
             raise ValidationError(
                 {"detail": "Issued voucher cannot be unissued."},
             )
@@ -40,7 +43,10 @@ class DisableCancelEditMixin(object):
     ]
 
     def disable_cancel_edit(self, validated_data, instance):
-        if instance.status in self.CANCELLED_STATUSES and validated_data.get("status") not in self.CANCELLED_STATUSES:
+        if (
+            instance.status in self.CANCELLED_STATUSES
+            and validated_data.get("status") not in self.CANCELLED_STATUSES
+        ):
             raise ValidationError(
                 {"detail": "Cancelled vouchers cannot be reverted."},
             )

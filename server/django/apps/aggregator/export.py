@@ -13,7 +13,20 @@ from apps.ledger.models import Account, Category, Party, PartyRepresentative
 from apps.product.models import Brand, InventoryAccount, Item, Unit
 from apps.product.models import Category as InventoryCategory
 from apps.tax.models import TaxScheme
-from apps.voucher.models import CreditNote, CreditNoteRow, DebitNote, DebitNoteRow, InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseDiscount, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, SalesVoucher, SalesVoucherRow
+from apps.voucher.models import (
+    CreditNote,
+    CreditNoteRow,
+    DebitNote,
+    DebitNoteRow,
+    PurchaseDiscount,
+    PurchaseVoucher,
+    PurchaseVoucherRow,
+    SalesDiscount,
+    SalesVoucher,
+    SalesVoucherRow,
+)
+from apps.voucher.models.invoice_design import InvoiceDesign
+from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
 
 COMPANY_FILTERS = [
     # Bank
@@ -104,14 +117,18 @@ class FilteredResource(JSONResourceMixin, resources.ModelResource):
 def get_csvs(company_id):
     csvs = {}
     for model in COMPANY_FILTERS:
-        resource = resources.modelresource_factory(model=model, resource_class=FilteredResource)()
+        resource = resources.modelresource_factory(
+            model=model, resource_class=FilteredResource
+        )()
         resource.filter_kwargs = {"company_id": company_id}
         data = resource.export()
         if len(data):
             key = "{}__{}".format(model.__name__, model._meta.app_label)
             csvs[key] = data.csv
     for model in COMPANY_ID_ACCESSOR_FILTERS:
-        resource = resources.modelresource_factory(model=model, resource_class=FilteredResource)()
+        resource = resources.modelresource_factory(
+            model=model, resource_class=FilteredResource
+        )()
         resource.filter_kwargs = {model.company_id_accessor: company_id}
         data = resource.export()
         if len(data):
@@ -157,11 +174,15 @@ def import_zipped_csvs(company_id, zipped_file):
                 raise SuspiciousOperation("Invalid Zip File.")
             if not (model in COMPANY_FILTERS or model in COMPANY_ID_ACCESSOR_FILTERS):
                 raise SuspiciousOperation("Invalid Zip File.")
-            resource = resources.modelresource_factory(model=model, resource_class=FilteredResource)()
+            resource = resources.modelresource_factory(
+                model=model, resource_class=FilteredResource
+            )()
             result = resource.import_data(dataset, dry_run=True)
             if result.has_errors():
                 raise SuspiciousOperation("Importing failed.")
             else:
-                ret = resource.import_data(dataset, dry_run=False, use_transactions=True)
+                ret = resource.import_data(
+                    dataset, dry_run=False, use_transactions=True
+                )
                 dct[filename_sans_ext] = ret.totals
         return dct

@@ -14,7 +14,9 @@ class CompanyMiddleware(object):
                 valid_data = AccessToken(raw_token)
                 user_id = valid_data["user_id"]
                 try:
-                    request.user = User.objects.prefetch_related("roles").get(pk=user_id)
+                    request.user = User.objects.prefetch_related("roles").get(
+                        pk=user_id
+                    )
                 except User.DoesNotExist:
                     pass
             except:

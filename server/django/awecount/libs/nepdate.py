@@ -155,7 +155,11 @@ def tuple_from_date(date_to_convert):
     Returns the given date object as tuple in the format (year,month,day)
     date_to_convert : A date object
     """
-    (year, month, day) = (date_to_convert.year, date_to_convert.month, date_to_convert.day)
+    (year, month, day) = (
+        date_to_convert.year,
+        date_to_convert.month,
+        date_to_convert.day,
+    )
     return year, month, day
 
 

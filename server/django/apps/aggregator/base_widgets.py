@@ -41,7 +41,13 @@ class BaseWidget(object):
             self.data_field = "sum"
 
     def is_series(self):
-        return self.series and self.type.lower() not in ["table", "pie", "percentage", "doughnut", "polar area"]
+        return self.series and self.type.lower() not in [
+            "table",
+            "pie",
+            "percentage",
+            "doughnut",
+            "polar area",
+        ]
 
     def is_table(self):
         return self.type == "Table"
@@ -66,7 +72,9 @@ class BaseWidget(object):
 
     def get_base_queryset(self):
         if not hasattr(self, "queryset"):
-            raise NotImplementedError("Either implement 'queryset' attribute or a get_base_queryset method.")
+            raise NotImplementedError(
+                "Either implement 'queryset' attribute or a get_base_queryset method."
+            )
         return self.queryset
 
     def get_date_labels(self):
@@ -78,12 +86,17 @@ class BaseWidget(object):
                 labels.append(sub_date)
                 self.group_indices[sub_date] = i
         elif self.group_by == "month":
-            dates = [dt for dt in rrule(MONTHLY, dtstart=self.start_date, until=self.end_date)]
+            dates = [
+                dt
+                for dt in rrule(MONTHLY, dtstart=self.start_date, until=self.end_date)
+            ]
             for idx, date in enumerate(dates):
                 self.group_indices[date.month] = idx
                 labels.append(date.strftime("%B"))
         elif self.group_by == "week":
-            dates = [dt for dt in rrule(WEEKLY, dtstart=self.start_date, until=self.end_date)]
+            dates = [
+                dt for dt in rrule(WEEKLY, dtstart=self.start_date, until=self.end_date)
+            ]
 
             # Add current week if not in dates
             today = datetime.date.today()
@@ -97,7 +110,9 @@ class BaseWidget(object):
                 labels.append("Week {}".format(week_num))
 
         elif self.group_by == "year":
-            dates = [dt for dt in rrule(YEARLY, dtstart=self.start_date, until=self.end_date)]
+            dates = [
+                dt for dt in rrule(YEARLY, dtstart=self.start_date, until=self.end_date)
+            ]
             for idx, date in enumerate(dates):
                 self.group_indices[date.year] = idx
                 labels.append(date.strftime("%Y"))
@@ -111,7 +126,14 @@ class BaseWidget(object):
         dct = {}
         if data and len(data):
             for idx, key in enumerate(data[0].keys()):
-                dct[key] = self.table_headings[idx] if self.table_headings else key.replace("__", " ").replace("_", " ").replace("cnt", "Count").title()
+                dct[key] = (
+                    self.table_headings[idx]
+                    if self.table_headings
+                    else key.replace("__", " ")
+                    .replace("_", " ")
+                    .replace("cnt", "Count")
+                    .title()
+                )
         return dct
 
     def get_data(self):
@@ -125,7 +147,9 @@ class BaseWidget(object):
             for datum in data:
                 if datum[self.label_field] not in dct.keys():
                     dct[datum[self.label_field]] = [0] * (self.count + 1)
-                dct[datum[self.label_field]][self.group_indices[datum[self.group_by]]] = datum[self.data_field]
+                dct[datum[self.label_field]][
+                    self.group_indices[datum[self.group_by]]
+                ] = datum[self.data_field]
 
             for key, val in dct.items():
                 self.datasets.append({"label": key or "None", "data": val})
@@ -149,7 +173,10 @@ class BaseWidget(object):
         if hasattr(self, "values") and self.values:
             qs = qs.values(*self.values)
         if hasattr(self, "count") and self.count:
-            date_kwargs = {self.date_attribute + "__gte": self.start_date, self.date_attribute + "__lte": self.end_date}
+            date_kwargs = {
+                self.date_attribute + "__gte": self.start_date,
+                self.date_attribute + "__lte": self.end_date,
+            }
             qs = qs.filter(**date_kwargs)
         return qs
 
@@ -187,5 +214,7 @@ class BaseWidget(object):
             qs = qs.annotate(year=ExtractYear(self.date_attribute))
         elif self.group_by == "week":
             qs = qs.annotate(week=ExtractWeek(self.date_attribute))
-        qs = qs.values(self.label_field, self.group_by).order_by(self.label_field, self.group_by)
+        qs = qs.values(self.label_field, self.group_by).order_by(
+            self.label_field, self.group_by
+        )
         return qs

@@ -8,7 +8,13 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
 from ..fifo_functions import fifo_handle_purchase_update
-from ..models import PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow
+from ..models import (
+    PurchaseDiscount,
+    PurchaseOrder,
+    PurchaseOrderRow,
+    PurchaseVoucher,
+    PurchaseVoucherRow,
+)
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
 
@@ -19,7 +25,9 @@ class PurchaseDiscountSerializer(serializers.ModelSerializer):
         extra_kwargs = {"name": {"required": True}}
 
 
-class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+class PurchaseVoucherRowSerializer(
+    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -37,10 +45,18 @@ class PurchaseVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializer
         model = PurchaseVoucherRow
         exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
 
-        extra_kwargs = {"discount": {"required": False, "allow_null": True}, "discount_type": {"allow_null": True, "required": False}}
+        extra_kwargs = {
+            "discount": {"required": False, "allow_null": True},
+            "discount_type": {"allow_null": True, "required": False},
+        }
 
 
-class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class PurchaseVoucherCreateSerializer(
+    StatusReversionMixin,
+    DiscountObjectTypeSerializerMixin,
+    ModeCumBankSerializerMixin,
+    serializers.ModelSerializer,
+):
     rows = PurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
 
@@ -58,7 +74,11 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
     def validate(self, data):
         company = self.context["request"].company
 
-        if not data.get("party") and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if (
+            not data.get("party")
+            and data.get("mode") == "Credit"
+            and data.get("status") != "Draft"
+        ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
@@ -73,8 +93,15 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             if request.company.inventory_setting.enable_fifo:
                 item_ids = [x.get("item_id") for x in data.get("rows")]
                 date = data["date"]
-                if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
-                    raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
+                if PurchaseVoucherRow.objects.filter(
+                    voucher__date__gt=date,
+                    item__in=item_ids,
+                    item__track_inventory=True,
+                ).exists():
+                    raise UnprocessableException(
+                        detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.",
+                        code="fifo_inconsistency",
+                    )
                 return data
 
         party = data.get("party")
@@ -84,8 +111,16 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
         if not company.purchase_setting.enable_empty_voucher_no:
             if not voucher_no:
                 raise ValidationError({"voucher_no": ["This field cannot be empty."]})
-            if self.Meta.model.objects.filter(voucher_no=voucher_no, party=party, fiscal_year=fiscal_year).exists():
-                raise ValidationError({"voucher_no": ["Purchase with the bill number for the chosen party already exists."]})
+            if self.Meta.model.objects.filter(
+                voucher_no=voucher_no, party=party, fiscal_year=fiscal_year
+            ).exists():
+                raise ValidationError(
+                    {
+                        "voucher_no": [
+                            "Purchase with the bill number for the chosen party already exists."
+                        ]
+                    }
+                )
 
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
@@ -156,7 +191,9 @@ class PurchaseVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSe
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo:
                 fifo_handle_purchase_update(instance, row)
-            PurchaseVoucherRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            PurchaseVoucherRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
         if purchase_orders:
             instance.purchase_orders.clear()
             instance.purchase_orders.set(purchase_orders)
@@ -179,7 +216,16 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseVoucher
-        fields = ("id", "voucher_no", "party", "date", "name", "status", "total_amount", "mode")
+        fields = (
+            "id",
+            "voucher_no",
+            "party",
+            "date",
+            "name",
+            "status",
+            "total_amount",
+            "mode",
+        )
 
 
 class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
@@ -203,8 +249,12 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
 
     rows = PurchaseVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(source="party.tax_registration_number")
-    enable_row_description = serializers.ReadOnlyField(source="company.purchase_setting.enable_row_description")
+    tax_registration_number = serializers.ReadOnlyField(
+        source="party.tax_registration_number"
+    )
+    enable_row_description = serializers.ReadOnlyField(
+        source="company.purchase_setting.enable_row_description"
+    )
     purchase_order_numbers = serializers.ReadOnlyField()
 
     class Meta:
@@ -218,7 +268,9 @@ class PurchaseVoucherDetailSerializer(serializers.ModelSerializer):
 
 class PurchaseBookExportSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
-    tax_registration_number = serializers.ReadOnlyField(source="party.tax_registration_number")
+    tax_registration_number = serializers.ReadOnlyField(
+        source="party.tax_registration_number"
+    )
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
     item_names = serializers.ReadOnlyField()
     total_quantity = serializers.SerializerMethodField()
@@ -229,7 +281,16 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseVoucher
-        fields = ("date", "party_name", "tax_registration_number", "voucher_no", "voucher_meta", "item_names", "units", "total_quantity")
+        fields = (
+            "date",
+            "party_name",
+            "tax_registration_number",
+            "voucher_no",
+            "voucher_meta",
+            "item_names",
+            "units",
+            "total_quantity",
+        )
 
 
 class PurchaseOrderRowSerializer(serializers.ModelSerializer):
@@ -272,7 +333,9 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     def assign_voucher_number(self, validated_data, instance=None):
         if instance and instance.voucher_no:
             return
-        next_voucher_no = get_next_voucher_no(PurchaseOrder, self.context["request"].company_id)
+        next_voucher_no = get_next_voucher_no(
+            PurchaseOrder, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
 
     def validate_party(self, attr):
@@ -299,5 +362,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
         self.assign_voucher_number(validated_data, instance)
         self.Meta.model.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            PurchaseOrderRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            PurchaseOrderRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
         return instance

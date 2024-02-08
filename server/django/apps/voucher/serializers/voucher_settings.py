@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.voucher.models import PurchaseSetting, SalesSetting
+from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
 
 
 class SalesCreateSettingSerializer(serializers.ModelSerializer):

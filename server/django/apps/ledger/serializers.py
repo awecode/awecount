@@ -6,7 +6,15 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.ledger.models.base import AccountClosing
 from awecount.libs.drf_fields import RoundedField
 
-from .models import Account, AccountOpeningBalance, Category, JournalEntry, Party, PartyRepresentative, Transaction
+from .models import (
+    Account,
+    AccountOpeningBalance,
+    Category,
+    JournalEntry,
+    Party,
+    PartyRepresentative,
+    Transaction,
+)
 
 
 class PartyRepresentativeSerializer(serializers.ModelSerializer):
@@ -67,11 +75,19 @@ class PartyAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Party
-        fields = ("id", "name", "tax_registration_number", "supplier_account", "customer_account")
+        fields = (
+            "id",
+            "name",
+            "tax_registration_number",
+            "supplier_account",
+            "customer_account",
+        )
 
 
 class PartySerializer(serializers.ModelSerializer):
-    tax_registration_number = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    tax_registration_number = serializers.CharField(
+        max_length=255, required=False, allow_null=True, allow_blank=True
+    )
     representative = PartyRepresentativeSerializer(many=True, required=False)
 
     def create(self, validated_data):
@@ -83,7 +99,12 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         if representatives:
             for representative in representatives:
-                if representative.get("name") or representative.get("phone") or representative.get("email") or representative.get("position"):
+                if (
+                    representative.get("name")
+                    or representative.get("phone")
+                    or representative.get("email")
+                    or representative.get("position")
+                ):
                     representative["party_id"] = instance.id
                     PartyRepresentative.objects.create(**representative)
         return instance
@@ -95,12 +116,21 @@ class PartySerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         # Party.objects.filter(pk=instance.id).update(**validated_data)
         for index, representative in enumerate(representatives):
-            if representative.get("name") or representative.get("phone") or representative.get("email") or representative.get("position"):
+            if (
+                representative.get("name")
+                or representative.get("phone")
+                or representative.get("email")
+                or representative.get("position")
+            ):
                 representative["party_id"] = instance.id
                 try:
-                    PartyRepresentative.objects.update_or_create(pk=representative.get("id"), defaults=representative)
+                    PartyRepresentative.objects.update_or_create(
+                        pk=representative.get("id"), defaults=representative
+                    )
                 except IntegrityError:
-                    raise APIException({"detail": "Party representative already created."})
+                    raise APIException(
+                        {"detail": "Party representative already created."}
+                    )
         return instance
 
     class Meta:
@@ -115,7 +145,17 @@ class PartyListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Party
-        fields = ("id", "name", "address", "contact_no", "email", "tax_registration_number", "dr", "cr", "balance")
+        fields = (
+            "id",
+            "name",
+            "address",
+            "contact_no",
+            "email",
+            "tax_registration_number",
+            "dr",
+            "cr",
+            "balance",
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -164,7 +204,11 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     def transaction(self, obj):
         account = self.context.get("account", None)
         try:
-            transactions = [transaction for transaction in obj.transactions.all() if transaction.account.id == account.id]
+            transactions = [
+                transaction
+                for transaction in obj.transactions.all()
+                if transaction.account.id == account.id
+            ]
             if transactions:
                 return transactions[0]
         except Exception:
@@ -241,7 +285,11 @@ class JournalEntryMultiAccountSerializer(serializers.ModelSerializer):
     def transaction(self, obj):
         account_ids = self.context.get("account_ids", None)
         try:
-            transactions = [transaction for transaction in obj.transactions.all() if transaction.account.id in account_ids]
+            transactions = [
+                transaction
+                for transaction in obj.transactions.all()
+                if transaction.account.id in account_ids
+            ]
             if transactions:
                 return transactions[0]
         except Exception:
@@ -280,12 +328,30 @@ class AccountDetailSerializer(serializers.ModelSerializer):
     parent_name = serializers.ReadOnlyField(source="parent.name")
 
     def get_journal_entries(self, obj):
-        entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by("pk", "date").prefetch_related("transactions", "content_type", "transactions__account").select_related()
+        entries = (
+            JournalEntry.objects.filter(transactions__account_id=obj.pk)
+            .order_by("pk", "date")
+            .prefetch_related("transactions", "content_type", "transactions__account")
+            .select_related()
+        )
         return JournalEntrySerializer(entries, context={"account": obj}, many=True).data
 
     class Meta:
         model = Account
-        fields = ("id", "code", "closing_balance", "name", "amounts", "opening_dr", "opening_cr", "category_name", "amounts", "parent_name", "category_id", "parent_id")
+        fields = (
+            "id",
+            "code",
+            "closing_balance",
+            "name",
+            "amounts",
+            "opening_dr",
+            "opening_cr",
+            "category_name",
+            "amounts",
+            "parent_name",
+            "category_id",
+            "parent_id",
+        )
 
 
 class CategoryTreeSerializer(serializers.ModelSerializer):
@@ -330,8 +396,16 @@ class TransactionEntrySerializer(serializers.Serializer):
     def get_source_type(self, obj):
         from django.apps import apps
 
-        v_type = obj.content_type_model if obj.content_type_model else obj.journal_entry.content_type.model
-        app_label = obj.content_type_app_label if obj.content_type_app_label else obj.journal_entry.content_type.app_label
+        v_type = (
+            obj.content_type_model
+            if obj.content_type_model
+            else obj.journal_entry.content_type.model
+        )
+        app_label = (
+            obj.content_type_app_label
+            if obj.content_type_app_label
+            else obj.journal_entry.content_type.app_label
+        )
 
         m = apps.get_model(app_label, v_type)
         if v_type[-4:] == " row":
@@ -371,7 +445,16 @@ class TransactionReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ["voucher_no", "date", "account", "source_type", "dr_amount", "cr_amount", "account_name", "category_id"]
+        fields = [
+            "voucher_no",
+            "date",
+            "account",
+            "source_type",
+            "dr_amount",
+            "cr_amount",
+            "account_name",
+            "category_id",
+        ]
 
 
 class ContentTypeListSerializer(serializers.ModelSerializer):

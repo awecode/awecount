@@ -75,7 +75,17 @@ class PurchaseCountByParty(PurchaseCountWidget):
     label_field = "party__name"
 
 
-WIDGETS = [SalesAmountByParty, SalesAmountByAgent, SalesCountByAgent, SalesCountByParty, PurchaseCountByParty, TotalPurchaseAmount, TotalSalesAmount, SalesCountByMode, PurchaseCountByMode]
+WIDGETS = [
+    SalesAmountByParty,
+    SalesAmountByAgent,
+    SalesCountByAgent,
+    SalesCountByParty,
+    PurchaseCountByParty,
+    TotalPurchaseAmount,
+    TotalSalesAmount,
+    SalesCountByMode,
+    PurchaseCountByMode,
+]
 
 WIDGET_CHOICES = [(widget.name, widget.name) for widget in WIDGETS]
 WIDGET_DICT = {widget.name: widget for widget in WIDGETS}

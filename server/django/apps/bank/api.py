@@ -7,10 +7,30 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from apps.aggregator.views import qs_to_xls
-from apps.bank.filters import ChequeDepositFilterSet, ChequeIssueFilterSet, FundTransferFilterSet
-from apps.bank.models import BankAccount, BankCashDeposit, ChequeDeposit, FundTransferTemplate
+from apps.bank.filters import (
+    ChequeDepositFilterSet,
+    ChequeIssueFilterSet,
+    FundTransferFilterSet,
+)
+from apps.bank.models import (
+    BankAccount,
+    BankCashDeposit,
+    ChequeDeposit,
+    FundTransferTemplate,
+)
 from apps.bank.resources import ChequeIssueResource
-from apps.bank.serializers import BankAccountChequeIssueSerializer, BankAccountSerializer, BankCashDepositCreateSerializer, BankCashDepositListSerializer, ChequeDepositCreateSerializer, ChequeDepositListSerializer, ChequeIssueSerializer, FundTransferListSerializer, FundTransferSerializer, FundTransferTemplateSerializer
+from apps.bank.serializers import (
+    BankAccountChequeIssueSerializer,
+    BankAccountSerializer,
+    BankCashDepositCreateSerializer,
+    BankCashDepositListSerializer,
+    ChequeDepositCreateSerializer,
+    ChequeDepositListSerializer,
+    ChequeIssueSerializer,
+    FundTransferListSerializer,
+    FundTransferSerializer,
+    FundTransferTemplateSerializer,
+)
 from apps.ledger.models import Account, Party
 from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import CRULViewSet
@@ -34,11 +54,28 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
                 "name",
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
         ),
-        ("bank_accounts", BankAccount.objects.filter(is_wallet=False).only("short_name", "account_number")),
+        (
+            "bank_accounts",
+            BankAccount.objects.filter(is_wallet=False).only(
+                "short_name", "account_number"
+            ),
+        ),
     ]
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["voucher_no", "bank_account__bank_name", "bank_account__account_number", "benefactor__name", "deposited_by", "cheque_number", "drawee_bank"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "bank_account__bank_name",
+        "bank_account__account_number",
+        "benefactor__name",
+        "deposited_by",
+        "cheque_number",
+        "drawee_bank",
+    ]
     filterset_class = ChequeDepositFilterSet
 
     def get_queryset(self):
@@ -83,13 +120,29 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
 class ChequeIssueViewSet(CRULViewSet):
     serializer_class = ChequeIssueSerializer
     collections = (
-        ("bank_accounts", BankAccount.objects.filter(is_wallet=False), BankAccountChequeIssueSerializer),
+        (
+            "bank_accounts",
+            BankAccount.objects.filter(is_wallet=False),
+            BankAccountChequeIssueSerializer,
+        ),
         ("parties", Party, PartyMinSerializer),
         ("accounts", Account),
     )
     filterset_class = ChequeIssueFilterSet
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["cheque_no", "bank_account__bank_name", "bank_account__account_number", "party__name", "issued_to", "dr_account__name", "amount"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "cheque_no",
+        "bank_account__bank_name",
+        "bank_account__account_number",
+        "party__name",
+        "issued_to",
+        "dr_account__name",
+        "amount",
+    ]
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
@@ -105,7 +158,11 @@ class ChequeIssueViewSet(CRULViewSet):
 
     @action(detail=False)
     def export(self, request):
-        queryset = self.filter_queryset(self.get_queryset()).annotate(issued=Case(When(issued_to__isnull=True, then="party__name"), default="issued_to"))
+        queryset = self.filter_queryset(self.get_queryset()).annotate(
+            issued=Case(
+                When(issued_to__isnull=True, then="party__name"), default="issued_to"
+            )
+        )
         params = [
             ("Invoices", queryset, ChequeIssueResource),
         ]
@@ -117,14 +174,42 @@ class FundTransferViewSet(CRULViewSet):
     list_serializer_class = FundTransferListSerializer
 
     collections = (
-        ("from_account", Account.objects.filter(Q(category__name="Bank Accounts", category__default=True) | Q(category__name="Customers", category__default=True)).order_by("category__name")),
-        ("to_account", Account.objects.filter(Q(category__name="Bank Accounts", category__default=True) | Q(category__name="Suppliers", category__default=True)).order_by("category__name")),
-        ("transaction_fee_account", Account.objects.filter(category__name="Bank Charges", category__default=True)),
+        (
+            "from_account",
+            Account.objects.filter(
+                Q(category__name="Bank Accounts", category__default=True)
+                | Q(category__name="Customers", category__default=True)
+            ).order_by("category__name"),
+        ),
+        (
+            "to_account",
+            Account.objects.filter(
+                Q(category__name="Bank Accounts", category__default=True)
+                | Q(category__name="Suppliers", category__default=True)
+            ).order_by("category__name"),
+        ),
+        (
+            "transaction_fee_account",
+            Account.objects.filter(
+                category__name="Bank Charges", category__default=True
+            ),
+        ),
     )
 
     filterset_class = FundTransferFilterSet
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["voucher_no", "from_account__name", "to_account__name", "transaction_fee_account__name", "amount", "transaction_fee"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "from_account__name",
+        "to_account__name",
+        "transaction_fee_account__name",
+        "amount",
+        "transaction_fee",
+    ]
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
@@ -168,10 +253,19 @@ class CashDepositViewSet(CRULViewSet):
                 "name",
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
         ),
-        ("bank_accounts", BankAccount.objects.filter(is_wallet=False).only("short_name", "account_number")),
+        (
+            "bank_accounts",
+            BankAccount.objects.filter(is_wallet=False).only(
+                "short_name", "account_number"
+            ),
+        ),
     ]
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     search_fields = [
         "voucher_no",
         "bank_account__bank_name",

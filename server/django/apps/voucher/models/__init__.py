@@ -8,9 +8,21 @@ from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from apps.bank.models import BankAccount, ChequeDeposit
-from apps.ledger.models import JournalEntry, Party, Transaction, TransactionCharge, TransactionModel, get_account
+from apps.ledger.models import (
+    JournalEntry,
+    Party,
+    Transaction,
+    TransactionCharge,
+    TransactionModel,
+    get_account,
+)
 from apps.ledger.models import set_transactions as set_ledger_transactions
-from apps.product.models import Item, Unit, find_obsolete_transactions, set_inventory_transactions
+from apps.product.models import (
+    Item,
+    Unit,
+    find_obsolete_transactions,
+    set_inventory_transactions,
+)
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, FiscalYear, User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
@@ -65,14 +77,26 @@ class Challan(TransactionModel, InvoiceModel):
 
     print_count = models.PositiveSmallIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="challan")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="challan")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="challan")
-    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name="challan", on_delete=models.SET_NULL)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="challan"
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="challan"
+    )
+    sales_agent = models.ForeignKey(
+        SalesAgent,
+        blank=True,
+        null=True,
+        related_name="challan",
+        on_delete=models.SET_NULL,
+    )
     # Model key for module based permission
     key = "Challan"
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ).select_related("item__account"):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -93,7 +117,9 @@ class Challan(TransactionModel, InvoiceModel):
 
 class ChallanRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name="rows")
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="challan_rows")
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="challan_rows"
+    )
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
@@ -105,7 +131,13 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
 
 class SalesVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
-    party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True, related_name="sales_invoices")
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="sales_invoices",
+    )
     customer_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -118,11 +150,21 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="sales")
+    discount_obj = models.ForeignKey(
+        SalesDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="sales",
+    )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
 
@@ -132,10 +174,22 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     total_amount = models.FloatField(blank=True, null=True)
 
     print_count = models.PositiveSmallIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales_invoices")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="sales_invoices")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="sales_invoices")
-    sales_agent = models.ForeignKey(SalesAgent, blank=True, null=True, related_name="sales_invoices", on_delete=models.SET_NULL)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sales_invoices"
+    )
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="sales_invoices"
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="sales_invoices"
+    )
+    sales_agent = models.ForeignKey(
+        SalesAgent,
+        blank=True,
+        null=True,
+        related_name="sales_invoices",
+        on_delete=models.SET_NULL,
+    )
 
     # Model key for module based permission
     key = "Sales"
@@ -157,10 +211,14 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         challan_enabled = self.company.sales_setting.enable_import_challan
         challan_dct = {}
         if challan_enabled:
-            challan_rows = ChallanRow.objects.filter(voucher__in=self.challans.all()).values("item_id", "quantity")
+            challan_rows = ChallanRow.objects.filter(
+                voucher__in=self.challans.all()
+            ).values("item_id", "quantity")
             for challan_row in challan_rows:
                 challan_dct[challan_row.get("item_id")] = challan_row.get("quantity")
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ).select_related("item__account"):
             quantity = int(row.quantity)
             if challan_enabled and challan_dct.get(row.item_id):
                 quantity = quantity - challan_dct.get(row.item_id)
@@ -200,10 +258,17 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(
+            sub_total_after_row_discounts
+        )
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related("tax_scheme", "discount_obj", "item__discount_allowed_account", "item__sales_account"):
+        for row in self.rows.filter().select_related(
+            "tax_scheme",
+            "discount_obj",
+            "item__discount_allowed_account",
+            "item__sales_account",
+        ):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -219,7 +284,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_discount += row_discount_amount
 
             if dividend_discount > 0:
-                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_dividend_discount = (
+                    row_total / sub_total_after_row_discounts
+                ) * dividend_discount
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     sales_value -= row_dividend_discount
@@ -239,10 +306,14 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             # Handle wallet commissions
             if self.mode == "Bank Deposit" and self.bank_account.is_wallet:
-                commission = row_total * self.bank_account.transaction_commission_percent / 100
+                commission = (
+                    row_total * self.bank_account.transaction_commission_percent / 100
+                )
                 entries.append(["dr", dr_acc, row_total - commission])
                 if commission:
-                    entries.append(["dr", self.bank_account.commission_account, commission])
+                    entries.append(
+                        ["dr", self.bank_account.commission_account, commission]
+                    )
             else:
                 entries.append(["dr", dr_acc, row_total])
 
@@ -266,7 +337,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             "export_sales": 0,
             "tax_exempted_sales": meta["non_taxable"],
             "invoice_number": self.voucher_no,
-            "invoice_date": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date))).replace("-", "."),
+            "invoice_date": nepdate.string_from_tuple(
+                nepdate.ad2bs(str(self.date))
+            ).replace("-", "."),
         }
         if self.is_export:
             data["taxable_sales_vat"] = 0
@@ -289,26 +362,56 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     @property
     def item_names(self):
         # TODO Optimize - SalesBookExportSerializer
-        return ", ".join(set(Item.objects.filter(sales_rows__voucher_id=self.id).values_list("name", flat=True)))
+        return ", ".join(
+            set(
+                Item.objects.filter(sales_rows__voucher_id=self.id).values_list(
+                    "name", flat=True
+                )
+            )
+        )
 
     @property
     def units(self):
         # TODO Optimize - SalesBookExportSerializer
-        return ", ".join(set(Unit.objects.filter(sales_rows__voucher_id=self.id).values_list("name", flat=True)))
+        return ", ".join(
+            set(
+                Unit.objects.filter(sales_rows__voucher_id=self.id).values_list(
+                    "name", flat=True
+                )
+            )
+        )
 
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(SalesVoucher, on_delete=models.CASCADE, related_name="rows")
+    voucher = models.ForeignKey(
+        SalesVoucher, on_delete=models.CASCADE, related_name="rows"
+    )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="sales_rows")
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_rows")
+    unit = models.ForeignKey(
+        Unit,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="sales_rows",
+    )
     rate = models.FloatField()
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="sales_rows")
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name="sales_rows")
+    discount_obj = models.ForeignKey(
+        SalesDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="sales_rows",
+    )
+    tax_scheme = models.ForeignKey(
+        TaxScheme, on_delete=models.CASCADE, related_name="sales_rows"
+    )
 
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)
@@ -340,9 +443,15 @@ class PurchaseOrder(TransactionModel, InvoiceModel):
     remarks = models.TextField(blank=True, null=True)
 
     print_count = models.PositiveSmallIntegerField(default=0)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="purchase_orders")
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="purchase_Orders")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="purchase_orders")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="purchase_orders"
+    )
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="purchase_Orders"
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="purchase_orders"
+    )
 
     # Model key for module based permission
     key = "PurchaseOrder"
@@ -352,8 +461,12 @@ class PurchaseOrder(TransactionModel, InvoiceModel):
 
 
 class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name="rows")
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="purchase_order_rows")
+    voucher = models.ForeignKey(
+        PurchaseOrder, on_delete=models.CASCADE, related_name="rows"
+    )
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="purchase_order_rows"
+    )
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
@@ -369,12 +482,22 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="purchases")
+    discount_obj = models.ForeignKey(
+        PurchaseDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="purchases",
+    )
 
     remarks = models.TextField(blank=True, null=True)
     is_import = models.BooleanField(default=False)
@@ -382,19 +505,37 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     total_amount = models.FloatField(blank=True, null=True)
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="purchase_vouchers")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="purchase_vouchers")
-    purchase_orders = models.ManyToManyField(PurchaseOrder, related_name="purchases", blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="purchase_vouchers"
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="purchase_vouchers"
+    )
+    purchase_orders = models.ManyToManyField(
+        PurchaseOrder, related_name="purchases", blank=True
+    )
 
     @property
     def item_names(self):
         # TODO Optimize - PurchaseBookExportSerializer
-        return ", ".join(set(Item.objects.filter(purchase_rows__voucher_id=self.id).values_list("name", flat=True)))
+        return ", ".join(
+            set(
+                Item.objects.filter(purchase_rows__voucher_id=self.id).values_list(
+                    "name", flat=True
+                )
+            )
+        )
 
     @property
     def units(self):
         # TODO Optimize - PurchaseBookExportSerializer
-        return ", ".join(set(Unit.objects.filter(purchase_rows__voucher_id=self.id).values_list("name", flat=True)))
+        return ", ".join(
+            set(
+                Unit.objects.filter(purchase_rows__voucher_id=self.id).values_list(
+                    "name", flat=True
+                )
+            )
+        )
 
     @property
     def buyer_name(self):
@@ -406,7 +547,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         return self.purchase_orders.values_list("voucher_no", flat=True)
 
     def find_invalid_transaction(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ).select_related("item__account"):
             find_obsolete_transactions(
                 row,
                 self.date,
@@ -414,7 +557,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             )
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ).select_related("item__account"):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -449,10 +594,17 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(
+            sub_total_after_row_discounts
+        )
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related("tax_scheme", "discount_obj", "item__discount_received_account", "item__purchase_account"):
+        for row in self.rows.filter().select_related(
+            "tax_scheme",
+            "discount_obj",
+            "item__discount_received_account",
+            "item__purchase_account",
+        ):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -468,7 +620,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                     row_discount += row_discount_amount
 
             if dividend_discount > 0:
-                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_dividend_discount = (
+                    row_total / sub_total_after_row_discounts
+                ) * dividend_discount
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     purchase_value -= row_dividend_discount
@@ -494,19 +648,39 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
 
 class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(PurchaseVoucher, related_name="rows", on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, related_name="purchase_rows", on_delete=models.CASCADE)
+    voucher = models.ForeignKey(
+        PurchaseVoucher, related_name="rows", on_delete=models.CASCADE
+    )
+    item = models.ForeignKey(
+        Item, related_name="purchase_rows", on_delete=models.CASCADE
+    )
     description = models.TextField(blank=True, null=True)
     quantity = models.FloatField()
-    unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL, related_name="purchase_rows")
+    unit = models.ForeignKey(
+        Unit,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="purchase_rows",
+    )
     rate = models.FloatField()
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="purchase_rows")
+    discount_obj = models.ForeignKey(
+        PurchaseDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="purchase_rows",
+    )
 
-    tax_scheme = models.ForeignKey(TaxScheme, blank=True, null=True, on_delete=models.SET_NULL)
+    tax_scheme = models.ForeignKey(
+        TaxScheme, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     remaining_quantity = models.FloatField(blank=True, null=True)
 
@@ -533,8 +707,16 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
             if existing_rate != self.rate:
                 status = "increased" if existing_rate < self.rate else "decreased"
                 message = f"The purchase price for {self.item.name} has {status} from {existing_rate} to {self.rate}."
-                to_emails = self.voucher.company.purchase_setting.rate_change_alert_emails
-                async_task("django.core.mail.send_mail", "Item purchase rate change alert.", message, settings.DEFAULT_FROM_EMAIL, to_emails)
+                to_emails = (
+                    self.voucher.company.purchase_setting.rate_change_alert_emails
+                )
+                async_task(
+                    "django.core.mail.send_mail",
+                    "Item purchase rate change alert.",
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    to_emails,
+                )
 
 
 CREDIT_NOTE_STATUSES = (
@@ -551,23 +733,39 @@ class CreditNote(TransactionModel, InvoiceModel):
 
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     date = models.DateField()
-    status = models.CharField(max_length=25, choices=CREDIT_NOTE_STATUSES, default=CREDIT_NOTE_STATUSES[0][0])
+    status = models.CharField(
+        max_length=25, choices=CREDIT_NOTE_STATUSES, default=CREDIT_NOTE_STATUSES[0][0]
+    )
 
     invoices = models.ManyToManyField(SalesVoucher, related_name="credit_notes")
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="credit_notes")
+    discount_obj = models.ForeignKey(
+        SalesDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="credit_notes",
+    )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     total_amount = models.FloatField(blank=True, null=True)
 
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="credit_notes")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="credit_notes")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="credit_notes"
+    )
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="credit_notes"
+    )
     print_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -603,7 +801,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                             row.save()
                             return
                     purchase_row_ids = [key for key, value in sold_items.items()]
-                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("-voucher__date", "-id")
+                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(
+                        id__in=purchase_row_ids
+                    ).order_by("-voucher__date", "-id")
                     if purchase_voucher_rows.exists():
                         for purchase_row in purchase_voucher_rows:
                             # can_be_reduced = purchase_row.remaining_quantity
@@ -613,7 +813,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                                 purchase_row.save()
                                 quantity -= purchase_row.remaining_quantity
                                 # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = purchase_row.quantity
+                                row.sold_items[
+                                    str(purchase_row.id)
+                                ] = purchase_row.quantity
                                 # else:
                                 #     row.sold_items[str(purchase_row.id)] += can_be_reduced
                                 row.save()
@@ -628,7 +830,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                                 row.save()
                                 break
                     if quantity > 0:
-                        purchase_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("voucher__date", "id")
+                        purchase_rows = row.item.purchase_rows.filter(
+                            remaining_quantity__gt=0
+                        ).order_by("voucher__date", "id")
                         for purchase_row in purchase_rows:
                             if purchase_row.remaining_quantity == quantity:
                                 purchase_row.remaining_quantity = 0
@@ -644,7 +848,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                                 break
                             else:
                                 quantity -= purchase_row.remaining_quantity
-                                sold_items[str(purchase_row.id)] = purchase_row.remaining_quantity
+                                sold_items[
+                                    str(purchase_row.id)
+                                ] = purchase_row.remaining_quantity
                                 purchase_row.remaining_quantity = 0
                                 row.sold_items[str(purchase_row.id)] = quantity
                                 purchase_row.save()
@@ -655,7 +861,11 @@ class CreditNote(TransactionModel, InvoiceModel):
         return super().cancel()
 
     def apply_inventory_transaction(voucher):
-        for row in voucher.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in (
+            voucher.rows.filter(is_returned=True)
+            .filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True))
+            .select_related("item__account")
+        ):
             set_inventory_transactions(
                 row,
                 voucher.date,
@@ -692,10 +902,17 @@ class CreditNote(TransactionModel, InvoiceModel):
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(
+            sub_total_after_row_discounts
+        )
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related("tax_scheme", "discount_obj", "item__discount_allowed_account", "item__sales_account"):
+        for row in self.rows.filter().select_related(
+            "tax_scheme",
+            "discount_obj",
+            "item__discount_allowed_account",
+            "item__sales_account",
+        ):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -711,7 +928,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                     row_discount += row_discount_amount
 
             if dividend_discount > 0:
-                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_dividend_discount = (
+                    row_total / sub_total_after_row_discounts
+                ) * dividend_discount
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     sales_value -= row_dividend_discount
@@ -749,7 +968,9 @@ class CreditNote(TransactionModel, InvoiceModel):
                 "tax_exempted_sales": meta["non_taxable"],
                 "ref_invoice_number": invoice.voucher_no,
                 "credit_note_number": self.voucher_no,
-                "credit_note_date": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date))).replace("-", "."),
+                "credit_note_date": nepdate.string_from_tuple(
+                    nepdate.ad2bs(str(self.date))
+                ).replace("-", "."),
                 "reason_for_return": self.remarks,
             }
             if invoice.is_export:
@@ -764,7 +985,9 @@ class CreditNote(TransactionModel, InvoiceModel):
 
 
 class CreditNoteRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name="rows")
+    voucher = models.ForeignKey(
+        CreditNote, on_delete=models.CASCADE, related_name="rows"
+    )
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     is_returned = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
@@ -773,11 +996,21 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     rate = models.FloatField()
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(SalesDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="credit_note_rows")
+    discount_obj = models.ForeignKey(
+        SalesDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="credit_note_rows",
+    )
 
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name="credit_note_rows")
+    tax_scheme = models.ForeignKey(
+        TaxScheme, on_delete=models.CASCADE, related_name="credit_note_rows"
+    )
 
 
 class DebitNote(TransactionModel, InvoiceModel):
@@ -786,23 +1019,37 @@ class DebitNote(TransactionModel, InvoiceModel):
 
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     date = models.DateField()
-    status = models.CharField(max_length=25, choices=CREDIT_NOTE_STATUSES, default=CREDIT_NOTE_STATUSES[0][0])
+    status = models.CharField(
+        max_length=25, choices=CREDIT_NOTE_STATUSES, default=CREDIT_NOTE_STATUSES[0][0]
+    )
 
     invoices = models.ManyToManyField(PurchaseVoucher, related_name="debit_notes")
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="debit_notes")
+    discount_obj = models.ForeignKey(
+        PurchaseDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="debit_notes",
+    )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
-    bank_account = models.ForeignKey(BankAccount, blank=True, null=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
     total_amount = models.FloatField(blank=True, null=True)
 
     remarks = models.TextField()
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="debit_notes")
-    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="debit_notes")
+    fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="debit_notes"
+    )
     print_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -818,14 +1065,20 @@ class DebitNote(TransactionModel, InvoiceModel):
                 keys = [int(k) for k, v in purchase_row_data.items()]
                 purchase_rows = PurchaseVoucherRow.objects.filter(id__in=keys)
                 for purchase_row in purchase_rows:
-                    purchase_row.remaining_quantity += purchase_row_data[str(purchase_row.id)]
+                    purchase_row.remaining_quantity += purchase_row_data[
+                        str(purchase_row.id)
+                    ]
                     row.purchase_row_data.pop(str(purchase_row.id))
                     row.save()
                     purchase_row.save()
         return super().cancel()
 
     def apply_inventory_transaction(self):
-        for row in self.rows.filter(is_returned=True).filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+        for row in (
+            self.rows.filter(is_returned=True)
+            .filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True))
+            .select_related("item__account")
+        ):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -860,10 +1113,17 @@ class DebitNote(TransactionModel, InvoiceModel):
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
-        dividend_discount, dividend_trade_discount = self.get_discount(sub_total_after_row_discounts)
+        dividend_discount, dividend_trade_discount = self.get_discount(
+            sub_total_after_row_discounts
+        )
 
         # filter bypasses rows cached by prefetching
-        for row in self.rows.filter().select_related("tax_scheme", "discount_obj", "item__discount_received_account", "item__purchase_account"):
+        for row in self.rows.filter().select_related(
+            "tax_scheme",
+            "discount_obj",
+            "item__discount_received_account",
+            "item__purchase_account",
+        ):
             entries = []
 
             row_total = row.quantity * row.rate
@@ -879,7 +1139,9 @@ class DebitNote(TransactionModel, InvoiceModel):
                     row_discount += row_discount_amount
 
             if dividend_discount > 0:
-                row_dividend_discount = (row_total / sub_total_after_row_discounts) * dividend_discount
+                row_dividend_discount = (
+                    row_total / sub_total_after_row_discounts
+                ) * dividend_discount
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     purchase_value -= row_dividend_discount
@@ -905,7 +1167,9 @@ class DebitNote(TransactionModel, InvoiceModel):
 
 
 class DebitNoteRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(DebitNote, on_delete=models.CASCADE, related_name="rows")
+    voucher = models.ForeignKey(
+        DebitNote, on_delete=models.CASCADE, related_name="rows"
+    )
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     is_returned = models.BooleanField(default=True)
     description = models.TextField(blank=True, null=True)
@@ -914,11 +1178,21 @@ class DebitNoteRow(TransactionModel, InvoiceRowModel):
     rate = models.FloatField()
 
     discount = models.FloatField(default=0)
-    discount_type = models.CharField(choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True)
+    discount_type = models.CharField(
+        choices=DISCOUNT_TYPES, max_length=15, blank=True, null=True
+    )
     trade_discount = models.BooleanField(default=False)
-    discount_obj = models.ForeignKey(PurchaseDiscount, blank=True, null=True, on_delete=models.SET_NULL, related_name="debit_note_rows")
+    discount_obj = models.ForeignKey(
+        PurchaseDiscount,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="debit_note_rows",
+    )
 
-    tax_scheme = models.ForeignKey(TaxScheme, on_delete=models.CASCADE, related_name="debit_note_rows")
+    tax_scheme = models.ForeignKey(
+        TaxScheme, on_delete=models.CASCADE, related_name="debit_note_rows"
+    )
     purchase_row_data = models.JSONField(blank=True, default=dict)
 
 
@@ -937,16 +1211,40 @@ PAYMENT_STATUSES = (
 
 class PaymentReceipt(TransactionModel):
     invoices = models.ManyToManyField(SalesVoucher, related_name="payment_receipts")
-    party = models.ForeignKey(Party, on_delete=models.PROTECT, related_name="payment_receipts")
+    party = models.ForeignKey(
+        Party, on_delete=models.PROTECT, related_name="payment_receipts"
+    )
     date = models.DateField()
-    mode = models.CharField(choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15)
+    mode = models.CharField(
+        choices=PAYMENT_MODES, default=PAYMENT_MODES[0][0], max_length=15
+    )
     amount = models.FloatField()
     tds_amount = models.FloatField(default=0)
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0])
-    transaction_charge_account = models.ForeignKey(TransactionCharge, related_name="payment_receipts", blank=True, null=True, on_delete=models.PROTECT)
+    status = models.CharField(
+        max_length=20, choices=PAYMENT_STATUSES, default=PAYMENT_STATUSES[0][0]
+    )
+    transaction_charge_account = models.ForeignKey(
+        TransactionCharge,
+        related_name="payment_receipts",
+        blank=True,
+        null=True,
+        on_delete=models.PROTECT,
+    )
     transaction_charge = models.FloatField(default=0)
-    bank_account = models.ForeignKey(BankAccount, related_name="payment_receipts", on_delete=models.CASCADE, blank=True, null=True)
-    cheque_deposit = models.ForeignKey(ChequeDeposit, blank=True, null=True, related_name="payment_receipts", on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(
+        BankAccount,
+        related_name="payment_receipts",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    cheque_deposit = models.ForeignKey(
+        ChequeDeposit,
+        blank=True,
+        null=True,
+        related_name="payment_receipts",
+        on_delete=models.SET_NULL,
+    )
     remarks = models.TextField(blank=True, null=True)
     clearing_date = models.DateField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -975,7 +1273,9 @@ class PaymentReceipt(TransactionModel):
             entries.append(["dr", dr_acc, self.amount])
             cr_amount += self.amount
         if self.tds_amount:
-            entries.append(["dr", get_account(self.company, "TDS Receivables"), self.tds_amount])
+            entries.append(
+                ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
+            )
             cr_amount += self.tds_amount
         if cr_amount:
             entries.append(["cr", self.party.customer_account, cr_amount])
@@ -993,7 +1293,9 @@ class PaymentReceipt(TransactionModel):
     def cancel_transactions(self):
         if not self.status == "Cancelled":
             return
-        JournalEntry.objects.filter(content_type__model="paymentreceipt", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="paymentreceipt", object_id=self.id
+        ).delete()
 
     def clear(self, handle_cheque=True):
         if self.status == "Issued":
@@ -1028,11 +1330,30 @@ class PaymentReceipt(TransactionModel):
     def journal_entries(self):
         app_label = self._meta.app_label
         model = self.__class__.__name__.lower()
-        qs = JournalEntry.objects.all().prefetch_related(Prefetch("transactions", Transaction.objects.all().select_related("account")))
+        qs = JournalEntry.objects.all().prefetch_related(
+            Prefetch(
+                "transactions", Transaction.objects.all().select_related("account")
+            )
+        )
         if self.mode == "Cheque" and self.cheque_deposit_id:
-            qs = qs.filter(Q(content_type__app_label=app_label, content_type__model=model, object_id=self.id) | Q(content_type__app_label="bank", content_type__model="chequedeposit", object_id=self.cheque_deposit_id))
+            qs = qs.filter(
+                Q(
+                    content_type__app_label=app_label,
+                    content_type__model=model,
+                    object_id=self.id,
+                )
+                | Q(
+                    content_type__app_label="bank",
+                    content_type__model="chequedeposit",
+                    object_id=self.cheque_deposit_id,
+                )
+            )
         else:
-            qs = qs.filter(content_type__app_label=app_label, content_type__model=model, object_id=self.id)
+            qs = qs.filter(
+                content_type__app_label=app_label,
+                content_type__model=model,
+                object_id=self.id,
+            )
         return qs
 
     def __str__(self):

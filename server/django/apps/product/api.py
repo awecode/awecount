@@ -19,12 +19,27 @@ from apps.ledger.models import Transaction as Ledger
 from apps.ledger.serializers import AccountMinSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from apps.voucher.models import ChallanRow, CreditNoteRow, DebitNoteRow, PurchaseOrderRow, PurchaseVoucherRow, SalesVoucherRow
+from apps.voucher.models import (
+    ChallanRow,
+    CreditNoteRow,
+    DebitNoteRow,
+    PurchaseOrderRow,
+    PurchaseVoucherRow,
+    SalesVoucherRow,
+)
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
-from .models import Brand, Category, InventoryAccount, Item, JournalEntry, Transaction, Unit
+from .models import (
+    Brand,
+    Category,
+    InventoryAccount,
+    Item,
+    JournalEntry,
+    Transaction,
+    Unit,
+)
 from .models import Category as InventoryCategory
 from .serializers import (
     BookSerializer,
@@ -47,7 +62,11 @@ from .serializers import (
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = [
         "name",
         "code",
@@ -67,8 +86,16 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
-        ("discount_allowed_accounts", Account.objects.filter(category__name="Discount Expenses"), AccountMinSerializer),
-        ("discount_received_accounts", Account.objects.filter(category__name="Discount Income"), AccountMinSerializer),
+        (
+            "discount_allowed_accounts",
+            Account.objects.filter(category__name="Discount Expenses"),
+            AccountMinSerializer,
+        ),
+        (
+            "discount_received_accounts",
+            Account.objects.filter(category__name="Discount Income"),
+            AccountMinSerializer,
+        ),
     )
 
     def get_queryset(self):
@@ -89,7 +116,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         for i in range(len(items) - 1):
             item1 = items[i]
             item2 = items[i + 1]
-            if ((item1.can_be_purchased or item1.can_be_sold or item1.fixed_asset) and (item2.direct_expense or item2.indirect_expense)) or ((item2.can_be_purchased or item2.can_be_sold or item2.fixed_asset) and (item1.direct_expense or item1.indirect_expense)):
+            if (
+                (item1.can_be_purchased or item1.can_be_sold or item1.fixed_asset)
+                and (item2.direct_expense or item2.indirect_expense)
+            ) or (
+                (item2.can_be_purchased or item2.can_be_sold or item2.fixed_asset)
+                and (item1.direct_expense or item1.indirect_expense)
+            ):
                 return True
 
         # Select one item from the items list
@@ -153,12 +186,22 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         if has_inventory_account:
             inventory_account = item.account
 
-            remaining_items_inventory_account_ids = remaining_items.values_list("account", flat=True)
-            remaining_items_inventory_accounts = InventoryAccount.objects.filter(id__in=remaining_items_inventory_account_ids)
-            inventory_transactions = Transaction.objects.filter(account__in=remaining_items_inventory_accounts)
+            remaining_items_inventory_account_ids = remaining_items.values_list(
+                "account", flat=True
+            )
+            remaining_items_inventory_accounts = InventoryAccount.objects.filter(
+                id__in=remaining_items_inventory_account_ids
+            )
+            inventory_transactions = Transaction.objects.filter(
+                account__in=remaining_items_inventory_accounts
+            )
 
-            inventory_transaction_ids = inventory_transactions.values_list("id", flat=True)
-            journal_entries = JournalEntry.objects.filter(transactions__in=inventory_transaction_ids)
+            inventory_transaction_ids = inventory_transactions.values_list(
+                "id", flat=True
+            )
+            journal_entries = JournalEntry.objects.filter(
+                transactions__in=inventory_transaction_ids
+            )
 
             for je in journal_entries:
                 if je.content_type.name == "item":
@@ -169,14 +212,20 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
             inventory_transactions.update(account=inventory_account)
             # this assumes that opening_balance_rate of item exixts
-            total_quantity = inventory_account.opening_balance + sum(obj.opening_balance for obj in remaining_items_inventory_accounts)
+            total_quantity = inventory_account.opening_balance + sum(
+                obj.opening_balance for obj in remaining_items_inventory_accounts
+            )
             if total_quantity:
-                inventory_account.opening_balance_rate = (inventory_account.opening_balance / total_quantity) * (inventory_account.opening_balance_rate or 0)
+                inventory_account.opening_balance_rate = (
+                    inventory_account.opening_balance / total_quantity
+                ) * (inventory_account.opening_balance_rate or 0)
             for obj in remaining_items_inventory_accounts:
                 inventory_account.current_balance += obj.current_balance
                 inventory_account.opening_balance += obj.opening_balance
                 if total_quantity:
-                    inventory_account.opening_balance_rate += (obj.opening_balance / total_quantity) * (obj.opening_balance_rate or 0)
+                    inventory_account.opening_balance_rate += (
+                        obj.opening_balance / total_quantity
+                    ) * (obj.opening_balance_rate or 0)
                 inventory_account.save()
 
             if inventory_account.opening_balance != current_opening_balance:
@@ -184,9 +233,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         if has_purchase_account:
             purchase_account = item.purchase_account
-            remaining_items_purchase_account_ids = remaining_items.values_list("purchase_account", flat=True)
-            remaining_items_purchase_accounts = Account.objects.filter(id__in=remaining_items_purchase_account_ids)
-            purchase_transactions = Ledger.objects.filter(account__in=remaining_items_purchase_accounts)
+            remaining_items_purchase_account_ids = remaining_items.values_list(
+                "purchase_account", flat=True
+            )
+            remaining_items_purchase_accounts = Account.objects.filter(
+                id__in=remaining_items_purchase_account_ids
+            )
+            purchase_transactions = Ledger.objects.filter(
+                account__in=remaining_items_purchase_accounts
+            )
             # purchase_transactions_ids = purchase_transactions.values_list("id", flat=True)
             # journals = AccountJournal.objects.filter(transactions__in=purchase_transactions_ids)
             # for je in journals:
@@ -197,17 +252,29 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_purchase_accounts.delete()
 
             discount_received_account = item.discount_received_account
-            remaining_items_discount_received_account_ids = remaining_items.values_list("discount_received_account", flat=True)
-            remaining_items_discount_received_accounts = Account.objects.filter(id__in=remaining_items_discount_received_account_ids)
-            discount_received_transactions = Ledger.objects.filter(account__in=remaining_items_discount_received_accounts)
+            remaining_items_discount_received_account_ids = remaining_items.values_list(
+                "discount_received_account", flat=True
+            )
+            remaining_items_discount_received_accounts = Account.objects.filter(
+                id__in=remaining_items_discount_received_account_ids
+            )
+            discount_received_transactions = Ledger.objects.filter(
+                account__in=remaining_items_discount_received_accounts
+            )
             discount_received_transactions.update(account=discount_received_account)
             remaining_items_discount_received_accounts.delete()
 
         if has_sales_account:
             sales_account = item.sales_account
-            remaining_items_sales_account_ids = remaining_items.values_list("sales_account", flat=True)
-            remaining_items_sales_accounts = Account.objects.filter(id__in=remaining_items_sales_account_ids)
-            sales_transactions = Ledger.objects.filter(account__in=remaining_items_sales_accounts)
+            remaining_items_sales_account_ids = remaining_items.values_list(
+                "sales_account", flat=True
+            )
+            remaining_items_sales_accounts = Account.objects.filter(
+                id__in=remaining_items_sales_account_ids
+            )
+            sales_transactions = Ledger.objects.filter(
+                account__in=remaining_items_sales_accounts
+            )
             # sales_transactions_ids = sales_transactions.values_list("id", flat=True)
             # journals = AccountJournal.objects.filter(transactions__in=sales_transactions_ids)
             # for je in journals:
@@ -218,9 +285,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_sales_accounts.delete()
 
             discount_allowed_account = item.discount_allowed_account
-            remaining_items_discount_allowed_account_ids = remaining_items.values_list("discount_allowed_account", flat=True)
-            remaining_items_discount_allowed_accounts = Account.objects.filter(id__in=remaining_items_discount_allowed_account_ids)
-            discount_allowed_transactions = Ledger.objects.filter(account__in=remaining_items_discount_allowed_accounts)
+            remaining_items_discount_allowed_account_ids = remaining_items.values_list(
+                "discount_allowed_account", flat=True
+            )
+            remaining_items_discount_allowed_accounts = Account.objects.filter(
+                id__in=remaining_items_discount_allowed_account_ids
+            )
+            discount_allowed_transactions = Ledger.objects.filter(
+                account__in=remaining_items_discount_allowed_accounts
+            )
             discount_allowed_transactions.update(account=discount_allowed_account)
             remaining_items_discount_allowed_accounts.delete()
 
@@ -277,7 +350,13 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     unique_items.append(item)
             if unique_items:
                 index += 1
-                filtered_data.append({"items": [x["id"] for x in unique_items], "config": group["config"], "index": index})
+                filtered_data.append(
+                    {
+                        "items": [x["id"] for x in unique_items],
+                        "config": group["config"],
+                        "index": index,
+                    }
+                )
 
         return Response(filtered_data)
 
@@ -296,13 +375,31 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 groups_not_merged.append(index + 1)
                 items_not_merged.append(group)
         if flag:
-            res = {"error": {"message": f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.", "items": items_not_merged}}
+            res = {
+                "error": {
+                    "message": f"Items in Groups {','.join([str(x) for x in groups_not_merged])} were not merged due to conflicting config on items.",
+                    "items": items_not_merged,
+                }
+            }
             return Response(res, status=209)
         return Response(status=200)
 
     @action(detail=True)
     def details(self, request, pk=None):
-        qs = super().get_queryset().select_related("account", "sales_account", "purchase_account", "discount_allowed_account", "discount_received_account", "expense_account", "fixed_asset_account", "tax_scheme")
+        qs = (
+            super()
+            .get_queryset()
+            .select_related(
+                "account",
+                "sales_account",
+                "purchase_account",
+                "discount_allowed_account",
+                "discount_received_account",
+                "expense_account",
+                "fixed_asset_account",
+                "tax_scheme",
+            )
+        )
         item = get_object_or_404(queryset=qs, pk=pk)
         serializer = ItemDetailSerializer(item, context={"request": request}).data
         return Response(serializer)
@@ -350,12 +447,16 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             if not value:
                 return None
             else:
-                qs = Category.objects.filter(name__iexact=value, company_id=request.company.id)
+                qs = Category.objects.filter(
+                    name__iexact=value, company_id=request.company.id
+                )
                 if qs.exists():
                     return qs.first()
                 else:
                     if request.data.get("create_new_category") == "true":
-                        cat = Category.objects.create(name=value, company_id=request.company.id)
+                        cat = Category.objects.create(
+                            name=value, company_id=request.company.id
+                        )
                         return cat
                     return None
 
@@ -363,7 +464,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             if not value:
                 return None
             else:
-                qs = TaxScheme.objects.filter(name__iexact=value, company_id=request.company.id)
+                qs = TaxScheme.objects.filter(
+                    name__iexact=value, company_id=request.company.id
+                )
                 if qs.exists():
                     return qs.first()
                 else:
@@ -373,12 +476,16 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             if not value:
                 return None
             else:
-                qs = Unit.objects.filter(name__iexact=value, company_id=request.company.id)
+                qs = Unit.objects.filter(
+                    name__iexact=value, company_id=request.company.id
+                )
                 if qs.exists():
                     return qs.first()
                 else:
                     if request.data.get("create_new_unit") == "true":
-                        new_unit = Unit.objects.create(name=value, company_id=request.company.id)
+                        new_unit = Unit.objects.create(
+                            name=value, company_id=request.company.id
+                        )
                         return new_unit
                     return None
 
@@ -431,7 +538,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         item.sales_account = sales_account
 
                         name = "Discount Allowed - " + item.name
-                        discount_allowed_account = Account(name=name, company=item.company)
+                        discount_allowed_account = Account(
+                            name=name, company=item.company
+                        )
                         discount_allowed_account.add_category("Discount Expenses")
                         discount_allowed_account.suggest_code(item)
                         accounts_to_create.append(discount_allowed_account)
@@ -440,7 +549,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     items_to_update.append(item)
 
                 Account.objects.bulk_create(accounts_to_create, batch_size=1000)
-                Item.objects.bulk_update(items_to_update, fields=["purchase_account", "sales_account", "discount_received_account", "discount_allowed_account"])
+                Item.objects.bulk_update(
+                    items_to_update,
+                    fields=[
+                        "purchase_account",
+                        "sales_account",
+                        "discount_received_account",
+                        "discount_allowed_account",
+                    ],
+                )
 
             except IntegrityError as e:
                 code = e.args[0].split("=(")[1].split(")")[0].split(",")[0]
@@ -456,7 +573,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
 class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     serializer_class = ItemOpeningSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = [
         "item__name",
         "item__code",
@@ -466,18 +587,39 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     ]
     filterset_class = InventoryAccountFilterSet
 
-    collections = (("items", Item.objects.only("id", "name").filter(track_inventory=True, account__opening_balance=0), GenericSerializer),)
+    collections = (
+        (
+            "items",
+            Item.objects.only("id", "name").filter(
+                track_inventory=True, account__opening_balance=0
+            ),
+            GenericSerializer,
+        ),
+    )
 
     def get_queryset(self, company_id=None):
         return super().get_queryset().filter(opening_balance__gt=0)
 
     def get_update_defaults(self, request=None):
-        self.collections = (("items", Item.objects.filter(track_inventory=True).filter(Q(account__opening_balance=0) | Q(account_id=self.kwargs.get("pk"))), ItemListSerializer),)
+        self.collections = (
+            (
+                "items",
+                Item.objects.filter(track_inventory=True).filter(
+                    Q(account__opening_balance=0) | Q(account_id=self.kwargs.get("pk"))
+                ),
+                ItemListSerializer,
+            ),
+        )
         return self.get_defaults(request=request)
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        account = get_object_or_404(InventoryAccount, item__id=data.get("item_id"), opening_balance=0, company=request.company)
+        account = get_object_or_404(
+            InventoryAccount,
+            item__id=data.get("item_id"),
+            opening_balance=0,
+            company=request.company,
+        )
         opening_balance = data.get("opening_balance", None)
         if not opening_balance:
             raise ValidationError({"opening_balance": ["Opening balance is required."]})
@@ -502,14 +644,22 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
         account.save()
         fiscal_year = self.request.company.current_fiscal_year
         account.item.update_opening_balance(fiscal_year)
-        JournalEntry.objects.filter(content_type__model="item", content_type__app_label="product", object_id=account.item.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="item",
+            content_type__app_label="product",
+            object_id=account.item.id,
+        ).delete()
         return Response({})
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
     collections = (("brands", Brand, BrandSerializer),)
 
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = [
         "name",
         "code",
@@ -521,7 +671,9 @@ class BookViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = BookFilterSet
 
     def get_queryset(self, **kwargs):
-        queryset = Item.objects.filter(category__name="Book", company=self.request.company)
+        queryset = Item.objects.filter(
+            category__name="Book", company=self.request.company
+        )
         return queryset
 
     serializer_class = BookSerializer
@@ -544,15 +696,38 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
-        ("discount_allowed_accounts", Account.objects.filter(category__name="Discount Expenses"), AccountMinSerializer),
-        ("discount_received_accounts", Account.objects.filter(category__name="Discount Income"), AccountMinSerializer),
+        (
+            "discount_allowed_accounts",
+            Account.objects.filter(category__name="Discount Expenses"),
+            AccountMinSerializer,
+        ),
+        (
+            "discount_received_accounts",
+            Account.objects.filter(category__name="Discount Income"),
+            AccountMinSerializer,
+        ),
     )
 
     def get_collections(self, request=None):
         collections_data = super().get_collections(self.request)
-        collections_data["fixed_assets_categories"] = GenericSerializer(AccountCategory.objects.get(name="Fixed Assets", default=True, company=self.request.company).get_descendants(include_self=True), many=True).data
-        collections_data["direct_expenses_categories"] = GenericSerializer(AccountCategory.objects.get(name="Direct Expenses", default=True, company=self.request.company).get_descendants(include_self=True), many=True).data
-        collections_data["indirect_expenses_categories"] = GenericSerializer(AccountCategory.objects.get(name="Indirect Expenses", default=True, company=self.request.company).get_descendants(include_self=True), many=True).data
+        collections_data["fixed_assets_categories"] = GenericSerializer(
+            AccountCategory.objects.get(
+                name="Fixed Assets", default=True, company=self.request.company
+            ).get_descendants(include_self=True),
+            many=True,
+        ).data
+        collections_data["direct_expenses_categories"] = GenericSerializer(
+            AccountCategory.objects.get(
+                name="Direct Expenses", default=True, company=self.request.company
+            ).get_descendants(include_self=True),
+            many=True,
+        ).data
+        collections_data["indirect_expenses_categories"] = GenericSerializer(
+            AccountCategory.objects.get(
+                name="Indirect Expenses", default=True, company=self.request.company
+            ).get_descendants(include_self=True),
+            many=True,
+        ).data
         return collections_data
 
     def get_queryset(self):
@@ -574,7 +749,11 @@ class BrandViewSet(InputChoiceMixin, CRULViewSet):
 class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = InventoryAccountSerializer
 
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = (
         "code",
         "name",
@@ -589,7 +768,12 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         start_date = param.get("start_date")
         end_date = param.get("end_date")
         obj = self.get_object()
-        entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by("pk", "date").prefetch_related("transactions", "content_type", "transactions__account").select_related()
+        entries = (
+            JournalEntry.objects.filter(transactions__account_id=obj.pk)
+            .order_by("pk", "date")
+            .prefetch_related("transactions", "content_type", "transactions__account")
+            .select_related()
+        )
 
         if start_date or end_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -599,7 +783,9 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 entries = entries.filter(date=start_date)
             else:
                 entries = entries.filter(date__range=[start_date, end_date])
-        serializer = JournalEntrySerializer(entries, context={"account": obj}, many=True)
+        serializer = JournalEntrySerializer(
+            entries, context={"account": obj}, many=True
+        )
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -611,21 +797,33 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         account_ids = self.get_account_ids(obj)
         start_date = param.get("start_date", None)
         end_date = param.get("end_date", None)
-        transactions = Transaction.objects.filter(account_id__in=account_ids).order_by("-journal_entry__date", "-pk").select_related("journal_entry__content_type")
+        transactions = (
+            Transaction.objects.filter(account_id__in=account_ids)
+            .order_by("-journal_entry__date", "-pk")
+            .select_related("journal_entry__content_type")
+        )
 
         aggregate = {}
         if start_date or end_date:
             if start_date == "null":
                 from rest_framework.exceptions import ValidationError
 
-                raise ValidationError("Either start date or both dates are required to filter.")
+                raise ValidationError(
+                    "Either start date or both dates are required to filter."
+                )
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
             # TODO: if only start date is given, raise error or process some other way?
-            end_date = datetime.strptime(end_date, "%Y-%m-%d") if end_date != "null" else datetime.today()
+            end_date = (
+                datetime.strptime(end_date, "%Y-%m-%d")
+                if end_date != "null"
+                else datetime.today()
+            )
             if start_date == end_date:
                 transactions = transactions.filter(journal_entry__date=start_date)
             else:
-                transactions = transactions.filter(journal_entry__date__range=[start_date, end_date])
+                transactions = transactions.filter(
+                    journal_entry__date__range=[start_date, end_date]
+                )
             aggregate = transactions.aggregate(Sum("dr_amount"), Sum("cr_amount"))
 
         # Only show 5 because fetching voucher_no is expensive because of GFK, GFK to be cached
@@ -644,10 +842,22 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
             qq = (
                 InventoryAccount.objects.filter(company=request.company)
                 .annotate(
-                    od=Sum("transactions__dr_amount", filter=Q(transactions__journal_entry__date__lt=start_date)),
-                    oc=Sum("transactions__cr_amount", filter=Q(transactions__journal_entry__date__lt=start_date)),
-                    cd=Sum("transactions__dr_amount", filter=Q(transactions__journal_entry__date__lte=end_date)),
-                    cc=Sum("transactions__cr_amount", filter=Q(transactions__journal_entry__date__lte=end_date)),
+                    od=Sum(
+                        "transactions__dr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=start_date),
+                    ),
+                    oc=Sum(
+                        "transactions__cr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=start_date),
+                    ),
+                    cd=Sum(
+                        "transactions__dr_amount",
+                        filter=Q(transactions__journal_entry__date__lte=end_date),
+                    ),
+                    cc=Sum(
+                        "transactions__cr_amount",
+                        filter=Q(transactions__journal_entry__date__lte=end_date),
+                    ),
                 )
                 .values("id", "name", "item__category_id", "od", "oc", "cd", "cc")
                 .exclude(od=None, oc=None, cd=None, cc=None)

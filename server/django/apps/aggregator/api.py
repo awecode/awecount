@@ -10,14 +10,21 @@ from awecount.libs.CustomViewSet import CRULViewSet
 from awecount.libs.helpers import choice_parser
 
 from .models import DISPLAY_TYPES, GROUP_BY, Widget
-from .serializers import LogEntrySerializer, WidgetListSerializer, WidgetSerializer, WidgetUpdateSerializer
+from .serializers import (
+    LogEntrySerializer,
+    WidgetListSerializer,
+    WidgetSerializer,
+    WidgetUpdateSerializer,
+)
 
 
 class LogEntryViewSet(ReadOnlyModelViewSet):
     serializer_class = LogEntrySerializer
 
     def get_queryset(self):
-        return LogEntry.objects.filter(actor__company_id=self.request.user.company_id).select_related("content_type", "actor")
+        return LogEntry.objects.filter(
+            actor__company_id=self.request.user.company_id
+        ).select_related("content_type", "actor")
 
     @action(detail=False)
     def export(self, request):

@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.voucher.serializers import PurchaseDiscountSerializer, PurchaseVoucherRowDetailSerializer
+from apps.voucher.serializers import (
+    PurchaseDiscountSerializer,
+    PurchaseVoucherRowDetailSerializer,
+)
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
@@ -10,7 +13,9 @@ from ..models import DebitNote, DebitNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
 
-class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+class DebitNoteRowSerializer(
+    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -26,10 +31,18 @@ class DebitNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mode
     class Meta:
         model = DebitNoteRow
         exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
-        extra_kwargs = {"discount": {"allow_null": True, "required": False}, "discount_type": {"allow_null": True, "required": False}}
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False},
+        }
 
 
-class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class DebitNoteCreateSerializer(
+    StatusReversionMixin,
+    DiscountObjectTypeSerializerMixin,
+    ModeCumBankSerializerMixin,
+    serializers.ModelSerializer,
+):
     voucher_no = serializers.ReadOnlyField()
     rows = DebitNoteRowSerializer(many=True)
 
@@ -38,7 +51,9 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             return
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
-        next_voucher_no = get_next_voucher_no(DebitNote, self.context["request"].company_id)
+        next_voucher_no = get_next_voucher_no(
+            DebitNote, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -53,7 +68,11 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
             )
 
     def validate(self, data):
-        if not data.get("party") and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if (
+            not data.get("party")
+            and data.get("mode") == "Credit"
+            and data.get("status") != "Draft"
+        ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
@@ -75,18 +94,35 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         for voucher in purchase_vouchers:
             purchase_rows = voucher.rows.all()
             for row in purchase_rows:
-                row_data = next((item for item in rows_data if item["id"] == row.id), None)
+                row_data = next(
+                    (item for item in rows_data if item["id"] == row.id), None
+                )
                 debit_note_row = instance.rows.get(item_id=row_data["item_id"])
-                if row.remaining_quantity < row_data["quantity"] and not self.context["request"].query_params.get("fifo_inconsistency"):
-                    raise UnprocessableException(detail="This action may cause inconsistency in fifo.", code="fifo_inconsistency")
-                if row_data["quantity"] > row.item.remaining_stock and not (self.context["request"].query_params.get("negative_stock") or self.context["request"].query_params.get("fifo_inconsistency")):
-                    raise UnprocessableException(detail="This can cause inconsistency in fifo.", code="negative_stock")
+                if row.remaining_quantity < row_data["quantity"] and not self.context[
+                    "request"
+                ].query_params.get("fifo_inconsistency"):
+                    raise UnprocessableException(
+                        detail="This action may cause inconsistency in fifo.",
+                        code="fifo_inconsistency",
+                    )
+                if row_data["quantity"] > row.item.remaining_stock and not (
+                    self.context["request"].query_params.get("negative_stock")
+                    or self.context["request"].query_params.get("fifo_inconsistency")
+                ):
+                    raise UnprocessableException(
+                        detail="This can cause inconsistency in fifo.",
+                        code="negative_stock",
+                    )
                 if row.remaining_quantity < row_data["quantity"]:
                     diff = row_data["quantity"] - row.remaining_quantity
-                    debit_note_row.purchase_row_data[str(row.id)] = row.remaining_quantity
+                    debit_note_row.purchase_row_data[
+                        str(row.id)
+                    ] = row.remaining_quantity
                     row.remaining_quantity = 0
                     row.save()
-                    available_rows = row.item.purchase_rows.filter(remaining_quantity__gt=0).order_by("-voucher__date", "-id")
+                    available_rows = row.item.purchase_rows.filter(
+                        remaining_quantity__gt=0
+                    ).order_by("-voucher__date", "-id")
                     for row in available_rows:
                         if row.remaining_quantity > diff:
                             debit_note_row.purchase_row_data[str(row.id)] = diff
@@ -94,7 +130,9 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
                             row.save()
                             break
                         else:
-                            debit_note_row.purchase_row_data[str(row.id)] = row.remaining_quantity
+                            debit_note_row.purchase_row_data[
+                                str(row.id)
+                            ] = row.remaining_quantity
                             diff -= row.remaining_quantity
                             row.remaining_quantity = 0
                             row.save()
@@ -140,7 +178,9 @@ class DebitNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializ
         DebitNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            DebitNoteRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            DebitNoteRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
@@ -180,7 +220,9 @@ class DebitNoteDetailSerializer(serializers.ModelSerializer):
     address = serializers.ReadOnlyField(source="party.address")
 
     rows = PurchaseVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(source="party.tax_registration_number")
+    tax_registration_number = serializers.ReadOnlyField(
+        source="party.tax_registration_number"
+    )
 
     invoice_data = serializers.SerializerMethodField()
 

@@ -18,10 +18,16 @@ class CompanyViewSetMixin(object):
         return super().get_serializer_class()
 
     def is_filtered(self):
-        return any(x in self.request.query_params if self.request.query_params.get(x) else None for x in self.filterset_class.base_filters.keys())
+        return any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
 
     def is_filtered_by_date(self):
-        return "start_date" in self.request.query_params and "end_date" in self.request.query_params
+        return (
+            "start_date" in self.request.query_params
+            and "end_date" in self.request.query_params
+        )
 
     def get_queryset(self, company_id=None):
         if self.queryset:
@@ -56,9 +62,16 @@ class CompanyViewSetMixin(object):
             raise RESTValidationError({"detail": e.messages})
 
     def is_month_filter(self):
-        if "start_date" in self.request.query_params.keys() and "end_date" in self.request.query_params.keys():
-            start_date = datetime.strptime(self.request.query_params["start_date"], "%Y-%m-%d")
-            end_date = datetime.strptime(self.request.query_params["end_date"], "%Y-%m-%d")
+        if (
+            "start_date" in self.request.query_params.keys()
+            and "end_date" in self.request.query_params.keys()
+        ):
+            start_date = datetime.strptime(
+                self.request.query_params["start_date"], "%Y-%m-%d"
+            )
+            end_date = datetime.strptime(
+                self.request.query_params["end_date"], "%Y-%m-%d"
+            )
             delta = end_date - start_date
             if delta.days < 33:
                 return True
@@ -105,7 +118,9 @@ class CollectionViewSet(object):
 
     @action(detail=False, url_path="create-defaults")
     def create_defaults(self, request):
-        dct = dict(merge_dicts(self.get_defaults(request), self.get_create_defaults(request)))
+        dct = dict(
+            merge_dicts(self.get_defaults(request), self.get_create_defaults(request))
+        )
         collections = self.get_collections(request)
         if collections:
             dct["collections"] = collections
@@ -113,7 +128,9 @@ class CollectionViewSet(object):
 
     @action(detail=True, url_path="update-defaults")
     def update_defaults(self, request, pk):
-        dct = dict(merge_dicts(self.get_defaults(request), self.get_update_defaults(request)))
+        dct = dict(
+            merge_dicts(self.get_defaults(request), self.get_update_defaults(request))
+        )
         collections = self.get_collections(request)
         if collections:
             dct["collections"] = collections
@@ -128,5 +145,13 @@ class GenericSerializer(serializers.Serializer):
         fields = ("id", "name")
 
 
-class CRULViewSet(CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class CRULViewSet(
+    CompanyViewSetMixin,
+    CollectionViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     pass

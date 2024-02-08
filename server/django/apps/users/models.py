@@ -13,7 +13,14 @@ from awecount.libs.fields import ChoiceArrayField
 
 from .permission_modules import module_pairs
 
-ORGANIZATION_TYPES = (("private_limited", "Private Limited"), ("public_limited", "Public Limited"), ("sole_proprietorship", "Sole Proprietorship"), ("partnership", "Partnership"), ("corporation", "Corporation"), ("non_profit", "Non-profit"))
+ORGANIZATION_TYPES = (
+    ("private_limited", "Private Limited"),
+    ("public_limited", "Public Limited"),
+    ("sole_proprietorship", "Sole Proprietorship"),
+    ("partnership", "Partnership"),
+    ("corporation", "Corporation"),
+    ("non_profit", "Non-profit"),
+)
 
 
 class FiscalYear(models.Model):
@@ -47,7 +54,9 @@ class Company(models.Model):
     # email = models.EmailField()
     emails = ArrayField(models.EmailField(), default=list, blank=True)
     website = models.URLField(blank=True, null=True)
-    organization_type = models.CharField(max_length=255, choices=ORGANIZATION_TYPES, default="private_limited")
+    organization_type = models.CharField(
+        max_length=255, choices=ORGANIZATION_TYPES, default="private_limited"
+    )
     tax_registration_number = models.IntegerField()
     # force_preview_before_save = models.BooleanField(default=False)
     enable_sales_invoice_update = models.BooleanField(default=False)
@@ -57,7 +66,9 @@ class Company(models.Model):
     enable_sales_agents = models.BooleanField(default=False)
     synchronize_cbms_nepal_test = models.BooleanField(default=False)
     synchronize_cbms_nepal_live = models.BooleanField(default=False)
-    current_fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name="companies")
+    current_fiscal_year = models.ForeignKey(
+        FiscalYear, on_delete=models.CASCADE, related_name="companies"
+    )
     config_template = models.CharField(max_length=255, default="np")
     invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
 
@@ -69,7 +80,11 @@ class Company(models.Model):
 
     def get_fiscal_years(self):
         # TODO Assign fiscal years to companies (m2m), return related fiscal years here
-        return sorted(FiscalYear.objects.all(), key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id, reverse=True)
+        return sorted(
+            FiscalYear.objects.all(),
+            key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
+            reverse=True,
+        )
 
     def save(self, *args, **kwargs):
         created = not self.pk
@@ -92,12 +107,18 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, full_name="", password=None):
-        return self.create_user(email, password=password, full_name=full_name, superuser=True)
+        return self.create_user(
+            email, password=password, full_name=full_name, superuser=True
+        )
 
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    modules = ChoiceArrayField(models.CharField(max_length=32, blank=True, choices=module_pairs), default=list, blank=True)
+    modules = ChoiceArrayField(
+        models.CharField(max_length=32, blank=True, choices=module_pairs),
+        default=list,
+        blank=True,
+    )
 
     def __str__(self):
         return self.name
@@ -109,7 +130,9 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     roles = models.ManyToManyField(Role, blank=True, related_name="users")
-    company = models.ForeignKey(Company, on_delete=models.SET_NULL, related_name="users", null=True)
+    company = models.ForeignKey(
+        Company, on_delete=models.SET_NULL, related_name="users", null=True
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
@@ -139,7 +162,11 @@ class User(AbstractBaseUser):
 
     def check_perm(self, perm):
         if perm not in self.role_modules:
-            raise APIException({"detail": "User does not have enough permissions to perform the action."})
+            raise APIException(
+                {
+                    "detail": "User does not have enough permissions to perform the action."
+                }
+            )
 
 
 class AccessKey(models.Model):
@@ -151,14 +178,24 @@ class AccessKey(models.Model):
     @classmethod
     def get_user(cls, key):
         try:
-            return cls.objects.filter(enabled=True).select_related("user__company").get(key=key).user
+            return (
+                cls.objects.filter(enabled=True)
+                .select_related("user__company")
+                .get(key=key)
+                .user
+            )
         except (cls.DoesNotExist, ValidationError):
             return
 
     @classmethod
     def get_company(cls, key):
         try:
-            return cls.objects.filter(enabled=True).select_related("user__company").get(key=key).user.company
+            return (
+                cls.objects.filter(enabled=True)
+                .select_related("user__company")
+                .get(key=key)
+                .user.company
+            )
         except (cls.DoesNotExist, ValidationError):
             return
 

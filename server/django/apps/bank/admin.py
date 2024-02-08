@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import BankAccount, BankCashDeposit, ChequeDeposit, ChequeIssue, FundTransfer, FundTransferTemplate
+from .models import (
+    BankAccount,
+    BankCashDeposit,
+    ChequeDeposit,
+    ChequeIssue,
+    FundTransfer,
+    FundTransferTemplate,
+)
 
 
 class ChequeDepositAdmin(admin.ModelAdmin):

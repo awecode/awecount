@@ -68,8 +68,12 @@ def delete_rows(rows, model):
                 instance.delete()
                 row_ids.append(row.get("id"))
 
-        JournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
-        InventoryJournalEntry.objects.filter(content_type=content_type, object_id__in=row_ids).delete()
+        JournalEntry.objects.filter(
+            content_type=content_type, object_id__in=row_ids
+        ).delete()
+        InventoryJournalEntry.objects.filter(
+            content_type=content_type, object_id__in=row_ids
+        ).delete()
 
 
 def link_callback(uri, rel):
@@ -222,7 +226,10 @@ class Number2Words(object):
             for idx, item in enumerate(MSBs):
                 inWords = self._formulateDoubleDigitWords(int(item))
                 if inWords:
-                    inWordsWithDenomination = "%s %s" % (inWords, self.powerNameList[idx])
+                    inWordsWithDenomination = "%s %s" % (
+                        inWords,
+                        self.powerNameList[idx],
+                    )
                     wordList.insert(0, inWordsWithDenomination)
 
         # ---------------------------------------------------------------------#
@@ -257,4 +264,9 @@ def commafy(amount):
     other_numbers = amount_string[:-3]
     if other_numbers:
         last_three = "," + last_three
-    return re.sub("\B(?=(\d{2})+(?!\d))", ",", other_numbers) + last_three + "." + after_point
+    return (
+        re.sub("\B(?=(\d{2})+(?!\d))", ",", other_numbers)
+        + last_three
+        + "."
+        + after_point
+    )

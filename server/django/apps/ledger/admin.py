@@ -1,12 +1,36 @@
 from django.contrib import admin, messages
 from mptt.admin import MPTTModelAdmin
 
-from apps.ledger.models import Account, AccountClosing, AccountOpeningBalance, Category, JournalEntry, Party, PartyRepresentative, Transaction, TransactionCharge
+from apps.ledger.models import (
+    Account,
+    AccountClosing,
+    AccountOpeningBalance,
+    Category,
+    JournalEntry,
+    Party,
+    PartyRepresentative,
+    Transaction,
+    TransactionCharge,
+)
 
 
 class PartyAdmin(admin.ModelAdmin):
-    search_fields = ("name", "address", "contact_no", "email", "tax_registration_number", "company__name")
-    list_display = ("name", "address", "contact_no", "email", "tax_registration_number", "company")
+    search_fields = (
+        "name",
+        "address",
+        "contact_no",
+        "email",
+        "tax_registration_number",
+        "company__name",
+    )
+    list_display = (
+        "name",
+        "address",
+        "contact_no",
+        "email",
+        "tax_registration_number",
+        "company",
+    )
     list_filter = ("company",)
 
 

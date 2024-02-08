@@ -1,7 +1,9 @@
 import datetime
 import os
 
-BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..")
+BASE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".."
+)
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 INSTALLED_APPS = [
@@ -66,7 +68,10 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         "apps.users.permissions.ModuleAccessPermission",
     ),
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication", "apps.users.authentication.AccessKeyAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.users.authentication.AccessKeyAuthentication",
+    ],
     "EXCEPTION_HANDLER": "awecount.libs.exception.exception_handler",
 }
 

@@ -13,7 +13,9 @@ class Command(BaseCommand):
         for company in Company.objects.all():
             root = {}
             for category in Category.ROOT:
-                root[category[0]] = Category.objects.get(name=category[0], code=category[1], company=company, default=True)
+                root[category[0]] = Category.objects.get(
+                    name=category[0], code=category[1], company=company, default=True
+                )
 
             # parent_name = 'Indirect Expenses'
             # parent_code = 'E-I'
@@ -28,4 +30,10 @@ class Command(BaseCommand):
             account_code = "Q-PL"
             category = root["Equity"]
 
-            Account.objects.create(name=account_name, category=category, code=account_code, company=company, default=True)
+            Account.objects.create(
+                name=account_name,
+                category=category,
+                code=account_code,
+                company=company,
+                default=True,
+            )

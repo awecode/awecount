@@ -1,5 +1,10 @@
 def get_default_permissions_from_model(model_name):
-    return [model_name + "View", model_name + "Create", model_name + "Modify", model_name + "Delete"]
+    return [
+        model_name + "View",
+        model_name + "Create",
+        model_name + "Modify",
+        model_name + "Delete",
+    ]
 
 
 gdp = get_default_permissions_from_model

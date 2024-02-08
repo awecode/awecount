@@ -11,7 +11,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         pvs = PurchaseVoucher.objects.all()
         for pv in pvs:
-            for row in pv.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+            for row in pv.rows.filter(
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+            ).select_related("item__account"):
                 find_obsolete_transactions(
                     row,
                     pv.date,
@@ -21,7 +23,9 @@ class Command(BaseCommand):
         svs = SalesVoucher.objects.all()
         print("------------Sales----------------")
         for pv in svs:
-            for row in pv.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)).select_related("item__account"):
+            for row in pv.rows.filter(
+                Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+            ).select_related("item__account"):
                 find_obsolete_transactions(
                     row,
                     pv.date,

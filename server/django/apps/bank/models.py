@@ -4,7 +4,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework.exceptions import ValidationError as RestValidatoinError
 
-from apps.ledger.models import Account, JournalEntry, Party, TransactionModel, set_ledger_transactions
+from apps.ledger.models import (
+    Account,
+    JournalEntry,
+    Party,
+    TransactionModel,
+    set_ledger_transactions,
+)
 from apps.users.models import Company
 from awecount.libs import wGenerator
 
@@ -18,9 +24,15 @@ class BankAccount(models.Model):
     branch_name = models.CharField(max_length=250, blank=True, null=True)
     next_cheque_no = models.CharField(blank=True, null=True, max_length=255)
     transaction_commission_percent = models.FloatField(blank=True, null=True, default=0)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="bank_accounts")
-    ledger = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name="bank_accounts")
-    commission_account = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name="wallet_accounts")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="bank_accounts"
+    )
+    ledger = models.ForeignKey(
+        Account, null=True, on_delete=models.SET_NULL, related_name="bank_accounts"
+    )
+    commission_account = models.ForeignKey(
+        Account, null=True, on_delete=models.SET_NULL, related_name="wallet_accounts"
+    )
 
     def save(self, *args, **kwargs):
         if self.is_wallet:
@@ -28,15 +40,27 @@ class BankAccount(models.Model):
                 raise RestValidatoinError({"bank_name": ["Wallet name is required!"]})
         else:
             if not self.account_number:
-                raise RestValidatoinError({"account_number": ["Account Number is required!"]})
+                raise RestValidatoinError(
+                    {"account_number": ["Account Number is required!"]}
+                )
             if not self.next_cheque_no:
-                raise RestValidatoinError({"next_cheque_no": ["Cheque No. can not be empty value!"]})
+                raise RestValidatoinError(
+                    {"next_cheque_no": ["Cheque No. can not be empty value!"]}
+                )
             elif not self.next_cheque_no.isdigit():
-                raise RestValidatoinError({"next_cheque_no": ["Cheque No. can only contain digits!"]})
+                raise RestValidatoinError(
+                    {"next_cheque_no": ["Cheque No. can only contain digits!"]}
+                )
         super().save(*args, **kwargs)
         post_save = False
-        if self.is_wallet and self.transaction_commission_percent and not self.commission_account_id:
-            commission_account = Account(name=self.full_name + " Commission", company=self.company)
+        if (
+            self.is_wallet
+            and self.transaction_commission_percent
+            and not self.commission_account_id
+        ):
+            commission_account = Account(
+                name=self.full_name + " Commission", company=self.company
+            )
             commission_account.add_category("Bank Charges")
             commission_account.suggest_code(self)
             commission_account.save()
@@ -53,7 +77,9 @@ class BankAccount(models.Model):
             self.save()
 
     def increase_cheque_no(self):
-        leading_zeroes = len(self.next_cheque_no) - len(str(int(self.next_cheque_no) + 1))
+        leading_zeroes = len(self.next_cheque_no) - len(
+            str(int(self.next_cheque_no) + 1)
+        )
         self.next_cheque_no = "0" * leading_zeroes + str(int(self.next_cheque_no) + 1)
         self.save()
 
@@ -64,7 +90,9 @@ class BankAccount(models.Model):
     @property
     def full_name(self):
         if self.account_number:
-            return "{} ({})".format(self.short_name or self.bank_name, self.account_number)
+            return "{} ({})".format(
+                self.short_name or self.bank_name, self.account_number
+            )
         else:
             return "{}".format(self.short_name or self.bank_name)
 
@@ -86,7 +114,9 @@ class ChequeDeposit(TransactionModel):
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=20)
     date = models.DateField()
     clearing_date = models.DateField(blank=True, null=True)
-    bank_account = models.ForeignKey(BankAccount, related_name="cheque_deposits", on_delete=models.CASCADE)
+    bank_account = models.ForeignKey(
+        BankAccount, related_name="cheque_deposits", on_delete=models.CASCADE
+    )
     cheque_number = models.CharField(max_length=50, blank=True, null=True)
     cheque_date = models.DateField(blank=True, null=True)
     drawee_bank = models.CharField(max_length=255, blank=True, null=True)
@@ -110,13 +140,18 @@ class ChequeDeposit(TransactionModel):
             return
         if not self.status == "Cleared":
             return
-        entries = [["dr", self.bank_account.ledger, self.amount], ["cr", self.benefactor, self.amount]]
+        entries = [
+            ["dr", self.bank_account.ledger, self.amount],
+            ["cr", self.benefactor, self.amount],
+        ]
         set_ledger_transactions(self, self.date, *entries, clear=True)
 
     def cancel_transactions(self):
         if not self.status == "Cancelled":
             return
-        JournalEntry.objects.filter(content_type__model="chequedeposit", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="chequedeposit", object_id=self.id
+        ).delete()
 
     def clear(self, handle_receipt=True):
         self.status = "Cleared"
@@ -160,7 +195,13 @@ class ChequeIssue(models.Model):
     date = models.DateField()
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     issued_to = models.CharField(max_length=255, blank=True, null=True)
-    dr_account = models.ForeignKey(Account, blank=True, null=True, related_name="cheque_issues", on_delete=models.SET_NULL)
+    dr_account = models.ForeignKey(
+        Account,
+        blank=True,
+        null=True,
+        related_name="cheque_issues",
+        on_delete=models.SET_NULL,
+    )
     amount = models.FloatField()
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -208,7 +249,9 @@ class ChequeIssue(models.Model):
             self.cancel_transactions()
 
     def cancel_transactions(self):
-        JournalEntry.objects.filter(content_type__model="chequeissue", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="chequeissue", object_id=self.id
+        ).delete()
 
     def cancel(self):
         self.status = "Cancelled"
@@ -238,17 +281,30 @@ class FundTransfer(TransactionModel):
     )
     voucher_no = models.CharField(blank=True, null=True, max_length=50)
     date = models.DateField()
-    from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="fund_transfers_from")
-    to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="fund_transfers_to")
+    from_account = models.ForeignKey(
+        Account, on_delete=models.PROTECT, related_name="fund_transfers_from"
+    )
+    to_account = models.ForeignKey(
+        Account, on_delete=models.PROTECT, related_name="fund_transfers_to"
+    )
     amount = models.FloatField()
-    transaction_fee_account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="charged_fund_transfers")
+    transaction_fee_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="charged_fund_transfers",
+    )
     transaction_fee = models.FloatField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
     narration = models.TextField(null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if "Bank Accounts" not in [self.from_account.category.name, self.to_account.category.name]:
+        if "Bank Accounts" not in [
+            self.from_account.category.name,
+            self.to_account.category.name,
+        ]:
             raise ValidationError("One of the account needs to be a bank account.")
         if self.from_account_id == self.to_account_id:
             raise ValidationError("Transferring to the same account is not allowed.")
@@ -278,7 +334,9 @@ class FundTransfer(TransactionModel):
             entries = [["dr", self.to_account, self.amount]]
             cr_amount = self.amount
             if self.transaction_fee_account_id and self.transaction_fee:
-                entries.append(["dr", self.transaction_fee_account, self.transaction_fee])
+                entries.append(
+                    ["dr", self.transaction_fee_account, self.transaction_fee]
+                )
                 cr_amount += self.transaction_fee
             entries.append(["cr", self.from_account, cr_amount])
             set_ledger_transactions(self, self.date, *entries, clear=True)
@@ -286,7 +344,9 @@ class FundTransfer(TransactionModel):
             self.cancel_transactions()
 
     def cancel_transactions(self):
-        JournalEntry.objects.filter(content_type__model="fundtransfer", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="fundtransfer", object_id=self.id
+        ).delete()
 
     def cancel(self):
         self.status = "Cancelled"
@@ -296,9 +356,27 @@ class FundTransfer(TransactionModel):
 
 class FundTransferTemplate(models.Model):
     name = models.CharField(max_length=255)
-    from_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="fund_transfers_from_template", blank=True, null=True)
-    to_account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="fund_transfers_to_template", blank=True, null=True)
-    transaction_fee_account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="charged_fund_transfers_template")
+    from_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="fund_transfers_from_template",
+        blank=True,
+        null=True,
+    )
+    to_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="fund_transfers_to_template",
+        blank=True,
+        null=True,
+    )
+    transaction_fee_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="charged_fund_transfers_template",
+    )
     transaction_fee = models.FloatField(blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
@@ -315,7 +393,9 @@ class BankCashDeposit(TransactionModel):
     voucher_no = models.IntegerField(blank=True, null=True, default=None)
     date = models.DateField()
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=25)
-    bank_account = models.ForeignKey(BankAccount, related_name="bank_cash_deposits", on_delete=models.CASCADE)
+    bank_account = models.ForeignKey(
+        BankAccount, related_name="bank_cash_deposits", on_delete=models.CASCADE
+    )
     amount = models.FloatField()
     benefactor = models.ForeignKey(Account, on_delete=models.CASCADE)
     deposited_by = models.CharField(max_length=255, blank=True, null=True)
@@ -332,13 +412,18 @@ class BankCashDeposit(TransactionModel):
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
-        entries = [["dr", self.bank_account.ledger, self.amount], ["cr", self.benefactor, self.amount]]
+        entries = [
+            ["dr", self.bank_account.ledger, self.amount],
+            ["cr", self.benefactor, self.amount],
+        ]
         set_ledger_transactions(self, self.date, *entries, clear=True)
 
     def cancel_transactions(self):
         if not self.status == "Cancelled":
             return
-        JournalEntry.objects.filter(content_type__model="bankcashdeposit", object_id=self.id).delete()
+        JournalEntry.objects.filter(
+            content_type__model="bankcashdeposit", object_id=self.id
+        ).delete()
 
     def clear(self):
         self.status = "Cleared"

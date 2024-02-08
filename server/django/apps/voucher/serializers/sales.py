@@ -13,7 +13,14 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
-from ..models import InvoiceDesign, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, SalesVoucher, SalesVoucherRow
+from ..models import (
+    PurchaseVoucher,
+    PurchaseVoucherRow,
+    SalesDiscount,
+    SalesVoucher,
+    SalesVoucherRow,
+)
+from ..models.invoice_design import InvoiceDesign
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 
 
@@ -42,7 +49,16 @@ class PaymentReceiptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ("id", "date", "status", "mode", "party_name", "amount", "tds_amount", "invoices")
+        fields = (
+            "id",
+            "date",
+            "status",
+            "mode",
+            "party_name",
+            "amount",
+            "tds_amount",
+            "invoices",
+        )
 
 
 class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
@@ -57,18 +73,44 @@ class PaymentReceiptDetailSerializer(serializers.ModelSerializer):
     def get_invoices(self, obj):
         data = []
         for invoice in obj.invoices.all():
-            data.append({"voucher_no": invoice.voucher_no, "total_amount": invoice.total_amount, "date": invoice.date, "id": invoice.id})
+            data.append(
+                {
+                    "voucher_no": invoice.voucher_no,
+                    "total_amount": invoice.total_amount,
+                    "date": invoice.date,
+                    "id": invoice.id,
+                }
+            )
         return data
 
     class Meta:
         model = PaymentReceipt
-        fields = ("id", "date", "status", "mode", "party_name", "invoices", "amount", "tds_amount", "bank_account_name", "cheque_date", "party_address", "cheque_number", "drawee_bank", "cheque_deposit_id")
+        fields = (
+            "id",
+            "date",
+            "status",
+            "mode",
+            "party_name",
+            "invoices",
+            "amount",
+            "tds_amount",
+            "bank_account_name",
+            "cheque_date",
+            "party_address",
+            "cheque_number",
+            "drawee_bank",
+            "cheque_deposit_id",
+        )
 
 
 class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     cheque_date = serializers.DateField(required=False, source="cheque_deposit.date")
-    cheque_number = serializers.CharField(required=False, source="cheque_deposit.cheque_number")
-    drawee_bank = serializers.CharField(required=False, source="cheque_deposit.drawee_bank")
+    cheque_number = serializers.CharField(
+        required=False, source="cheque_deposit.cheque_number"
+    )
+    drawee_bank = serializers.CharField(
+        required=False, source="cheque_deposit.drawee_bank"
+    )
     remarks = serializers.CharField(required=False)
     party_name = serializers.ReadOnlyField(source="party.name")
     invoice_nos = serializers.SerializerMethodField()
@@ -86,7 +128,11 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             if invoice.status == "Cancelled":
                 raise ValidationError({"invoice": "Invoice has already been cancelled"})
             if party_id and invoice.party_id != party_id:
-                raise ValidationError({"invoice": "A single payment receipt can be issued to a single party only!"})
+                raise ValidationError(
+                    {
+                        "invoice": "A single payment receipt can be issued to a single party only!"
+                    }
+                )
             party_id = invoice.party_id
             self.invoice_ids.append(invoice.id)
             self.total_amount += invoice.total_amount
@@ -114,14 +160,19 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         if self.validated_data["mode"] == "Cheque":
             cheque_deposit_data["bank_account"] = self.validated_data["bank_account"]
         instance = super().save(**kwargs)
-        if instance.amount >= self.total_amount and instance.mode in ["Cash", "Bank Deposit"]:
+        if instance.amount >= self.total_amount and instance.mode in [
+            "Cash",
+            "Bank Deposit",
+        ]:
             instance.invoices.update(status="Paid")
             instance.status = "Cleared"
             instance.save()
         # elif instance.amount and len(self.invoice_ids) === 1:
         #     instance.invoices.update(status='Partially Paid')
         if self.validated_data["mode"] == "Cheque":
-            cheque_deposit = instance.cheque_deposit or ChequeDeposit(company_id=self.context["request"].company_id, status="Issued")
+            cheque_deposit = instance.cheque_deposit or ChequeDeposit(
+                company_id=self.context["request"].company_id, status="Issued"
+            )
             cheque_deposit.date = instance.date
             cheque_deposit.bank_account = instance.bank_account
             cheque_deposit.cheque_date = cheque_deposit_data.get("date")
@@ -139,10 +190,27 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentReceipt
-        fields = ("id", "date", "invoices", "amount", "tds_amount", "bank_account", "cheque_date", "cheque_number", "drawee_bank", "remarks", "mode", "party_id", "party_name", "invoice_nos")
+        fields = (
+            "id",
+            "date",
+            "invoices",
+            "amount",
+            "tds_amount",
+            "bank_account",
+            "cheque_date",
+            "cheque_number",
+            "drawee_bank",
+            "remarks",
+            "mode",
+            "party_id",
+            "party_name",
+            "invoice_nos",
+        )
 
 
-class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+class SalesVoucherRowSerializer(
+    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -161,7 +229,10 @@ class SalesVoucherRowSerializer(DiscountObjectTypeSerializerMixin, serializers.M
     class Meta:
         model = SalesVoucherRow
         exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
-        extra_kwargs = {"discount": {"allow_null": True, "required": False}, "discount_type": {"allow_null": True, "required": False}}
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False},
+        }
 
 
 class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
@@ -177,13 +248,24 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
             if "code" not in data["item_obj"]:
                 raise ValidationError({"item": ["item_obj.code is required."]})
             try:
-                item_obj = Item.objects.get(code=data["item_obj"].get("code"), company_id=self.context["request"].company_id)
+                item_obj = Item.objects.get(
+                    code=data["item_obj"].get("code"),
+                    company_id=self.context["request"].company_id,
+                )
                 # if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
             except Item.DoesNotExist:
                 item_obj = Item.objects.create(
-                    code=str(data["item_obj"].get("code")), name=str(data["item_obj"].get("name") or data["item_obj"].get("code")), unit_id=data["unit_id"], category_id=data.get("category_id"), selling_price=data["rate"], tax_scheme_id=data["tax_scheme_id"], company_id=self.context["request"].company_id
+                    code=str(data["item_obj"].get("code")),
+                    name=str(
+                        data["item_obj"].get("name") or data["item_obj"].get("code")
+                    ),
+                    unit_id=data["unit_id"],
+                    category_id=data.get("category_id"),
+                    selling_price=data["rate"],
+                    tax_scheme_id=data["tax_scheme_id"],
+                    company_id=self.context["request"].company_id,
                 )
             data["item_id"] = item_obj.id
             del data["item_obj"]
@@ -191,7 +273,12 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
         return data
 
 
-class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class SalesVoucherCreateSerializer(
+    StatusReversionMixin,
+    DiscountObjectTypeSerializerMixin,
+    ModeCumBankSerializerMixin,
+    serializers.ModelSerializer,
+):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = SalesVoucherRowSerializer(many=True)
@@ -203,7 +290,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             return
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
-        next_voucher_no = get_next_voucher_no(SalesVoucher, self.context["request"].company_id)
+        next_voucher_no = get_next_voucher_no(
+            SalesVoucher, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -225,7 +314,11 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             data["due_date"] = None
         else:
             data["due_date"] = request.data["due_date"]
-        if not data.get("party") and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if (
+            not data.get("party")
+            and data.get("mode") == "Credit"
+            and data.get("status") != "Draft"
+        ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
@@ -238,10 +331,17 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                 return data
             item_ids = [row["item_id"] for row in request.data.get("rows")]
             date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
-            sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
-            challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
+            sales_rows = SalesVoucherRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date
+            ).exclude(voucher__status__in=["Draft", "Cancelled"])
+            challan_rows = ChallanRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+            )
             if sales_rows.exists() or challan_rows.exists():
-                raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
+                raise UnprocessableException(
+                    detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
 
             # Check negative stock
             if request.company.inventory_setting.enable_negative_stock_check:
@@ -253,15 +353,29 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     item = Item.objects.get(id=row["item_id"])
                     # if item.negative_stock(row["quantity"]):
                     if item.remaining_stock < row["quantity"]:
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}", code="negative_stock")
-                    if not request.query_params.get("negative_stock") and item.remaining_stock and item.remaining_stock < row["quantity"]:
-                        raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}", code="negative_stock")
+                        raise UnprocessableException(
+                            detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
+                            code="negative_stock",
+                        )
+                    if (
+                        not request.query_params.get("negative_stock")
+                        and item.remaining_stock
+                        and item.remaining_stock < row["quantity"]
+                    ):
+                        raise UnprocessableException(
+                            detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
+                            code="negative_stock",
+                        )
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
         # Check if there are invoices in later date
         if data.get("status") == "Issued":
-            qs = SalesVoucher.objects.filter(date__gt=data.get("date"), fiscal_year_id=data.get("fiscal_year_id"), company_id=data.get("company_id"))
+            qs = SalesVoucher.objects.filter(
+                date__gt=data.get("date"),
+                fiscal_year_id=data.get("fiscal_year_id"),
+                company_id=data.get("company_id"),
+            )
             if voucher_no:
                 qs = qs.filter(voucher_no__lt=voucher_no)
                 # if qs.exists():
@@ -280,7 +394,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if due_date:
             if isinstance(due_date, str):
                 due_date = datetime.datetime.strptime(due_date, "%Y-%m-%d").date()
-            validation_date = self.instance.due_date if self.instance else timezone.now().date()
+            validation_date = (
+                self.instance.due_date if self.instance else timezone.now().date()
+            )
             if due_date < validation_date:
                 raise ValidationError("Due date cannot be before invoice date.")
 
@@ -288,7 +404,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         if request.company.inventory_setting.enable_fifo:
             item_id = row.get("item_id")
             quantity = row.get("quantity")
-            purchase_rows = PurchaseVoucherRow.objects.filter(item_id=item_id, remaining_quantity__gt=0).order_by("voucher__date", "id")
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=item_id, remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
             sold_items = {}
             for purchase_row in purchase_rows:
                 if purchase_row.remaining_quantity == quantity:
@@ -303,7 +421,10 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
                     break
                 else:
                     quantity -= purchase_row.remaining_quantity
-                    sold_items[purchase_row.id] = [purchase_row.remaining_quantity, purchase_row.rate]
+                    sold_items[purchase_row.id] = [
+                        purchase_row.remaining_quantity,
+                        purchase_row.rate,
+                    ]
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             return sold_items
@@ -321,15 +442,27 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
             for row in items_list:
                 challan_items.append(row)
                 if row[0] not in voucher_items_ids:
-                    raise serializers.ValidationError({"detail": "Items cannot be deleted while importing challan."})
-                desired_tuple = next((tup for tup in voucher_items if tup[0] == row[0]), None)
+                    raise serializers.ValidationError(
+                        {"detail": "Items cannot be deleted while importing challan."}
+                    )
+                desired_tuple = next(
+                    (tup for tup in voucher_items if tup[0] == row[0]), None
+                )
                 if not desired_tuple:
-                    raise serializers.ValidationError({"detail": "Items cannot be added while importing challan."})
+                    raise serializers.ValidationError(
+                        {"detail": "Items cannot be added while importing challan."}
+                    )
                 if desired_tuple[1] != row[1]:
-                    raise serializers.ValidationError({"detail": "The quantity cannot be changed while importing challan."})
+                    raise serializers.ValidationError(
+                        {
+                            "detail": "The quantity cannot be changed while importing challan."
+                        }
+                    )
 
         if len(challan_items) < len(voucher_items):
-            raise serializers.ValidationError({"detail": "Items cannot be added while importing challan."})
+            raise serializers.ValidationError(
+                {"detail": "Items cannot be added while importing challan."}
+            )
         return
 
     def create(self, validated_data):
@@ -351,7 +484,9 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
-            if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
+            if request.company.inventory_setting.enable_fifo and not request.data.get(
+                "invoices"
+            ):
                 sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
@@ -397,10 +532,14 @@ class SalesVoucherCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeria
 
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo and not request.data.get("invoices"):
+            if request.company.inventory_setting.enable_fifo and not request.data.get(
+                "invoices"
+            ):
                 sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
-            SalesVoucherRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            SalesVoucherRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
             # if not request.data.get("invoices"):
 
         if challans:
@@ -464,20 +603,33 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     sales_agent = SalesAgentSerializer()
 
     rows = SalesVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(source="party.tax_registration_number")
-    enable_row_description = serializers.ReadOnlyField(source="company.sales_setting.enable_row_description")
+    tax_registration_number = serializers.ReadOnlyField(
+        source="party.tax_registration_number"
+    )
+    enable_row_description = serializers.ReadOnlyField(
+        source="company.sales_setting.enable_row_description"
+    )
 
     payment_receipts = serializers.SerializerMethodField()
     options = serializers.SerializerMethodField()
     fiscal_year = serializers.StringRelatedField()
-    invoice_footer_text = serializers.ReadOnlyField(source="company.sales_setting.invoice_footer_text")
+    invoice_footer_text = serializers.ReadOnlyField(
+        source="company.sales_setting.invoice_footer_text"
+    )
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
     def get_payment_receipts(self, obj):
         receipts = []
         if hasattr(obj, "receipts"):
             for receipt in obj.receipts:
-                receipts.append({"id": receipt.id, "amount": receipt.amount, "tds_amount": receipt.tds_amount, "status": receipt.status})
+                receipts.append(
+                    {
+                        "id": receipt.id,
+                        "amount": receipt.amount,
+                        "tds_amount": receipt.tds_amount,
+                        "status": receipt.status,
+                    }
+                )
         return receipts
 
     def get_options(self, obj):
@@ -508,12 +660,28 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
     def get_payment_receipts(self, obj):
         receipts = []
         for receipt in obj.receipts:
-            receipts.append({"id": receipt.id, "amount": receipt.amount, "tds_amount": receipt.tds_amount, "status": receipt.status})
+            receipts.append(
+                {
+                    "id": receipt.id,
+                    "amount": receipt.amount,
+                    "tds_amount": receipt.tds_amount,
+                    "status": receipt.status,
+                }
+            )
         return receipts
 
     class Meta:
         model = SalesVoucher
-        fields = ("id", "voucher_no", "party_name", "date", "status", "customer_name", "total_amount", "payment_receipts")
+        fields = (
+            "id",
+            "voucher_no",
+            "party_name",
+            "date",
+            "status",
+            "customer_name",
+            "total_amount",
+            "payment_receipts",
+        )
 
 
 class SaleVoucherOptionsSerializer(serializers.ModelSerializer):
@@ -541,7 +709,18 @@ class SalesBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ("id", "date", "buyers_name", "buyers_pan", "voucher_no", "voucher_meta", "is_export", "meta_discount", "meta_tax", "meta_taxable")
+        fields = (
+            "id",
+            "date",
+            "buyers_name",
+            "buyers_pan",
+            "voucher_no",
+            "voucher_meta",
+            "is_export",
+            "meta_discount",
+            "meta_tax",
+            "meta_taxable",
+        )
 
 
 class SalesBookExportSerializer(serializers.ModelSerializer):
@@ -557,7 +736,18 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesVoucher
-        fields = ("date", "buyers_name", "buyers_pan", "voucher_no", "voucher_meta", "is_export", "item_names", "units", "total_quantity", "status")
+        fields = (
+            "date",
+            "buyers_name",
+            "buyers_pan",
+            "voucher_no",
+            "voucher_meta",
+            "is_export",
+            "item_names",
+            "units",
+            "total_quantity",
+            "status",
+        )
 
 
 class PurchaseBookSerializer(serializers.ModelSerializer):
@@ -581,13 +771,27 @@ class PurchaseBookSerializer(serializers.ModelSerializer):
 class SalesRowSerializer(serializers.ModelSerializer):
     item = serializers.CharField(source="item.name")
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
-    buyers_pan = serializers.ReadOnlyField(source="voucher.party.tax_registration_number")
+    buyers_pan = serializers.ReadOnlyField(
+        source="voucher.party.tax_registration_number"
+    )
     voucher__voucher_no = serializers.CharField(source="voucher.voucher_no")
     voucher__date = serializers.CharField(source="voucher.date")
 
     class Meta:
         model = SalesVoucherRow
-        fields = ("item", "buyers_name", "buyers_pan", "voucher__voucher_no", "voucher_id", "rate", "quantity", "voucher__date", "tax_amount", "discount_amount", "net_amount")
+        fields = (
+            "item",
+            "buyers_name",
+            "buyers_pan",
+            "voucher__voucher_no",
+            "voucher_id",
+            "rate",
+            "quantity",
+            "voucher__date",
+            "tax_amount",
+            "discount_amount",
+            "net_amount",
+        )
 
 
 class ChallanRowSerializer(serializers.ModelSerializer):
@@ -620,7 +824,9 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
             return
-        next_voucher_no = get_next_voucher_no(Challan, self.context["request"].company_id)
+        next_voucher_no = get_next_voucher_no(
+            Challan, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -635,12 +841,21 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             )
 
     def validate(self, data):
-        if not data.get("party") and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if (
+            not data.get("party")
+            and data.get("mode") == "Credit"
+            and data.get("status") != "Draft"
+        ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
         if not (data.get("customer_name") or data.get("party")):
-            raise ValidationError({"party": ["Party is required."], "customer_name": ["Customer name is required."]})
+            raise ValidationError(
+                {
+                    "party": ["Party is required."],
+                    "customer_name": ["Customer name is required."],
+                }
+            )
 
         request = self.context["request"]
 
@@ -651,10 +866,19 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
                 # validate back date entry
                 item_ids = [row["item_id"] for row in rows]
                 date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
-                sales_rows = SalesVoucherRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date).exclude(voucher__status__in=["Draft", "Cancelled"])
-                challan_rows = ChallanRow.objects.filter(item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued")
+                sales_rows = SalesVoucherRow.objects.filter(
+                    item_id__in=item_ids, voucher__date__gt=date
+                ).exclude(voucher__status__in=["Draft", "Cancelled"])
+                challan_rows = ChallanRow.objects.filter(
+                    item_id__in=item_ids,
+                    voucher__date__gt=date,
+                    voucher__status="Issued",
+                )
                 if sales_rows.exists() or challan_rows.exists():
-                    raise UnprocessableException(detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.", code="fifo_inconsistency")
+                    raise UnprocessableException(
+                        detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
+                        code="fifo_inconsistency",
+                    )
             else:
                 return data
 
@@ -665,7 +889,10 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
                         # TODO: Improve queries
                         item = Item.objects.get(id=row["item_id"])
                         if item.remaining_stock < row["quantity"]:
-                            raise UnprocessableException(detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}", code="negative_stock")
+                            raise UnprocessableException(
+                                detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
+                                code="negative_stock",
+                            )
                 else:
                     return data
         return data
@@ -706,7 +933,9 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             if request.company.inventory_setting.enable_fifo:
                 sold_items = fifo_handle_sales_create(row)
                 row["sold_items"] = sold_items
-            ChallanRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            ChallanRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
         instance.refresh_from_db()
         instance.apply_inventory_transactions()
         # instance.synchronize(verb='PATCH')

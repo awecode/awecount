@@ -22,7 +22,11 @@ from apps.tax.models import TaxScheme
 from apps.users.models import FiscalYear
 from apps.voucher.models import PurchaseVoucher, SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
-from awecount.libs.CustomViewSet import CollectionViewSet, CompanyViewSetMixin, CRULViewSet
+from awecount.libs.CustomViewSet import (
+    CollectionViewSet,
+    CompanyViewSetMixin,
+    CRULViewSet,
+)
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 
 from .models import Account, AccountOpeningBalance, Category, JournalEntry
@@ -47,11 +51,17 @@ from .serializers import (
 )
 
 
-class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet):
+class PartyViewSet(
+    InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, CRULViewSet
+):
     serializer_class = PartySerializer
     account_keys = ["supplier_account", "customer_account"]
     choice_serializer_class = PartyMinSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = (
         "name",
         "tax_registration_number",
@@ -74,9 +84,23 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
         if self.action == "transactions":
             qs = qs.select_related("supplier_account", "customer_account")
         if self.action == "customers":
-            qs = qs.filter(customer_account__transactions__isnull=False).annotate(dr=Coalesce(Sum("customer_account__transactions__dr_amount"), 0.0), cr=Coalesce(Sum("customer_account__transactions__cr_amount"), 0.0)).annotate(balance=F("dr") - F("cr"))
+            qs = (
+                qs.filter(customer_account__transactions__isnull=False)
+                .annotate(
+                    dr=Coalesce(Sum("customer_account__transactions__dr_amount"), 0.0),
+                    cr=Coalesce(Sum("customer_account__transactions__cr_amount"), 0.0),
+                )
+                .annotate(balance=F("dr") - F("cr"))
+            )
         if self.action == "suppliers":
-            qs = qs.filter(supplier_account__transactions__isnull=False).annotate(dr=Coalesce(Sum("supplier_account__transactions__dr_amount"), 0.0), cr=Coalesce(Sum("supplier_account__transactions__cr_amount"), 0.0)).annotate(balance=F("dr") - F("cr"))
+            qs = (
+                qs.filter(supplier_account__transactions__isnull=False)
+                .annotate(
+                    dr=Coalesce(Sum("supplier_account__transactions__dr_amount"), 0.0),
+                    cr=Coalesce(Sum("supplier_account__transactions__cr_amount"), 0.0),
+                )
+                .annotate(balance=F("dr") - F("cr"))
+            )
         return qs
 
     @action(detail=True)
@@ -96,7 +120,11 @@ class PartyViewSet(InputChoiceMixin, TransactionsViewMixin, DestroyModelMixin, C
 
 class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = CategorySerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = ("code", "name")
     filterset_class = CategoryFilterSet
 
@@ -105,7 +133,11 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
 
 class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
     serializer_class = AccountSerializer
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = ("code", "name")
     filterset_class = AccountFilterSet
 
@@ -113,14 +145,25 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return [obj.id]
 
     def get_queryset(self):
-        qs = Account.objects.filter(company=self.request.company).select_related("category", "parent")
+        qs = Account.objects.filter(company=self.request.company).select_related(
+            "category", "parent"
+        )
         if self.action == "list":
-            qs = qs.annotate(dr=Coalesce(Sum("transactions__dr_amount"), 0.0), cr=Coalesce(Sum("transactions__cr_amount"), 0.0)).annotate(computed_balance=F("dr") - F("cr")).order_by("-id")
+            qs = (
+                qs.annotate(
+                    dr=Coalesce(Sum("transactions__dr_amount"), 0.0),
+                    cr=Coalesce(Sum("transactions__cr_amount"), 0.0),
+                )
+                .annotate(computed_balance=F("dr") - F("cr"))
+                .order_by("-id")
+            )
         return qs
 
     def get_accounts_by_category_name(self, category_name):
         queryset = self.get_queryset()
-        queryset = queryset.filter(category__name=category_name, company=self.request.company)
+        queryset = queryset.filter(
+            category__name=category_name, company=self.request.company
+        )
         serializer = self.get_serializer(queryset, many=True)
         return serializer.data
 
@@ -139,7 +182,12 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         start_date = param.get("start_date")
         end_date = param.get("end_date")
         obj = self.get_object()
-        entries = JournalEntry.objects.filter(transactions__account_id=obj.pk).order_by("pk", "date").prefetch_related("transactions", "content_type", "transactions__account").select_related()
+        entries = (
+            JournalEntry.objects.filter(transactions__account_id=obj.pk)
+            .order_by("pk", "date")
+            .prefetch_related("transactions", "content_type", "transactions__account")
+            .select_related()
+        )
 
         if start_date or end_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -157,7 +205,9 @@ class CategoryTreeView(APIView):
     action = "list"
 
     def get_queryset(self):
-        return Category.objects.exclude(Q(accounts__isnull=True) & Q(children__isnull=True))
+        return Category.objects.exclude(
+            Q(accounts__isnull=True) & Q(children__isnull=True)
+        )
 
     def get(self, request, format=None):
         queryset = self.get_queryset().filter(company=request.company)
@@ -193,10 +243,30 @@ class TrialBalanceView(APIView):
             qq = (
                 Account.objects.filter(company=request.company)
                 .annotate(
-                    od=Sum("transactions__dr_amount", filter=Q(transactions__journal_entry__date__lt=start_date)),
-                    oc=Sum("transactions__cr_amount", filter=Q(transactions__journal_entry__date__lt=start_date)),
-                    cd=Sum("transactions__dr_amount", filter=Q(transactions__journal_entry__date__lt=end_date) | Q(transactions__journal_entry__date=end_date, transactions__type="Regular")),
-                    cc=Sum("transactions__cr_amount", filter=Q(transactions__journal_entry__date__lt=end_date) | Q(transactions__journal_entry__date=end_date, transactions__type="Regular")),
+                    od=Sum(
+                        "transactions__dr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=start_date),
+                    ),
+                    oc=Sum(
+                        "transactions__cr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=start_date),
+                    ),
+                    cd=Sum(
+                        "transactions__dr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=end_date)
+                        | Q(
+                            transactions__journal_entry__date=end_date,
+                            transactions__type="Regular",
+                        ),
+                    ),
+                    cc=Sum(
+                        "transactions__cr_amount",
+                        filter=Q(transactions__journal_entry__date__lt=end_date)
+                        | Q(
+                            transactions__journal_entry__date=end_date,
+                            transactions__type="Regular",
+                        ),
+                    ),
                 )
                 .values("id", "name", "category_id", "od", "oc", "cd", "cc")
                 .exclude(od=None, oc=None, cd=None, cc=None)
@@ -212,13 +282,32 @@ class TaxSummaryView(APIView):
         return TaxScheme.objects.none()
 
     def get_sales_queryset(self, **kwargs):
-        return SalesVoucher.objects.filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"])
+        return SalesVoucher.objects.filter(
+            company_id=self.request.company_id,
+            status__in=["Issued", "Paid", "Partially Paid"],
+        )
 
     def get_non_import_purchase_queryset(self, **kwargs):
-        return PurchaseVoucher.objects.filter(is_import=False).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"]).distinct()
+        return (
+            PurchaseVoucher.objects.filter(is_import=False)
+            .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
+            .filter(
+                company_id=self.request.company_id,
+                status__in=["Issued", "Paid", "Partially Paid"],
+            )
+            .distinct()
+        )
 
     def get_import_purchase_queryset(self, **kwargs):
-        return PurchaseVoucher.objects.filter(is_import=True).filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0)).filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"]).distinct()
+        return (
+            PurchaseVoucher.objects.filter(is_import=True)
+            .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
+            .filter(
+                company_id=self.request.company_id,
+                status__in=["Issued", "Paid", "Partially Paid"],
+            )
+            .distinct()
+        )
 
     def get(self, request, format=None):
         start_date = request.GET.get("start_date")
@@ -227,7 +316,16 @@ class TaxSummaryView(APIView):
         if not (start_date and end_date):
             raise ValidationError("Start and end dates are required.")
 
-        sales_data = self.get_sales_queryset().filter(date__gte=start_date, date__lte=end_date).aggregate(total_meta_tax=Sum("meta_tax"), total_meta_taxable=Sum("meta_taxable"), total_meta_non_taxable=Sum("meta_non_taxable"), total_export=Sum(Case(When(is_export=True, then=F("total_amount")))))
+        sales_data = (
+            self.get_sales_queryset()
+            .filter(date__gte=start_date, date__lte=end_date)
+            .aggregate(
+                total_meta_tax=Sum("meta_tax"),
+                total_meta_taxable=Sum("meta_taxable"),
+                total_meta_non_taxable=Sum("meta_non_taxable"),
+                total_export=Sum(Case(When(is_export=True, then=F("total_amount")))),
+            )
+        )
 
         non_import_purchase_data = (
             self.get_non_import_purchase_queryset()
@@ -261,7 +359,11 @@ class TaxSummaryView(APIView):
 class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = AccountOpeningBalanceSerializer
 
-    filter_backends = (filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter)
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    )
     search_fields = ("account__name", "opening_dr", "opening_cr")
 
     def get_serializer_class(self):
@@ -270,9 +372,19 @@ class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
         return self.serializer_class
 
     def get_queryset(self):
-        return AccountOpeningBalance.objects.filter(fiscal_year=self.request.company.current_fiscal_year, company=self.request.company).order_by("-pk")
+        return AccountOpeningBalance.objects.filter(
+            fiscal_year=self.request.company.current_fiscal_year,
+            company=self.request.company,
+        ).order_by("-pk")
 
-    collections = (("accounts", Account.objects.exclude(name__startswith="Opening Balance").filter(account_opening_balances__isnull=True)),)
+    collections = (
+        (
+            "accounts",
+            Account.objects.exclude(name__startswith="Opening Balance").filter(
+                account_opening_balances__isnull=True
+            ),
+        ),
+    )
 
 
 class CustomerClosingView(APIView):
@@ -282,25 +394,56 @@ class CustomerClosingView(APIView):
         return Account.objects.filter(customer_detail__isnull=False)
 
     def get(self, request, format=None):
-        customers = self.get_queryset().filter(company_id=self.request.user.company_id).exclude(transactions__isnull=True)
+        customers = (
+            self.get_queryset()
+            .filter(company_id=self.request.user.company_id)
+            .exclude(transactions__isnull=True)
+        )
 
         balances = customers.annotate(
             dr=Sum("transactions__dr_amount"),
             cr=Sum("transactions__cr_amount"),
         ).values("dr", "cr", "customer_detail__tax_registration_number", "id")
 
-        last_invoice_dates = customers.annotate(last_invoice_date=Max(Case(When(customer_detail__sales_invoices__status__in=["Issued", "Paid", "Partially Paid"], then="customer_detail__sales_invoices__date")))).values("customer_detail__tax_registration_number", "id", "last_invoice_date")
-        return Response({"balances": balances, "last_invoice_dates": last_invoice_dates})
+        last_invoice_dates = customers.annotate(
+            last_invoice_date=Max(
+                Case(
+                    When(
+                        customer_detail__sales_invoices__status__in=[
+                            "Issued",
+                            "Paid",
+                            "Partially Paid",
+                        ],
+                        then="customer_detail__sales_invoices__date",
+                    )
+                )
+            )
+        ).values("customer_detail__tax_registration_number", "id", "last_invoice_date")
+        return Response(
+            {"balances": balances, "last_invoice_dates": last_invoice_dates}
+        )
 
 
-class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet):
+class TransactionViewSet(
+    CompanyViewSetMixin, CollectionViewSet, ListModelMixin, GenericViewSet
+):
     company_id_attr = "journal_entry__company_id"
     serializer_class = TransactionReportSerializer
     filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
     search_fields = ["account__name", "account__category__name"]
-    journal_entry_content_type = JournalEntry.objects.values_list("content_type", flat=True).distinct()
-    collections = [("accounts", Account), ("transaction_types", ContentType.objects.filter(id__in=journal_entry_content_type), ContentTypeListSerializer), ("categories", Category)]
+    journal_entry_content_type = JournalEntry.objects.values_list(
+        "content_type", flat=True
+    ).distinct()
+    collections = [
+        ("accounts", Account),
+        (
+            "transaction_types",
+            ContentType.objects.filter(id__in=journal_entry_content_type),
+            ContentTypeListSerializer,
+        ),
+        ("categories", Category),
+    ]
 
     def get_serializer_class(self):
         if self.request.GET.get("group"):
@@ -308,7 +451,9 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
         return super().get_serializer_class()
 
     def get_queryset(self):
-        qs = Transaction.objects.prefetch_related("account", "journal_entry__content_type")
+        qs = Transaction.objects.prefetch_related(
+            "account", "journal_entry__content_type"
+        )
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
         accounts = list(filter(None, self.request.GET.getlist("account")))
@@ -336,7 +481,9 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
 
         if group_by == "acc":
             qs = (
-                qs.annotate(year=ExtractYear("journal_entry__date"), label=F("account__name"))
+                qs.annotate(
+                    year=ExtractYear("journal_entry__date"), label=F("account__name")
+                )
                 .values("year", "label")
                 .annotate(
                     total_debit=Sum("dr_amount"),
@@ -346,7 +493,10 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             )
         if group_by == "cat":
             qs = (
-                qs.annotate(year=ExtractYear("journal_entry__date"), label=F("account__category__name"))
+                qs.annotate(
+                    year=ExtractYear("journal_entry__date"),
+                    label=F("account__category__name"),
+                )
                 .values("year", "label")
                 .annotate(
                     total_debit=Sum("dr_amount"),
@@ -356,7 +506,10 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             )
         if group_by == "type":
             qs = (
-                qs.annotate(year=ExtractYear("journal_entry__date"), label=F("journal_entry__content_type__model"))
+                qs.annotate(
+                    year=ExtractYear("journal_entry__date"),
+                    label=F("journal_entry__content_type__model"),
+                )
                 .values("year", "label")
                 .annotate(
                     total_debit=Sum("dr_amount"),
@@ -377,7 +530,9 @@ class TransactionViewSet(CompanyViewSetMixin, CollectionViewSet, ListModelMixin,
             return qs_to_xls(params)
 
 
-class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin, GenericViewSet):
+class AccountClosingViewSet(
+    CollectionViewSet, ListModelMixin, CreateModelMixin, GenericViewSet
+):
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
 
@@ -394,8 +549,15 @@ class AccountClosingViewSet(CollectionViewSet, ListModelMixin, CreateModelMixin,
     def create(self, request, *args, **kwargs):
         company = request.company
         fiscal_year_id = request.data.get("fiscal_year")
-        account_closing = AccountClosing.objects.get_or_create(company=company, fiscal_period_id=fiscal_year_id)[0]
+        account_closing = AccountClosing.objects.get_or_create(
+            company=company, fiscal_period_id=fiscal_year_id
+        )[0]
         if account_closing.status == "Closed":
-            return Response({"detail": "Your accounts for this year have already been closed."}, status=400)
+            return Response(
+                {"detail": "Your accounts for this year have already been closed."},
+                status=400,
+            )
         account_closing.close()
-        return Response("Successfully closed accounts for selected fiscal year.", status=200)
+        return Response(
+            "Successfully closed accounts for selected fiscal year.", status=200
+        )

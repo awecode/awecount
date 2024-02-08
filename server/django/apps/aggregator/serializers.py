@@ -48,7 +48,16 @@ class WidgetSerializer(serializers.ModelSerializer):
 class WidgetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = ("id", "name", "widget", "order", "group_by", "count", "display_type", "is_active")
+        fields = (
+            "id",
+            "name",
+            "widget",
+            "order",
+            "group_by",
+            "count",
+            "display_type",
+            "is_active",
+        )
 
 
 class WidgetUpdateSerializer(serializers.ModelSerializer):

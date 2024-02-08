@@ -62,7 +62,10 @@ def qs_to_xls(querysets):
         csum[0] = "Total"
         sheet.append(csum)
     xls = book.xls
-    response = HttpResponse(xls, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response = HttpResponse(
+        xls,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
     filename = "{}_{}.xls".format(qs.model.__name__ + "_", datetime.today().date())
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     return response
@@ -73,11 +76,16 @@ def export_auditlog(request):
     if not request.user.is_authenticated or not request.company_id:
         raise PermissionDenied
     resource = LogEntryResource()
-    qs = LogEntry.objects.filter(actor__company_id=request.user.company_id).select_related("content_type", "actor")
+    qs = LogEntry.objects.filter(
+        actor__company_id=request.user.company_id
+    ).select_related("content_type", "actor")
     dataset = resource.export(queryset=qs)
     dataset.title = "Audit Logs"
     xls = dataset.xls
-    response = HttpResponse(xls, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response = HttpResponse(
+        xls,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
     filename = "{}_{}.xls".format("Log_Entries_", datetime.today().date())
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     return response

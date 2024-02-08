@@ -12,6 +12,11 @@ class Command(BaseCommand):
             if not jv.source:
                 cnt += 1
                 first = jv.transactions.first()
-                print(jv.id, jv.date, jv.content_type, (first.account, first.account.company) if first else "")
+                print(
+                    jv.id,
+                    jv.date,
+                    jv.content_type,
+                    (first.account, first.account.company) if first else "",
+                )
 
         print("{} orphan journal entries!".format(cnt))

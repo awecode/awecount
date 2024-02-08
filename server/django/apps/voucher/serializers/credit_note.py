@@ -9,7 +9,9 @@ from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixi
 from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
 
 
-class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.ModelSerializer):
+class CreditNoteRowSerializer(
+    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
@@ -25,10 +27,18 @@ class CreditNoteRowSerializer(DiscountObjectTypeSerializerMixin, serializers.Mod
     class Meta:
         model = CreditNoteRow
         exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
-        extra_kwargs = {"discount": {"allow_null": True, "required": False}, "discount_type": {"allow_null": True, "required": False}}
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False},
+        }
 
 
-class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin, serializers.ModelSerializer):
+class CreditNoteCreateSerializer(
+    StatusReversionMixin,
+    DiscountObjectTypeSerializerMixin,
+    ModeCumBankSerializerMixin,
+    serializers.ModelSerializer,
+):
     voucher_no = serializers.ReadOnlyField()
     rows = CreditNoteRowSerializer(many=True)
 
@@ -37,7 +47,9 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             return
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
-        next_voucher_no = get_next_voucher_no(CreditNote, self.context["request"].company_id)
+        next_voucher_no = get_next_voucher_no(
+            CreditNote, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -52,7 +64,11 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             )
 
     def validate(self, data):
-        if not data.get("party") and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if (
+            not data.get("party")
+            and data.get("mode") == "Credit"
+            and data.get("status") != "Draft"
+        ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
@@ -75,16 +91,22 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
             sales_rows = voucher.rows.all()
             for row in sales_rows:
                 # sales_row_id = rows_data[row.id]
-                row_data = next((item for item in rows_data if item["id"] == row.id), None)
+                row_data = next(
+                    (item for item in rows_data if item["id"] == row.id), None
+                )
                 sold_items = row.sold_items
                 quantity = row_data["quantity"]
                 ob = None
                 if sold_items.get("OB"):
                     ob = sold_items.pop("OB")
                 purchase_row_ids = [key for key, value in sold_items.items()]
-                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(id__in=purchase_row_ids).order_by("voucher__date", "id")
+                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(
+                    id__in=purchase_row_ids
+                ).order_by("voucher__date", "id")
                 for purchase_row in purchase_voucher_rows:
-                    can_be_added = purchase_row.quantity - purchase_row.remaining_quantity
+                    can_be_added = (
+                        purchase_row.quantity - purchase_row.remaining_quantity
+                    )
                     diff = quantity - can_be_added
                     if diff >= can_be_added:
                         purchase_row.remaining_quantity += can_be_added
@@ -153,7 +175,9 @@ class CreditNoteCreateSerializer(StatusReversionMixin, DiscountObjectTypeSeriali
         CreditNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            CreditNoteRow.objects.update_or_create(voucher=instance, pk=row.get("id"), defaults=row)
+            CreditNoteRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.refresh_from_db()
@@ -194,7 +218,9 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
     address = serializers.ReadOnlyField(source="party.address")
 
     rows = SalesVoucherRowDetailSerializer(many=True)
-    tax_registration_number = serializers.ReadOnlyField(source="party.tax_registration_number")
+    tax_registration_number = serializers.ReadOnlyField(
+        source="party.tax_registration_number"
+    )
 
     invoice_data = serializers.SerializerMethodField()
     # invoices = serializers.SerializerMethodField()

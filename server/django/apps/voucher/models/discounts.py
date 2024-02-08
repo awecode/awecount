@@ -25,8 +25,12 @@ class Discount(models.Model):
 
 
 class SalesDiscount(Discount):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="sales_discounts")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="sales_discounts"
+    )
 
 
 class PurchaseDiscount(Discount):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="purchase_discounts")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="purchase_discounts"
+    )

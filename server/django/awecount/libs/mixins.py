@@ -205,9 +205,39 @@ class TransactionsViewMixin(object):
                     """
                 opening_transaction = Transaction.objects.raw(opening_transaction_query)
 
-            aggregate["opening"] = {"dr": sum([t.total_dr_amount for t in opening_transaction if t.total_dr_amount is not None]), "cr": sum([t.total_cr_amount for t in opening_transaction if t.total_cr_amount is not None])}
+            aggregate["opening"] = {
+                "dr": sum(
+                    [
+                        t.total_dr_amount
+                        for t in opening_transaction
+                        if t.total_dr_amount is not None
+                    ]
+                ),
+                "cr": sum(
+                    [
+                        t.total_cr_amount
+                        for t in opening_transaction
+                        if t.total_cr_amount is not None
+                    ]
+                ),
+            }
 
-            aggregate["total"] = {"dr": sum([t.total_dr_amount for t in transactions if t.total_dr_amount is not None]), "cr": sum([t.total_cr_amount for t in transactions if t.total_cr_amount is not None])}
+            aggregate["total"] = {
+                "dr": sum(
+                    [
+                        t.total_dr_amount
+                        for t in transactions
+                        if t.total_dr_amount is not None
+                    ]
+                ),
+                "cr": sum(
+                    [
+                        t.total_cr_amount
+                        for t in transactions
+                        if t.total_cr_amount is not None
+                    ]
+                ),
+            }
 
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
@@ -219,14 +249,36 @@ class TransactionsViewMixin(object):
         # transactions_from_previous_pages = transactions[:offset]
         transactions_from_next_pages = transactions[offset + limit :]
         data["page_cumulative"] = {
-            "current": {"dr": sum([t.total_dr_amount for t in page if t.total_dr_amount is not None]), "cr": sum([t.total_cr_amount for t in page if t.total_cr_amount is not None])},
+            "current": {
+                "dr": sum(
+                    [t.total_dr_amount for t in page if t.total_dr_amount is not None]
+                ),
+                "cr": sum(
+                    [t.total_cr_amount for t in page if t.total_cr_amount is not None]
+                ),
+            },
             # 'previous': {
             #     'dr': sum(
             #         [t.total_dr_amount for t in transactions_from_previous_pages if t.total_dr_amount is not None]),
             #     'cr': sum(
             #         [t.total_cr_amount for t in transactions_from_previous_pages if t.total_cr_amount is not None])
             # },
-            "next": {"dr": sum([t.total_dr_amount for t in transactions_from_next_pages if t.total_dr_amount is not None]), "cr": sum([t.total_cr_amount for t in transactions_from_next_pages if t.total_cr_amount is not None])},
+            "next": {
+                "dr": sum(
+                    [
+                        t.total_dr_amount
+                        for t in transactions_from_next_pages
+                        if t.total_dr_amount is not None
+                    ]
+                ),
+                "cr": sum(
+                    [
+                        t.total_cr_amount
+                        for t in transactions_from_next_pages
+                        if t.total_cr_amount is not None
+                    ]
+                ),
+            },
         }
 
         return Response(data)

@@ -1,7 +1,25 @@
 from django.contrib import admin
 from django.urls import reverse
 
-from apps.voucher.models import Challan, ChallanRow, CreditNote, CreditNoteRow, DebitNote, DebitNoteRow, InvoiceDesign, JournalVoucher, JournalVoucherRow, PaymentReceipt, PurchaseDiscount, PurchaseSetting, PurchaseVoucher, PurchaseVoucherRow, SalesAgent, SalesDiscount, SalesSetting, SalesVoucher, SalesVoucherRow
+from apps.voucher.models import (
+    Challan,
+    ChallanRow,
+    CreditNote,
+    CreditNoteRow,
+    DebitNote,
+    DebitNoteRow,
+    PaymentReceipt,
+    PurchaseDiscount,
+    PurchaseVoucher,
+    PurchaseVoucherRow,
+    SalesAgent,
+    SalesDiscount,
+    SalesVoucher,
+    SalesVoucherRow,
+)
+from apps.voucher.models.invoice_design import InvoiceDesign
+from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
 
 
 class SaleVoucherRowTabular(admin.TabularInline):
@@ -43,13 +61,31 @@ class SalesVoucherAdmin(admin.ModelAdmin):
         "remarks",
     )
     list_filter = ("company", "status", "mode", "fiscal_year")
-    list_display = ("company", "voucher_no", "party", "customer_name", "status", "total_amount")
+    list_display = (
+        "company",
+        "voucher_no",
+        "party",
+        "customer_name",
+        "status",
+        "total_amount",
+    )
     inlines = (SaleVoucherRowTabular,)
-    autocomplete_fields = ["party", "company", "discount_obj", "sales_agent", "bank_account", "challans", "user"]
+    autocomplete_fields = [
+        "party",
+        "company",
+        "discount_obj",
+        "sales_agent",
+        "bank_account",
+        "challans",
+        "user",
+    ]
 
     def get_queryset(self, request):
         qs = super(SalesVoucherAdmin, self).get_queryset(request)
-        changelist_path = reverse("admin:%s_%s_changelist" % (self.model._meta.app_label, self.model._meta.model_name))
+        changelist_path = reverse(
+            "admin:%s_%s_changelist"
+            % (self.model._meta.app_label, self.model._meta.model_name)
+        )
         if request.path == changelist_path:
             qs = qs.select_related(
                 "party",
@@ -123,7 +159,13 @@ admin.site.register(JournalVoucher, JournalVoucherAdmin)
 
 
 class PurchaseVoucherAdmin(admin.ModelAdmin):
-    search_fields = ("voucher_no", "party__name", "party__tax_registration_number", "company__name", "company__tax_registration_number")
+    search_fields = (
+        "voucher_no",
+        "party__name",
+        "party__tax_registration_number",
+        "company__name",
+        "company__tax_registration_number",
+    )
     list_filter = ("company",)
     list_display = ("company", "voucher_no", "party", "total_amount")
     inlines = (PurchaseVoucherRowTabular,)
@@ -152,7 +194,12 @@ admin.site.register(SalesAgent, SalesAgentAdmin)
 class SalesSettingAdmin(admin.ModelAdmin):
     list_display = ("company",)
     search_fields = ("company__name",)
-    list_filter = ("show_party_by_default", "show_trade_discount_in_voucher", "mode", "enable_row_description")
+    list_filter = (
+        "show_party_by_default",
+        "show_trade_discount_in_voucher",
+        "mode",
+        "enable_row_description",
+    )
 
 
 admin.site.register(SalesSetting, SalesSettingAdmin)
@@ -176,7 +223,13 @@ admin.site.register(PaymentReceipt, PaymentReceiptAdmin)
 
 
 class ChallanAdmin(admin.ModelAdmin):
-    search_fields = ("voucher_no", "party__name", "party__tax_registration_number", "company__name", "company__tax_registration_number")
+    search_fields = (
+        "voucher_no",
+        "party__name",
+        "party__tax_registration_number",
+        "company__name",
+        "company__tax_registration_number",
+    )
     list_filter = ("company",)
     list_display = (
         "company",

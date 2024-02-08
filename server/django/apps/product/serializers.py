@@ -70,12 +70,16 @@ class ItemSerializer(serializers.ModelSerializer):
     @staticmethod
     def base64_check(validated_data, attributes):
         for attr in attributes:
-            if validated_data.get(attr) and not isinstance(validated_data.get(attr), ContentFile):
+            if validated_data.get(attr) and not isinstance(
+                validated_data.get(attr), ContentFile
+            ):
                 validated_data.pop(attr)
         return validated_data
 
     def update(self, instance, validated_data):
-        validated_data = self.base64_check(validated_data, ["front_image", "back_image"])
+        validated_data = self.base64_check(
+            validated_data, ["front_image", "back_image"]
+        )
         return super().update(instance, validated_data)
 
     class Meta:
@@ -147,22 +151,32 @@ class ItemPurchaseSerializer(serializers.ModelSerializer):
 class BookSerializer(ItemSerializer):
     def create(self, validated_data):
         request = self.context["request"]
-        category = Category.objects.filter(name="Book", company=request.user.company).first()
+        category = Category.objects.filter(
+            name="Book", company=request.user.company
+        ).first()
         if not category:
             raise ValidationError({"detail": 'Please create "Book" category first!'})
         validated_data["category"] = category
 
         if category.items_purchase_account_type == "global":
-            validated_data["purchase_account"] = Account.objects.get(name="Purchase Account", default=True)
+            validated_data["purchase_account"] = Account.objects.get(
+                name="Purchase Account", default=True
+            )
 
         if category.items_sales_account_type == "global":
-            validated_data["sales_account"] = Account.objects.get(name="Sales Account", default=True)
+            validated_data["sales_account"] = Account.objects.get(
+                name="Sales Account", default=True
+            )
 
         if category.items_discount_allowed_account_type == "global":
-            validated_data["discount_allowed_account"] = Account.objects.get(name="Discount Expenses", default=True)
+            validated_data["discount_allowed_account"] = Account.objects.get(
+                name="Discount Expenses", default=True
+            )
 
         if category.items_discount_received_account_type == "global":
-            validated_data["discount_received_account"] = Account.objects.get(name="Discount Income", default=True)
+            validated_data["discount_received_account"] = Account.objects.get(
+                name="Discount Income", default=True
+            )
 
         instance = super(BookSerializer, self).create(validated_data)
         return instance
@@ -303,7 +317,11 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     def transaction(self, obj):
         account = self.context.get("account", None)
         try:
-            transactions = [transaction for transaction in obj.transactions.all() if transaction.account.id == account.id]
+            transactions = [
+                transaction
+                for transaction in obj.transactions.all()
+                if transaction.account.id == account.id
+            ]
             if transactions:
                 return transactions[0]
         except Exception:
@@ -355,7 +373,17 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ("id", "dr_amount", "cr_amount", "current_balance", "date", "source_type", "account_id", "source_id", "voucher_no")
+        fields = (
+            "id",
+            "dr_amount",
+            "cr_amount",
+            "current_balance",
+            "date",
+            "source_type",
+            "account_id",
+            "source_id",
+            "voucher_no",
+        )
 
 
 class InventorySettingCreateSerializer(serializers.ModelSerializer):

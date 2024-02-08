@@ -3,7 +3,14 @@ from rest_framework.exceptions import ValidationError
 
 from awecount.libs.serializers import StatusReversionMixin
 
-from .models import BankAccount, BankCashDeposit, ChequeDeposit, ChequeIssue, FundTransfer, FundTransferTemplate
+from .models import (
+    BankAccount,
+    BankCashDeposit,
+    ChequeDeposit,
+    ChequeIssue,
+    FundTransfer,
+    FundTransferTemplate,
+)
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
@@ -22,7 +29,9 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
 
     def validate_voucher_no(self, attr):
         if attr and attr > 214748364:
-            raise ValidationError("Voucher Number should be a number between 0 to 214748364.")
+            raise ValidationError(
+                "Voucher Number should be a number between 0 to 214748364."
+            )
         return attr
 
     def create(self, validated_data):
@@ -48,7 +57,15 @@ class ChequeDepositListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChequeDeposit
-        fields = ("id", "voucher_no", "bank_account", "date", "bank_account_name", "benefactor_name", "status")
+        fields = (
+            "id",
+            "voucher_no",
+            "bank_account",
+            "date",
+            "bank_account_name",
+            "benefactor_name",
+            "status",
+        )
 
 
 class BankCashDepositListSerializer(serializers.ModelSerializer):
@@ -57,7 +74,16 @@ class BankCashDepositListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BankCashDeposit
-        fields = ("id", "voucher_no", "bank_account", "date", "bank_account_name", "benefactor_name", "deposited_by", "status")
+        fields = (
+            "id",
+            "voucher_no",
+            "bank_account",
+            "date",
+            "bank_account_name",
+            "benefactor_name",
+            "deposited_by",
+            "status",
+        )
 
 
 class ChequeIssueSerializer(serializers.ModelSerializer):
@@ -91,7 +117,17 @@ class FundTransferListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FundTransfer
-        fields = ("id", "voucher_no", "date", "from_account", "to_account", "from_account_name", "to_account_name", "amount", "status")
+        fields = (
+            "id",
+            "voucher_no",
+            "date",
+            "from_account",
+            "to_account",
+            "from_account_name",
+            "to_account_name",
+            "amount",
+            "status",
+        )
 
 
 class FundTransferTemplateSerializer(serializers.ModelSerializer):
@@ -121,7 +157,9 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
         )
 
 
-class BankCashDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
+class BankCashDepositCreateSerializer(
+    StatusReversionMixin, serializers.ModelSerializer
+):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     voucher_no = serializers.IntegerField(required=False, allow_null=True)

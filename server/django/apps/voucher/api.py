@@ -22,28 +22,94 @@ from apps.aggregator.views import qs_to_xls
 from apps.bank.models import BankAccount
 from apps.bank.serializers import BankAccountSerializer
 from apps.ledger.models import Account, Party
-from apps.ledger.serializers import AccountSerializer, JournalEntriesSerializer, PartyMinSerializer, SalesJournalEntrySerializer
+from apps.ledger.serializers import (
+    AccountSerializer,
+    JournalEntriesSerializer,
+    PartyMinSerializer,
+    SalesJournalEntrySerializer,
+)
 from apps.product.models import Item, Unit
-from apps.product.serializers import ItemPOSSerializer, ItemPurchaseSerializer, ItemSalesSerializer
+from apps.product.serializers import (
+    ItemPOSSerializer,
+    ItemPurchaseSerializer,
+    ItemSalesSerializer,
+)
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales
-from apps.voucher.filters import ChallanFilterSet, CreditNoteFilterSet, DebitNoteFilterSet, JournalVoucherFilterSet, PaymentReceiptFilterSet, PurchaseDiscountFilterSet, PurchaseOrderFilterSet, PurchaseVoucherFilterSet, SalesDiscountFilterSet, SalesRowFilterSet, SalesVoucherFilterSet
+from apps.voucher.filters import (
+    ChallanFilterSet,
+    CreditNoteFilterSet,
+    DebitNoteFilterSet,
+    JournalVoucherFilterSet,
+    PaymentReceiptFilterSet,
+    PurchaseDiscountFilterSet,
+    PurchaseOrderFilterSet,
+    PurchaseVoucherFilterSet,
+    SalesDiscountFilterSet,
+    SalesRowFilterSet,
+    SalesVoucherFilterSet,
+)
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
-from apps.voucher.resources import CreditNoteResource, CreditNoteRowResource, DebitNoteResource, DebitNoteRowResource, PurchaseVoucherResource, PurchaseVoucherRowResource, SalesVoucherResource, SalesVoucherRowResource
-from apps.voucher.serializers.debit_note import DebitNoteCreateSerializer, DebitNoteDetailSerializer, DebitNoteListSerializer
-from apps.voucher.serializers.purchase import PurchaseOrderCreateSerializer, PurchaseOrderListSerializer
-from apps.voucher.serializers.voucher_settings import PurchaseCreateSettingSerializer, PurchaseSettingCreateSerializer, PurchaseSettingSerializer, PurchaseUpdateSettingSerializer, SalesCreateSettingSerializer, SalesSettingCreateSerializer, SalesSettingsSerializer, SalesUpdateSettingSerializer
+from apps.voucher.resources import (
+    CreditNoteResource,
+    CreditNoteRowResource,
+    DebitNoteResource,
+    DebitNoteRowResource,
+    PurchaseVoucherResource,
+    PurchaseVoucherRowResource,
+    SalesVoucherResource,
+    SalesVoucherRowResource,
+)
+from apps.voucher.serializers.debit_note import (
+    DebitNoteCreateSerializer,
+    DebitNoteDetailSerializer,
+    DebitNoteListSerializer,
+)
+from apps.voucher.serializers.purchase import (
+    PurchaseOrderCreateSerializer,
+    PurchaseOrderListSerializer,
+)
+from apps.voucher.serializers.voucher_settings import (
+    PurchaseCreateSettingSerializer,
+    PurchaseSettingCreateSerializer,
+    PurchaseSettingSerializer,
+    PurchaseUpdateSettingSerializer,
+    SalesCreateSettingSerializer,
+    SalesSettingCreateSerializer,
+    SalesSettingsSerializer,
+    SalesUpdateSettingSerializer,
+)
 
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no, zero_for_none
-from awecount.libs.CustomViewSet import CollectionViewSet, CompanyViewSetMixin, CRULViewSet, GenericSerializer
+from awecount.libs.CustomViewSet import (
+    CollectionViewSet,
+    CompanyViewSetMixin,
+    CRULViewSet,
+    GenericSerializer,
+)
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
 
-from .models import CreditNote, CreditNoteRow, DebitNote, DebitNoteRow, InvoiceDesign, JournalVoucher, JournalVoucherRow, PurchaseDiscount, PurchaseOrder, PurchaseOrderRow, PurchaseVoucher, PurchaseVoucherRow, SalesDiscount, SalesVoucher, SalesVoucherRow
+from .models import (
+    CreditNote,
+    CreditNoteRow,
+    DebitNote,
+    DebitNoteRow,
+    PurchaseDiscount,
+    PurchaseOrder,
+    PurchaseOrderRow,
+    PurchaseVoucher,
+    PurchaseVoucherRow,
+    SalesDiscount,
+    SalesVoucher,
+    SalesVoucherRow,
+)
+from .models.invoice_design import InvoiceDesign
+from .models.journal_vouchers import JournalVoucher, JournalVoucherRow
 from .serializers import (
     ChallanCreateSerializer,
     ChallanListSerializer,
@@ -88,18 +154,42 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("discounts", SalesDiscount, SalesDiscountMinSerializer),
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
-        ("items", Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)), ItemSalesSerializer),
+        (
+            "items",
+            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)),
+            ItemSalesSerializer,
+        ),
     ]
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
 
     filterset_class = SalesVoucherFilterSet
 
-    search_fields = ["voucher_no", "party__name", "remarks", "total_amount", "party__tax_registration_number", "customer_name", "date", "address", "rows__item__name", "mode", "bank_account__bank_name", "bank_account__short_name"]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "total_amount",
+        "party__tax_registration_number",
+        "customer_name",
+        "date",
+        "address",
+        "rows__item__name",
+        "mode",
+        "bank_account__bank_name",
+        "bank_account__short_name",
+    ]
 
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
-        if request.company.enable_sales_agents and sales_agent_tuple not in self.collections:
+        if (
+            request.company.enable_sales_agents
+            and sales_agent_tuple not in self.collections
+        ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)
         return super().get_collections(request)
@@ -109,7 +199,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if self.action == "retrieve":
             qs = qs.prefetch_related("rows")
         elif self.action == "list":
-            qs = qs.select_related("party").prefetch_related(Prefetch("payment_receipts", PaymentReceipt.objects.exclude(status="Cancelled"), to_attr="receipts"))
+            qs = qs.select_related("party").prefetch_related(
+                Prefetch(
+                    "payment_receipts",
+                    PaymentReceipt.objects.exclude(status="Cancelled"),
+                    to_attr="receipts",
+                )
+            )
         return qs.order_by("-date", "-voucher_no")
 
     def get_serializer_class(self):
@@ -143,32 +239,61 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         qs = (
             super()
             .get_queryset()
-            .prefetch_related(Prefetch("rows", SalesVoucherRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme").order_by("pk")))
-            .prefetch_related(Prefetch("payment_receipts", PaymentReceipt.objects.exclude(status="Cancelled"), to_attr="receipts"))
-            .select_related("discount_obj", "bank_account", "company__sales_setting", "party")
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    SalesVoucherRow.objects.all()
+                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .order_by("pk"),
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "payment_receipts",
+                    PaymentReceipt.objects.exclude(status="Cancelled"),
+                    to_attr="receipts",
+                )
+            )
+            .select_related(
+                "discount_obj", "bank_account", "company__sales_setting", "party"
+            )
         )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
         # Return available bank accounts to enable editing the mode.
-        data["available_bank_accounts"] = GenericSerializer(BankAccount.objects.filter(company=request.company), many=True).data
+        data["available_bank_accounts"] = GenericSerializer(
+            BankAccount.objects.filter(company=request.company), many=True
+        ).data
         return Response(data)
 
     def get_defaults(self, request=None):
         return {
-            "options": {"fiscal_years": FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data, "enable_sales_agents": request.company.enable_sales_agents, "enable_fifo": request.company.inventory_setting.enable_fifo},
+            "options": {
+                "fiscal_years": FiscalYearSerializer(
+                    request.company.get_fiscal_years(), many=True
+                ).data,
+                "enable_sales_agents": request.company.enable_sales_agents,
+                "enable_fifo": request.company.inventory_setting.enable_fifo,
+            },
         }
 
     def get_create_defaults(self, request=None):
         data = SalesCreateSettingSerializer(request.company.sales_setting).data
-        data["options"]["voucher_no"] = get_next_voucher_no(SalesVoucher, request.company_id)
+        data["options"]["voucher_no"] = get_next_voucher_no(
+            SalesVoucher, request.company_id
+        )
         return data
 
     def get_update_defaults(self, request=None):
         data = SalesUpdateSettingSerializer(request.company.sales_setting).data
-        data["options"]["can_update_issued"] = request.company.enable_sales_invoice_update
+        data["options"][
+            "can_update_issued"
+        ] = request.company.enable_sales_invoice_update
         obj = self.get_object()
         if not obj.voucher_no:
-            data["options"]["voucher_no"] = get_next_voucher_no(SalesVoucher, request.company_id)
+            data["options"]["voucher_no"] = get_next_voucher_no(
+                SalesVoucher, request.company_id
+            )
         return data
 
     @action(detail=True, methods=["POST"])
@@ -198,9 +323,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         sales_voucher = self.get_object()
         message = request.data.get("message")
         if not message:
-            raise RESTValidationError({"message": "message field is required for cancelling invoice!"})
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling invoice!"}
+            )
         if request.company.inventory_setting.enable_fifo:
-            fifo_cancel_sales(sales_voucher, request.query_params.get("fifo_inconsistency"))
+            fifo_cancel_sales(
+                sales_voucher, request.query_params.get("fifo_inconsistency")
+            )
         sales_voucher.cancel(message)
         return Response({})
 
@@ -213,32 +342,87 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, url_path="by-voucher-no")
     def by_voucher_no(self, request):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", SalesVoucherRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme"))).select_related("discount_obj", "bank_account")
-        return Response(SalesVoucherDetailSerializer(get_object_or_404(voucher_no=request.query_params.get("invoice_no"), fiscal_year_id=request.query_params.get("fiscal_year"), queryset=qs)).data)
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    SalesVoucherRow.objects.all().select_related(
+                        "item", "unit", "discount_obj", "tax_scheme"
+                    ),
+                )
+            )
+            .select_related("discount_obj", "bank_account")
+        )
+        return Response(
+            SalesVoucherDetailSerializer(
+                get_object_or_404(
+                    voucher_no=request.query_params.get("invoice_no"),
+                    fiscal_year_id=request.query_params.get("fiscal_year"),
+                    queryset=qs,
+                )
+            ).data
+        )
 
     @action(detail=False)
     def export(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         params = [
             ("Invoices", queryset, SalesVoucherResource),
-            ("Sales Rows", SalesVoucherRow.objects.filter(voucher__company_id=request.company_id), SalesVoucherRowResource),
+            (
+                "Sales Rows",
+                SalesVoucherRow.objects.filter(voucher__company_id=request.company_id),
+                SalesVoucherRowResource,
+            ),
         ]
         return qs_to_xls(params)
 
 
-class POSViewSet(DeleteRows, CompanyViewSetMixin, CollectionViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class POSViewSet(
+    DeleteRows,
+    CompanyViewSetMixin,
+    CollectionViewSet,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = SalesVoucher.objects.all()
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     collections = [
         ("units", Unit.objects.only("name", "short_name")),
-        ("discounts", SalesDiscount.objects.only("name", "type", "value"), SalesDiscountMinSerializer),
+        (
+            "discounts",
+            SalesDiscount.objects.only("name", "type", "value"),
+            SalesDiscountMinSerializer,
+        ),
         ("bank_accounts", BankAccount.objects.only("short_name", "bank_name")),
-        ("tax_schemes", TaxScheme.objects.only("name", "short_name", "rate"), TaxSchemeMinSerializer),
+        (
+            "tax_schemes",
+            TaxScheme.objects.only("name", "short_name", "rate"),
+            TaxSchemeMinSerializer,
+        ),
     ]
 
     def get_item_queryset(self, company_id):
-        return Item.objects.filter(can_be_sold=True, company_id=company_id).annotate(sold_qty=Coalesce(Sum("sales_rows__quantity", filter=Q(sales_rows__voucher__date__gte=timezone.now() - timedelta(days=30))), 0)).only("name", "unit_id", "selling_price", "tax_scheme_id", "code").order_by("-sold_qty")
+        return (
+            Item.objects.filter(can_be_sold=True, company_id=company_id)
+            .annotate(
+                sold_qty=Coalesce(
+                    Sum(
+                        "sales_rows__quantity",
+                        filter=Q(
+                            sales_rows__voucher__date__gte=timezone.now()
+                            - timedelta(days=30)
+                        ),
+                    ),
+                    0,
+                )
+            )
+            .only("name", "unit_id", "selling_price", "tax_scheme_id", "code")
+            .order_by("-sold_qty")
+        )
 
     def get_collections(self, request=None):
         data = super().get_collections(request)
@@ -276,8 +460,19 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = PurchaseVoucher
     row = PurchaseVoucherRow
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["voucher_no", "party__name", "remarks", "total_amount", "party__tax_registration_number", "rows__item__name"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "total_amount",
+        "party__tax_registration_number",
+        "rows__item__name",
+    ]
     filterset_class = PurchaseVoucherFilterSet
 
     collections = (
@@ -287,15 +482,32 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
         ("bank_accounts", BankAccount, BankAccountSerializer),
-        ("items", Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True) | Q(fixed_asset=True)), ItemPurchaseSerializer),
+        (
+            "items",
+            Item.objects.filter(
+                Q(can_be_purchased=True)
+                | Q(direct_expense=True)
+                | Q(indirect_expense=True)
+                | Q(fixed_asset=True)
+            ),
+            ItemPurchaseSerializer,
+        ),
     )
 
     def create(self, request, *args, **kwargs):
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exists():
-            raise ValidationError({"voucher_no": ["Purchase with the bill number for the chosen party already exists."]})
+        if self.model.objects.filter(
+            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+        ).exists():
+            raise ValidationError(
+                {
+                    "voucher_no": [
+                        "Purchase with the bill number for the chosen party already exists."
+                    ]
+                }
+            )
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -303,8 +515,20 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         voucher_no = request.data.get("voucher_no", None)
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
-        if self.model.objects.filter(voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year).exclude(id=obj.id).exists():
-            raise ValidationError({"voucher_no": ["Purchase with the bill number for the chosen party already exists."]})
+        if (
+            self.model.objects.filter(
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            )
+            .exclude(id=obj.id)
+            .exists()
+        ):
+            raise ValidationError(
+                {
+                    "voucher_no": [
+                        "Purchase with the bill number for the chosen party already exists."
+                    ]
+                }
+            )
         return super().update(request, *args, **kwargs)
 
     def get_create_defaults(self, request=None):
@@ -314,7 +538,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         data = PurchaseUpdateSettingSerializer(request.company.purchase_setting).data
         obj = self.get_object()
         if not obj.voucher_no:
-            data["options"]["voucher_no"] = get_next_voucher_no(PurchaseVoucher, request.company_id)
+            data["options"]["voucher_no"] = get_next_voucher_no(
+                PurchaseVoucher, request.company_id
+            )
         return data
 
     def get_queryset(self, **kwargs):
@@ -332,13 +558,33 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     def get_defaults(self, request=None):
         return {
-            "options": {"fiscal_years": FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data},
+            "options": {
+                "fiscal_years": FiscalYearSerializer(
+                    request.company.get_fiscal_years(), many=True
+                ).data
+            },
         }
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", PurchaseVoucherRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme").order_by("pk"))).select_related("discount_obj", "bank_account", "company__purchase_setting", "party")
-        return Response(PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data)
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    PurchaseVoucherRow.objects.all()
+                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .order_by("pk"),
+                )
+            )
+            .select_related(
+                "discount_obj", "bank_account", "company__purchase_setting", "party"
+            )
+        )
+        return Response(
+            PurchaseVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        )
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):
@@ -348,8 +594,25 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, url_path="by-voucher-no")
     def by_voucher_no(self, request):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", PurchaseVoucherRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme"))).select_related("discount_obj", "bank_account")
-        voucher = get_object_or_404(voucher_no=request.query_params.get("invoice_no"), party_id=request.query_params.get("party"), fiscal_year_id=request.query_params.get("fiscal_year"), queryset=qs)
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    PurchaseVoucherRow.objects.all().select_related(
+                        "item", "unit", "discount_obj", "tax_scheme"
+                    ),
+                )
+            )
+            .select_related("discount_obj", "bank_account")
+        )
+        voucher = get_object_or_404(
+            voucher_no=request.query_params.get("invoice_no"),
+            party_id=request.query_params.get("party"),
+            fiscal_year_id=request.query_params.get("fiscal_year"),
+            queryset=qs,
+        )
 
         return Response(PurchaseVoucherDetailSerializer(voucher).data)
 
@@ -367,7 +630,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         for row in rows:
             sold_items = row.sold_items
             quantity = sold_items.pop(str(row_id))
-            purchase_rows = PurchaseVoucherRow.objects.filter(item_id=row.item_id, remaining_quantity__gt=0).order_by("voucher__date", "id")
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=row.item_id, remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
             for purchase_row in purchase_rows:
                 if purchase_row.remaining_quantity == quantity:
                     purchase_row.remaining_quantity = 0
@@ -390,10 +655,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 else:
                     quantity -= purchase_row.remaining_quantity
                     if str(purchase_row.id) in sold_items.keys():
-                        sold_items[str(purchase_row.id)][0] += purchase_row.remaining_quantity
+                        sold_items[str(purchase_row.id)][
+                            0
+                        ] += purchase_row.remaining_quantity
                         sold_items[str(purchase_row.id)][1] = purchase_row.rate
                     else:
-                        sold_items[str(purchase_row.id)] = [purchase_row.remaining_quantity, purchase_row.rate]
+                        sold_items[str(purchase_row.id)] = [
+                            purchase_row.remaining_quantity,
+                            purchase_row.rate,
+                        ]
                     purchase_row.remaining_quantity = 0
                     purchase_row.save()
             row.sold_items = sold_items
@@ -408,11 +678,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 row.save()
 
                 # Update sales rows
-                sales_voucher_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
+                sales_voucher_rows = SalesVoucherRow.objects.filter(
+                    sold_items__has_key=str(row.id)
+                )
                 self.update_rows(sales_voucher_rows, row.id)
 
                 # Update challan rows
-                challan_rows = ChallanRow.objects.filter(sold_items__has_key=str(row.id))
+                challan_rows = ChallanRow.objects.filter(
+                    sold_items__has_key=str(row.id)
+                )
                 self.update_rows(challan_rows, row.id)
 
     @action(detail=True, methods=["POST"])
@@ -420,7 +694,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         purchase_voucher = self.get_object()
         message = request.data.get("message")
         if not message:
-            raise RESTValidationError({"message": "message field is required for cancelling invoice!"})
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling invoice!"}
+            )
 
         if request.company.inventory_setting.enable_fifo:
             row_ids = purchase_voucher.rows.values_list("id", flat=True)
@@ -446,17 +722,29 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     return Response({})
                 purchase_rows = purchase_voucher.rows.all()
                 for row in purchase_rows:
-                    sales_rows = SalesVoucherRow.objects.filter(sold_items__has_key=str(row.id))
-                    challan_rows = ChallanRow.objects.filter(sold_items__has_key=str(row.id))
-                    sold_items_challan = list(challan_rows.values_list("sold_items", flat=True))
-                    sold_items_sales = list(sales_rows.values_list("sold_items", flat=True))
+                    sales_rows = SalesVoucherRow.objects.filter(
+                        sold_items__has_key=str(row.id)
+                    )
+                    challan_rows = ChallanRow.objects.filter(
+                        sold_items__has_key=str(row.id)
+                    )
+                    sold_items_challan = list(
+                        challan_rows.values_list("sold_items", flat=True)
+                    )
+                    sold_items_sales = list(
+                        sales_rows.values_list("sold_items", flat=True)
+                    )
                     sold_items = sold_items_challan + sold_items_sales
                     sum = 0
                     for item in sold_items:
                         sum += item[str(row.id)][0]
-                    remaining_quantity = zero_for_none(row.item.remaining_stock) - row.quantity
+                    remaining_quantity = (
+                        zero_for_none(row.item.remaining_stock) - row.quantity
+                    )
                     if remaining_quantity <= 0:
-                        raise UnprocessableException(detail="Negative Stock Warning!", code="negative_stock")
+                        raise UnprocessableException(
+                            detail="Negative Stock Warning!", code="negative_stock"
+                        )
             purchase_voucher.cancel()
             self.fifo_update_sales_rows(purchase_voucher)
             return Response({})
@@ -469,7 +757,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         params = [
             ("Invoices", queryset, PurchaseVoucherResource),
-            ("Purchase Rows", PurchaseVoucherRow.objects.filter(voucher__company_id=request.company_id), PurchaseVoucherRowResource),
+            (
+                "Purchase Rows",
+                PurchaseVoucherRow.objects.filter(
+                    voucher__company_id=request.company_id
+                ),
+                PurchaseVoucherRowResource,
+            ),
         ]
         return qs_to_xls(params)
 
@@ -479,8 +773,19 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     model = CreditNote
     row = CreditNoteRow
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["voucher_no", "party__name", "remarks", "total_amount", "party__tax_registration_number", "rows__item__name"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "total_amount",
+        "party__tax_registration_number",
+        "rows__item__name",
+    ]
     filterset_class = CreditNoteFilterSet
 
     collections = (
@@ -516,7 +821,14 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         return CreditNoteCreateSerializer
 
     def get_defaults(self, request=None):
-        data = {"options": {"fiscal_years": FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data}, "fields": {"can_update_issued": request.company.enable_credit_note_update}}
+        data = {
+            "options": {
+                "fiscal_years": FiscalYearSerializer(
+                    request.company.get_fiscal_years(), many=True
+                ).data
+            },
+            "fields": {"can_update_issued": request.company.enable_credit_note_update},
+        }
         return data
 
     def get_create_defaults(self, request=None):
@@ -533,13 +845,28 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
             invoice_objs.append({"id": inv.id, "voucher_no": inv.voucher_no})
         options["sales_invoice_objs"] = invoice_objs
         if not obj.voucher_no:
-            options["voucher_no"] = get_next_voucher_no(SalesVoucher, request.company_id)
+            options["voucher_no"] = get_next_voucher_no(
+                SalesVoucher, request.company_id
+            )
 
         return {"options": options}
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().prefetch_related("invoices", Prefetch("rows", CreditNoteRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme").order_by("pk"))).select_related("discount_obj", "bank_account", "party")
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                "invoices",
+                Prefetch(
+                    "rows",
+                    CreditNoteRow.objects.all()
+                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .order_by("pk"),
+                ),
+            )
+            .select_related("discount_obj", "bank_account", "party")
+        )
         data = CreditNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_credit_note_update
         return Response(data)
@@ -555,8 +882,14 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
-        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
-            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
         obj = self.get_object()
         try:
             obj.cancel()
@@ -581,7 +914,11 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     def export(self, request):
         params = [
             ("Invoices", self.get_queryset(), CreditNoteResource),
-            ("Credit Note Rows", CreditNoteRow.objects.filter(voucher__company_id=request.company_id), CreditNoteRowResource),
+            (
+                "Credit Note Rows",
+                CreditNoteRow.objects.filter(voucher__company_id=request.company_id),
+                CreditNoteRowResource,
+            ),
         ]
         return qs_to_xls(params)
 
@@ -591,8 +928,19 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     model = DebitNote
     row = DebitNoteRow
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
-    search_fields = ["voucher_no", "party__name", "remarks", "total_amount", "party__tax_registration_number", "rows__item__name"]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "total_amount",
+        "party__tax_registration_number",
+        "rows__item__name",
+    ]
     filterset_class = DebitNoteFilterSet
 
     collections = (
@@ -601,7 +949,16 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
         ("bank_accounts", BankAccount, BankAccountSerializer),
-        ("items", Item.objects.filter(Q(can_be_purchased=True) | Q(direct_expense=True) | Q(indirect_expense=True) | Q(fixed_asset=True)), ItemPurchaseSerializer),
+        (
+            "items",
+            Item.objects.filter(
+                Q(can_be_purchased=True)
+                | Q(direct_expense=True)
+                | Q(indirect_expense=True)
+                | Q(fixed_asset=True)
+            ),
+            ItemPurchaseSerializer,
+        ),
     )
 
     def get_queryset(self):
@@ -628,7 +985,14 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         return DebitNoteCreateSerializer
 
     def get_defaults(self, request=None):
-        data = {"options": {"fiscal_years": FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data}, "fields": {"can_update_issued": request.company.enable_debit_note_update}}
+        data = {
+            "options": {
+                "fiscal_years": FiscalYearSerializer(
+                    request.company.get_fiscal_years(), many=True
+                ).data
+            },
+            "fields": {"can_update_issued": request.company.enable_debit_note_update},
+        }
         return data
 
     def get_create_defaults(self, request=None):
@@ -645,12 +1009,26 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         options["purchase_invoice_objs"] = invoice_objs
 
         if not obj.voucher_no:
-            options["voucher_no"] = get_next_voucher_no(PurchaseVoucher, request.company_id)
+            options["voucher_no"] = get_next_voucher_no(
+                PurchaseVoucher, request.company_id
+            )
         return {"options": options}
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", DebitNoteRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme").order_by("pk"))).select_related("discount_obj", "bank_account", "party")
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    DebitNoteRow.objects.all()
+                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .order_by("pk"),
+                )
+            )
+            .select_related("discount_obj", "bank_account", "party")
+        )
         data = DebitNoteDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_debit_note_update
         return Response(data)
@@ -666,8 +1044,14 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
-        if request.company.inventory_setting.enable_fifo and not request.query_params.get("fifo_inconsistency"):
-            raise UnprocessableException(detail="This may cause inconsistencies in fifo!", code="fifo_inconsistency")
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
         obj = self.get_object()
         try:
             obj.cancel()
@@ -693,7 +1077,11 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         params = [
             ("Invoices", queryset, DebitNoteResource),
-            ("Debit Note Rows", DebitNoteRow.objects.filter(voucher__company_id=request.company_id), DebitNoteRowResource),
+            (
+                "Debit Note Rows",
+                DebitNoteRow.objects.filter(voucher__company_id=request.company_id),
+                DebitNoteRowResource,
+            ),
         ]
         return qs_to_xls(params)
 
@@ -704,7 +1092,11 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     model = JournalVoucher
     row = JournalVoucherRow
     # filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter,]
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
 
     search_fields = [
         "voucher_no",
@@ -717,7 +1109,14 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
         if self.action != "list":
-            qs = qs.prefetch_related(Prefetch("rows", JournalVoucherRow.objects.order_by("-type", "id").select_related("account")))
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "rows",
+                    JournalVoucherRow.objects.order_by("-type", "id").select_related(
+                        "account"
+                    ),
+                )
+            )
         return qs.order_by("-pk")
 
     def get_serializer_class(self):
@@ -782,7 +1181,11 @@ class InvoiceDesignViewSet(CRULViewSet):
 class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = SalesDiscountSerializer
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     search_fields = [
         "name",
     ]
@@ -792,20 +1195,42 @@ class SalesDiscountViewSet(InputChoiceMixin, CRULViewSet):
 class PurchaseDiscountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = PurchaseDiscountSerializer
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     search_fields = [
         "name",
     ]
     filterset_class = PurchaseDiscountFilterSet
 
 
-class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class SalesBookViewSet(
+    CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
     serializer_class = SalesBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = SalesVoucherFilterSet
 
     def get_queryset(self, **kwargs):
-        qs = super().get_queryset().filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"]).prefetch_related(Prefetch("rows", SalesVoucherRow.objects.select_related("discount_obj", "tax_scheme"))).select_related("discount_obj", "party")
+        qs = (
+            super()
+            .get_queryset()
+            .filter(
+                company_id=self.request.company_id,
+                status__in=["Issued", "Paid", "Partially Paid"],
+            )
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    SalesVoucherRow.objects.select_related(
+                        "discount_obj", "tax_scheme"
+                    ),
+                )
+            )
+            .select_related("discount_obj", "party")
+        )
         return qs.order_by("-date", "-voucher_no")
 
     def list(self, request, *args, **kwargs):
@@ -815,10 +1240,20 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
         serializer = self.get_serializer(page, many=True)
         data = serializer.data
 
-        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in self.filterset_class.base_filters.keys())
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
 
         if is_filtered:
-            aggregate = queryset.aggregate(total_amount=Sum("total_amount"), total_meta_discount=Sum("meta_discount"), total_meta_tax=Sum("meta_tax"), total_meta_taxable=Sum("meta_taxable"), total_meta_non_taxable=Sum("meta_non_taxable"), total_export=Sum(Case(When(is_export=True, then=F("total_amount")))))
+            aggregate = queryset.aggregate(
+                total_amount=Sum("total_amount"),
+                total_meta_discount=Sum("meta_discount"),
+                total_meta_tax=Sum("meta_tax"),
+                total_meta_taxable=Sum("meta_taxable"),
+                total_meta_non_taxable=Sum("meta_non_taxable"),
+                total_export=Sum(Case(When(is_export=True, then=F("total_amount")))),
+            )
             self.paginator.aggregate = aggregate
 
         return self.get_paginated_response(data)
@@ -826,18 +1261,36 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
     @action(detail=False)
     def export(self, request):
         if self.is_filtered_by_date():
-            input_stream_path = os.path.join(settings.BASE_DIR, "awecount/store/spreadsheet_templates/np/sales-book.xlsx")
+            input_stream_path = os.path.join(
+                settings.BASE_DIR,
+                "awecount/store/spreadsheet_templates/np/sales-book.xlsx",
+            )
             input_stream = open(input_stream_path, "rb")
             wb = openpyxl.load_workbook(input_stream)
             ws = wb.active
             # TODO Optimization: Check if queryset can be optimized
-            qs = super().get_queryset().filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid", "Cancelled"]).select_related("discount_obj", "party").order_by("date", "voucher_no")
-            queryset = self.filter_queryset(qs).annotate(total_quantity=Sum("rows__quantity"))
+            qs = (
+                super()
+                .get_queryset()
+                .filter(
+                    company_id=self.request.company_id,
+                    status__in=["Issued", "Paid", "Partially Paid", "Cancelled"],
+                )
+                .select_related("discount_obj", "party")
+                .order_by("date", "voucher_no")
+            )
+            queryset = self.filter_queryset(qs).annotate(
+                total_quantity=Sum("rows__quantity")
+            )
             serializer = SalesBookExportSerializer(queryset, many=True)
             data = serializer.data
 
             for idx, row in enumerate(data):
-                ws.cell(column=1, row=idx + 7, value=ad2bs_str(row.get("date")).replace("-", "."))
+                ws.cell(
+                    column=1,
+                    row=idx + 7,
+                    value=ad2bs_str(row.get("date")).replace("-", "."),
+                )
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 if row.get("status") == "Cancelled":
                     ws.cell(column=3, row=idx + 7, value="Cancelled")
@@ -851,7 +1304,9 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                     ws.cell(column=8, row=idx + 7, value=taxable + non_taxable)
                     ws.cell(column=9, row=idx + 7, value=non_taxable)
                     ws.cell(column=10, row=idx + 7, value=taxable)
-                    ws.cell(column=11, row=idx + 7, value=row.get("voucher_meta").get("tax"))
+                    ws.cell(
+                        column=11, row=idx + 7, value=row.get("voucher_meta").get("tax")
+                    )
                     ws.cell(column=3, row=idx + 7, value=row.get("buyers_name"))
                     ws.cell(column=4, row=idx + 7, value=row.get("buyers_pan"))
                 ws.cell(column=5, row=idx + 7, value=row.get("item_names"))
@@ -861,7 +1316,10 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                 if row.get("is_export"):
                     ws.cell(column=12, row=idx + 7, value=row.get("grand_total"))
 
-            years = [ad2bs(self.request.query_params.get("start_date"))[0], ad2bs(self.request.query_params.get("end_date"))[0]]
+            years = [
+                ad2bs(self.request.query_params.get("start_date"))[0],
+                ad2bs(self.request.query_params.get("end_date"))[0],
+            ]
             years.sort()
             year_str = "/".join(set([str(year) for year in years]))
 
@@ -869,19 +1327,35 @@ class SalesBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.Gene
                 column=1,
                 row=4,
                 value="करदाता दर्ता नं (PAN) : {}        करदाताको नाम: {}         साल    {}      कर अवधि: {} -{}".format(
-                    self.request.company.tax_registration_number, self.request.company.name, year_str, ad2bs_str(self.request.query_params.get("start_date")).replace("-", "."), ad2bs_str(self.request.query_params.get("end_date")).replace("-", ".")
+                    self.request.company.tax_registration_number,
+                    self.request.company.name,
+                    year_str,
+                    ad2bs_str(self.request.query_params.get("start_date")).replace(
+                        "-", "."
+                    ),
+                    ad2bs_str(self.request.query_params.get("end_date")).replace(
+                        "-", "."
+                    ),
                 ),
             )
 
-            response = HttpResponse(save_virtual_workbook(wb), content_type="application/vnd.ms-excel")
+            response = HttpResponse(
+                save_virtual_workbook(wb), content_type="application/vnd.ms-excel"
+            )
             filename = "{}_{}.xlsx".format("sales-book" + "_", datetime.today().date())
-            response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+            response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+                filename
+            )
             return response
 
 
 class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     serializer_class = SalesRowSerializer
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     filterset_class = SalesRowFilterSet
 
     search_fields = [
@@ -893,7 +1367,9 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     ]
 
     def get_queryset(self, **kwargs):
-        qs = SalesVoucherRow.objects.filter(voucher__company_id=self.request.company_id).select_related("item", "voucher__party")
+        qs = SalesVoucherRow.objects.filter(
+            voucher__company_id=self.request.company_id
+        ).select_related("item", "voucher__party")
         return qs.order_by("-pk")
 
     def list(self, request, *args, **kwargs):
@@ -903,9 +1379,22 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer(page, many=True)
         data = serializer.data
 
-        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in self.filterset_class.base_filters.keys())
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
         if is_filtered:
-            aggregate = queryset.aggregate(Sum("quantity"), Sum("discount_amount"), Sum("tax_amount"), Sum("net_amount"), Avg("rate"), Count("item", distinct=True), Count("voucher", distinct=True), Count("voucher__party", distinct=True), Count("voucher__sales_agent", distinct=True))
+            aggregate = queryset.aggregate(
+                Sum("quantity"),
+                Sum("discount_amount"),
+                Sum("tax_amount"),
+                Sum("net_amount"),
+                Avg("rate"),
+                Count("item", distinct=True),
+                Count("voucher", distinct=True),
+                Count("voucher__party", distinct=True),
+                Count("voucher__sales_agent", distinct=True),
+            )
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
 
@@ -918,11 +1407,22 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
             qs = qs.filter(voucher__date__gte=start_date)
         if end_date:
             qs = qs.filter(voucher__date__lte=end_date)
-        qs = qs.values("item__category", "item__category__name").annotate(quantity=Sum("quantity"), discount_amount=Sum("discount_amount"), tax_amount=Sum("tax_amount"), net_amount=Sum("net_amount")).order_by("-net_amount")
+        qs = (
+            qs.values("item__category", "item__category__name")
+            .annotate(
+                quantity=Sum("quantity"),
+                discount_amount=Sum("discount_amount"),
+                tax_amount=Sum("tax_amount"),
+                net_amount=Sum("net_amount"),
+            )
+            .order_by("-net_amount")
+        )
         return Response(qs)
 
 
-class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class PurchaseBookViewSet(
+    CompanyViewSetMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
     serializer_class = PurchaseBookSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PurchaseVoucherFilterSet
@@ -932,8 +1432,18 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
             super()
             .get_queryset()
             .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
-            .filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"])
-            .prefetch_related(Prefetch("rows", PurchaseVoucherRow.objects.all().select_related("discount_obj", "tax_scheme")))
+            .filter(
+                company_id=self.request.company_id,
+                status__in=["Issued", "Paid", "Partially Paid"],
+            )
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    PurchaseVoucherRow.objects.all().select_related(
+                        "discount_obj", "tax_scheme"
+                    ),
+                )
+            )
             .select_related("discount_obj", "party")
         )
         return qs.distinct().order_by("-date", "-pk")
@@ -945,7 +1455,10 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
         serializer = self.get_serializer(page, many=True)
         data = serializer.data
 
-        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in self.filterset_class.base_filters.keys())
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
 
         if is_filtered:
             aggregate = queryset.aggregate(
@@ -963,19 +1476,37 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
     @action(detail=False)
     def export(self, request):
         if self.is_filtered_by_date():
-            input_stream_path = os.path.join(settings.BASE_DIR, "awecount/store/spreadsheet_templates/np/purchase-book.xlsx")
+            input_stream_path = os.path.join(
+                settings.BASE_DIR,
+                "awecount/store/spreadsheet_templates/np/purchase-book.xlsx",
+            )
             input_stream = open(input_stream_path, "rb")
             wb = openpyxl.load_workbook(input_stream)
             ws = wb.active
-            qs = super().get_queryset().filter(company_id=self.request.company_id, status__in=["Issued", "Paid", "Partially Paid"]).select_related("discount_obj", "party").order_by("date", "voucher_no")
-            queryset = self.filter_queryset(qs).annotate(total_quantity=Sum("rows__quantity"))
+            qs = (
+                super()
+                .get_queryset()
+                .filter(
+                    company_id=self.request.company_id,
+                    status__in=["Issued", "Paid", "Partially Paid"],
+                )
+                .select_related("discount_obj", "party")
+                .order_by("date", "voucher_no")
+            )
+            queryset = self.filter_queryset(qs).annotate(
+                total_quantity=Sum("rows__quantity")
+            )
             serializer = PurchaseBookExportSerializer(queryset, many=True)
             data = serializer.data
 
             for idx, row in enumerate(data):
                 taxable = row.get("voucher_meta").get("taxable")
                 non_taxable = row.get("voucher_meta").get("non_taxable")
-                ws.cell(column=1, row=idx + 7, value=ad2bs_str(row.get("date")).replace("-", "."))
+                ws.cell(
+                    column=1,
+                    row=idx + 7,
+                    value=ad2bs_str(row.get("date")).replace("-", "."),
+                )
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(column=5, row=idx + 7, value=row.get("tax_registration_number"))
@@ -985,9 +1516,14 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
                 ws.cell(column=9, row=idx + 7, value=taxable + non_taxable)
                 ws.cell(column=10, row=idx + 7, value=non_taxable)
                 ws.cell(column=11, row=idx + 7, value=taxable)
-                ws.cell(column=12, row=idx + 7, value=row.get("voucher_meta").get("tax"))
+                ws.cell(
+                    column=12, row=idx + 7, value=row.get("voucher_meta").get("tax")
+                )
 
-            years = [ad2bs(self.request.query_params.get("start_date"))[0], ad2bs(self.request.query_params.get("end_date"))[0]]
+            years = [
+                ad2bs(self.request.query_params.get("start_date"))[0],
+                ad2bs(self.request.query_params.get("end_date"))[0],
+            ]
             years.sort()
             year_str = "/".join(set([str(year) for year in years]))
 
@@ -995,13 +1531,27 @@ class PurchaseBookViewSet(CompanyViewSetMixin, mixins.ListModelMixin, viewsets.G
                 column=1,
                 row=4,
                 value="करदाता दर्ता नं (PAN) : {}        करदाताको नाम: {}         साल    {}      कर अवधि: {} -{}".format(
-                    self.request.company.tax_registration_number, self.request.company.name, year_str, ad2bs_str(self.request.query_params.get("start_date")).replace("-", "."), ad2bs_str(self.request.query_params.get("end_date")).replace("-", ".")
+                    self.request.company.tax_registration_number,
+                    self.request.company.name,
+                    year_str,
+                    ad2bs_str(self.request.query_params.get("start_date")).replace(
+                        "-", "."
+                    ),
+                    ad2bs_str(self.request.query_params.get("end_date")).replace(
+                        "-", "."
+                    ),
                 ),
             )
 
-            response = HttpResponse(save_virtual_workbook(wb), content_type="application/vnd.ms-excel")
-            filename = "{}_{}.xlsx".format("purchase-book" + "_", datetime.today().date())
-            response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+            response = HttpResponse(
+                save_virtual_workbook(wb), content_type="application/vnd.ms-excel"
+            )
+            filename = "{}_{}.xlsx".format(
+                "purchase-book" + "_", datetime.today().date()
+            )
+            response["Content-Disposition"] = 'attachment; filename="{}"'.format(
+                filename
+            )
             return response
 
 
@@ -1035,13 +1585,21 @@ class SalesSettingsViewSet(CRULViewSet):
     def get_defaults(self, request=None):
         s_setting = self.request.company.sales_setting
 
-        data = {"fields": SalesSettingsSerializer(s_setting, context={"request": request}).data}
+        data = {
+            "fields": SalesSettingsSerializer(
+                s_setting, context={"request": request}
+            ).data
+        }
         return data
 
 
 class PaymentReceiptViewSet(CRULViewSet):
     serializer_class = PaymentReceiptFormSerializer
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
     queryset = PaymentReceipt.objects.all()
     search_fields = ["party__name", "amount", "cheque_deposit__cheque_number"]
 
@@ -1060,7 +1618,13 @@ class PaymentReceiptViewSet(CRULViewSet):
         return PaymentReceiptFormSerializer
 
     def get_defaults(self, request=None):
-        data = {"options": {"fiscal_years": FiscalYearSerializer(request.company.get_fiscal_years(), many=True).data}}
+        data = {
+            "options": {
+                "fiscal_years": FiscalYearSerializer(
+                    request.company.get_fiscal_years(), many=True
+                ).data
+            }
+        }
         return data
 
     @action(detail=True, methods=["POST"])
@@ -1077,21 +1641,46 @@ class PaymentReceiptViewSet(CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().select_related("bank_account", "cheque_deposit", "party")
-        data = PaymentReceiptDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("bank_account", "cheque_deposit", "party")
+        )
+        data = PaymentReceiptDetailSerializer(
+            get_object_or_404(pk=pk, queryset=qs)
+        ).data
         return Response(data)
 
     @action(detail=False, url_path="fetch-invoice")
     def fetch_invoice(self, request):
-        qs = SalesVoucher.objects.filter(company_id=request.company_id).select_related("party")
-        invoice = get_object_or_404(voucher_no=request.query_params.get("invoice_no"), fiscal_year_id=request.query_params.get("fiscal_year"), queryset=qs)
+        qs = SalesVoucher.objects.filter(company_id=request.company_id).select_related(
+            "party"
+        )
+        invoice = get_object_or_404(
+            voucher_no=request.query_params.get("invoice_no"),
+            fiscal_year_id=request.query_params.get("fiscal_year"),
+            queryset=qs,
+        )
         if invoice.status == "Paid":
-            return Response({"detail": "Invoice has already been paid for!"}, status=400)
+            return Response(
+                {"detail": "Invoice has already been paid for!"}, status=400
+            )
         if invoice.status == "Cancelled":
-            return Response({"detail": "Invoice has already been canceled!"}, status=400)
+            return Response(
+                {"detail": "Invoice has already been canceled!"}, status=400
+            )
         if not invoice.party_id:
-            return Response({"detail": "Requested invoice isn't for a party!"}, status=400)
-        data = {"id": invoice.id, "voucher_no": invoice.voucher_no, "party_id": invoice.party_id, "party_name": invoice.party.name, "amount": invoice.total_amount, "taxable": invoice.get_voucher_meta().get("taxable") or 0}
+            return Response(
+                {"detail": "Requested invoice isn't for a party!"}, status=400
+            )
+        data = {
+            "id": invoice.id,
+            "voucher_no": invoice.voucher_no,
+            "party_id": invoice.party_id,
+            "party_name": invoice.party.name,
+            "amount": invoice.total_amount,
+            "taxable": invoice.get_voucher_meta().get("taxable") or 0,
+        }
         return Response(data)
 
     @action(detail=True, url_path="journal-entries")
@@ -1108,30 +1697,56 @@ class PaymentReceiptViewSet(CRULViewSet):
         if not (start_date and end_date):
             raise ValidationError("Start and end dates are required.")
 
-        qs = PaymentReceipt.objects.filter(company=request.company, status__in=["Cleared"]).filter(date__gte=start_date, date__lte=end_date)
+        qs = PaymentReceipt.objects.filter(
+            company=request.company, status__in=["Cleared"]
+        ).filter(date__gte=start_date, date__lte=end_date)
 
-        excluded_ids = qs.annotate(cnt=Count("invoices__sales_agent_id", distinct=True)).filter(cnt__gte=2).values_list("id", flat=True)
-        excluded_sum = qs.filter(id__in=excluded_ids).aggregate(Sum("amount")).get("amount__sum")
+        excluded_ids = (
+            qs.annotate(cnt=Count("invoices__sales_agent_id", distinct=True))
+            .filter(cnt__gte=2)
+            .values_list("id", flat=True)
+        )
+        excluded_sum = (
+            qs.filter(id__in=excluded_ids).aggregate(Sum("amount")).get("amount__sum")
+        )
 
         included = qs.exclude(id__in=excluded_ids)
 
         # values = included.values('invoices__sales_agent_id', 'invoices__sales_agent__name').annotate(
         #     total_amount=DistinctSum('amount'))
 
-        values = included.distinct().values("invoices__sales_agent_id", "invoices__sales_agent__name").annotate(total_amount=Sum("amount"))
+        values = (
+            included.distinct()
+            .values("invoices__sales_agent_id", "invoices__sales_agent__name")
+            .annotate(total_amount=Sum("amount"))
+        )
 
-        return Response({"values": values, "total": values.aggregate(Sum("amount")).get("amount__sum"), "excluded": excluded_ids, "excluded_sum": excluded_sum})
+        return Response(
+            {
+                "values": values,
+                "total": values.aggregate(Sum("amount")).get("amount__sum"),
+                "excluded": excluded_ids,
+                "excluded_sum": excluded_sum,
+            }
+        )
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset().prefetch_related("invoices"))
+        queryset = self.filter_queryset(
+            self.get_queryset().prefetch_related("invoices")
+        )
         page = self.paginate_queryset(queryset.distinct())
         serializer = self.get_serializer(page, many=True)
         data = serializer.data
 
-        is_filtered = any(x in self.request.query_params if self.request.query_params.get(x) else None for x in self.filterset_class.base_filters.keys())
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
         if is_filtered:
             aggregate = queryset.aggregate(Sum("amount"), Sum("tds_amount"))
-            aggregate["invoices"] = queryset.aggregate(Count("invoices", distinct=True)).get("invoices__count")
+            aggregate["invoices"] = queryset.aggregate(
+                Count("invoices", distinct=True)
+            ).get("invoices__count")
             self.paginator.aggregate = aggregate
 
         return self.get_paginated_response(data)
@@ -1145,18 +1760,36 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     collections = [
         ("parties", Party, PartyMinSerializer),
         ("units", Unit),
-        ("items", Item.objects.filter(can_be_sold=True, track_inventory=True), ItemSalesSerializer),
+        (
+            "items",
+            Item.objects.filter(can_be_sold=True, track_inventory=True),
+            ItemSalesSerializer,
+        ),
     ]
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
 
     filterset_class = ChallanFilterSet
 
-    search_fields = ["voucher_no", "party__name", "remarks", "party__tax_registration_number", "customer_name", "rows__item__name"]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "party__tax_registration_number",
+        "customer_name",
+        "rows__item__name",
+    ]
 
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
-        if request.company.enable_sales_agents and sales_agent_tuple not in self.collections:
+        if (
+            request.company.enable_sales_agents
+            and sales_agent_tuple not in self.collections
+        ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)
         return super().get_collections(request)
@@ -1190,7 +1823,21 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", SalesVoucherRow.objects.all().select_related("item", "unit", "discount_obj", "tax_scheme").order_by("pk"))).select_related("discount_obj", "bank_account", "company__sales_setting", "party")
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    SalesVoucherRow.objects.all()
+                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .order_by("pk"),
+                )
+            )
+            .select_related(
+                "discount_obj", "bank_account", "company__sales_setting", "party"
+            )
+        )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
         return Response(data)
@@ -1201,7 +1848,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         }
 
     def get_create_defaults(self, request=None):
-        data = {"options": {"voucher_no": get_next_voucher_no(Challan, request.company_id)}}
+        data = {
+            "options": {"voucher_no": get_next_voucher_no(Challan, request.company_id)}
+        }
         return data
 
     @action(detail=True, methods=["POST"])
@@ -1218,7 +1867,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         challan = self.get_object()
         message = request.data.get("message")
         if not message:
-            raise RESTValidationError({"message": "message field is required for cancelling invoice!"})
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling invoice!"}
+            )
         if request.company.inventory_setting.enable_fifo:
             fifo_cancel_sales(challan, request.query_params.get("fifo_inconsistency"))
         challan.cancel(message)
@@ -1233,8 +1884,20 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, url_path="by-voucher-no")
     def by_voucher_no(self, request):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", ChallanRow.objects.all().select_related("item", "unit")))
-        challan = get_object_or_404(voucher_no=request.query_params.get("invoice_no"), fiscal_year_id=request.query_params.get("fiscal_year"), queryset=qs)
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows", ChallanRow.objects.all().select_related("item", "unit")
+                )
+            )
+        )
+        challan = get_object_or_404(
+            voucher_no=request.query_params.get("invoice_no"),
+            fiscal_year_id=request.query_params.get("fiscal_year"),
+            queryset=qs,
+        )
         if challan.sales.exclude(status__iexact="cancelled").exists():
             return Response({"detail": "Challan has already been used."}, status=400)
         if challan.status != "Issued":
@@ -1270,13 +1933,31 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = PurchaseOrder
     row = PurchaseOrderRow
 
-    collections = [("parties", Party, PartyMinSerializer), ("units", Unit), ("items", Item.objects.filter(can_be_purchased=True, track_inventory=True), ItemPurchaseSerializer)]
+    collections = [
+        ("parties", Party, PartyMinSerializer),
+        ("units", Unit),
+        (
+            "items",
+            Item.objects.filter(can_be_purchased=True, track_inventory=True),
+            ItemPurchaseSerializer,
+        ),
+    ]
 
-    filter_backends = [filters.DjangoFilterBackend, rf_filters.OrderingFilter, rf_filters.SearchFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
 
     filterset_class = PurchaseOrderFilterSet
 
-    search_fields = ["voucher_no", "party__name", "remarks", "party__tax_registration_number", "rows__item__name"]
+    search_fields = [
+        "voucher_no",
+        "party__name",
+        "remarks",
+        "party__tax_registration_number",
+        "rows__item__name",
+    ]
 
     def get_queryset(self, **kwargs):
         qs = super(PurchaseOrderViewSet, self).get_queryset()
@@ -1296,7 +1977,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         instance = self.get_object()
         message = request.data.get("message")
         if not message:
-            raise RESTValidationError({"message": "message field is required for cancelling invoice!"})
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling invoice!"}
+            )
         instance.remarks = f"Reason for cancellation: {message}"
         instance.status = "Cancelled"
         instance.save()
@@ -1304,13 +1987,28 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, url_path="by-voucher-no")
     def by_voucher_no(self, request):
-        qs = super().get_queryset().prefetch_related(Prefetch("rows", PurchaseOrderRow.objects.all().select_related("item", "unit")))
+        qs = (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "rows",
+                    PurchaseOrderRow.objects.all().select_related("item", "unit"),
+                )
+            )
+        )
         voucher_number = request.query_params.get("invoice_no")
         fiscal_year = request.query_params.get("fiscal_year")
-        instance = get_object_or_404(voucher_no=voucher_number, fiscal_year_id=fiscal_year, queryset=qs)
+        instance = get_object_or_404(
+            voucher_no=voucher_number, fiscal_year_id=fiscal_year, queryset=qs
+        )
         if instance.purchases.exclude(status__iexact="cancelled").exists():
-            return Response({"detail": "The purchase order has already been used."}, status=400)
+            return Response(
+                {"detail": "The purchase order has already been used."}, status=400
+            )
 
         if instance.status == "Cancelled":
-            return Response({"detail": "The selected purchase order can not be used."}, status=400)
+            return Response(
+                {"detail": "The selected purchase order can not be used."}, status=400
+            )
         return Response(PurchaseOrderCreateSerializer(instance).data)

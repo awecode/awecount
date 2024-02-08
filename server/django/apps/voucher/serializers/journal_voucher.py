@@ -7,7 +7,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from awecount.libs import decimalize
 from awecount.libs.serializers import DisableCancelEditMixin
 
-from ..models import JournalVoucher, JournalVoucherRow
+from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
 
 
 class JournalVoucherRowSerializer(serializers.ModelSerializer):
@@ -22,7 +22,9 @@ class JournalVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSerializer):
+class JournalVoucherCreateSerializer(
+    DisableCancelEditMixin, serializers.ModelSerializer
+):
     rows = JournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
@@ -69,9 +71,13 @@ class JournalVoucherCreateSerializer(DisableCancelEditMixin, serializers.ModelSe
             row["account_id"] = account.get("id")
             row["journal_voucher"] = instance
             try:
-                JournalVoucherRow.objects.update_or_create(pk=row.get("id"), defaults=row)
+                JournalVoucherRow.objects.update_or_create(
+                    pk=row.get("id"), defaults=row
+                )
             except IntegrityError:
-                raise APIException({"non_field_errors": ["Voucher repeated in journal voucher."]})
+                raise APIException(
+                    {"non_field_errors": ["Voucher repeated in journal voucher."]}
+                )
         instance.refresh_from_db()
         JournalVoucher.apply_transactions(instance)
         return instance
