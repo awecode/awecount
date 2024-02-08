@@ -774,19 +774,21 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
 
 class FifoInconsistencyLog(models.Model):
+    item = models.ForeignKey(
+        "Item", on_delete=models.CASCADE, related_name="fifo_inconsistency_logs"
+    )
     occured_at = models.DateTimeField(auto_now_add=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     transaction_id = models.PositiveIntegerField()
-    quantity = models.FloatField()
     is_resolved = models.BooleanField(default=False)
 
 
 @receiver(pre_delete, sender=Transaction)
 def _transaction_delete(sender, instance, **kwargs):
     FifoInconsistencyLog.objects.create(
+        item=instance.account.item,
         content_type=instance.journal_entry.content_type,
         transaction_id=instance.id,
-        quantity=instance.dr_amount or instance.cr_amount,
     )
 
 
