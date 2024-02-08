@@ -19,6 +19,6 @@ export default boot(({ app, router }) => {
     environment: 'development',
     trackComponents: true,
     tracesSampleRate: 1.0,
-    tracePropagationTargets: ['localhost', /^http:\/\/localhost:8000\.io\/api/],
+    tracePropagationTargets: ['localhost', /^https:\/\/sentry\.awecount\-quasar\.pages\.dev/,]
   });
 });
