@@ -869,17 +869,8 @@ class Item(models.Model):
 
     @property
     def available_stock_data(self):
-        data = list(self.purchase_rows.filter(remaining_quantity__gt=0).order_by("id").values("remaining_quantity", "rate"))
-        if self.account:
-            ob = self.account.opening_quantity
-            if ob:
-                obj = {
-                    "remaining_quantity":  ob,
-                    "rate": self.account.opening_balance_rate
-                }
-                data.insert(0, obj)
-
-        return data
+        qs = self.account.transactions.filter(remaining_quantity__gt=0).order_by("journal_entry__date", "id").values("remaining_quantity", "rate")
+        return list(qs)
 
     class Meta:
         unique_together = ('code', 'company',)
