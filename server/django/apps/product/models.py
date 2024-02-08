@@ -521,10 +521,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         updated_txns.append(tx_next)
                         transaction.consumption_data[tx_next.id] : req_qty
                     else:
-                        transaction.consumption_data["outstanding"] = req_qty
-                        # This is where we need to keep track of fifo inconsistency
-                        # handle_fifo_inconsistency(transaction)
-
+                        transaction.fifo_inconsistency_quantity = req_qty
 
                 for txn in txn_qs:
                     transaction.consumption_data[txn.id] = txn.remaining_quantity
@@ -539,10 +536,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     tx_next.save()
                     transaction.consumption_data[tx_next.id] =  req_qty
                 else:
-                    transaction.consumption_data["outstanding"] = req_qty
-                    # This is where we need to keep track of fifo inconsistency
-                    # handle_fifo_inconsistency(transaction)
-
+                    transaction.fifo_inconsistency_quantity = req_qty
 
         elif arg[0] == 'ob':
             transaction.cr_amount = None
