@@ -1212,16 +1212,15 @@ class Item(models.Model):
             # prevents recursion
             self.save(post_save=False)
 
+    # TODO: Why make a new property for this?
     @property
     def remaining_stock(self):
         remaining = (
-            self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(
-                rem_qt=Sum("remaining_quantity")
-            )["rem_qt"]
-            or 0
+            self.account.transactions.filter(remaining_quantity__gt=0)
+            .order_by("journal_entry__date", "id")
+            .aggregate(remaining_quantity=Sum("remaining_quantity"))
+            .get("remaining_quantity", 0)
         )
-        if self.account:
-            remaining += zero_for_none(self.account.opening_quantity)
         return remaining
 
     @property
