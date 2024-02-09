@@ -87,8 +87,8 @@ const onLoginSubmit = async () => {
         position: 'top-right',
       })
     })
-    const createElol = () => {
-      throw new Error('This is testinnnn error!')
-    }
+}
+const createElol = () => {
+  throw new Error('This is testinnnn error!')
 }
 </script>
