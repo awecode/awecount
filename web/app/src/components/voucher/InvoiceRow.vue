@@ -2,8 +2,7 @@
   <div :class="usedInPos ? '-mt-12' : ''">
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
-        <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-          <!-- TODO: solve error -->
+        <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'" data-testid="item">
           <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
               ? false
@@ -19,10 +18,10 @@
         </div>
       </div>
       <div class="col-2">
-        <span v-if="showRateQuantity">
+        <span v-if="showRateQuantity" data-testid="quantity-input">
           <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' : 'Quantity'"
             :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-            type="number" :disable="hasChallan" data-testid="quantity-input">
+            type="number" :disable="hasChallan" >
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
               <q-icon v-if="COGSData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
                 <q-tooltip>
@@ -42,10 +41,10 @@
         </span>
       </div>
       <div class="col-2">
-        <div v-if="showRateQuantity">
+        <div v-if="showRateQuantity" data-testid="rate-input">
           <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'"
             :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number"
-            data-testid="rate-input">
+            >
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
               <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
                 <q-tooltip>
@@ -61,9 +60,9 @@
           </q-input>
         </div>
       </div>
-      <div v-if="inputAmount" class="col-2">
+      <div v-if="inputAmount" class="col-2" data-testid="amount-input">
         <!-- <span class="">{{ amountComputed }}</span> -->
-        <q-input v-model="amountComputed" label="Amount" @change="onAmountInput" data-testid="amount-input">
+        <q-input v-model="amountComputed" label="Amount" @change="onAmountInput">
           <template v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'"
             v-slot:append>
             <span class="text-sm mt-4 text-blue-400">
@@ -75,8 +74,8 @@
         </q-input>
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
-      <div v-else class="col-2 row justify-center items-center">
-        <span class="" data-testid="amount-input">{{ amountComputed }}
+      <div v-else class="col-2 row justify-center items-center" data-testid="amount-input">
+        <span class="" >{{ amountComputed }}
           <span class="relative bg-red-200"
             v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'">
             <span class="text-sm ml-2 text-blue-400 absolute top-1/2 -right-0 -translate-y-1/2">
@@ -120,10 +119,10 @@
     </div> -->
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
-        <div class="col-grow">
+        <div class="col-grow" data-testid="unit-select">
           <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
             emit-value map-options :error-message="errors?.unit_id ? errors.unit_id[0] : null"
-            :error="errors?.unit_id ? true : false" data-testid="unit-select" />
+            :error="errors?.unit_id ? true : false" />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
@@ -149,10 +148,10 @@
             </div>
           </div>
         </div>
-        <div class="col-3">
+        <div class="col-3" data-testid="row-tax-select">
           <q-select v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax" option-value="id"
             option-label="name" emit-value map-options :error="errors?.tax_scheme_id ? true : null" :error-message="errors?.tax_scheme_id ? 'This field is required' : null
-              " data-testid="row-tax-select" />
+              " />
         </div>
       </div>
       <div v-if="$route.params.id

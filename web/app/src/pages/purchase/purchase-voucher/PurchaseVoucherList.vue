@@ -49,7 +49,7 @@
 
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div class="row align-center justify-center">
+          <div class="row align-center justify-center" data-testid="status">
             <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
               ? 'bg-blue-2 text-blue-10'
               : props.row.status == 'Paid'
@@ -79,7 +79,7 @@
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center" v-if="checkPermissions('PurchaseVoucherView')">
             <q-btn color="blue" label="View" :to="`/purchase-voucher/${props.row.id}/view`"
-              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
+              class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" data-testid="view-btn" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
@@ -88,10 +88,10 @@
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link v-if="checkPermissions('PurchaseVoucherView')" :to="`/purchase-voucher/${props.row.id}/view`"
-              style="font-weight: 500; text-decoration: none" class="text-blue">
+              style="font-weight: 500; text-decoration: none" class="text-blue" data-testid="voucher-no">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher_no }}</span>
+            <span v-else data-testid="voucher-no">{{ props.row.voucher_no }}</span>
           </span>
         </q-td>
       </template>

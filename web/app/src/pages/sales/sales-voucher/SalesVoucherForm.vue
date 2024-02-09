@@ -68,7 +68,7 @@
               :error="!!errors?.address" data-testid="address-input"></q-input>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
               v-model="fields.due_date" class="col-md-6 col-12" :error="!!errors?.due_date"
-              :error-message="errors?.due_date" :toLimit="fields.date"></date-picker>
+              :error-message="errors?.due_date" :toLimit="fields.date" data-testid="due-date"></date-picker>
             <div class="col-md-6 col-12 row q-col-gutter-md">
               <div :class="['Percent', 'Amount'].includes(fields.discount_type)
                 ? 'col-6'
@@ -81,8 +81,8 @@
               </div>
               <div class="col-6 row">
                 <div :class="formDefaults.options?.show_trade_discount_in_voucher
-                    ? 'col-6'
-                    : 'col-12'
+                  ? 'col-6'
+                  : 'col-12'
                   " v-if="fields.discount_type === 'Amount' ||
     fields.discount_type === 'Percent'
     ">
@@ -149,16 +149,15 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft')" color="orange-8" label="Save Draft"
-          type="submit" class="issue-btn" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange-8" label="Save Draft"
+          type="submit" data-testid="issue-btn" />
         <q-btn v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
-          @click.prevent="() => onSubmitClick('Draft')" :loading="loading" color="orange-8"
-          :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" class="draft-btn" />
+          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8"
+          :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" data-testid="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading"
           @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')"
           color="green"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`"
-          class="issue-btn" />
+          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`" data-testid="create/update-btn" />
       </div>
     </q-card>
   </q-form>
