@@ -72,12 +72,12 @@ module.exports = configure(function (ctx) {
       env: {
         BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
       },
-      sourcemap: true,
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
       // distDir
+      sourcemap: true,
 
       extendViteConf(viteConf) {
         viteConf.plugins.push(
