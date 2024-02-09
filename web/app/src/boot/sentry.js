@@ -10,15 +10,7 @@ export default boot(({ app, router }) => {
     dsn: 'https://51ed8b7e9bb19758cd85c6b792f9c9c8@o374601.ingest.sentry.io/4506143333154816',
     // dsn: 'https://a33dd63776e1f24aea26b1a39a0aebf3@o4506710210641920.ingest.sentry.io/450671022345856',
     enabled: process.env.NODE_ENV !== 'development',
-    integrations: [
-      // new BrowserTracing({
-      //   routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-      //   tracingOrigins: ['localhost', 'my-site-url.com', regex],
-      // }),
-      // Sentry.browserTracingIntegration({ router })
-    ],
+    integrations: [],
     trackComponents: true,
-    // tracesSampleRate: 1.0,
-    // tracePropagationTargets: [ /^https:\/\/sentry\.awecount\-quasar\.pages\.dev/,]
   });
 });
