@@ -7,7 +7,7 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-
+const { sentryVitePlugin } = require("@sentry/vite-plugin")
 const UnoCSS = require('unocss/vite').default
 // const { presetAttributify, presetUno } = require('unocss')
 // import presetWind from '@unocss/preset-wind'
@@ -72,7 +72,7 @@ module.exports = configure(function (ctx) {
       env: {
         BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
       },
-
+      sourcemap: true,
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
@@ -84,6 +84,13 @@ module.exports = configure(function (ctx) {
           ...UnoCSS({
             presets: [presetWind()],
           })
+        )
+        viteConf.plugins.push(
+          sentryVitePlugin({
+            org: 'personal-6kx',
+            project: 'javascript-vue',
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+          }),
         )
       },
       // viteVuePluginOptions: {},

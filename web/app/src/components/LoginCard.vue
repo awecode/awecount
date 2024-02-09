@@ -1,4 +1,5 @@
 <template>
+  <q-btn color="red" @click="createElol">Create Elol</q-btn>
   <div class="row justify-center items-center bg-white q-pa-md">
     <div class="full-width q-px-md">
       <q-form class="text-sm" @submit="onLoginSubmit" autofocus>
@@ -86,5 +87,8 @@ const onLoginSubmit = async () => {
         position: 'top-right',
       })
     })
+    const createElol = () => {
+      throw new Error('This is testinnnn error!')
+    }
 }
 </script>

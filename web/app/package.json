@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.7.3",
+    "@sentry/vite-plugin": "^2.14.0",
     "@types/node": "^12.20.55",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
