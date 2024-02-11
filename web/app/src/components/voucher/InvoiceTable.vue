@@ -1,8 +1,8 @@
 <template>
   <q-card-section class="overflow-y-auto -mt-4">
-    <q-card :class="usedInPos ? 'min-w-[550px]' : 'min-w-[700px]'" class="pt-6">
-      <div :class="usedInPos ? 'q-px-lg' : 'q-pa-lg'" class="q-col-gutter-md scroll">
-        <div class="row text-subtitle2 hr q-py-sm no-wrap" :class="usedInPos ? 'mb-2' : ''">
+    <q-card class="min-w-[700px] pt-6">
+      <div class="q-pa-lg q-col-gutter-md scroll">
+        <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
             <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
               Particular(s)
@@ -21,10 +21,9 @@
             :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
-            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
-            :COGSData="COGSData" :hasChallan="hasChallan" />
+              " :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="props.showRowTradeDiscount"
+            :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
+            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center text-left pt-2">
@@ -133,10 +132,6 @@ export default {
           trade_discount: false,
         },
       ],
-    },
-    usedInPos: {
-      type: Boolean,
-      default: () => false,
     },
     enableRowDescription: {
       type: Boolean,
