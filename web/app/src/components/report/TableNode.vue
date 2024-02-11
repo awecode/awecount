@@ -263,17 +263,17 @@ export default {
     const newTotalObj = ref(null)
     const activeObjectArray = computed(() => {
       const activeArray = []
-      showTotalObject.value = totalObjectFormat
+      const UpdatedShowTotalObject = totalObjectFormat
       const accountArray = props.category_accounts[props.item.id]
       if (accountArray) {
         accountArray.forEach((item) => {
           const currentObj = props.accounts[item]
           activeArray.push(currentObj)
           fieldsArray.forEach((item) => {
-            showTotalObject.value[item] =
-              showTotalObject.value[item] + currentObj[item]
+            UpdatedShowTotalObject[item] = UpdatedShowTotalObject[item] + currentObj[item]
           })
-          emit('updateTotal', showTotalObject.value, props.index)
+          emit('updateTotal', UpdatedShowTotalObject, props.index)
+          showTotalObject.value = UpdatedShowTotalObject
         })
       }
       return activeArray
