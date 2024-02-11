@@ -36,6 +36,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SelectItemAccountsWithTypes: typeof import('./src/components/SelectItemAccountsWithTypes.vue')['default']
     SelectWithFetch: typeof import('./src/components/SelectWithFetch.vue')['default']
+    ShowListBoolean: typeof import('./src/components/ShowListBoolean.vue')['default']
     TableNode: typeof import('./src/components/report/TableNode.vue')['default']
     TablePagination: typeof import('./src/components/account/TablePagination.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']

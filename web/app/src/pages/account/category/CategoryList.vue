@@ -37,16 +37,12 @@
         <q-td :props="props">
           <q-btn v-if="checkPermissions('CategoryModify')" color="orange-7" label="Edit"
             :to="`/account-category/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
-          <!-- {{ props }} -->
         </q-td>
-        <!-- TODO: add modals -->
       </template>
       <template v-slot:body-cell-default="props">
         <q-td :props="props">
-          <q-checkbox v-model="props.row.default" color="grey" disable>
-          </q-checkbox>
+          <ShowListBoolean :value="props.row.default" />
         </q-td>
-        <!-- TODO: add modals -->
       </template>
     </q-table>
   </div>
