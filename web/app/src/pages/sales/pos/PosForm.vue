@@ -161,8 +161,7 @@
                     </q-btn>
                     <div class="flex items-center justify-end gap-4" v-if="fields.rows.length > 0">
                       <q-btn @click.prevent="onSubmitClick('Draft')" color="orange-6" label="Save Draft" type="submit" />
-                      <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
-                        type="submit" />
+                      <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" label="Issue" type="submit" />
                     </div>
                   </div>
                 </div>
