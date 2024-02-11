@@ -39,7 +39,6 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md items-center">
             <q-btn v-if="checkPermissions('PurchaseDiscountModify')" color="orange-7" label="Edit"
               :to="`/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn"
@@ -49,10 +48,8 @@
       </template>
       <template v-slot:body-cell-trade_discount="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row justify-center">
-            <q-checkbox v-model="props.row.trade_discount" disable color="grey">
-            </q-checkbox>
+            <ShowListBoolean :value="props.row.trade_discount"/>
           </div>
         </q-td>
       </template>
