@@ -17,7 +17,7 @@
             :rowEmpty="(rowEmpty && index === 0) || false" @deleteRow="(index) => removeRow(index)"
             :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null" :usedInPos="true"
             :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="false" :inputAmount="false"
-            :showRateQuantity="true" @onItemIdUpdate="onItemIdUpdate" usedIn="sales" />
+            :showRateQuantity="true" usedIn="sales" />
         </div>
       </div>
     </q-card>
@@ -82,7 +82,7 @@ export default {
       default: () => false,
     }
   },
-  emits: ['update:modelValue', 'deleteRowErr', '@updateTableData'],
+  emits: ['update:modelValue', 'deleteRowErr', 'updateTableData'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue);
     const rowEmpty = ref(false);

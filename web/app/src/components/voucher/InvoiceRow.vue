@@ -366,7 +366,7 @@ export default {
         modalValue.value.rate = amount / modalValue.value.quantity
       }
     }
-    if (props.isFifo && props.usedIn === 'sales' && !route.params.id) {
+    if (props.isFifo && props.usedIn === 'sales' && !route.params.id && !props.usedInPos) {
       watch(
         () => modalValue.value.item_id,
         (newValue) => {
