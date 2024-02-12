@@ -728,12 +728,18 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     if tx_next:
                         tx_next.remaining_quantity -= req_qty
                         updated_txns.append(tx_next)
-                        transaction.consumption_data[tx_next.id]: req_qty
+                        transaction.consumption_data[tx_next.id] = [
+                            req_qty,
+                            tx_next.rate,
+                        ]
                     else:
                         transaction.fifo_inconsistency_quantity = req_qty
 
                 for txn in txn_qs:
-                    transaction.consumption_data[txn.id] = txn.remaining_quantity
+                    transaction.consumption_data[txn.id] = [
+                        txn.remaining_quantity,
+                        txn.rate,
+                    ]
 
                 updated_txns += [
                     txn for txn in txn_qs if not setattr(txn, "remaining_quantity", 0)
