@@ -785,10 +785,17 @@ class FifoInconsistencyLog(models.Model):
 
 @receiver(pre_delete, sender=Transaction)
 def _transaction_delete(sender, instance, **kwargs):
-    FifoInconsistencyLog.objects.create(
-        item=instance.account.item,
-        content_type=instance.journal_entry.content_type,
-        transaction_id=instance.id,
+    # if a tarnsaction is deleted, find the transaction which has consumed from this transaction
+    # and remove reference from it, and add the quantity to fifo_inconsistency_quantity
+    # using the fifo_inconsistency_quantity field, we can find the transactions which
+    # have been affected by this transaction and recalculate the fifo
+
+    Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
+        fifo_inconsistency_quantity=(
+            Coalesce(F("fifo_inconsistency_quantity"), 0)
+            + Cast(F(f"consumption_data__{instance.id}__0"), models.IntegerField())
+        ),
+        consumption_data=F("consumption_data") - str(instance.id),
     )
 
 
