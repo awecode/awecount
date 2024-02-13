@@ -710,8 +710,12 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
             # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
             if content_type.model == "creditnoterow":
+                import ipdb
+
+                ipdb.set_trace()
                 t = Transaction.objects.get(
-                    journal_entry__object_id=models.sales_row_data["id"]
+                    journal_entry__object_id=model.sales_row_data["id"],
+                    journal_entry__content_type__model="salesvoucherrow",
                 )
                 arg[3] = fifo_avg(t.consumption_data, float(arg[2]))
 
@@ -726,7 +730,8 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 # find the corresponding purchase voucher row and transaction
 
                 t = Transaction.objects.get(
-                    journal_entry__object_id=model.purchase_row_data["id"]
+                    journal_entry__object_id=model.purchase_row_data["id"],
+                    journal_entry__content_type__model="purchasevoucherrow",
                 )
                 t.remaining_quantity = t.dr_amount - float(arg[2])
                 t.save()
@@ -746,6 +751,8 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         consumption_data=F("consumption_data") - str(t.id),
                     ),
                 )
+
+                transaction.consumption_data[t.id] = float(arg[2])
 
             else:
                 # Consumption data
