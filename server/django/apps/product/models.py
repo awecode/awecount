@@ -779,14 +779,17 @@ def set_inventory_transactions(model, date, *args, clear=True):
             obsolete_transactions.delete()
 
 
-class FifoInconsistencyLog(models.Model):
-    item = models.ForeignKey(
-        "Item", on_delete=models.CASCADE, related_name="fifo_inconsistency_logs"
+class TransatcionRemovalLog(models.Model):
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    row_id = models.PositiveIntegerField(primary_key=True)
+    transaction_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("Ledger", "Ledger"),
+            ("Inventory", "Inventory"),
+        ],
     )
-    occured_at = models.DateTimeField(auto_now_add=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    transaction_id = models.PositiveIntegerField()
-    is_resolved = models.BooleanField(default=False)
+    row_dump = models.JSONField(null=True, blank=True)
 
 
 @receiver(pre_delete, sender=Transaction)
@@ -802,6 +805,12 @@ def _transaction_delete(sender, instance, **kwargs):
             + Cast(F(f"consumption_data__{instance.id}__0"), models.IntegerField())
         ),
         consumption_data=F("consumption_data") - str(instance.id),
+    )
+
+    TransatcionRemovalLog.objects.create(
+        row_id=instance.id,
+        transaction_type="Inventory",
+        row_dump=instance.__dict__,
     )
 
 
