@@ -920,6 +920,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     tax_scheme = models.ForeignKey(
         TaxScheme, on_delete=models.CASCADE, related_name="credit_note_rows"
     )
+    sales_row_data = models.JSONField(blank=True, null=True)
 
 
 class DebitNote(TransactionModel, InvoiceModel):
