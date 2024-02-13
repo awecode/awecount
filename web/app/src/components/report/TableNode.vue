@@ -273,12 +273,11 @@ export default {
             UpdatedShowTotalObject[item] = UpdatedShowTotalObject[item] + currentObj[item]
           })
           emit('updateTotal', UpdatedShowTotalObject, props.index)
-          showTotalObject.value = UpdatedShowTotalObject
+          showTotalObject.value = {...UpdatedShowTotalObject}
         })
       }
       return activeArray
     })
-    const activeObject = null
     const onUpdateTotal = (total, index) => {
       itemProps.value.children[index].total = total
     }
@@ -345,7 +344,6 @@ export default {
     return {
       props,
       itemProps,
-      activeObject,
       activeObjectArray,
       onUpdateTotal,
       showTotalObject,
