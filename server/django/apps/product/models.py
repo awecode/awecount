@@ -649,6 +649,13 @@ def fifo_avg(consumption_data, required_quantity):
     cumulative_quantity = 0
     cumulative_rate = 0
 
+    # in fifo, we can't consume more than the total quantity
+    # if the required quantity is more than the total quantity,
+    # we'll calculate the average rate for the total quantity
+    required_quantity = min(
+        required_quantity, sum([x[0] for x in consumption_data.values()])
+    )
+
     for quantity, rate in consumption_data.values():
         if cumulative_quantity + quantity <= required_quantity:
             cumulative_quantity += quantity
