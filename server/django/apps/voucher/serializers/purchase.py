@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
@@ -164,10 +163,6 @@ class PurchaseVoucherCreateSerializer(
         instance = PurchaseVoucher.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo:
-                item = Item.objects.get(id=row["item_id"])
-                if item.track_inventory:
-                    row["remaining_quantity"] = row["quantity"]
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         if purchase_orders:
             instance.purchase_orders.clear()
@@ -180,7 +175,6 @@ class PurchaseVoucherCreateSerializer(
         rows_data = validated_data.pop("rows")
         if validated_data.get("voucher_no") == "":
             validated_data["voucher_no"] = None
-        request = self.context["request"]
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)

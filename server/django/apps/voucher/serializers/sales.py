@@ -14,7 +14,6 @@ from awecount.libs.serializers import StatusReversionMixin
 
 from ..models import (
     PurchaseVoucher,
-    PurchaseVoucherRow,
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
@@ -398,35 +397,6 @@ class SalesVoucherCreateSerializer(
             )
             if due_date < validation_date:
                 raise ValidationError("Due date cannot be before invoice date.")
-
-    def update_purchase_rows(self, request, row):
-        if request.company.inventory_setting.enable_fifo:
-            item_id = row.get("item_id")
-            quantity = row.get("quantity")
-            purchase_rows = PurchaseVoucherRow.objects.filter(
-                item_id=item_id, remaining_quantity__gt=0
-            ).order_by("voucher__date", "id")
-            sold_items = {}
-            for purchase_row in purchase_rows:
-                if purchase_row.remaining_quantity == quantity:
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
-                    break
-                elif purchase_row.remaining_quantity > quantity:
-                    purchase_row.remaining_quantity -= quantity
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
-                    break
-                else:
-                    quantity -= purchase_row.remaining_quantity
-                    sold_items[purchase_row.id] = [
-                        purchase_row.remaining_quantity,
-                        purchase_row.rate,
-                    ]
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-            return sold_items
 
     def check_challans(self, challans, rows):
         voucher_items = []
