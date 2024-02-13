@@ -325,6 +325,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
             )
+
+        if sales_voucher.credit_notes.exists():
+            raise RESTValidationError(
+                {
+                    "message": "This sales voucher has credit notes. Please cancel them first."
+                }
+            )
+
         sales_voucher.cancel(message)
         return Response({})
 
@@ -627,6 +635,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         if not message:
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
+            )
+
+        if purchase_voucher.debit_notes.exists():
+            raise RESTValidationError(
+                {
+                    "message": "This purchase voucher has debit notes. Please cancel them first."
+                }
             )
 
         if request.company.inventory_setting.enable_fifo:
