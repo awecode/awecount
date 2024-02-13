@@ -96,7 +96,7 @@ class Challan(TransactionModel, InvoiceModel):
     def apply_inventory_transactions(self):
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-        ).select_related("item__account"):
+        ):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -217,7 +217,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 challan_dct[challan_row.get("item_id")] = challan_row.get("quantity")
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-        ).select_related("item__account"):
+        ):
             quantity = int(row.quantity)
             if challan_enabled and challan_dct.get(row.item_id):
                 quantity = quantity - challan_dct.get(row.item_id)
@@ -556,7 +556,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def apply_inventory_transaction(self):
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-        ).select_related("item__account"):
+        ):
             set_inventory_transactions(
                 row,
                 self.date,
@@ -770,10 +770,8 @@ class CreditNote(TransactionModel, InvoiceModel):
         return super().cancel()
 
     def apply_inventory_transaction(voucher):
-        for row in (
-            voucher.rows.filter(is_returned=True)
-            .filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True))
-            .select_related("item__account")
+        for row in voucher.rows.filter(is_returned=True).filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
         ):
             set_inventory_transactions(
                 row,
