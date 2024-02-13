@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, models, transaction
 from django.db.models import F, JSONField, Sum, Window
+from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
@@ -640,6 +641,26 @@ def find_obsolete_transactions(model, date, *args):
         obsolete_transactions.delete()
 
 
+def fifo_avg(consumption_data, required_quantity):
+    # sort consumption data by key
+    consumption_data = OrderedDict(
+        sorted(consumption_data.items(), key=lambda x: int(x[0]))
+    )
+    cumulative_quantity = 0
+    cumulative_rate = 0
+
+    for quantity, rate in consumption_data.values():
+        if cumulative_quantity + quantity <= required_quantity:
+            cumulative_quantity += quantity
+            cumulative_rate += quantity * rate
+        else:
+            remaining_quantity = required_quantity - cumulative_quantity
+            cumulative_rate += remaining_quantity * rate
+            break
+
+    return cumulative_rate / required_quantity
+
+
 def set_inventory_transactions(model, date, *args, clear=True):
     args = [arg for arg in args if arg is not None]
 
@@ -686,76 +707,115 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction.dr_amount = float(arg[2])
             transaction.remaining_quantity = float(arg[2])
             diff += float(arg[2])
+
+            # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
+            if content_type.model == "creditnoterow":
+                t = Transaction.objects.get(
+                    journal_entry__object_id=models.sales_row_data["id"]
+                )
+                arg[3] = fifo_avg(t.consumption_data, float(arg[2]))
+
         elif arg[0] == "cr":
             transaction.consumption_data = transaction.consumption_data or {}
             transaction.cr_amount = float(arg[2])
             transaction.dr_amount = None
             diff -= float(arg[2])
 
-            # Consumption data
-            req_qty = float(arg[2])
+            # check first if the transaction is for Debit Note, as it requires different handling
+            if content_type.model == "debitnoterow":
+                # find the corresponding purchase voucher row and transaction
 
-            base_txn_qs = (
-                Transaction.objects.filter(
-                    account=arg[1], cr_amount=None, remaining_quantity__gt=0
+                t = Transaction.objects.get(
+                    journal_entry__object_id=model.purchase_row_data["id"]
                 )
-                .annotate(
-                    running=Window(
-                        expression=Sum("remaining_quantity"),
-                        order_by=["journal_entry__date", "id"],
-                    )
+                t.remaining_quantity = t.dr_amount - float(arg[2])
+                t.save()
+
+                # here we assume that all transaction referencing this transaction has been affetcted and
+                # we'll recalulate the fifo for all of them
+                (
+                    Transaction.objects.filter(
+                        consumption_data__has_key=str(t.id)
+                    ).update(
+                        fifo_inconsistency_quantity=(
+                            Coalesce(F("fifo_inconsistency_quantity"), 0)
+                            + Cast(
+                                F(f"consumption_data__{t.id}__0"), models.IntegerField()
+                            )
+                        ),
+                        consumption_data=F("consumption_data") - str(t.id),
+                    ),
                 )
-                .order_by("journal_entry__date", "id")
-                .only("id", "remaining_quantity")
-            )
-
-            # TODO: For debit note, we can find the transactions od that purchase voucher row and then consume them
-            # But, what if the remaining quantity is already 0, i.e sales have been made for that item
-
-            txn_qs = base_txn_qs.filter(running__lte=req_qty)
-            count = len(txn_qs)
-            if count:
-                updated_txns = []
-
-                # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
-
-                # the last transaction i.e. the one with the highest running (< req_qty)
-                txn_highest = txn_qs[count - 1]
-
-                if txn_highest.running < req_qty:
-                    tx_next = base_txn_qs.filter(running__gt=req_qty).first()
-                    req_qty -= txn_highest.running
-                    if tx_next:
-                        tx_next.remaining_quantity -= req_qty
-                        updated_txns.append(tx_next)
-                        transaction.consumption_data[tx_next.id] = [
-                            req_qty,
-                            tx_next.rate,
-                        ]
-                    else:
-                        transaction.fifo_inconsistency_quantity = req_qty
-
-                for txn in txn_qs:
-                    transaction.consumption_data[txn.id] = [
-                        txn.remaining_quantity,
-                        txn.rate,
-                    ]
-
-                updated_txns += [
-                    txn for txn in txn_qs if not setattr(txn, "remaining_quantity", 0)
-                ]
-
-                Transaction.objects.bulk_update(updated_txns, ["remaining_quantity"])
 
             else:
-                # possibly the required quantity is lesser than any cumulative remaining quantity
-                tx_next = base_txn_qs.filter(running__gt=req_qty).first()
-                if tx_next:
-                    tx_next.remaining_quantity -= req_qty
-                    tx_next.save()
-                    transaction.consumption_data[tx_next.id] = req_qty
+                # Consumption data
+                req_qty = float(arg[2])
+
+                base_txn_qs = (
+                    Transaction.objects.filter(
+                        account=arg[1], cr_amount=None, remaining_quantity__gt=0
+                    )
+                    .annotate(
+                        running=Window(
+                            expression=Sum("remaining_quantity"),
+                            order_by=["journal_entry__date", "id"],
+                        )
+                    )
+                    .order_by("journal_entry__date", "id")
+                    .only("id", "remaining_quantity")
+                )
+
+                # TODO: For debit note, we can find the transactions od that purchase voucher row and then consume them
+                # But, what if the remaining quantity is already 0, i.e sales have been made for that item
+
+                txn_qs = base_txn_qs.filter(running__lte=req_qty)
+                count = len(txn_qs)
+                if count:
+                    updated_txns = []
+
+                    # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
+
+                    # the last transaction i.e. the one with the highest running (< req_qty)
+                    txn_highest = txn_qs[count - 1]
+
+                    if txn_highest.running < req_qty:
+                        tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                        req_qty -= txn_highest.running
+                        if tx_next:
+                            tx_next.remaining_quantity -= req_qty
+                            updated_txns.append(tx_next)
+                            transaction.consumption_data[tx_next.id] = [
+                                req_qty,
+                                tx_next.rate,
+                            ]
+                        else:
+                            transaction.fifo_inconsistency_quantity = req_qty
+
+                    for txn in txn_qs:
+                        transaction.consumption_data[txn.id] = [
+                            txn.remaining_quantity,
+                            txn.rate,
+                        ]
+
+                    updated_txns += [
+                        txn
+                        for txn in txn_qs
+                        if not setattr(txn, "remaining_quantity", 0)
+                    ]
+
+                    Transaction.objects.bulk_update(
+                        updated_txns, ["remaining_quantity"]
+                    )
+
                 else:
-                    transaction.fifo_inconsistency_quantity = req_qty
+                    # possibly the required quantity is lesser than any cumulative remaining quantity
+                    tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                    if tx_next:
+                        tx_next.remaining_quantity -= req_qty
+                        tx_next.save()
+                        transaction.consumption_data[tx_next.id] = req_qty
+                    else:
+                        transaction.fifo_inconsistency_quantity = req_qty
         else:
             raise Exception('Transactions can only be either "dr" or "cr".')
         transaction.account = arg[1]
@@ -975,7 +1035,6 @@ class Item(models.Model):
         set_inventory_transactions(
             self,
             date,
-            ["dr", self.account, self.account.opening_balance],
             [
                 "dr",
                 self.account,
