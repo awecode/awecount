@@ -5,7 +5,6 @@ from django.db import models, transaction
 from apps.product.models import (
     Brand,
     Category,
-    FifoInconsistencyLog,
     InventoryAccount,
     InventorySetting,
     Item,
@@ -154,15 +153,3 @@ class InventoryAccountAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     raw_id_fields = ("journal_entry",)
-
-
-@admin.register(FifoInconsistencyLog)
-class FifoInconsistencyLogAdmin(admin.ModelAdmin):
-    list_display = ("transaction_id", "occured_at", "is_resolved")
-    actions = None
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
