@@ -164,7 +164,7 @@ class DebitNoteCreateSerializer(
         validated_data["user_id"] = request.user.id
         instance = DebitNote.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            row.pop("id")
+            row["purchase_row_data"] = {"id": row.pop("id")}
             row = self.assign_discount_obj(row)
             DebitNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
