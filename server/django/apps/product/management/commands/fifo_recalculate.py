@@ -66,78 +66,71 @@ class Command(BaseCommand):
         )
 
         if len(txns_can_be_consumed_lte):
-            updated_txns = []
-
             # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
             # the last transaction i.e. the one with the highest running (< req_qty)
             txn_highest = txns_can_be_consumed_lte[len(txns_can_be_consumed_lte) - 1]
-
             if txn_highest.running < total_quantity_to_fulfill:
                 tx_next = txns_can_be_consumed.filter(
                     running__gt=total_quantity_to_fulfill
                 ).first()
-                total_quantity_to_fulfill -= txn_highest.running
                 if tx_next:
-                    tx_next.remaining_quantity -= total_quantity_to_fulfill
-                    updated_txns.append(tx_next)
-                else:
-                    txns_to_fix[
-                        0
-                    ].fifo_inconsistency_quantity = total_quantity_to_fulfill
+                    txns_can_be_consumed_lte = txns_can_be_consumed_lte | tx_next
+        else:
+            txns_can_be_consumed_lte = txns_can_be_consumed.filter(
+                running__gt=total_quantity_to_fulfill
+            ).first()
 
-            for txn_to_fix in txns_to_fix:
-                for consumable in txns_can_be_consumed_lte:
-                    if consumable.remaining_quantity == 0:
-                        continue
-
+        for txn_to_fix in txns_to_fix:
+            for consumable in txns_can_be_consumed_lte:
+                if (
+                    consumable.remaining_quantity == 0
+                    or txn_to_fix.fifo_inconsistency_quantity == 0
+                ):
+                    continue
                     # txn_to_fix.fifo_inconsistency_quantity = max(0, txn_to_fix.fifo_inconsistency_quantity - txn.remaining_quantity)
                     # txn_to_fix.consumption_data[txn.id] = [
                     #         txn.fifo_inconsistency_quantity,
                     #         txn.rate,
                     # ]
                     # txn.remaining_quantity -= txn.fifo_inconsistency_quantity
-
-                    if (
+                if (
+                    txn_to_fix.fifo_inconsistency_quantity
+                    < consumable.remaining_quantity
+                ):
+                    txn_to_fix.consumption_data[consumable.id] = [
+                        txn_to_fix.fifo_inconsistency_quantity,
+                        consumable.rate,
+                    ]
+                    consumable.remaining_quantity -= (
                         txn_to_fix.fifo_inconsistency_quantity
-                        < consumable.remaining_quantity
-                    ):
-                        txn_to_fix.consumption_data[consumable.id] = [
-                            txn_to_fix.fifo_inconsistency_quantity,
-                            consumable.rate,
-                        ]
-                        txn_to_fix.fifo_inconsistency_quantity = 0
-                        consumable.remaining_quantity -= (
-                            txn_to_fix.fifo_inconsistency_quantity
-                        )
+                    )
+                    txn_to_fix.fifo_inconsistency_quantity = 0
+                elif (
+                    txn_to_fix.fifo_inconsistency_quantity
+                    >= consumable.remaining_quantity
+                ):
+                    txn_to_fix.fifo_inconsistency_quantity -= (
+                        consumable.remaining_quantity
+                    )
+                    txn_to_fix.consumption_data[consumable.id] = [
+                        consumable.remaining_quantity,
+                        consumable.rate,
+                    ]
+                    consumable.remaining_quantity = 0
 
-                    elif (
-                        txn_to_fix.fifo_inconsistency_quantity
-                        >= consumable.remaining_quantity
-                    ):
-                        txn_to_fix.fifo_inconsistency_quantity -= (
-                            consumable.remaining_quantity
-                        )
-                        txn_to_fix.consumption_data[consumable.id] = [
-                            consumable.remaining_quantity,
-                            consumable.rate,
-                        ]
-                        consumable.remaining_quantity = 0
-
-            # updated_txns += [
-            #     txn for txn in txn_qs if not setattr(txn, "remaining_quantity", 0)
-            # ]
-
-            # ipdb.set_trace()
-            # updated_txns += list(txns_to_fix) + list(txns_can_be_consumed_lte)
-
-            Transaction.objects.bulk_update(
-                txns_to_fix, ["remaining_quantity", "consumption_data"]
-            )
-
-            Transaction.objects.bulk_update(
-                txns_can_be_consumed_lte, ["remaining_quantity"]
-            )
-        else:
-            txns_can_be_consumed_gt = txns_can_be_consumed.filter(
-                running__gt=total_quantity_to_fulfill
-            ).first()
+        Transaction.objects.bulk_update(
+            txns_to_fix,
+            [
+                "remaining_quantity",
+                "consumption_data",
+                "fifo_inconsistency_quantity",
+            ],
+        )
+        Transaction.objects.bulk_update(
+            txns_can_be_consumed_lte,
+            [
+                "remaining_quantity",
+                "consumption_data",
+                "fifo_inconsistency_quantity",
+            ],
+        )
