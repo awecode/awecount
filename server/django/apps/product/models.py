@@ -1303,13 +1303,7 @@ class Item(models.Model):
     # TODO: Why make a new property for this?
     @property
     def remaining_stock(self):
-        remaining = (
-            self.account.transactions.filter(remaining_quantity__gt=0)
-            .order_by("journal_entry__date", "id")
-            .aggregate(remaining_quantity=Sum("remaining_quantity"))
-            .get("remaining_quantity", 0)
-        )
-        return remaining
+        return self.account.current_balance
 
     @property
     def available_stock_data(self):
