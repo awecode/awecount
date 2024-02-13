@@ -150,10 +150,7 @@ class DebitNoteCreateSerializer(
                 debit_note_row.save()
 
     def create(self, validated_data):
-        from copy import deepcopy
-
         rows_data = validated_data.pop("rows")
-        rows_data_copy = deepcopy(rows_data)
         invoices = validated_data.pop("invoices")
         request = self.context["request"]
         self.assign_fiscal_year(validated_data)
@@ -163,6 +160,7 @@ class DebitNoteCreateSerializer(
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = DebitNote.objects.create(**validated_data)
+
         for index, row in enumerate(rows_data):
             row["purchase_row_data"] = {"id": row.pop("id")}
             row = self.assign_discount_obj(row)
@@ -170,8 +168,7 @@ class DebitNoteCreateSerializer(
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
-        if self.context["request"].company.inventory_setting.enable_fifo:
-            self.cancel_purchase(instance, rows_data_copy)
+
         return instance
 
     def update(self, instance, validated_data):

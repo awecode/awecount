@@ -134,10 +134,7 @@ class CreditNoteCreateSerializer(
                     sales_row.save(update_fields=["sold_items"])
 
     def create(self, validated_data):
-        from copy import deepcopy
-
         rows_data = validated_data.pop("rows")
-        rows_data_copy = deepcopy(rows_data)
         invoices = validated_data.pop("invoices")
         request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=None)
@@ -148,6 +145,7 @@ class CreditNoteCreateSerializer(
         validated_data["user_id"] = request.user.id
         instance = CreditNote.objects.create(**validated_data)
         # sales_row_ids = []
+        # FIXME: Why enumerate?
         for index, row in enumerate(rows_data):
             row["sales_row_data"] = {"id": row.pop("id")}
             row = self.assign_discount_obj(row)
@@ -155,8 +153,6 @@ class CreditNoteCreateSerializer(
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
-        if self.context["request"].company.inventory_setting.enable_fifo:
-            self.cancel_sales(instance, rows_data_copy)
         # instance.synchronize()
         return instance
 
