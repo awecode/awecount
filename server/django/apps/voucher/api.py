@@ -82,7 +82,7 @@ from apps.voucher.serializers.voucher_settings import (
 )
 
 # from awecount.libs.db import DistinctSum
-from awecount.libs import get_next_voucher_no, zero_for_none
+from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,
@@ -644,59 +644,20 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 }
             )
 
-        if request.company.inventory_setting.enable_fifo:
-            row_ids = purchase_voucher.rows.values_list("id", flat=True)
-            str_ids = [str(x) for x in row_ids]
-            if request.query_params.get("fifo_inconsistency"):
-                purchase_voucher.cancel()
-                self.fifo_update_sales_rows(purchase_voucher)
-                return Response({})
-            sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
-            challan_rows = ChallanRow.objects.filter(sold_items__has_keys=str_ids)
-            if sales_rows.exists() or challan_rows.exists():
-                # TODO: provide a descriptive message
+        # Negative stock check
+        if (
+            request.company.inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            if purchase_voucher.rows.filter(
+                item__account__current_balance__lt=0
+            ).count():
                 raise UnprocessableException(
-                    detail="This action might create inconsistencies in FIFO.",
-                    code="fifo_inconsistency",
+                    detail="Negative Stock Warning!", code="negative_stock"
                 )
 
-            # Negative stock check
-            if request.company.inventory_setting.enable_negative_stock_check:
-                if request.query_params.get("negative_stock"):
-                    purchase_voucher.cancel()
-                    self.fifo_update_sales_rows(purchase_voucher)
-                    return Response({})
-                purchase_rows = purchase_voucher.rows.all()
-                for row in purchase_rows:
-                    sales_rows = SalesVoucherRow.objects.filter(
-                        sold_items__has_key=str(row.id)
-                    )
-                    challan_rows = ChallanRow.objects.filter(
-                        sold_items__has_key=str(row.id)
-                    )
-                    sold_items_challan = list(
-                        challan_rows.values_list("sold_items", flat=True)
-                    )
-                    sold_items_sales = list(
-                        sales_rows.values_list("sold_items", flat=True)
-                    )
-                    sold_items = sold_items_challan + sold_items_sales
-                    sum = 0
-                    for item in sold_items:
-                        sum += item[str(row.id)][0]
-                    remaining_quantity = (
-                        zero_for_none(row.item.remaining_stock) - row.quantity
-                    )
-                    if remaining_quantity <= 0:
-                        raise UnprocessableException(
-                            detail="Negative Stock Warning!", code="negative_stock"
-                        )
-            purchase_voucher.cancel()
-            self.fifo_update_sales_rows(purchase_voucher)
-            return Response({})
-        else:
-            purchase_voucher.cancel()
-            return Response({})
+        purchase_voucher.cancel()
+        return Response({})
 
     @action(detail=False)
     def export(self, request):
