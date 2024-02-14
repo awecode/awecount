@@ -549,7 +549,7 @@ class Transaction(models.Model):
     rate = models.FloatField(null=True, blank=True)
     remaining_quantity = models.IntegerField(null=True, blank=True)
     consumption_data = models.JSONField(null=True, blank=True)
-    fifo_inconsistency_quantity = models.IntegerField(
+    fifo_inconsistency_quantity = models.FloatField(
         null=True, blank=True
     )  # This is the quantity that is not accounted for in the fifo, or say which is not consumed
 
@@ -752,7 +752,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         fifo_inconsistency_quantity=(
                             Coalesce(F("fifo_inconsistency_quantity"), 0)
                             + Cast(
-                                F(f"consumption_data__{t.id}__0"), models.IntegerField()
+                                F(f"consumption_data__{t.id}__0"), models.FloatField()
                             )
                         ),
                         consumption_data=F("consumption_data") - str(t.id),
@@ -882,7 +882,7 @@ def _transaction_delete(sender, instance, **kwargs):
     Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
         fifo_inconsistency_quantity=(
             Coalesce(F("fifo_inconsistency_quantity"), 0)
-            + Cast(F(f"consumption_data__{instance.id}__0"), models.IntegerField())
+            + Cast(F(f"consumption_data__{instance.id}__0"), models.FloatField())
         ),
         consumption_data=F("consumption_data") - str(instance.id),
     )
