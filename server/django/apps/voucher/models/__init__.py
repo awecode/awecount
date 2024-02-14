@@ -106,7 +106,6 @@ class Challan(TransactionModel, InvoiceModel):
     def mark_as_resolved(self):
         if self.status == "Issued":
             self.status = "Resolved"
-            self.rows.update(sold_items={})
             self.save()
         else:
             raise ValueError("This voucher cannot be mark as resolved!")

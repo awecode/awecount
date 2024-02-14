@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
 
-from ..models import CreditNote, CreditNoteRow, PurchaseVoucherRow
+from ..models import CreditNote, CreditNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
 from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
 
@@ -84,54 +84,6 @@ class CreditNoteCreateSerializer(
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
-
-    def cancel_sales(self, instance, rows_data):
-        sales_vouchers = instance.invoices.all()
-
-        for sales_voucher in sales_vouchers:
-            sales_rows = sales_voucher.rows.all()
-
-            for sales_row in sales_rows:
-                row_data = next(
-                    (row for row in rows_data if row["id"] == sales_row.id), None
-                )
-                if not row_data:
-                    continue
-
-                sold_items = sales_row.sold_items
-                quantity = row_data["quantity"]
-
-                ob = sold_items.pop("OB", None)
-                purchase_row_ids = sold_items.keys()
-                purchase_voucher_rows = PurchaseVoucherRow.objects.filter(
-                    id__in=purchase_row_ids
-                ).order_by("voucher__date", "id")
-
-                # handle purchase rows
-                for purchase_row in purchase_voucher_rows:
-                    sold_item_quantity = sold_items[str(purchase_row.id)][0]
-                    can_be_added = min(
-                        purchase_row.quantity - purchase_row.remaining_quantity,
-                        sold_item_quantity,
-                    )
-                    purchase_row.remaining_quantity += can_be_added
-                    purchase_row.save(update_fields=["remaining_quantity"])
-
-                    sales_row.sold_items[str(purchase_row.id)][0] -= can_be_added
-                    sales_row.save(update_fields=["sold_items"])
-
-                    quantity -= can_be_added
-                    if quantity <= 0:
-                        break
-
-                # handle opening stock
-                if ob and quantity > 0:
-                    inv_account = sales_row.item.account
-                    opening_quantity = min(ob[0], quantity)
-                    inv_account.opening_quantity += opening_quantity
-                    inv_account.save(update_fields=["opening_quantity"])
-                    sales_row.sold_items["OB"] = [ob[0] - opening_quantity, ob[1]]
-                    sales_row.save(update_fields=["sold_items"])
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
