@@ -759,7 +759,10 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     ),
                 )
 
-                transaction.consumption_data[t.id] = float(arg[2])
+                transaction.consumption_data[t.id] = [
+                    float(arg[2]),
+                    t.rate,
+                ]
 
             else:
                 # Consumption data
@@ -827,7 +830,10 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     if tx_next:
                         tx_next.remaining_quantity -= req_qty
                         tx_next.save()
-                        transaction.consumption_data[tx_next.id] = req_qty
+                        transaction.consumption_data[tx_next.id] = [
+                            req_qty,
+                            tx_next.rate,
+                        ]
                     else:
                         transaction.fifo_inconsistency_quantity = req_qty
         else:
