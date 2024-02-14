@@ -21,7 +21,7 @@
         <span v-if="showRateQuantity" data-testid="quantity-input">
           <q-input v-model.number="modalValue.quantity" :label="usedInPos ? '' : 'Quantity'"
             :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-            type="number" :disable="hasChallan" >
+            type="number" :disable="hasChallan">
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
               <q-icon v-if="COGSData[index].totalCost.status === 'error'" color="orange" name="mdi-alert">
                 <q-tooltip>
@@ -43,8 +43,7 @@
       <div class="col-2">
         <div v-if="showRateQuantity" data-testid="rate-input">
           <q-input v-model.number="modalValue.rate" :label="usedInPos ? '' : 'Rate'"
-            :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number"
-            >
+            :error-message="errors?.rate ? errors.rate[0] : null" :error="errors?.rate ? true : false" type="number">
             <template v-if="isFifo && COGSData?.hasOwnProperty(index)" v-slot:append>
               <span v-if="COGSData[index].totalCost.status != 'error'" class="text-sm mt-4 text-blue-400">
                 <q-tooltip>
@@ -75,7 +74,7 @@
         <!-- <q-input v-model="amountComputed" disable label="Amount"></q-input> -->
       </div>
       <div v-else class="col-2 row justify-center items-center" data-testid="amount-input">
-        <span class="" >{{ amountComputed }}
+        <span class="">{{ amountComputed }}
           <span class="relative bg-red-200"
             v-if="isFifo && COGSData?.hasOwnProperty(index) && COGSData[index].totalCost.status != 'error'">
             <span class="text-sm ml-2 text-blue-400 absolute top-1/2 -right-0 -translate-y-1/2">
@@ -367,7 +366,7 @@ export default {
         modalValue.value.rate = amount / modalValue.value.quantity
       }
     }
-    if (props.isFifo && props.usedIn === 'sales' && !route.params.id) {
+    if (props.isFifo && props.usedIn === 'sales' && !route.params.id && !props.usedInPos) {
       watch(
         () => modalValue.value.item_id,
         (newValue) => {
