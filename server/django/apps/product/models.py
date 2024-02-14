@@ -717,9 +717,6 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
             # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
             if content_type.model == "creditnoterow":
-                import ipdb
-
-                ipdb.set_trace()
                 t = Transaction.objects.get(
                     journal_entry__object_id=model.sales_row_data["id"],
                     journal_entry__content_type__model="salesvoucherrow",
