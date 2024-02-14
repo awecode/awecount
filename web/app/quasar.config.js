@@ -87,8 +87,8 @@ module.exports = configure(function (ctx) {
         )
         viteConf.plugins.push(
           sentryVitePlugin({
-            org: 'awecount',
-            project: 'javascript-vue',
+            org: 'awecode',
+            project: 'awecount',
             authToken: process.env.SENTRY_AUTH_TOKEN,
           }),
         )
