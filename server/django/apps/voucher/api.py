@@ -333,6 +333,16 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 }
             )
 
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
         sales_voucher.cancel(message)
         return Response({})
 
@@ -644,6 +654,16 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 }
             )
 
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
         # Negative stock check
         if (
             request.company.inventory_setting.enable_negative_stock_check
@@ -789,6 +809,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
+        # FIFO inconsistency check
         if (
             request.company.inventory_setting.enable_fifo
             and not request.query_params.get("fifo_inconsistency")
@@ -797,6 +818,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 detail="This may cause inconsistencies in fifo!",
                 code="fifo_inconsistency",
             )
+
         obj = self.get_object()
         try:
             obj.cancel()
@@ -959,6 +981,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 detail="This may cause inconsistencies in fifo!",
                 code="fifo_inconsistency",
             )
+
         obj = self.get_object()
         try:
             obj.cancel()
@@ -1049,6 +1072,16 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
         obj = self.get_object()
         try:
             obj.cancel(reason=request.data.get("message"))
@@ -1777,6 +1810,17 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
             )
+
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
         challan.cancel(message)
         return Response({})
 
