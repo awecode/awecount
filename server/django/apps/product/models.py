@@ -7,6 +7,7 @@ from django.db.models import F, JSONField, Sum, Window
 from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
@@ -886,7 +887,7 @@ def _transaction_delete(sender, instance, **kwargs):
     TransatcionRemovalLog.objects.create(
         row_id=instance.id,
         transaction_type="Inventory",
-        row_dump=instance.__dict__,
+        row_dump=model_to_dict(instance),
     )
 
 
