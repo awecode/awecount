@@ -85,22 +85,22 @@ class PurchaseVoucherCreateSerializer(
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
-        if request.query_params.get("fifo_inconsistency"):
-            return data
-        else:
-            if request.company.inventory_setting.enable_fifo:
-                item_ids = [x.get("item_id") for x in data.get("rows")]
-                date = data["date"]
-                if PurchaseVoucherRow.objects.filter(
-                    voucher__date__gt=date,
-                    item__in=item_ids,
-                    item__track_inventory=True,
-                ).exists():
-                    raise UnprocessableException(
-                        detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.",
-                        code="fifo_inconsistency",
-                    )
-                return data
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            item_ids = [x.get("item_id") for x in data.get("rows")]
+            date = data["date"]
+            if PurchaseVoucherRow.objects.filter(
+                voucher__date__gt=date,
+                item__in=item_ids,
+                item__track_inventory=True,
+            ).exists():
+                raise UnprocessableException(
+                    detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
 
         party = data.get("party")
         fiscal_year = self.context["request"].company.current_fiscal_year
