@@ -41,6 +41,10 @@ class ItemSerializer(serializers.ModelSerializer):
         return attr
 
     def validate(self, attrs):
+        if attrs.get("direct_expenses") and attrs.get("indirect_expenses"):
+            raise ValidationError(
+                "Item cannot be both direct and indirect expense at the same time."
+            )
         # if (
         #     attrs.get("purchase_account_type") == "Category"
         #     or attrs.get("sales_account_type") == "Category"
