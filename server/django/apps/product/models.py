@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, models, transaction
-from django.db.models import F, JSONField, Sum, Window
+from django.db.models import F, Func, JSONField, Sum, Window
 from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -715,6 +715,29 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction.remaining_quantity = float(arg[2])
             diff += float(arg[2])
 
+            # check if a transaction with later date has been created
+            # if yes, then we'll recalculate the fifo for all transactions referencing this transaction
+            later_transactions = Transaction.objects.filter(
+                account=arg[1],
+                journal_entry__date__gt=date,
+                remaining_quantity__lt=F("dr_amount"),
+            ).values_list("id", flat=True)
+
+            updated_txns = []
+
+            for txn in Transaction.objects.filter(
+                consumption_data__has_key__in=later_transactions
+            ):
+                txn.fifo_inconsistency_quantity = float(
+                    txn.fifo_inconsistency_quantity
+                ) + float(txn.consumption_data[str(transaction.id)][0])
+                txn.consumption_data.pop(str(transaction.id))
+                updated_txns.append(txn)
+
+            Transaction.objects.bulk_update(
+                updated_txns, ["fifo_inconsistency_quantity", "consumption_data"]
+            )
+
             # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
             if content_type.model == "creditnoterow":
                 t = Transaction.objects.get(
@@ -762,6 +785,43 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 ]
 
             else:
+                # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
+                later_transactions = Transaction.objects.filter(
+                    account=arg[1], journal_entry__date__gt=date, cr_amount__gt=0
+                )
+
+                dr_ids = (
+                    later_transactions.annotate(
+                        keys=Func(F("consumption_data"), function="jsonb_object_keys")
+                    )
+                    .values_list("keys", flat=True)
+                    .distinct()
+                )
+
+                dr_txns = {
+                    txn.id: txn for txn in Transaction.objects.filter(id__in=dr_ids)
+                }
+
+                updated_txns = []
+
+                for txn in later_transactions:
+                    txn.fifo_inconsistency_quantity = txn.cr_amount
+                    for key, value in txn.consumption_data.items():
+                        dr_txn = dr_txns[int(key)]
+                        dr_txn.remaining_quantity += value[0]
+                        updated_txns.append(dr_txn)
+                    txn.consumption_data = {}
+                    updated_txns.append(txn)
+
+                Transaction.objects.bulk_update(
+                    updated_txns,
+                    [
+                        "fifo_inconsistency_quantity",
+                        "consumption_data",
+                        "remaining_quantity",
+                    ],
+                )
+
                 # Consumption data
                 req_qty = float(arg[2])
 
@@ -778,9 +838,6 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     .order_by("journal_entry__date", "id")
                     .only("id", "remaining_quantity")
                 )
-
-                # TODO: For debit note, we can find the transactions od that purchase voucher row and then consume them
-                # But, what if the remaining quantity is already 0, i.e sales have been made for that item
 
                 txn_qs = base_txn_qs.filter(running__lte=req_qty)
                 count = len(txn_qs)
@@ -821,8 +878,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         updated_txns, ["remaining_quantity"]
                     )
 
-                else:
-                    # possibly the required quantity is lesser than any cumulative remaining quantity
+                else:  # possibly the required quantity is lesser than any cumulative remaining quantity
                     tx_next = base_txn_qs.filter(running__gt=req_qty).first()
                     if tx_next:
                         tx_next.remaining_quantity -= req_qty
