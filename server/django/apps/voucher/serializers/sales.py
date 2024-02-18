@@ -325,18 +325,29 @@ class SalesVoucherCreateSerializer(
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
-        if request.company.inventory_setting.enable_fifo:
-            if request.query_params.get("fifo_inconsistency"):
-                return data
-            item_ids = [row["item_id"] for row in request.data.get("rows")]
+        item_ids = [row["id"] for row in data["rows"]]
+        quantities = {row["id"]: row["quantity"] for row in data["rows"]}
+
+        inventory_setting = request.company.inventory_setting
+
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
             date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
-            sales_rows = SalesVoucherRow.objects.filter(
-                item_id__in=item_ids, voucher__date__gt=date
-            ).exclude(voucher__status__in=["Draft", "Cancelled"])
-            challan_rows = ChallanRow.objects.filter(
-                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+
+            sales_rows_exists = (
+                SalesVoucherRow.objects.filter(
+                    item_id__in=item_ids, voucher__date__gt=date
+                )
+                .exclude(voucher__status__in=["Draft", "Cancelled"])
+                .exists()
             )
-            if sales_rows.exists() or challan_rows.exists():
+
+            challan_rows_exists = ChallanRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+            ).exists()
+
+            if sales_rows_exists or challan_rows_exists:
                 raise UnprocessableException(
                     detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
                     code="fifo_inconsistency",
@@ -344,12 +355,9 @@ class SalesVoucherCreateSerializer(
 
         # Check negative stock
         if (
-            request.company.inventory_setting.enable_negative_stock_check
+            inventory_setting.enable_negative_stock_check
             and not request.query_params.get("negative_stock")
         ):
-            item_ids = [row["id"] for row in data["rows"]]
-            quantities = {row["id"]: row["quantity"] for row in data["rows"]}
-
             items = (
                 Item.objects.filter(id__in=item_ids)
                 .annotate(remaining_stock=F("account__current_balance"))
@@ -810,38 +818,38 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             )
 
         request = self.context["request"]
+        item_ids = [row["id"] for row in data["rows"]]
+        quantities = {row["id"]: row["quantity"] for row in data["rows"]}
 
-        inventory_settings = request.company.inventory_setting
+        inventory_setting = request.company.inventory_setting
 
-        if inventory_settings.enable_fifo:
-            if not request.query_params.get("fifo_inconsistency"):
-                rows = data["rows"]
-                # validate back date entry
-                item_ids = [row["item_id"] for row in rows]
-                date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
-                sales_rows = SalesVoucherRow.objects.filter(
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+
+            sales_rows_exists = (
+                SalesVoucherRow.objects.filter(
                     item_id__in=item_ids, voucher__date__gt=date
-                ).exclude(voucher__status__in=["Draft", "Cancelled"])
-                challan_rows = ChallanRow.objects.filter(
-                    item_id__in=item_ids,
-                    voucher__date__gt=date,
-                    voucher__status="Issued",
                 )
-                if sales_rows.exists() or challan_rows.exists():
-                    raise UnprocessableException(
-                        detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
-                        code="fifo_inconsistency",
-                    )
-            else:
-                return data
+                .exclude(voucher__status__in=["Draft", "Cancelled"])
+                .exists()
+            )
+
+            challan_rows_exists = ChallanRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+            ).exists()
+
+            if sales_rows_exists or challan_rows_exists:
+                raise UnprocessableException(
+                    detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
 
         if (
-            request.company.inventory_setting.enable_negative_stock_check
+            inventory_setting.enable_negative_stock_check
             and not request.query_params.get("negative_stock")
         ):
-            item_ids = [row["id"] for row in data["rows"]]
-            quantities = {row["id"]: row["quantity"] for row in data["rows"]}
-
             items = (
                 Item.objects.filter(id__in=item_ids)
                 .annotate(remaining_stock=F("account__current_balance"))
