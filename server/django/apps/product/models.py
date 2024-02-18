@@ -456,7 +456,6 @@ class InventoryAccount(models.Model):
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
     opening_balance_rate = models.FloatField(blank=True, null=True)
-    opening_quantity = models.FloatField(default=0)
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="inventory"
     )
