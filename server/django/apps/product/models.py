@@ -799,7 +799,8 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 )
 
                 dr_txns = {
-                    txn.id: txn for txn in Transaction.objects.filter(id__in=list(dr_ids))
+                    txn.id: txn
+                    for txn in Transaction.objects.filter(id__in=list(dr_ids))
                 }
 
                 updated_txns = []
@@ -932,13 +933,55 @@ def _transaction_delete(sender, instance, **kwargs):
     # using the fifo_inconsistency_quantity field, we can find the transactions which
     # have been affected by this transaction and recalculate the fifo
 
-    Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
-        fifo_inconsistency_quantity=(
-            Coalesce(F("fifo_inconsistency_quantity"), 0)
-            + Cast(F(f"consumption_data__{instance.id}__0"), models.FloatField())
-        ),
-        consumption_data=F("consumption_data") - str(instance.id),
-    )
+    if instance.dr_amount:
+        Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
+            fifo_inconsistency_quantity=(
+                Coalesce(F("fifo_inconsistency_quantity"), 0)
+                + Cast(F(f"consumption_data__{instance.id}__0"), models.FloatField())
+            ),
+            consumption_data=F("consumption_data") - str(instance.id),
+        )
+
+    if instance.cr_amount:
+        later_transactions = Transaction.objects.filter(
+            account=instance.account,
+            journal_entry__date__gte=instance.journal_entry.date,
+            id__gte=instance.id,
+            cr_amount__gt=0,
+        )
+
+        dr_ids = (
+            later_transactions.annotate(
+                keys=Func(F("consumption_data"), function="jsonb_object_keys")
+            )
+            .values_list("keys", flat=True)
+            .distinct()
+        )
+
+        dr_txns = {
+            txn.id: txn for txn in Transaction.objects.filter(id__in=list(dr_ids))
+        }
+
+        updated_txns = []
+
+        for txn in later_transactions:
+            txn.fifo_inconsistency_quantity = txn.cr_amount
+            for key, value in txn.consumption_data.items():
+                dr_txn = dr_txns[int(key)]
+                dr_txn.remaining_quantity += value[0]
+                updated_txns.append(dr_txn)
+            txn.consumption_data = {}
+            if txn.id != instance.id:
+                updated_txns.append(txn)
+
+        Transaction.objects.bulk_update(
+            updated_txns,
+            [
+                "fifo_inconsistency_quantity",
+                "consumption_data",
+                "remaining_quantity",
+            ],
+        )
 
     TransatcionRemovalLog.objects.create(
         row_id=instance.id,
