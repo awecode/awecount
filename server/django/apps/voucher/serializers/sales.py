@@ -325,8 +325,8 @@ class SalesVoucherCreateSerializer(
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
-        item_ids = [row["id"] for row in data["rows"]]
-        quantities = {row["id"]: row["quantity"] for row in data["rows"]}
+        item_ids = [row["item_id"] for row in data["rows"]]
+        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
 
         inventory_setting = request.company.inventory_setting
 
@@ -818,8 +818,8 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             )
 
         request = self.context["request"]
-        item_ids = [row["id"] for row in data["rows"]]
-        quantities = {row["id"]: row["quantity"] for row in data["rows"]}
+        item_ids = [row["item_id"] for row in data["rows"]]
+        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
 
         inventory_setting = request.company.inventory_setting
 
