@@ -799,7 +799,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 )
 
                 dr_txns = {
-                    txn.id: txn for txn in Transaction.objects.filter(id__in=dr_ids)
+                    txn.id: txn for txn in Transaction.objects.filter(id__in=list(dr_ids))
                 }
 
                 updated_txns = []
