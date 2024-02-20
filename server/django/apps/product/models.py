@@ -785,111 +785,118 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 ]
 
             else:
-                # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
-                later_transactions = Transaction.objects.filter(
-                    account=arg[1], journal_entry__date__gt=date, cr_amount__gt=0
-                )
-
-                dr_ids = (
-                    later_transactions.annotate(
-                        keys=Func(F("consumption_data"), function="jsonb_object_keys")
+                if Transaction.objects.filter(
+                    account=arg[1], cr_amount_gt=0, fifo_inconsistency_quantity__gt=0
+                ).exists():
+                    transaction.fifo_inconsistency_quantity = float(arg[2])
+                else:
+                    # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
+                    later_transactions = Transaction.objects.filter(
+                        account=arg[1], journal_entry__date__gt=date, cr_amount__gt=0
                     )
-                    .values_list("keys", flat=True)
-                    .distinct()
-                )
 
-                dr_txns = {
-                    txn.id: txn
-                    for txn in Transaction.objects.filter(id__in=list(dr_ids))
-                }
-
-                updated_txns = []
-
-                for txn in later_transactions:
-                    txn.fifo_inconsistency_quantity = txn.cr_amount
-                    for key, value in txn.consumption_data.items():
-                        dr_txn = dr_txns[int(key)]
-                        dr_txn.remaining_quantity += value[0]
-                        updated_txns.append(dr_txn)
-                    txn.consumption_data = {}
-                    updated_txns.append(txn)
-
-                Transaction.objects.bulk_update(
-                    updated_txns,
-                    [
-                        "fifo_inconsistency_quantity",
-                        "consumption_data",
-                        "remaining_quantity",
-                    ],
-                )
-
-                # Consumption data
-                req_qty = float(arg[2])
-
-                base_txn_qs = (
-                    Transaction.objects.filter(
-                        account=arg[1], cr_amount=None, remaining_quantity__gt=0
-                    )
-                    .annotate(
-                        running=Window(
-                            expression=Sum("remaining_quantity"),
-                            order_by=["journal_entry__date", "id"],
+                    dr_ids = (
+                        later_transactions.annotate(
+                            keys=Func(
+                                F("consumption_data"), function="jsonb_object_keys"
+                            )
                         )
+                        .values_list("keys", flat=True)
+                        .distinct()
                     )
-                    .order_by("journal_entry__date", "id")
-                    .only("id", "remaining_quantity")
-                )
 
-                txn_qs = base_txn_qs.filter(running__lte=req_qty)
-                count = len(txn_qs)
-                if count:
+                    dr_txns = {
+                        txn.id: txn
+                        for txn in Transaction.objects.filter(id__in=list(dr_ids))
+                    }
+
                     updated_txns = []
 
-                    # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
+                    for txn in later_transactions:
+                        txn.fifo_inconsistency_quantity = txn.cr_amount
+                        for key, value in txn.consumption_data.items():
+                            dr_txn = dr_txns[int(key)]
+                            dr_txn.remaining_quantity += value[0]
+                            updated_txns.append(dr_txn)
+                        txn.consumption_data = {}
+                        updated_txns.append(txn)
 
-                    # the last transaction i.e. the one with the highest running (< req_qty)
-                    txn_highest = txn_qs[count - 1]
+                    Transaction.objects.bulk_update(
+                        updated_txns,
+                        [
+                            "fifo_inconsistency_quantity",
+                            "consumption_data",
+                            "remaining_quantity",
+                        ],
+                    )
 
-                    if txn_highest.running < req_qty:
+                    # Consumption data
+                    req_qty = float(arg[2])
+
+                    base_txn_qs = (
+                        Transaction.objects.filter(
+                            account=arg[1], cr_amount=None, remaining_quantity__gt=0
+                        )
+                        .annotate(
+                            running=Window(
+                                expression=Sum("remaining_quantity"),
+                                order_by=["journal_entry__date", "id"],
+                            )
+                        )
+                        .order_by("journal_entry__date", "id")
+                        .only("id", "remaining_quantity")
+                    )
+
+                    txn_qs = base_txn_qs.filter(running__lte=req_qty)
+                    count = len(txn_qs)
+                    if count:
+                        updated_txns = []
+
+                        # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
+
+                        # the last transaction i.e. the one with the highest running (< req_qty)
+                        txn_highest = txn_qs[count - 1]
+
+                        if txn_highest.running < req_qty:
+                            tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                            req_qty -= txn_highest.running
+                            if tx_next:
+                                tx_next.remaining_quantity -= req_qty
+                                updated_txns.append(tx_next)
+                                transaction.consumption_data[tx_next.id] = [
+                                    req_qty,
+                                    tx_next.rate,
+                                ]
+                            else:
+                                transaction.fifo_inconsistency_quantity = req_qty
+
+                        for txn in txn_qs:
+                            transaction.consumption_data[txn.id] = [
+                                txn.remaining_quantity,
+                                txn.rate,
+                            ]
+
+                        updated_txns += [
+                            txn
+                            for txn in txn_qs
+                            if not setattr(txn, "remaining_quantity", 0)
+                        ]
+
+                        Transaction.objects.bulk_update(
+                            updated_txns, ["remaining_quantity"]
+                        )
+
+                    else:  # possibly the required quantity is lesser than any cumulative remaining quantity
                         tx_next = base_txn_qs.filter(running__gt=req_qty).first()
-                        req_qty -= txn_highest.running
                         if tx_next:
                             tx_next.remaining_quantity -= req_qty
-                            updated_txns.append(tx_next)
+                            tx_next.save()
                             transaction.consumption_data[tx_next.id] = [
                                 req_qty,
                                 tx_next.rate,
                             ]
                         else:
                             transaction.fifo_inconsistency_quantity = req_qty
-
-                    for txn in txn_qs:
-                        transaction.consumption_data[txn.id] = [
-                            txn.remaining_quantity,
-                            txn.rate,
-                        ]
-
-                    updated_txns += [
-                        txn
-                        for txn in txn_qs
-                        if not setattr(txn, "remaining_quantity", 0)
-                    ]
-
-                    Transaction.objects.bulk_update(
-                        updated_txns, ["remaining_quantity"]
-                    )
-
-                else:  # possibly the required quantity is lesser than any cumulative remaining quantity
-                    tx_next = base_txn_qs.filter(running__gt=req_qty).first()
-                    if tx_next:
-                        tx_next.remaining_quantity -= req_qty
-                        tx_next.save()
-                        transaction.consumption_data[tx_next.id] = [
-                            req_qty,
-                            tx_next.rate,
-                        ]
-                    else:
-                        transaction.fifo_inconsistency_quantity = req_qty
         else:
             raise Exception('Transactions can only be either "dr" or "cr".')
         transaction.account = arg[1]
