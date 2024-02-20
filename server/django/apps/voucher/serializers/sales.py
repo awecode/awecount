@@ -360,16 +360,16 @@ class SalesVoucherCreateSerializer(
         ):
             items = (
                 Item.objects.filter(id__in=item_ids)
-                .annotate(remaining_stock=F("account__current_balance"))
-                .only("remaining_stock", "id")
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
             )
 
-            remaining_stock_map = {item.id: item.remaining_stock for item in items}
+            remaining_stock_map = {item.id: item.remaining for item in items}
 
             for item in items:
                 if remaining_stock_map[item.id] < quantities[item.id]:
                     raise UnprocessableException(
-                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
                         code="negative_stock",
                     )
 
@@ -852,16 +852,16 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         ):
             items = (
                 Item.objects.filter(id__in=item_ids)
-                .annotate(remaining_stock=F("account__current_balance"))
-                .only("remaining_stock", "id")
+                .annotate(remaining=F("account__current_balance"))
+                .only("remaining", "id")
             )
 
-            remaining_stock_map = {item.id: item.remaining_stock for item in items}
+            remaining_stock_map = {item.id: item.remaining for item in items}
 
             for item in items:
                 if remaining_stock_map[item.id] < quantities[item.id]:
                     raise UnprocessableException(
-                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
                         code="negative_stock",
                     )
 
