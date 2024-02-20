@@ -786,7 +786,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
             else:
                 if Transaction.objects.filter(
-                    account=arg[1], cr_amount_gt=0, fifo_inconsistency_quantity__gt=0
+                    account=arg[1], cr_amount__gt=0, fifo_inconsistency_quantity__gt=0
                 ).exists():
                     transaction.fifo_inconsistency_quantity = float(arg[2])
                 else:
