@@ -4,10 +4,10 @@
       :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable" @update:model-value="onDateInput"
       :label="props.label" type="text" class="full-width" mask="####-##-##" debounce="1000">
       <template v-slot:append v-if="notRequired && !!getDateValue">
-        <q-icon class="cursor-pointer" name="close" @click="onDateInput('')"/>
+        <q-icon class="cursor-pointer" name="close" @click="onDateInput('')" />
       </template>
     </q-input>
-    <q-menu v-if="!props.disable" :no-focus="true">
+    <q-menu v-if="!props.disable" :no-focus="true" ref="menuRef">
       <q-date v-if="isCalendarInAD" v-model="date" mask="YYYY-MM-DD" :options="toDateValidation" />
       <bs-date-picker v-else v-model="date" :toLimit="props.toLimit"></bs-date-picker>
     </q-menu>
@@ -18,6 +18,7 @@ import BsDatePicker from '/src/components/date/BsDatePicker.vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 
+const menuRef = ref(null)
 const store = useLoginStore()
 const props = defineProps([
   'toLimit',
@@ -51,11 +52,13 @@ watch(date, (val) => {
     if (DateConverter.isValidAD(val)) {
       error.value = false
       errorMessage.value = null
+      menuRef.value.hide()
     }
   } else {
     if (DateConverter.isValid(val)) {
       error.value = false
       errorMessage.value = null
+      menuRef.value.hide()
     }
   }
   emit('update:modelValue', val)
