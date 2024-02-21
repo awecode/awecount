@@ -1250,6 +1250,16 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
+STATUS_CHOICES = ((("Issued", "Issued"), ("Cancelled", "Cancelled")))
+
+class StockAdjustmentVoucher(models.Model):
+    voucher_no = models.PositiveIntegerField(blank=True, null=True)
+    date = models.DateField()
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=225, choices=STATUS_CHOICES)
+    company = models.ManyToManyField(
+        Company,related_name="stock_adjustment_voucher"
+    )
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
@@ -1260,3 +1270,4 @@ auditlog.register(CreditNote)
 auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
+auditlog.register(StockAdjustmentVoucher)
