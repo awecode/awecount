@@ -16,6 +16,7 @@ from apps.voucher.models import (
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
+    StockAdjustmentVoucher,
 )
 from apps.voucher.models.invoice_design import InvoiceDesign
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
@@ -248,3 +249,14 @@ class PurchaseVoucherRowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)
+
+class StockAdjustmentVoucherAdmin(admin.ModelAdmin):
+    search_fields = (
+        "voucher_no",
+        "company__name",
+    )
+    list_filter = ("company",)
+    list_display = (
+        "voucher_no",
+    )
+admin.site.register(StockAdjustmentVoucher, StockAdjustmentVoucherAdmin)
