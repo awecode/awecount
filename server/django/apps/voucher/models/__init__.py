@@ -1257,8 +1257,8 @@ class StockAdjustmentVoucher(models.Model):
     date = models.DateField()
     issue_datetime = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=225, choices=STATUS_CHOICES)
-    company = models.ManyToManyField(
-        Company,related_name="stock_adjustment_voucher"
+    company = models.ForeignKey(
+        Company,on_delete=models.CASCADE, related_name="stock_adjustment_voucher"
     )
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
