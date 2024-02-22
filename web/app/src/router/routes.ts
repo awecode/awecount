@@ -64,6 +64,16 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Items', 'Stock Opening', 'Update'],
         },
       },
+      {
+        path: 'stock-adjustment/list',
+        component: () =>
+          import(
+            'src/pages/inventory/item/opening-balance/ItemOpeningBalanceForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Stock Adjustment'],
+        },
+      },
     ],
   },
   {
