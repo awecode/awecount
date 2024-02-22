@@ -46,12 +46,24 @@
           </div>
         </div>
         <div v-if="isCalendarInAD" class="row md-no-wrap q-gutter-md date-Con">
-          <q-date v-model="value0" :options="(date) => date < '2033/04/16'" mask="YYYY-MM-DD" />
-          <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">From</div>
+            <q-date v-model="value0" :options="(date) => date < '2033/04/16'" mask="YYYY-MM-DD" />
+          </div>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">To</div>
+            <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
+          </div>
         </div>
         <div v-else class="row md-no-wrap q-gutter-md date-Con">
-          <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
-          <bs-date-picker v-model="value1" :toLimit="value0"></bs-date-picker>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">From</div>
+            <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
+          </div>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">To</div>
+            <bs-date-picker v-model="value1" :toLimit="value0"></bs-date-picker>
+          </div>
         </div>
       </div>
     </q-menu>

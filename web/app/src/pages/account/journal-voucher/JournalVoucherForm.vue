@@ -88,6 +88,7 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const endpoint = '/v1/journal-voucher/'
+    const route = useRoute()
     const updateVoucher = (e, i) => {
       formData.fields.value.rows[i] = e
     }
@@ -138,11 +139,12 @@ export default {
             : 'Add Journal Voucher') + ' | Awecount',
       }
     })
-    formData.fields.value.voucher_no =
-      formData?.formDefaults?.value.voucher_no || null
+    formData.fields.value.voucher_no = formData?.formDefaults?.value.voucher_no || null
 
     watch(formData?.formDefaults, (a) => {
-      formData.fields.value.voucher_no = a.fields.voucher_no || null
+      if (!route.params.id) {
+        formData.fields.value.voucher_no = a.fields.voucher_no || null
+      }
     })
     formData.fields.value.date = formData.fields.value.date || formData.today
     formData.fields.value.rows = formData.fields.value.rows || [
