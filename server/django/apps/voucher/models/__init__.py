@@ -1250,13 +1250,13 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-STATUS_CHOICES = ((("Issued", "Issued"), ("Cancelled", "Cancelled")))
+ADJUSTMENT_STATUS_CHOICES = ((("Issued", "Issued"), ("Cancelled", "Cancelled")))
 
 class StockAdjustmentVoucher(models.Model):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     issue_datetime = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=225, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=225, choices=ADJUSTMENT_STATUS_CHOICES)
     company = models.ForeignKey(
         Company,on_delete=models.CASCADE, related_name="stock_adjustment_voucher"
     )
