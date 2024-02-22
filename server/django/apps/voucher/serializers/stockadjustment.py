@@ -19,7 +19,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StockAdjustmentVoucher
-        fields =['voucher_no','date']
+        fields =['voucher_no','date','status']
 
 class StockAdjustmentVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
