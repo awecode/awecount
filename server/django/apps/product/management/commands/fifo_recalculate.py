@@ -74,11 +74,11 @@ class Command(BaseCommand):
                     running__gt=total_quantity_to_fulfill
                 ).first()
                 if tx_next:
-                    txns_can_be_consumed_lte = txns_can_be_consumed_lte | tx_next
+                    txns_can_be_consumed_lte.union(tx_next)
         else:
             txns_can_be_consumed_lte = txns_can_be_consumed.filter(
                 running__gt=total_quantity_to_fulfill
-            ).first()
+            )[:1]
 
         for txn_to_fix in txns_to_fix:
             for consumable in txns_can_be_consumed_lte:
