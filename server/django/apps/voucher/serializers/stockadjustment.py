@@ -17,6 +17,11 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
             next_voucher_no = get_next_voucher_no(StockAdjustmentVoucher, self.context['request'].company_id)
             validated_data['voucher_no'] = next_voucher_no
 
+    def create(self,validated_data):
+        self.assign_voucher_number(validated_data, instance=None)
+        instance = StockAdjustmentVoucher.objects.create(**validated_data)
+        return instance
+    
     class Meta:
         model = StockAdjustmentVoucher
         fields =['voucher_no','date']
