@@ -24,6 +24,7 @@ from .models import (
     PurchaseOrder,
     PurchaseVoucher,
     SalesVoucher,
+    StockAdjustmentVoucher,
 )
 
 
@@ -138,6 +139,13 @@ class ChallanFilterSet(DateFilterSet):
 class PurchaseOrderFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=PURCHASE_ORDER_STATUS_CHOICES)
 
-    class MEta:
+    class Meta:
         model = PurchaseOrder
+        fields = []
+
+class StockAdjustmentVoucherFilterSet(DateFilterSet):
+    status = filters.MultipleChoiceFilter(choices=STATUSES)
+
+    class Meta:
+        model = StockAdjustmentVoucher
         fields = []
