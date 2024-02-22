@@ -47,6 +47,7 @@ MODULES = [
     *gdp("InvoiceDesign"),
     *gdp("PurchaseOrder"),
     "PurchaseOrderCancel",
+
     # Bank
     *gdp("BankAccount"),
     *gdp("BankBranch"),
@@ -70,6 +71,7 @@ MODULES = [
     *gdp("TransactionCharge"),
     *gdp("AccountOpeningBalance"),
     *gdp("Transaction"),
+    *gdp("StockAdjustmentVoucher"),
 ]
 
 MODULES.sort()
