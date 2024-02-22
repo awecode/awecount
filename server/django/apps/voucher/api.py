@@ -49,8 +49,15 @@ from apps.voucher.filters import (
     SalesDiscountFilterSet,
     SalesRowFilterSet,
     SalesVoucherFilterSet,
+    StockAdjustmentVoucherFilterSet,
 )
-from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
+from apps.voucher.models import (
+    Challan,
+    ChallanRow,
+    PaymentReceipt,
+    SalesAgent,
+    StockAdjustmentVoucher,
+)
 from apps.voucher.resources import (
     CreditNoteResource,
     CreditNoteRowResource,
@@ -139,6 +146,11 @@ from .serializers import (
     SalesVoucherCreateSerializer,
     SalesVoucherDetailSerializer,
     SalesVoucherListSerializer,
+)
+from .serializers.stockadjustment import (
+    StockAdjustmentVoucherCreateSerializer,
+    StockAdjustmentVoucherDetailSerializer,
+    StockAdjustmentVoucherListSerializer,
 )
 
 
@@ -1961,3 +1973,29 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 {"detail": "The selected purchase order can not be used."}, status=400
             )
         return Response(PurchaseOrderCreateSerializer(instance).data)
+
+
+class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
+    queryset = StockAdjustmentVoucher.objects.all()
+    serializer_class = StockAdjustmentVoucherCreateSerializer
+    model = StockAdjustmentVoucher
+    filter_backends = [
+        filters.DjangoFilterBackend,
+    ]
+    filterset_class = StockAdjustmentVoucherFilterSet
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return StockAdjustmentVoucherListSerializer
+        elif self.action == "retrieve":
+            return StockAdjustmentVoucherDetailSerializer
+        return StockAdjustmentVoucherCreateSerializer
+
+    def get_create_defaults(self, request=None):
+        voucher_no = get_next_voucher_no(StockAdjustmentVoucher, request.company_id)
+        data = {
+            "fields": {
+                "voucher_no": voucher_no,
+            }
+        }
+        return data
