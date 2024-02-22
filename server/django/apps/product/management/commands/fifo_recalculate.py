@@ -87,12 +87,6 @@ class Command(BaseCommand):
                     or txn_to_fix.fifo_inconsistency_quantity == 0
                 ):
                     continue
-                    # txn_to_fix.fifo_inconsistency_quantity = max(0, txn_to_fix.fifo_inconsistency_quantity - txn.remaining_quantity)
-                    # txn_to_fix.consumption_data[txn.id] = [
-                    #         txn.fifo_inconsistency_quantity,
-                    #         txn.rate,
-                    # ]
-                    # txn.remaining_quantity -= txn.fifo_inconsistency_quantity
                 if (
                     txn_to_fix.fifo_inconsistency_quantity
                     < consumable.remaining_quantity
