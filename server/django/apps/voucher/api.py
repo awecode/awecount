@@ -1991,11 +1991,3 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
             return StockAdjustmentVoucherDetailSerializer
         return StockAdjustmentVoucherCreateSerializer
 
-    def get_create_defaults(self, request=None):
-        voucher_no = get_next_voucher_no(StockAdjustmentVoucher, request.company_id)
-        data = {
-            "fields": {
-                "voucher_no": voucher_no,
-            }
-        }
-        return data
