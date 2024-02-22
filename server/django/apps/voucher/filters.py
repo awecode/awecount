@@ -16,6 +16,7 @@ from apps.voucher.models import (
 from apps.voucher.models.journal_vouchers import JournalVoucher
 
 from .models import (
+    ADJUSTMENT_STATUS_CHOICES,
     CHALLAN_STATUSES,
     CREDIT_NOTE_STATUSES,
     PURCHASE_ORDER_STATUS_CHOICES,
@@ -144,7 +145,7 @@ class PurchaseOrderFilterSet(DateFilterSet):
         fields = []
 
 class StockAdjustmentVoucherFilterSet(DateFilterSet):
-    status = filters.MultipleChoiceFilter(choices=STATUSES)
+    status = filters.MultipleChoiceFilter(choices=ADJUSTMENT_STATUS_CHOICES)
 
     class Meta:
         model = StockAdjustmentVoucher
