@@ -79,25 +79,28 @@
       <h2 style="font-size: 28px" class="text-center q-mb-xl text-weight-bold text-grey-8">
         CLIENTS
       </h2>
-      <div class="client-con gap-12 flex-wrap">
-        <img src="/img/sangrila.png" alt="Sangrila" />
-        <img src="/img/sampurna.png" alt="Sampurna" />
+      <div class="client-con grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        <img src="/img/sangrila.png" alt="Sangrila" class="object-contain w-full h-full p-8" />
+        <img src="/img/sampurna.png" alt="Sampurna" class="object-contain w-full h-full p-6" />
         <a href="https://edusanjal.com/" target="_blank">
-          <img src="/img/edusanjal.png" alt="Edusanjal" />
+          <img src="/img/edusanjal.png" alt="Edusanjal" class="object-contain w-full h-full p-4" />
         </a>
-        <a href="https://thuprai.com/" target="_blank"><img src="/img/thuprai.svg" alt="Thuprai" /></a>
-        <a href="https://crayonscorp.com.np/" target="_blank" class="flex items-center"
-          style="max-width: 200px; height: auto;"><img src="/img/crayons_corp.png" alt="Crayons Corp" class="w-full"
-            style="max-width: 200px; height: auto;" /></a>
-        <img src="/img/self_drive_nepal.jpg" alt="Self Drive Nepal" class="w-full object-contain"
-          style="max-width: 200px;" />
+        <a href="https://thuprai.com/" target="_blank"><img src="/img/thuprai.svg" alt="Thuprai"
+            class="object-contain w-full h-full p-4" /></a>
+        <a href="https://crayonscorp.com.np/" target="_blank" class="flex items-center"><img src="/img/crayons_corp.png"
+            alt="Crayons Corp" class="object-contain w-full h-full p-4" /></a>
+        <img src="/img/self_drive_nepal.jpg" alt="Self Drive Nepal" class="object-contain w-full h-full p-4" />
         <a href="https://sparkcar.org/" target="_blank">
-          <img src="/img/spark_car.jpg" alt="Spark Car" class="w-full object-contain" style="max-width: 200px;" />
+          <img src="/img/spark_car.jpg" alt="Spark Car" class="object-contain w-full h-full p-4" />
         </a>
         <a href="https://khaanpin.com.np/" target="_blank">
-          <img src="/img/khaanpin.png" alt="Khaanpin" class="w-full object-contain" style="max-width: 200px;" />
+          <img src="/img/khaanpin.png" alt="Khaanpin" class="object-contain w-full h-full p-4" />
         </a>
-        <img src="/img/spark_link.jpg" alt="Spark Link" class="w-full object-contain" style="max-width: 200px;" />
+        <img src="/img/spark_link.jpg" alt="Spark Link" class="object-contain w-full h-full p-4"
+          style="max-height: 100px;" />
+        <a href="https://www.codewarelab.com/" target="_blank">
+          <img src="/img/codeware_lab.svg" alt="Codeware Lab" class="object-contain w-full h-full p-4" />
+        </a>
       </div>
     </div>
     <footer class="bg-blue-6 q-py-sm">
@@ -193,37 +196,12 @@ useMeta({
 .client-con {
   max-width: 1300px;
   margin: 0 auto;
-  display: flex;
-  /* justify-content: space-between; */
-
-  @media (max-width: 800px) {
-    flex-flow: column;
-    /* justify-content: center; */
-    align-items: center;
-    gap: 15px;
-  }
-
-  @media (max-width: 800px) {
-    flex-flow: column;
-    /* justify-content: center; */
-    align-items: center;
-    gap: 15px;
-  }
 }
 
 @media (max-width: 800px) {
-  .client-con img {
-    max-width: 180px;
-    max-height: 40px;
-  }
 
   .btns-con {
     display: none;
   }
-}
-
-.client-con img {
-  height: 50px;
-  width: auto;
 }
 </style>
