@@ -74,7 +74,7 @@ router.register("invoice-design", voucher.InvoiceDesignViewSet)
 router.register("sales-book", voucher.SalesBookViewSet, basename="sales-book")
 router.register("sales-row", voucher.SalesRowViewSet, basename="sales-row")
 router.register("sales-agent", voucher.SalesAgentViewSet, basename="sales-agent")
-router.register("adjustment-voucher", voucher.StockAdjustmentVoucherViewSet,basename="adjustment-voucher")
+router.register("stock-adjustment", voucher.StockAdjustmentVoucherViewSet,basename="adjustment-voucher")
 router.register(
     "sales-settings", voucher.SalesSettingsViewSet, basename="sales-settings"
 )
