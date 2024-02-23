@@ -24,14 +24,14 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = StockAdjustmentVoucher
-        fields =['id','voucher_no','date','status']
+        fields =['id','voucher_no','date','status','purpose','remarks']
 
 class StockAdjustmentVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockAdjustmentVoucher
-        fields = ['id','voucher_no', 'date','status']
+        fields = ['id','voucher_no', 'date','status','purpose','remarks']
 
 class StockAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockAdjustmentVoucher
-        fields = ['id','voucher_no', 'date','status']
+        fields = ['id','voucher_no', 'date','status','purpose','remarks']
