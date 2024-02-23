@@ -6,7 +6,8 @@
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px;">
           <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px;">
-            <img style="max-width: 60px; max-height: 40px; object-fit: contain;" :src="store.companyInfo.logo_url" alt="Company Logo">
+            <img style="max-width: 60px; max-height: 40px; object-fit: contain;" :src="store.companyInfo.logo_url"
+              alt="Company Logo">
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
             <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
@@ -20,8 +21,9 @@
           <div class="row btns-Con">
             <q-btn class="gt-sm">{{ store.companyInfo?.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
-            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">{{
-              activeDateFormat }}
+            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="store.isCalendarInAD = !store.isCalendarInAD">{{
+                activeDateFormat }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
             <a target="_blank" href="https://docs.awecount.com/" style="color: inherit;">
@@ -139,6 +141,12 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'edit_note',
         link: '/items/opening/',
         hide: !checkPermissions('AccountOpeningBalanceView')
+      },
+      {
+        title: 'Stock Adjustment',
+        icon: 'mdi-swap-horizontal',
+        link: '/items/stock-adjustment/list',
+        hide: !checkPermissions('StockAdjustmentVoucherView')
       },
     ],
   },
