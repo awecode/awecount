@@ -1250,7 +1250,13 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-ADJUSTMENT_STATUS_CHOICES = ((("Issued", "Issued"), ("Cancelled", "Cancelled")))
+ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+PURPOSE_CHOICES=(("Stock In","Stock In"),
+                ("Stock Out","Stock Out"),
+                ("Damaged","Damaged"))
+
+
+
 
 class StockAdjustmentVoucher(models.Model):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
@@ -1260,6 +1266,17 @@ class StockAdjustmentVoucher(models.Model):
     company = models.ForeignKey(
         Company,on_delete=models.CASCADE, related_name="stock_adjustment_voucher"
     )
+    purpose=models.Charfield(max_length=225,choices=PURPOSE_CHOICES)
+    remarks = models.TextField()
+
+class StockAdjustmentVoucherRow(TransactionModel,InvoiceRowModel):
+    voucher=models.ForeignKey(StockAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows")    
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="stock_adjustment_rows")
+    rate = models.FloatField()
+    quantity = models.PositiveSmallIntegerField(default=1)
+    amount = models.FloatField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
@@ -1271,3 +1288,4 @@ auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
 auditlog.register(StockAdjustmentVoucher)
+auditlog.register(StockAdjustmentVoucherRow)
