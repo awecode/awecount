@@ -96,18 +96,21 @@
         <a href="https://khaanpin.com.np/" target="_blank">
           <img src="/img/khaanpin.png" alt="Khaanpin" class="object-contain w-full h-full p-4" />
         </a>
-        <div class="text-center">
-          <img src="/img/spark_link.jpg" alt="Spark Link" class="object-contain w-full h-full p-4"
+        <div class="text-center p-4">
+          <img src="/img/spark_link.jpg" alt="Spark Link" class="object-contain w-full h-full"
           style="max-height: 100px;" />
           <span class="text-center text-grey-8 text-body1">Spark Link</span>
         </div>
         <a href="https://www.codewarelab.com/" target="_blank">
           <img src="/img/codeware_lab.svg" alt="Codeware Lab" class="object-contain w-full h-full p-4" />
         </a>
+        <a href="https://nepalaya.com.np/" target="_blank">
+          <img src="/img/nepalaya.svg" alt="Nepalya" class="object-contain w-full h-full p-4" />
+        </a>
       </div>
     </div>
     <footer class="bg-blue-6 q-py-sm">
-      <div class="text-center text-white text-body1">© Awecode, 2020</div>
+      <div class="text-center text-white text-body1">Awecode © {{ new Date().getFullYear() }}</div>
     </footer>
   </div>
 </template>
