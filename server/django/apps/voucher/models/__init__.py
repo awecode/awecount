@@ -1266,7 +1266,7 @@ class StockAdjustmentVoucher(models.Model):
     company = models.ForeignKey(
         Company,on_delete=models.CASCADE, related_name="stock_adjustment_voucher"
     )
-    purpose=models.Charfield(max_length=225,choices=PURPOSE_CHOICES)
+    purpose=models.CharField(max_length=225,choices=PURPOSE_CHOICES)
     remarks = models.TextField()
 
 class StockAdjustmentVoucherRow(TransactionModel,InvoiceRowModel):
@@ -1275,7 +1275,9 @@ class StockAdjustmentVoucherRow(TransactionModel,InvoiceRowModel):
     rate = models.FloatField()
     quantity = models.PositiveSmallIntegerField(default=1)
     amount = models.FloatField(blank=True, null=True)
+    unit=models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+
 
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
