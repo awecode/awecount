@@ -853,7 +853,7 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             items = (
                 Item.objects.filter(id__in=item_ids)
                 .annotate(remaining=F("account__current_balance"))
-                .only("remaining", "id")
+                .only("id")
             )
 
             remaining_stock_map = {item.id: item.remaining for item in items}
