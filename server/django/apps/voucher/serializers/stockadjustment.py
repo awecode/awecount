@@ -1,11 +1,10 @@
 from rest_framework import serializers
-from awecount.libs.serializers import StatusReversionMixin
 
 from apps.voucher.models import StockAdjustmentVoucher
 from awecount.libs import get_next_voucher_no
 
 
-class StockAdjustmentVoucherCreateSerializer(StatusReversionMixin,serializers.ModelSerializer):
+class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_no=serializers.ReadOnlyField()
     
 
