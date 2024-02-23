@@ -66,12 +66,23 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'stock-adjustment/list',
+        name: 'Stock Adjustment',
         component: () =>
           import(
             'src/pages/inventory/product/stock-adjustment/StockAdjustmentList.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Stock Adjustment'],
+          breadcrumb: ['Home', 'Items', 'Stock Adjustment'],
+        },
+      },
+      {
+        path: 'stock-adjustment/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/stock-adjustment/StockAdjustmentForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Adjustment', 'Create'],
         },
       },
     ],
