@@ -1991,5 +1991,6 @@ class StockAdjustmentVoucherViewSet( CRULViewSet):
 
     collections = [
         ("items", Item),
+        ("units", Unit)
     ]
 
