@@ -14,13 +14,13 @@
   <q-markup-table flat bordered>
     <thead>
       <q-tr class="text-left">
-        <q-th> SN </q-th>
-        <q-th> Particular </q-th>
-        <q-th> Qty </q-th>
-        <q-th> Rate </q-th>
-        <q-th> Discount </q-th>
-        <q-th class="text-right"> Tax </q-th>
-        <q-th class="text-right"> Amount </q-th>
+        <q-th data-testid="SN" > SN </q-th>
+        <q-th data-testid="Particular" > Particular </q-th>
+        <q-th data-testid="Qty" > Qty </q-th>
+        <q-th data-testid="Rate" > Rate </q-th>
+        <q-th data-testid="Discount" > Discount </q-th>
+        <q-th data-testid="Tax"  class="text-right"> Tax </q-th>
+        <q-th data-testid="Amount"  class="text-right"> Amount </q-th>
       </q-tr>
     </thead>
     <tbody class="text-left">
