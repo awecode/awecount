@@ -13,15 +13,17 @@
           <div class="row q-col-gutter-md">
             <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
               :error-message="errors?.date"></date-picker>
-            <q-select class="col-md-6 col-12" v-model="fields.purpose" :options="purposeChoices"
-              label="Purpose"></q-select>
-          </div>
-          <div class="q-mt-md">
-            <AdjustmentInvoiceTable></AdjustmentInvoiceTable>
+            <q-select class="col-md-6 col-12" v-model="fields.purpose" :options="purposeChoices" option-value="value"
+              option-label="label" map-options emit-value label="Purpose" :error-message="errors.purpose"
+              :error="!!errors.purpose"></q-select>
           </div>
           <div class="q-mt-lg">
-            <q-input v-model="fields.description" label="Remarks*" class="col-6" :error-message="errors.description"
-              :error="!!errors.description" type="textarea" autogrow />
+            <AdjustmentInvoiceTable :itemOptions="formDefaults?.collections?.items"
+              :unitOptions="formDefaults?.collections?.units" v-model="fields.rows"></AdjustmentInvoiceTable>
+          </div>
+          <div class="q-mt-lg">
+            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks"
+              :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
@@ -63,6 +65,7 @@ export default {
       getDefaults: true,
       successRoute: '/items/stock-adjustment/list/',
     })
+    formData.fields.value.date = formData.today
     useMeta(metaData)
     return {
       ...formData, checkPermissions, purposeChoices
