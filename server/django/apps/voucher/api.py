@@ -1975,7 +1975,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return Response(PurchaseOrderCreateSerializer(instance).data)
 
 
-class StockAdjustmentVoucherViewSet( CRULViewSet):
+class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
     queryset = StockAdjustmentVoucher.objects.all()
     serializer_class = StockAdjustmentVoucherCreateSerializer
     model = StockAdjustmentVoucher
