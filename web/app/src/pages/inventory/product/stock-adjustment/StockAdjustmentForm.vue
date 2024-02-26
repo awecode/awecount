@@ -20,7 +20,7 @@
           <div class="q-mt-lg">
             <AdjustmentInvoiceTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
               :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows"
-              @deleteRowErr="(index) => deleteRowErr(index, errors)">
+              @deleteRow="(index) => deleteRow(index, errors)">
             </AdjustmentInvoiceTable>
           </div>
           <div class="q-mt-lg">
@@ -69,8 +69,16 @@ export default {
       successRoute: '/items/stock-adjustment/list/',
     })
     formData.fields.value.date = formData.today
-    const deleteRowErr = (index, errors) => {
-      if (!!errors?.rows) errors.rows.splice(index, 1)
+    const deleteRow = (index, errors) => {
+      if (formData.fields.value.rows[index].id) {
+        const deletedObj = { ...formData.fields.value.rows[index] }
+        if (formData.fields.value.deleted_rows) {
+          formData.fields.value.deleted_rows.push(deletedObj)
+        } else formData.fields.value.deleted_rows = [deletedObj]
+      }
+      if (!!errors?.rows) {
+        errors.rows.splice(index, 1)
+      }
     }
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
@@ -80,7 +88,7 @@ export default {
       }
     }
     return {
-      ...formData, checkPermissions, purposeChoices, deleteRowErr, onSubmitClick
+      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick
     }
   },
 }
