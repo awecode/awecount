@@ -149,6 +149,8 @@ from .serializers import (
 )
 from .serializers.stockadjustment import (
     StockAdjustmentVoucherCreateSerializer,
+    StockAdjustmentVoucherListSerializer,
+    StockAdjustmentVoucherDetailSerializer
 )
 
 
@@ -1982,12 +1984,12 @@ class StockAdjustmentVoucherViewSet( CRULViewSet):
     ]
     filterset_class = StockAdjustmentVoucherFilterSet
 
-    # def get_serializer_class(self):
-    #     if self.action == "list":
-    #         return StockAdjustmentVoucherListSerializer
-    #     elif self.action == "retrieve":
-    #         return StockAdjustmentVoucherDetailSerializer
-    #     return StockAdjustmentVoucherCreateSerializer
+    def get_serializer_class(self):
+        if self.action == "list":
+            return StockAdjustmentVoucherListSerializer
+        elif self.action == "retrieve":
+            return StockAdjustmentVoucherDetailSerializer
+        return StockAdjustmentVoucherCreateSerializer
 
     collections = [
         ("items", Item),
