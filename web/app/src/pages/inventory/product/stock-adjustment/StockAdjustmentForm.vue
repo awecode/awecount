@@ -18,8 +18,9 @@
               :error="!!errors.purpose"></q-select>
           </div>
           <div class="q-mt-lg">
-            <AdjustmentInvoiceTable :itemOptions="formDefaults?.collections?.items"
-              :unitOptions="formDefaults?.collections?.units" v-model="fields.rows"></AdjustmentInvoiceTable>
+            <AdjustmentInvoiceTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
+              :unitOptions="formDefaults?.collections?.units" :errors="errors?.rows" @deleteRowErr="(index) => deleteRowErr(index, errors)">
+            </AdjustmentInvoiceTable>
           </div>
           <div class="q-mt-lg">
             <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks"
@@ -66,9 +67,12 @@ export default {
       successRoute: '/items/stock-adjustment/list/',
     })
     formData.fields.value.date = formData.today
+    const deleteRowErr = (index, errors) => {
+      if (!!errors?.rows) errors.rows.splice(index, 1)
+    }
     useMeta(metaData)
     return {
-      ...formData, checkPermissions, purposeChoices
+      ...formData, checkPermissions, purposeChoices, deleteRowErr
     }
   },
 }

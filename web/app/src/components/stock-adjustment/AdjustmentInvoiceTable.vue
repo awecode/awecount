@@ -12,23 +12,25 @@
       </div>
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
         <div class="col-3">
-          <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions" />
+          <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions"
+            :error="rowEmpty ? 'This field is required.' : errors && errors[index]?.item_id ? errors[index].item_id[0] : null" />
         </div>
         <div class="col-2 text-center">
-          <q-input v-model.number="row.quantity" label="Quantity"
-            :error-message="errors?.quantity ? errors.quantity[0] : null" :error="errors?.quantity ? true : false"
-            type="number" data-testid="quantity-input">
+          <q-input v-model.number="row.quantity" label="Quantity" type="number" data-testid="quantity-input"
+            :error="errors && errors[index]?.quantity ? true : false"
+            :error-message="errors && errors[index]?.quantity ? errors[index].quantity[0] : ''">
           </q-input>
         </div>
         <div class="col-2 text-center">
-          <q-input v-model.number="row.rate" label="Rate" :error-message="errors?.quantity ? errors.quantity[0] : null"
-            :error="errors?.quantity ? true : false" type="number" data-testid="quantity-input">
+          <q-input v-model.number="row.rate" label="Rate" data-testid="quantity-input"
+            :error="errors && errors[index]?.rate ? true : false"
+            :error-message="errors && errors[index]?.rate ? errors[index].rate[0] : ''">
           </q-input>
         </div>
         <div class="col-2">
           <q-select v-model="row.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
-            emit-value map-options :error-message="errors?.unit_id ? errors.unit_id[0] : null"
-            :error="errors?.unit_id ? true : false" data-testid="unit-select" />
+            emit-value map-options data-testid="unit-select" :error="errors && errors[index]?.unit_id ? true : false"
+            :error-message="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''" />
         </div>
         <div class="col-2 row items-center justify-center">{{ row.rate * row.quantity }}</div>
         <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
@@ -37,7 +39,7 @@
             <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"></q-icon>
           </q-btn>
           <q-btn flat @click="() => deleteRow(index)" class="q-pa-sm focus-highLight" color="transparent"
-            :disable="hasChallan" data-testid="row-delete-btn">
+            data-testid="row-delete-btn">
             <q-icon name="delete" size="20px" color="negative" class="cursor-pointer"></q-icon>
           </q-btn>
         </div>
@@ -86,23 +88,29 @@ const props = defineProps({
   unitOptions: {
     type: Object,
     default: () => {
-      return {}
+      return []
     },
   },
   errors: {
-    type: Array || String,
+    type: Array || String || null,
     default: () => {
       return null
     },
   },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'deleteRowErr'])
 const modalValue = ref(props.modelValue)
-// const rowEmpty = ref(false)
+const errors = ref(props.errors)
 watch(
   () => props.modelValue,
   (newValue) => {
     modalValue.value = newValue
+  }
+)
+watch(
+  () => props.errors,
+  (newValue) => {
+    errors.value = newValue
   }
 )
 const addRow = () => {
@@ -116,12 +124,9 @@ const addRow = () => {
   })
 }
 const deleteRow = (index) => {
-  // if (props.errors || modalValue.value[index].id)
-  //   emit(
-  //     'deleteRowErr',
-  //     index,
-  //     modalValue.value[index]?.id ? modalValue.value[index] : null
-  //   )
+  if (props.errors && props.errors.length && props.errors[index]) {
+    emit('deleteRowErr', index)
+  }
   modalValue.value.splice(index, 1)
 }
 watch(
@@ -131,4 +136,9 @@ watch(
   },
   { deep: true }
 )
+const rowEmpty = computed(() => {
+  let val = false
+  if (props.errors && typeof props.errors === 'string') val = true
+  return val
+})
 </script>
