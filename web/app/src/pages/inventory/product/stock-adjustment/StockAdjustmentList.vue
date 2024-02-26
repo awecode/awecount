@@ -19,15 +19,9 @@
                   <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
-                  <div class="q-mb-sm">
-                    <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null"></q-checkbox>
-                  </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip :options="[
-                      'Draft',
                       'Issued',
-                      'Paid',
-                      'Partially Paid',
                       'Cancelled',
                     ]" v-model="filters.status" />
                   </div>
@@ -46,31 +40,21 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('ItemView')" color="blue"
+          <!-- <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
-            :to="`/items/details/${props.row.id}/`" />
-          <q-btn v-if="checkPermissions('ItemModify')" color="orange-6"
+            :to="`/items/details/${props.row.id}/`" /> -->
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify')" color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
-            :to="`/items/${props.row.id}/`" />
+            :to="`/items/stock-adjustment/${props.row.id}/`" />
         </q-td>
       </template>
-      <template v-slot:body-cell-name="props">
+      <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('ItemView')" :to="`/items/details/${props.row.id}/`"
+          <router-link v-if="checkPermissions('StockAdjustmentVoucherModify')" :to="`/items/stock-adjustment/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none" class="text-blue">
-            {{ props.row.name }}
+            {{ props.row.voucher_no }}
           </router-link>
-          <span v-else>{{ props.row.name }}</span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-category="props">
-        <q-td :props="props">
-          <router-link v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
-            :to="`/inventory-category/${props.row.category.id}/`" style="font-weight: 500; text-decoration: none"
-            class="text-blue">
-            {{ props.row.category?.name }}
-          </router-link>
-          <span v-else>{{ props.row.category?.name }}</span>
+          <span v-else>{{ props.row.voucher_no }}</span>
         </q-td>
       </template>
     </q-table>
@@ -81,12 +65,11 @@
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-const endpoint = '/v1/items'
+const endpoint = '/v1/stock-adjustment/'
 const metaData = {
-  title: 'Items | Awecount',
+  title: 'Stock Adjustments | Awecount',
 }
 useMeta(metaData)
-const isItemImportOpen = ref(false)
 const {
   columns,
   rows,
@@ -97,7 +80,6 @@ const {
   filters,
   onFilterUpdate,
   resetFilters,
-  loadData
 } = useList(endpoint)
 </script>
 
