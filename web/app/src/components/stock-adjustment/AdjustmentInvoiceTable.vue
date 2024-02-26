@@ -98,7 +98,7 @@ const props = defineProps({
     },
   },
 })
-const emit = defineEmits(['update:modelValue', 'deleteRowErr'])
+const emit = defineEmits(['update:modelValue', 'deleteRow'])
 const modalValue = ref(props.modelValue)
 const errors = ref(props.errors)
 watch(
@@ -124,8 +124,8 @@ const addRow = () => {
   })
 }
 const deleteRow = (index) => {
-  if (props.errors && props.errors.length && props.errors[index]) {
-    emit('deleteRowErr', index)
+  if (props.errors && props.errors.length && props.errors[index] || modalValue.value[index]?.id) {
+    emit('deleteRow', index)
   }
   modalValue.value.splice(index, 1)
 }
