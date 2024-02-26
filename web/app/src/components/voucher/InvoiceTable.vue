@@ -208,17 +208,29 @@ export default {
             item.discount,
             props.discountOptions
           ) || 0
-        if (data.sameScheme !== false && item.taxObj) {
+        // console.log('modalValue.value', modalValue.value)
+        let currentTaxObj = null
+        if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
+          const taxindex = props.taxOptions.findIndex(
+            (taxItem) => taxItem.id === item.tax_scheme_id
+          )
+          if (taxindex > -1) {
+            currentTaxObj = props.taxOptions[taxindex]
+            // data.taxObj = props.taxOptions[taxindex]
+          }
+          // debugger
+        }
+        if (data.sameScheme !== false && currentTaxObj) {
           if (
             data.sameScheme === null &&
-            item.taxObj &&
-            item.taxObj.rate != 0
+            currentTaxObj &&
+            currentTaxObj.rate != 0
           ) {
-            data.sameScheme = item.taxObj.id
-            data.taxObj = item.taxObj
+            data.sameScheme = currentTaxObj.id
+            data.taxObj = currentTaxObj
           } else if (
-            data.sameScheme === item.taxObj?.id ||
-            item.taxObj.rate === 0
+            data.sameScheme === currentTaxObj?.id ||
+            currentTaxObj.rate === 0
           ) {
           } else data.sameScheme = false
         }
@@ -230,18 +242,18 @@ export default {
             props.discountOptions
           ) || 0
 
-        if (item.taxObj) {
+        if (currentTaxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
             rowTax =
               (rowTotal -
                 (rowDiscount || 0) -
                 props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           } else {
             rowTax =
               (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           }
           data.totalTax = data.totalTax + rowTax
         }
