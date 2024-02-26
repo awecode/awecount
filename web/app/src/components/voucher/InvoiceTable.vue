@@ -127,7 +127,6 @@ export default {
           description: '',
           discount_type: null,
           tax_scheme_id: '',
-          taxObj: null,
           discount_id: null,
           trade_discount: false,
         },
@@ -208,7 +207,6 @@ export default {
             item.discount,
             props.discountOptions
           ) || 0
-        // console.log('modalValue.value', modalValue.value)
         let currentTaxObj = null
         if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
           const taxindex = props.taxOptions.findIndex(
@@ -216,9 +214,7 @@ export default {
           )
           if (taxindex > -1) {
             currentTaxObj = props.taxOptions[taxindex]
-            // data.taxObj = props.taxOptions[taxindex]
           }
-          // debugger
         }
         if (data.sameScheme !== false && currentTaxObj) {
           if (

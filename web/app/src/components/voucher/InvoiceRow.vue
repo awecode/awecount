@@ -228,7 +228,6 @@ export default {
           discount_type: null,
           itemObj: null,
           tax_scheme_id: '',
-          taxObj: null,
           discount_id: null,
           trade_discount: false,
         }
@@ -281,15 +280,6 @@ export default {
         ) / 100
     )
     const selectedItem = ref(null)
-    const updateTaxObj = () => {
-      const taxindex = props.taxOptions.findIndex(
-        (item) => item.id === props.modelValue.tax_scheme_id
-      )
-      if (taxindex > -1) {
-        selectedTax.value = props.taxOptions[taxindex]
-        nextTick(() => (modalValue.value.taxObj = props.taxOptions[taxindex]))
-      }
-    }
 
     watch(
       () => props.modelValue,
@@ -322,14 +312,7 @@ export default {
         }
       }
     )
-    watch(
-      () => props.modelValue.tax_scheme_id,
-      () => updateTaxObj()
-    )
-    watch(
-      () => props.taxOptions,
-      () => updateTaxObj()
-    )
+
     watch(
       () => props.errors,
       (newValue) => {
