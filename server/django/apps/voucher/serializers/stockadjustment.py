@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.voucher.models import StockAdjustmentVoucher
+from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
 
 
@@ -9,12 +9,14 @@ class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
     unit_id = serializers.IntegerField(required=True)
 
     class Meta:
-        model = StockAdjustmentVoucher
+        model = StockAdjustmentVoucherRow
         exclude = (
-            "items",
+            "item",
             "voucher",
-            "unit",
+            # "unit",
         )
+        
+        
 
 
 class StockAdjustmentVoucherRowDetailSerializer(serializers.ModelSerializer):
@@ -22,7 +24,7 @@ class StockAdjustmentVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit = serializers.CharField(source="unit.name")
 
     class Meta:
-        model = StockAdjustmentVoucher
+        model = StockAdjustmentVoucherRow
         exclude = ("items", "voucher", "unit")
 
 
