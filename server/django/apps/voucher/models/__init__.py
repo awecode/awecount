@@ -1260,7 +1260,7 @@ PURPOSE_CHOICES=(("Stock In","Stock In"),
 
 
 
-class StockAdjustmentVoucher(models.Model):
+class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     issue_datetime = models.DateTimeField(default=timezone.now)
@@ -1309,7 +1309,7 @@ class StockAdjustmentVoucher(models.Model):
         #         set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
-class StockAdjustmentVoucherRow(TransactionModel,InvoiceRowModel):
+class StockAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
     voucher=models.ForeignKey(StockAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows")    
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="stock_adjustment_rows")
     rate = models.FloatField()
