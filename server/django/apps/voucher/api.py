@@ -149,8 +149,8 @@ from .serializers import (
 )
 from .serializers.stockadjustment import (
     StockAdjustmentVoucherCreateSerializer,
+    StockAdjustmentVoucherDetailSerializer,
     StockAdjustmentVoucherListSerializer,
-    StockAdjustmentVoucherDetailSerializer
 )
 
 
@@ -1973,6 +1973,7 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 {"detail": "The selected purchase order can not be used."}, status=400
             )
         return Response(PurchaseOrderCreateSerializer(instance).data)
+    
 
 
 class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
@@ -1995,4 +1996,16 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         ("items", Item),
         ("units", Unit)
     ]
+
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        stock_adjustment_voucher = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling voucher!"}
+            )
+        stock_adjustment_voucher.cancel(message=message)
+        return Response({})
+
 
