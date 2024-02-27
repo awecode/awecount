@@ -71,7 +71,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
 class StockAdjustmentVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockAdjustmentVoucher
-        exclude = ("company", "issue_datetime", "remarks")
+        fields=['id', 'voucher_no', 'date', 'status','purpose']
 
 
 class StockAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
