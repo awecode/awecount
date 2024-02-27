@@ -1269,6 +1269,44 @@ class StockAdjustmentVoucher(models.Model):
     purpose=models.CharField(max_length=225,choices=PURPOSE_CHOICES)
     remarks = models.TextField()
 
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ):  
+            quantity = int(row.quantity)
+            if self.purpose == "Stock In":
+                transaction_type = "dr"
+            else:
+                transaction_type = "cr" 
+            set_inventory_transactions(
+                row,
+                self.date,
+                [transaction_type, row.item.account, quantity, row.rate],
+            )
+                
+
+    def apply_transactions(self, voucher_meta=None):
+
+        # if self.status == "Cancelled":
+        #     self.cancel_transactions()
+        #     return
+
+        # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+
+        # filter bypasses rows cached by prefetching
+
+        # for row in self.rows.filter().select_related(
+        #     "tax_scheme",
+        #     "discount_obj",
+        #     "item__discount_allowed_account",
+        #     "item__sales_account",
+        # ):  
+        #     entries = []
+        #     if self.purpose == 'Damage':
+        #         entries.append(["", row.item.discount_allowed_account, row_discount])
+        #         set_ledger_transactions(row, self.date, *entries, clear=True)
+        self.apply_inventory_transactions()
+
 class StockAdjustmentVoucherRow(TransactionModel,InvoiceRowModel):
     voucher=models.ForeignKey(StockAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows")    
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="stock_adjustment_rows")
