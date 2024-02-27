@@ -29,9 +29,9 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit" :loading="loading"
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
             @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit" :loading="loading"
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
             @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
           <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
             @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
@@ -70,6 +70,7 @@ export default {
       title: 'Stock Adjustment | Awecount',
     }
     useMeta(metaData)
+    const $q = useQuasar()
     const isDeleteOpen = ref(false)
     const deleteMsg = ref(null)
     const purposeChoices = [
