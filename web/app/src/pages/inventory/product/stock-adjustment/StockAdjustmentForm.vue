@@ -62,7 +62,11 @@ export default {
       {
         label: 'Damaged',
         value: 'Damaged'
-      }
+      },
+      {
+        label: 'Expired',
+        value: 'Expired'
+      },
     ]
     const formData = useForm(endpoint, {
       getDefaults: true,
