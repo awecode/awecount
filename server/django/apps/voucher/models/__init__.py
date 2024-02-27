@@ -1253,7 +1253,9 @@ class PaymentReceipt(TransactionModel):
 ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
 PURPOSE_CHOICES=(("Stock In","Stock In"),
                 ("Stock Out","Stock Out"),
-                ("Damaged","Damaged"))
+                ("Damaged","Damaged"),
+                ("Expired","Expired"),
+)
 
 
 
