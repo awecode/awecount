@@ -15,7 +15,7 @@
               :error-message="errors?.date"></date-picker>
             <q-select class="col-md-6 col-12" v-model="fields.purpose" :options="purposeChoices" option-value="value"
               option-label="label" map-options emit-value label="Purpose" :error-message="errors.purpose"
-              :error="!!errors.purpose"></q-select>
+              :error="!!errors.purpose" :disable="isEdit"></q-select>
           </div>
           <div class="q-mt-lg">
             <AdjustmentInvoiceTable v-model="fields.rows" :itemOptions="formDefaults?.collections?.items"
@@ -28,13 +28,33 @@
               :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
-        <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading"
-            @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading"
-            @click.prevent="onSubmitClick('Issued')" color="green" label="Create" class="q-ml-auto" type="submit" />
+        <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit" :loading="loading"
+            @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit" :loading="loading"
+            @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
+            @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
       </q-card>
+      <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
+        <q-card style="min-width: min(40vw, 500px)">
+          <q-card-section class="bg-red-6 flex justify-between">
+            <div class="text-h6 text-white">
+              <span>Confirm Cancellation?</span>
+            </div>
+            <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
+          </q-card-section>
+
+          <q-card-section class="q-ma-md">
+            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+              :error-message="errors?.message"> </q-input>
+            <div class="text-right q-mt-lg">
+              <q-btn label="Confirm" @click="onCancelClick"></q-btn>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
     </q-card>
   </q-form>
 </template>
@@ -50,6 +70,8 @@ export default {
       title: 'Stock Adjustment | Awecount',
     }
     useMeta(metaData)
+    const isDeleteOpen = ref(false)
+    const deleteMsg = ref(null)
     const purposeChoices = [
       {
         label: 'Stock In',
@@ -91,8 +113,65 @@ export default {
         formData.fields.value.status = originalStatus
       }
     }
+    const onCancelClick = () => {
+      const url = `/v1/stock-adjustment/${formData.fields.value.id}/cancel/`
+      const body = {
+        message: deleteMsg.value,
+      }
+      formData.loading.value = true
+      useApi(url, {
+        method: 'POST',
+        body,
+      })
+        .then(() => {
+          $q.notify({
+            color: 'positive',
+            message: 'Cancelled',
+            icon: 'check_circle',
+          })
+          formData.fields.value.status = 'Cancelled'
+          formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+          isDeleteOpen.value = false
+          formData.loading.value = false
+        })
+        .catch((err) => {
+          if (err.status === 422) {
+            useHandleCancelInconsistencyError(url, err, body, $q)
+              .then(() => {
+                $q.notify({
+                  color: 'positive',
+                  message: 'Cancelled',
+                  icon: 'check_circle',
+                })
+                formData.fields.value.status = 'Cancelled'
+                formData.fields.value.remarks = ('\nReason for cancellation: ' + deleteMsg.value)
+                isDeleteOpen.value = false
+                formData.loading.value = false
+              })
+              .catch((error) => {
+                if (error.status !== 'cancel') {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                }
+                formData.loading.value = false
+              })
+          } else {
+            const parsedError = useHandleFormError(err)
+            formData.errors.value = parsedError.errors
+            $q.notify({
+              color: 'negative',
+              message: parsedError.message,
+              icon: 'report_problem',
+            })
+          }
+          formData.loading.value = false
+        })
+    }
     return {
-      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick
+      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick
     }
   },
 }
