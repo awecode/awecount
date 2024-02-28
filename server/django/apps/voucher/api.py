@@ -1991,6 +1991,7 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         "total_amount",
         "date",
         "purpose",
+        "voucher_no",
     ]
     def get_queryset(self, **kwargs):
         qs = super(StockAdjustmentVoucherViewSet, self).get_queryset()
