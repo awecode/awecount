@@ -1982,9 +1982,21 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
     model = StockAdjustmentVoucher
     filter_backends = [
         filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
     ]
     filterset_class = StockAdjustmentVoucherFilterSet
+    search_fields = [
+        "remarks",
+        "total_amount",
+        "date",
+        "purpose",
+    ]
+    def get_queryset(self, **kwargs):
+        qs = super(StockAdjustmentVoucherViewSet, self).get_queryset()
+        return qs.order_by("-date", "-voucher_no")
 
+    
     def get_serializer_class(self):
         if self.action == "list":
             return StockAdjustmentVoucherListSerializer
