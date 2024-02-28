@@ -29,10 +29,10 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
-            @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'" :loading="loading"
-            @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+            :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+            :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
           <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
             @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
@@ -47,7 +47,7 @@
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message"
               :error-message="errors?.message"> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="onCancelClick"></q-btn>
