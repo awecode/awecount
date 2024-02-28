@@ -23,6 +23,7 @@ class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
 class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     rows = StockAdjustmentVoucherRowSerializer(many=True)
+    total_amount = serializers.ReadOnlyField()
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -33,23 +34,22 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
             StockAdjustmentVoucher, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
-    
-    # def validate_rows(self, rows):
-    #     import ipdb; ipdb.set_trace()
-    #     for row in rows:
-    #         row_serializer = StockAdjustmentVoucherRowSerializer(data=row)
-    #         if not row_serializer.is_valid():
-    #             raise serializers.ValidationError(row_serializer.errors)
-    #     return rows
+        
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         self.assign_voucher_number(validated_data, instance=None)
         instance = StockAdjustmentVoucher.objects.create(**validated_data)
+        total_amount = 0
         for index, row in enumerate(rows_data):
             if row.get("id"):
                 row.pop("id")
+            quantity = row.get('quantity')
+            rate = row.get('rate')
+            total_amount += (rate * quantity)
             StockAdjustmentVoucherRow.objects.create(voucher=instance, **row)
+        instance.total_amount = total_amount
+        instance.save()
         instance.apply_transactions()
         return instance
 
@@ -57,11 +57,18 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         # prevent form updating purpose
         validated_data.pop("purpose")
         rows_data = validated_data.pop("rows")
+        total_amount = 0
         StockAdjustmentVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             StockAdjustmentVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
+            quantity = row.get('quantity')
+            rate = row.get('rate')
+            total_amount += (rate * quantity)
+        if instance.total_amount != total_amount:
+            instance.total_amount = total_amount
+            instance.save()
         instance.apply_transactions()
         return instance
 
@@ -73,7 +80,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
 class StockAdjustmentVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockAdjustmentVoucher
-        fields=['id', 'voucher_no', 'date', 'status','purpose']
+        fields=['id', 'voucher_no', 'date', 'status','purpose', 'total_amount']
 
 
 class StockAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
