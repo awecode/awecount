@@ -62,6 +62,12 @@ MODES = (
     ("Bank Deposit", "Bank Deposit"),
 )
 
+ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+PURPOSE_CHOICES=(("Stock In","Stock In"),
+                ("Stock Out","Stock Out"),
+                ("Damaged","Damaged"),
+                ("Expired","Expired"),
+)
 
 class Challan(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -1250,14 +1256,6 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
-PURPOSE_CHOICES=(("Stock In","Stock In"),
-                ("Stock Out","Stock Out"),
-                ("Damaged","Damaged"),
-                ("Expired","Expired"),
-)
-
-
 
 
 class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
@@ -1289,24 +1287,24 @@ class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
 
     def apply_transactions(self, voucher_meta=None):
 
-        # if self.status == "Cancelled":
-        #     self.cancel_transactions()
-        #     return
-
-        # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
+        if self.status == "Cancelled":
+            self.cancel_transactions()
+            return
 
         # filter bypasses rows cached by prefetching
+        if ( self.purpose in ['Damaged', 'Expired']):
+            for row in self.rows.filter().select_related(
+                "item__purchase_account",
+            ):  
+                entries = [["cr", row.item.purchase_account, row_amount]]
+                row_amount = row.quantity * row.rate
+                if self.purpose == 'Damaged':
+                    #TODO: Do not fetch account with name 
+                    entries.append(["dr", get_account(self.company, "Damage Expense"), row_amount])
+                elif self.purpose == 'Expired':
+                    entries.append(["dr", get_account(self.company, "Expiry Expense"), row_amount])
+                set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        # for row in self.rows.filter().select_related(
-        #     "tax_scheme",
-        #     "discount_obj",
-        #     "item__discount_allowed_account",
-        #     "item__sales_account",
-        # ):  
-        #     entries = []
-        #     if self.purpose == 'Damage':
-        #         entries.append(["", row.item.discount_allowed_account, row_discount])
-        #         set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
 
 class StockAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
