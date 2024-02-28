@@ -1268,6 +1268,7 @@ class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
     )
     purpose=models.CharField(max_length=225,choices=PURPOSE_CHOICES)
     remarks = models.TextField()
+    total_amount = models.FloatField(null=True, blank=True)
 
     def apply_inventory_transactions(self):
         for row in self.rows.filter(
