@@ -54,6 +54,8 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        # prevent form updating purpose
+        validated_data.pop("purpose")
         rows_data = validated_data.pop("rows")
         StockAdjustmentVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
