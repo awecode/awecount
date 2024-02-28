@@ -1132,6 +1132,33 @@ def handle_company_creation(sender, **kwargs):
         default=True,
     )
 
+    # For Stock Adjustemnt
+    # ==========================
+    inventory_write_off_account = Category.objects.create(
+        name="Inventory write-off",
+        parent=indirect_expenses,
+        code="E-I-DE-IWO",
+        company=company,
+        default=True,
+    )
+
+    Account.objects.create(
+        name="Damage Expense",
+        code="E-I-DE-IWO-DE",
+        category=inventory_write_off_account,
+        company=company,
+        default=True,
+    )
+
+    Account.objects.create(
+        name="Expiry Expense",
+        code="E-I-DE-IWO-EE",
+        category=inventory_write_off_account,
+        company=company,
+        default=True,
+    )
+
+
 
 def get_account(request_or_company, name):
     if not request_or_company.__class__.__name__ == "Company":
