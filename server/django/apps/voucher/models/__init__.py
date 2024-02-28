@@ -1296,8 +1296,8 @@ class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
             for row in self.rows.filter().select_related(
                 "item__purchase_account",
             ):  
-                entries = [["cr", row.item.purchase_account, row_amount]]
                 row_amount = row.quantity * row.rate
+                entries = [["cr", row.item.purchase_account, row_amount]]
                 if self.purpose == 'Damaged':
                     #TODO: Do not fetch account with name 
                     entries.append(["dr", get_account(self.company, "Damage Expense"), row_amount])
