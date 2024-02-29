@@ -41,7 +41,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context["request"]
-        inventory_setting = request.company.inventory_settings
+        inventory_setting = request.company.inventory_setting
         instance = StockAdjustmentVoucher.objects.create(data)
         item_ids = [row["item_id"] for row in data["rows"]]
         quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
