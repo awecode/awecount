@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
+from apps.product.models import InventoryAccount
 from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
+from awecount.libs.exception import UnprocessableException
 
 
 class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
@@ -51,6 +53,18 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         instance.total_amount = total_amount
         instance.save()
         instance.apply_transactions()
+        request = self.context["request"]
+        inventory_setting = request.company.inventory_settings
+        if  instance.apply_transaction.transaction_type=="cr" :
+            if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+                for rows in row:
+                    if InventoryAccount.current_balance<row.cr.amount:
+                        raise UnprocessableException()
+                    InventoryAccount.current_balance-=row.cr.amount
+
         return instance
 
     def update(self, instance, validated_data):
