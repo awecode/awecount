@@ -1,6 +1,7 @@
+from django.db.models import F
 from rest_framework import serializers
 
-from apps.product.models import InventoryAccount
+from apps.product.models import Item
 from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
@@ -38,6 +39,31 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         validated_data["voucher_no"] = next_voucher_no
         
 
+    def validate(self, data):
+        request = self.context["request"]
+        inventory_setting = request.company.inventory_settings
+        instance = StockAdjustmentVoucher.objects.create(data)
+        item_ids = [row["item_id"] for row in data["rows"]]
+        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
+        if  instance.apply_transaction.transaction_type=="cr" and inventory_setting.enable_negative_stock_check and not request.query_params.get("negative_stock") :
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+
+            remaining_stock_map = {item.id: item.remaining for item in items}
+
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
+        return data
+
+
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         self.assign_voucher_number(validated_data, instance=None)
@@ -53,18 +79,6 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         instance.total_amount = total_amount
         instance.save()
         instance.apply_transactions()
-        request = self.context["request"]
-        inventory_setting = request.company.inventory_settings
-        if  instance.apply_transaction.transaction_type=="cr" :
-            if (
-            inventory_setting.enable_negative_stock_check
-            and not request.query_params.get("negative_stock")
-        ):
-                for rows in row:
-                    if InventoryAccount.current_balance<row.cr.amount:
-                        raise UnprocessableException()
-                    InventoryAccount.current_balance-=row.cr.amount
-
         return instance
 
     def update(self, instance, validated_data):
