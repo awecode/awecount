@@ -105,35 +105,35 @@ const newColumn = [
     label: 'Voucher no',
     align: 'left',
     field: 'voucher_no',
-    // sortable: true
+    sortable: true
   },
   {
     name: 'date',
     label: 'Date',
     align: 'left',
     field: 'date',
-    // sortable: true
+    sortable: true
   },
   {
     name: 'status',
     label: 'Status',
     align: 'center',
     field: 'status',
-    // sortable: true
+    sortable: true
   },
   {
     name: 'purpose',
     label: 'Purpose',
     align: 'left',
     field: 'purpose',
-    // sortable: true
+    sortable: true
   },
   {
     name: 'total_amount',
     label: 'Total amount',
     align: 'left',
     field: 'total_amount',
-    // sortable: true
+    sortable: true
   },
   { name: 'actions', align: 'left', label: 'Actions' },
 ]
