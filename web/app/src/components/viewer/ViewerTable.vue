@@ -71,7 +71,7 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
-        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> {{ getTaxname }} </q-td><q-td class="text-right">{{
+        <q-td> </q-td><q-td> </q-td><q-td class="text-right"> {{ getTaxname }} </q-td><q-td class="text-right" data-testid="tax">{{
           formatNumberWithComma(fields?.voucher_meta.tax)
         }}</q-td>
       </q-tr>
