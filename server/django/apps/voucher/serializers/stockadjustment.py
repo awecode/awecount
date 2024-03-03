@@ -1,9 +1,9 @@
 import datetime
 
-from django.db.models import F
+from django.db.models import F, Q
 from rest_framework import serializers
 
-from apps.product.models import Item
+from apps.product.models import Item, Transaction
 from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
@@ -45,8 +45,8 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         data = super().validate(data)
         inventory_setting = request.company.inventory_setting
+        item_ids = {row["item_id"] for row in data["rows"]}
         if inventory_setting.enable_negative_stock_check and not request.query_params.get("negative_stock") and not data.get("purpose") == 'Stock In':
-            item_ids = {row["item_id"] for row in data["rows"]}
             quantities = {}
             for row in data["rows"]:
                 item_id = row["item_id"]
@@ -71,20 +71,14 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         if inventory_setting.enable_fifo and not request.query_params.get(
                 "fifo_inconsistency"
             ):
-                date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
-
-                stock_adjustment_rows_exists = (
-                    StockAdjustmentVoucher.objects.filter(
-                        item_id__in=item_ids, voucher__date__gt=date
-                    )
-                    .exclude(voucher__status__in=["Cancelled"])
-                    .exists()
-                )
-
-                if stock_adjustment_rows_exists:
-                    raise UnprocessableException(
-                        detail="There are stockadjustment voucher on later dates. This might create insonsistencies in FIFO.",
-                        code="fifo_inconsistency",)
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+            items_transactions = (
+                Transaction.objects.filter(Q(account__item__id__in=item_ids) & Q(journal_entry__date__gt=date))
+            )
+            if items_transactions.exists():
+                raise UnprocessableException(
+                    detail="There are Transactions on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",)
         return data
 
 
