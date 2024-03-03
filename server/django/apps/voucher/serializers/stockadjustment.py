@@ -45,26 +45,30 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         data = super().validate(data)
         inventory_setting = request.company.inventory_setting
-        instance = StockAdjustmentVoucher.objects.create(**data)
-        item_ids = [row["item_id"] for row in data["rows"]]
-        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
-        if  instance.apply_transaction.transaction_type=="cr":
-            if inventory_setting.enable_negative_stock_check and not request.query_params.get("negative_stock") :
-                items = (
-                    Item.objects.filter(id__in=item_ids)
-                    .annotate(remaining=F("account__current_balance"))
-                    .only("id")
-                )
-
-                remaining_stock_map = {item.id: item.remaining for item in items}
-
-                for item in items:
-                    if remaining_stock_map[item.id] < quantities[item.id]:
-                        raise UnprocessableException(
-                            detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
-                            code="negative_stock",
-                        )
-            if inventory_setting.enable_fifo and not request.query_params.get(
+        if inventory_setting.enable_negative_stock_check and not request.query_params.get("negative_stock") and not data.get("purpose") == 'Stock In':
+            item_ids = {row["item_id"] for row in data["rows"]}
+            quantities = {}
+            for row in data["rows"]:
+                item_id = row["item_id"]
+                quantity = row["quantity"]
+                if quantities.get(item_id):
+                    quantities[item_id] += quantity
+                else:
+                    quantities[item_id] = quantity
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+            remaining_stock_map = {item.id: item.remaining for item in items}
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+            
+        if inventory_setting.enable_fifo and not request.query_params.get(
                 "fifo_inconsistency"
             ):
                 date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
