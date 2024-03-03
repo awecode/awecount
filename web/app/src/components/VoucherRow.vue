@@ -75,8 +75,9 @@
               size="20px"
               color="green"
               class="cursor-pointer"
-              title="Expand"
-            ></q-icon>
+            >
+            <q-tooltip>Expand</q-tooltip>
+          </q-icon>
           </q-btn>
           <q-btn
             flat

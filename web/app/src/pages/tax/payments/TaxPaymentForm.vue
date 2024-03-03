@@ -31,24 +31,25 @@
           <q-input v-model="fields.remarks" type="textarea" autogrow label="Remarks" class="col-12 q-mt-sm"
             :error="!!errors.remarks" :error-message="errors.remarks" />
         </q-card-section>
-        <div class="q-pb-lg row justify-start q-gutter-x-md">
+        <div class="q-pb-lg row justify-end q-gutter-x-md">
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Draft', submitForm)"
               color="orange-6" label="Save Draft" class="q-px-lg q-mb-sm" type="submit" :loading="loading" />
-            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')" @click.prevent="isDeleteOpen = true"
-              color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm" :loading="loading" />
+            <q-btn v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')"
+              @click.prevent="isDeleteOpen = true" color="red-6" label="Cancel" icon="cancel" class="q-px-lg q-mb-sm"
+              :loading="loading" />
             <q-btn v-if="checkPermissions('TaxPaymentCreate')" @click.prevent="submitWithStatus('Paid', submitForm)"
               color="green-6" :label="'Mark as paid'" class="q-px-lg q-mb-sm" :loading="loading" />
           </span>
           <span v-if="fields.status === 'Paid' || fields.status === 'Cancelled'" class="row q-gutter-x-md">
+            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="isDeleteOpen = true" color="red-6" label="Cancel"
+              :loading="loading" icon="cancel" class="q-px-lg q-mb-sm" />
             <q-btn @click.prevent="
               submitWithStatus(
                 fields.status === 'Cancelled' ? 'Cancelled' : 'Paid',
                 submitForm
               )
               " color="green-6" :label="'Update'" class="q-px-lg q-mb-sm" :loading="loading" />
-            <q-btn v-if="fields.status !== 'Cancelled'" @click.prevent="isDeleteOpen = true" color="red-6" label="Cancel" :loading="loading"
-              icon="cancel" class="q-px-lg q-mb-sm" />
           </span>
         </div>
       </q-card>
@@ -69,8 +70,7 @@
           <div class=" text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes"
-                @click="submitWithStatus('Cancelled')"></q-btn>
+              <q-btn flat class="text-red" label="Yes" @click="submitWithStatus('Cancelled')"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -86,7 +86,6 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/tax-payments/'
-    // const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/tax-payment/list/',
@@ -104,7 +103,8 @@ export default {
     async function submitWithStatus(status) {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await formData.submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

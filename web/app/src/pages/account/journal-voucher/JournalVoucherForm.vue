@@ -99,7 +99,7 @@ export default {
         }
         formData.fields.value.deleted_rows.push(formData.fields.value.rows[i])
       }
-      if (errors.rows) {
+      if (errors && Array.isArray(errors.rows)) {
         errors.rows.splice(i, 1)
       }
       formData.fields.value.rows.splice(i, 1)
@@ -176,9 +176,8 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {
-        await formData.submitForm()
-      } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

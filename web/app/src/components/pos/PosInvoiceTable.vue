@@ -1,15 +1,10 @@
 <template>
   <q-card-section class="overflow-y-auto -mt-4">
-    <q-card :class="usedInPos ? 'min-w-[550px]' : 'min-w-[700px]'" class="pt-6">
-      <div :class="usedInPos ? 'q-px-lg' : 'q-pa-lg'" class="q-col-gutter-md scroll">
+    <q-card class="pt-6 min-w-[550px]">
+      <div class="q-col-gutter-md scroll q-px-lg">
         <div class="row text-subtitle2 hr q-py-sm no-wrap mb-2">
           <div class="col-5 row">
-            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-              Particular(s)
-            </div>
-            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
-              Return
-            </div>
+            Particular(s)
           </div>
           <div class="col-2 text-center">Qty</div>
           <div class="col-2 text-center">Rate</div>
@@ -22,7 +17,7 @@
             :rowEmpty="(rowEmpty && index === 0) || false" @deleteRow="(index) => removeRow(index)"
             :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null" :usedInPos="true"
             :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="false" :inputAmount="false"
-            :showRateQuantity="true" @onItemIdUpdate="onItemIdUpdate" />
+            :showRateQuantity="true" usedIn="sales" />
         </div>
       </div>
     </q-card>
@@ -87,7 +82,7 @@ export default {
       default: () => false,
     }
   },
-  emits: ['update:modelValue', 'deleteRowErr', '@updateTableData'],
+  emits: ['update:modelValue', 'deleteRowErr', 'updateTableData'],
   setup(props, { emit }) {
     const modalValue = ref(props.modelValue);
     const rowEmpty = ref(false);

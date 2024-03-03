@@ -1,8 +1,8 @@
 <template>
   <q-card-section class="overflow-y-auto -mt-4">
-    <q-card :class="usedInPos ? 'min-w-[550px]' : 'min-w-[700px]'" class="pt-6">
-      <div :class="usedInPos ? 'q-px-lg' : 'q-pa-lg'" class="q-col-gutter-md scroll">
-        <div class="row text-subtitle2 hr q-py-sm no-wrap" :class="usedInPos ? 'mb-2' : ''">
+    <q-card class="min-w-[700px] pt-6">
+      <div class="q-pa-lg q-col-gutter-md scroll">
+        <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
             <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
               Particular(s)
@@ -21,22 +21,12 @@
             :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount"
-            :showRateQuantity="props.showRateQuantity" :isFifo="isFifo" @onItemIdUpdate="onItemIdUpdate"
-            :COGSData="COGSData" :hasChallan="hasChallan" />
+              " :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="props.showRowTradeDiscount"
+            :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
+            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
           <div class="col-7 text-center text-left pt-2">
-            <div
-              v-if="usedInPos && modalValue.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0)">
-              <div class="font-medium text-gray-500">Rows &nbsp; {{ modalValue.length }}</div>
-              <div class="font-medium text-gray-500">Items &nbsp; {{ modalValue.reduce((accumulator, currentDict) =>
-                (accumulator + currentDict.quantity),
-                0)
-              }}
-              </div>
-            </div>
           </div>
           <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
@@ -68,7 +58,7 @@
           </div>
           <div class="col-1 text-center"></div>
         </div>
-        <div v-if="!usedInPos">
+        <div>
           <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan"
             data-testid="add-row-btn">Add Row</q-btn>
         </div>
@@ -114,7 +104,7 @@ export default {
       },
     },
     errors: {
-      type: Array || String,
+      type: [Array, String],
       default: () => {
         return null
       },
@@ -137,15 +127,10 @@ export default {
           description: '',
           discount_type: null,
           tax_scheme_id: '',
-          taxObj: null,
           discount_id: null,
           trade_discount: false,
         },
       ],
-    },
-    usedInPos: {
-      type: Boolean,
-      default: () => false,
     },
     enableRowDescription: {
       type: Boolean,
@@ -190,13 +175,6 @@ export default {
       }
     )
     watch(
-      () => props.errors,
-      (newValue) => {
-        if (newValue === 'This field is required.') rowEmpty.value = true
-        else rowEmpty.value = false
-      }
-    )
-    watch(
       () => modalValue,
       (newValue) => {
         emit('update:modelValue', newValue)
@@ -229,17 +207,26 @@ export default {
             item.discount,
             props.discountOptions
           ) || 0
-        if (data.sameScheme !== false && item.taxObj) {
+        let currentTaxObj = null
+        if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
+          const taxindex = props.taxOptions.findIndex(
+            (taxItem) => taxItem.id === item.tax_scheme_id
+          )
+          if (taxindex > -1) {
+            currentTaxObj = props.taxOptions[taxindex]
+          }
+        }
+        if (data.sameScheme !== false && currentTaxObj) {
           if (
             data.sameScheme === null &&
-            item.taxObj &&
-            item.taxObj.rate != 0
+            currentTaxObj &&
+            currentTaxObj.rate != 0
           ) {
-            data.sameScheme = item.taxObj.id
-            data.taxObj = item.taxObj
+            data.sameScheme = currentTaxObj.id
+            data.taxObj = currentTaxObj
           } else if (
-            data.sameScheme === item.taxObj?.id ||
-            item.taxObj.rate === 0
+            data.sameScheme === currentTaxObj?.id ||
+            currentTaxObj.rate === 0
           ) {
           } else data.sameScheme = false
         }
@@ -251,18 +238,18 @@ export default {
             props.discountOptions
           ) || 0
 
-        if (item.taxObj) {
+        if (currentTaxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
             rowTax =
               (rowTotal -
                 (rowDiscount || 0) -
                 props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           } else {
             rowTax =
               (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           }
           data.totalTax = data.totalTax + rowTax
         }
@@ -336,7 +323,7 @@ export default {
         const currentItemId = row.item_id
         // this calculates the total available stock for the selected item According to fifo
         const availableStock = (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) ?
-         localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
+          localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
         let currentCOGS = 0
         let quantity = row.quantity
         if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
@@ -361,7 +348,7 @@ export default {
         } else {
           currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
         }
-        COGSRows[index] = { totalCost :currentCOGS, availableStock}
+        COGSRows[index] = { totalCost: currentCOGS, availableStock }
       })
       COGSData.value = COGSRows
     }

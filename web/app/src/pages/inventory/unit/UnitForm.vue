@@ -43,7 +43,7 @@ export default {
     useMeta(metaData)
     return {
       ...useForm(endpoint, {
-        getDefaults: true,
+        getDefaults: false,
         successRoute: '/units/list/',
       }), checkPermissions
     }

@@ -23,8 +23,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Brand" v-model="fields.brand"
-                :options="formDefaults.collections?.brands"
+              <n-auto-complete label="Brand" v-model="fields.brand" :options="formDefaults.collections?.brands"
                 :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
             </div>
           </div>
@@ -35,24 +34,23 @@
           <q-card class="q-pa-lg">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
+                <n-auto-complete label="Category" v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories"
                   :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
                   :error="errors.category" @update:modelValue="setCategory" />
               </div>
             </div>
-            <div v-if="fields.extra_fields">
+            <div v-if="fields.extra_data">
               <q-input v-for="(field, index) in fields.extra_fields" :label="field.name" :type="field.type.value"
                 :key="index" v-model="fields.extra_data[field.name]"></q-input>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
-                  :options="formDefaults.collections?.units"
+                <n-auto-complete label="Unit" v-model="fields.unit_id" :options="formDefaults.collections?.units"
                   :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.unit_id" />
               </div>
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
+                <n-auto-complete label="Tax Scheme" v-model="fields.tax_scheme_id"
                   :options="formDefaults.collections?.tax_scheme"
                   :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
@@ -90,24 +88,30 @@
             <div class="mt-4">
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account"
+                @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
                 v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account"
+                @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
+              <select-item-accounts-with-types v-if="fields.can_be_sold"
+                v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account"
+                @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
+              <select-item-accounts-with-types v-if="fields.can_be_purchased"
+                v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account"
+                @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
@@ -122,8 +126,8 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="images.front_image" class="q-full-width" :error-messages="errors.front_image"
-                label="Front Image" @update:model-value="
+              <q-file v-model="images.front_image" :error-messages="errors.front_image" label="Front Image"
+                @update:model-value="
                   onFileChange(fields, $event, 'front_image')
                   ">
                 <template v-slot:prepend>
@@ -142,8 +146,8 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="fields.back_image" class="q-full-width" :error-messages="errors.back_image"
-                label="Back Image" @update:model-value="onFileChange(fields, $event, 'back_image')">
+              <q-file v-model="fields.back_image" :error-messages="errors.back_image" label="Back Image"
+                @update:model-value="onFileChange(fields, $event, 'back_image')">
                 <template v-slot:prepend>
                   <q-icon name="attach_file" />
                 </template>
@@ -256,7 +260,7 @@ const setCategory = () => {
       if (item.id === category_id) {
         return item;
       }
-    });
+    })
     if (selected.hasOwnProperty('extra_fields')) {
       if (fields.value.extra_data === null) {
         fields.value.extra_data = {}
@@ -403,13 +407,27 @@ const onTypeUpdate = (key, selectedType) => {
   }
   if (selectedType === 'category' && !fields.value.category) {
     $q.notify({
-        color: 'orange-6',
-        message: 'Please select a category first!',
-        icon: 'report_problem',
-        position: 'top-right',
+      color: 'orange-6',
+      message: 'Please select a category first!',
+      icon: 'report_problem',
+      position: 'top-right',
     })
   }
 }
+
+watch(() => fields.value.can_be_purchased, (newValue) => {
+  if (newValue) {
+    fields.value.purchase_account_type || (fields.value.purchase_account_type = 'dedicated')
+    fields.value.discount_received_account_type || (fields.value.discount_received_account_type = 'dedicated')
+  }
+})
+watch(() => fields.value.can_be_sold, (newValue) => {
+  if (newValue) {
+    fields.value.sales_account_type || (fields.value.sales_account_type = 'dedicated')
+    fields.value.discount_allowed_account_type || (fields.value.discount_allowed_account_type = 'dedicated')
+  }
+})
+
 </script>
 
 <style scoped>

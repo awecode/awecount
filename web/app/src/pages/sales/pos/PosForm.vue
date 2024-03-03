@@ -161,8 +161,7 @@
                     </q-btn>
                     <div class="flex items-center justify-end gap-4" v-if="fields.rows.length > 0">
                       <q-btn @click.prevent="onSubmitClick('Draft')" color="orange-6" label="Save Draft" type="submit" />
-                      <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" :label="isEdit ? 'Update' : 'Issue'"
-                        type="submit" />
+                      <q-btn @click.prevent="onSubmitClick('Issued')" color="green-8" label="Issue" type="submit" />
                     </div>
                   </div>
                 </div>
@@ -234,7 +233,9 @@ const deleteRowErr = (index, errors, deleteObj) => {
     }
     fields.value.deleted_rows.push(deleteObj)
   }
-  if (!!errors.rows) errors.rows.splice(index, 1)
+  if (errors && Array.isArray(errors.rows)) {
+    errors.rows.splice(index, 1)
+  }
 }
 const onSubmitClick = (status, noPrint) => {
   if (!fields.value?.rows || !(fields.value.rows.length > 0)) return
@@ -365,17 +366,7 @@ const getPartyObj = () => {
     return partyChoices.value[index]
   } else return null
 }
-const printPdf = (data) => {
-  let ifram = document.createElement('iframe')
-  ifram.style = 'display:none; margin: 20px'
-  document.body.appendChild(ifram)
-  const pri = ifram.contentWindow
-  pri.document.open()
-  pri.document.write(data)
-  pri.document.close()
-  pri.focus()
-  setTimeout(() => pri.print(), 100)
-}
+
 const hasItemModifyAccess = computed(() => {
   return checkPermissions('ItemModify')
 })
@@ -409,7 +400,7 @@ const handleSubmitSuccess = (data, noPrint) => {
       !formDefaults.value.options.show_rate_quantity_in_voucher,
       formDefaults.value.collections.tax_schemes
     )
-    printPdf(printData)
+    usePrintPdfWindow(printData)
   }
   fields.value.rows = []
   fields.value.mode = 'Cash'

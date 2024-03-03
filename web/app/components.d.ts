@@ -25,7 +25,6 @@ declare module '@vue/runtime-core' {
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     ItemImport: typeof import('./src/components/ItemImport.vue')['default']
     ItemMergeGroup: typeof import('./src/components/settings/ItemMergeGroup.vue')['default']
-    JournalVoucherDetails: typeof import('./src/components/voucher/JournalVoucherDetails.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']

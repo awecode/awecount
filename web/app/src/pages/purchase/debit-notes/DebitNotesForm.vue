@@ -31,7 +31,7 @@
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->
                     <q-select label="Fiscal Year" v-model="referenceFormData.fiscal_year"
-                      :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
+                      :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" ></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
@@ -87,12 +87,12 @@
       </div>
       <div v-if="checkPermissions('DebitNoteCreate')"
         class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange"
+        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft')" color="orange"
           label="Save Draft" :disable="fields.invoices ? false : true" type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft'" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
           :disable="fields.invoices ? false : true" type="submit" />
-        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued', fields, submitForm)" :loading="loading" color="green"
+        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')" :loading="loading" color="green"
           :label="isEdit ? fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
@@ -154,12 +154,15 @@ export default {
         }
         formData.fields.value.deleted_rows.push(deleteObj)
       }
-      if (!!errors.rows) errors.rows.splice(index, 1)
+      if (errors && Array.isArray(errors.rows)) {
+        errors.rows.splice(index, 1)
+      }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -254,7 +257,7 @@ export default {
 
     // to update voucher meta in Credit and debit Notes
     const updateVoucherMeta = (data) => {
-      formData.fields.value.discount = data.discount
+      // formData.fields.value.discount = data.discount
       formData.fields.value.meta_discount = data.discount
       formData.fields.value.meta_sub_total = data.subTotal
       formData.fields.value.meta_tax = data.totalTax

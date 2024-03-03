@@ -21,16 +21,16 @@
                 <q-icon v-if="fields.type !== null" class="cursor-pointer" name="clear"
                   @click.stop.prevent="fields.type = null" /></template></q-select>
             <q-input v-model="fields.value" label="Value *" class="col-12 col-md-6" :error-message="errors.value"
-              :error="!!errors.value" type="number"/>
+              :error="!!errors.value" type="number" />
           </div>
           <q-checkbox class="q-mt-sm" v-model="fields.trade_discount" label="Is Trade Discount?"
             :error-message="errors.trade_discount" :error="!!errors.trade_discount" />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('SalesDiscountCreate') && !isEdit" :loading="loading" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('SalesDiscountModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green"
-            label="Update" class="q-ml-auto" type="submit" />
+          <q-btn v-if="checkPermissions('SalesDiscountCreate') && !isEdit" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Create" class="q-ml-auto" type="submit" />
+          <q-btn v-if="checkPermissions('SalesDiscountModify') && isEdit" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Update" class="q-ml-auto" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -46,7 +46,7 @@ export default {
   setup(props, context) {
     const endpoint = '/v1/sales-discount/'
     const formData = useForm(endpoint, {
-      getDefaults: true,
+      getDefaults: false,
       successRoute: '/sales-discount/list/',
     })
     useMeta(() => {

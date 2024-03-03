@@ -88,5 +88,3 @@ const onLoginSubmit = async () => {
     })
 }
 </script>
-
-<style scoped></style>

@@ -30,7 +30,7 @@
                     <q-input v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number"
                       :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
-                      :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
+                      :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
@@ -50,7 +50,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount_type"
-                  :error-message="errors?.discount_type" :options="discountOptionsComputed"
+                  :options="discountOptionsComputed"
                   :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
                 </n-auto-complete>
               </div>
@@ -82,8 +82,9 @@
         v-model="fields.rows" :mainDiscount="{
           discount_type: fields.discount_type,
           discount: fields.discount,
-        }" :errors="!!errors?.rows ? errors?.rows : null" @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)"
-        :usedIn="'creditNote'" @updateVoucherMeta="updateVoucherMeta"></invoice-table>
+        }" :errors="!!errors?.rows ? errors?.rows : null"
+        @deleteRowErr="(index) => deleteRowErr(index, errors, deleteObj)" :usedIn="'creditNote'"
+        @updateVoucherMeta="updateVoucherMeta"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
           <!-- <q-input
@@ -98,9 +99,9 @@
           <div>
             <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"></q-checkbox>
           </div>
-          <q-select v-model="fields.sales_agent" label="Sales Agent" class="col-8" :error="!!errors?.sales_agent"
-            :error-message="errors?.sales_agent"></q-select>
-          <!-- TODO: add sales agent form -->
+          <q-input v-if="fields.sales_agent?.name" label="Sales Agent" class="col-8" disable
+            v-model="fields.sales_agent.name">
+          </q-input>
         </div>
       </div>
 
@@ -173,13 +174,15 @@ export default {
         }
         formData.fields.value.deleted_rows.push(deleteObj)
       }
-      if (!!errors.rows) errors.rows.splice(index, 1)
-      // errors.rows.splice(index, 1)
+      if (errors && Array.isArray(errors.rows)) {
+        errors.rows.splice(index, 1)
+      }
     }
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await formData.submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -281,7 +284,7 @@ export default {
 
     // to update voucher meta in Credit and debit Notes
     const updateVoucherMeta = (data) => {
-      formData.fields.value.discount = data.discount
+      // formData.fields.value.discount = data.discount
       formData.fields.value.meta_discount = data.discount
       formData.fields.value.meta_sub_total = data.subTotal
       formData.fields.value.meta_tax = data.totalTax

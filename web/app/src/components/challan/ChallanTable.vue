@@ -4,12 +4,7 @@
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
-            <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'">
-              Particular(s)
-            </div>
-            <div v-if="usedIn === 'creditNote'" class="col-2 text-center">
-              Return
-            </div>
+            Particular(s)
           </div>
           <div class="col-3 text-center">Qty</div>
           <div class="col-3 text-center">Unit</div>
@@ -21,16 +16,16 @@
               <n-auto-complete v-model="modalValue[index].item_id" :options="itemOptions" label="Item" :error="!!errors?.[index]
                 ? errors[index].item_id
                   ? errors[index].item_id[0]
-                  : rowEmpty || false
-                : false
+                  : rowEmpty ? 'This field is required' : ''
+                : ''
                 " :modal-component="ItemAdd" @update:modelValue="onItemChange(index)" />
             </div>
             <div class="col-3">
               <q-input v-model.number="modalValue[index].quantity" label="Quantity" type="number" :error-message="!!errors?.[index]
                 ? errors[index].quantity
                   ? errors[index].quantity[0]
-                  : false
-                : false
+                  : ''
+                : ''
                 " :error="!!errors?.[index]
     ? errors[index].quantity
       ? true
@@ -43,8 +38,8 @@
                 option-label="name" emit-value map-options :error-message="!!errors?.[index]
                   ? errors[index].unit_id
                     ? 'Please Select an Option'
-                    : false
-                  : false
+                    : ''
+                  : ''
                   " :error="!!errors?.[index]
     ? errors[index].unit_id
       ? true
@@ -91,10 +86,8 @@ export default {
       },
     },
     errors: {
-      type: Array || String,
-      default: () => {
-        return null
-      },
+      type: [Array, String],
+      default: () => []
     },
     modelValue: {
       type: Array,
