@@ -3,7 +3,8 @@
     <div class="q-date q-date--portrait q-date--portrait-standard">
       <div class="q-date__header ">
         <div class="relative-position">
-          <div class="q-date__header-subtitle q-date__header-link cursor-pointer" tabindex="0" @click="changeTo('year')">
+          <div class="q-date__header-subtitle q-date__header-link cursor-pointer" tabindex="0"
+            @click="changeTo('year')">
             {{ year }}</div>
         </div>
         <div class="q-date__header-title relative-position flex no-wrap">
@@ -33,7 +34,7 @@
                     tabindex="0" type="button"><span class="q-focus-helper"></span><span
                       class="q-btn__content text-center col items-center q-anchor--skip justify-center row"><span
                         class="block">{{ months_list[month
-                          - 1] }}</span></span></button></div>
+              - 1] }}</span></span></button></div>
               </div>
               <div class="row items-center q-date__arrow"><button :disabled="year == 2089 && month == 12"
                   @click="incMonth"
@@ -80,7 +81,8 @@
                 <span v-for="(row, index) in monthRows" :key="index">
                   <span v-for="(obj, j) in row" :key="j">
                     <span class="border-none" v-if="obj" @click="onDateClick(obj)">
-                      <div class="q-date__calendar-item q-date__calendar-item--in"><button :disabled="compareBsDate(obj)"
+                      <div class="q-date__calendar-item q-date__calendar-item--in"><button
+                          :disabled="compareBsDate(obj)"
                           class="day-selector q-btn q-btn-item non-selectable no-outline q-btn--rectangle q-btn--actionable q-focusable q-hoverable q-btn--dense"
                           tabindex="0"
                           :class="day == obj ? 'q-btn--unelevated bg-primary text-white' : 'q-btn--flat q-btn--active'"
@@ -138,7 +140,7 @@
 <script setup>
 import DateConverter from './VikramSamvat'
 const props = defineProps(['modelValue', 'error', 'toLimit'])
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'closeMenu'])
 const ad_date = ref(props.modelValue || null)
 if (!ad_date.value) {
   ad_date.value = DateConverter.date2str(new Date())
@@ -239,6 +241,9 @@ const onDateClick = (data) => {
   if (!props.modelValue && bsDate.value) {
     emit('update:modelValue', DateConverter.bs2ad(bsDate.value))
   }
+  nextTick(() => {
+    emit('closeMenu')
+  })
   if (props.toLimit) {
     const selectedDate = `${year.value}-${month.value < 10 ? `0${month.value}` : `${month.value}`}-${data < 10 ? `0${data}` : `${data}`}`
     const toLimitConverted = DateConverter.ad2bs(props.toLimit)
