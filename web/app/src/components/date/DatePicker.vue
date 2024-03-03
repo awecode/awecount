@@ -115,9 +115,4 @@ const toDateValidation = (date) => {
   }
   else return '1944/04/13' < date && date < '2033/04/14'
 }
-
-const closeMenu = () => {
-  // debugger
-  console.log('testinnnn')
-}
 </script>

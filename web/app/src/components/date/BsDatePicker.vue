@@ -238,10 +238,7 @@ watch(() => bsDate.value, (newVal) => {
 })
 
 const onDateClick = (data) => {
-  if (!props.modelValue && bsDate.value) {
-    emit('update:modelValue', DateConverter.bs2ad(bsDate.value))
-  }
-  nextTick(() => {
+  setTimeout(() => {
     emit('closeMenu')
   })
   if (props.toLimit) {
