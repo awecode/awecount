@@ -4,7 +4,7 @@
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">Add Stock Adjustment Voucher</span>
-          <span v-else>Update Stock Adjustment Voucher</span>
+          <span v-else>Update Stock Adjustment Voucher | {{ fields.status }} | # {{ fields.voucher_no }}</span>
         </div>
       </q-card-section>
 
@@ -32,7 +32,8 @@
           <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
           <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update" type="submit" />
+            :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update"
+            type="submit" />
           <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
             @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
