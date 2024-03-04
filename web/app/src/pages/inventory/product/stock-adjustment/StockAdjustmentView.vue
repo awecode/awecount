@@ -1,5 +1,6 @@
 <template>
   <div v-if="fields">
+    <print-header></print-header>
     <div>
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
