@@ -100,7 +100,7 @@
     }` : ''}`
     " icon="print" />
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
-            label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
+            label="Journal Entries" icon="books" :to="`/journal-entries/stock-adjustment/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
           <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
