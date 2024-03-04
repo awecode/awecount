@@ -41,9 +41,9 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue"
-            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
-            :to="`/items/details/${props.row.id}/`" /> -->
+          <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
+            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="View"
+            :to="`/items/stock-adjustment/${props.row.id}/view`" />
           <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify')" color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
             :to="`/items/stock-adjustment/${props.row.id}/`" />
