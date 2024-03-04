@@ -27,6 +27,7 @@ from apps.ledger.serializers import (
     JournalEntriesSerializer,
     PartyMinSerializer,
     SalesJournalEntrySerializer,
+    JournalEntrySerializer
 )
 from apps.product.models import Item, Unit
 from apps.product.serializers import (
@@ -2020,5 +2021,11 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
             )
         stock_adjustment_voucher.cancel(message=message)
         return Response({})
+
+    @action(detail=True, url_path="journal-entries")
+    def journal_entries(self, request, pk):
+        stock_adjustment_voucher = get_object_or_404(StockAdjustmentVoucher, pk=pk)
+        journals = stock_adjustment_voucher.journal_entries()
+        return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
 
