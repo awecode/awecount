@@ -21,10 +21,7 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
-                    <MultiSelectChip :options="[
-                      'Issued',
-                      'Cancelled',
-                    ]" v-model="filters.status" />
+                    <MultiSelectChip :options="['Issued', 'Cancelled']" v-model="filters.status" />
                   </div>
                 </div>
                 <div class="q-mx-md">
@@ -39,6 +36,7 @@
           </q-btn>
         </div>
       </template>
+
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
@@ -49,6 +47,7 @@
             :to="`/items/stock-adjustment/${props.row.id}/`" />
         </q-td>
       </template>
+
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link v-if="checkPermissions('StockAdjustmentVoucherModify')"
@@ -59,18 +58,20 @@
           <span v-else>{{ props.row.voucher_no }}</span>
         </q-td>
       </template>
+
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center">
             <div class="text-white text-subtitle row items-center justify-center" :class="props.row.status == 'Issued'
-              ? 'bg-blue-2 text-blue-10'
-              : props.row.status == 'Paid'
-                ? 'bg-green-2 text-green-10'
-                : props.row.status == 'Draft'
-                  ? 'bg-orange-2 text-orange-10'
-                  : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
-                    : 'bg-red-2 text-red-10'
-              " style="border-radius: 8px; padding: 2px 10px">
+      ? 'bg-blue-2 text-blue-10'
+      : props.row.status == 'Paid'
+        ? 'bg-green-2 text-green-10'
+        : props.row.status == 'Draft'
+          ? 'bg-orange-2 text-orange-10'
+          : props.row.status == 'Partially Paid'
+            ? 'bg-green-1 text-green-6'
+            : 'bg-red-2 text-red-10'
+      " style="border-radius: 8px; padding: 2px 10px">
               {{ props.row.status }}
             </div>
           </div>
@@ -105,35 +106,35 @@ const newColumn = [
     label: 'Voucher no',
     align: 'left',
     field: 'voucher_no',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'date',
     label: 'Date',
     align: 'left',
     field: 'date',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'status',
     label: 'Status',
     align: 'center',
     field: 'status',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'purpose',
     label: 'Purpose',
     align: 'left',
     field: 'purpose',
-    sortable: true
+    sortable: true,
   },
   {
     name: 'total_amount',
     label: 'Total amount',
     align: 'left',
     field: 'total_amount',
-    sortable: true
+    sortable: true,
   },
   { name: 'actions', align: 'left', label: 'Actions' },
 ]
