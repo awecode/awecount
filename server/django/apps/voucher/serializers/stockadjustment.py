@@ -2,7 +2,10 @@ import datetime
 
 from django.db.models import F, Q
 from rest_framework import serializers
-
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+from apps.ledger.serializers import JournalEntrySerializer
 from apps.product.models import Item, Transaction
 from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
@@ -117,6 +120,12 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
             instance.save()
         instance.apply_transactions()
         return instance
+    
+    @action(detail=True, url_path="journal-entries")
+    def journal_entries(self, request, pk):
+        stock_adjustment_voucher = get_object_or_404(StockAdjustmentVoucher, pk=pk)
+        journals = stock_adjustment_voucher.journal_entries()
+        return Response(JournalEntrySerializer(journals, many=True).data)
 
     class Meta:
         model = StockAdjustmentVoucher
