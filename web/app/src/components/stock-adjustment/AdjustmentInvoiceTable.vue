@@ -3,7 +3,7 @@
     <q-card-section>
       <div class="row text-subtitle2 hr q-py-sm no-wrap q-col-gutter-md">
         <div class="col-5 row">
-          Particular(s)
+          {{ label }}
         </div>
         <div class="col-2 text-center">Qty</div>
         <div class="col-2 text-center">Rate</div>
@@ -56,9 +56,9 @@
           <div class="col-6">Total Amount</div>
           <div class="col-6">
             {{ modalValue?.reduce(
-              (accum, row) => accum + (row.quantity * row.rate),
-              0
-            ) || 0 }}
+            (accum, row) => accum + (row.quantity * row.rate),
+            0
+          ) || 0 }}
           </div>
         </div>
       </div>
@@ -97,6 +97,10 @@ const props = defineProps({
       return null
     },
   },
+  label: {
+    type: String,
+    default: 'Particular(s)',
+  }
 })
 const emit = defineEmits(['update:modelValue', 'deleteRow'])
 const modalValue = ref(props.modelValue)
