@@ -12,8 +12,8 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <q-select class="col-md-6 col-12" v-model="fields.finished_product"
-              :options="formDefaults?.collections?.items" option-value="id" option-label="name" map-options emit-value
-              label="Item *" :error-message="errors.finished_product" :error="!!errors.finished_product"
+              :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options emit-value
+              label="Finished Product *" :error-message="errors.finished_product" :error="!!errors.finished_product"
               :disable="isEdit"></q-select>
             <q-select class="col-md-6 col-12" v-model="fields.unit_id" :options="formDefaults?.collections?.units"
               option-value="id" option-label="name" map-options emit-value label="Unit *"
