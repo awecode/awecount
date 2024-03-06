@@ -105,6 +105,58 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Items', 'Stock Adjustment', 'Details'],
         },
       },
+      {
+        path: 'bill-of-material/list',
+        name: 'Bill of Material',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bills of Material'],
+        },
+      },
+      {
+        path: 'bill-of-material/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bill of Material', 'Create'],
+        },
+      },
+      {
+        path: 'bill-of-material/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bill of Material', 'Update'],
+        },
+      },
+      // {
+      //   path: 'stock-conversion/list',
+      //   name: 'Stock Conversion',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/stock-conversion/StockConversionList.vue'
+      //     ),
+      //   meta: {
+      //     breadcrumb: ['Home', 'Items', 'Stock Conversion'],
+      //   },
+      // },
+      // {
+      //   path: 'stock-conversion/add',
+      //   component: () =>
+      //     import(
+      //       'src/pages/inventory/product/stock-conversion/StockConversionForm.vue'
+      //     ),
+      //   meta: {
+      //     breadcrumb: ['Home', 'Items', 'Stock Conversion', 'Create'],
+      //   },
+      // },
     ],
   },
   {
