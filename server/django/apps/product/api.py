@@ -57,6 +57,8 @@ from .serializers import (
     JournalEntrySerializer,
     TransactionEntrySerializer,
     UnitSerializer,
+    BillOfMaterialCreateSerializer,
+    BillOfMaterialListSerializer
 )
 
 
@@ -871,3 +873,14 @@ class InventorySettingsViewSet(CRULViewSet):
         i_setting = self.request.company.inventory_setting
         data = {"fields": self.get_serializer(i_setting).data}
         return data
+
+class BillOfMaterialViewSet(CRULViewSet):
+    collections = [
+        ["items", Item],
+        ["units", Unit]
+    ]
+    
+    def get_serializer_class(self):
+        if self.action == "list":
+            return BillOfMaterialListSerializer
+        return BillOfMaterialCreateSerializer
