@@ -887,6 +887,16 @@ class BillOfMaterialViewSet(CRULViewSet):
         ],
         ["units", Unit],
     ]
+    filter_backends = [
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "item"
+    ]
+    def get_queryset(self, **kwargs):
+        qs = super(BillOfMaterialViewSet, self).get_queryset()
+        return qs.order_by("-created_at",)
 
     def get_serializer_class(self):
         if self.action == "list":
