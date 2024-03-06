@@ -9,6 +9,8 @@ from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
 
 from .models import (
+    BillOfMaterial,
+    BillOfMaterialRow,
     Brand,
     Category,
     InventoryAccount,
@@ -20,7 +22,6 @@ from .models import (
 )
 from .models import (
     Category as InventoryCategory,
-    BillOfMaterial, BillOfMaterialRow
 )
 
 
@@ -417,6 +418,7 @@ class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         rows = validated_data.pop('rows')
+        validated_data.pop('finished_product')
         for row in rows:
             BillOfMaterialRow.objects.update_or_create(
               bill_of_material=instance,  pk=row.get("id"), defaults=row

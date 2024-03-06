@@ -8,6 +8,7 @@ from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
@@ -1464,12 +1465,18 @@ class BillOfMaterial(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     rate = models.FloatField()
     finished_product = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="bill_of_material")
-    # def __str__(self) -> str:
-    #     return self.name
+    remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self) -> str:
+        return "Bill of Material - {}".format(self.finished_product.name)
+    
 
 class BillOfMaterialRow(models.Model):
     bill_of_material = models.ForeignKey(BillOfMaterial, on_delete=models.CASCADE, related_name="rows")
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.FloatField()
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
-    rate = models.FloatField()
+
+    def __str__(self) -> str:
+        return "Bill of Material Row - {}".format(self.item.name)
