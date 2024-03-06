@@ -879,7 +879,7 @@ class InventorySettingsViewSet(CRULViewSet):
 
 class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
     model = BillOfMaterial
-    row= BillOfMaterialRow
+    row = BillOfMaterialRow
     serializer_class = BillOfMaterialCreateSerializer
     collections = [
         [
@@ -890,7 +890,11 @@ class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
             GenericSerializer,
         ],
         ["units", Unit],
-        ["items", Item],
+        [
+            "items",
+            Item.objects.only("id", "name").filter(track_inventory=True),
+            GenericSerializer,
+        ],
     ]
     filter_backends = [
         rf_filters.OrderingFilter,
@@ -899,9 +903,12 @@ class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
     search_fields = [
         "finished_product__name",
     ]
+
     def get_queryset(self, **kwargs):
         qs = super(BillOfMaterialViewSet, self).get_queryset()
-        return qs.order_by("-created_at",)
+        return qs.order_by(
+            "-created_at",
+        )
 
     def get_serializer_class(self):
         if self.action == "list":
