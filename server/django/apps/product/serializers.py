@@ -20,6 +20,7 @@ from .models import (
 )
 from .models import (
     Category as InventoryCategory,
+    BillOfMaterial, BillOfMaterialRow
 )
 
 
@@ -393,3 +394,48 @@ class InventorySettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventorySetting
         exclude = ["company"]
+
+class BillOfMaterialRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=False)
+    class Meta:
+        model = BillOfMaterialRow
+        exclude = ("item", "unit", 'bill_of_material')
+
+class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
+    unit_id = serializers.IntegerField(required=True)
+    rows = BillOfMaterialRowSerializer(many=True)
+    finished_product_name = serializers.ReadOnlyField(source="finished_product.name")
+
+    def create(self, validated_data):
+        rows = validated_data.pop('rows')
+        instance = BillOfMaterial.objects.create(**validated_data)
+        for row in rows:
+            BillOfMaterialRow.objects.create(bill_of_material=instance, **row)
+        return instance
+    
+    def update(self, instance, validated_data):
+        rows = validated_data.pop('rows')
+        for row in rows:
+            BillOfMaterialRow.objects.update_or_create(
+              bill_of_material=instance,  pk=row.get("id"), defaults=row
+            )
+        return super().update(instance, validated_data)
+    
+    class Meta:
+        model = BillOfMaterial
+        exclude = ("company", "unit")
+
+class BillOfMaterialListSerializer(serializers.ModelSerializer):
+    item = serializers.ReadOnlyField(source="finished_product.name")
+    class Meta:
+        model = BillOfMaterial
+        fields = ['id', 'item']
+
+class BillOfMaterialItemListSerializer(serializers.ModelSerializer):
+    queryset = Item.objects.exclude(bill_of_material__isnull=True)
+    class Meta:
+        model = Item
+        fields = ['id', 'name']
+        

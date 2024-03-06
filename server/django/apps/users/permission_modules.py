@@ -20,6 +20,7 @@ MODULES = [
     *gdp("InventoryAccount"),
     *gdp("InventoryCategory"),
     *gdp("Book"),
+    *gdp("BillOfMaterial"),
     # Ledger
     *gdp("Category"),
     *gdp("Party"),
