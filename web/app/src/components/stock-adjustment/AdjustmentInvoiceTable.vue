@@ -2,13 +2,13 @@
   <q-card class="q-pa-sm">
     <q-card-section>
       <div class="row text-subtitle2 hr q-py-sm no-wrap q-col-gutter-md">
-        <div class="col-5 row">
+        <div class="col-3 row">
           {{ label }}
         </div>
         <div class="col-2 text-center">Qty</div>
         <div class="col-2 text-center">Rate</div>
+        <div class="col-2 text-center">Unit</div>
         <div class="col-2 text-center">Amount</div>
-        <div class="col-1 text-center"></div>
       </div>
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
         <div class="col-3">
