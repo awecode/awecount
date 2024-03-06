@@ -47,6 +47,11 @@ router.register(
     item.ItemOpeningBalanceViewSet,
     basename="item-opening-balance",
 )
+router.register(
+    "bill-of-material",
+    item.BillOfMaterialViewSet,
+    basename="bill-of-material",
+)
 
 # voucher
 router.register("sales-voucher", voucher.SalesVoucherViewSet)
