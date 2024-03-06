@@ -28,10 +28,12 @@ from apps.voucher.models import (
     SalesVoucherRow,
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
-from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
+from awecount.libs.mixins import DeleteRows, InputChoiceMixin, ShortNameChoiceMixin
 
 from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
 from .models import (
+    BillOfMaterial,
+    BillOfMaterialRow,
     Brand,
     Category,
     InventoryAccount,
@@ -875,7 +877,9 @@ class InventorySettingsViewSet(CRULViewSet):
         return data
 
 
-class BillOfMaterialViewSet(CRULViewSet):
+class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
+    model = BillOfMaterial
+    row= BillOfMaterialRow
     serializer_class = BillOfMaterialCreateSerializer
     collections = [
         [
