@@ -879,13 +879,14 @@ class BillOfMaterialViewSet(CRULViewSet):
     serializer_class = BillOfMaterialCreateSerializer
     collections = [
         [
-            "items",
+            "finished_products",
             Item.objects.only("id", "name").filter(
                 track_inventory=True, bill_of_material__isnull=True
             ),
             GenericSerializer,
         ],
         ["units", Unit],
+        ["items", Item],
     ]
 
     def get_serializer_class(self):
