@@ -12,9 +12,9 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <q-select class="col-md-6 col-12" v-model="fields.finished_product"
-              :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options emit-value
-              label="Finished Product *" :error-message="errors.finished_product" :error="!!errors.finished_product"
-              :disable="isEdit"></q-select>
+              :options="formDefaults?.collections?.finished_products" option-value="id" option-label="name" map-options
+              emit-value label="Finished Product *" :error-message="errors.finished_product"
+              :error="!!errors.finished_product" :disable="isEdit"></q-select>
             <q-select class="col-md-6 col-12" v-model="fields.unit_id" :options="formDefaults?.collections?.units"
               option-value="id" option-label="name" map-options emit-value label="Unit *"
               :error-message="errors.unit_id" :error="!!errors.unit_id"></q-select>
@@ -24,13 +24,13 @@
               :error="!!errors.rate" type="number"></q-input>
           </div>
           <div class="q-mt-lg">
-            <AdjustmentInvoiceTable label="Raw Material(s)" v-model="fields.rows"
+            <AdjustmentInvoiceTable label="Raw Material(s)" v-model="fields.rows" :minimal="true"
               :itemOptions="formDefaults?.collections?.items" :unitOptions="formDefaults?.collections?.units"
               :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)">
             </AdjustmentInvoiceTable>
           </div>
           <div class="q-mt-lg">
-            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks"
+            <q-input v-model="fields.remarks" label="Remarks" class="col-6" :error-message="errors.remarks"
               :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>

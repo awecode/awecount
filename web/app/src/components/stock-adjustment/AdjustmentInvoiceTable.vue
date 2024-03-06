@@ -2,16 +2,16 @@
   <q-card class="q-pa-sm">
     <q-card-section>
       <div class="row text-subtitle2 hr q-py-sm no-wrap q-col-gutter-md">
-        <div class="col-3 row">
+        <div class="row" :class="minimal ? 'col-7' : 'col-3'">
           {{ label }}
         </div>
         <div class="col-2 text-center">Qty</div>
-        <div class="col-2 text-center">Rate</div>
+        <div v-if="!minimal" class="col-2 text-center">Rate</div>
         <div class="col-2 text-center">Unit</div>
-        <div class="col-2 text-center">Amount</div>
+        <div class="col-2 text-center" v-if="!minimal">Amount</div>
       </div>
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
-        <div class="col-3">
+        <div :class="minimal ? 'col-7' : 'col-3'">
           <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions"
             :error="rowEmpty ? 'This field is required.' : errors && errors[index]?.item_id ? errors[index].item_id[0] : null" />
         </div>
@@ -21,7 +21,7 @@
             :error-message="errors && errors[index]?.quantity ? errors[index].quantity[0] : ''">
           </q-input>
         </div>
-        <div class="col-2 text-center">
+        <div v-if="!minimal" class="col-2 text-center">
           <q-input v-model.number="row.rate" label="Rate" data-testid="quantity-input"
             :error="errors && errors[index]?.rate ? true : false"
             :error-message="errors && errors[index]?.rate ? errors[index].rate[0] : ''">
@@ -32,9 +32,9 @@
             emit-value map-options data-testid="unit-select" :error="errors && errors[index]?.unit_id ? true : false"
             :error-message="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''" />
         </div>
-        <div class="col-2 row items-center justify-center">{{ row.rate * row.quantity }}</div>
+        <div class="col-2 row items-center justify-center" v-if="!minimal">{{ row.rate * row.quantity }}</div>
         <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
-          <q-btn flat class="q-pa-sm focus-highLight" color="transparent"
+          <q-btn v-if="!minimal" flat class="q-pa-sm focus-highLight" color="transparent"
             @click="() => (row.expandedState = !row.expandedState)" data-testid="expand-btn">
             <q-icon name="mdi-arrow-expand" size="20px" color="green" class="cursor-pointer" title="Expand"></q-icon>
           </q-btn>
@@ -52,13 +52,13 @@
         <div class="col-8">
           <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" data-testid="add-row-btn">Add Row</q-btn>
         </div>
-        <div class="col-4 row font-medium text-gray-600">
+        <div v-if="!minimal" class="col-4 row font-medium text-gray-600">
           <div class="col-6">Total Amount</div>
           <div class="col-6">
             {{ modalValue?.reduce(
-            (accum, row) => accum + (row.quantity * row.rate),
-            0
-          ) || 0 }}
+          (accum, row) => accum + (row.quantity * row.rate),
+          0
+        ) || 0 }}
           </div>
         </div>
       </div>
@@ -100,7 +100,11 @@ const props = defineProps({
   label: {
     type: String,
     default: 'Particular(s)',
-  }
+  },
+  minimal: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emit = defineEmits(['update:modelValue', 'deleteRow'])
 const modalValue = ref(props.modelValue)
