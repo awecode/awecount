@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from django.db import models, transaction
 
 from apps.product.models import (
+    BillOfMaterial,
     Brand,
     Category,
     InventoryAccount,
@@ -153,3 +154,8 @@ class InventoryAccountAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     raw_id_fields = ("journal_entry",)
+
+
+
+
+admin.site.register(BillOfMaterial)
