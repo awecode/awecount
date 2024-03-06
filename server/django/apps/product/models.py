@@ -1477,7 +1477,6 @@ class BillOfMaterialRow(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.FloatField()
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
-    rate = models.FloatField()
 
     def __str__(self) -> str:
         return "Bill of Material Row - {}".format(self.item.name)
