@@ -57,27 +57,6 @@ export default {
       title: 'Stock Adjustment | Awecount',
     }
     useMeta(metaData)
-    const $q = useQuasar()
-    const isDeleteOpen = ref(false)
-    const deleteMsg = ref(null)
-    const purposeChoices = [
-      {
-        label: 'Stock In',
-        value: 'Stock In'
-      },
-      {
-        label: 'Stock Out',
-        value: 'Stock Out'
-      },
-      {
-        label: 'Damaged',
-        value: 'Damaged'
-      },
-      {
-        label: 'Expired',
-        value: 'Expired'
-      },
-    ]
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/items/bill-of-material/list/',
@@ -103,7 +82,7 @@ export default {
     }
 
     return {
-      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick
+      ...formData, checkPermissions, deleteRow, onSubmitClick
     }
   },
 }
