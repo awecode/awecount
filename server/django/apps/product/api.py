@@ -875,6 +875,7 @@ class InventorySettingsViewSet(CRULViewSet):
         return data
 
 class BillOfMaterialViewSet(CRULViewSet):
+    serializer_class = BillOfMaterialCreateSerializer
     collections = [
         ["items", Item],
         ["units", Unit]
