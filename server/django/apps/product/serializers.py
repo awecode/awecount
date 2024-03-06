@@ -433,9 +433,4 @@ class BillOfMaterialListSerializer(serializers.ModelSerializer):
         model = BillOfMaterial
         fields = ['id', 'item']
 
-class BillOfMaterialItemListSerializer(serializers.ModelSerializer):
-    queryset = Item.objects.exclude(bill_of_material__isnull=True)
-    class Meta:
-        model = Item
-        fields = ['id', 'name']
         
