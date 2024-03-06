@@ -1454,3 +1454,22 @@ class InventorySetting(models.Model):
 
     def __str__(self) -> str:
         return "Inventory Setting - {}".format(self.company.name)
+
+
+class BillOfMaterial(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="bill_of_material"
+    )
+    quantity = models.FloatField()
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    rate = models.FloatField()
+    finished_product = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="bill_of_material")
+    # def __str__(self) -> str:
+    #     return self.name
+
+class BillOfMaterialRow(models.Model):
+    bill_of_material = models.ForeignKey(BillOfMaterial, on_delete=models.CASCADE, related_name="rows")
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.FloatField()
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    rate = models.FloatField()
