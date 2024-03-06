@@ -892,7 +892,7 @@ class BillOfMaterialViewSet(CRULViewSet):
         rf_filters.SearchFilter,
     ]
     search_fields = [
-        "item"
+        "finished_product__name",
     ]
     def get_queryset(self, **kwargs):
         qs = super(BillOfMaterialViewSet, self).get_queryset()
