@@ -42,6 +42,8 @@ from .models import (
 )
 from .models import Category as InventoryCategory
 from .serializers import (
+    BillOfMaterialCreateSerializer,
+    BillOfMaterialListSerializer,
     BookSerializer,
     BrandSerializer,
     InventoryAccountSerializer,
@@ -57,8 +59,6 @@ from .serializers import (
     JournalEntrySerializer,
     TransactionEntrySerializer,
     UnitSerializer,
-    BillOfMaterialCreateSerializer,
-    BillOfMaterialListSerializer
 )
 
 
@@ -874,13 +874,20 @@ class InventorySettingsViewSet(CRULViewSet):
         data = {"fields": self.get_serializer(i_setting).data}
         return data
 
+
 class BillOfMaterialViewSet(CRULViewSet):
     serializer_class = BillOfMaterialCreateSerializer
     collections = [
-        ["items", Item],
-        ["units", Unit]
+        [
+            "items",
+            Item.objects.only("id", "name").filter(
+                track_inventory=True, bill_of_material__isnull=True
+            ),
+            GenericSerializer,
+        ],
+        ["units", Unit],
     ]
-    
+
     def get_serializer_class(self):
         if self.action == "list":
             return BillOfMaterialListSerializer
