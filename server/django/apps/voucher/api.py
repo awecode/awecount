@@ -27,9 +27,8 @@ from apps.ledger.serializers import (
     JournalEntriesSerializer,
     PartyMinSerializer,
     SalesJournalEntrySerializer,
-    JournalEntrySerializer
 )
-from apps.product.models import Item, Unit
+from apps.product.models import BillOfMaterial, Item, Unit
 from apps.product.serializers import (
     ItemPOSSerializer,
     ItemPurchaseSerializer,
@@ -55,6 +54,7 @@ from apps.voucher.filters import (
 from apps.voucher.models import (
     Challan,
     ChallanRow,
+    InventoryConversionVoucher,
     PaymentReceipt,
     SalesAgent,
     StockAdjustmentVoucher,
@@ -123,6 +123,9 @@ from .serializers import (
     CreditNoteCreateSerializer,
     CreditNoteDetailSerializer,
     CreditNoteListSerializer,
+    InventoryConversionVoucherCreateSerializer,
+    InventoryConversionVoucherDetailSerializer,
+    InventoryConversionVoucherListSerializer,
     InvoiceDesignSerializer,
     JournalVoucherCreateSerializer,
     JournalVoucherDetailSerializer,
@@ -2007,8 +2010,11 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         return StockAdjustmentVoucherCreateSerializer
 
     collections = [
-        ("items", Item),
-        ("units", Unit)
+        (
+            "items",
+            Item.objects.only("id", "name").filter(track_inventory=True),
+        ),
+        ("units", Unit),
     ]
 
     @action(detail=True, methods=["POST"])
@@ -2029,3 +2035,38 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
 
+class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
+    queryset = InventoryConversionVoucher.objects.all()
+    serializer_class = InventoryConversionVoucherCreateSerializer
+    model = InventoryConversionVoucher
+    def get_serializer_class(self):
+        if self.action == "list":
+            return InventoryConversionVoucherListSerializer
+        elif self.action == "retrieve":
+            return InventoryConversionVoucherDetailSerializer
+        return InventoryConversionVoucherCreateSerializer
+
+
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        inventory_conversion_voucher = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling voucher!"}
+            )
+        inventory_conversion_voucher.cancel(message=message)
+        return Response({})
+    
+
+    collections = [
+        (
+            "items",
+            Item.objects.only("id", "name").filter(track_inventory=True),
+        ),
+        ("units", Unit),
+        ("finished_products", BillOfMaterial.objects.prefetch_related('finished_product').only('id', 'finished_product'), GenericSerializer)
+        # ("item_name",
+        #  BillOfMaterialRow.objects.values_list("item__name",flat=True)
+        #  )
+    ]
