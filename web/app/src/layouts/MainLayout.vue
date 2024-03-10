@@ -248,13 +248,12 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/items/bill-of-material/list',
         hide: !checkPermissions('BillOfMaterialView')
       },
-      // {
-      //   title: 'Stock Conversion',
-      //   icon: 'mdi-shuffle-variant',
-      //   link: '/items/stock-conversion/list',
-      //   // hide: !checkPermissions('StockAdjustmentVoucherView')
-      // },
-
+      {
+        title: 'Inventory Conversion',
+        icon: 'mdi-shuffle-variant',
+        link: '/items/inventory-conversion/list',
+        // hide: !checkPermissions('StockAdjustmentVoucherView')
+      },
     ],
   },
   // {

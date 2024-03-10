@@ -136,27 +136,27 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Items', 'Bill of Material', 'Update'],
         },
       },
-      // {
-      //   path: 'stock-conversion/list',
-      //   name: 'Stock Conversion',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/stock-conversion/StockConversionList.vue'
-      //     ),
-      //   meta: {
-      //     breadcrumb: ['Home', 'Items', 'Stock Conversion'],
-      //   },
-      // },
-      // {
-      //   path: 'stock-conversion/add',
-      //   component: () =>
-      //     import(
-      //       'src/pages/inventory/product/stock-conversion/StockConversionForm.vue'
-      //     ),
-      //   meta: {
-      //     breadcrumb: ['Home', 'Items', 'Stock Conversion', 'Create'],
-      //   },
-      // },
+      {
+        path: 'inventory-conversion/list',
+        name: 'Stock Conversion',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Conversion'],
+        },
+      },
+      {
+        path: 'inventory-conversion/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Stock Conversion', 'Create'],
+        },
+      },
     ],
   },
   {
