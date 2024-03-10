@@ -1469,7 +1469,7 @@ class BillOfMaterial(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self) -> str:
-        return "Bill of Material - {}".format(self.finished_product.name)
+        return self.finished_product.name
     
 
 class BillOfMaterialRow(models.Model):
