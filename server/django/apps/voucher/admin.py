@@ -8,6 +8,7 @@ from apps.voucher.models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    InventoryConversionVoucher,
     PaymentReceipt,
     PurchaseDiscount,
     PurchaseVoucher,
@@ -260,3 +261,7 @@ class StockAdjustmentVoucherAdmin(admin.ModelAdmin):
         "voucher_no",
     )
 admin.site.register(StockAdjustmentVoucher, StockAdjustmentVoucherAdmin)
+
+
+
+admin.site.register(InventoryConversionVoucher)
