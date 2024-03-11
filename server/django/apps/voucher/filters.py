@@ -21,11 +21,13 @@ from .models import (
     CREDIT_NOTE_STATUSES,
     PURCHASE_ORDER_STATUS_CHOICES,
     STATUSES,
+    CONVERSION_CHOICES,
     CreditNote,
     PurchaseOrder,
     PurchaseVoucher,
     SalesVoucher,
     StockAdjustmentVoucher,
+    InventoryConversionVoucher,
 )
 
 
@@ -144,9 +146,18 @@ class PurchaseOrderFilterSet(DateFilterSet):
         model = PurchaseOrder
         fields = []
 
+
 class StockAdjustmentVoucherFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=ADJUSTMENT_STATUS_CHOICES)
 
     class Meta:
         model = StockAdjustmentVoucher
+        fields = []
+
+
+class InventoryConversionVoucherFilterSet(DateFilterSet):
+    status = filters.MultipleChoiceFilter(choices=CONVERSION_CHOICES)
+
+    class Meta:
+        model = InventoryConversionVoucher
         fields = []
