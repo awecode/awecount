@@ -52,6 +52,17 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             InventoryConversionVoucherRow, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
+    
+    def create(self, validated_data):
+        rows_data = validated_data.pop("rows")
+        self.assign_voucher_number(validated_data, instance=None)
+        instance = InventoryConversionVoucher.objects.create(**validated_data)
+        for row in rows_data:
+            if row.get("id"):
+                row.pop("id") 
+            InventoryConversionVoucherRow.objects.create(voucher=instance, **row)
+        instance.save()
+        return instance
 
     class Meta:
         model = InventoryConversionVoucher
