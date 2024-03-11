@@ -167,6 +167,16 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Update'],
         },
       },
+      {
+        path: 'inventory-conversion/:id/view',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionView.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Detail'],
+        },
+      },
     ],
   },
   {
