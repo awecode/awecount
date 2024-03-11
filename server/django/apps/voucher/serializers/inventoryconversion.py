@@ -40,7 +40,8 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
 
 class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
-        fields=['id', 'voucher_no', 'date','transaction_type']
+        model = InventoryConversionVoucher
+        fields=['id', 'voucher_no', 'date']
 
 class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
     rows = InventoryConversionVoucherRowSerializer(many=True)
