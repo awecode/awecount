@@ -1356,9 +1356,7 @@ class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     )
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(
-            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-        ):
+        for row in self.rows:
             quantity = int(row.quantity)
             set_inventory_transactions(
                 row,
