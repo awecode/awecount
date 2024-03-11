@@ -18,6 +18,7 @@ from apps.ledger.models import (
 )
 from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.product.models import (
+    BillOfMaterial,
     Item,
     Unit,
     find_obsolete_transactions,
@@ -1333,6 +1334,7 @@ class StockAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
 class InventoryConversionVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
+    finished_product=models.ForeignKey(BillOfMaterial, on_delete=models.SET_NULL, related_name="inventory_conversion_voucher",null=True, blank=True)
     issue_datetime = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=225, choices=CONVERSION_CHOICES)
     company = models.ForeignKey(
