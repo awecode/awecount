@@ -1350,7 +1350,7 @@ class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="inventory_conversion_voucher_rows"
     )
-    rate = models.FloatField()
+    rate = models.FloatField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
     transaction_type = models.CharField(
