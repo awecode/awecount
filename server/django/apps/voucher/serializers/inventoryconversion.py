@@ -17,7 +17,7 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         transaction_type = attrs.get("transaction_type")
         rate = attrs.get("rate", None)
-
+        
         if transaction_type == "Dr" and not rate:
             raise serializers.ValidationError(
                 {"detail": "Rate is required for debit transaction."}
@@ -52,14 +52,14 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             InventoryConversionVoucher, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
-    
+
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         self.assign_voucher_number(validated_data, instance=None)
         instance = InventoryConversionVoucher.objects.create(**validated_data)
         for row in rows_data:
             if row.get("id"):
-                row.pop("id") 
+                row.pop("id")
             InventoryConversionVoucherRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
         instance.save()
@@ -69,7 +69,9 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         # prevent form updating finished_product
         validated_data.pop("finished_product")
         rows_data = validated_data.pop("rows")
-        InventoryConversionVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        InventoryConversionVoucher.objects.filter(pk=instance.id).update(
+            **validated_data
+        )
         for row in rows_data:
             InventoryConversionVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
@@ -77,16 +79,21 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             instance.apply_inventory_transactions()
             instance.save()
         return instance
+
     class Meta:
         model = InventoryConversionVoucher
         exclude = ("company",)
 
 
-
 class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryConversionVoucher
-        fields = ["id", "voucher_no", "date", "status",]
+        fields = [
+            "id",
+            "voucher_no",
+            "date",
+            "status",
+        ]
 
 
 class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):

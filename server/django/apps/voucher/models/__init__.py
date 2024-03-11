@@ -1334,7 +1334,13 @@ class StockAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
 class InventoryConversionVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
-    finished_product=models.ForeignKey(BillOfMaterial, on_delete=models.SET_NULL, related_name="inventory_conversion_voucher",null=True, blank=True)
+    finished_product = models.ForeignKey(
+        BillOfMaterial,
+        on_delete=models.SET_NULL,
+        related_name="inventory_conversion_voucher",
+        null=True,
+        blank=True,
+    )
     issue_datetime = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=225, choices=CONVERSION_CHOICES)
     company = models.ForeignKey(
@@ -1352,6 +1358,8 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
                 self.date,
                 [row.transaction_type, row.item.account, quantity, row.rate],
             )
+
+
 class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(
         InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
@@ -1365,6 +1373,8 @@ class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     transaction_type = models.CharField(
         max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
     )
+
+
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
