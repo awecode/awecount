@@ -1350,13 +1350,13 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
 
     def apply_inventory_transactions(self):
         for row in self.rows.filter(
-            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+            Q(item__track_inventory=True)
         ):
             quantity = int(row.quantity)
             set_inventory_transactions(
                 row,
                 self.date,
-                [row.transaction_type, row.item.account, quantity, row.rate],
+                [row.transaction_type.lower(), row.item.account, quantity, row.rate],
             )
 
 
