@@ -1342,7 +1342,16 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
     )
     remarks = models.TextField()
 
-   
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ):
+            quantity = int(row.quantity)
+            set_inventory_transactions(
+                row,
+                self.date,
+                [row.transaction_type, row.item.account, quantity, row.rate],
+            )
 class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(
         InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
@@ -1356,17 +1365,6 @@ class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
     transaction_type = models.CharField(
         max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
     )
-
-    def apply_inventory_transactions(self):
-        for row in self.rows:
-            quantity = int(row.quantity)
-            set_inventory_transactions(
-                row,
-                self.date,
-                [self.transaction_type, row.item.account, quantity, row.rate],
-            )
-
-
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
