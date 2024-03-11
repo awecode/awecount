@@ -13,7 +13,23 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
     unit_id = serializers.IntegerField(required=True)
     item_name = serializers.ReadOnlyField(source="item.name")
     unit_name = serializers.ReadOnlyField(source="unit.name")
-    
+
+    def validate(self, attrs):
+        transaction_type = attrs.get("transaction_type")
+        rate = attrs.get("rate", None)
+
+        if transaction_type == "Dr" and not rate:
+            raise serializers.ValidationError(
+                {"detail": "Rate is required for debit transaction."}
+            )
+
+        if transaction_type == "Cr" and rate:
+            raise serializers.ValidationError(
+                {"detail": "Rate is not allowed for credit transaction."}
+            )
+
+        return super().validate(attrs)
+
     class Meta:
         model = InventoryConversionVoucherRow
         exclude = (
@@ -22,26 +38,31 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
             "unit",
         )
 
+
 class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
-    rows =InventoryConversionVoucherRowSerializer(many=True)
+    rows = InventoryConversionVoucherRowSerializer(many=True)
+
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
             return
         if validated_data.get("status") in ["Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            InventoryConversionVoucherRow,self.context["request"].company_id
+            InventoryConversionVoucherRow, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
+
     class Meta:
-        model=InventoryConversionVoucher
+        model = InventoryConversionVoucher
         exclude = ("company",)
+
 
 class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryConversionVoucher
-        fields=['id', 'voucher_no', 'date']
+        fields = ["id", "voucher_no", "date"]
+
 
 class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
     rows = InventoryConversionVoucherRowSerializer(many=True)
@@ -52,8 +73,8 @@ class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
 
 
 class InventoryConversionFinishedProductList(serializers.Serializer):
-        name = serializers.ReadOnlyField()
-        id = serializers.ReadOnlyField()
+    name = serializers.ReadOnlyField()
+    id = serializers.ReadOnlyField()
 
-        class Meta:
-            fields = ("id", "name")
+    class Meta:
+        fields = ("id", "name")
