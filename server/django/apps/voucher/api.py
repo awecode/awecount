@@ -50,6 +50,7 @@ from apps.voucher.filters import (
     SalesRowFilterSet,
     SalesVoucherFilterSet,
     StockAdjustmentVoucherFilterSet,
+    InventoryConversionVoucherFilterSet,
 )
 from apps.voucher.models import (
     Challan,
@@ -2039,6 +2040,21 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
     queryset = InventoryConversionVoucher.objects.all()
     serializer_class = InventoryConversionVoucherCreateSerializer
     model = InventoryConversionVoucher
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+       "voucher_no",
+       "date",
+
+    ]
+    filterset_class =InventoryConversionVoucherFilterSet
+    def get_queryset(self, **kwargs):
+        qs = super(InventoryConversionVoucherViewSet, self).get_queryset()
+        return qs.order_by("-date")
+
     def get_serializer_class(self):
         if self.action == "list":
             return InventoryConversionVoucherListSerializer
@@ -2066,7 +2082,5 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
         ),
         ("units", Unit),
         ("finished_products", BillOfMaterial.objects.prefetch_related('finished_product').only('id', 'finished_product'), GenericSerializer)
-        # ("item_name",
-        #  BillOfMaterialRow.objects.values_list("item__name",flat=True)
-        #  )
+        
     ]
