@@ -1355,15 +1355,16 @@ class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
         max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
     )
 
-    # def apply_inventory_transaction(voucher):
-    #     for row in voucher.rows.filter(is_returned=True).filter(
-    #         Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-    #     ):
-    #         set_inventory_transactions(
-    #             row,
-    #             voucher.date,
-    #             ["dr", row.item.account, int(row.quantity), row.rate],
-    #         )
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ):
+            quantity = int(row.quantity)
+            set_inventory_transactions(
+                row,
+                self.date,
+                [self.transaction_type, row.item.account, quantity, row.rate],
+            )
 
 
 auditlog.register(Challan)
