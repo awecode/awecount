@@ -133,7 +133,7 @@ const addRow = () => {
     rate: '',
     item_id: null,
     unit_id: null,
-    type: props.type
+    transaction_type: props.type
   })
 }
 const deleteRow = (index) => {
