@@ -49,7 +49,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         if validated_data.get("status") in ["Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            InventoryConversionVoucherRow, self.context["request"].company_id
+            InventoryConversionVoucher, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
     
@@ -64,15 +64,27 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    def update(self, instance, validated_data):
+        # prevent form updating finished_product
+        validated_data.pop("finished_product")
+        rows_data = validated_data.pop("rows")
+        InventoryConversionVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        for row in rows_data:
+            InventoryConversionVoucherRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
+            instance.save()
+        return instance
     class Meta:
         model = InventoryConversionVoucher
         exclude = ("company",)
 
 
+
 class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryConversionVoucher
-        fields = ["id", "voucher_no", "date"]
+        fields = ["id", "voucher_no", "date", "status",]
 
 
 class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
