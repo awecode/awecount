@@ -61,6 +61,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             if row.get("id"):
                 row.pop("id") 
             InventoryConversionVoucherRow.objects.create(voucher=instance, **row)
+        instance.apply_inventory_transactions()
         instance.save()
         return instance
 
@@ -73,6 +74,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             InventoryConversionVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
+            instance.apply_inventory_transactions()
             instance.save()
         return instance
     class Meta:
