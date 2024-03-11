@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-end q-gutter-md" v-if="checkPermissions('StockAdjustmentVoucherCreate')">
+    <div class="row justify-end q-gutter-md" v-if="checkPermissions('InventoryConversionVoucherCreate')">
       <q-btn color="green" class="add-btn" to="/items/inventory-conversion/add" label="Add Inventory Conversion Voucher"
         icon-right="add" />
     </div>
@@ -39,10 +39,10 @@
 
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherView')" color="blue-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="View"
             :to="`/items/inventory-conversion/${props.row.id}/view`" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify')" color="orange-6"
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherModify')" color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
             :to="`/items/inventory-conversion/${props.row.id}/`" />
         </q-td>
@@ -50,8 +50,8 @@
 
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('StockAdjustmentVoucherModify')"
-            :to="`/items/stock-adjustment/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
+          <router-link v-if="checkPermissions('InventoryConversionVoucherModify')"
+            :to="`/items/inventory-conversion/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
             class="text-blue">
             {{ props.row.voucher_no }}
           </router-link>

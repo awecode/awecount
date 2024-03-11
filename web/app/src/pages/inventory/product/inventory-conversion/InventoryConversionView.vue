@@ -122,9 +122,9 @@
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && (fields?.status !== 'Cancelled')"
+            <q-btn v-if="checkPermissions('InventoryConversionVoucherView') && (fields?.status !== 'Cancelled')"
               color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-conversion/${fields?.id}/`" />
-            <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
+            <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
               icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
         </div>

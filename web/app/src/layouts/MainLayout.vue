@@ -252,7 +252,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Inventory Conversion',
         icon: 'mdi-shuffle-variant',
         link: '/items/inventory-conversion/list',
-        // hide: !checkPermissions('StockAdjustmentVoucherView')
+        hide: !checkPermissions('InventoryConversionVoucherView')
       },
     ],
   },
