@@ -39,12 +39,12 @@
 
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
+          <!-- <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="View"
-            :to="`/items/stock-adjustment/${props.row.id}/view`" />
+            :to="`/items/stock-adjustment/${props.row.id}/view`" /> -->
           <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify')" color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
-            :to="`/items/stock-adjustment/${props.row.id}/`" />
+            :to="`/items/inventory-conversion/${props.row.id}/`" />
         </q-td>
       </template>
 
@@ -85,7 +85,7 @@
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-const endpoint = '/v1/stock-adjustment/'
+const endpoint = '/v1/inventory-conversion/'
 const metaData = {
   title: 'Stock Adjustments | Awecount',
 }
