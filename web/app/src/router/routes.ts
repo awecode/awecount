@@ -138,13 +138,13 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'inventory-conversion/list',
-        name: 'Stock Conversion',
+        name: 'Inventory Conversion',
         component: () =>
           import(
             'src/pages/inventory/product/inventory-conversion/InventoryConversionList.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Conversion'],
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion'],
         },
       },
       {
@@ -154,7 +154,7 @@ const routes: RouteRecordRaw[] = [
             'src/pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Conversion', 'Create'],
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Create'],
         },
       },
     ],
