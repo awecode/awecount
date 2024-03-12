@@ -302,9 +302,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     def get_update_defaults(self, request=None):
         data = SalesUpdateSettingSerializer(request.company.sales_setting).data
-        data["options"][
-            "can_update_issued"
-        ] = request.company.enable_sales_invoice_update
+        data["options"]["can_update_issued"] = (
+            request.company.enable_sales_invoice_update
+        )
         obj = self.get_object()
         if not obj.voucher_no:
             data["options"]["voucher_no"] = get_next_voucher_no(
@@ -2046,15 +2046,16 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
         rf_filters.SearchFilter,
     ]
     search_fields = [
-       "voucher_no",
-       "date",
-       "finished_product__finished_product__name",
-
+        "voucher_no",
+        "date",
+        "finished_product__finished_product__name",
+        "rows__item__name",
     ]
-    filterset_class =InventoryConversionVoucherFilterSet
+    filterset_class = InventoryConversionVoucherFilterSet
+
     def get_queryset(self, **kwargs):
         qs = super(InventoryConversionVoucherViewSet, self).get_queryset()
-        return qs.order_by("-date", "-voucher_no")
+        return qs.order_by("-date","-voucher_no")
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -2074,7 +2075,6 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
             )
         inventory_conversion_voucher.cancel(message=message)
         return Response({})
-    
 
     collections = [
         (
@@ -2082,6 +2082,11 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
             Item.objects.only("id", "name").filter(track_inventory=True),
         ),
         ("units", Unit),
-        ("finished_products", BillOfMaterial.objects.prefetch_related('finished_product').only('id', 'finished_product'), GenericSerializer)
-        
+        (
+            "finished_products",
+            BillOfMaterial.objects.prefetch_related("finished_product").only(
+                "id", "finished_product"
+            ),
+            GenericSerializer,
+        ),
     ]
