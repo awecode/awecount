@@ -1349,9 +1349,7 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
     remarks = models.TextField()
 
     def apply_inventory_transactions(self):
-        for row in self.rows.filter(
-            Q(item__track_inventory=True)
-        ):
+        for row in self.rows.filter(Q(item__track_inventory=True)):
             quantity = int(row.quantity)
             set_inventory_transactions(
                 row,
