@@ -1,7 +1,9 @@
-from django.db.models import F
+import datetime
+
+from django.db.models import F, Q
 from rest_framework import serializers
 
-from apps.product.models import Item
+from apps.product.models import Item, Transaction
 from apps.voucher.models import (
     InventoryConversionVoucher,
     InventoryConversionVoucherRow,
@@ -59,7 +61,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # Check negative stock
         request = self.context["request"]
-        item_ids = [
+        cr_item_ids = [
             row["item_id"]
             for row in data["rows"]
             if row.get("transaction_type") == "Cr"
@@ -76,7 +78,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             and not request.query_params.get("negative_stock")
         ):
             items = (
-                Item.objects.filter(id__in=item_ids)
+                Item.objects.filter(id__in=cr_item_ids)
                 .annotate(remaining=F("account__current_balance"))
                 .only("id")
             )
@@ -90,6 +92,19 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
                         code="negative_stock",
                     )
 
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
+            item_ids = [row["item_id"] for row in data["rows"]]
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+            items_transactions = Transaction.objects.filter(
+                Q(account__item__id__in=item_ids) & Q(journal_entry__date__gt=date)
+            )
+            if items_transactions.exists():
+                raise UnprocessableException(
+                    detail="There are Transactions on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
         return data
 
     def create(self, validated_data):
