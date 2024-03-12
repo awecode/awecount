@@ -1264,13 +1264,13 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
+class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     issue_datetime = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=225, choices=ADJUSTMENT_STATUS_CHOICES)
     company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="stock_adjustment_voucher"
+        Company, on_delete=models.CASCADE, related_name="inventory_adjustment_voucher"
     )
     purpose = models.CharField(max_length=225, choices=PURPOSE_CHOICES)
     remarks = models.TextField()
@@ -1317,12 +1317,12 @@ class StockAdjustmentVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transactions()
 
 
-class StockAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
+class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(
-        StockAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
+        InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
     )
     item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, related_name="stock_adjustment_rows"
+        Item, on_delete=models.CASCADE, related_name="inventory_adjustment_rows"
     )
     rate = models.FloatField()
     quantity = models.PositiveSmallIntegerField(default=1)
@@ -1383,7 +1383,7 @@ auditlog.register(CreditNote)
 auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
-auditlog.register(StockAdjustmentVoucher)
-auditlog.register(StockAdjustmentVoucherRow)
+auditlog.register(InventoryAdjustmentVoucher)
+auditlog.register(InventoryAdjustmentVoucherRow)
 auditlog.register(InventoryConversionVoucher)
 auditlog.register(InventoryConversionVoucherRow)

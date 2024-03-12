@@ -26,7 +26,7 @@ from .models import (
     PurchaseOrder,
     PurchaseVoucher,
     SalesVoucher,
-    StockAdjustmentVoucher,
+    InventoryAdjustmentVoucher,
     InventoryConversionVoucher,
 )
 
@@ -147,11 +147,11 @@ class PurchaseOrderFilterSet(DateFilterSet):
         fields = []
 
 
-class StockAdjustmentVoucherFilterSet(DateFilterSet):
+class InventoryAdjustmentVoucherFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=ADJUSTMENT_STATUS_CHOICES)
 
     class Meta:
-        model = StockAdjustmentVoucher
+        model = InventoryAdjustmentVoucher
         fields = []
 
 

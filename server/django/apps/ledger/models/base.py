@@ -1132,7 +1132,7 @@ def handle_company_creation(sender, **kwargs):
         default=True,
     )
 
-    # For Stock Adjustemnt
+    # For Inventory Adjustemnt
     # ==========================
     inventory_write_off_account = Category.objects.create(
         name="Inventory write-off",

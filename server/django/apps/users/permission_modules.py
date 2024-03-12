@@ -49,7 +49,7 @@ MODULES = [
     *gdp("PurchaseOrder"),
     "PurchaseOrderCancel",
     *gdp("InventoryConversionVoucher"),
-    *gdp("StockAdjustmentVoucher"),
+    *gdp("InventoryAdjustmentVoucher"),
 
     # Bank
     *gdp("BankAccount"),
