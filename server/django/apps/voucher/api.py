@@ -2055,7 +2055,7 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
 
     def get_queryset(self, **kwargs):
         qs = super(InventoryConversionVoucherViewSet, self).get_queryset()
-        return qs.order_by("-date","voucher_no")
+        return qs.order_by("-date","-voucher_no")
 
     def get_serializer_class(self):
         if self.action == "list":
