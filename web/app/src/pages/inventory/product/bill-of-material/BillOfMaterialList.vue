@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-end q-gutter-md" v-if="checkPermissions('StockAdjustmentVoucherCreate')">
+    <div class="row justify-end q-gutter-md" v-if="checkPermissions('BillOfMaterialCreate')">
       <q-btn color="green" class="add-btn" to="/items/bill-of-material/add" label="Add Bill of Material"
         icon-right="add" />
     </div>
@@ -52,7 +52,7 @@ import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
 const endpoint = '/v1/bill-of-material/'
 const metaData = {
-  title: 'Stock Adjustments | Awecount',
+  title: 'Inventory Adjustments | Awecount',
 }
 const newColumn = [
   {

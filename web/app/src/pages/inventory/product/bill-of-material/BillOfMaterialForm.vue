@@ -54,7 +54,7 @@ export default {
   setup(props, context) {
     const endpoint = '/v1/bill-of-material/'
     const metaData = {
-      title: 'Stock Adjustment | Awecount',
+      title: 'Bill of Material | Awecount',
     }
     useMeta(metaData)
     const formData = useForm(endpoint, {
