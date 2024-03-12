@@ -106,7 +106,12 @@
               <q-tr class="text-subtitle2">
                 <q-td> </q-td>
                 <q-td> </q-td><q-td> </q-td><q-td> Total </q-td><q-td class="text-right">{{
-    formatNumberWithComma(fields?.total_amount)
+    formatNumberWithComma(
+      fields?.drRows?.reduce(
+        (accum, row) => accum + (row.quantity * row.rate),
+        0
+      ) || 0
+    )
   }}</q-td>
               </q-tr>
             </tbody>
@@ -124,8 +129,9 @@
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn v-if="checkPermissions('InventoryConversionVoucherView') && (fields?.status !== 'Cancelled')"
               color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-conversion/${fields?.id}/`" />
-            <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
-              icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
+            <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && fields?.status !== 'Cancelled'"
+              color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)"
+              :loading="loading" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
