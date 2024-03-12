@@ -106,7 +106,7 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # prevent form updating finished_product
-        validated_data.pop("finished_product")
+        validated_data.pop("finished_product", None)
         rows_data = validated_data.pop("rows")
         InventoryConversionVoucher.objects.filter(pk=instance.id).update(
             **validated_data
