@@ -71,14 +71,13 @@ const props = defineProps({
     type: Array,
     default: () => [{
       quantity: 1,
-      rate: '',
       item_id: null,
       unit_id: null,
       transaction_type: 'Cr'
     },
     {
       quantity: 1,
-      rate: '',
+      rate: 0,
       item_id: null,
       unit_id: null,
       transaction_type: 'Dr'
@@ -128,13 +127,14 @@ watch(
   }
 )
 const addRow = () => {
-  modalValue.value.push({
+  let newRow = {
     quantity: 1,
-    rate: '',
     item_id: null,
     unit_id: null,
     transaction_type: props.type
-  })
+  }
+  if (props.transaction_type === 'Dr') newRow.rate = 0
+  modalValue.value.push(newRow)
 }
 const deleteRow = (index) => {
   if (props.errors && props.errors.length && props.errors[index] || modalValue.value[index]?.id) {
