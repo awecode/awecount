@@ -112,7 +112,7 @@ export default {
       }
     }
     const onCancelClick = () => {
-      const url = `/v1/stock-adjustment/${formData.fields.value.id}/cancel/`
+      const url = `/v1/inventory-conversion/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
