@@ -50,7 +50,7 @@ from apps.voucher.filters import (
     SalesDiscountFilterSet,
     SalesRowFilterSet,
     SalesVoucherFilterSet,
-    StockAdjustmentVoucherFilterSet,
+    InventoryAdjustmentVoucherFilterSet,
 )
 from apps.voucher.models import (
     Challan,
@@ -58,7 +58,7 @@ from apps.voucher.models import (
     InventoryConversionVoucher,
     PaymentReceipt,
     SalesAgent,
-    StockAdjustmentVoucher,
+    InventoryAdjustmentVoucher,
 )
 from apps.voucher.resources import (
     CreditNoteResource,
@@ -152,10 +152,10 @@ from .serializers import (
     SalesVoucherDetailSerializer,
     SalesVoucherListSerializer,
 )
-from .serializers.stockadjustment import (
-    StockAdjustmentVoucherCreateSerializer,
-    StockAdjustmentVoucherDetailSerializer,
-    StockAdjustmentVoucherListSerializer,
+from .serializers.inventoryadjustment import (
+    InventoryAdjustmentVoucherCreateSerializer,
+    InventoryAdjustmentVoucherDetailSerializer,
+    InventoryAdjustmentVoucherListSerializer,
 )
 
 
@@ -1981,16 +1981,16 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     
 
 
-class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
-    queryset = StockAdjustmentVoucher.objects.all()
-    serializer_class = StockAdjustmentVoucherCreateSerializer
-    model = StockAdjustmentVoucher
+class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
+    queryset = InventoryAdjustmentVoucher.objects.all()
+    serializer_class = InventoryAdjustmentVoucherCreateSerializer
+    model = InventoryAdjustmentVoucher
     filter_backends = [
         filters.DjangoFilterBackend,
         rf_filters.OrderingFilter,
         rf_filters.SearchFilter,
     ]
-    filterset_class = StockAdjustmentVoucherFilterSet
+    filterset_class = InventoryAdjustmentVoucherFilterSet
     search_fields = [
         "remarks",
         "total_amount",
@@ -1999,16 +1999,16 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         "voucher_no",
     ]
     def get_queryset(self, **kwargs):
-        qs = super(StockAdjustmentVoucherViewSet, self).get_queryset()
+        qs = super(InventoryAdjustmentVoucherViewSet, self).get_queryset()
         return qs.order_by("-date", "-voucher_no")
 
     
     def get_serializer_class(self):
         if self.action == "list":
-            return StockAdjustmentVoucherListSerializer
+            return InventoryAdjustmentVoucherListSerializer
         elif self.action == "retrieve":
-            return StockAdjustmentVoucherDetailSerializer
-        return StockAdjustmentVoucherCreateSerializer
+            return InventoryAdjustmentVoucherDetailSerializer
+        return InventoryAdjustmentVoucherCreateSerializer
 
     collections = [
         (
@@ -2020,19 +2020,19 @@ class StockAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
-        stock_adjustment_voucher = self.get_object()
+        inventory_adjustment_voucher = self.get_object()
         message = request.data.get("message")
         if not message:
             raise RESTValidationError(
                 {"message": "message field is required for cancelling voucher!"}
             )
-        stock_adjustment_voucher.cancel(message=message)
+        inventory_adjustment_voucher.cancel(message=message)
         return Response({})
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):
-        stock_adjustment_voucher = get_object_or_404(StockAdjustmentVoucher, pk=pk)
-        journals = stock_adjustment_voucher.journal_entries()
+        inventory_adjustment_voucher = get_object_or_404(InventoryAdjustmentVoucher, pk=pk)
+        journals = inventory_adjustment_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
 

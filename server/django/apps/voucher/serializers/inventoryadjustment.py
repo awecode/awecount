@@ -3,12 +3,12 @@ import datetime
 from django.db.models import F, Q
 from rest_framework import serializers
 from apps.product.models import Item, Transaction
-from apps.voucher.models import StockAdjustmentVoucher, StockAdjustmentVoucherRow
+from apps.voucher.models import InventoryAdjustmentVoucher, InventoryAdjustmentVoucherRow
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 
 
-class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=True)
@@ -16,7 +16,7 @@ class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     
     class Meta:
-        model = StockAdjustmentVoucherRow
+        model = InventoryAdjustmentVoucherRow
         exclude = (
             "item",
             "voucher",
@@ -24,9 +24,9 @@ class StockAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
-    rows = StockAdjustmentVoucherRowSerializer(many=True)
+    rows = InventoryAdjustmentVoucherRowSerializer(many=True)
     total_amount = serializers.ReadOnlyField()
 
     def assign_voucher_number(self, validated_data, instance):
@@ -35,7 +35,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         if validated_data.get("status") in ["Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-            StockAdjustmentVoucher, self.context["request"].company_id
+            InventoryAdjustmentVoucher, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
         
@@ -84,7 +84,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         self.assign_voucher_number(validated_data, instance=None)
-        instance = StockAdjustmentVoucher.objects.create(**validated_data)
+        instance = InventoryAdjustmentVoucher.objects.create(**validated_data)
         total_amount = 0
         for index, row in enumerate(rows_data):
             if row.get("id"):
@@ -92,7 +92,7 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
             quantity = row.get('quantity')
             rate = row.get('rate')
             total_amount += (rate * quantity)
-            StockAdjustmentVoucherRow.objects.create(voucher=instance, **row)
+            InventoryAdjustmentVoucherRow.objects.create(voucher=instance, **row)
         instance.total_amount = total_amount
         instance.save()
         instance.apply_transactions()
@@ -103,9 +103,9 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         validated_data.pop("purpose")
         rows_data = validated_data.pop("rows")
         total_amount = 0
-        StockAdjustmentVoucher.objects.filter(pk=instance.id).update(**validated_data)
+        InventoryAdjustmentVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            StockAdjustmentVoucherRow.objects.update_or_create(
+            InventoryAdjustmentVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
             quantity = row.get('quantity')
@@ -118,19 +118,19 @@ class StockAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
         return instance
 
     class Meta:
-        model = StockAdjustmentVoucher
+        model = InventoryAdjustmentVoucher
         exclude = ("company",)
 
 
-class StockAdjustmentVoucherListSerializer(serializers.ModelSerializer):
+class InventoryAdjustmentVoucherListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StockAdjustmentVoucher
+        model = InventoryAdjustmentVoucher
         fields=['id', 'voucher_no', 'date', 'status','purpose', 'total_amount']
 
 
-class StockAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
-    rows = StockAdjustmentVoucherRowSerializer(many=True)
+class InventoryAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
+    rows = InventoryAdjustmentVoucherRowSerializer(many=True)
 
     class Meta:
-        model = StockAdjustmentVoucher
+        model = InventoryAdjustmentVoucher
         exclude = ("company",)

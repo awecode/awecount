@@ -3,5 +3,5 @@ from .journal_voucher import *
 from .mixins import *
 from .purchase import *
 from .sales import *
-from .stockadjustment import*
+from .inventoryadjustment import*
 from .inventoryconversion import*
