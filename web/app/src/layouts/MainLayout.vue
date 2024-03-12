@@ -237,10 +237,10 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('AccountOpeningBalanceView')
       },
       {
-        title: 'Stock Adjustment',
+        title: 'Inventory Adjustment',
         icon: 'mdi-swap-horizontal',
-        link: '/items/stock-adjustment/list',
-        hide: !checkPermissions('StockAdjustmentVoucherView')
+        link: '/items/inventory-adjustment/list',
+        hide: !checkPermissions('InventoryAdjustmentVoucherView')
       },
       {
         title: 'Bill of Material',

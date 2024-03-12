@@ -3,8 +3,8 @@
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span v-if="!isEdit">Add Stock Adjustment Voucher</span>
-          <span v-else>Update Stock Adjustment Voucher | {{ fields.status }} | # {{ fields.voucher_no }}</span>
+          <span v-if="!isEdit">Add Inventory Adjustment Voucher</span>
+          <span v-else>Update Inventory Adjustment Voucher | {{ fields.status }} | # {{ fields.voucher_no }}</span>
         </div>
       </q-card-section>
 
@@ -29,12 +29,12 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update"
             type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
+          <q-btn v-if="!isEdit && checkPermissions('InventoryAdjustmentVoucherCreate')" :loading="loading"
             @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
       </q-card>
@@ -66,9 +66,9 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/stock-adjustment/'
+    const endpoint = '/v1/inventory-adjustment/'
     const metaData = {
-      title: 'Stock Adjustment | Awecount',
+      title: 'Inventory Adjustment | Awecount',
     }
     useMeta(metaData)
     const $q = useQuasar()
@@ -94,7 +94,7 @@ export default {
     ]
     const formData = useForm(endpoint, {
       getDefaults: true,
-      successRoute: '/items/stock-adjustment/list/',
+      successRoute: '/items/inventory-adjustment/list/',
     })
     formData.fields.value.date = formData.today
     const deleteRow = (index, errors) => {
@@ -116,7 +116,7 @@ export default {
       }
     }
     const onCancelClick = () => {
-      const url = `/v1/stock-adjustment/${formData.fields.value.id}/cancel/`
+      const url = `/v1/inventory-adjustment/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }

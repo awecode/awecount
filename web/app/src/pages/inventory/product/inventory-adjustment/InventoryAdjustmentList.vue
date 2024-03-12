@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
-    <div class="row justify-end q-gutter-md" v-if="checkPermissions('StockAdjustmentVoucherCreate')">
-      <q-btn color="green" class="add-btn" to="/items/stock-adjustment/add" label="Add Stock Adjustment Voucher"
+    <div class="row justify-end q-gutter-md" v-if="checkPermissions('InventoryAdjustmentVoucherCreate')">
+      <q-btn color="green" class="add-btn" to="/items/inventory-adjustment/add" label="Add Inventory Adjustment Voucher"
         icon-right="add" />
     </div>
     <q-table title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
@@ -39,19 +39,19 @@
 
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherView')" color="blue-6"
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherView')" color="blue-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="View"
-            :to="`/items/stock-adjustment/${props.row.id}/view`" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify')" color="orange-6"
+            :to="`/items/inventory-adjustment/${props.row.id}/view`" />
+          <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify')" color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit"
-            :to="`/items/stock-adjustment/${props.row.id}/`" />
+            :to="`/items/inventory-adjustment/${props.row.id}/`" />
         </q-td>
       </template>
 
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('StockAdjustmentVoucherModify')"
-            :to="`/items/stock-adjustment/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
+          <router-link v-if="checkPermissions('InventoryAdjustmentVoucherModify')"
+            :to="`/items/inventory-adjustment/${props.row.id}/`" style="font-weight: 500; text-decoration: none"
             class="text-blue">
             {{ props.row.voucher_no }}
           </router-link>
@@ -85,9 +85,9 @@
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-const endpoint = '/v1/stock-adjustment/'
+const endpoint = '/v1/inventory-adjustment/'
 const metaData = {
-  title: 'Stock Adjustments | Awecount',
+  title: 'Inventory Adjustments | Awecount',
 }
 useMeta(metaData)
 const {

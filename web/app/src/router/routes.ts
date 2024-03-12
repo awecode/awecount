@@ -65,44 +65,44 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'stock-adjustment/list',
-        name: 'Stock Adjustment',
+        path: 'inventory-adjustment/list',
+        name: 'Inventory Adjustment',
         component: () =>
           import(
-            'src/pages/inventory/product/stock-adjustment/StockAdjustmentList.vue'
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Adjustment'],
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment'],
         },
       },
       {
-        path: 'stock-adjustment/add',
+        path: 'inventory-adjustment/add',
         component: () =>
           import(
-            'src/pages/inventory/product/stock-adjustment/StockAdjustmentForm.vue'
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Adjustment', 'Create'],
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Create'],
         },
       },
       {
-        path: 'stock-adjustment/:id',
+        path: 'inventory-adjustment/:id',
         component: () =>
           import(
-            'src/pages/inventory/product/stock-adjustment/StockAdjustmentForm.vue'
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Adjustment', 'Update'],
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Update'],
         },
       },
       {
-        path: 'stock-adjustment/:id/view',
+        path: 'inventory-adjustment/:id/view',
         component: () =>
           import(
-            'src/pages/inventory/product/stock-adjustment/StockAdjustmentView.vue'
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentView.vue'
           ),
         meta: {
-          breadcrumb: ['Home', 'Items', 'Stock Adjustment', 'Details'],
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Details'],
         },
       },
       {

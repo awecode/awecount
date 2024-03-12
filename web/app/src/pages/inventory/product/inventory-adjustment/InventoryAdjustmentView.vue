@@ -5,7 +5,7 @@
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
           <div class="text-h6 d-print-none">
-            <span>Stock Adjustment Voucher | {{ fields?.status }}
+            <span>Inventory Adjustment Voucher | {{ fields?.status }}
               <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
             </span>
           </div>
@@ -87,8 +87,8 @@
       <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none" v-if="fields">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && (fields?.status !== 'Cancelled')"
-              color="orange-5" label="Edit" icon="edit" :to="`/items/stock-adjustment/${fields?.id}/`" />
+            <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherModify') && (fields?.status !== 'Cancelled')"
+              color="orange-5" label="Edit" icon="edit" :to="`/items/inventory-adjustment/${fields?.id}/`" />
             <q-btn v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel"
               icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
@@ -100,7 +100,7 @@
     }` : ''}`
     " icon="print" />
           <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
-            label="Journal Entries" icon="books" :to="`/journal-entries/stock-adjustment/${fields.id}/`" />
+            label="Journal Entries" icon="books" :to="`/journal-entries/inventory-adjustment/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
           <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
@@ -130,7 +130,7 @@ import { Ref } from 'vue'
 export default {
   setup() {
     const metaData = {
-      title: 'Stock Adjustment | Awecount',
+      title: 'Inventory Adjustment | Awecount',
     }
     useMeta(metaData)
     const $q = useQuasar()
@@ -141,7 +141,7 @@ export default {
     const loading = ref(false)
 
     const onCancelClick = () => {
-      const url = `/v1/stock-adjustment/${fields.value.id}/cancel/`
+      const url = `/v1/inventory-adjustment/${fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
@@ -223,7 +223,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/stock-adjustment/${this.$route.params.id}/`
+    const endpoint = `/v1/inventory-adjustment/${this.$route.params.id}/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
