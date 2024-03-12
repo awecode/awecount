@@ -1,10 +1,13 @@
+from django.db.models import F
 from rest_framework import serializers
 
+from apps.product.models import Item
 from apps.voucher.models import (
     InventoryConversionVoucher,
     InventoryConversionVoucherRow,
 )
 from awecount.libs import get_next_voucher_no
+from awecount.libs.exception import UnprocessableException
 
 
 class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
@@ -52,6 +55,42 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
             InventoryConversionVoucher, self.context["request"].company_id
         )
         validated_data["voucher_no"] = next_voucher_no
+
+    def validate(self, data):
+        # Check negative stock
+        request = self.context["request"]
+        item_ids = [
+            row["item_id"]
+            for row in data["rows"]
+            if row.get("transaction_type") == "Cr"
+        ]
+        quantities = {
+            row["item_id"]: row["quantity"]
+            for row in data["rows"]
+            if row.get("transaction_type") == "Cr"
+        }
+
+        inventory_setting = request.company.inventory_setting
+        if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+
+            remaining_stock_map = {item.id: item.remaining for item in items}
+
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
+        return data
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
