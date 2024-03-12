@@ -17,7 +17,7 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         transaction_type = attrs.get("transaction_type")
         rate = attrs.get("rate", None)
-        
+
         if transaction_type == "Dr" and not rate:
             raise serializers.ValidationError(
                 {"detail": "Rate is required for debit transaction."}
@@ -98,7 +98,10 @@ class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
 
 class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
     rows = InventoryConversionVoucherRowSerializer(many=True)
-    finished_product_name= serializers.ReadOnlyField(source="finished_product.finished_product.name")
+    finished_product_name = serializers.ReadOnlyField(
+        source="finished_product.finished_product.name"
+    )
+
     class Meta:
         model = InventoryConversionVoucher
         exclude = ("company",)
