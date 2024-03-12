@@ -26,7 +26,7 @@
           <div v-if="fields.finished_product" class="grid grid-cols-2">
             <div class="">Finished Product</div>
             <div class="">
-              {{ fields.finished_product }}
+              {{ fields.finished_product_name }}
             </div>
           </div>
         </div>
