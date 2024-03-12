@@ -87,7 +87,7 @@ import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
 const endpoint = '/v1/inventory-conversion/'
 const metaData = {
-  title: 'Stock Adjustments | Awecount',
+  title: 'Inventory Conversion | Awecount',
 }
 useMeta(metaData)
 const {

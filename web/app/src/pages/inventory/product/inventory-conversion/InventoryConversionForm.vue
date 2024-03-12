@@ -42,12 +42,12 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
-          <q-btn v-if="checkPermissions('StockAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+          <q-btn v-if="checkPermissions('InventoryConversionVoucherModify') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="onSubmitClick(fields.status)" color="green" label="Update"
             type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('StockAdjustmentVoucherCreate')" :loading="loading"
+          <q-btn v-if="!isEdit && checkPermissions('InventoryConversionVoucherCreate')" :loading="loading"
             @click.prevent="onSubmitClick('Issued')" color="green" label="Create" type="submit" />
         </div>
       </q-card>
