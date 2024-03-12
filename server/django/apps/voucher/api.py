@@ -41,6 +41,7 @@ from apps.voucher.filters import (
     ChallanFilterSet,
     CreditNoteFilterSet,
     DebitNoteFilterSet,
+    InventoryConversionVoucherFilterSet,
     JournalVoucherFilterSet,
     PaymentReceiptFilterSet,
     PurchaseDiscountFilterSet,
@@ -50,7 +51,6 @@ from apps.voucher.filters import (
     SalesRowFilterSet,
     SalesVoucherFilterSet,
     StockAdjustmentVoucherFilterSet,
-    InventoryConversionVoucherFilterSet,
 )
 from apps.voucher.models import (
     Challan,
@@ -2048,6 +2048,7 @@ class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
     search_fields = [
        "voucher_no",
        "date",
+       "finished_product__finished_product__name",
 
     ]
     filterset_class =InventoryConversionVoucherFilterSet
