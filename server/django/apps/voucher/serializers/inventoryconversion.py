@@ -163,6 +163,10 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
 
 
 class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
+    finished_product_name = serializers.ReadOnlyField(
+        source="finished_product.finished_product.name"
+    )
+
     class Meta:
         model = InventoryConversionVoucher
         fields = [
@@ -170,6 +174,7 @@ class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
             "voucher_no",
             "date",
             "status",
+            "finished_product_name",
         ]
 
 
