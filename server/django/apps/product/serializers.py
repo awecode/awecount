@@ -409,6 +409,13 @@ class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
     rows = BillOfMaterialRowSerializer(many=True)
     finished_product_name = serializers.ReadOnlyField(source="finished_product.name")
 
+    def validate(self,data):
+        finished_product=data.get("finished_product")
+        for row in data['rows']:
+            if row['item_id'] == finished_product.id:
+                raise ValidationError({"detail": "Finished product cannot be part of its own bill of material."})
+        return data
+    
     def create(self, validated_data):
         rows = validated_data.pop('rows')
         instance = BillOfMaterial.objects.create(**validated_data)
