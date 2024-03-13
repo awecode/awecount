@@ -13,6 +13,7 @@
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
         <div :class="minimal ? 'col-7' : 'col-3'">
           <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions"
+            @update:model-value="onItemChange(index)"
             :error="rowEmpty ? 'This field is required.' : errors && errors[index]?.item_id ? errors[index].item_id[0] : null" />
         </div>
         <div class="col-2 text-center">
@@ -92,7 +93,7 @@ const props = defineProps({
     },
   },
   errors: {
-    type: [Array , String , null],
+    type: [Array, String, null],
     default: () => {
       return null
     },
@@ -105,10 +106,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  finishedProduct: {
+    type: [Number, null],
+    default: null
+  }
 })
 const emit = defineEmits(['update:modelValue', 'deleteRow'])
 const modalValue = ref(props.modelValue)
 const errors = ref(props.errors)
+const $q = useQuasar()
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -149,4 +155,17 @@ const rowEmpty = computed(() => {
   if (props.errors && typeof props.errors === 'string') val = true
   return val
 })
+const onItemChange = (index) => {
+  if (!modalValue.value || !modalValue.value.length || !props.finishedProduct) return
+  const itemIds = modalValue.value.map(item => item.item_id)
+  if (itemIds.includes(props.finishedProduct)) {
+    $q.notify({
+      type: 'negative',
+      message: 'Item cannot be selected as both Dr and Cr'
+    })
+    nextTick(() => {
+      modalValue.value[index].item_id = null
+    })
+  }
+}
 </script>

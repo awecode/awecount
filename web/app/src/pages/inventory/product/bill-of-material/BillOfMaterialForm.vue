@@ -26,7 +26,9 @@
           <div class="q-mt-lg">
             <AdjustmentInvoiceTable label="Raw Material(s)" v-model="fields.rows" :minimal="true"
               :itemOptions="formDefaults?.collections?.items" :unitOptions="formDefaults?.collections?.units"
-              :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)">
+              :errors="errors?.rows" @deleteRow="(index) => deleteRow(index, errors)"
+              :finishedProduct="fields.finished_product"
+            >
             </AdjustmentInvoiceTable>
           </div>
           <div class="q-mt-lg">
