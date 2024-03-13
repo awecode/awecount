@@ -63,13 +63,13 @@ export default {
     })
     formData.fields.value.date = formData.today
     const deleteRow = (index, errors) => {
-      if (formData.fields.value.rows[index].id) {
+      if (formData.fields.value.rows && formData.fields.value.rows[index].id) {
         const deletedObj = { ...formData.fields.value.rows[index] }
         if (formData.fields.value.deleted_rows) {
           formData.fields.value.deleted_rows.push(deletedObj)
         } else formData.fields.value.deleted_rows = [deletedObj]
       }
-      if (!!errors?.rows) {
+      if (errors && errors.rows && Array.isArray(errors)) {
         errors.rows.splice(index, 1)
       }
     }
