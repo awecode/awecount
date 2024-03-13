@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from rest_framework import serializers
 
@@ -25,7 +26,7 @@ class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
 
         if transaction_type == "Dr" and not rate:
             raise serializers.ValidationError(
-                {"detail": "Rate is required for debit transaction."}
+                {"rate": "Rate is required for debit transaction."}
             )
 
         if transaction_type == "Cr" and rate:
@@ -59,19 +60,41 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         validated_data["voucher_no"] = next_voucher_no
 
     def validate(self, data):
-        # Check negative stock
         request = self.context["request"]
-        cr_item_ids = [
-            row["item_id"]
-            for row in data["rows"]
-            if row.get("transaction_type") == "Cr"
-        ]
+        bill_of_material = data.get("finished_product", None)
+        if bill_of_material is not None:
+            finished_product = bill_of_material.finished_product
+
+        dr_item_ids = []
+        cr_item_ids = []
+
+        for row in data["rows"]:
+            if row.get("transaction_type") == "Dr":
+                dr_item_ids.append(row["item_id"])
+            else:
+                cr_item_ids.append(row["item_id"])
+
+        if (not cr_item_ids) or (not dr_item_ids):
+            raise ValidationError({"detail": "Dr and Cr items are required"})
+
+        if finished_product is not None:
+            for item_id in dr_item_ids:
+                if item_id != finished_product.id:
+                    dr_item_ids.append(finished_product.id)
+
+        for row in data["rows"]:
+            if row["item_id"] in cr_item_ids and row["item_id"] in dr_item_ids:
+                raise ValidationError(
+                    {"detail": "Same item cannot be in both Dr and Cr"}
+                )
+
         quantities = {
             row["item_id"]: row["quantity"]
             for row in data["rows"]
             if row.get("transaction_type") == "Cr"
         }
 
+        # Check negative stock
         inventory_setting = request.company.inventory_setting
         if (
             inventory_setting.enable_negative_stock_check
