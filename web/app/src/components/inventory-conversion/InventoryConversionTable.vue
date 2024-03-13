@@ -98,7 +98,7 @@ const props = defineProps({
     },
   },
   errors: {
-    type: Array || String || null,
+    type: [Array, String, null],
     default: () => {
       return null
     },
@@ -166,7 +166,7 @@ const onItemChange = (index) => {
       drIds.push(row.item_id)
     } else crIds.push(row.item_id)
   })
-  
+
   const itemIds = drIds.concat(crIds)
   const itemIdSet = new Set(itemIds)
   if (itemIds.length > itemIdSet.size) {

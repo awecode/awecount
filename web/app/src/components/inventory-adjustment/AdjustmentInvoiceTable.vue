@@ -92,7 +92,7 @@ const props = defineProps({
     },
   },
   errors: {
-    type: Array || String || null,
+    type: [Array , String , null],
     default: () => {
       return null
     },
