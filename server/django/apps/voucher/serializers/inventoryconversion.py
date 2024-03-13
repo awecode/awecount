@@ -75,7 +75,9 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
                 cr_item_ids.append(row["item_id"])
 
         if (not cr_item_ids) or (not dr_item_ids):
-            raise ValidationError({"detail": "Dr and Cr items are required"})
+            raise ValidationError(
+                {"detail": "Finished product and raw material are required"}
+            )
 
         if finished_product is not None:
             for item_id in dr_item_ids:
@@ -85,7 +87,9 @@ class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
         for row in data["rows"]:
             if row["item_id"] in cr_item_ids and row["item_id"] in dr_item_ids:
                 raise ValidationError(
-                    {"detail": "Same item cannot be in both Dr and Cr"}
+                    {
+                        "detail": "Finished product and raw material cannot have same item"
+                    }
                 )
 
         quantities = {
