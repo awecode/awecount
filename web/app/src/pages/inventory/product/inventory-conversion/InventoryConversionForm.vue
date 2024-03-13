@@ -18,10 +18,6 @@
             <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
               :error-message="errors?.date"></date-picker>
           </div>
-          <!-- <div class="row q-col-gutter-md">
-            <date-picker label="Date*" v-model="fields.date" class="col-md-6 col-12" :error="!!errors?.date"
-              :error-message="errors?.date"></date-picker>
-          </div> -->
           <div class="q-mt-lg grid 2xl:grid-cols-12 2xl:gap-x-8 grid-cols-1 gap-y-8">
             <div class="col-span-4">
               <div class="mb-2 pl-2">Raw Material(s)</div>
