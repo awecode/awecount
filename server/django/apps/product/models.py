@@ -716,26 +716,45 @@ def set_inventory_transactions(model, date, *args, clear=True):
             diff += float(arg[2])
 
             # check if a transaction with later date has been created
-            # if yes, then we'll recalculate the fifo for all transactions referencing this transaction
-            later_transactions = Transaction.objects.filter(
+            # if yes, then we'll recalculate the fifo for all transactions referencing transaction after this date
+            future_dr_transactions = Transaction.objects.filter(
                 account=arg[1],
                 journal_entry__date__gt=date,
-                remaining_quantity__lt=F("dr_amount"),
+                dr_amount__gt=0,
             ).values_list("id", flat=True)
 
             updated_txns = []
 
+            dr_txns = {
+                txn.id: txn
+                for txn in Transaction.objects.filter(
+                    id__in=list(future_dr_transactions)
+                )
+            }
+
             for txn in Transaction.objects.filter(
-                consumption_data__has_any_keys=list(later_transactions)
+                consumption_data__has_any_keys=list(future_dr_transactions)
             ):
-                txn.fifo_inconsistency_quantity = float(
-                    txn.fifo_inconsistency_quantity or 0
-                ) + float(txn.consumption_data[str(transaction.id)][0])
-                txn.consumption_data.pop(str(transaction.id))
+                txn.fifo_inconsistency_quantity = zero_for_none(
+                    txn.fifo_inconsistency_quantity
+                )
+
+                for key, value in txn.consumption_data.items():
+                    dr_txn = dr_txns[int(key)]
+                    dr_txn.remaining_quantity += value[0]
+                    updated_txns.append(dr_txn)
+                    txn.fifo_inconsistency_quantity += value[0]
+                    txn.consumption_data.pop(key)
+
                 updated_txns.append(txn)
 
             Transaction.objects.bulk_update(
-                updated_txns, ["fifo_inconsistency_quantity", "consumption_data"]
+                updated_txns,
+                [
+                    "fifo_inconsistency_quantity",
+                    "consumption_data",
+                    "remaining_quantity",
+                ],
             )
 
             # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
