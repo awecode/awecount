@@ -811,12 +811,12 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     transaction.fifo_inconsistency_quantity = float(arg[2])
                 else:
                     # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
-                    later_transactions = Transaction.objects.filter(
+                    future_transactions = Transaction.objects.filter(
                         account=arg[1], journal_entry__date__gt=date, cr_amount__gt=0
                     )
 
                     dr_ids = (
-                        later_transactions.annotate(
+                        future_transactions.annotate(
                             keys=Func(
                                 F("consumption_data"), function="jsonb_object_keys"
                             )
@@ -832,7 +832,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
 
                     updated_txns = []
 
-                    for txn in later_transactions:
+                    for txn in future_transactions:
                         txn.fifo_inconsistency_quantity = txn.cr_amount
                         for key, value in txn.consumption_data.items():
                             dr_txn = dr_txns[int(key)]
