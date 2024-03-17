@@ -729,7 +729,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 consumption_data__has_any_keys=list(later_transactions)
             ):
                 txn.fifo_inconsistency_quantity = float(
-                    txn.fifo_inconsistency_quantity
+                    txn.fifo_inconsistency_quantity or 0
                 ) + float(txn.consumption_data[str(transaction.id)][0])
                 txn.consumption_data.pop(str(transaction.id))
                 updated_txns.append(txn)
