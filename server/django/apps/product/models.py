@@ -743,8 +743,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
                     txn.fifo_inconsistency_quantity
                 )
 
-                consumption_data = txn.consumption_data
-                for key, value in consumption_data.items():
+                for key, value in list(txn.consumption_data.items()):
                     dr_txn = dr_txns[int(key)]
                     dr_txn.remaining_quantity += value[0]
                     updated_txns.append(dr_txn)
