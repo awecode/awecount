@@ -547,7 +547,7 @@ class Transaction(models.Model):
         JournalEntry, related_name="transactions", on_delete=models.CASCADE
     )
     rate = models.FloatField(null=True, blank=True)
-    remaining_quantity = models.IntegerField(null=True, blank=True)
+    remaining_quantity = models.PositiveIntegerField(null=True, blank=True)
     consumption_data = models.JSONField(null=True, blank=True)
     fifo_inconsistency_quantity = models.FloatField(
         null=True, blank=True
