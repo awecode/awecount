@@ -723,17 +723,21 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 dr_amount__gt=0,
             ).values_list("id", flat=True)
 
+            future_dr_transactions = list(future_dr_transactions)
+
+            # if the transaction is already created, then we'll add it to the list
+            if transaction.id:
+                future_dr_transactions.append(transaction.id)
+
             updated_txns = []
 
             dr_txns = {
                 txn.id: txn
-                for txn in Transaction.objects.filter(
-                    id__in=list(future_dr_transactions)
-                )
+                for txn in Transaction.objects.filter(id__in=future_dr_transactions)
             }
 
             for txn in Transaction.objects.filter(
-                consumption_data__has_any_keys=list(future_dr_transactions)
+                consumption_data__has_any_keys=future_dr_transactions
             ):
                 txn.fifo_inconsistency_quantity = zero_for_none(
                     txn.fifo_inconsistency_quantity
@@ -825,9 +829,19 @@ def set_inventory_transactions(model, date, *args, clear=True):
                         .distinct()
                     )
 
+                    dr_ids = list(dr_ids)
+
+                    if transaction.id:
+                        dr_ids.extend(
+                            [
+                                key
+                                for key in transaction.consumption_data.keys()
+                                if key not in dr_ids
+                            ]
+                        )
+
                     dr_txns = {
-                        txn.id: txn
-                        for txn in Transaction.objects.filter(id__in=list(dr_ids))
+                        txn.id: txn for txn in Transaction.objects.filter(id__in=dr_ids)
                     }
 
                     updated_txns = []
