@@ -46,6 +46,11 @@
           </q-btn>
         </div>
       </template>
+      <template v-slot:body-cell-date="props">
+        <q-td data-testid="SN">
+          {{ props.row.date }}
+        </q-td>
+      </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
           <div class="row align-center justify-center" data-testid="status">
@@ -170,7 +175,7 @@ export default {
         label: 'Date',
         align: 'left',
         field: 'date',
-        sortable: true
+        sortable: true,
       },
       { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       {
