@@ -94,6 +94,9 @@ class Challan(TransactionModel, InvoiceModel):
     key = "Challan"
 
     def apply_inventory_transactions(self):
+        if self.status == "Draft":
+            return
+        
         for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
             set_inventory_transactions(
                 row,
