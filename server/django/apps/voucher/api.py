@@ -1311,9 +1311,6 @@ class SalesBookViewSet(
                     )
                     ws.cell(column=3, row=idx + 7, value=row.get("buyers_name"))
                     ws.cell(column=4, row=idx + 7, value=row.get("buyers_pan"))
-                # ws.cell(column=5, row=idx + 7, value=row.get("item_names"))
-                # ws.cell(column=6, row=idx + 7, value=row.get("total_quantity"))
-                # ws.cell(column=7, row=idx + 7, value=row.get("units"))
 
                 if row.get("is_export"):
                     ws.cell(column=9, row=idx + 7, value=row.get("grand_total"))
@@ -1512,9 +1509,6 @@ class PurchaseBookViewSet(
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(column=5, row=idx + 7, value=row.get("tax_registration_number"))
-                # ws.cell(column=6, row=idx + 7, value=row.get("item_names"))
-                # ws.cell(column=7, row=idx + 7, value=row.get("total_quantity"))
-                # ws.cell(column=8, row=idx + 7, value=row.get("units"))
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
                 ws.cell(column=7, row=idx + 7, value=non_taxable)
                 ws.cell(column=8, row=idx + 7, value=taxable)
