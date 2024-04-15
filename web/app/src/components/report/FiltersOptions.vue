@@ -22,36 +22,13 @@
                           @click="() => removeOption(option)"></q-btn>
                   </span>
               </div>
-              <!-- selected options {{ modalValue }}--modalValue -->
           </div>
         </div>
         <div>
             <q-select v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
                 :options="options" map-options emit-value>
-                <!-- <template v-slot:append>
-                                            <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                                                @click.stop.prevent="fields.mode = null" /></template> -->
             </q-select>
         </div>
-        <div class="row q-gutter-sm">
-            <!-- style="border-radius: 1rem; padding: 4px 12px" -->
-            <!-- <q-btn @click="() => onStatusClick(statuses)" style="border-radius: 1rem; padding: 4px 12px" size="sm"
-          class="text-subtitle2" v-for="(statuses, index) in options" :key="index" :class="modalValue.includes(statuses)
-            ? 'bg-blue-1 text-blue-9'
-            : 'bg-grey-4 text-grey-9'
-            ">
-          <div class="row items-center">
-            <Transition>
-              <q-icon style="height: 22px" v-if="modalValue.includes(statuses)" name="check" size="sm" color="blue"
-                class="q-mr-xs"></q-icon>
-            </Transition>
-            <span style="font-size: 0.85rem; text-transform: capitalize">
-              {{ statuses }}
-            </span>
-          </div>
-        </q-btn> -->
-        </div>
-        <!-- {{ modalValue }} --modalValue -->
     </div>
 </template>
 
@@ -80,16 +57,6 @@ export default {
     setup(props, { emit }) {
         const modalValueSelect = ref(null)
         const modalValue: Ref<Array<string>> = ref(props.modelValue)
-        // const onStatusClick = (status: string) => {
-        //     const index: number = modalValue.value.findIndex(
-        //         (item) => item === status
-        //     )
-        //     if (index >= 0) {
-        //         modalValue.value.splice(index, 1)
-        //     } else {
-        //         modalValue.value.push(status)
-        //     }
-        // }
         const removeOption = (id) => {
             if (typeof modalValue.value === 'string') modalValue.value = []
             else {
