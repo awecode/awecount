@@ -26,6 +26,8 @@ from apps.voucher.models import (
     PurchaseOrderRow,
     PurchaseVoucherRow,
     SalesVoucherRow,
+    InventoryAdjustmentVoucherRow,
+    InventoryConversionVoucherRow
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin, ShortNameChoiceMixin
@@ -171,6 +173,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
         debit_note_rows = DebitNoteRow.objects.filter(item__id__in=item_ids)
         debit_note_rows.update(item=item)
+
+        inventory_adjustment_rows = InventoryAdjustmentVoucherRow.objects.filter(item__id__in=item_ids)
+        inventory_adjustment_rows.update(item=item)
+
+        inventory_conversion_rows = InventoryConversionVoucherRow.objects.filter(item__id__in=item_ids)
+        inventory_conversion_rows.update(item=item)
 
         if has_inventory_account or has_purchase_account or has_sales_account:
             if has_inventory_account:
