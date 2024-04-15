@@ -1204,7 +1204,9 @@ class SalesBookViewSet(
 
         if is_filtered:
             aggregate = queryset.aggregate(
-                total_amount=Sum("total_amount"),
+                total__amount=Sum(
+                    "total_amount"
+                ),  # couldn't use total_amount and total__amount is humanized as total_amount in fe
                 total_meta_discount=Sum("meta_discount"),
                 total_meta_tax=Sum("meta_tax"),
                 total_meta_taxable=Sum("meta_taxable"),
@@ -1251,27 +1253,24 @@ class SalesBookViewSet(
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 if row.get("status") == "Cancelled":
                     ws.cell(column=3, row=idx + 7, value="Cancelled")
+                    ws.cell(column=5, row=idx + 7, value="0")
+                    ws.cell(column=6, row=idx + 7, value="0")
+                    ws.cell(column=7, row=idx + 7, value="0")
                     ws.cell(column=8, row=idx + 7, value="0")
-                    ws.cell(column=9, row=idx + 7, value="0")
-                    ws.cell(column=10, row=idx + 7, value="0")
-                    ws.cell(column=11, row=idx + 7, value="0")
                 else:
                     taxable = row.get("voucher_meta").get("taxable")
                     non_taxable = row.get("voucher_meta").get("non_taxable")
-                    ws.cell(column=8, row=idx + 7, value=taxable + non_taxable)
-                    ws.cell(column=9, row=idx + 7, value=non_taxable)
-                    ws.cell(column=10, row=idx + 7, value=taxable)
+                    ws.cell(column=5, row=idx + 7, value=taxable + non_taxable)
+                    ws.cell(column=6, row=idx + 7, value=non_taxable)
+                    ws.cell(column=7, row=idx + 7, value=taxable)
                     ws.cell(
-                        column=11, row=idx + 7, value=row.get("voucher_meta").get("tax")
+                        column=8, row=idx + 7, value=row.get("voucher_meta").get("tax")
                     )
                     ws.cell(column=3, row=idx + 7, value=row.get("buyers_name"))
                     ws.cell(column=4, row=idx + 7, value=row.get("buyers_pan"))
-                ws.cell(column=5, row=idx + 7, value=row.get("item_names"))
-                ws.cell(column=6, row=idx + 7, value=row.get("total_quantity"))
-                ws.cell(column=7, row=idx + 7, value=row.get("units"))
 
                 if row.get("is_export"):
-                    ws.cell(column=12, row=idx + 7, value=row.get("grand_total"))
+                    ws.cell(column=9, row=idx + 7, value=row.get("grand_total"))
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
@@ -1467,14 +1466,11 @@ class PurchaseBookViewSet(
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(column=5, row=idx + 7, value=row.get("tax_registration_number"))
-                ws.cell(column=6, row=idx + 7, value=row.get("item_names"))
-                ws.cell(column=7, row=idx + 7, value=row.get("total_quantity"))
-                ws.cell(column=8, row=idx + 7, value=row.get("units"))
-                ws.cell(column=9, row=idx + 7, value=taxable + non_taxable)
-                ws.cell(column=10, row=idx + 7, value=non_taxable)
-                ws.cell(column=11, row=idx + 7, value=taxable)
+                ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
+                ws.cell(column=7, row=idx + 7, value=non_taxable)
+                ws.cell(column=8, row=idx + 7, value=taxable)
                 ws.cell(
-                    column=12, row=idx + 7, value=row.get("voucher_meta").get("tax")
+                    column=9, row=idx + 7, value=row.get("voucher_meta").get("tax")
                 )
 
             years = [

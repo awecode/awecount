@@ -139,9 +139,9 @@ class Command(BaseCommand):
             if txn_highest.running < total_quantity_to_fulfill:
                 tx_next = txns_can_be_consumed.filter(
                     running__gt=total_quantity_to_fulfill
-                ).first()
+                )[:1]
                 if tx_next:
-                    txns_can_be_consumed_lte = txns_can_be_consumed_lte.union(tx_next)
+                    txns_can_be_consumed_lte = txns_can_be_consumed.union(tx_next)
         else:
             txns_can_be_consumed_lte = txns_can_be_consumed.filter(
                 running__gt=total_quantity_to_fulfill
