@@ -263,12 +263,6 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
         source="party.tax_registration_number"
     )
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
-    item_names = serializers.ReadOnlyField()
-    total_quantity = serializers.SerializerMethodField()
-
-    def get_total_quantity(self, obj):
-        # Annotate this on queryset on api that uses this serializer
-        return obj.total_quantity
 
     class Meta:
         model = PurchaseVoucher
@@ -278,9 +272,6 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
             "tax_registration_number",
             "voucher_no",
             "voucher_meta",
-            "item_names",
-            "units",
-            "total_quantity",
         )
 
 

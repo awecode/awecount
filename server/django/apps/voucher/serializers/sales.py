@@ -304,7 +304,7 @@ class SalesVoucherCreateSerializer(
             raise ValidationError(
                 {"date": ["Date not in current fiscal year."]},
             )
-
+ 
     def validate(self, data):
         # TODO: Find why due date is null and fix the issue
         request = self.context["request"]
@@ -687,12 +687,6 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
     buyers_pan = serializers.ReadOnlyField(source="party.tax_registration_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
-    item_names = serializers.ReadOnlyField()
-    total_quantity = serializers.SerializerMethodField()
-
-    def get_total_quantity(self, obj):
-        # Annotate this on queryset on api that uses this serializer
-        return obj.total_quantity
 
     class Meta:
         model = SalesVoucher
@@ -703,9 +697,6 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
             "voucher_no",
             "voucher_meta",
             "is_export",
-            "item_names",
-            "units",
-            "total_quantity",
             "status",
         )
 
@@ -784,11 +775,13 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
             return
+        if validated_data.get("status") in ["Draft", "Cancelled"]:
+            return
         next_voucher_no = get_next_voucher_no(
-            Challan, self.context["request"].company_id
-        )
+                Challan, self.context["request"].company_id
+         )
         validated_data["voucher_no"] = next_voucher_no
-
+   
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
             return
