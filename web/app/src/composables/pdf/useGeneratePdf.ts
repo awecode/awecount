@@ -303,6 +303,9 @@ export default function useGeneratePdf(
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
     }</div>
+    <div style="${compayInfo.invoice_template === 2 && invoiceInfo.party_contact_no ? '' : 'display: none;'}">${
+      invoiceInfo.party_contact_no
+    }</div>
       ${
         invoiceInfo.tax_registration_number
           ? `<div style="font-weight: 600; color: grey;">Tax reg. No. ${invoiceInfo.tax_registration_number}</div>`
