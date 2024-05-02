@@ -296,6 +296,10 @@ const getMonth = (last = false) => {
     let year = DateConverter.getBSYear(date)
     let month = DateConverter.getBSMonth(date)
     month = month - (last ? 1 : 0)
+    if (last && month == 0) {
+      month = 12
+      year = year - 1
+    }
     const month_end_day = DateConverter.getMonthDays(year, month)
     const bs0 = `${year}-${month}-01`
     const bs1 = `${year}-${month}-${month_end_day}`
