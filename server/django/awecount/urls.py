@@ -61,6 +61,9 @@ router.register(
     "purchase-vouchers", voucher.PurchaseVoucherViewSet, basename="purchase-vouchers"
 )
 router.register(
+    "purchase-voucher-row", voucher.PurchaseVoucherRowViewSet, basename="purchase-voucher-row"
+)
+router.register(
     "purchase-discount", voucher.PurchaseDiscountViewSet, basename="purchase-discount"
 )
 router.register(
