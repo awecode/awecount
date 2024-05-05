@@ -225,6 +225,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('PurchaseDiscountView')
       },
       {
+        title: 'Purchase Report',
+        icon: 'mdi-format-list-bulleted',
+        link: '/purchase-voucher-row/list/',
+        hide: !checkPermissions('PurchaseVoucherView'),
+      },
+      {
         title: 'Purchase Book',
         icon: 'book',
         link: '/purchase-book/list/',

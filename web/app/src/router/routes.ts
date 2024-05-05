@@ -509,7 +509,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Home', 'Purchase Orders', 'Update'],
         },
-      }
+      },
     ],
   },
   {
@@ -578,6 +578,21 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Discounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/purchase-voucher-row/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/row/PurchaseVoucherRowList.vue'),
+        name: 'PurchaseVoucher Rows',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Rows'],
         },
       },
     ],
