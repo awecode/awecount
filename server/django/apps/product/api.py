@@ -425,6 +425,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, url_path="purchase-choices")
+    def purchase_choices(self, request):
+        queryset = self.get_queryset().filter(can_be_purchased=True)
+        serializer = GenericSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     @action(detail=False, methods=["POST"], url_path="import")
     def import_from_file(self, request):
         file = request.FILES["file"]

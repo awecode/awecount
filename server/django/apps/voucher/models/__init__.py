@@ -689,6 +689,7 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
+    key = "PurchaseVoucher"
 
     def save(self, *args, **kwargs):
         if not self.item.cost_price:

@@ -47,6 +47,7 @@ from apps.voucher.filters import (
     PurchaseDiscountFilterSet,
     PurchaseOrderFilterSet,
     PurchaseVoucherFilterSet,
+    PurchaseVoucherRowFilterSet,
     SalesDiscountFilterSet,
     SalesRowFilterSet,
     SalesVoucherFilterSet,
@@ -70,6 +71,7 @@ from apps.voucher.serializers.debit_note import (
 from apps.voucher.serializers.purchase import (
     PurchaseOrderCreateSerializer,
     PurchaseOrderListSerializer,
+    PurchaseVoucherRowSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
     PurchaseCreateSettingSerializer,
@@ -1393,6 +1395,74 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
                 Count("voucher", distinct=True),
                 Count("voucher__party", distinct=True),
                 Count("voucher__sales_agent", distinct=True),
+            )
+            self.paginator.aggregate = aggregate
+        return self.get_paginated_response(data)
+
+    @action(detail=False, url_path="by-category")
+    def by_category(self, request):
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        qs = self.get_queryset()
+        if start_date:
+            qs = qs.filter(voucher__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(voucher__date__lte=end_date)
+        qs = (
+            qs.values("item__category", "item__category__name")
+            .annotate(
+                quantity=Sum("quantity"),
+                discount_amount=Sum("discount_amount"),
+                tax_amount=Sum("tax_amount"),
+                net_amount=Sum("net_amount"),
+            )
+            .order_by("-net_amount")
+        )
+        return Response(qs)
+
+class PurchaseVoucherRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
+    serializer_class = PurchaseVoucherRowSerializer
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    filterset_class = PurchaseVoucherRowFilterSet
+
+    search_fields = [
+        "voucher__party__name",
+        "voucher__party__tax_registration_number",
+        "item__name",
+    ]
+
+    def get_queryset(self, **kwargs):
+        qs = PurchaseVoucherRow.objects.filter(
+            voucher__company_id=self.request.company_id
+        ).select_related("item", "voucher__party")
+        return qs.order_by("-pk")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = serializer.data
+
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
+        if is_filtered:
+            aggregate = queryset.aggregate(
+                Sum("quantity"),
+                Sum("discount_amount"),
+                Sum("tax_amount"),
+                Sum("net_amount"),
+                Avg("rate"),
+                Count("item", distinct=True),
+                Count("voucher", distinct=True),
+                Count("voucher__party", distinct=True),
+                # Count("voucher__sales_agent", distinct=True),
             )
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
