@@ -32,7 +32,11 @@ class PurchaseVoucherRowSerializer(
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
-
+    item = serializers.ReadOnlyField(source="item.name")
+    buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
+    voucher__date = serializers.ReadOnlyField(source="voucher.date")
+    voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
+    voucher_id=serializers.ReadOnlyField(source="voucher.id")   
     def validate_discount(self, value):
         print(f"Validating discount: {value}")
         if not value:
@@ -43,7 +47,7 @@ class PurchaseVoucherRowSerializer(
 
     class Meta:
         model = PurchaseVoucherRow
-        exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
+        exclude = ("tax_scheme", "voucher", "unit", "discount_obj")
 
         extra_kwargs = {
             "discount": {"required": False, "allow_null": True},
@@ -129,7 +133,7 @@ class PurchaseVoucherCreateSerializer(
 
         # if request.query_params.get("fifo_inconsistency"):
         #     return data
-        # else:
+        # else:#
         #     if request.company.inventory_setting.enable_fifo:
         #         item_ids = [x.get("item_id") for x in data.get("rows")]
         #         date = data["date"]
