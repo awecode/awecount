@@ -29,8 +29,8 @@ from awecount.libs.CustomViewSet import (
 )
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 
-from .models import Account, AccountOpeningBalance, Category, JournalEntry
-from .serializers import (
+from ..models import Account, AccountOpeningBalance, Category, JournalEntry
+from ..serializers import (
     AccountClosingSerializer,
     AccountDetailSerializer,
     AccountFormSerializer,
