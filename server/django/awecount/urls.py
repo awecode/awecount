@@ -8,6 +8,7 @@ from apps.aggregator import api as aggregator
 from apps.aggregator import views as aggregator_views
 from apps.bank import api as bank
 from apps.ledger import api as ledger
+from apps.ledger.api import public as public_ledger
 from apps.product import api as item
 from apps.product.views import book_by_isbn
 from apps.report import api as report_api
@@ -21,6 +22,12 @@ router = DefaultRouter()
 router.register("parties", ledger.PartyViewSet, basename="parties")
 router.register("categories", ledger.CategoryViewSet, basename="categories")
 router.register("accounts", ledger.AccountViewSet, basename="accounts")
+
+router.register(
+    "public/journal-voucher",
+    public_ledger.PublicJournalVoucherViewSet,
+    basename="public-journal-voucher",
+)
 
 router.register(
     "inventory-account", item.InventoryAccountViewSet, basename="inventory-account"
@@ -61,7 +68,9 @@ router.register(
     "purchase-vouchers", voucher.PurchaseVoucherViewSet, basename="purchase-vouchers"
 )
 router.register(
-    "purchase-voucher-row", voucher.PurchaseVoucherRowViewSet, basename="purchase-voucher-row"
+    "purchase-voucher-row",
+    voucher.PurchaseVoucherRowViewSet,
+    basename="purchase-voucher-row",
 )
 router.register(
     "purchase-discount", voucher.PurchaseDiscountViewSet, basename="purchase-discount"

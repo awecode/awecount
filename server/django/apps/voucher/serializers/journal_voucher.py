@@ -4,7 +4,8 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, ValidationError
 
-from awecount.libs import decimalize
+from apps.ledger.models.base import Account
+from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
 
 from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
@@ -107,3 +108,113 @@ class JournalVoucherDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalVoucher
         fields = ("id", "voucher_no", "date", "status", "rows", "narration")
+
+
+class PublicAccountSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    code = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+    parent_id = serializers.IntegerField(required=False)
+    parent__id = serializers.IntegerField(source="parent.id", required=False)
+    parent__code = serializers.CharField(source="parent.code", required=False)
+    parent__name = serializers.CharField(source="parent.name", required=False)
+    category_id = serializers.IntegerField(required=False)
+    category__id = serializers.IntegerField(source="category.id", required=False)
+    category__name = serializers.CharField(source="category.name", required=False)
+    category__code = serializers.CharField(source="category.code", required=False)
+    supplier_detail__name = serializers.CharField(
+        source="supplier_detail.name", required=False
+    )
+    supplier_detail__email = serializers.EmailField(
+        source="supplier_detail.email", required=False
+    )
+    supplier_detail__contact_no = serializers.CharField(
+        source="supplier_detail.contact_no", required=False
+    )
+    supplier_detail__tax_registration_no = serializers.CharField(
+        source="supplier_detail.tax_registration_no", required=False
+    )
+    customer_detail__name = serializers.CharField(
+        source="customer_detail.name", required=False
+    )
+    customer_detail__email = serializers.EmailField(
+        source="customer_detail.email", required=False
+    )
+    customer_detail__contact_no = serializers.CharField(
+        source="customer_detail.contact_no", required=False
+    )
+    customer_detail__tax_registration_no = serializers.CharField(
+        source="customer_detail.tax_registration_no", required=False
+    )
+
+
+class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
+    account = PublicAccountSerializer(default={})
+    account_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = JournalVoucherRow
+        exclude = ("journal_voucher", "id")
+
+
+class PublicJournalVoucherCreateSerializer(
+    DisableCancelEditMixin, serializers.ModelSerializer
+):
+    voucher_no = serializers.CharField(required=False)
+    status = serializers.ChoiceField(choices=JournalVoucher.STATUSES, default="Approved")
+    rows = PublicJournalVoucherRowSerializer(many=True)
+
+    def validate(self, attrs):
+        for row in attrs.get("rows"):
+            dr_amt = row.get("dr_amount")
+            cr_amt = row.get("cr_amount")
+            if not bool(dr_amt) and not bool(cr_amt):
+                raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
+            account_id = row.get("account_id")
+            if not account_id:
+                account_id = row.get("account").get("id")
+            if not account_id:
+                accounts = Account.objects.filter(
+                    **row.get("account")
+                ).all()
+                if accounts.count() > 1:
+                    raise ValidationError(
+                        {"detail": "More than one account found for the given details."}
+                    )
+                elif accounts.count() == 1:
+                    account_id = accounts.first().id
+                else:
+                    raise ValidationError(
+                        {"detail": "No account found for the given details."}
+                    )
+            row["account_id"] = account_id
+                 
+        # Raise error if debit and credit totals differ
+        dr_total = Decimal(0)
+        cr_total = Decimal(0)
+        for row in attrs.get("rows"):
+            dr = row.get("dr_amount")
+            cr = row.get("cr_amount")
+            if dr:
+                dr_total += decimalize(dr)
+            if cr:
+                cr_total += decimalize(cr)
+        if not (dr_total == cr_total):
+            raise ValidationError({"detail": "Debit and Credit totals do not match."})
+
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop("rows")
+        validated_data["company_id"] = self.context["request"].company_id
+        validated_data["voucher_no"] = get_next_voucher_no(JournalVoucher, self.context["request"].company_id)
+        journal_voucher = JournalVoucher.objects.create(**validated_data)
+        for _, row in enumerate(rows_data):
+            row.pop("account")
+            JournalVoucherRow.objects.create(journal_voucher=journal_voucher, **row)
+        JournalVoucher.apply_transactions(journal_voucher)
+        return journal_voucher
+
+    class Meta:
+        model = JournalVoucher
+        exclude = ("company","id")
