@@ -115,37 +115,21 @@ class PublicAccountSerializer(serializers.Serializer):
     code = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     parent_id = serializers.IntegerField(required=False)
-    parent__id = serializers.IntegerField(source="parent.id", required=False)
-    parent__code = serializers.CharField(source="parent.code", required=False)
-    parent__name = serializers.CharField(source="parent.name", required=False)
+    parent__id = serializers.IntegerField(required=False)
+    parent__code = serializers.CharField(required=False)
+    parent__name = serializers.CharField(required=False)
     category_id = serializers.IntegerField(required=False)
-    category__id = serializers.IntegerField(source="category.id", required=False)
-    category__name = serializers.CharField(source="category.name", required=False)
-    category__code = serializers.CharField(source="category.code", required=False)
-    supplier_detail__name = serializers.CharField(
-        source="supplier_detail.name", required=False
-    )
-    supplier_detail__email = serializers.EmailField(
-        source="supplier_detail.email", required=False
-    )
-    supplier_detail__contact_no = serializers.CharField(
-        source="supplier_detail.contact_no", required=False
-    )
-    supplier_detail__tax_registration_no = serializers.CharField(
-        source="supplier_detail.tax_registration_no", required=False
-    )
-    customer_detail__name = serializers.CharField(
-        source="customer_detail.name", required=False
-    )
-    customer_detail__email = serializers.EmailField(
-        source="customer_detail.email", required=False
-    )
-    customer_detail__contact_no = serializers.CharField(
-        source="customer_detail.contact_no", required=False
-    )
-    customer_detail__tax_registration_no = serializers.CharField(
-        source="customer_detail.tax_registration_no", required=False
-    )
+    category__id = serializers.IntegerField(required=False)
+    category__name = serializers.CharField(required=False)
+    category__code = serializers.CharField(required=False)
+    supplier_detail__name = serializers.CharField(required=False)
+    supplier_detail__email = serializers.EmailField(required=False)
+    supplier_detail__contact_no = serializers.CharField(required=False)
+    supplier_detail__tax_registration_number = serializers.IntegerField(required=False)
+    customer_detail__name = serializers.CharField(required=False)
+    customer_detail__email = serializers.EmailField(required=False)
+    customer_detail__contact_no = serializers.CharField(required=False)
+    customer_detail__tax_registration_number = serializers.IntegerField(required=False)
 
 
 class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
@@ -161,7 +145,9 @@ class PublicJournalVoucherCreateSerializer(
     DisableCancelEditMixin, serializers.ModelSerializer
 ):
     voucher_no = serializers.CharField(required=False)
-    status = serializers.ChoiceField(choices=JournalVoucher.STATUSES, default="Approved")
+    status = serializers.ChoiceField(
+        choices=JournalVoucher.STATUSES, default="Approved"
+    )
     rows = PublicJournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
@@ -175,8 +161,7 @@ class PublicJournalVoucherCreateSerializer(
                 account_id = row.get("account").get("id")
             if not account_id:
                 accounts = Account.objects.filter(
-                    **row.get("account"),
-                    company_id=self.context["request"].company_id
+                    **row.get("account"), company_id=self.context["request"].company_id
                 ).all()
                 if accounts.count() > 1:
                     raise ValidationError(
@@ -189,7 +174,7 @@ class PublicJournalVoucherCreateSerializer(
                         {"detail": "No account found for the given details."}
                     )
             row["account_id"] = account_id
-                 
+
         # Raise error if debit and credit totals differ
         dr_total = Decimal(0)
         cr_total = Decimal(0)
@@ -200,6 +185,7 @@ class PublicJournalVoucherCreateSerializer(
                 dr_total += decimalize(dr)
             if cr:
                 cr_total += decimalize(cr)
+        
         if not (dr_total == cr_total):
             raise ValidationError({"detail": "Debit and Credit totals do not match."})
 
@@ -208,7 +194,9 @@ class PublicJournalVoucherCreateSerializer(
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         validated_data["company_id"] = self.context["request"].company_id
-        validated_data["voucher_no"] = get_next_voucher_no(JournalVoucher, self.context["request"].company_id)
+        validated_data["voucher_no"] = get_next_voucher_no(
+            JournalVoucher, self.context["request"].company_id
+        )
         journal_voucher = JournalVoucher.objects.create(**validated_data)
         for _, row in enumerate(rows_data):
             row.pop("account")
@@ -218,4 +206,4 @@ class PublicJournalVoucherCreateSerializer(
 
     class Meta:
         model = JournalVoucher
-        exclude = ("company","id")
+        exclude = ("company", "id")
