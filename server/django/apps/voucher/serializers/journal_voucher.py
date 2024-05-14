@@ -185,7 +185,7 @@ class PublicJournalVoucherCreateSerializer(
                 dr_total += decimalize(dr)
             if cr:
                 cr_total += decimalize(cr)
-        
+
         if not (dr_total == cr_total):
             raise ValidationError({"detail": "Debit and Credit totals do not match."})
 
@@ -207,3 +207,8 @@ class PublicJournalVoucherCreateSerializer(
     class Meta:
         model = JournalVoucher
         exclude = ("company", "id")
+
+
+class PublicJournalVoucherStatusChangeSerializer(serializers.Serializer):
+    voucher_no = serializers.CharField(required=True)
+    status = serializers.ChoiceField(choices=JournalVoucher.STATUSES, required=True)
