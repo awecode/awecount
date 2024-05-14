@@ -175,7 +175,8 @@ class PublicJournalVoucherCreateSerializer(
                 account_id = row.get("account").get("id")
             if not account_id:
                 accounts = Account.objects.filter(
-                    **row.get("account")
+                    **row.get("account"),
+                    company_id=self.context["request"].company_id
                 ).all()
                 if accounts.count() > 1:
                     raise ValidationError(
