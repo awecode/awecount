@@ -24,11 +24,12 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
     def change_status(self, request):
         serializer = PublicJournalVoucherStatusChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        journal_voucher = JournalVoucher.objects.filter(
-            voucher_no=serializer.validated_data.get("voucher_no"),
-            company_id=request.user.company_id,
-        ).first()
-        if not journal_voucher:
+        try:
+            journal_voucher = JournalVoucher.objects.get(
+                voucher_no=serializer.validated_data.get("voucher_no"),
+                company_id=request.user.company_id,
+            )
+        except JournalVoucher.DoesNotExist:
             return Response({"detail": "Journal Voucher not found"}, status=404)
         journal_voucher.status = serializer.validated_data.get("status")
         journal_voucher.save()
