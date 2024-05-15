@@ -30,7 +30,7 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
                 company_id=request.user.company_id,
             )
         except JournalVoucher.DoesNotExist:
-            return Response({"detail": "Journal Voucher not found"}, status=404)
+            return Response({"detail": "Journal Voucher not found."}, status=404)
         journal_voucher.status = serializer.validated_data.get("status")
         journal_voucher.save()
-        return Response({"detail": "Status changed successfully"})
+        return Response({"detail": "Status changed successfully."})
