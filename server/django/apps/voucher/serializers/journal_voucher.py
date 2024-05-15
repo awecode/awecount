@@ -151,40 +151,31 @@ class PublicJournalVoucherCreateSerializer(
     rows = PublicJournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
+        dr_total = Decimal(0)
+        cr_total = Decimal(0)
+
         for row in attrs.get("rows"):
             dr_amt = row.get("dr_amount")
             cr_amt = row.get("cr_amount")
-            if not bool(dr_amt) and not bool(cr_amt):
-                raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
-            account_id = row.get("account_id")
+            account_id = row.get("account_id") or (row.get("account") and row["account"].get("id"))
+            
             if not account_id:
-                account_id = row.get("account").get("id")
-            if not account_id:
-                accounts = Account.objects.filter(
-                    **row.get("account"), company_id=self.context["request"].company_id
-                ).all()
-                if accounts.count() > 1:
-                    raise ValidationError(
-                        {"detail": "More than one account found for the given details."}
-                    )
-                elif accounts.count() == 1:
-                    account_id = accounts.first().id
+                accounts = Account.objects.filter(**row.get("account"), company_id=self.context["request"].company_id)
+                count = accounts.count()
+                if count > 1:
+                    raise ValidationError({"detail": "More than one account found for the given details."})
+                elif count == 0:
+                    raise ValidationError({"detail": "No account found for the given details."})
                 else:
-                    raise ValidationError(
-                        {"detail": "No account found for the given details."}
-                    )
-            row["account_id"] = account_id
+                    account_id = accounts.first().id
+                    row["account_id"] = account_id
+            
+            if not dr_amt and not cr_amt:
+                raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
+            
+            dr_total += decimalize(dr_amt) if dr_amt else 0
+            cr_total += decimalize(cr_amt) if cr_amt else 0
 
-        # Raise error if debit and credit totals differ
-        dr_total = Decimal(0)
-        cr_total = Decimal(0)
-        for row in attrs.get("rows"):
-            dr = row.get("dr_amount")
-            cr = row.get("cr_amount")
-            if dr:
-                dr_total += decimalize(dr)
-            if cr:
-                cr_total += decimalize(cr)
 
         if dr_total != cr_total:
             raise ValidationError({"detail": "Debit and Credit totals do not match."})
