@@ -157,28 +157,31 @@ class PublicJournalVoucherCreateSerializer(
         for row in attrs.get("rows"):
             dr_amt = row.get("dr_amount")
             cr_amt = row.get("cr_amount")
-            account_id = row.get("account_id") or (row.get("account") and row["account"].get("id"))
-            
-            if not account_id:
-                accounts = Account.objects.filter(**row.get("account"), company_id=self.context["request"].company_id)
-                count = accounts.count()
-                if count > 1:
-                    raise ValidationError({"detail": "More than one account found for the given details."})
-                elif count == 0:
-                    raise ValidationError({"detail": "No account found for the given details."})
-                else:
-                    account_id = accounts.first().id
-                    row["account_id"] = account_id
-            
+
+            account_id = row.get("account_id") 
+            if account_id:
+                row["account"]["id"] = account_id
+         
+            try:
+                account = Account.objects.get(
+                    **row.get("account"), company_id=self.context["request"].company_id
+                )
+                row["account_id"] = account.id
+            except Account.DoesNotExist:
+                raise ValidationError("No account found for the given details.")
+            except Account.MultipleObjectsReturned:
+                raise ValidationError(
+                    "More than one account found for the given details."
+                )
+
             if not dr_amt and not cr_amt:
-                raise ValidationError({"detail": "Both Dr and Cr amounts cannot be 0."})
-            
+                raise ValidationError("Both Dr and Cr amounts cannot be 0.")
+
             dr_total += decimalize(dr_amt) if dr_amt else 0
             cr_total += decimalize(cr_amt) if cr_amt else 0
 
-
         if dr_total != cr_total:
-            raise ValidationError({"detail": "Debit and Credit totals do not match."})
+            raise ValidationError("Debit and Credit totals do not match.")
 
         return super().validate(attrs)
 
