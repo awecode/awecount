@@ -1,5 +1,5 @@
-from import_export.resources import Resource
 from import_export.fields import Field
+from import_export.resources import Resource
 
 
 class AgeingReportResource(Resource):

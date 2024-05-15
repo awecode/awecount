@@ -7,16 +7,19 @@ from apps.ledger.serializers import AccountBalanceSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
+
 from .models import (
+    Brand,
+    Category,
+    InventoryAccount,
     InventorySetting,
     Item,
-    Unit,
-    Category as InventoryCategory,
-    Brand,
-    InventoryAccount,
     JournalEntry,
-    Category,
     Transaction,
+    Unit,
+)
+from .models import (
+    Category as InventoryCategory,
 )
 
 
@@ -112,8 +115,8 @@ class ItemOpeningSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryAccount
-        fields = ('id', 'name', 'item_id', 'opening_balance', 'opening_balance_rate')
-    
+        fields = ("id", "name", "item_id", "opening_balance", "opening_balance_rate")
+
     def update(self, instance, validated_data):
         validated_data["opening_quantity"] = validated_data["opening_balance"]
         return super().update(instance, validated_data)
@@ -321,7 +324,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
             ]
             if transactions:
                 return transactions[0]
-        except Exception as e:
+        except Exception:
             return
 
     def get_dr_amount(self, obj):
@@ -371,11 +374,19 @@ class TransactionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = (
-            'id', 'dr_amount', 'cr_amount', 'current_balance', 'date', 'source_type', 'account_id', 'source_id',
-            'voucher_no')
+            "id",
+            "dr_amount",
+            "cr_amount",
+            "current_balance",
+            "date",
+            "source_type",
+            "account_id",
+            "source_id",
+            "voucher_no",
+        )
 
 
 class InventorySettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventorySetting
-        exclude = ['company']
+        exclude = ["company"]

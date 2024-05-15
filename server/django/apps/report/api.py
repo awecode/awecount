@@ -1,18 +1,18 @@
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
 import datetime
 
-from django.http import HttpResponse
 from django.db.models import (
-    Sum,
-    F,
     Case,
-    When,
-    Value,
+    F,
     Q,
+    Sum,
+    Value,
+    When,
 )
+from django.http import HttpResponse
 from django.utils import timezone
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from apps.ledger.models.base import Party
 from apps.ledger.serializers import PartySerializer
@@ -44,9 +44,9 @@ class ReportViewSet(GenericViewSet):
             .filter(customer_account_id__isnull=False)
         )
         return queryset
-    
+
     def ageing_report_data(selg, request):
-        base_date_str =  request.query_params["date"]
+        base_date_str = request.query_params["date"]
         base_date = datetime.datetime.strptime(base_date_str, "%Y-%m-%d")
         date_range_30 = [base_date - timezone.timedelta(days=30), base_date]
         date_range_60 = [
@@ -81,7 +81,8 @@ class ReportViewSet(GenericViewSet):
 
         total_30 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_30)
                 .filter(Q(payment_date__isnull=True) | ~Q(payment_date__lte=base_date))
                 .annotate(party_name=F("party__name"))
@@ -94,7 +95,8 @@ class ReportViewSet(GenericViewSet):
 
         total_60 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_60)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -110,7 +112,8 @@ class ReportViewSet(GenericViewSet):
 
         total_90 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_90)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -126,7 +129,8 @@ class ReportViewSet(GenericViewSet):
 
         total_120 = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__range=date_range_120)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -142,7 +146,8 @@ class ReportViewSet(GenericViewSet):
 
         total_120plus = (
             (
-                SalesVoucher.objects.filter(company=request.company).exclude(status__in=["Cancelled", "Draft"])
+                SalesVoucher.objects.filter(company=request.company)
+                .exclude(status__in=["Cancelled", "Draft"])
                 .filter(mode="Credit", date__lte=date_120plus)
                 .filter(
                     Q(payment_date__isnull=True)
@@ -159,7 +164,14 @@ class ReportViewSet(GenericViewSet):
         lists = [total_30, total_60, total_90, total_120, total_120plus]
         merge_dicts = merge_dict_lists(lists, "party_name")
         ret_dicts = []
-        keys = ["total_30", "total_60", "total_90", "total_120", "total_120plus", "grand_total"]
+        keys = [
+            "total_30",
+            "total_60",
+            "total_90",
+            "total_120",
+            "total_120plus",
+            "grand_total",
+        ]
         for dict in merge_dicts:
             dct = {}
             for key in keys:
@@ -178,7 +190,7 @@ class ReportViewSet(GenericViewSet):
         if page is not None:
             return self.get_paginated_response(page)
         return Response(ret_dicts)
-    
+
     @action(detail=False, methods=["GET"], url_path="export-ageing-report")
     def export_ageing_report(self, request):
         ret_dicts = self.ageing_report_data(request)
@@ -186,6 +198,7 @@ class ReportViewSet(GenericViewSet):
             dct.pop("party_id")
 
         from xlsxwriter import Workbook
+
         headers = {
             "party_name": "Party",
             "total_30": "30 days",
@@ -193,7 +206,7 @@ class ReportViewSet(GenericViewSet):
             "total_90": "90 days",
             "total_120": "120 days",
             "total_120plus": "120 days +",
-            "grand_total": "Total"
+            "grand_total": "Total",
         }
         aggregate = {
             "party_name": "Total",
@@ -202,7 +215,7 @@ class ReportViewSet(GenericViewSet):
             "total_90": 0,
             "total_120": 0,
             "total_120plus": 0,
-            "grand_total": 0
+            "grand_total": 0,
         }
         for dct in ret_dicts:
             for k, v in dct.items():
@@ -218,19 +231,21 @@ class ReportViewSet(GenericViewSet):
         row = 1
         for dict in ret_dicts:
             for key, value in dict.items():
-                col=headers_list.index(headers[key])
+                col = headers_list.index(headers[key])
                 ws.write(row, col, value)
             row += 1
         for k, v in aggregate.items():
             col = headers_list.index(headers[k])
             ws.write(row, col, v)
-        ws.set_row(first_row, None, wb.add_format({'bold': True}))
-        ws.set_row(row, None, wb.add_format({'bold': True}))
+        ws.set_row(first_row, None, wb.add_format({"bold": True}))
+        ws.set_row(row, None, wb.add_format({"bold": True}))
         wb.close()
         with open("ageing_report.xlsx", "rb") as excel:
             data = excel.read()
-        response = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = 'Ageing_{}.xlsx'.format(datetime.datetime.today().date())
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        response = HttpResponse(
+            data,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        filename = "Ageing_{}.xlsx".format(datetime.datetime.today().date())
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
         return response
-

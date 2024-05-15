@@ -15,7 +15,7 @@ def merge_dicts(dict1, dict2):
 
 
 def choice_parser(options, add_blank=False):
-    data = [{'value': option[0], 'text': option[1]} for option in options]
+    data = [{"value": option[0], "text": option[1]} for option in options]
     if add_blank:
-        data.insert(0, {'value': '', 'text': '--------'})
+        data.insert(0, {"value": "", "text": "--------"})
     return data
