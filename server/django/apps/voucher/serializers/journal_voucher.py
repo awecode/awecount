@@ -186,7 +186,7 @@ class PublicJournalVoucherCreateSerializer(
             if cr:
                 cr_total += decimalize(cr)
 
-        if not (dr_total == cr_total):
+        if dr_total != cr_total:
             raise ValidationError({"detail": "Debit and Credit totals do not match."})
 
         return super().validate(attrs)
