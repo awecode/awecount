@@ -42,6 +42,8 @@ class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
             "description",
             "dr_amount",
             "cr_amount",
+            "account",
+            "account_id",
         )
 
 
@@ -111,6 +113,9 @@ class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
     voucher_no = serializers.CharField()
 
 
-class PublicJournalVoucherStatusChangeSerializer(serializers.Serializer):
-    voucher_no = serializers.CharField(required=True)
-    status = serializers.ChoiceField(choices=JournalVoucher.STATUSES, required=True)
+class PublicJournalVoucherStatusChangeSerializer(
+    serializers.ModelSerializer, DisableCancelEditMixin
+):
+    class Meta:
+        model = JournalVoucher
+        fields = ("voucher_no", "status")
