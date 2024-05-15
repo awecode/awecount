@@ -106,7 +106,7 @@ class PublicJournalVoucherCreateSerializer(
 
     class Meta:
         model = JournalVoucher
-        exclude = ("company", "id")
+        fields = ("voucher_no", "date", "narration", "status", "rows")
 
 
 class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
