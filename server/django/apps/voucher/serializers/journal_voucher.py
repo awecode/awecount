@@ -175,7 +175,7 @@ class PublicJournalVoucherCreateSerializer(
                 )
 
             if not dr_amt and not cr_amt:
-                raise ValidationError("Both Dr and Cr amounts cannot be 0.")
+                raise ValidationError("Both Dr and Cr amounts can not be empty.")
 
             dr_total += decimalize(dr_amt) if dr_amt else 0
             cr_total += decimalize(cr_amt) if cr_amt else 0
