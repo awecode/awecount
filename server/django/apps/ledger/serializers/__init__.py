@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.ledger.models.base import AccountClosing
 from awecount.libs.drf_fields import RoundedField
 
-from .models import (
+from ..models import (
     Account,
     AccountOpeningBalance,
     Category,

@@ -2,12 +2,12 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.voucher.models.journal_vouchers import JournalVoucher
-from apps.voucher.serializers.journal_voucher import (
+from apps.ledger.serializers.public import (
     PublicJournalVoucherCreateResponseSerializer,
     PublicJournalVoucherCreateSerializer,
     PublicJournalVoucherStatusChangeSerializer,
 )
+from apps.voucher.models.journal_vouchers import JournalVoucher
 
 
 class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
