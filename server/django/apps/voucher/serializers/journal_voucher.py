@@ -138,7 +138,12 @@ class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalVoucherRow
-        exclude = ("journal_voucher", "id")
+        fields = (
+            "type",
+            "description",
+            "dr_amount",
+            "cr_amount",
+        )
 
 
 class PublicJournalVoucherCreateSerializer(
@@ -158,10 +163,10 @@ class PublicJournalVoucherCreateSerializer(
             dr_amt = row.get("dr_amount")
             cr_amt = row.get("cr_amount")
 
-            account_id = row.get("account_id") 
+            account_id = row.get("account_id")
             if account_id:
                 row["account"]["id"] = account_id
-         
+
             try:
                 account = Account.objects.get(
                     **row.get("account"), company_id=self.context["request"].company_id
