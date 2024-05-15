@@ -209,6 +209,10 @@ class PublicJournalVoucherCreateSerializer(
         exclude = ("company", "id")
 
 
+class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
+    voucher_no = serializers.CharField()
+
+
 class PublicJournalVoucherStatusChangeSerializer(serializers.Serializer):
     voucher_no = serializers.CharField(required=True)
     status = serializers.ChoiceField(choices=JournalVoucher.STATUSES, required=True)

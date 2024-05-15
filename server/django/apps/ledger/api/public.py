@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from apps.voucher.models.journal_vouchers import JournalVoucher
 from apps.voucher.serializers.journal_voucher import (
+    PublicJournalVoucherCreateResponseSerializer,
     PublicJournalVoucherCreateSerializer,
     PublicJournalVoucherStatusChangeSerializer,
 )
@@ -12,6 +13,12 @@ from apps.voucher.serializers.journal_voucher import (
 class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     serializer_class = PublicJournalVoucherCreateSerializer
     queryset = PublicJournalVoucherCreateSerializer.Meta.model.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        res = super().create(request, *args, **kwargs)
+        serializer = PublicJournalVoucherCreateResponseSerializer(data=res.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="change-status")
     def change_status(self, request):
