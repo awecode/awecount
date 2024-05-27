@@ -262,7 +262,7 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                         data["item_obj"].get("name") or data["item_obj"].get("code")
                     ),
                     unit_id=data["unit_id"],
-                    category_id=data.get("category_id"),
+                    category_id=data["item_obj"].get("category_id"),
                     selling_price=data["rate"],
                     tax_scheme_id=data["tax_scheme_id"],
                     company_id=self.context["request"].company_id,
