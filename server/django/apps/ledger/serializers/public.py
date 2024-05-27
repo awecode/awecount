@@ -123,6 +123,8 @@ class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
 class PublicJournalVoucherStatusChangeSerializer(
     serializers.ModelSerializer, DisableCancelEditMixin
 ):
+    reason = serializers.CharField(required=False)
+
     class Meta:
         model = JournalVoucher
-        fields = ("voucher_no", "status")
+        fields = ("voucher_no", "status", "reason")
