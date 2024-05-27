@@ -31,6 +31,11 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
             )
         except JournalVoucher.DoesNotExist:
             return Response({"detail": "Journal voucher not found."}, status=404)
-        journal_voucher.status = serializer.validated_data.get("status")
-        journal_voucher.save()
+        status = serializer.validated_data.get("status")
+        if status == "Cancelled":
+            reason = serializer.validated_data.get("reason")
+            journal_voucher.cancel(reason=reason)
+        else:
+            journal_voucher.status = status
+            journal_voucher.save()
         return Response({"detail": "Status changed successfully."})

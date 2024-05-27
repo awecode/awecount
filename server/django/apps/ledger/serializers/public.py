@@ -34,6 +34,12 @@ class PublicAccountSerializer(serializers.Serializer):
 class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
     account = PublicAccountSerializer(default={})
     account_id = serializers.IntegerField(required=False)
+    dr_amount = serializers.DecimalField(
+        max_digits=None, decimal_places=None, required=False
+    )
+    cr_amount = serializers.DecimalField(
+        max_digits=None, decimal_places=None, required=False
+    )
 
     class Meta:
         model = JournalVoucherRow
@@ -74,7 +80,9 @@ class PublicJournalVoucherCreateSerializer(
                 )
                 row["account_id"] = account.id
             except Account.DoesNotExist:
-                raise ValidationError("No account found for the given details.")
+                raise ValidationError(
+                    f"No account found for the given details. {str(row.get('account'))}"
+                )
             except Account.MultipleObjectsReturned:
                 raise ValidationError(
                     "More than one account found for the given details."
@@ -82,7 +90,6 @@ class PublicJournalVoucherCreateSerializer(
 
             if not dr_amt and not cr_amt:
                 raise ValidationError("Both Dr and Cr amounts can not be empty.")
-
             dr_total += decimalize(dr_amt) if dr_amt else 0
             cr_total += decimalize(cr_amt) if cr_amt else 0
 
@@ -116,6 +123,8 @@ class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
 class PublicJournalVoucherStatusChangeSerializer(
     serializers.ModelSerializer, DisableCancelEditMixin
 ):
+    reason = serializers.CharField(required=False)
+
     class Meta:
         model = JournalVoucher
-        fields = ("voucher_no", "status")
+        fields = ("voucher_no", "status", "reason")
