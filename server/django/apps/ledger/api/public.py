@@ -36,6 +36,6 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
             reason = serializer.validated_data.get("reason")
             journal_voucher.cancel(reason=reason)
         else:
-            journal_voucher.status = serializer.validated_data.get("status")
+            journal_voucher.status = status
             journal_voucher.save()
         return Response({"detail": "Status changed successfully."})
