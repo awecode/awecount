@@ -112,7 +112,7 @@ export default {
         remove: true,
         label: 'Total Sales',
         align: 'left',
-        field: (row) => row.voucher_meta.grand_total,
+        field: (row) => row.voucher_meta.sub_total_after_row_discounts,
       },
       {
         name: 'non_taxable_sales',
@@ -129,13 +129,13 @@ export default {
         field: '',
       },
       // TODO: add export sales
-      {
-        name: 'discount',
-        label: 'Discount',
-        align: 'left',
-        field: 'meta_discount',
-        remove: true,
-      },
+      // {
+      //   name: 'discount',
+      //   label: 'Discount',
+      //   align: 'left',
+      //   field: 'meta_discount',
+      //   remove: true,
+      // },
       {
         name: 'amount',
         label: 'Amount',
