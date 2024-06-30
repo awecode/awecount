@@ -35,7 +35,7 @@
           <q-th rowspan="2" style="text-align: center">Total Sales</q-th>
           <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Non Taxable Sales</q-th>
           <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Export Sales</q-th>
-          <q-th rowspan="2" style="text-align: center">Discount</q-th>
+          <!-- <q-th rowspan="2" style="text-align: center">Discount</q-th> -->
           <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Sales</q-th>
         </q-tr>
         <q-tr>
