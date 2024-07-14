@@ -88,7 +88,7 @@
           }}</q-td>
         </q-tr>
         <q-tr :props="props">
-          <q-td><router-link :to="`/account/detail/${data.sales_account?.id}`">Sales</router-link></q-td>
+          <q-td><router-link :to="`/account/${data.sales_account?.id}/view/`">Sales</router-link></q-td>
           <q-td>{{ data.sales_account?.amounts.dr }}</q-td>
           <q-td>{{ data.sales_account?.amounts.cr }}</q-td>
           <q-td>{{
@@ -97,7 +97,7 @@
           }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.purchase_account">
-          <q-td><router-link :to="`/accounts/detail/${data.purchase_account?.id}`">Purchase</router-link></q-td>
+          <q-td><router-link :to="`/account/${data.purchase_account?.id}/view/`">Purchase</router-link></q-td>
           <q-td>{{ data.purchase_account?.amounts.dr }}</q-td>
           <q-td>{{ data.purchase_account?.amounts.cr }}</q-td>
           <q-td>{{
@@ -106,7 +106,7 @@
           }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.expense_account">
-          <q-td><router-link :to="`/accounts/detail/${data.expense_account?.id}`">Expenses</router-link></q-td>
+          <q-td><router-link :to="`/account/${data.expense_account?.id}/view/`">Expenses</router-link></q-td>
           <q-td>{{ data.expense_account?.amounts.dr }}</q-td>
           <q-td>{{ data.expense_account?.amounts.cr }}</q-td>
           <q-td>{{
@@ -115,7 +115,7 @@
           }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.fixed_asset_account">
-          <q-td><router-link :to="`/accounts/detail/${data.fixed_asset_account?.id}`">Fixed Assets</router-link></q-td>
+          <q-td><router-link :to="`/account/${data.fixed_asset_account?.id}/view`">Fixed Assets</router-link></q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.dr }}</q-td>
           <q-td>{{ data.fixed_asset_account?.amounts.cr }}</q-td>
           <q-td>{{
@@ -124,7 +124,7 @@
           }}</q-td>
         </q-tr>
         <q-tr :props="props" v-if="data.discount_received_account">
-          <q-td><router-link :to="`/accounts/detail/${data.discount_received_account?.id}`">Discount
+          <q-td><router-link :to="`/account/${data.discount_received_account?.id}/view`">Discount
               Received</router-link></q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.dr) }}</q-td>
           <q-td>{{ $nf(data.discount_received_account?.amounts.cr) }}</q-td>
