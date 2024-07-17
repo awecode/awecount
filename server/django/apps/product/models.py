@@ -437,7 +437,7 @@ class Category(models.Model):
             # if self.use_account_subcategory and self.account_category_id and self.account_category:
             #     with transaction.atomic():
             #         AccountCategory.objects.rebuild()
-            # self.apply_account_options()
+            self.apply_account_options()
             self.save(post_save=False)
 
     def apply_account_options(self):
@@ -449,12 +449,13 @@ class Category(models.Model):
         # TODO: add for "dedicated", "Use dedicated account" option
         # TODO: add for Company On Queryset
         # TODO: handle trackInventory
+        # TODO: verify that Item inherits settings from Catogory
         # item_list = Item.objects.filter(category=self)
         # for item in item_list:
         if self.can_be_sold:
             if self.items_sales_account_type == "global":
                 sales_account = Account.objects.get(
-                    name="Sales Account", default=True
+                    name="Sales Account", default=True, company=self.company
                 )
             elif self.items_sales_account_type == "existing":
                 sales_account = self.sales_account
@@ -473,7 +474,7 @@ class Category(models.Model):
             # for discount_allowed_account
             if self.items_discount_allowed_account_type == "global":
                 discount_allowed_account = Account.objects.get(
-                    name="Discount Allowed Account", default=True
+                    name="Discount Expenses", default=True, company=self.company
                 )
             elif self.items_discount_allowed_account_type == "existing":
                 discount_allowed_account = self.discount_allowed_account
@@ -493,7 +494,7 @@ class Category(models.Model):
             if self.can_be_purchased:
                 if self.items_purchase_account_type == "global":
                     purachase_account = Account.objects.get(
-                        name="Purchase Account", default=True
+                        name="Purchase Account", default=True, company=self.company
                     )
                 elif self.items_purchase_account_type == "existing":
                     purachase_account = self.purchase_account
@@ -512,7 +513,7 @@ class Category(models.Model):
 
                 if self.items_discount_received_account_type == "global":
                     discount_received_account = Account.objects.get(
-                        name="Discount Received Account", default=True
+                        name="Discount Income", default=True, company=self.company
                     )
                 elif self.items_discount_received_account_type == "existing":
                     discount_received_account = self.discount_received_account
@@ -529,17 +530,21 @@ class Category(models.Model):
                     else:
                         discount_received_account = self.dedicated_discount_received_account
 
-        if sales_account or discount_allowed_account or purachase_account or discount_received_account:
-            update_fields = {}
-            if sales_account is not None:
-                update_fields["sales_account"] = sales_account
-            if discount_allowed_account is not None:
-                update_fields["discount_allowed_account"] = discount_allowed_account
-            if purachase_account is not None:
-                update_fields["purchase_account"] = purachase_account
-            if discount_received_account is not None:
-                update_fields["discount_received_account"] = discount_received_account
-            Item.objects.filter(Category=self).update(**update_fields)
+        update_fields = {}
+        if sales_account is not None:
+            update_fields["sales_account"] = sales_account
+            update_fields["sales_account_type"] = self.items_sales_account_type
+        if discount_allowed_account is not None:
+            update_fields["discount_allowed_account"] = discount_allowed_account
+            update_fields["discount_allowed_account_type"] = self.items_discount_allowed_account_type
+        if purachase_account is not None:
+            update_fields["purchase_account"] = purachase_account
+            update_fields["purchase_account_type"] = self.items_purchase_account_type
+        if discount_received_account is not None:
+            update_fields["discount_received_account"] = discount_received_account
+            update_fields["discount_received_account_type"] = self.items_discount_received_account_type
+        if update_fields:
+            Item.objects.filter(category=self).update(**update_fields)
 
         if "dedicated" in {
             self.items_sales_account_type,
@@ -551,6 +556,7 @@ class Category(models.Model):
             for item in items_list:
                 if self.can_be_sold:
                     if self.items_sales_account_type == "dedicated":
+                        item.sales_account_type = "dedicated"
                         if not item.dedicated_sales_account:
                             sales_account_name = item.name + " (Sales)"
                             account = Account(name=sales_account_name, company=self.company)
@@ -566,6 +572,7 @@ class Category(models.Model):
                             item.sales_account = item.dedicated_sales_account
 
                     if self.items_discount_allowed_account_type == "dedicated":
+                        item.discount_allowed_account_type = "dedicated"
                         if not item.dedicated_discount_allowed_account:
                             discount_allowed_account_name = "Discount Allowed - " + item.name
                             account = Account(
@@ -577,9 +584,60 @@ class Category(models.Model):
                                 account.add_category("Discount expenses")
                             account.suggest_code(item)
                             account.save()
-                        # item.sales_account = item.dedicated_sales_account
+                            item.dedicated_discount_allowed_account = account
+                            item.discount_allowed_account = account
+                        else:
+                            item.discount_allowed_account = item.dedicated_discount_allowed_account
 
-        # print("Done")
+                    if self.items_purchase_account_type == "dedicated":
+                        item.purchase_account_type = "dedicated"
+                        if not item.dedicated_purchase_account:
+                            purachase_account_name = item.name + " (Purchase)"
+                            account = Account(name=purachase_account_name, company=self.company)
+                            if self.purchase_account_category is not None:
+                                account.category = self.purchase_account_category
+                            else:
+                                account.add_category("Purchase")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_purchase_account = account
+                            item.purchase_account = account
+                        else:
+                            item.purchase_account = item.dedicated_purchase_account
+
+                    if self.items_discount_received_account_type == "dedicated":
+                        item.discount_received_account_type = "dedicated"
+                        if not item.dedicated_discount_received_account:
+                            discount_received_account_name = "Discount Received - " + item.name
+                            account = Account(
+                                name=discount_received_account_name, company=self.company
+                            )
+                            if self.discount_received_account_category is not None:
+                                account.category = self.discount_received_account_category
+                            else:
+                                account.add_category("Discount expenses")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_discount_received_account = account
+                            item.discount_received_account = account
+                        else:
+                            item.discount_received_account = item.dedicated_discount_received_account
+            # TODO: fileds can be filtered for optimization
+            Item.objects.bulk_update(items_list, [
+                "sales_account",
+                "sales_account_type",
+                "dedicated_sales_account",
+                "discount_allowed_account",
+                "discount_allowed_account_type",
+                "dedicated_discount_allowed_account",
+                "purchase_account",
+                "purchase_account_type",
+                "dedicated_purchase_account",
+                "discount_received_account",
+                "discount_received_account_type",
+                "dedicated_discount_received_account"
+            ])
+        print("Done----------------------------------")
 
     def __str__(self):
         return self.name
