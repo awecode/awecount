@@ -446,10 +446,8 @@ class Category(models.Model):
         purachase_account = None
         discount_received_account = None
         # settings
-        # TODO: add for "dedicated", "Use dedicated account" option
         # TODO: add for Company On Queryset
         # TODO: handle trackInventory
-        # TODO: verify that Item inherits settings from Catogory
         # item_list = Item.objects.filter(category=self)
         # for item in item_list:
         if self.can_be_sold:
@@ -491,44 +489,44 @@ class Category(models.Model):
                 else:
                     discount_allowed_account = self.dedicated_discount_allowed_account
 
-            if self.can_be_purchased:
-                if self.items_purchase_account_type == "global":
-                    purachase_account = Account.objects.get(
-                        name="Purchase Account", default=True, company=self.company
+        if self.can_be_purchased:
+            if self.items_purchase_account_type == "global":
+                purachase_account = Account.objects.get(
+                    name="Purchase Account", default=True, company=self.company
+                )
+            elif self.items_purchase_account_type == "existing":
+                purachase_account = self.purchase_account
+            elif self.items_purchase_account_type == "category":
+                if not self.dedicated_purchase_account:
+                    purachase_account_name = self.name + " (Purchase)"
+                    ledger = Account(
+                        name=purachase_account_name, company=self.company
                     )
-                elif self.items_purchase_account_type == "existing":
-                    purachase_account = self.purchase_account
-                elif self.items_purchase_account_type == "category":
-                    if not self.dedicated_purchase_account:
-                        purachase_account_name = self.name + " (Purchase)"
-                        ledger = Account(
-                            name=purachase_account_name, company=self.company
-                        )
-                        ledger.add_category("Purchase")
-                        ledger.suggest_code(self, prefix="C")
-                        ledger.save()
-                        purachase_account = ledger
-                    else:
-                        purachase_account = self.dedicated_purchase_account
+                    ledger.add_category("Purchase")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    purachase_account = ledger
+                else:
+                    purachase_account = self.dedicated_purchase_account
 
-                if self.items_discount_received_account_type == "global":
-                    discount_received_account = Account.objects.get(
-                        name="Discount Income", default=True, company=self.company
+            if self.items_discount_received_account_type == "global":
+                discount_received_account = Account.objects.get(
+                    name="Discount Income", default=True, company=self.company
+                )
+            elif self.items_discount_received_account_type == "existing":
+                discount_received_account = self.discount_received_account
+            elif self.items_discount_received_account_type == "category":
+                if not self.dedicated_discount_received_account:
+                    discount_received_account_name = "Discount Received - " + self.name
+                    ledger = Account(
+                        name=discount_received_account_name, company=self.company
                     )
-                elif self.items_discount_received_account_type == "existing":
-                    discount_received_account = self.discount_received_account
-                elif self.items_discount_received_account_type == "category":
-                    if not self.dedicated_discount_received_account:
-                        discount_received_account_name = "Discount Received - " + self.name
-                        ledger = Account(
-                            name=discount_received_account_name, company=self.company
-                        )
-                        ledger.add_category("Discount expenses")
-                        ledger.suggest_code(self, prefix="C")
-                        ledger.save()
-                        discount_received_account = ledger
-                    else:
-                        discount_received_account = self.dedicated_discount_received_account
+                    ledger.add_category("Discount expenses")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    discount_received_account = ledger
+                else:
+                    discount_received_account = self.dedicated_discount_received_account
 
         update_fields = {}
         if sales_account is not None:
