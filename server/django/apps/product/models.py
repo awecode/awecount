@@ -267,7 +267,6 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate_unique()
-
         post_save = kwargs.pop("post_save", True)
         if not self.code:
             self.suggest_code()
@@ -437,7 +436,6 @@ class Category(models.Model):
             # if self.use_account_subcategory and self.account_category_id and self.account_category:
             #     with transaction.atomic():
             #         AccountCategory.objects.rebuild()
-            self.apply_account_settings_to_items()
             self.save(post_save=False)
 
     def apply_account_settings_to_items(self):
