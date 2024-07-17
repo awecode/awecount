@@ -538,7 +538,9 @@ class Category(models.Model):
             update_fields["discount_received_account"] = discount_received_account
             update_fields["discount_received_account_type"] = self.items_discount_received_account_type
         if update_fields:
-            items_list = Item.objects.filter(category=self, company=self.company)
+            items_list = Item.objects.filter(category=self, company=self.company).select_related(
+                "sales_account", "purchase_account", "discount_allowed_account", "discount_received_account"
+            )
             for item in items_list:
                 sales_voucher_row_ids = SalesVoucherRow.objects.filter(item=item).values_list("id", flat=True)
                 credit_note_row_ids = CreditNoteRow.objects.filter(item=item).values_list("id", flat=True)
