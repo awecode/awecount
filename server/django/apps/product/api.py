@@ -13,6 +13,8 @@ from rest_framework.mixins import DestroyModelMixin
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from awecount.libs.exception import UnprocessableException
+
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
 from apps.ledger.models import Transaction as Ledger
@@ -731,6 +733,34 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             AccountMinSerializer,
         ),
     )
+
+    def perform_update(self, request, *args, **kwargs):
+        category = self.get_object()
+        apply_changes = self.request.query_params.get("Account Changes Detected")
+        if (
+            (category.items_sales_account_type != self.request.data.get("items_sales_account_type"))
+            or (
+                category.items_purchase_account_type
+                != self.request.data.get("items_purchase_account_type")
+            )
+            or (
+                category.items_discount_allowed_account_type
+                != self.request.data.get("items_discount_allowed_account_type")
+            )
+            or (
+                category.items_discount_received_account_type
+                != self.request.data.get("items_discount_received_account_type")
+            )
+        ) and apply_changes is None:
+            raise UnprocessableException(
+                detail="Changes in account settings detected! Do you want the changes to be applied to the items belonging to this category?",
+                code="Account Changes Detected",
+            )
+        super().perform_update(request, *args, **kwargs)
+        if apply_changes == "true":
+            category.refresh_from_db()
+            category.apply_account_settings_to_items()
+
 
     def get_collections(self, request=None):
         collections_data = super().get_collections(self.request)
