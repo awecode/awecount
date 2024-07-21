@@ -155,6 +155,7 @@ export default (endpoint, config) => {
           if (data.data?.detail) {
             message = `${data.data.detail}`
           }
+          loading.value = false
           processErrors(data.response._data)
         }
         if (data.status == 404) {
@@ -163,8 +164,10 @@ export default (endpoint, config) => {
           } else {
             message = 'Not found!'
           }
+          loading.value = false
         } else if (data.status == 500) {
           message = 'Server Error! Please contact us with the problem.'
+          loading.value = false
         } else if (data.status === 422) {
           $q.dialog({
             title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
@@ -200,7 +203,13 @@ export default (endpoint, config) => {
                   message: 'Something went Wrong!',
                   icon: 'report_problem',
                 })
+              }).finally(() => {
+                loading.value = false
               })
+          }).onCancel(() => {
+            loading.value = false
+          }).onDismiss(() => {
+            loading.value = false
           })
         }
         else {
@@ -209,8 +218,8 @@ export default (endpoint, config) => {
             message: message,
             icon: 'report_problem',
           })
+          loading.value = false
         }
-        loading.value = false
         return {
           error: 'Api Error'
         }
