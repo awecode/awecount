@@ -734,6 +734,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ),
     )
 
+    @transaction.atomic
     def perform_update(self, request, *args, **kwargs):
         category = self.get_object()
         apply_changes = self.request.query_params.get("Account Changes Detected")
