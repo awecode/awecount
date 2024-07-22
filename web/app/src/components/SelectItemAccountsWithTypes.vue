@@ -111,8 +111,8 @@ const getOptionCollection = (collections, name) => {
         }
     }
 }
-watch(() => type.value, (newValue) => {
-    if (newValue === 'category') {
+watch([() => type.value, () => props.options], (newValue) => {
+    if (newValue[0] === 'category') {
         if (props.activeCategory && !props.usedInCategoryForm) {
             const selected = props.inventory_categories.find(item => {
                 if (item.id === props.activeCategory) {
@@ -132,7 +132,7 @@ watch(() => type.value, (newValue) => {
             }
         } else modalValue.value = null
     }
-    else if (newValue === 'global') {
+    else if (newValue[0] === 'global') {
         modalValue.value = getOptionCollection(props.options, globalAccountName[props.label])
     }
     else {

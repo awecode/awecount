@@ -83,14 +83,14 @@
               v-model:modelValue="fields.discount_allowed_account"
               v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
               :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.discount_allowed_account" :error="errors.discount_allowed_account" />
+              :dedicatedAccount="fields.dedicard_discount_allowed_account" :error="errors.discount_allowed_account" />
           </div>
           <div class="col-12 col-lg-6">
             <select-item-accounts-with-types v-if="fields.can_be_purchased"
               v-model:modelValue="fields.discount_received_account"
               v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
               :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.discount_received_account" :error="errors.discount_received_account" />
+              :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" />
           </div>
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">
