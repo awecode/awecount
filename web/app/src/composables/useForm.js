@@ -208,8 +208,6 @@ export default (endpoint, config) => {
               })
           }).onCancel(() => {
             loading.value = false
-          }).onDismiss(() => {
-            loading.value = false
           })
         }
         else {
