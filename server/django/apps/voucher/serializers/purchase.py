@@ -85,7 +85,7 @@ class PurchaseVoucherCreateSerializer(
                 {"party": ["Party is required for a credit issue."]},
             )
 
-        if party and (party.company_id != company.id):
+        if party.company_id != company.id:
             raise SuspiciousOperation("Modifying object owned by other company!")
 
         request = self.context["request"]
