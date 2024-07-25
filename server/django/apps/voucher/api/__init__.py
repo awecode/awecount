@@ -96,7 +96,7 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
 
-from .models import (
+from ..models import (
     CreditNote,
     CreditNoteRow,
     DebitNote,
@@ -110,9 +110,9 @@ from .models import (
     SalesVoucher,
     SalesVoucherRow,
 )
-from .models.invoice_design import InvoiceDesign
-from .models.journal_vouchers import JournalVoucher, JournalVoucherRow
-from .serializers import (
+from ..models.invoice_design import InvoiceDesign
+from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from ..serializers import (
     ChallanCreateSerializer,
     ChallanListSerializer,
     CreditNoteCreateSerializer,
