@@ -2,7 +2,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
-from apps.voucher.fifo_functions import fifo_handle_purchase_update
 from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
@@ -12,11 +11,83 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
 
-class PurchaseVoucherRowSerializer(
+class PublicItemSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
+    code = serializers.CharField(required=False)
+    voucher_no = serializers.CharField(required=False)
+    selling_price = serializers.FloatField(required=False)
+    cost_price = serializers.FloatField(required=False)
+    sales_account_type = serializers.CharField(required=False)
+    purchase_account_type = serializers.CharField(required=False)
+    discount_allowed_account_type = serializers.CharField(required=False)
+    discount_received_account_type = serializers.CharField(required=False)
+    track_inventory = serializers.BooleanField(required=False)
+    can_be_sold = serializers.BooleanField(required=False)
+    can_be_purchased = serializers.BooleanField(required=False)
+    fixed_asset = serializers.BooleanField(required=False)
+    direct_expense = serializers.BooleanField(required=False)
+    indirect_expense = serializers.BooleanField(required=False)
+
+    category__id = serializers.IntegerField(required=False)
+    category__name = serializers.CharField(required=False)
+
+    brand__id = serializers.IntegerField(required=False)
+    brand__name = serializers.CharField(required=False)
+
+    tax_scheme__id = serializers.IntegerField(required=False)
+    tax_scheme__name = serializers.CharField(required=False)
+
+    account__id = serializers.IntegerField(required=False)
+    account__name = serializers.CharField(required=False)
+    account__code = serializers.CharField(required=False)
+    account__account_no = serializers.CharField(required=False)
+
+    sales_account__id = serializers.IntegerField(required=False)
+    sales_account__name = serializers.CharField(required=False)
+    sales_account__code = serializers.CharField(required=False)
+
+    dedicated_sales_account__id = serializers.IntegerField(required=False)
+    dedicated_sales_account__name = serializers.CharField(required=False)
+    dedicated_sales_account__code = serializers.CharField(required=False)
+
+    purchase_account__id = serializers.IntegerField(required=False)
+    purchase_account__name = serializers.CharField(required=False)
+    purchase_account__code = serializers.CharField(required=False)
+
+    dedicated_purchase_account__id = serializers.IntegerField(required=False)
+    dedicated_purchase_account__name = serializers.CharField(required=False)
+    dedicated_purchase_account__code = serializers.CharField(required=False)
+
+    discount_allowed_account__id = serializers.IntegerField(required=False)
+    discount_allowed_account__name = serializers.CharField(required=False)
+    discount_allowed_account__code = serializers.CharField(required=False)
+
+    dedicated_discount_allowed_account__id = serializers.IntegerField(required=False)
+    dedicated_discount_allowed_account__name = serializers.CharField(required=False)
+    dedicated_discount_allowed_account__code = serializers.CharField(required=False)
+
+    discount_received_account__id = serializers.IntegerField(required=False)
+    discount_received_account__name = serializers.CharField(required=False)
+    discount_received_account__code = serializers.CharField(required=False)
+
+    dedicated_discount_received_account__id = serializers.IntegerField(required=False)
+    dedicated_discount_received_account__name = serializers.CharField(required=False)
+    dedicated_discount_received_account__code = serializers.CharField(required=False)
+
+    expense_account__id = serializers.IntegerField(required=False)
+    expense_account__name = serializers.CharField(required=False)
+    expense_account__code = serializers.CharField(required=False)
+
+    fixed_asset_account__id = serializers.IntegerField(required=False)
+    fixed_asset_account__name = serializers.CharField(required=False)
+    fixed_asset_account__code = serializers.CharField(required=False)
+
+
+class PublicPurchaseVoucherRowSerializer(
     DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
 ):
     id = serializers.IntegerField(required=False)
-    item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
     item = serializers.ReadOnlyField(source="item.name")
@@ -24,6 +95,9 @@ class PurchaseVoucherRowSerializer(
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
+
+    item_id = serializers.IntegerField(required=False)
+    item = PublicItemSerializer(default={})
 
     def validate_discount(self, value):
         print(f"Validating discount: {value}")
@@ -49,7 +123,7 @@ class PublicPurchaseVoucherCreateSerializer(
     ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
-    rows = PurchaseVoucherRowSerializer(many=True)
+    rows = PublicPurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -131,9 +205,23 @@ class PublicPurchaseVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
+            item_id = row.get("item_id")
+            if item_id:
+                row["item"]["id"] = item_id
+
+            try:
+                item = Item.objects.get(
+                    **row.get("item"), company_id=self.context["request"].company_id
+                )
+                row["item_id"] = item.id
+            except Item.DoesNotExist:
+                raise ValidationError("No item found for the given details.")
+            except Item.MultipleObjectsReturned:
+                raise ValidationError("More than one item found for the given details.")
+
             if row.get("discount_type") == "":
                 row["discount_type"] = None
-            row_serializer = PurchaseVoucherRowSerializer(data=row)
+            row_serializer = PublicPurchaseVoucherRowSerializer(data=row)
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
@@ -155,7 +243,8 @@ class PublicPurchaseVoucherCreateSerializer(
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
-        for index, row in enumerate(rows_data):
+        for _, row in enumerate(rows_data):
+            row.pop("item")
             row = self.assign_discount_obj(row)
             if request.company.inventory_setting.enable_fifo:
                 item = Item.objects.get(id=row["item_id"])
@@ -165,31 +254,6 @@ class PublicPurchaseVoucherCreateSerializer(
         if purchase_orders:
             instance.purchase_orders.clear()
             instance.purchase_orders.set(purchase_orders)
-        meta = instance.generate_meta(update_row_data=True)
-        instance.apply_transactions(voucher_meta=meta)
-        return instance
-
-    def update(self, instance, validated_data):
-        rows_data = validated_data.pop("rows")
-        if validated_data.get("voucher_no") == "":
-            validated_data["voucher_no"] = None
-        request = self.context["request"]
-        purchase_orders = validated_data.pop("purchase_orders", None)
-        self.assign_fiscal_year(validated_data, instance=instance)
-        self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
-        PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
-        for index, row in enumerate(rows_data):
-            row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo:
-                fifo_handle_purchase_update(instance, row)
-            PurchaseVoucherRow.objects.update_or_create(
-                voucher=instance, pk=row.get("id"), defaults=row
-            )
-        if purchase_orders:
-            instance.purchase_orders.clear()
-            instance.purchase_orders.set(purchase_orders)
-        instance.refresh_from_db()
         meta = instance.generate_meta(update_row_data=True)
         instance.apply_transactions(voucher_meta=meta)
         return instance
