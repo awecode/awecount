@@ -29,6 +29,11 @@ router.register(
     public_ledger.PublicJournalVoucherViewSet,
     basename="public-journal-voucher",
 )
+router.register(
+    "public/party",
+    public_ledger.PublicPartyViewset,
+    basename="public-party",
+)
 
 router.register(
     "public/purchase-voucher",

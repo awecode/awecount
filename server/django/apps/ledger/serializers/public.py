@@ -3,7 +3,7 @@ from decimal import Decimal
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.ledger.models.base import Account
+from apps.ledger.models.base import Account, Party
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
 from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
@@ -128,3 +128,23 @@ class PublicJournalVoucherStatusChangeSerializer(
     class Meta:
         model = JournalVoucher
         fields = ("voucher_no", "status", "reason")
+
+
+class PublicPartyListSerializer(serializers.ModelSerializer):
+    dr = serializers.ReadOnlyField()
+    cr = serializers.ReadOnlyField()
+    balance = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Party
+        fields = (
+            "id",
+            "name",
+            "address",
+            "contact_no",
+            "email",
+            "tax_registration_number",
+            "dr",
+            "cr",
+            "balance",
+        )
