@@ -256,21 +256,6 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
             except Item.DoesNotExist:
-                # item_obj = Item.objects.create(
-                #     code=str(data["item_obj"].get("code")),
-                #     name=str(
-                #         data["item_obj"].get("name") or data["item_obj"].get("code")
-                #     ),
-                #     unit_id=data["unit_id"],
-                #     category_id=data["item_obj"].get("category_id"),
-                #     selling_price=data["rate"],
-                #     tax_scheme_id=data["tax_scheme_id"],
-                #     company_id=self.context["request"].company_id,
-                #     sales_account_type=data["item_obj"].get("sales_account_type"),
-                #     purchase_account_type=data["item_obj"].get("purchase_account_type"),
-                #     discount_allowed_account_type=data["item_obj"].get("discount_allowed_account_type"),
-                #     discount_received_account_type=data["item_obj"].get("discount_received_account_type"),
-                # )
                 item_obj_data = {
                     'code': str(data["item_obj"].get("code")),
                     'name': str(
@@ -282,12 +267,17 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                     "tax_scheme_id": data["tax_scheme_id"],
                     "company_id": self.context["request"].company_id,
                 }
+                sales_account = None
+                purchase_account = None
+                discount_allowed_account = None
+                discount_received_account = None
                 if data["item_obj"].get("category_id"):
                     item_category = Category.objects.filter(id=data["item_obj"].get("category_id"), company_id=self.context["request"].company_id).first()
-                    sales_account = item_category.dedicated_sales_account
-                    purchase_account = item_category.dedicated_purchase_account
-                    discount_allowed_account = item_category.dedicated_discount_allowed_account
-                    discount_received_account = item_category.dedicated_discount_received_account
+                    if item_category:
+                        sales_account = item_category.dedicated_sales_account
+                        purchase_account = item_category.dedicated_purchase_account
+                        discount_allowed_account = item_category.dedicated_discount_allowed_account
+                        discount_received_account = item_category.dedicated_discount_received_account
 
                 if sales_account:
                     item_obj_data['sales_account_type'] = 'category'
