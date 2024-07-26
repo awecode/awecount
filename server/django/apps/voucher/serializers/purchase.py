@@ -1,5 +1,6 @@
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
 from apps.tax.serializers import TaxSchemeSerializer
