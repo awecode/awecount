@@ -54,3 +54,7 @@ class PublicPartyViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
             .filter(company_id=self.request.user.company_id)
             .order_by("-pk")
         )
+    
+    @action(detail=False, methods=["get"], url_path="all")
+    def all(self, request):
+        return Response(self.serializer_class(self.get_queryset(), many=True).data)
