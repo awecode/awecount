@@ -5,7 +5,11 @@ from apps.voucher.models import PurchaseVoucher
 from apps.voucher.serializers.public import PublicPurchaseVoucherCreateSerializer
 
 
-class PublicPurchaseVoucherViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class PublicPurchaseVoucherViewset(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+):
     serializer_class = PublicPurchaseVoucherCreateSerializer
     queryset = PublicPurchaseVoucherCreateSerializer.Meta.model.objects.all()
 
@@ -24,3 +28,6 @@ class PublicPurchaseVoucherViewset(viewsets.GenericViewSet, mixins.CreateModelMi
                 }
             )
         return super().create(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.queryset.filter(company_id=self.request.company_id)
