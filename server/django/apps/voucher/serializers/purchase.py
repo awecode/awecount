@@ -1,3 +1,4 @@
+from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -36,7 +37,8 @@ class PurchaseVoucherRowSerializer(
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
-    voucher_id=serializers.ReadOnlyField(source="voucher.id")   
+    voucher_id = serializers.ReadOnlyField(source="voucher.id")
+
     def validate_discount(self, value):
         print(f"Validating discount: {value}")
         if not value:
@@ -78,14 +80,15 @@ class PurchaseVoucherCreateSerializer(
     def validate(self, data):
         company = self.context["request"].company
 
-        if (
-            not data.get("party")
-            and data.get("mode") == "Credit"
-            and data.get("status") != "Draft"
-        ):
+        party = data.get("party")
+        if not party and data.get("mode") == "Credit" and data.get("status") != "Draft":
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
+
+        if party and (party.company_id != company.id):
+            raise SuspiciousOperation("Modifying object owned by other company!")
+
         request = self.context["request"]
 
         if data.get("discount") and data.get("discount") < 0:
@@ -108,7 +111,6 @@ class PurchaseVoucherCreateSerializer(
                     )
                 return data
 
-        party = data.get("party")
         fiscal_year = self.context["request"].company.current_fiscal_year
         voucher_no = data.get("voucher_no")
 
@@ -143,6 +145,11 @@ class PurchaseVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
+            item = Item.objects.filter(pk=row.get("item_id")).first()
+            if not item:
+                raise serializers.ValidationError({"item_id": ["Item not found."]})
+            if item.company_id != self.context["request"].company_id:
+                raise SuspiciousOperation("Modifying object owned by other company!")
             if row.get("discount_type") == "":
                 row["discount_type"] = None
             row_serializer = PurchaseVoucherRowSerializer(data=row)
