@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -58,9 +59,9 @@ class TransactionsViewMixin(object):
 
         account_id_list_str = ",".join([str(account_id) for account_id in account_ids])
 
-        # transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).values(
-        # 'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
-        #     count=Count('journal_entry__source_voucher_id'))
+        transactions = Transaction.objects.select_related('account').filter(account_id__in=account_ids).values(
+        'journal_entry__source_voucher_id', 'journal_entry__content_type__model').order_by('journal_entry__source_voucher_id').annotate(
+            count=Count('journal_entry__source_voucher_id'))
 
         # FIXME: upgrade postgres and add this query back inside rawquery
         # -- CREATE OR REPLACE FUNCTION merge_jsonb_agg(jsonb, jsonb)
@@ -143,11 +144,11 @@ class TransactionsViewMixin(object):
             sa.date DESC
         """
 
-        transactions = Transaction.objects.raw(raw_query)
+        # transactions = Transaction.objects.raw(raw_query)
         opening_transaction = transactions
 
         aggregate = {}
-        if start_date or end_date:
+        if False and (start_date or end_date):
             if start_date:
                 opening_transaction_query = f"""
                     WITH SourceAggregation AS (
