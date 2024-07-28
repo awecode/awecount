@@ -38,14 +38,14 @@ class CategoryMinSerializer(serializers.ModelSerializer):
 
 
 class AccountListSerializer(serializers.ModelSerializer):
-    dr = RoundedField()
-    cr = RoundedField()
+    # dr = RoundedField()
+    # cr = RoundedField()
     computed_balance = RoundedField()
     category = CategoryMinSerializer()
 
     class Meta:
         model = Account
-        fields = ("id", "code", "name", "dr", "cr", "computed_balance", "category")
+        fields = ("id", "code", "name", "computed_balance", "category")
 
 
 class AccountSerializer(serializers.ModelSerializer):
