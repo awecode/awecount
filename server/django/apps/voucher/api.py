@@ -325,7 +325,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, permission_classes=[AllowAny])
     def throw_response(self, request):
-        return Response({"success": True})
+        accounts_count = Account.objects.count()
+        return Response({"success": True, "accounts_count": accounts_count})
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
