@@ -95,7 +95,7 @@
           </td>
         </tr>
       </template>
-      <tr class="text-weight-bold" v-if="$route.query.start_date">
+      <tr class="text-weight-bold" v-if="$route.query.start_date && fields.page_cumulative">
         <td colspan="2"></td>
         <td class="text-left">Closing</td>
         <td></td>
@@ -133,7 +133,7 @@
           }}
         </td>
       </tr>
-      <tr class="text-weight-bold" v-else>
+      <tr class="text-weight-bold" v-else-if="fields.page_cumulative">
         <td colspan="2"></td>
         <td class="text-left">Closing</td>
         <td></td>
@@ -171,8 +171,8 @@
         <td>
           {{
             store.isCalendarInAD
-            ? transaction.date
-            : DateConverter.getRepresentation(transaction.date, 'bs')
+              ? transaction.date
+              : DateConverter.getRepresentation(transaction.date, 'bs')
           }}
         </td>
         <td>{{ transaction.source_type }}</td>
@@ -189,19 +189,19 @@
           <router-link v-if="transaction.source_type && transaction.voucher_no && checkPermissions(
             getPermissionsWithSourceType[transaction.source_type]
           )
-            " class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
-    transaction.voucher_no }}</router-link>
+          " class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">{{
+            transaction.voucher_no }}</router-link>
           <span v-else> {{ transaction.voucher_no }} </span>
         </td>
         <td>
           <span v-if="transaction.dr_amount">{{
             $nf(transaction.dr_amount, 2)
-          }}</span>
+            }}</span>
         </td>
         <td>
           <span v-if="transaction.cr_amount">{{
             $nf(transaction.cr_amount, 2)
-          }}</span>
+            }}</span>
         </td>
         <td v-if="runningBalance && Object.keys(runningBalance).length">
           {{ $nf((runningBalance[index].dr - runningBalance[index].cr), 2) }}
@@ -212,7 +212,7 @@
         fields.aggregate.total &&
         (fields.aggregate.total.dr_amount__sum ||
           fields.aggregate.total.cr_amount__sum)
-        ">
+      ">
         <td colspan="2"></td>
         <td class="text-left">Total</td>
         <td></td>
@@ -281,7 +281,7 @@
           }}
         </td>
       </tr>
-      <tr class="text-weight-bold" v-else>
+      <tr class="text-weight-bold" v-else-if="fields.page_cumulative">
         <td rowspan="1" colspan="2"></td>
         <td class="text-left">Opening</td>
         <td></td>
@@ -419,7 +419,7 @@ export default {
         number,
         Record<string, number | string | null>
       > = {}
-      if (fields.value?.transactions?.results) {
+      if (fields.value?.transactions?.results && fields.value.page_cumulative) {
         const openingBalance = { dr: 0, cr: 0 }
         if (route.query.start_date) {
           openingBalance.dr = (fields.value.aggregate.opening.dr || 0) + (fields.value.page_cumulative.next.dr || 0)
