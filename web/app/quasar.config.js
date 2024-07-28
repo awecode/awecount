@@ -70,7 +70,7 @@ module.exports = configure(function (ctx) {
       // env: {},
       // env: require('dotenv').config().parsed,
       env: {
-        BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
+        BASE_URL: process.env.BASE_URL || 'http://localhost:8000',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
