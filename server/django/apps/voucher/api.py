@@ -323,6 +323,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def throw_error(self, request):
         return 1 / 0
 
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_response(self, request):
+        return Response({"success": True})
+
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         sales_voucher = self.get_object()
