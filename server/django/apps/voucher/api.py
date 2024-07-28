@@ -16,6 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.aggregator.views import qs_to_xls
@@ -83,7 +84,6 @@ from apps.voucher.serializers.voucher_settings import (
     SalesSettingsSerializer,
     SalesUpdateSettingSerializer,
 )
-
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no, zero_for_none
 from awecount.libs.CustomViewSet import (
@@ -95,7 +95,6 @@ from awecount.libs.CustomViewSet import (
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
-
 from .models import (
     CreditNote,
     CreditNoteRow,
@@ -189,8 +188,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
         if (
-            request.company.enable_sales_agents
-            and sales_agent_tuple not in self.collections
+                request.company.enable_sales_agents
+                and sales_agent_tuple not in self.collections
         ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)
@@ -320,6 +319,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         obj.apply_transactions()
         return Response({})
 
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_error(self, request):
+        return 1 / 0
+
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         sales_voucher = self.get_object()
@@ -416,7 +419,7 @@ class POSViewSet(
                         "sales_rows__quantity",
                         filter=Q(
                             sales_rows__voucher__date__gte=timezone.now()
-                            - timedelta(days=30)
+                                                           - timedelta(days=30)
                         ),
                     ),
                     0,
@@ -501,7 +504,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
         if self.model.objects.filter(
-            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
         ).exists():
             raise ValidationError(
                 {
@@ -518,11 +521,11 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
         if (
-            self.model.objects.filter(
-                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
-            )
-            .exclude(id=obj.id)
-            .exists()
+                self.model.objects.filter(
+                    voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+                )
+                        .exclude(id=obj.id)
+                        .exists()
         ):
             raise ValidationError(
                 {
@@ -741,7 +744,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     for item in sold_items:
                         sum += item[str(row.id)][0]
                     remaining_quantity = (
-                        zero_for_none(row.item.remaining_stock) - row.quantity
+                            zero_for_none(row.item.remaining_stock) - row.quantity
                     )
                     if remaining_quantity <= 0:
                         raise UnprocessableException(
@@ -885,8 +888,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
+                request.company.inventory_setting.enable_fifo
+                and not request.query_params.get("fifo_inconsistency")
         ):
             raise UnprocessableException(
                 detail="This may cause inconsistencies in fifo!",
@@ -1047,8 +1050,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
+                request.company.inventory_setting.enable_fifo
+                and not request.query_params.get("fifo_inconsistency")
         ):
             raise UnprocessableException(
                 detail="This may cause inconsistencies in fifo!",
@@ -1419,6 +1422,7 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
             .order_by("-net_amount")
         )
         return Response(qs)
+
 
 class PurchaseVoucherRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     serializer_class = PurchaseVoucherRowSerializer
@@ -1853,8 +1857,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
         if (
-            request.company.enable_sales_agents
-            and sales_agent_tuple not in self.collections
+                request.company.enable_sales_agents
+                and sales_agent_tuple not in self.collections
         ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)
