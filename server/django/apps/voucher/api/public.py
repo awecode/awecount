@@ -1,8 +1,14 @@
 from django.core.exceptions import ValidationError
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.voucher.models import PurchaseVoucher
-from apps.voucher.serializers.public import PublicPurchaseVoucherCreateSerializer
+from apps.voucher.models.discounts import PurchaseDiscount
+from apps.voucher.serializers.public import (
+    PublicPurchaseDiscountSerializer,
+    PublicPurchaseVoucherCreateSerializer,
+)
 
 
 class PublicPurchaseVoucherViewset(
@@ -31,3 +37,12 @@ class PublicPurchaseVoucherViewset(
 
     def get_queryset(self):
         return self.queryset.filter(company_id=self.request.company_id)
+
+
+class PublicPurchaseDiscountViewset(viewsets.GenericViewSet):
+    queryset = PurchaseDiscount.objects.all()
+
+    @action(detail=False, methods=["get"], url_path="all")
+    def all(self, request):
+        parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
+        return Response(PublicPurchaseDiscountSerializer(parties, many=True).data)

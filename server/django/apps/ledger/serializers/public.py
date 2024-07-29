@@ -131,10 +131,6 @@ class PublicJournalVoucherStatusChangeSerializer(
 
 
 class PublicPartyListSerializer(serializers.ModelSerializer):
-    dr = serializers.ReadOnlyField()
-    cr = serializers.ReadOnlyField()
-    balance = serializers.ReadOnlyField()
-
     class Meta:
         model = Party
         fields = (
@@ -144,7 +140,4 @@ class PublicPartyListSerializer(serializers.ModelSerializer):
             "contact_no",
             "email",
             "tax_registration_number",
-            "dr",
-            "cr",
-            "balance",
         )

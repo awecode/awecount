@@ -43,18 +43,10 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
         return Response({"detail": "Status changed successfully."})
 
 
-class PublicPartyViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
+class PublicPartyViewset(viewsets.GenericViewSet):
     queryset = Party.objects.all()
-    serializer_class = PublicPartyListSerializer
 
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(company_id=self.request.user.company_id)
-            .order_by("-pk")
-        )
-    
     @action(detail=False, methods=["get"], url_path="all")
     def all(self, request):
-        return Response(self.serializer_class(self.get_queryset(), many=True).data)
+        parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
+        return Response(PublicPartyListSerializer(parties, many=True).data)

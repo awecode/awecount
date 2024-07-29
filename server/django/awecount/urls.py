@@ -42,6 +42,12 @@ router.register(
 )
 
 router.register(
+    "public/purchase-discount",
+    public_voucher.PublicPurchaseDiscountViewset,
+    basename="public-purchase-discount",
+)
+
+router.register(
     "inventory-account", item.InventoryAccountViewSet, basename="inventory-account"
 )
 router.register(

@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
 from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
+from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
@@ -220,7 +221,8 @@ class PublicPurchaseVoucherCreateSerializer(
                 )
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
-                    "More than one item found for the given details. " + str(row.get("item"))
+                    "More than one item found for the given details. "
+                    + str(row.get("item"))
                 )
 
             if row.get("discount_type") == "":
@@ -265,3 +267,10 @@ class PublicPurchaseVoucherCreateSerializer(
     class Meta:
         model = PurchaseVoucher
         exclude = ("company", "user", "bank_account", "discount_obj", "fiscal_year")
+
+
+class PublicPurchaseDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseDiscount
+        exclude = ("company",)
+        extra_kwargs = {"name": {"required": True}}
