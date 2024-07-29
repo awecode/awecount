@@ -215,9 +215,13 @@ class PublicPurchaseVoucherCreateSerializer(
                 )
                 row["item_id"] = item.id
             except Item.DoesNotExist:
-                raise ValidationError("No item found for the given details.")
+                raise ValidationError(
+                    "No item found for the given details. " + str(row.get("item"))
+                )
             except Item.MultipleObjectsReturned:
-                raise ValidationError("More than one item found for the given details.")
+                raise ValidationError(
+                    "More than one item found for the given details. " + str(row.get("item"))
+                )
 
             if row.get("discount_type") == "":
                 row["discount_type"] = None
