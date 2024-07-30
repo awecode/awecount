@@ -359,7 +359,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all().select_related(
-                        "item__category", "unit", "discount_obj", "tax_scheme"
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
                     ),
                 )
             )
@@ -584,7 +584,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     PurchaseVoucherRow.objects.all()
-                    .select_related("item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
                     .order_by("pk"),
                 )
             )
@@ -871,7 +871,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     CreditNoteRow.objects.all()
-                    .select_related("item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
                     .order_by("pk"),
                 ),
             )
@@ -1033,7 +1033,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     DebitNoteRow.objects.all()
-                    .select_related("item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
                     .order_by("pk"),
                 )
             )
