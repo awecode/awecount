@@ -148,15 +148,15 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         qs = Account.objects.filter(company=self.request.company).select_related(
             "category", "parent"
         )
-        if self.action == "list":
-            qs = (
-                qs.annotate(
-                    dr=Coalesce(Sum("transactions__dr_amount"), 0.0),
-                    cr=Coalesce(Sum("transactions__cr_amount"), 0.0),
-                )
-                .annotate(computed_balance=F("dr") - F("cr"))
-                .order_by("-id")
-            )
+        # if self.action == "list":
+        #     qs = (
+        #         qs.annotate(
+        #             dr=Coalesce(Sum("transactions__dr_amount"), 0.0),
+        #             cr=Coalesce(Sum("transactions__cr_amount"), 0.0),
+        #         )
+        #         .annotate(computed_balance=F("dr") - F("cr"))
+        #         .order_by("-id")
+        #     )
         return qs
 
     def get_accounts_by_category_name(self, category_name):

@@ -81,14 +81,13 @@ class PurchaseVoucherCreateSerializer(
         company = self.context["request"].company
 
         party = data.get("party")
-
         if not party and data.get("mode") == "Credit" and data.get("status") != "Draft":
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
 
         if party and (party.company_id != company.id):
-            raise SuspiciousOperation("Modifying object owned by other company.")
+            raise SuspiciousOperation("Modifying object owned by other company!")
 
         request = self.context["request"]
 
@@ -112,7 +111,6 @@ class PurchaseVoucherCreateSerializer(
                     )
                 return data
 
-        party = data.get("party")
         fiscal_year = self.context["request"].company.current_fiscal_year
         voucher_no = data.get("voucher_no")
 
@@ -249,6 +247,7 @@ class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     discount_obj = PurchaseDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
 
     class Meta:
         model = PurchaseVoucherRow

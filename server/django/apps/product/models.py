@@ -12,6 +12,7 @@ from apps.ledger.models import Category as AccountCategory
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
 from awecount.libs import none_for_zero, zero_for_none
+from django.core.validators import MinValueValidator
 
 
 class Unit(models.Model):
@@ -76,6 +77,7 @@ class Category(models.Model):
     default_unit = models.ForeignKey(
         Unit, blank=True, null=True, on_delete=models.SET_NULL
     )
+    hs_code = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1000)],)
     default_tax_scheme = models.ForeignKey(
         TaxScheme,
         blank=True,

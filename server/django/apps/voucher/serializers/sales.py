@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
-from apps.product.models import Item
+from apps.product.models import Item, Category
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
@@ -218,6 +218,7 @@ class SalesVoucherRowSerializer(
     item_name = serializers.ReadOnlyField(source="item.name")
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
+    hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
 
     def validate_discount(self, value):
         if not value:
@@ -256,17 +257,44 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
             except Item.DoesNotExist:
-                item_obj = Item.objects.create(
-                    code=str(data["item_obj"].get("code")),
-                    name=str(
+                item_obj_data = {
+                    'code': str(data["item_obj"].get("code")),
+                    'name': str(
                         data["item_obj"].get("name") or data["item_obj"].get("code")
                     ),
-                    unit_id=data["unit_id"],
-                    category_id=data["item_obj"].get("category_id"),
-                    selling_price=data["rate"],
-                    tax_scheme_id=data["tax_scheme_id"],
-                    company_id=self.context["request"].company_id,
-                )
+                    "unit_id": data["unit_id"],
+                    "category_id": data["item_obj"].get("category_id"),
+                    "selling_price": data["rate"],
+                    "tax_scheme_id": data["tax_scheme_id"],
+                    "company_id": self.context["request"].company_id,
+                }
+                sales_account = None
+                purchase_account = None
+                discount_allowed_account = None
+                discount_received_account = None
+                if data["item_obj"].get("category_id"):
+                    item_category = Category.objects.filter(id=data["item_obj"].get("category_id"), company_id=self.context["request"].company_id).first()
+                    if item_category:
+                        sales_account = item_category.dedicated_sales_account
+                        purchase_account = item_category.dedicated_purchase_account
+                        discount_allowed_account = item_category.dedicated_discount_allowed_account
+                        discount_received_account = item_category.dedicated_discount_received_account
+
+                if sales_account:
+                    item_obj_data['sales_account_type'] = 'category'
+                    item_obj_data['sales_account'] = sales_account
+                if purchase_account:
+                    item_obj_data['purchase_account_type'] = 'category'
+                    item_obj_data['purchase_account'] = purchase_account
+                if discount_allowed_account:
+                    item_obj_data['discount_allowed_account_type'] = 'category'
+                    item_obj_data['discount_allowed_account'] = discount_allowed_account
+                if discount_received_account:
+                    item_obj_data['discount_received_account_type'] = 'category'
+                    item_obj_data['discount_received_account'] = discount_received_account
+
+                item_obj = Item.objects.create(**item_obj_data)
+
             data["item_id"] = item_obj.id
             del data["item_obj"]
 
@@ -589,6 +617,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     discount_obj = SalesDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
 
     class Meta:
         model = SalesVoucherRow

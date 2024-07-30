@@ -16,6 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.aggregator.views import qs_to_xls
@@ -245,7 +246,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -320,6 +323,15 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         obj.apply_transactions()
         return Response({})
 
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_error(self, request):
+        return 1 / 0
+
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_response(self, request):
+        accounts_count = Account.objects.count()
+        return Response({"success": True, "accounts_count": accounts_count})
+
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         sales_voucher = self.get_object()
@@ -351,7 +363,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all().select_related(
-                        "item", "unit", "discount_obj", "tax_scheme"
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
                     ),
                 )
             )
@@ -576,7 +588,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     PurchaseVoucherRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -863,7 +877,9 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     CreditNoteRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 ),
             )
@@ -1025,7 +1041,9 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     DebitNoteRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -1420,6 +1438,7 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
         )
         return Response(qs)
 
+
 class PurchaseVoucherRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
     serializer_class = PurchaseVoucherRowSerializer
     filter_backends = [
@@ -1582,9 +1601,7 @@ class PurchaseBookViewSet(
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
                 ws.cell(column=7, row=idx + 7, value=non_taxable)
                 ws.cell(column=8, row=idx + 7, value=taxable)
-                ws.cell(
-                    column=9, row=idx + 7, value=row.get("voucher_meta").get("tax")
-                )
+                ws.cell(column=9, row=idx + 7, value=row.get("voucher_meta").get("tax"))
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],

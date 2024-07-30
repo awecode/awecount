@@ -27,6 +27,7 @@ admin.site.register(BankCashDeposit, BankCashDepositAdmin)
 class BankAccountAdmin(admin.ModelAdmin):
     list_filter = ("company",)
     search_fields = ("name", "account_number", "bank_name", "branch_name")
+    autocomplete_fields = ("company", "ledger", "commission_account")
 
 
 admin.site.register(BankAccount, BankAccountAdmin)
