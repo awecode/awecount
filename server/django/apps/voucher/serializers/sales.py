@@ -218,6 +218,7 @@ class SalesVoucherRowSerializer(
     item_name = serializers.ReadOnlyField(source="item.name")
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
+    hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
 
     def validate_discount(self, value):
         if not value:
@@ -616,6 +617,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     discount_obj = SalesDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
 
     class Meta:
         model = SalesVoucherRow
