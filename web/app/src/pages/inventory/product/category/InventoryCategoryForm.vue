@@ -27,6 +27,10 @@
                 :error="errors.default_tax_scheme_id" />
             </div>
           </div>
+          <div class="row q-col-gutter-md">
+            <q-input class="col-12 col-md-6" v-model="fields.hs_code" label="H.S. code" :error-message="errors.hs_code"
+              :error="!!errors.hs_code" />
+          </div>
           <div class="row q-gutter-y-lg mt-1 mb-6">
             <div class="col-sm-6 col-12 col-lg-4">
               <q-checkbox v-model="fields.track_inventory" label="Track Inventory" :error-message="errors.track_inventory"

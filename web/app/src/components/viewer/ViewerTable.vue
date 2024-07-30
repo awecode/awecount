@@ -15,6 +15,7 @@
     <thead>
       <q-tr class="text-left">
         <q-th data-testid="SN" > SN </q-th>
+        <q-th data-testid="hs-code" > H.S. code</q-th>
         <q-th data-testid="Particular" > Particular </q-th>
         <q-th data-testid="Qty" > Qty </q-th>
         <q-th data-testid="Rate" > Rate </q-th>
@@ -28,6 +29,7 @@
         <q-td>
           {{ index + 1 }}
         </q-td>
+        <q-td> {{ row.hs_code }} </q-td>
         <q-td>
           {{ row.item_name }} <br>
           <span v-if="row.description" style="font-size: 11px;" class="text-grey-8">
@@ -57,6 +59,7 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
+        <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Sub Total </q-td><q-td class="text-right">{{
           formatNumberWithComma(fields?.voucher_meta.sub_total) }}</q-td>
       </q-tr>
@@ -64,10 +67,12 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
+        <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Discount </q-td><q-td class="text-right">{{
           formatNumberWithComma(fields?.voucher_meta.discount) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
+        <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
@@ -79,12 +84,13 @@
         <q-td> </q-td>
         <q-td> </q-td>
         <q-td> </q-td>
+        <q-td> </q-td>
         <q-td> </q-td><q-td> </q-td><q-td class="text-right"> Total </q-td><q-td class="text-right">{{
           formatNumberWithComma(fields?.voucher_meta.grand_total) }}</q-td>
       </q-tr>
       <q-tr class="text-subtitle2">
         <td></td>
-        <td colspan="6">
+        <td colspan="7">
           <span style="white-space: wrap;">In Words: {{ numberToText(fields?.voucher_meta.grand_total) }} </span>
         </td>
       </q-tr>
