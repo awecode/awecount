@@ -244,7 +244,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
                     .order_by("pk"),
                 )
             )
@@ -359,7 +359,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all().select_related(
-                        "item", "unit", "discount_obj", "tax_scheme"
+                        "item__category", "unit", "discount_obj", "tax_scheme"
                     ),
                 )
             )
