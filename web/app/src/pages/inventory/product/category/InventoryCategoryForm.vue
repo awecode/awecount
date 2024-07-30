@@ -87,7 +87,7 @@
               v-model:modelValue="fields.discount_allowed_account"
               v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
               :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicard_discount_allowed_account" :error="errors.discount_allowed_account" />
+              :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" />
           </div>
           <div class="col-12 col-lg-6">
             <select-item-accounts-with-types v-if="fields.can_be_purchased"
