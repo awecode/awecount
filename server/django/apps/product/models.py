@@ -77,7 +77,7 @@ class Category(models.Model):
     default_unit = models.ForeignKey(
         Unit, blank=True, null=True, on_delete=models.SET_NULL
     )
-    hs_code = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(999)])
+    hs_code = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1000)],)
     default_tax_scheme = models.ForeignKey(
         TaxScheme,
         blank=True,
