@@ -1,3 +1,4 @@
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -8,6 +9,7 @@ from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
 )
+from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
@@ -85,6 +87,74 @@ class PublicItemSerializer(serializers.Serializer):
     fixed_asset_account__code = serializers.CharField(required=False)
 
 
+class ItemCreateSerializer(serializers.ModelSerializer):
+    tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
+    unit_id = serializers.IntegerField(required=False, allow_null=True)
+    extra_fields = serializers.ReadOnlyField(source="category.extra_fields")
+    front_image = Base64FileField(required=False, allow_null=True)
+    back_image = Base64FileField(required=False, allow_null=True)
+
+    def validate_cost_price(self, attr):
+        if attr and attr < 0:
+            raise ValidationError("Cost price cannot be negative.")
+        return attr
+
+    def validate_selling_price(self, attr):
+        if attr and attr < 0:
+            raise ValidationError("Selling price cannot be negative.")
+        return attr
+
+    def validate(self, attrs):
+        # if (
+        #     attrs.get("purchase_account_type") == "Category"
+        #     or attrs.get("sales_account_type") == "Category"
+        #     or attrs.get("discount_received_account_type") == "Category"
+        #     or attrs.get("discount_allowed_account_type") == "Category"
+        # ) and not attrs.get("category"):
+        #     raise serializers.ValidationError(
+        #         {"category": ["Category must be selected to use category account."]}
+        #     )
+
+        type_account_tuples = [
+            ("sales_account_type", "sales_account"),
+            ("purchase_account_type", "purchase_account"),
+            ("discount_received_account_type", "discount_received_account"),
+            ("discount_allowed_account_type", "discount_allowed_account"),
+        ]
+
+        id_required = ["global", "category", "existing"]
+
+        for obj in type_account_tuples:
+            if attrs.get(obj[0]):
+                if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
+                    raise ValidationError({obj[1]: ["This field cannot be empty."]})
+
+        return attrs
+
+    @staticmethod
+    def base64_check(validated_data, attributes):
+        for attr in attributes:
+            if validated_data.get(attr) and not isinstance(
+                validated_data.get(attr), ContentFile
+            ):
+                validated_data.pop(attr)
+        return validated_data
+
+    def update(self, instance, validated_data):
+        validated_data = self.base64_check(
+            validated_data, ["front_image", "back_image"]
+        )
+        return super().update(instance, validated_data)
+
+    class Meta:
+        model = Item
+        exclude = (
+            "company",
+            "tax_scheme",
+            "unit",
+        )
+
+
 class PublicPurchaseVoucherRowSerializer(
     DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
 ):
@@ -99,6 +169,7 @@ class PublicPurchaseVoucherRowSerializer(
 
     item_id = serializers.IntegerField(required=False)
     item = PublicItemSerializer(default={})
+    item_obj = ItemCreateSerializer(required=False, allow_null=True)
 
     def validate_discount(self, value):
         print(f"Validating discount: {value}")
@@ -206,6 +277,8 @@ class PublicPurchaseVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
+            item_obj = row.pop("item_obj")
+
             item_id = row.get("item_id")
             if item_id:
                 row["item"]["id"] = item_id
@@ -214,11 +287,35 @@ class PublicPurchaseVoucherCreateSerializer(
                 item = Item.objects.get(
                     **row.get("item"), company_id=self.context["request"].company_id
                 )
+                if item_obj:
+                    if item_obj.get("name"):
+                        item.name = item_obj.get("name")
+                    if item_obj.get("cost_price"):
+                        item.cost_price = item_obj.get("cost_price")
+                    item.save()
+
                 row["item_id"] = item.id
             except Item.DoesNotExist:
-                raise ValidationError(
-                    "No item found for the given details. " + str(row.get("item"))
+                if item_obj is None:
+                    raise ValidationError(
+                        "No item found for the given details. " + str(row.get("item"))
+                    )
+                category = item_obj.get("category")
+                new_item = Item(
+                    company_id=self.context["request"].company_id,
+                    **item_obj,
+                    sales_account_type=category.items_sales_account_type,
+                    sales_account=category.dedicated_sales_account,
+                    purchase_account_type=category.items_purchase_account_type,
+                    purchase_account=category.dedicated_purchase_account,
+                    discount_allowed_account_type=category.items_discount_allowed_account_type,
+                    discount_allowed_account=category.dedicated_discount_allowed_account,
+                    discount_received_account_type=category.items_discount_received_account_type,
+                    discount_received_account=category.dedicated_discount_received_account,
                 )
+                new_item.save()
+                row["item_id"] = new_item.id
+
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
                     "More than one item found for the given details. "
