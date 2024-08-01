@@ -15,12 +15,14 @@ class InputChoiceMixin(object):
     @action(detail=False)
     def choices(self, request):
         queryset = self.filter_queryset(self.get_queryset())
+        paginator = self.paginator
+        page = paginator.paginate_queryset(queryset, request)
         if hasattr(self, "choice_serializer_class"):
             serializer_class = self.choice_serializer_class
         else:
             serializer_class = GenericSerializer
-        serializer = serializer_class(queryset, many=True)
-        return Response(serializer.data)
+        serializer = serializer_class(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class ShortNameChoiceMixin(object):
