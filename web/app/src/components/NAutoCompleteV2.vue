@@ -3,11 +3,12 @@
     <q-select :loading="fetchLoading" :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
       :options="filteredOptions" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
       @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error"
-      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn" virtual-scroll-slice-ratio-after="-0.05">
+      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn"
+      virtual-scroll-slice-ratio-after="-0.05" @popup-show="isActive = true" @popup-hide="() => isActive = false">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
       </template>
-      <template v-if="fetchLoading" #after-options >
+      <template v-if="fetchLoading" #after-options>
         <div class="flex justify-center pb-2 text-gray-500">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
             <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2">
@@ -86,16 +87,18 @@ export default {
   emits: ['update:modelValue'],
 
   setup(props, { emit }) {
+    const isActive = ref(false)
     const valUpdated = (val) => {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const allOptions = ref(props.options)
+    const allOptions = ref([])
     const isModalOpen = ref(false)
     const filteredOptions = ref(props?.options?.results || [])
     const fetchLoading = ref(false)
     const filteredOptionsPagination = ref(null)
     const serachKeyword = ref(null)
+    const initiallyLoaded = ref(false)
 
     watch(
       () => props.modelValue,
@@ -109,6 +112,15 @@ export default {
       (newValue) => {
         allOptions.value = newValue
         filteredOptions.value = newValue.results
+      }
+    )
+
+    watch(
+      () => isActive.value, async (newValue) => {
+        if (newValue && !fetchLoading.value && !initiallyLoaded.value) {
+          await fetchOptions()
+          initiallyLoaded.value = true
+        }
       }
     )
 
@@ -150,26 +162,39 @@ export default {
     const closeModal = () => {
       isModalOpen.value = false
     }
-    const fetchOptions = (staticOptions) => {
+    const fetchOptions = async (staticOptions) => {
       fetchLoading.value = true
       const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
-      useApi(endpoint).then((data) => {
-        if (staticOptions && staticOptions.length) {
-          allOptions.value.results.push(...props.staticOptions, ...data.results)
-        } else allOptions.value.results.push(...data.results)
-        Object.assign(allOptions.value.pagination, data.pagination)
-        fetchLoading.value = false
-      }).catch((err) => {
+      try {
+        const data = await useApi(endpoint)
+        if (data) {
+          if (staticOptions && staticOptions.length) {
+            allOptions.value.results.push(...props.staticOptions, ...data.results)
+          } else allOptions.value.results.push(...data.results)
+          Object.assign(allOptions.value.pagination, data.pagination)
+          fetchLoading.value = false
+        }
+      } catch (error) {
         console.log('Error While Fetching Options', err)
         fetchLoading.value = false
-      })
+      }
+      // .then((data) => {
+      //   if (staticOptions && staticOptions.length) {
+      //     allOptions.value.results.push(...props.staticOptions, ...data.results)
+      //   } else allOptions.value.results.push(...data.results)
+      //   Object.assign(allOptions.value.pagination, data.pagination)
+      //   fetchLoading.value = false
+      // }).catch((err) => {
+      //   console.log('Error While Fetching Options', err)
+      //   fetchLoading.value = false
+      // })
     }
 
-    if (props.endpoint && !props.options?.results?.length > 0) {
-      if (props.staticOptions && props.staticOptions.length) {
-        fetchOptions(props.staticOptions)
-      } else fetchOptions()
-    }
+    // if (props.endpoint && !props.options?.results?.length > 0) {
+    //   if (props.staticOptions && props.staticOptions.length) {
+    //     fetchOptions(props.staticOptions)
+    //   } else fetchOptions()
+    // }
 
     const onScroll = (scrollData) => {
       if (filteredOptionsPagination.value) {
@@ -204,7 +229,8 @@ export default {
       props,
       modalValue,
       onScroll,
-      fetchLoading
+      fetchLoading,
+      isActive
     }
   },
 }
