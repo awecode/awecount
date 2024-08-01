@@ -49,15 +49,6 @@ export default {
       type: [Object, String, Number],
       default: () => null,
     },
-    options: {
-      type: Object,
-      default: () => {
-        return {
-          results: [],
-          pagination: {}
-        }
-      }
-    },
     modalComponent: {
       type: Object,
       required: false,
@@ -92,8 +83,8 @@ export default {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const initalAllOptions = props.options
-    initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
+    const initalAllOptions = { results: [], pagination: {} }
+    if (props.staticOptions) initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
     const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
     const filteredOptions = ref(allOptions.value.results || [])
@@ -106,14 +97,6 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
-    )
-
-    watch(
-      () => props.options,
-      (newValue) => {
-        allOptions.value = newValue
-        filteredOptions.value = newValue.results
       }
     )
 
