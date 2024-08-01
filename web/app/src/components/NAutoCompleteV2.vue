@@ -71,7 +71,7 @@ export default {
       default: () => null
     },
     staticOptions: {
-      type: [Array, Object, undefined],
+      type: [Array],
       default: () => []
     }
   },
@@ -84,7 +84,7 @@ export default {
     }
     const modalValue = ref(props.modelValue)
     const initalAllOptions = { results: [], pagination: {} }
-    if (props.staticOptions) initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
+    initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
     const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
     const filteredOptions = ref(allOptions.value.results || [])
