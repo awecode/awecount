@@ -9,7 +9,7 @@ class ChequeDepositFilterSet(DateFilterSet):
 
     class Meta:
         model = ChequeDeposit
-        fields = ('bank_account',)
+        fields = ("bank_account",)
 
 
 class ChequeIssueFilterSet(DateFilterSet):
@@ -17,7 +17,7 @@ class ChequeIssueFilterSet(DateFilterSet):
 
     class Meta:
         model = ChequeIssue
-        fields = ('bank_account',)
+        fields = ("bank_account",)
 
 
 class FundTransferFilterSet(DateFilterSet):
@@ -25,4 +25,4 @@ class FundTransferFilterSet(DateFilterSet):
 
     class Meta:
         model = FundTransfer
-        fields = ('status', 'date')
+        fields = ("status", "date")

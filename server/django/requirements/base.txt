@@ -1,4 +1,4 @@
-Django
+Django==4.1.1
 psycopg2-binary
 Pillow
 django-rest-framework
@@ -20,3 +20,4 @@ redis
 openpyxl==3.0.10
 XlsxWriter
 whitenoise
+thefuzz

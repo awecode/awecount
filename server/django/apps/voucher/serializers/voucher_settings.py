@@ -1,38 +1,36 @@
 from rest_framework import serializers
 
-from apps.voucher.models import SalesSetting, PurchaseSetting
-from apps.voucher.models.voucher_settings import InventorySetting
+from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
 
 
 class SalesCreateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        fields = ('fields', 'options')
+        fields = ("fields", "options")
 
 
 class SalesUpdateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        fields = ('options',)
+        fields = ("options",)
 
 
 class PurchaseCreateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        fields = ('fields', 'options')
+        fields = ("fields", "options")
 
 
 class PurchaseUpdateSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseSetting
-        fields = ('options',)
+        fields = ("options",)
 
 
 class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = PurchaseSetting
-        exclude = ('company',)
+        exclude = ("company",)
 
     # def update(self, instance, validated_data):
     #     import ipdb; ipdb.set_trace()
@@ -44,10 +42,10 @@ class PurchaseSettingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseSetting
-        exclude = ('company',)
+        exclude = ("company",)
 
     def get_mode(self, obj):
-        if not obj.mode in ['Cash', 'Credit']:
+        if obj.mode not in ["Cash", "Credit"]:
             return int(obj.mode)
         return obj.mode
 
@@ -55,22 +53,17 @@ class PurchaseSettingSerializer(serializers.ModelSerializer):
 class SalesSettingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesSetting
-        exclude = ('company',)
+        exclude = ("company",)
 
 
 class SalesSettingsSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
+
     class Meta:
         model = SalesSetting
-        exclude = ('company', 'enable_sales_date_edit')
+        exclude = ("company", "enable_sales_date_edit")
 
     def get_mode(self, obj):
-        if not obj.mode in ['Cash', 'Credit']:
+        if obj.mode not in ["Cash", "Credit"]:
             return int(obj.mode)
         return obj.mode
-
-
-class InventorySettingCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InventorySetting
-        exclude = ['company']
