@@ -10,14 +10,14 @@
 
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
-          <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name"
+          <div class="q-col-gutter-md grid lg:grid-cols-2">
+            <q-input v-model="fields.name" label="Name *" :error-message="errors.name"
               :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code" class="col-6" :error-message="errors.code"
+            <q-input v-model="fields.code" label="Code" :error-message="errors.code"
               :error="!!errors.code" />
           </div>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
+          <div class="q-col-gutter-md grid lg:grid-cols-2">
+            <div class="lg:col-6 col-12">
               <n-auto-complete v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *"
                 :error="errors?.parent" />
             </div>

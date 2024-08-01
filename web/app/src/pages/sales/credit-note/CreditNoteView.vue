@@ -17,21 +17,8 @@
         <ViewerTable :fields="fields" />
       </q-card-section>
     </q-card>
-    <!-- <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-    <q-btn
-      @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
-      color="primary"
-      label="Draft"
-    />
-    <q-btn
-      @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
-      color="green-8"
-      :label="isEdit ? 'Update' : 'Issue'"
-    />
-  </div> -->
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
-        <!-- {{ fields }} -->
         <q-btn v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
           color="orange-5" label="Edit" icon="edit" :to="`/credit-note/${fields.id}/`" />
         <q-btn v-if="fields?.status === 'Issued'" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
@@ -44,7 +31,6 @@
           :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print"
           @click="onPrintclick(false)" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <!-- <q-btn @click="onPrintclick" label="Print" icon="print" /> -->
         <q-btn color="blue-7" label="Journal Entries" icon="books"
           :to="`/journal-entries/credit-note/${this.$route.params.id}/`" />
       </div>
@@ -53,10 +39,11 @@
       </div>
       <q-dialog v-model="isDeleteOpen">
           <q-card style="min-width: min(40vw, 400px)">
-            <q-card-section class="bg-red-6 q-py-md">
+            <q-card-section class="bg-red-6 q-py-md flex justify-between">
               <div class="text-h6 text-white">
                 <span>Confirm Cancellation?</span>
               </div>
+              <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
             </q-card-section>
             <q-separator inset />
             <q-card-section>
@@ -90,6 +77,7 @@ export default {
       title: 'Credit Note | Awecount',
     }
     useMeta(metaData)
+    const $q = useQuasar()
     const fields = ref(null)
     const isDeleteOpen = ref(false)
     const submitChangeStatus = (id, status) => {
@@ -104,7 +92,6 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
           if (fields.value) {
             fields.value.status = status
           }
@@ -112,19 +99,34 @@ export default {
             isDeleteOpen.value = false
           }
         })
-        .catch((err) => console.log('err from the api', err))
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
+              if (fields.value) {
+                fields.value.status = status
+              }
+              if (status === 'Cancelled') {
+                isDeleteOpen.value = false
+              }
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+            })
+          } else $q.notify({
+              color: 'negative',
+              message: data.data?.message || data.data?.detail || 'Something went Wrong!',
+              icon: 'report_problem',
+            })
+        })
     }
     const print = (bodyOnly) => {
-      let ifram = document.createElement('iframe')
-      ifram.style = 'display:none; margin: 20px'
-      document.body.appendChild(ifram)
-      const pri = ifram.contentWindow
-      pri.document.open()
-      pri.document.write(useGeneratePdf('creditNote', bodyOnly, fields.value))
-      // pri.document.body.firstElementChild.prepend()
-      pri.document.close()
-      pri.focus()
-      setTimeout(() => pri.print(), 100)
+      const printData = useGeneratePdf('creditNote', bodyOnly, fields.value)
+      usePrintPdfWindow(printData)
     }
     const onPrintclick = (noApiCall = false) => {
       if (!noApiCall) {
@@ -168,18 +170,6 @@ export default {
       })
   },
 }
-// const {
-//   columns,
-//   rows,
-//   resetFilters,
-//   filters,
-//   loading,
-//   searchQuery,
-//   pagination,
-//   onRequest,
-//   confirmDeletion,
-//   initiallyLoaded,
-// } = useList(endpoint);
 </script>
 
 <style>
@@ -200,8 +190,6 @@ export default {
 }
 
 @media print {
-
-  /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
   .d-print-none {
     display: none;
     visibility: hidden;

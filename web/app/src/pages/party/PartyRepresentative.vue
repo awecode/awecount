@@ -5,7 +5,7 @@
     :key="index"
     class="q-pa-md q-mb-md"
   >
-    <div>
+    <div class="flex flex-col gap-y-4">
       <div class="row q-col-gutter-md">
         <q-input
           v-model="representative.name"

@@ -6,11 +6,12 @@ export default function useGeneratePosPdf(
   invoiceInfo: object,
   partyObj: object | null,
   hideRowQuantity: boolean,
-  clientRows: Array<string, any> | null,
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   taxOptions: Array<any>
+  /* eslint-disable @typescript-eslint/no-explicit-any */
 ): string {
-  const loginStore: Record<string, string | number | object> = useLoginStore()
-  const compayInfo: Record<string, string | number> = loginStore.companyInfo
+  const loginStore = useLoginStore()
+  const compayInfo = loginStore.companyInfo
   let sameTax = null
   let sameTaxObj = null
   const tableRow = (rows: Array<object>): string => {
@@ -32,6 +33,9 @@ export default function useGeneratePosPdf(
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
       }">${index + 1}</th>
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px; ${
+        index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
+      }">${row.hs_code ?? ''}</th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
       }">${row.item_name}<br><span style="font-size: 12px; ${
@@ -52,7 +56,7 @@ export default function useGeneratePosPdf(
         }</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px; ${
         index + 1 !== rows.length ? 'border-bottom: #b9b9b9 solid 2px;' : ''
-      }">${formatNumberWithComma((row.quantity * row.rate), 2)}</th>
+      }">${formatNumberWithComma((row.quantity * row.rate))}</th>
     </tr>
     `
       }
@@ -67,6 +71,7 @@ export default function useGeneratePosPdf(
       <th style="width: 20px; height:${
         80 * number
       }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
@@ -82,7 +87,7 @@ export default function useGeneratePosPdf(
     <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 110px; max-width:190px; object-fit: contain; position: absolute ${
+    }" alt="Compony Logo" style="height: 110px; max-width:160px; object-fit: contain; position: absolute ${
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
   <div style="text-align:center; padding-left: 10px;">
@@ -193,6 +198,7 @@ export default function useGeneratePosPdf(
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
     <tr style="color: grey; font-weight: 500;">
       <th style="width: 40px; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">SN</th>
+      <th style="white-space: nowrap; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">H.S. Code</th>
       <th style="width: 40%; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Particular</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Qty</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Rate</th>
@@ -211,14 +217,14 @@ export default function useGeneratePosPdf(
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
@@ -227,11 +233,11 @@ export default function useGeneratePosPdf(
               ? compayInfo.invoice_template === 2 ? (`${sameTaxObj.rate} % ` + `${sameTaxObj.name}`) : (`${sameTaxObj.name} ` +
                 `${sameTaxObj.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax) }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>

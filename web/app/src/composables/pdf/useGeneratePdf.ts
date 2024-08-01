@@ -35,6 +35,7 @@ export default function useGeneratePdf(
       <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${
         index + 1
       }</th>
+      <th style="width: 20px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;">${row.hs_code ?? ''}  </th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;">${
         row.item_name
       }<br><div style="font-size: 12px; ${
@@ -50,7 +51,7 @@ export default function useGeneratePdf(
         hideRowQuantity ? 'display: none' : ''
       }">${$nf(row.rate)}</span></th>
       <th style="text-align: right; font-weight: 400; padding:5px;">${
-        formatNumberWithComma((row.quantity * row.rate), 2)
+        formatNumberWithComma((row.quantity * row.rate))
       }</th>
     </tr>
     `
@@ -65,6 +66,7 @@ export default function useGeneratePdf(
       <th style="width: 20px; height:${
         80 * number
       }px; padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
+      <th style="padding: 10px 0; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="width: 50%; font-weight: 400; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
       <th style="text-align: left; font-weight: 400; padding:5px; border-right: #b9b9b9 solid 2px;"></th>
@@ -81,7 +83,7 @@ export default function useGeneratePdf(
     <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:190px; position: absolute ${
+    }" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute ${
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
   <div style="text-align:center; padding-left: 10px;">
@@ -192,7 +194,8 @@ export default function useGeneratePdf(
   const table = `<div>
   <table style="width: 100%; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9;">
     <tr style="color: grey; font-weight: 500;">
-      <th style="width: 40px; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">SN</th>
+    <th style="width: 40px; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">SN</th>
+    <th style="white-space: nowrap; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">H.S. Code</th>
       <th style="width: 40%; text-align:left; padding-left:20px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Particular</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Qty</th>
       <th style="text-align: left; padding:5px; border-right: #b9b9b9 solid 2px; border-bottom: #b9b9b9 solid 2px;">Rate</th>
@@ -210,20 +213,20 @@ export default function useGeneratePdf(
         voucherType === 'creditNote' || voucherType === 'debitNote'
           ? ''
           : `<div style="font-weight: 600; margin-bottom: 10px;">In words:</div>
-      <div>${numberToText(invoiceInfo.total_amount, 2)}</div>`
+      <div>${numberToText(invoiceInfo.voucher_meta.grand_total)}</div>`
       }
       </div>
       <div style="width: 250px; padding: 10px 0; padding-left: 10px; border-left: 2px solid #b9b9b9; margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">SUB TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.sub_total)
           }</span>
         </div>
         <div style="display: ${
           invoiceInfo.voucher_meta.discount ? 'flex' : 'none'
         }; justify-content: space-between; margin: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">DISCOUNT</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.discount, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.discount)
           }</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
@@ -232,11 +235,11 @@ export default function useGeneratePdf(
               ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
                 `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`)
               : 'TAX'
-          }</span> <span>${formatNumberWithComma(invoiceInfo.meta_tax, 2)}</span>
+          }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 5px 0">
           <span style="font-weight: 600; color: gray;">GRAND TOTAL</span> <span>${
-            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total, 2)
+            formatNumberWithComma(invoiceInfo.voucher_meta.grand_total)
           }</span>
         </div>
       </div>
@@ -302,6 +305,9 @@ export default function useGeneratePdf(
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
+    }</div>
+    <div style="${compayInfo.invoice_template === 2 && invoiceInfo.party_contact_no ? '' : 'display: none;'}">${
+      invoiceInfo.party_contact_no
     }</div>
       ${
         invoiceInfo.tax_registration_number

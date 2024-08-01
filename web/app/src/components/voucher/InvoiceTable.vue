@@ -1,6 +1,6 @@
 <template>
-  <q-card-section>
-    <q-card>
+  <q-card-section class="overflow-y-auto -mt-4">
+    <q-card class="min-w-[700px] pt-6">
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
           <div class="col-5 row">
@@ -21,36 +21,37 @@
             :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
             :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
             @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :usedInPos="props.usedInPos" :enableRowDescription="props.enableRowDescription"
-            :showRowTradeDiscount="props.showRowTradeDiscount" :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :hasChallan="hasChallan" />
+              " :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="props.showRowTradeDiscount"
+            :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
+            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" :hasChallan="hasChallan" />
         </div>
         <div class="row q-py-sm">
-          <div class="col-7 text-center"></div>
+          <div class="col-7 text-center text-left pt-2">
+          </div>
           <div class="text-weight-bold text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
               <div class="col-6 text-right">Sub Total</div>
-              <div class="col-6 q-pl-md">
+              <div class="col-6 q-pl-md" data-testid="computed-subtotal">
                 {{ $nf(totalDataComputed.subTotal) }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.discount">
               <div class="col-6 text-right">Discount</div>
-              <div class="col-6 q-pl-md">
-                <!-- {{ totalDataComputed.discount }} -->
+              <div class="col-6 q-pl-md" data-testid="computed-final-discount">
                 {{ $nf(totalDataComputed.discount) }}
               </div>
             </div>
             <div class="row q-pb-md" v-if="totalDataComputed.totalTax">
-              <div class="col-6 text-right">
+              <div class="col-6 text-right" data-testid="computed-tax-name">
                 {{ totalDataComputed.taxName }}
               </div>
-              <div class="col-6 q-pl-md">
+              <div class="col-6 q-pl-md" data-testid="computed-total-tax">
                 {{ $nf(totalDataComputed.totalTax) }}
               </div>
             </div>
             <div class="row q-pb-md">
               <div class="col-6 text-right">Total</div>
-              <div class="col-6 q-pl-md">
+              <div class="col-6 q-pl-md" data-testid="computed-total">
                 {{ $nf(totalDataComputed.total) }}
               </div>
             </div>
@@ -58,7 +59,8 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" v-if="!usedInPos" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan">Add Row</q-btn>
+          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan"
+            data-testid="add-row-btn">Add Row</q-btn>
         </div>
       </div>
     </q-card>
@@ -70,7 +72,6 @@ import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
 import InvoiceRow from './InvoiceRow.vue'
 import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
     itemOptions: {
       type: Array,
@@ -103,7 +104,7 @@ export default {
       },
     },
     errors: {
-      type: Array || String,
+      type: [Array, String],
       default: () => {
         return null
       },
@@ -126,15 +127,10 @@ export default {
           description: '',
           discount_type: null,
           tax_scheme_id: '',
-          taxObj: null,
           discount_id: null,
-          trade_discount: false
+          trade_discount: false,
         },
       ],
-    },
-    usedInPos: {
-      type: Boolean,
-      default: () => false,
     },
     enableRowDescription: {
       type: Boolean,
@@ -152,10 +148,14 @@ export default {
       type: Boolean,
       default: () => true,
     },
+    isFifo: {
+      type: Boolean,
+      default: () => false,
+    },
     hasChallan: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
   },
   emits: ['update:modelValue', 'deleteRowErr', 'updateVoucherMeta'],
   setup(props, { emit }) {
@@ -165,13 +165,6 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-      }
-    )
-    watch(
-      () => props.errors,
-      (newValue) => {
-        if (newValue === 'This field is required.') rowEmpty.value = true
-        else rowEmpty.value = false
       }
     )
     watch(
@@ -214,11 +207,27 @@ export default {
             item.discount,
             props.discountOptions
           ) || 0
-        if (data.sameScheme !== false && item.taxObj) {
-          if (data.sameScheme === null && item.taxObj && item.taxObj.rate != 0) {
-            data.sameScheme = item.taxObj.id
-            data.taxObj = item.taxObj
-          } else if (data.sameScheme === item.taxObj?.id || item.taxObj.rate === 0) {
+        let currentTaxObj = null
+        if (item.tax_scheme_id && props.taxOptions && props.taxOptions.length) {
+          const taxindex = props.taxOptions.findIndex(
+            (taxItem) => taxItem.id === item.tax_scheme_id
+          )
+          if (taxindex > -1) {
+            currentTaxObj = props.taxOptions[taxindex]
+          }
+        }
+        if (data.sameScheme !== false && currentTaxObj) {
+          if (
+            data.sameScheme === null &&
+            currentTaxObj &&
+            currentTaxObj.rate != 0
+          ) {
+            data.sameScheme = currentTaxObj.id
+            data.taxObj = currentTaxObj
+          } else if (
+            data.sameScheme === currentTaxObj?.id ||
+            currentTaxObj.rate === 0
+          ) {
           } else data.sameScheme = false
         }
         let mainDiscountAmount =
@@ -229,37 +238,18 @@ export default {
             props.discountOptions
           ) || 0
 
-        // preventing from mainDiscount amount from being added Twice
-
-        // checking if tax is selected manually
-        // if (item.tax_scheme_id) {
-        //   let rowTax = 0
-        //   if (props.mainDiscount.discount_type === 'Amount') {
-        //     rowTax =
-        //       (rowTotal -
-        //         (rowDiscount || 0) -
-        //         props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   } else {
-        //     rowTax =
-        //       (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-        //       (item.taxObj.rate / 100 || 0)
-        //   }
-        //   data.totalTax = data.totalTax + rowTax
-        // }
-        // checking if tax is selected coming automaticaly with item
-        if (item.taxObj) {
+        if (currentTaxObj) {
           let rowTax = 0
           if (props.mainDiscount.discount_type === 'Amount') {
             rowTax =
               (rowTotal -
                 (rowDiscount || 0) -
                 props.mainDiscount.discount * (rowTotal / data.addTotal)) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           } else {
             rowTax =
               (rowTotal - (rowDiscount || 0) - mainDiscountAmount) *
-              (item.taxObj.rate / 100 || 0)
+              (currentTaxObj.rate / 100 || 0)
           }
           data.totalTax = data.totalTax + rowTax
         }
@@ -285,22 +275,6 @@ export default {
         data.taxName = 'Tax'
         data.taxRate = null
       }
-      // if (props.mainDiscount.discount_type === 'Amount') {
-      //   modalValue.value.forEach((item, index) => {
-      //     console.log(data.subTotal, index)
-      //     // const rowTotal = (())
-      //   })
-      // }
-      // data.totalTax = data.subTotal - data.discount *
-      // clac total discount
-      // data.discount =
-      //   (data.discount || 0) +
-      //   (useCalcDiscount(
-      //     props.mainDiscount.discount_type,
-      //     data.subTotal - data.discount,
-      //     props.mainDiscount.discount,
-      //     props.discountOptions
-      //   ) || 0)
       data.total = data.subTotal - data.discount + (data.totalTax || 0)
       return data
     })
@@ -333,9 +307,55 @@ export default {
         )
       modalValue.value.splice(index, 1)
     }
+    // For purchase rows Data of Items
+    const itemPurchaseData = ref({})
+    const COGSData = ref(null)
+    const onItemIdUpdate = async (itemId) => {
+      if (itemId && !itemPurchaseData.value.hasOwnProperty(itemId)) {
+        try {
+          const data = await useApi(`/v1/items/${itemId}/available-stock/`)
+          itemPurchaseData.value[itemId] = data
+        } catch (err) { console.log(err) }
+      }
+      const localPurchaseData = JSON.parse(JSON.stringify(itemPurchaseData.value))
+      const COGSRows = {}
+      modalValue.value.forEach((row, index) => {
+        const currentItemId = row.item_id
+        // this calculates the total available stock for the selected item According to fifo
+        const availableStock = (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) ?
+          localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
+        let currentCOGS = 0
+        let quantity = row.quantity
+        if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
+          for (let i = 0; quantity >= 0; i++) {
+            const currentRow = localPurchaseData[currentItemId][i]
+            if (currentRow.remaining_quantity > quantity) {
+              currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
+              currentCOGS = currentCOGS + (quantity * currentRow.rate)
+              break
+            } else if (currentRow.remaining_quantity <= quantity) {
+              quantity = quantity - currentRow.remaining_quantity
+              currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
+              localPurchaseData[currentItemId][i].remaining_quantity = 0
+              if (((i + 1) === localPurchaseData[currentItemId].length)) {
+                if (quantity > 0) {
+                  currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+                  break
+                } else break
+              }
+            }
+          }
+        } else {
+          currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+        }
+        COGSRows[index] = { totalCost: currentCOGS, availableStock }
+      })
+      COGSData.value = COGSRows
+    }
+    // For purchase rows Data of Items
 
     // to update voucher meta in Credit and debit Notes
-    if (props.usedIn === "creditNote") {
+    if (props.usedIn === 'creditNote') {
       watch(totalDataComputed, (newValue) => {
         emit('updateVoucherMeta', newValue)
       })
@@ -352,8 +372,10 @@ export default {
       InvoiceRow,
       useCalcDiscount,
       rowEmpty,
+      itemPurchaseData,
+      onItemIdUpdate,
+      COGSData
     }
   },
 }
 </script>
-

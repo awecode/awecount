@@ -1,8 +1,8 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="add-btn"
-        icon-right="add" />
+      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account"
+        class="add-btn" icon-right="add" />
     </div>
 
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
@@ -44,10 +44,12 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="blue" dense flat to="" /> -->
-          <q-btn v-if="checkPermissions('AccountView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
-            style="font-size: 12px" label="View" :to="`/account/${props.row.id}/view/`" />
+          <q-btn v-if="checkPermissions('AccountView')" color="blue"
+            class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
+            :to="`/account/${props.row.id}/view/`" />
           <q-btn v-if="checkPermissions('AccountModify')" label="Edit" color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/account/${props.row.id}/edit/`" />
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
+            :to="`/account/${props.row.id}/edit/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
@@ -71,6 +73,15 @@
       <template v-slot:body-cell-balance="props">
         <q-td :props="props">
           {{ parseInt(props.row.computed_balance || 0) }}
+        </q-td>
+      </template>
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.id}/view/`"
+            style="font-weight: 500; text-decoration: none" class="text-blue">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>
@@ -108,27 +119,27 @@ export default {
         field: 'category',
         sortable: true
       },
-      {
-        name: 'dr',
-        label: 'Dr',
-        align: 'left',
-        field: 'dr',
-        sortable: true
-      },
-      {
-        name: 'cr',
-        label: 'Cr',
-        align: 'left',
-        field: 'cr',
-        sortable: true
-      },
-      {
-        name: 'computed_balance',
-        label: 'Balance',
-        align: 'left',
-        field: 'computed_balance',
-        sortable: true
-      },
+      // {
+      //   name: 'dr',
+      //   label: 'Dr',
+      //   align: 'left',
+      //   field: 'dr',
+      //   sortable: true
+      // },
+      // {
+      //   name: 'cr',
+      //   label: 'Cr',
+      //   align: 'left',
+      //   field: 'cr',
+      //   sortable: true
+      // },
+      // {
+      //   name: 'computed_balance',
+      //   label: 'Balance',
+      //   align: 'left',
+      //   field: 'computed_balance',
+      //   sortable: true
+      // },
       {
         name: 'actions',
         label: 'Actions',
@@ -138,7 +149,7 @@ export default {
     const listData = useList(endpoint)
     watch(() => route.query, () => {
       if (route.path === '/account/') {
-        const queryParams = {...route.query}
+        const queryParams = { ...route.query }
         if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
           listData.searchQuery.value = queryParams.search
         } else listData.searchQuery.value = null

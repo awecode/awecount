@@ -2,25 +2,18 @@
   <div class="q-py-lg q-pl-lg q-mr-xl">
     <div class="flex justify-between">
       <div class="text-h5">
-        <!-- <span v-if="fields?.code" class="q-ml-md text-grey-9 text-h5x"
-        >{{ fields.code }}:
-      </span> -->
         <span class="text-bold">{{ fields?.name || '-' }}</span>
-        <!-- <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9" title="Code">{{
-        fields.code
-      }}</span> -->
-        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7" title="Category">({{ fields?.category_name
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7"> <q-tooltip>Category</q-tooltip> ({{
+          fields?.category_name
           || '-' }})</span>
       </div>
       <div>
-        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block" title="Code">[Code: {{
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{
           fields?.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
-      <!-- <q-card class="q-mt-md">
-        <q-card-section> -->
-      <div class="grid grid-cols-3 gap-x-6">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Dr Amount</div>
           <div class="q-px-md">
@@ -40,16 +33,14 @@
           </div>
         </div>
       </div>
-      <!-- </q-card-section>
-      </q-card> -->
-      <div class="mt-8 px-2">
-        <div class="row q-col-gutter-md print-hide">
+      <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
+        <div class="row q-col-gutter-md print-hide items-center">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
             <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />
           </div>
           <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="sm:q-mt-md" />
           </div>
         </div>
       </div>
@@ -94,7 +85,7 @@ watch(
 )
 watch(
   () => route.params.id,
-  (newid, oldid) => {
+  (newid) => {
     if (newid && route.path.includes('/view/')) {
       const url = `/v1/accounts/${route.params.id}/transactions/`
       const updatedEndpoint = withQuery(url, {})

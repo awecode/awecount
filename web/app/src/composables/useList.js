@@ -85,9 +85,8 @@ export default (endpoint, predefinedColumns = null) => {
       url = withQuery(url, filters.value)
     }
     if (pagination.value.sortBy) {
-      const query = `${pagination.value.descending ? '-' : ''}${
-        pagination.value.sortBy
-      }`
+      const query = `${pagination.value.descending ? '-' : ''}${pagination.value.sortBy
+        }`
       url = withQuery(url, { ordering: query })
     }
     useApi(url)
@@ -194,9 +193,8 @@ export default (endpoint, predefinedColumns = null) => {
     if (props.pagination.sortBy) {
       pagination.value.sortBy = props.pagination.sortBy
       pagination.value.descending = props.pagination.descending
-      const query = `${props.pagination.descending ? '-' : ''}${
-        props.pagination.sortBy
-      }`
+      const query = `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy
+        }`
       url = withQuery(url, { ordering: query })
     } else {
       pagination.value.sortBy = ''
@@ -250,17 +248,23 @@ export default (endpoint, predefinedColumns = null) => {
     // router.push({ path: route.path, query: cleanedFilters })
   }
   const rows = computed(() => {
-    // debugger
     if (
-      unCalculatedrows.value?.length > 0 &&
-      !store.isCalendarInAD &&
-      unCalculatedrows.value[0].hasOwnProperty('date')
+      unCalculatedrows.value?.length > 0
     ) {
       let newData = []
       unCalculatedrows.value.forEach((item) => {
         const updatedItem = { ...item }
-        if (updatedItem) {
-          updatedItem.date = DateConverter.getRepresentation(item.date, 'bs')
+        if (!store.isCalendarInAD &&
+          unCalculatedrows.value[0].hasOwnProperty('date')) {
+          if (updatedItem) {
+            updatedItem.date = DateConverter.getRepresentation(item.date, 'bs')
+          }
+        }
+        for (const key in updatedItem) {
+          // if (key !== 'date' && updatedItem[key] && (typeof updatedItem[key] == 'number' || !isNaN(updatedItem[key]))) {
+          if (key !== 'date' && updatedItem[key] && typeof updatedItem[key] == 'number') {
+            updatedItem[key] = $nf(updatedItem[key])
+          }
         }
         newData.push(updatedItem)
       })
@@ -325,5 +329,6 @@ export default (endpoint, predefinedColumns = null) => {
     confirmDeletion,
     initiallyLoaded,
     aggregate,
+    loadData
   }
 }

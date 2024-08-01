@@ -24,8 +24,19 @@
         <q-td :props="props">
           <q-btn v-if="checkPermissions('PartyModify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn"
             style="font-size: 12px" label="edit" :to="`/party/${props.row.id}/`" />
-          <q-btn color="blue" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Account"
+          <q-btn color="blue" v-if="checkPermissions('PartyView')" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Account"
             :to="`/parties/account/${props.row.id}/`" />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('PartyView')" :to="`/parties/account/${props.row.id}/`"
+            style="font-weight: 500; text-decoration: none" class="text-blue block">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else>
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

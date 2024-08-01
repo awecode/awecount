@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" autofocus >
+  <q-form class="q-pa-lg" autofocus>
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -11,7 +11,7 @@
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name"
+            <q-input v-model="fields.name" label="Name *" class="col-12 lg:col-6" :error-message="errors.name"
               :error="!!errors.name" />
           </div>
           <div>
@@ -20,10 +20,10 @@
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm" color="green" label="Update"
-            class="q-ml-auto" type="submit" />
-          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit"/>
+          <q-btn v-if="checkPermissions('BrandModify') && isEdit" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Update" class="q-ml-auto" type="submit" />
+          <q-btn v-if="!isEdit && checkPermissions('BrandCreate')" :loading="loading" @click.prevent="submitForm"
+            color="green" label="Create" class="q-ml-auto" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -43,7 +43,7 @@ export default {
     useMeta(metaData)
     return {
       ...useForm(endpoint, {
-        getDefaults: true,
+        getDefaults: false,
         successRoute: '/brand/list/',
       }), checkPermissions
     }

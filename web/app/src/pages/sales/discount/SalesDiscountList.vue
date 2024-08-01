@@ -39,17 +39,23 @@
 
       <template v-slot:body-cell-trade_discount="props">
         <q-td :props="props">
-          <div class="row align-center text-subtitle2 text-grey-8 justify-center">
-            <q-checkbox disable v-model="props.row.trade_discount" color="grey"></q-checkbox>
-            <!-- {{ props.row.trade_discount }} -->
-          </div>
+          <ShowListBoolean :value="props.row.trade_discount" />
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <q-btn v-if="checkPermissions('SalesDiscountModify')" color="orange-6" label="Edit"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/sales-discount/${props.row.id}/`" />
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
+            :to="`/sales-discount/${props.row.id}/`" />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-name="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('SalesDiscountModify')" :to="`/sales-discount/${props.row.id}/`"
+            style="font-weight: 500; text-decoration: none" class="text-blue">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>
@@ -75,7 +81,7 @@ export default {
         field: 'name',
         sortable: true
       },
-      { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true},
+      { name: 'type', label: 'Type', align: 'left', field: 'type', sortable: true },
       {
         name: 'value',
         label: 'Value',

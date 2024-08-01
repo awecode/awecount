@@ -2,29 +2,21 @@
   <div class="q-py-lg q-pl-lg q-mr-xl">
     <div class="flex justify-between">
       <div class="text-h5">
-      <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${fields?.item}/`"
-              style="font-weight: 500; text-decoration: none" class="text-blue" :title="`${fields?.name}`">
-              {{ fields?.name }}
-            </router-link>
+        <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/items/details/${fields?.item}/`"
+          style="font-weight: 500; text-decoration: none" class="text-blue">
+          {{ fields?.name }}
+        </router-link>
         <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
-        <span
-          v-if="fields?.category_name"
-          class="q-ml-md text-h6 text-grey-7"
-          title="Category"
-          >({{ fields?.category_name || '-' }})</span
-        >
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">({{ fields?.category_name || '-' }})
+          <q-tooltip>Category</q-tooltip> </span>
       </div>
       <div>
-        <span
-          v-if="fields?.code"
-          class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block"
-          title="Code"
-          >[Code: {{ fields.code }}]</span
-        >
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields.code
+        }}]</span>
       </div>
     </div>
     <div class="mt-8">
-      <div class="grid grid-cols-3 gap-x-6">
+      <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
           <div class="q-px-md text-grey-8">Current Balance</div>
           <div class="q-px-md">
@@ -45,10 +37,10 @@
         </div>
       </div>
       <div class="mt-8 px-2">
-        <div class="row q-col-gutter-md">
+        <div class="flex gap-x-2 mb-4 items-center">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" />
           <div>
-            <q-btn @click.prevent="filter" color="primary" label="FILTER" class="q-mt-md" :disabled="!(startDate && endDate)" />
+            <q-btn @click.prevent="filter" color="primary" label="FILTER" :disabled="!(startDate && endDate)" />
           </div>
         </div>
       </div>
@@ -60,6 +52,11 @@
               :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium" style="text-decoration: none">{{
                 props.row.voucher_no }}</router-link>
             <span v-else>{{ props.row.voucher_no }}</span>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-voucher_type="props">
+          <q-td :props="props">
+            <span>{{ props.row.source_type === 'Item' ? 'Opening' : props.row.source_type }}</span>
           </q-td>
         </template>
       </q-table>
@@ -138,11 +135,11 @@ const columnList = [
 
 function loadData() {
   loading.value = true
-  const field = fields.value.transactions.results.value
-    ? Object.keys(fields.value?.transactions?.results[0])?.filter(
-      (f) => f !== 'id'
-    )
-    : null
+  // const field = fields.value.transactions.results.value
+  //   ? Object.keys(fields.value?.transactions?.results[0])?.filter(
+  //     (f) => f !== 'id'
+  //   )
+  //   : null
 
   // columnList.value = field?.map((f) => {
   //   return {

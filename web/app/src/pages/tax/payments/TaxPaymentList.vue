@@ -86,6 +86,13 @@ export default {
         sortable: true
       },
       {
+        name: 'date',
+        label: 'Date',
+        align: 'left',
+        field: 'date',
+        sortable: true
+      },
+      {
         name: 'tax_scheme_name',
         label: 'Tax Scheme',
         align: 'left',
@@ -110,13 +117,6 @@ export default {
         label: 'Status',
         align: 'center',
         field: 'status',
-        sortable: true
-      },
-      {
-        name: 'date',
-        label: 'Date',
-        align: 'left',
-        field: 'date',
         sortable: true
       },
       {

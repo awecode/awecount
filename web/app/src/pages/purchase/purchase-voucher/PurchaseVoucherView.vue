@@ -39,7 +39,8 @@
               <div class="col-6">{{ discountComputed }}</div>
             </div>
           </div>
-          <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0" class="col-12 col-md-6 q-gutter-y-lg">
+          <div v-if="fields.purchase_order_numbers && fields.purchase_order_numbers.length > 0"
+            class="col-12 col-md-6 q-gutter-y-lg">
             <div class="col-12 col-md-6 row">
               <div class="col-6">Purchase Order(s)</div>
               <div class="col-6">{{ fields.purchase_order_numbers.join(',') }}</div>
@@ -63,8 +64,8 @@
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="orange-5" label="Edit" icon="edit"
             :to="`/purchase-voucher/${fields?.id}/`" />
           <q-btn v-if="fields?.status === 'Issued' && checkPermissions('PurchaseVoucherModify')"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid" :loading="isLoading"
-            icon="mdi-check-all" />
+            @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" color="green-6" label="mark as paid"
+            :loading="isLoading" icon="mdi-check-all" />
           <q-btn v-if="checkPermissions('PurchaseVoucherModify')" color="red-5" label="Cancel" icon="cancel"
             @click.prevent="() => (isDeleteOpen = true)" :loading="isLoading" />
         </div>
@@ -75,14 +76,16 @@
       </div>
       <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}">
         <q-card style="min-width: min(40vw, 500px)">
-          <q-card-section class="bg-red-6">
+          <q-card-section class="bg-red-6 flex justify-between">
             <div class="text-h6 text-white">
               <span>Confirm Cancellation?</span>
             </div>
+            <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message"> </q-input>
+            <q-input autofocus v-model="deleteMsg" type="textarea" outlined :error="!!errors?.message"
+              :error-message="errors?.message"> </q-input>
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
             </div>
@@ -99,7 +102,6 @@ import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
-import checkPermissions from 'src/composables/checkPermissions'
 interface Fields {
   status: string
   voucher_no: string
@@ -126,8 +128,8 @@ export default {
     const modeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
-    const isLoading:Ref<boolean> = ref(false)
-    const errors = ref(null)
+    const isLoading: Ref<boolean> = ref(false)
+    const errors = ref({})
     const submitChangeStatus = (id: number, status: string) => {
       isLoading.value = true
       let endpoint = ''
@@ -141,36 +143,34 @@ export default {
       }
       useApi(endpoint, body)
         .then(() => {
-          // if (fields.value)
-          if (fields.value) {
-            fields.value.status = status
-            if (status === 'Cancelled') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher has been cancelled.',
-              })
-              fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
-              isDeleteOpen.value = false
-            } else if (status === 'Paid') {
-              $q.notify({
-                color: 'green-6',
-                icon: 'check_circle',
-                message: 'Voucher Marked as paid.',
-              })
-            }
-          }
+          onStatusChange(status)
           isLoading.value = false
         })
-        .catch((err) => {
-          const parsedError = useHandleFormError(err)
-          errors.value = parsedError.errors
-          $q.notify({
-            color: 'negative',
-            message: parsedError.message,
-            icon: 'report_problem',
-          })
-          isLoading.value = false
+        .catch((data) => {
+          if (data.status === 422) {
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
+              isLoading.value = false
+              onStatusChange(status)
+            }).catch((error) => {
+              if (error.status !== 'cancel') {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }
+              isLoading.value = false
+            })
+          } else {
+            const parsedError = useHandleFormError(data)
+            errors.value = parsedError.errors
+            $q.notify({
+              color: 'negative',
+              message: parsedError.message,
+              icon: 'report_problem',
+            })
+            isLoading.value = false
+          }
         })
     }
     const getDate = computed(() => {
@@ -194,6 +194,26 @@ export default {
         )
       } else return false
     })
+    const onStatusChange = (status: string) => {
+      if (fields.value) {
+        fields.value.status = status
+        if (status === 'Cancelled') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher has been cancelled.',
+          })
+          // fields.value.remarks = ('\nReason for cancellation: ' + body?.body.message)
+          isDeleteOpen.value = false
+        } else if (status === 'Paid') {
+          $q.notify({
+            color: 'green-6',
+            icon: 'check_circle',
+            message: 'Voucher Marked as paid.',
+          })
+        }
+      }
+    }
     return {
       allowPrint: false,
       bodyOnly: false,

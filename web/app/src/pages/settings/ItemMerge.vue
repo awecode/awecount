@@ -32,8 +32,8 @@
 <script setup lang="ts">
 const router = useRouter()
 const metaData = {
-      title: 'Item Merge | Awecount',
-    }
+  title: 'Item Merge | Awecount',
+}
 useMeta(metaData)
 const modalValueArray = ref([{
   items: [null, null],
@@ -52,12 +52,16 @@ const removeGroup = (index: number) => {
   modalValueArray.value.splice(index, 1)
 }
 const addGroup = () => {
+  let index = Math.random()
+  if (modalValueArray.value.length) {
+    index = 1 + modalValueArray.value[(modalValueArray.value.length - 1)].index + index
+  }
   modalValueArray.value.push({
     items: [null, null],
     config: {
       defaultItem: null
     },
-    index: 1 + modalValueArray.value[-1].index + Math.random()
+    index
   })
 }
 const onSubmit = () => {

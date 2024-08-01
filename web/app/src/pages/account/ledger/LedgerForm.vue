@@ -10,17 +10,17 @@
 
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
-          <div class="row q-col-gutter-md">
-            <q-input v-model="fields.name" label="Name *" class="col-6" :error-message="errors.name"
+          <div class="q-col-gutter-md grid lg:grid-cols-2">
+            <q-input v-model="fields.name" label="Name *" :error-message="errors.name"
               :error="!!errors.name" />
-            <q-input v-model="fields.code" label="Code" class="col-6" :error-message="errors.code"
+            <q-input v-model="fields.code" label="Code" :error-message="errors.code"
               :error="!!errors.code" />
           </div>
-          <div class="row q-col-gutter-md">
-            <div class="col-6">
+          <div class="q-col-gutter-md grid lg:grid-cols-2">
+            <div>
               <n-auto-complete v-model="fields.parent" :options="accountChoices" label="Parent" :error="errors?.parent" />
             </div>
-            <div class="col-6">
+            <div>
               <n-auto-complete v-model="fields.category" :options="categoryChoices" label="Category *"
                 :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
             </div>

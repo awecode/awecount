@@ -18,12 +18,12 @@
       </template>
       <template v-slot:body-cell-recoverable="props">
         <q-td :props="props">
-          <q-checkbox color="grey-6" v-model="props.row.recoverable" disable></q-checkbox>
+          <ShowListBoolean :value="props.row.recoverable" />
         </q-td>
       </template>
       <template v-slot:body-cell-default="props">
         <q-td :props="props">
-          <q-checkbox color="grey-6" v-model="props.row.default" disable></q-checkbox>
+          <ShowListBoolean :value="props.row.default" />
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">

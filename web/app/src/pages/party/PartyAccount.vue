@@ -190,7 +190,7 @@ export default {
     )
     watch(
       () => route.params.id,
-      (newid, oldid) => {
+      (newid) => {
         if (newid && route.path.includes('/parties/account/')) {
           const url = `/v1/parties/${newid}/transactions/?`
           const updatedEndpoint = withQuery(url, {})

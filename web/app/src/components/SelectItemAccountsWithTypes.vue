@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid lg:grid-cols-2 lg:gap-4">
         <div>
             <q-select class="q-full-width" :label="`${label} A/C Options`" option-value="value" option-label="label"
                 map-options emit-value v-model="type" :options="account_types" :error="false"/>
@@ -12,14 +12,14 @@
                 <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
                   <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
                 </div>
-                <div v-else class="flex gap-2 items-center">
+                <div v-else class="flex gap-2 items-center no-wrap">
                   <q-icon name="info" size="sm" color="grey-7"></q-icon>
-                  <div class="text-grey-7">A new {{ props.label }} Account will be created for the Item</div>
+                  <div class="text-grey-7 whitespace-normal">A new {{ props.label }} Account will be created for the Item</div>
                 </div>
                 <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
             <div v-else-if="type === 'category'" class="flex items-center h-full">
-              <div v-if="usedInCategoryForm" class="flex gap-2 items-end">
+              <div v-if="usedInCategoryForm" class="flex gap-2 items-end no-wrap">
                 <q-icon name="info" size="sm" color="grey-7"></q-icon>
                 <div class="text-grey-7">Category's {{ props.label }} Account will be used for the Item</div>
               </div>
@@ -111,8 +111,8 @@ const getOptionCollection = (collections, name) => {
         }
     }
 }
-watch(() => type.value, (newValue) => {
-    if (newValue === "category") {
+watch([() => type.value, () => props.options], (newValue) => {
+    if (newValue[0] === 'category') {
         if (props.activeCategory && !props.usedInCategoryForm) {
             const selected = props.inventory_categories.find(item => {
                 if (item.id === props.activeCategory) {
@@ -132,7 +132,7 @@ watch(() => type.value, (newValue) => {
             }
         } else modalValue.value = null
     }
-    else if (newValue === "global") {
+    else if (newValue[0] === 'global') {
         modalValue.value = getOptionCollection(props.options, globalAccountName[props.label])
     }
     else {

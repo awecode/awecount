@@ -30,17 +30,17 @@
           <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1">
           </PartyRepresentative>
         </q-card-section>
-        <div class="text-right q-pr-md q-pb-lg row">
-          <span v-if="isEdit" class="q-gutter-x-sm row">
-            <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="orange-6" label="Update" :loading="loading"
-              class="q-mb-sm" type="submit" />
-            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete" :loading="loading"
-              class="q-mb-sm" />
-            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative" :loading="loading"
-              class="q-mb-sm" />
+        <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
+          <span v-if="isEdit" class="flex gap-4">
+            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
+              :loading="loading" class="q-mb-sm" />
+            <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
+              :loading="loading" class="q-mb-sm" />
+            <q-btn v-if="checkPermissions('PartyModify')" @click.prevent="submitForm" color="green" label="Update"
+              :loading="loading" class="q-mb-sm" type="submit" />
           </span>
-          <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create" :loading="loading"
-            class="q-mr-sm q-mb-sm" type="submit" />
+          <q-btn v-else-if="checkPermissions('PartyCreate')" @click.prevent="submitForm" color="green" label="Create"
+            :loading="loading" class="q-mr-sm q-mb-sm" type="submit" />
         </div>
       </q-card>
     </q-card>
@@ -53,16 +53,16 @@ import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useRouter } from 'vue-router'
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   components: {
     PartyRepresentative,
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const $q = useQuasar()
     const endpoint = '/v1/parties/'
     const router = useRouter()
     const formData = useForm(endpoint, {
-      getDefaults: true,
+      getDefaults: false,
       successRoute: '/party/list/',
     })
     useMeta(() => {

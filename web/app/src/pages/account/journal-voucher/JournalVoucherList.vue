@@ -39,8 +39,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <div class="flex gap-4 justify-center">
-            <q-btn color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`"
+          <div class="flex gap-4 no-wrap">
+            <q-btn v-if="checkPermissions('JournalVoucherView')" color="blue" label="View" :to="`/journal-voucher/${props.row.id}/view/`"
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
             <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')" color="orange-7"
               label="Edit" :to="`/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm l-edit-btn"
@@ -58,6 +58,17 @@
                 : 'bg-red-2 text-red-10'
               " style="border-radius: 8px; padding: 2px 10px">{{ props.row.status }}</span>
           </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('JournalVoucherView')" :to="`/challan/${props.row.id}/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
+          </span>
         </q-td>
       </template>
     </q-table>

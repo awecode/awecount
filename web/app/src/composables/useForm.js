@@ -1,14 +1,9 @@
-// import { api } from 'boot/ofetch'
 import { withTrailingSlash, withoutTrailingSlash, joinURL } from 'ufo'
 import { getCurrentInstance } from 'vue'
 import useApi from './useApi'
+import { useLoginStore } from 'src/stores/login-info'
+import { useModalFormLoading } from 'src/stores/ModalFormLoading'
 
-// interface UseFormConfig {
-//   getDefaults: boolean
-//   successRoute: string
-// }
-
-// export default (endpoint: string, config: UseFormConfig) => {
 export default (endpoint, config) => {
   const $q = useQuasar()
   const fields = ref({})
@@ -26,41 +21,79 @@ export default (endpoint, config) => {
   const context = root?.setupContext
 
   const isModal = !!root?.attrs['is-modal']
-
+  const store = useLoginStore()
+  const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
-
+  const isGetDefaultLoading = ref(false)
+  const isGetEditLoading = ref(false)
+  const modalId = Math.floor(Math.random() * 999999999)
+  // seta a unique key for modal in ModalFormLoading store
+  if (isModal) {
+    modalFormLoading[modalId] = true
+    context.emit('getModalId', modalId)
+  } else {
+    store.isLoading = true
+  }
   onMounted(() => {
     // added is modal check
     isEdit.value = !!route.params.id && !isModal
+    if ((!config.getDefaults && !isEdit.value && !isModal)) {
+      store.isLoading = false
+    }
+    else if (isModal && (isEdit.value || config.getDefaults)) {
+      store.isLoading = false
+    } else setModalLoadingFalse()
     id.value = route.params.id
     if (isEdit.value) {
+      isGetEditLoading.value = true
       useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
         (data) => {
           fields.value = data
+          isGetEditLoading.value = false
+          if (!isGetDefaultLoading.value) {
+            store.isLoading = false
+          }
+          setModalLoadingFalse()
         }
       )
-      // .catch((error) => {
-      //   if (error.status === 404) {
-      //     // router.push('/')
-      //     $q.notify({
-      //       color: 'negative',
-      //       message: 'Not Found!',
-      //       icon: 'report_problem',
-      //     })
-      //   }
-      // })
+        .catch((error) => {
+          isGetEditLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            setModalLoadingFalse()
+          }
+          if (error.status === 404) {
+            // router.push('/')
+            $q.notify({
+              color: 'negative',
+              message: 'Not Found!',
+              icon: 'report_problem',
+            })
+          }
+        })
     }
     if (config.getDefaults) {
+      isGetDefaultLoading.value = true
       useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
         (data) => {
-          // TODO: Check with Dipesh sir
           if (data.fields) {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
+
+          // From drop down branch
           delete data.collections
-          Object.assign(formDefaults.value, data)
-          Object.assign(fields.value, data.fields)
-          // TODO: Check with Dipesh sir
+          // Object.assign(formDefaults.value, data)
+          // Object.assign(fields.value, data.fields)
+          // From drop down branch
+
+          // From main
+          formDefaults.value = data
+          isGetDefaultLoading.value = false
+          if (!isGetEditLoading.value) {
+            store.isLoading = false
+            setModalLoadingFalse()
+          }
+          // From main
         }
       )
     }
@@ -75,7 +108,6 @@ export default (endpoint, config) => {
   }
 
   const processErrors = (responseData) => {
-    // let dct = {}
     const dct = Object.fromEntries(
       Object.entries(responseData).map(([k, v]) => {
         let val = v
@@ -103,7 +135,8 @@ export default (endpoint, config) => {
     } else {
       postEndpoint = endpoint
     }
-    await useApi(postEndpoint, {
+    const originalStatus = fields.value.status
+    return await useApi(postEndpoint, {
       method: isEdit.value ? 'PATCH' : 'POST',
       body: fields.value,
     })
@@ -136,6 +169,7 @@ export default (endpoint, config) => {
           if (data.data?.detail) {
             message = `${data.data.detail}`
           }
+          loading.value = false
           processErrors(data.response._data)
         }
         if (data.status == 404) {
@@ -144,16 +178,64 @@ export default (endpoint, config) => {
           } else {
             message = 'Not found!'
           }
+          loading.value = false
         } else if (data.status == 500) {
           message = 'Server Error! Please contact us with the problem.'
+          loading.value = false
+        } else if (data.status === 422) {
+          $q.dialog({
+            title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
+            message:
+              `<span class="text-grey-8">Reason: ${data.data.detail}` +
+              '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+            cancel: true,
+            html: true,
+          }).onOk(() => {
+            useApi(postEndpoint + `?${data.data?.code}=true`, {
+              method: isEdit.value ? 'PATCH' : 'POST',
+              body: { ...fields.value, status: originalStatus },
+            })
+              .then((data) => {
+                $q.notify({
+                  color: 'positive',
+                  message: 'Saved',
+                  icon: 'check_circle',
+                })
+                if (isModal) {
+                  context.emit('modalSignal', data)
+                } else {
+                  if (config.successRoute) {
+                    router.push(config.successRoute)
+                  } else {
+                    router.push(removeLastUrlSegment(route.path))
+                  }
+                }
+              })
+              .catch(() => {
+                $q.notify({
+                  color: 'negative',
+                  message: 'Something went Wrong!',
+                  icon: 'report_problem',
+                })
+              }).finally(() => {
+                loading.value = false
+              })
+          }).onCancel(() => {
+            loading.value = false
+          })
         }
-        $q.notify({
-          color: 'negative',
-          message: message,
-          icon: 'report_problem',
-        })
-        loading.value = false
-        throw new Error('Api Error')
+        else {
+          $q.notify({
+            color: 'negative',
+            message: message,
+            icon: 'report_problem',
+          })
+          loading.value = false
+        }
+        return {
+          error: 'Api Error'
+        }
+        // throw new Error('Api Error')
       })
   }
 
@@ -194,6 +276,16 @@ export default (endpoint, config) => {
         })
     }
   }
+  const setModalLoadingFalse = () => {
+    if (isModal && modalFormLoading.hasOwnProperty(`${modalId}`)) {
+      modalFormLoading[modalId] = false
+    }
+  }
+  onUnmounted(() => {
+    if (isModal) {
+      if (modalFormLoading.hasOwnProperty(`${modalId}`)) delete modalFormLoading[modalId]
+    } else store.isLoading = false
+  })
 
   return {
     fields,
@@ -206,6 +298,6 @@ export default (endpoint, config) => {
     submitForm,
     cancel,
     cancelForm,
-    loading
+    loading,
   }
 }

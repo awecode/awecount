@@ -19,8 +19,8 @@
             <div class="text-bold text-grey-9">{{ getDate[0] || '-' }}</div>
           </div>
           <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
-            this.$route.params.slug === 'sales-voucher'
-            " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
+    this.$route.params.slug === 'sales-voucher'
+    " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
     ? 'purchase-voucher'
     : this.$route.params.slug
     }/${fields[0]?.source_id}/view`">
@@ -41,11 +41,12 @@
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
-                    row.account.name }}</router-link>
+                  <router-link style="text-decoration: none" class="text-blue"
+                    :to="`/account/${row.account.id}/view`">{{
+    row.account.name }}</router-link>
                 </div>
-                <div class="col-3">{{ $nf(row.dr_amount) || null }}</div>
-                <div class="col-3">{{ $nf(row.cr_amount) || null }}</div>
+                <div class="col-3" data-testid="dr">{{ $nf(row.dr_amount) || null }}</div>
+                <div class="col-3" data-testid="cr">{{ $nf(row.cr_amount) || null }}</div>
               </div>
             </template>
           </div>
@@ -83,8 +84,8 @@
             <div class="text-bold text-grey-9">{{ getDate[index] || '-' }}</div>
           </div>
           <router-link v-if="this.$route.params.slug === 'purchase-vouchers' ||
-            this.$route.params.slug === 'sales-voucher'
-            " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
+    this.$route.params.slug === 'sales-voucher'
+    " style="text-decoration: none" :to="`/${this.$route.params.slug === 'purchase-vouchers'
     ? 'purchase-voucher'
     : this.$route.params.slug
     }/${voucher?.source_id}/view`">
@@ -104,10 +105,10 @@
             <div class="row q-col-gutter-md">
               <div class="col-grow">
                 <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">{{
-                  row.account.name }}</router-link>
+    row.account.name }}</router-link>
               </div>
-              <div class="col-3">{{ $nf(row.dr_amount) || null }}</div>
-              <div class="col-3">{{ $nf(row.cr_amount) || null }}</div>
+              <div class="col-3" data-testid="dr">{{ $nf(row.dr_amount) || null }}</div>
+              <div class="col-3" data-testid="cr">{{ $nf(row.cr_amount) || null }}</div>
             </div>
           </div>
           <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
@@ -188,7 +189,6 @@ import { useLoginStore } from 'src/stores/login-info'
 
 export default {
   setup() {
-    const route = useRoute()
     const metaData = {
       title: 'Journal Entries | Awecount',
     }

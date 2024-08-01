@@ -1,10 +1,10 @@
 <template>
-  <div class="row q-col-gutter-md">
-    <div class="row q-col-gutter-md target">
+  <div class="flex gap-x-4 gap-y-2">
+    <div class="flex gap-x-6 gap-y-0 target">
       <q-input :model-value="getText0" :error="error0" :error-message="errorMessage0" @update:model-value="onInput0"
-        label="Start Date" />
+        label="Start Date" debounce="1000" mask="####-##-##" />
       <q-input :model-value="getText1" :error="error1" :error-message="errorMessage1" @update:model-value="onInput1"
-        label="End Date" />
+        label="End Date" debounce="1000" mask="####-##-##" />
     </div>
     <q-menu ref="menuDom" target=".target" :no-focus="true">
       <div class="row q-pa-md main-con">
@@ -13,45 +13,57 @@
             <div class="text-caption">Date Range</div>
             <q-list dense padding class="rounded-borders q-pr-md">
               <q-item clickable :active="activeDate == 'today'" v-ripple>
-                <q-item-section @click="getToday((last = false))">Today</q-item-section>
+                <q-item-section @click="getToday((last = false)); menuDom.hide();">Today</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'yesterday'" v-ripple>
-                <q-item-section @click="getToday((last = true))">Yesterday</q-item-section>
+                <q-item-section @click="getToday((last = true)); menuDom.hide();">Yesterday</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last7'" v-ripple>
-                <q-item-section @click="getDays((last = 7))">Last 7 Days</q-item-section>
+                <q-item-section @click="getDays((last = 7)); menuDom.hide();">Last 7 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'last30'" v-ripple>
-                <q-item-section @click="getDays((last = 30))">Last 30 Days</q-item-section>
+                <q-item-section @click="getDays((last = 30)); menuDom.hide();">Last 30 Days</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = false))">This Month</q-item-section>
+                <q-item-section @click="getMonth((last = false)); menuDom.hide();">This Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastMonth'" v-ripple>
-                <q-item-section @click="getMonth((last = true))">Last Month</q-item-section>
+                <q-item-section @click="getMonth((last = true)); menuDom.hide();">Last Month</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisYear'" v-ripple>
-                <q-item-section @click="getYear((last = false))">This Year</q-item-section>
+                <q-item-section @click="getYear((last = false)); menuDom.hide();">This Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastYear'" v-ripple>
-                <q-item-section @click="getYear((last = true))">Last Year</q-item-section>
+                <q-item-section @click="getYear((last = true)); menuDom.hide();">Last Year</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'thisFY'" v-ripple>
-                <q-item-section @click="getFY((last = false))">This FY</q-item-section>
+                <q-item-section @click="getFY((last = false)); menuDom.hide();">This FY</q-item-section>
               </q-item>
               <q-item clickable :active="activeDate == 'lastFY'" v-ripple>
-                <q-item-section @click="getFY((last = true))">Last FY</q-item-section>
+                <q-item-section @click="getFY((last = true)); menuDom.hide();">Last FY</q-item-section>
               </q-item>
             </q-list>
           </div>
         </div>
         <div v-if="isCalendarInAD" class="row md-no-wrap q-gutter-md date-Con">
-          <q-date v-model="value0" :options="(date) => date < '2033/04/16'" mask="YYYY-MM-DD" />
-          <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">From</div>
+            <q-date v-model="value0" :options="(date) => date < '2033/04/16'" mask="YYYY-MM-DD" />
+          </div>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">To</div>
+            <q-date :options="toDateValidation" v-model="value1" mask="YYYY-MM-DD" />
+          </div>
         </div>
         <div v-else class="row md-no-wrap q-gutter-md date-Con">
-          <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
-          <bs-date-picker v-model="value1" :toLimit="value0"></bs-date-picker>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">From</div>
+            <bs-date-picker class="bs-date" v-model="value0"></bs-date-picker>
+          </div>
+          <div>
+            <div class="mb-2 text-base font-medium text-gray-600">To</div>
+            <bs-date-picker v-model="value1" :toLimit="value0"></bs-date-picker>
+          </div>
         </div>
       </div>
     </q-menu>
@@ -74,7 +86,6 @@ import BsDatePicker from '/src/components/date/BsDatePicker.vue'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
-const $q = useQuasar()
 
 const props = defineProps(['startDate', 'endDate', 'hideBtns', 'focusOnMount'])
 
@@ -149,23 +160,23 @@ watch(
   }
 )
 
-const filter = () => {
-  if (!value0.value && !value1.value) {
-    $q.notify({
-      color: 'negative',
-      message: 'Date range is invalid',
-      icon: 'report_problem',
-    })
-    return
-  }
-  emit('filter')
-}
+// const filter = () => {
+//   if (!value0.value && !value1.value) {
+//     $q.notify({
+//       color: 'negative',
+//       message: 'Date range is invalid',
+//       icon: 'report_problem',
+//     })
+//     return
+//   }
+//   emit('filter')
+// }
 
 const onInput0 = (text) => {
   text = DateConverter.parseText(text)
-  // if (!text) {
-  //   return;
-  // }
+  if (!text) {
+    return;
+  }
   error0.value = false
   errorMessage0.value = null
   if (isCalendarInAD.value) {
@@ -285,6 +296,10 @@ const getMonth = (last = false) => {
     let year = DateConverter.getBSYear(date)
     let month = DateConverter.getBSMonth(date)
     month = month - (last ? 1 : 0)
+    if (last && month == 0) {
+      month = 12
+      year = year - 1
+    }
     const month_end_day = DateConverter.getMonthDays(year, month)
     const bs0 = `${year}-${month}-01`
     const bs1 = `${year}-${month}-${month_end_day}`

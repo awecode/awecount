@@ -3,16 +3,17 @@
     <div class="grid xl:grid-cols-6">
       <div class="flex flex-col gap-3 xl:col-span-4">
         <div v-for="(item, index) in modalValue.items" :key="index" class="flex">
-          <div class="grow flex gap-2 items-end">
-            <q-select v-model="modalValue.items[index]" :options="itemOptions" option-value="id" option-label="name"
-              map-options emit-value label="Item" class="grow-1"
-              @update:model-value="(value) => onUpdate(value, selectedItems, index)"></q-select>
+          <div class="grow flex gap-2 items-center">
+            <div class="grow-1">
+              <n-auto-complete v-model="modalValue.items[index]" :options="itemOptions" label="Item"
+                @update:model-value="(value) => onUpdate(value, selectedItems, index)"></n-auto-complete>
+            </div>
             <q-btn color="red-5" outline icon="delete" :disable="modalValue.items.length < 2"
               @click="() => removeItem(index)"></q-btn>
           </div>
-          <div class="w-36 flex items-end">
+          <div class="w-36 flex items-center">
             <q-radio v-if="modalValue.items[index]" v-model="modalValue.config.defaultItem" :val="modalValue.items[index]"
-            label="Default Item" />
+              label="Default Item" />
           </div>
         </div>
       </div>
@@ -60,7 +61,9 @@ const onUpdate = (value: number, selectedItems: Array<number>, index: number) =>
       icon: 'report_problem',
       position: 'top-right',
     })
-    modalValue.value.items[index] = null
+    nextTick(() => {
+      modalValue.value.items[index] = null
+    })
   }
 }
 const modalValue = ref(props.modelValue)

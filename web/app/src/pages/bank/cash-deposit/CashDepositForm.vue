@@ -36,25 +36,26 @@
               :error-message="errors.narration" :error="!!errors.narration" />
           </div>
         </q-card>
-        <div class="text-right q-pr-md q-pb-lg">
+        <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn v-if="checkPermissions('BankCashDepositCreate') && !isEdit" @click.prevent="submitForm" color="green"
-            label="Create" class="q-ml-auto" type="submit" :loading="loading" />
+            label="Create" type="submit" :loading="loading" />
           <q-btn v-if="checkPermissions('BankCashDepositModify') && isEdit" @click.prevent="submitForm" color="green"
-            label="Update" class="q-ml-auto" type="submit" :loading="loading" />
+            label="Update" type="submit" :loading="loading" />
           <q-btn v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
-            @click.prevent="isDeleteOpen = true" icon="block" color="red" :label="'Cancel'" class="q-ml-md" :loading="loading" />
+            @click.prevent="isDeleteOpen = true" icon="block" color="red" :label="'Cancel'" :loading="loading" />
           <q-btn v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
             :to="`/journal-entries/bank-cash-deposits/${id}/`" color="blue" icon="library_books" label="Journal Entries"
-            class="text-h7 q-py-sm q-ml-md" :loading="loading" />
+            class="text-h7 q-py-sm" :loading="loading" />
         </div>
       </q-card>
     </q-card>
     <q-dialog v-model="isDeleteOpen">
       <q-card style="min-width: min(40vw, 400px)">
-        <q-card-section class="bg-red-6 q-py-md">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
         <q-separator inset />
         <q-card-section>

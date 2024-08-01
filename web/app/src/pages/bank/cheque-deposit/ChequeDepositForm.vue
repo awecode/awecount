@@ -29,7 +29,7 @@
           <div class="row q-col-gutter-md">
             <date-picker v-model="fields.cheque_date" class="col-md-6 col-12" label="Cheque Date"
               :error-message="errors.cheque_date" :error="!!errors.cheque_date" :notRequired="true"></date-picker>
-            <q-input v-model="fields.cheque_number" label="Cheque Number" class="col-6"
+            <q-input v-model="fields.cheque_number" label="Cheque Number" class="col-md-6 col-12"
               :error-message="errors.cheque_number" :error="!!errors.cheque_number" type="number" />
           </div>
           <div class="row q-col-gutter-md">
@@ -53,7 +53,7 @@
         @click.prevent="onSubmitClick('Draft')" color="orange" icon="fa-solid fa-pen-to-square" :loading="loading"
         label="Save Draft" class="q-mr-md q-py-sm" />
       <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" :loading="loading" />
-      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick('Issued')" color="green-6" icon="fa-solid fa-floppy-disk" label="Update" type="submit" :loading="loading"/>
+      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" @click.prevent="onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" color="green-6" icon="fa-solid fa-floppy-disk" :label="fields.status === 'Draft' ? 'Issue' : 'Update'" type="submit" :loading="loading"/>
     </div>
   </q-form>
 </template>
@@ -87,7 +87,8 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await formData.submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }

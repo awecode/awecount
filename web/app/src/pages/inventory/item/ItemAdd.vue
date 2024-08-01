@@ -23,8 +23,7 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete class="q-full-width" label="Brand" v-model="fields.brand"
-                :options="formDefaults.collections?.brands"
+              <n-auto-complete label="Brand" v-model="fields.brand" :options="formDefaults.collections?.brands"
                 :modal-component="checkPermissions('BrandCreate') ? BrandForm : null" :error="errors.brand" />
             </div>
           </div>
@@ -35,24 +34,23 @@
           <q-card class="q-pa-lg">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Category" v-model="fields.category"
+                <n-auto-complete label="Category" v-model="fields.category"
                   :options="formDefaults.collections?.inventory_categories"
                   :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
                   :error="errors.category" @update:modelValue="setCategory" />
               </div>
             </div>
-            <div v-if="fields.extra_fields">
+            <div v-if="fields.extra_data">
               <q-input v-for="(field, index) in fields.extra_fields" :label="field.name" :type="field.type.value"
                 :key="index" v-model="fields.extra_data[field.name]"></q-input>
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Unit" v-model="fields.unit_id"
-                  :options="formDefaults.collections?.units"
+                <n-auto-complete label="Unit" v-model="fields.unit_id" :options="formDefaults.collections?.units"
                   :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.unit_id" />
               </div>
               <div class="col-12 col-md-6">
-                <n-auto-complete class="q-full-width" label="Tax Scheme" v-model="fields.tax_scheme_id"
+                <n-auto-complete label="Tax Scheme" v-model="fields.tax_scheme_id"
                   :options="formDefaults.collections?.tax_scheme"
                   :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null" :error="errors.tax_scheme_id" />
               </div>
@@ -90,24 +88,30 @@
             <div class="mt-4">
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account"
+                @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
                 v-model:typeModelValue="fields.purchase_account_type" label="Purchase"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
-              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.discount_allowed_account"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account"
+                @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
+              <select-item-accounts-with-types v-if="fields.can_be_sold"
+                v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
-              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.discount_received_account"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account"
+                @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
+              <select-item-accounts-with-types v-if="fields.can_be_purchased"
+                v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
-                :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories" :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
+                :inventory_categories="formDefaults.collections?.inventory_categories"
+                :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account"
+                @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
@@ -122,8 +126,8 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="images.front_image" class="q-full-width" :error-messages="errors.front_image"
-                label="Front Image" @update:model-value="
+              <q-file v-model="images.front_image" :error-messages="errors.front_image" label="Front Image"
+                @update:model-value="
                   onFileChange(fields, $event, 'front_image')
                   ">
                 <template v-slot:prepend>
@@ -142,8 +146,8 @@
               </div>
             </div>
             <div v-else class="col-sm-5 col-12">
-              <q-file v-model="fields.back_image" class="q-full-width" :error-messages="errors.back_image"
-                label="Back Image" @update:model-value="onFileChange(fields, $event, 'back_image')">
+              <q-file v-model="fields.back_image" :error-messages="errors.back_image" label="Back Image"
+                @update:model-value="onFileChange(fields, $event, 'back_image')">
                 <template v-slot:prepend>
                   <q-icon name="attach_file" />
                 </template>
@@ -179,6 +183,7 @@ const $q = useQuasar()
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits([])
 const images = ref({
   front_image: null,
@@ -255,8 +260,8 @@ const setCategory = () => {
       if (item.id === category_id) {
         return item;
       }
-    });
-    if (selected.hasOwnProperty("extra_fields")) {
+    })
+    if (selected.hasOwnProperty('extra_fields')) {
       if (fields.value.extra_data === null) {
         fields.value.extra_data = {}
       }
@@ -274,112 +279,111 @@ const setCategory = () => {
         fields.value.extra_fields = null
       }
     }
-    if (selected.hasOwnProperty("default_unit_id")) {
+    if (selected.hasOwnProperty('default_unit_id')) {
       if (selected.default_unit_id) {
         fields.value.unit_id = selected.default_unit_id
       } else {
-        fields.value.unit_id = ""
+        fields.value.unit_id = ''
       }
     }
 
-    if (selected.hasOwnProperty("default_tax_scheme_id")) {
+    if (selected.hasOwnProperty('default_tax_scheme_id')) {
       if (selected.default_tax_scheme_id) {
         fields.value.tax_scheme_id = selected.default_tax_scheme_id
       } else {
-        fields.value.tax_scheme_id = ""
+        fields.value.tax_scheme_id = ''
       }
     }
     if (
       !fields.value.sales_account && !fields.value.items_sales_account_type &&
-      selected.hasOwnProperty("items_sales_account_type")
+      selected.hasOwnProperty('items_sales_account_type')
     ) {
-      if (selected.items_sales_account_type === "category") {
+      if (selected.items_sales_account_type === 'category') {
         fields.value.sales_account = selected.dedicated_sales_account
       }
-      else if (selected.items_sales_account_type === "global") {
-        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, "Sales Account")
+      else if (selected.items_sales_account_type === 'global') {
+        fields.value.sales_account = getOptionCollection(formDefaults.value.collections.accounts, 'Sales Account')
       }
-      else if (selected.items_sales_account_type === "existing") {
+      else if (selected.items_sales_account_type === 'existing') {
         fields.value.sales_account = selected.sales_account
       }
-      if (selected.items_sales_account_type !== "creation") {
+      if (selected.items_sales_account_type !== 'creation') {
         fields.value.sales_account_type = selected.items_sales_account_type
       }
     }
     if (
       !fields.value.purchase_account && !fields.value.items_purchase_account_type &&
-      selected.hasOwnProperty("items_purchase_account_type")
+      selected.hasOwnProperty('items_purchase_account_type')
     ) {
-      if (selected.items_purchase_account_type === "category") {
+      if (selected.items_purchase_account_type === 'category') {
         fields.value.purchase_account = selected.dedicated_purchase_account
       }
-      else if (selected.items_purchase_account_type === "global") {
-        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, "Purchase Account")
+      else if (selected.items_purchase_account_type === 'global') {
+        fields.value.purchase_account = getOptionCollection(formDefaults.value.collections.accounts, 'Purchase Account')
       }
-      else if (selected.items_purchase_account_type === "existing") {
+      else if (selected.items_purchase_account_type === 'existing') {
         fields.value.purchase_account = selected.purchase_account
       }
-      if (selected.items_purchase_account_type !== "creation") {
+      if (selected.items_purchase_account_type !== 'creation') {
         fields.value.purchase_account_type = selected.items_purchase_account_type
       }
     }
     if (
       !fields.value.discount_allowed_account && !fields.value.items_discount_allowed_account_type &&
-      selected.hasOwnProperty("items_discount_allowed_account_type")
+      selected.hasOwnProperty('items_discount_allowed_account_type')
     ) {
-      if (selected.items_discount_allowed_account_type === "category") {
+      if (selected.items_discount_allowed_account_type === 'category') {
         fields.value.discount_allowed_account = selected.dedicated_discount_allowed_account
       }
-      else if (selected.items_discount_allowed_account_type === "global") {
-        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Expenses")
+      else if (selected.items_discount_allowed_account_type === 'global') {
+        fields.value.discount_allowed_account = getOptionCollection(formDefaults.value.collections.accounts, 'Discount Expenses')
       }
-      else if (selected.items_discount_allowed_account_type === "existing") {
+      else if (selected.items_discount_allowed_account_type === 'existing') {
         fields.value.discount_allowed_account = selected.discount_allowed_account
       }
-      if (selected.items_discount_allowed_account_type !== "creation") {
+      if (selected.items_discount_allowed_account_type !== 'creation') {
         fields.value.discount_allowed_account_type = selected.items_discount_allowed_account_type
       }
     }
     if (
       !fields.value.discount_received_account && !fields.value.items_discount_received_account_type &&
-      selected.hasOwnProperty("items_discount_received_account_type")
+      selected.hasOwnProperty('items_discount_received_account_type')
     ) {
-      if (selected.items_discount_received_account_type === "category") {
+      if (selected.items_discount_received_account_type === 'category') {
         fields.value.discount_received_account = selected.dedicated_discount_received_account
       }
-      else if (selected.items_discount_received_account_type === "global") {
-        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.accounts, "Discount Income")
+      else if (selected.items_discount_received_account_type === 'global') {
+        fields.value.discount_received_account = getOptionCollection(formDefaults.value.collections.accounts, 'Discount Income')
       }
-      else if (selected.items_discount_received_account_type === "existing") {
+      else if (selected.items_discount_received_account_type === 'existing') {
         fields.value.discount_received_account = selected.discount_received_account
       }
-      if (selected.items_discount_received_account_type !== "creation") {
+      if (selected.items_discount_received_account_type !== 'creation') {
         fields.value.discount_received_account_type = selected.items_discount_received_account_type
       }
     }
 
-    if (selected.hasOwnProperty("track_inventory")) {
+    if (selected.hasOwnProperty('track_inventory')) {
       fields.value.track_inventory = selected.track_inventory
     }
-    if (selected.hasOwnProperty("can_be_sold")) {
+    if (selected.hasOwnProperty('can_be_sold')) {
       fields.value.can_be_sold = selected.can_be_sold
     }
-    if (selected.hasOwnProperty("can_be_purchased")) {
+    if (selected.hasOwnProperty('can_be_purchased')) {
       fields.value.can_be_purchased = selected.can_be_purchased
     }
-    if (selected.hasOwnProperty("fixed_asset")) {
+    if (selected.hasOwnProperty('fixed_asset')) {
       fields.value.fixed_asset = selected.fixed_asset
     }
-    if (selected.hasOwnProperty("direct_expense")) {
+    if (selected.hasOwnProperty('direct_expense')) {
       fields.value.direct_expense = selected.direct_expense
     }
-    if (selected.hasOwnProperty("indirect_expense")) {
+    if (selected.hasOwnProperty('indirect_expense')) {
       fields.value.indirect_expense = selected.indirect_expense
     }
   }
 }
 // watch(() => accountTypeValues.value.sales_account, (newValue) => {
-//   // debugger
 //   if (accountTypeValues.value.sales_account === "category") {
 //     if (fields.value.category) {
 //       const selected = formDefaults.value.collections.inventory_categories.find(item => {
@@ -403,13 +407,27 @@ const onTypeUpdate = (key, selectedType) => {
   }
   if (selectedType === 'category' && !fields.value.category) {
     $q.notify({
-        color: 'orange-6',
-        message: 'Please select a category first!',
-        icon: 'report_problem',
-        position: 'top-right',
+      color: 'orange-6',
+      message: 'Please select a category first!',
+      icon: 'report_problem',
+      position: 'top-right',
     })
   }
 }
+
+watch(() => fields.value.can_be_purchased, (newValue) => {
+  if (newValue) {
+    fields.value.purchase_account_type || (fields.value.purchase_account_type = 'dedicated')
+    fields.value.discount_received_account_type || (fields.value.discount_received_account_type = 'dedicated')
+  }
+})
+watch(() => fields.value.can_be_sold, (newValue) => {
+  if (newValue) {
+    fields.value.sales_account_type || (fields.value.sales_account_type = 'dedicated')
+    fields.value.discount_allowed_account_type || (fields.value.discount_allowed_account_type = 'dedicated')
+  }
+})
+
 </script>
 
 <style scoped>

@@ -7,7 +7,7 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-
+const { sentryVitePlugin } = require("@sentry/vite-plugin")
 const UnoCSS = require('unocss/vite').default
 // const { presetAttributify, presetUno } = require('unocss')
 // import presetWind from '@unocss/preset-wind'
@@ -32,7 +32,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['ofetch', 'num'],
+    boot: ['ofetch', 'num', 'sentry'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -70,20 +70,27 @@ module.exports = configure(function (ctx) {
       // env: {},
       // env: require('dotenv').config().parsed,
       env: {
-        BASE_URL: ctx.dev ? 'http://localhost:8000' : process.env.BASE_URL,
+        BASE_URL: process.env.BASE_URL || 'http://localhost:8000',
       },
-
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
       // distDir
+      sourcemap: true,
 
       extendViteConf(viteConf) {
         viteConf.plugins.push(
           ...UnoCSS({
             presets: [presetWind()],
           })
+        )
+        viteConf.plugins.push(
+          sentryVitePlugin({
+            org: 'awecode',
+            project: 'awecount',
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+          }),
         )
       },
       // viteVuePluginOptions: {},

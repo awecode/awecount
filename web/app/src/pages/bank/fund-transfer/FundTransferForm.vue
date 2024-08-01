@@ -42,24 +42,25 @@
               :error-message="errors.transaction_fee" :error="!!errors.transaction_fee" />
           </div>
         </q-card-section>
-        <div class="text-right q-pr-md q-pb-lg">
-          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Create" class="q-ml-auto" type="submit" />
-          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading"
-            label="Update" class="q-ml-auto" type="submit" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="isDeleteOpen = true" :loading="loading"
-            icon="block" color="red" :label="'Cancel'" class="q-ml-md" />
-          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue" :loading="loading"
-            icon="library_books" label="Journal Entries" class="text-h7 q-py-sm q-ml-md" />
+        <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
+          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green"
+            :loading="loading" label="Create" type="submit" />
+          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
+            :loading="loading" label="Update" type="submit" />
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')"
+            @click.prevent="isDeleteOpen = true" :loading="loading" icon="block" color="red" :label="'Cancel'" />
+          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"
+            :loading="loading" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
         </div>
       </q-card>
     </q-card>
     <q-dialog v-model="isDeleteOpen">
       <q-card style="min-width: min(40vw, 400px)">
-        <q-card-section class="bg-red-6 q-py-md">
+        <q-card-section class="bg-red-6 q-py-md flex justify-between">
           <div class="text-h6 text-white">
             <span>Confirm Cancellation?</span>
           </div>
+          <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
         </q-card-section>
         <q-separator inset />
         <q-card-section>
@@ -69,8 +70,7 @@
           <div class=" text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-              <q-btn flat class="text-red" label="Yes"
-                @click="cancelForm"></q-btn>
+              <q-btn flat class="text-red" label="Yes" @click="cancelForm"></q-btn>
             </div>
           </div>
         </q-card-section>
@@ -82,12 +82,10 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
-import { useQuasar } from 'quasar'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
     const endpoint = '/v1/fund-transfer/'
-    const $q = useQuasar()
     const isDeleteOpen = ref(false)
     const formData = useForm(endpoint, {
       getDefaults: true,

@@ -18,7 +18,7 @@
                   @click="() => (addInoviceModal = !addInoviceModal)">
                 </q-btn></span>
             </div>
-            <q-input class="col-md-6 col-12" label="Party" v-model="fields.party_name" disable>
+            <q-input class="col-md-6 col-12" label="Party" v-model="fields.party_name" disable :error="!!errors?.party_name" :error-message="errors.party_name">
             </q-input>
           </div>
           <div class="row q-col-gutter-md">
@@ -54,17 +54,18 @@
             <q-btn v-if="checkPermissions('PaymentReceiptCreate') && !isEdit" :loading="loading"
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Create" type="submit" />
             <q-btn v-if="checkPermissions('PaymentReceiptModify') && isEdit" :loading="loading"
-              @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Update" type="submit" />
+              @click.prevent="() => onSubmitClick(fields.status, fields, submitForm)" color="green" label="Update" type="submit" />
           </div>
         </q-card-section>
       </q-card>
     </q-card>
     <q-dialog v-model="addInoviceModal" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-grey-4">
+        <q-card-section class="bg-grey-4 flex justify-between">
           <div class="text-h6">
             <span class="q-mx-md">Add Invoice</span>
           </div>
+          <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
         </q-card-section>
 
         <q-card-section class="q-mb-md">
@@ -142,7 +143,7 @@ export default {
                 icon: 'report_problem',
                 position: 'top-right',
               })
-              formData.errors.value.invoice_no = "The invoice has already been added!"
+              formData.errors.value.invoice_no = 'The invoice has already been added!'
             } else if (fields.party_id === data.party_id) {
               if (!fields.invoice_nos) fields.invoice_nos = []
               fields.invoice_nos.push(data.voucher_no)
@@ -191,10 +192,10 @@ export default {
           position: 'top-right',
         })
         if (!invoiceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!invoiceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
       }
     }

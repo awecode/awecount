@@ -273,7 +273,7 @@
 <script>
 // import { utils, writeFile } from 'xlsx'
 // import XLSX from "xlsx-js-style"
-import { useRoute } from "vue-router"
+import { useRoute } from 'vue-router'
 import { useLoginStore } from 'src/stores/login-info'
 export default {
     setup() {
@@ -330,7 +330,8 @@ export default {
             useApi(endpoint)
                 .then((data) => {
                     unCatogarizedData.value = []
-                    const computedData = [...categoryTree.value]
+                    const categoryData = JSON.stringify(categoryTree.value)
+                    const computedData = [...JSON.parse(categoryData)]
                     const tallyTotal = { ...objFormat }
                     data.forEach((obj) => {
                         const acc = {
@@ -386,7 +387,7 @@ export default {
         // }
         const onDownloadXls = async () => {
             // TODO: add download xls link
-            const XLSX = await import("xlsx-js-style")
+            const XLSX = await import('xlsx-js-style')
             const elt = document.getElementById('tableRef').children[0]
             const baseUrl = window.location.origin
             replaceHrefAttribute(elt, baseUrl)
@@ -419,10 +420,10 @@ export default {
             worksheet['!cols'] = [{ width: 50 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 },]
             const workbook = XLSX.utils.book_new()
             XLSX.utils.book_append_sheet(workbook, worksheet, 'sheet_name_here');
-            const excelBuffer = XLSX.write(workbook, {
-                type: 'buffer',
-                cellStyles: true,
-            });
+            // const excelBuffer = XLSX.write(workbook, {
+            //     type: 'buffer',
+            //     cellStyles: true,
+            // });
             // download Excel
             XLSX.writeFileXLSX(workbook, 'TrialBalance.xls')
         }

@@ -36,6 +36,7 @@ import { withQuery } from 'ufo'
 const router = useRouter()
 const route = useRoute()
 const pageSize = ref(route.query.page_size || 20)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
     fields: {
         type: Object,

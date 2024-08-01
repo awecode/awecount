@@ -17,16 +17,17 @@
               </div>
               <q-dialog v-model="importPurchaseOrder">
                 <q-card style="min-width: min(60vw, 400px)">
-                  <q-card-section class="bg-grey-4">
+                  <q-card-section class="bg-grey-4 flex justify-between">
                     <div class="text-h6">
                       <span>Add Reference Purchase Order(s)</span>
                     </div>
+                    <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
                     <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
-                      :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
+                      :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="fetchInvoice()"></q-btn>
@@ -37,7 +38,7 @@
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
-                :error="errors?.party ? errors?.party : null"
+                :error="errors?.party ? errors?.party : ''"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
             </div>
             <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
@@ -49,7 +50,7 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
-                  :error-message="errors.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                  :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -119,27 +120,24 @@
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Save Draft" type="submit" />
+          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Save Draft" type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
           type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" label="Issue" />
+          @click.prevent="() => onSubmitClick('Issued')" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
       </div>
     </q-card>
   </q-form>
 </template>
 
 <script>
-import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
-import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -178,10 +176,11 @@ export default {
       }
       if (!!errors.rows) errors.rows.splice(index, 1)
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try { await submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -218,7 +217,7 @@ export default {
             icon: 'report_problem',
             position: 'top-right',
           })
-          formData.errors.value.invoice_no = "The invoice has already been added!"
+          formData.errors.value.invoice_no = 'The invoice has already been added!'
         } else {
           const url = 'v1/purchase-order/by-voucher-no/'
           useApi(
@@ -296,10 +295,10 @@ export default {
         })
         if (!formData?.errors?.value) formData.errors.value = {}
         if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
       }
     }
@@ -329,7 +328,6 @@ export default {
       PurchaseDiscountForm,
       openDatePicker,
       staticOptions,
-      InvoiceTable,
       deleteRowErr,
       onSubmitClick,
       checkPermissions,

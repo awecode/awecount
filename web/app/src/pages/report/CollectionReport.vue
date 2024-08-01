@@ -2,7 +2,7 @@
   <q-card class="q-ma-md q-px-md">
     <q-card-section>
       <div>
-        <div class="flex gap-8 items-center">
+        <div class="flex gap-x-8 gap-y-2 items-center">
           <div>
             <DateRangePicker
               v-model:startDate="fields.start_date"

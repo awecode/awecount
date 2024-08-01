@@ -18,19 +18,20 @@
               <q-btn color="blue" label="Add Refrence" @click="() => (addRefrence = true)" />
               <q-dialog v-model="addRefrence" @before-hide="errors && delete errors?.fiscal_year && delete errors?.invoice_no && delete errors?.party">
                 <q-card style="min-width: min(60vw, 400px)">
-                  <q-card-section class="bg-grey-4">
+                  <q-card-section class="bg-grey-4 flex justify-between">
                     <div class="text-h6">
                       <span>Add Reference Invoice(s)</span>
                     </div>
+                    <q-btn icon="close" class="text-white bg-red-500 opacity-95" flat round dense v-close-popup />
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
-                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
+                    <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="text" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party">
                     </n-auto-complete>
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->
                     <q-select label="Fiscal Year" v-model="referenceFormData.fiscal_year"
-                      :options="formDefaults.options.fiscal_years" option-value="id" option-label="name" map-options
+                      :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" ></q-select>
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="() => fetchInvoice(fields)"></q-btn>
@@ -86,13 +87,13 @@
       </div>
       <div v-if="checkPermissions('DebitNoteCreate')"
         class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange"
+        <q-btn v-if="!isEdit" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)" @click.prevent="() => onSubmitClick('Draft')" color="orange"
           label="Save Draft" :disable="fields.invoices ? false : true" type="submit" />
         <q-btn v-if="isEdit && fields.status === 'Draft'" :loading="loading" :disabled="!(fields.invoices && fields.invoices.length > 0)"
-          @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" color="orange" label="Update Draft"
+          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
           :disable="fields.invoices ? false : true" type="submit" />
-        <q-btn @click.prevent="() => onSubmitClick('Issued', fields, submitForm)" :loading="loading" color="green"
-          :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? 'Issue from Draft' : 'Issue' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
+        <q-btn @click.prevent="() => onSubmitClick(isEdit ? fields.status === 'Draft' ? 'Issued' : fields.status : 'Issued')" :loading="loading" color="green"
+          :label="isEdit ? fields?.status === 'Draft' ? 'Issue from Draft' : 'Update' : 'Issue'" :disabled="!(fields.invoice_data && fields.invoice_data.length > 0)" />
       </div>
     </q-card>
   </q-form>
@@ -153,12 +154,15 @@ export default {
         }
         formData.fields.value.deleted_rows.push(deleteObj)
       }
-      if (!!errors.rows) errors.rows.splice(index, 1)
+      if (errors && Array.isArray(errors.rows)) {
+        errors.rows.splice(index, 1)
+      }
     }
-    const onSubmitClick = async (status, fields, submitForm) => {
+    const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      try {await submitForm() } catch (err) {
+      const data = await formData.submitForm()
+      if (data && data.hasOwnProperty('error')) {
         formData.fields.value.status = originalStatus
       }
     }
@@ -201,9 +205,8 @@ export default {
               delete data[item]
             })
             data.rows.forEach(row => {
-              delete row["id"]
               row.taxObj = row.tax_scheme
-              if (row.discount_type === "") {
+              if (row.discount_type === '') {
                 row.discount_type = null
               }
             });
@@ -229,13 +232,13 @@ export default {
           })
       } else {
         if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = "Invoice Number is required!"
+          formData.errors.value.invoice_no = 'Invoice Number is required!'
         }
         if (!referenceFormData.value.party) {
-          formData.errors.value.party = "Party is required!"
+          formData.errors.value.party = 'Party is required!'
         }
         if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = "Fiscal Year is required!"
+          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
         }
         $q.notify({
           color: 'red-6',
@@ -254,7 +257,7 @@ export default {
 
     // to update voucher meta in Credit and debit Notes
     const updateVoucherMeta = (data) => {
-      formData.fields.value.discount = data.discount
+      // formData.fields.value.discount = data.discount
       formData.fields.value.meta_discount = data.discount
       formData.fields.value.meta_sub_total = data.subTotal
       formData.fields.value.meta_tax = data.totalTax

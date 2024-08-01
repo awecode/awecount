@@ -66,10 +66,21 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <div class="row q-gutter-x-md items-center">
+          <div class="row q-gutter-x-md items-center" v-if="checkPermissions('DebitNoteView')">
             <q-btn color="blue" label="View" :to="`/debit-note/${props.row.id}/view/`"
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
           </div>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <span v-if="props.row.voucher_no">
+            <router-link v-if="checkPermissions('DebitNoteView')" :to="`/debit-note/${props.row.id}/view/`"
+              style="font-weight: 500; text-decoration: none" class="text-blue">
+              {{ props.row.voucher_no }}
+            </router-link>
+            <span v-else>{{ props.row.voucher_no }}</span>
+          </span>
         </q-td>
       </template>
     </q-table>
@@ -112,8 +123,8 @@ export default {
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true},
-      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
+      { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true },
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
       { name: 'actions', label: 'Actions', align: 'left' },
     ]
 

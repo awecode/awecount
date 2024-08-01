@@ -509,7 +509,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Home', 'Purchase Orders', 'Update'],
         },
-      }
+      },
     ],
   },
   {
@@ -578,6 +578,21 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/purchase/discounts/PurchaseDiscountForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchase Discounts', 'Update'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/purchase-voucher-row/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/row/PurchaseVoucherRowList.vue'),
+        name: 'PurchaseVoucher Rows',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Rows'],
         },
       },
     ],
@@ -819,6 +834,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/report/AgeingReport.vue'),
         meta: {
           breadcrumb: ['Home', 'Customer Ageing Report'],
+        },
+      },
+      {
+        path: 'sales-by-category/',
+        component: () => import('src/pages/report/SalesByCategory.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Sales By Category'],
         },
       },
     ],
@@ -1247,6 +1269,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/settings/ItemMerge.vue'),
         meta: {
           breadcrumb: ['Home', 'Item Merge'],
+        },
+      },
+      {
+        path: 'inventory-settings/',
+        component: () => import('src/pages/settings/InventorySettings.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Inventory Settings'],
         },
       },
     ],

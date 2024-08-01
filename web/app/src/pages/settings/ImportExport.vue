@@ -74,7 +74,7 @@ export default {
     })
     function downloadFile() {
       this.loading = true
-      let fileName = `awecount_export_${new Date().toLocaleString()}.zip`
+      // let fileName = `awecount_export_${new Date().toLocaleString()}.zip`
       useApi()
         // .download(
         //   'export/',
