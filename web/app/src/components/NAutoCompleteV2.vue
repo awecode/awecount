@@ -80,8 +80,8 @@ export default {
       default: () => null
     },
     staticOptions: {
-      type: [Array, null],
-      default: () => null
+      type: [Array, Object, undefined],
+      default: () => []
     }
   },
   emits: ['update:modelValue'],
@@ -92,9 +92,11 @@ export default {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const allOptions = ref(props.options)
+    const initalAllOptions = props.options
+    initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
+    const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
-    const filteredOptions = ref(props?.options?.results || [])
+    const filteredOptions = ref(allOptions.value.results || [])
     const fetchLoading = ref(false)
     const filteredOptionsPagination = ref(null)
     const serachKeyword = ref(null)
@@ -112,6 +114,14 @@ export default {
       (newValue) => {
         allOptions.value = newValue
         filteredOptions.value = newValue.results
+      }
+    )
+
+    watch(
+      () => props.staticOptions,
+      (newValue) => {
+        allOptions.value.results = allOptions.value.results.concat(newValue)
+        filteredOptions.value = allOptions.value.results
       }
     )
 

@@ -33,6 +33,7 @@
                   : null
                 : null
             "
+            :static-options="voucher.account_obj"
           />
         </div>
         <div class="col-2">
