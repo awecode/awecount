@@ -81,6 +81,7 @@ export default (endpoint, config) => {
           }
 
           // From drop down branch
+          // TODO: resolve and remove this
           delete data.collections
           // Object.assign(formDefaults.value, data)
           // Object.assign(fields.value, data.fields)
@@ -96,10 +97,6 @@ export default (endpoint, config) => {
           // From main
         }
       )
-    }
-    // debugger
-    if (config.collections && config.collections.length > 0) {
-      formDefaults.value.collections = config.collections.reduce((obj, entry) => ({ ...obj, [entry]: { results: [], pagination: {} } }), {})
     }
 
   })

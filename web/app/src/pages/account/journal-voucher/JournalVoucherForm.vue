@@ -130,7 +130,6 @@ export default {
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/journal-voucher/',
-      collections: ['accounts']
     })
     useMeta(() => {
       return {

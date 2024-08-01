@@ -92,7 +92,7 @@ export default {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const allOptions = ref([])
+    const allOptions = ref(props.options)
     const isModalOpen = ref(false)
     const filteredOptions = ref(props?.options?.results || [])
     const fetchLoading = ref(false)
@@ -175,7 +175,7 @@ export default {
           fetchLoading.value = false
         }
       } catch (error) {
-        console.log('Error While Fetching Options', err)
+        console.log('Error While Fetching Options', error)
         fetchLoading.value = false
       }
       // .then((data) => {
