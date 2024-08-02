@@ -49,6 +49,15 @@ export default {
       type: [Object, String, Number],
       default: () => null,
     },
+    options: {
+      type: Object,
+      default: () => {
+        return {
+          results: [],
+          pagination: {},
+        }
+      },
+    },
     modalComponent: {
       type: Object,
       required: false,
@@ -83,20 +92,38 @@ export default {
       emit('update:modelValue', val)
     }
     const modalValue = ref(props.modelValue)
-    const initalAllOptions = { results: [], pagination: {} }
-    initalAllOptions.results = initalAllOptions.results.concat(props.staticOption || [])
+    const initalAllOptions = props.options
+    if (props.staticOption && props.staticOption.id) {
+      initalAllOptions.results = initalAllOptions.results.filter((item) => {
+        return (props.staticOption.id !== item.id)
+      })
+    }
     const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
     const filteredOptions = ref(allOptions.value.results || [])
     const fetchLoading = ref(false)
     const filteredOptionsPagination = ref(null)
     const serachKeyword = ref(null)
-    const initiallyLoaded = ref(false)
-
     watch(
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
+      }
+    )
+
+    watch(
+      () => props.options,
+      (newValue) => {
+        if (!newValue) return
+        if (props.staticOption && props.staticOption.id) {
+          const filteredOptions = newValue.results.filter((item) => {
+            return (props.staticOption.id !== item.id)
+          })
+          allOptions.value.results = filteredOptions
+        } else {
+          allOptions.value.results = newValue.results
+        }
+        Object.assign(allOptions.value.pagination, newValue.pagination)
       }
     )
 
@@ -108,14 +135,14 @@ export default {
       }
     )
 
-    watch(
-      () => isActive.value, async (newValue) => {
-        if (newValue && !fetchLoading.value && !initiallyLoaded.value) {
-          await fetchOptions()
-          initiallyLoaded.value = true
-        }
-      }
-    )
+    // watch(
+    //   () => isActive.value, async (newValue) => {
+    //     if (newValue && !fetchLoading.value && !initiallyLoaded.value) {
+    //       await fetchOptions()
+    //       initiallyLoaded.value = true
+    //     }
+    //   }
+    // )
 
     const filterFn = (val, update) => {
       serachKeyword.value = val
