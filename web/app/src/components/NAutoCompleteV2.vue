@@ -161,12 +161,14 @@ export default {
       try {
         const data = await useApi(endpoint)
         if (data) {
-          if (staticOptions && staticOptions.length) {
-            allOptions.value.results.push(...props.staticOptions, ...data.results)
-          } else allOptions.value.results.push(...data.results)
+          const filteredOptions = data.results.filter((item) => {
+            // check if aaray of undefined
+            return !props.staticOptions.some((i) => i && i.id === item.id)
+          })
+          allOptions.value.results.push(...filteredOptions)
           Object.assign(allOptions.value.pagination, data.pagination)
-          fetchLoading.value = false
         }
+        fetchLoading.value = false
       } catch (error) {
         console.log('Error While Fetching Options', error)
         fetchLoading.value = false
