@@ -81,3 +81,15 @@ class TransactionsViewMixin(object):
         data['transactions'] = self.paginator.get_response_data(serializer.data)
         data['aggregate'] = aggregate
         return Response(data)
+
+class ChoiceObjectMixin():
+    additional_fields = {}
+    serializer_class = GenericSerializer
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_additional_fields()
+
+    def add_additional_fields(self):
+        for field_name, source in self.additional_fields.items():
+            self.fields[field_name] = self.serializer_class(source=source)
