@@ -70,9 +70,9 @@ export default {
       type: [String, null],
       default: () => null
     },
-    staticOptions: {
-      type: [Array],
-      default: () => []
+    staticOption: {
+      type: [Object, undefined],
+      required: false
     }
   },
   emits: ['update:modelValue'],
@@ -84,7 +84,7 @@ export default {
     }
     const modalValue = ref(props.modelValue)
     const initalAllOptions = { results: [], pagination: {} }
-    initalAllOptions.results = initalAllOptions.results.concat(props.staticOptions)
+    initalAllOptions.results = initalAllOptions.results.concat(props.staticOption || [])
     const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
     const filteredOptions = ref(allOptions.value.results || [])
@@ -101,9 +101,9 @@ export default {
     )
 
     watch(
-      () => props.staticOptions,
+      () => props.staticOption,
       (newValue) => {
-        allOptions.value.results = allOptions.value.results.concat(newValue)
+        allOptions.value.results = allOptions.value.results.concat(newValue | [])
         filteredOptions.value = allOptions.value.results
       }
     )
@@ -155,17 +155,18 @@ export default {
     const closeModal = () => {
       isModalOpen.value = false
     }
-    const fetchOptions = async (staticOptions) => {
+    const fetchOptions = async () => {
       fetchLoading.value = true
       const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
       try {
         const data = await useApi(endpoint)
         if (data) {
-          const filteredOptions = data.results.filter((item) => {
-            // check if aaray of undefined
-            return !props.staticOptions.some((i) => i && i.id === item.id)
-          })
-          allOptions.value.results.push(...filteredOptions)
+          if (props.staticOption && props.staticOption.id) {
+            const filteredOptions = data.results.filter((item) => {
+              return (props.staticOption.id !== item.id)
+            })
+            allOptions.value.results.push(...filteredOptions)
+          } else allOptions.value.results.push(...data.results)
           Object.assign(allOptions.value.pagination, data.pagination)
         }
         fetchLoading.value = false
