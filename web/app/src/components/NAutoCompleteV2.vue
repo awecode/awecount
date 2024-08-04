@@ -117,13 +117,15 @@ export default {
       (newValue) => {
         if (!newValue) return
         if (props.staticOption && props.staticOption.id) {
-          const filteredOptions = newValue.results.filter((item) => {
+          const cleanedOptions = newValue.results.filter((item) => {
             return (props.staticOption.id !== item.id)
           })
-          filteredOptions.unshift(props.staticOption)
-          allOptions.value.results = filteredOptions
+          cleanedOptions.unshift(props.staticOption)
+          allOptions.value.results = cleanedOptions
+          filteredOptions.value = cleanedOptions
         } else {
           allOptions.value.results = newValue.results
+          filteredOptions.value = newValue.results
         }
         Object.assign(allOptions.value.pagination, newValue.pagination)
       }
@@ -133,10 +135,12 @@ export default {
       () => props.staticOption,
       (newValue) => {
         if (newValue && newValue.id) {
-          const filteredOptions = allOptions.value.results.filter((item) => {
+          const cleanedOptions = allOptions.value.results.filter((item) => {
             return (newValue.id !== item.id)
           })
-          allOptions.value.results = filteredOptions.unshift(newValue)
+          cleanedOptions.unshift(newValue)
+          allOptions.value.results = cleanedOptions
+          filteredOptions.value = cleanedOptions
         }
       }
     )
