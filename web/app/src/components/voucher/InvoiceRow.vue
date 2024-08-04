@@ -298,10 +298,10 @@ export default {
       () => props.modelValue.item_id,
       (newValue) => {
         if (!!props.itemOptions && !!newValue) {
-          const index = props.itemOptions.findIndex(
+          const index = props.itemOptions.results.findIndex(
             (item) => item.id === newValue
           )
-          const itemObject = props.itemOptions[index]
+          const itemObject = props.itemOptions.results[index]
           modalValue.value.itemObj = itemObject
           modalValue.value.item_id = itemObject.id
           modalValue.value.description = itemObject.description
@@ -379,7 +379,7 @@ export default {
       deleteRow,
       checkPermissions,
       onAmountInput,
-      choiceEndpointBaseComputed
+      choiceEndpointBaseComputed,
     }
   },
 }
