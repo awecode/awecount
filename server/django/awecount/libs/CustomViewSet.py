@@ -99,20 +99,24 @@ class CollectionViewSet(object):
             model = qs.model
         if hasattr(model, "company_id"):
             qs = qs.filter(company_id=request.company_id)
+
+        paginate = True
+        if len(collection) > 3:
+            paginate = collection[3]
+
+        serializer_class = GenericSerializer
         if len(collection) > 2:
             serializer_class = collection[2]
+
+        if paginate:
             page = self.paginate_queryset(qs)
             serializer = serializer_class(page, many=True)
             paginated_response = self.get_paginated_response(serializer.data)
             data = paginated_response.data
             return data
         else:
-            serializer_class = GenericSerializer
-            page = self.paginate_queryset(qs)
-            serializer = serializer_class(page, many=True)
-            paginated_response = self.get_paginated_response(serializer.data)
-            data = paginated_response.data
-            return data
+            serializer = serializer_class(qs, many=True)
+            return serializer.data
 
     def get_collections(self, request=None):
         if hasattr(self, "collections") and self.collections:
@@ -140,30 +144,7 @@ class CollectionViewSet(object):
             raise Http404
         response = {}
         if len(collection) > 1:
-            # second argument can be a model or a queryset
-            arg_2 = collection[1]
-            if isclass(arg_2):
-                model = arg_2
-                qs = model.objects.all()
-            else:
-                qs = arg_2
-                model = qs.model
-            if hasattr(model, "company_id"):
-                qs = qs.filter(company_id=request.company_id)
-            if len(collection) > 2:
-                serializer_class = collection[2]
-                page = self.paginate_queryset(qs)
-                serializer = serializer_class(page, many=True)
-                paginated_response = self.get_paginated_response(serializer.data)
-                data = paginated_response.data
-                response = data
-            else:
-                serializer_class = GenericSerializer
-                page = self.paginate_queryset(qs)
-                serializer = serializer_class(page, many=True)
-                paginated_response = self.get_paginated_response(serializer.data)
-                data = paginated_response.data
-                response = data
+            response = self.get_collection_results(request=request, collection=collection)
         return Response(response)
 
     @action(detail=True, url_path="update-defaults")
