@@ -10,6 +10,7 @@ from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
+from awecount.libs.mixins import ChoiceObjectMixin
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
@@ -302,6 +303,7 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
 
 
 class SalesVoucherCreateSerializer(
+    ChoiceObjectMixin,
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
@@ -312,6 +314,11 @@ class SalesVoucherCreateSerializer(
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
+
+    additional_fields = {
+        "party_obj": 'party',
+        "mode_obj": "bank_account",
+    }
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
