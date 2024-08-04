@@ -49,9 +49,9 @@
                     :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'"
                     data-testid="customer-name-input">
                   </q-input>
-                  <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
+                  <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " @update:modelValue="onPartyChange" />
+                      " @update:modelValue="onPartyChange" endpoint="/v1/sales-voucher/create-defaults/parties" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)" data-testid="switch-account-group-btn">
@@ -76,7 +76,8 @@
                 " data-testid="overall-discount-type-div">
                 <n-auto-complete-v2 v-model="fields.discount_type" label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null" :options="discountOptionsComputed"
-                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
+                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                  endpoint="/v1/sales-voucher/create-defaults/discounts">
                 </n-auto-complete-v2>
               </div>
               <div class="col-6 row">
