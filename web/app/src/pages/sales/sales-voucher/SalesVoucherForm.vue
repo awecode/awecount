@@ -51,7 +51,7 @@
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " @update:modelValue="onPartyChange" endpoint="/v1/sales-voucher/create-defaults/parties" />
+                      " @update:modelValue="onPartyChange" :staticOption="fields.party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)" data-testid="switch-account-group-btn">
@@ -74,11 +74,11 @@
                 ? 'col-6'
                 : 'col-12'
                 " data-testid="overall-discount-type-div">
-                <n-auto-complete-v2 v-model="fields.discount_type" label="Discount"
-                  :error="errors?.discount_type ? errors?.discount_type : null" :options="discountOptionsComputed"
+                <n-auto-complete v-model="fields.discount_type" label="Discount"
+                  :error="errors?.discount_type ? errors?.discount_type : null" :options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
                   :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
-                  endpoint="/v1/sales-voucher/create-defaults/discounts">
-                </n-auto-complete-v2>
+                  >
+                </n-auto-complete>
               </div>
               <div class="col-6 row">
                 <div :class="formDefaults.options?.show_trade_discount_in_voucher
@@ -102,18 +102,20 @@
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <NAutoCompleteV2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
-                :error="!!errors?.mode" :options="modeOptionsComputed" data-testid="mode-input">
+              <!-- {{ formDefaults.options?.default_mode_obj }} -->
+              <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
+                endpoint="/v1/sales-voucher/create-defaults/bank_accounts"
+                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template></NAutoCompleteV2>
+                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
             </div>
           </div>
         </q-card-section>
       </q-card>
       <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+    " :discountOptions="staticOptions.discount_types.concat(formDefaults.collections?.discounts)" :taxOptions="formDefaults.collections?.tax_schemes"
         v-model="fields.rows" :mainDiscount="{
           discount_type: fields.discount_type,
           discount: fields.discount,
@@ -376,17 +378,6 @@ export default {
         } else formData.fields.value.mode = 'Credit'
       }
     })
-    const discountOptionsComputed = computed(() => {
-      const obj = {
-        results: [...staticOptions.discount_types],
-        pagination: {},
-      }
-      if (formData?.formDefaults.value?.collections?.discounts?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.discounts.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.discounts.pagination)
-      }
-      return obj
-    })
 
     const modeOptionsComputed = computed(() => {
       const obj = {
@@ -418,7 +409,6 @@ export default {
       onPartyChange,
       // TODO: temp
       show_row_column_in_voucher_row,
-      discountOptionsComputed,
       modeOptionsComputed
     }
   },
