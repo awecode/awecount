@@ -129,14 +129,14 @@
               ? 'col-5'
               : 'col-12'
               " data-testid="row-discount-type-div">
-              <n-auto-complete-v2 v-model="modalValue.discount_type" label="Discount" :options="discountOptions"/>
+              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions"/>
             </div>
             <div :class="showRowTradeDiscount ? 'col-3' : 'col-6'" v-if="modalValue.discount_type === 'Amount' ||
               modalValue.discount_type === 'Percent'
             ">
-              <n-auto-complete-v2 v-model.number="modalValue.discount" label="Discount"
+              <n-auto-complete v-model.number="modalValue.discount" label="Discount"
                 :error-message="errors?.discount ? errors.discount[0] : null" :error="errors?.discount ? true : false"
-                data-testid="row-discount-input" :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/discounts`" />
+                data-testid="row-discount-input" />
             </div>
             <div class="col-3 row" v-if="['Amount', 'Percent'].includes(modalValue.discount_type) &&
               showRowTradeDiscount
@@ -147,9 +147,9 @@
           </div>
         </div>
         <div class="col-3" data-testid="row-tax-select">
-          <n-auto-complete-v2 v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax"
+          <n-auto-complete v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax"
           :error="errors?.tax_scheme_id ? true : null" :error-message="errors?.tax_scheme_id ? 'This field is required' : null"
-          :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/tax-schemes`" />
+          />
         </div>
       </div>
       <div v-if="$route.params.id
