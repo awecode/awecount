@@ -74,10 +74,10 @@
                 ? 'col-6'
                 : 'col-12'
                 " data-testid="overall-discount-type-div">
-                <n-auto-complete v-model="fields.discount_type" label="Discount"
+                <n-auto-complete-v2 v-model="fields.discount_type" label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null" :options="discountOptionsComputed"
                   :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
-                </n-auto-complete>
+                </n-auto-complete-v2>
               </div>
               <div class="col-6 row">
                 <div :class="formDefaults.options?.show_trade_discount_in_voucher
@@ -100,14 +100,13 @@
           </div>
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode *" class="col-12 col-md-6" :error-message="errors?.mode"
-              :error="!!errors?.mode" :options="staticOptions.modes.concat(
-                formDefaults.collections?.bank_accounts
-              )
-                " option-value="id" option-label="name" map-options emit-value data-testid="mode-input">
-              <template v-slot:append>
-                <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                  @click.stop.prevent="fields.mode = null" /></template></q-select>
+            <div class="col-12 col-md-6">
+              <NAutoCompleteV2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
+                :error="!!errors?.mode" :options="modeOptionsComputed" data-testid="mode-input">
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.mode = null" /></template></NAutoCompleteV2>
+            </div>
           </div>
         </q-card-section>
       </q-card>
@@ -377,11 +376,27 @@ export default {
       }
     })
     const discountOptionsComputed = computed(() => {
-      if (formData?.formDefaults.value?.collections?.discounts) {
-        return staticOptions.discount_types.concat(
-          formData.formDefaults.value.collections.discounts
-        )
-      } else return staticOptions.discount_types
+      const obj = {
+        results: [...staticOptions.discount_types],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.discounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.discounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.discounts.pagination)
+      }
+      return obj
+    })
+
+    const modeOptionsComputed = computed(() => {
+      const obj = {
+        results: [...staticOptions.modes],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      }
+      return obj
     })
     return {
       ...formData,
@@ -402,7 +417,8 @@ export default {
       onPartyChange,
       // TODO: temp
       show_row_column_in_voucher_row,
-      discountOptionsComputed
+      discountOptionsComputed,
+      modeOptionsComputed
     }
   },
 }
