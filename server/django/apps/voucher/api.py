@@ -152,9 +152,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     collections = [
         ("parties", Party, PartyMinSerializer),
         ("units", Unit),
-        ("discounts", SalesDiscount, SalesDiscountMinSerializer),
+        ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
             Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)),
@@ -275,6 +275,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 ).data,
                 "enable_sales_agents": request.company.enable_sales_agents,
                 "enable_fifo": request.company.inventory_setting.enable_fifo,
+                "default_mode_obj": BankAccount.objects.filter(
+                    id=request.company.sales_setting.mode
+                )
+                .annotate(name=F("short_name" or "bank_name" or "account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
