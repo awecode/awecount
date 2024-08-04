@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item, Category
+from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
@@ -220,6 +221,10 @@ class SalesVoucherRowSerializer(
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
     hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
+    item_obj = serializers.SerializerMethodField()
+
+    def get_item_obj(self, obj):
+        return ItemSalesSerializer(obj.item).data
 
     def validate_discount(self, value):
         if not value:
