@@ -97,6 +97,7 @@ export default {
       initalAllOptions.results = initalAllOptions.results.filter((item) => {
         return (props.staticOption.id !== item.id)
       })
+      initalAllOptions.results.unshift(props.staticOption)
     }
     const allOptions = ref(initalAllOptions)
     const isModalOpen = ref(false)
@@ -119,6 +120,7 @@ export default {
           const filteredOptions = newValue.results.filter((item) => {
             return (props.staticOption.id !== item.id)
           })
+          filteredOptions.unshift(props.staticOption)
           allOptions.value.results = filteredOptions
         } else {
           allOptions.value.results = newValue.results
@@ -130,8 +132,12 @@ export default {
     watch(
       () => props.staticOption,
       (newValue) => {
-        allOptions.value.results = allOptions.value.results.concat(newValue | [])
-        filteredOptions.value = allOptions.value.results
+        if (newValue && newValue.id) {
+          const filteredOptions = allOptions.value.results.filter((item) => {
+            return (newValue.id !== item.id)
+          })
+          allOptions.value.results = filteredOptions.unshift(newValue)
+        }
       }
     )
 

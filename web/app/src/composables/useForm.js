@@ -82,7 +82,7 @@ export default (endpoint, config) => {
 
           // From drop down branch
           // TODO: resolve and remove this
-          delete data.collections
+          // delete data.collections
           // Object.assign(formDefaults.value, data)
           // Object.assign(fields.value, data.fields)
           // From drop down branch

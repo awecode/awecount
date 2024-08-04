@@ -22,6 +22,7 @@
           <n-auto-complete-v2
             v-model="voucher.account_id"
             label="Account"
+            :options="props.options"
             :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
             endpoint="/v1/accounts/choices/"
@@ -32,7 +33,7 @@
                   : null
                 : null
             "
-            :static-options="voucher.account_obj"
+            :static-option="voucher.account_obj"
           />
         </div>
         <div class="col-2">
