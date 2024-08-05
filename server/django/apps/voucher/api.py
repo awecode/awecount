@@ -198,7 +198,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super(SalesVoucherViewSet, self).get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party").prefetch_related(
                 Prefetch(
