@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from awecount.libs import decimalize
 from awecount.libs.serializers import DisableCancelEditMixin
-from awecount.libs.mixins import ChoiceObjectMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
 
@@ -94,14 +94,13 @@ class JournalVoucherListSerializer(serializers.ModelSerializer):
         fields = ("id", "voucher_no", "date", "status", "narration")
 
 
-class JournalVoucherRowDetailSerializer(ChoiceObjectMixin, serializers.ModelSerializer):
+class JournalVoucherRowDetailSerializer(serializers.ModelSerializer):
     account_name = serializers.ReadOnlyField(source="account.name")
-    additional_fields = {
-        "account_obj": 'account',
-    }
+    selected_account_obj = GenericSerializer(read_only=True, source="account")
+    
     class Meta:
         model = JournalVoucherRow
-        fields = ("id", "account_id", "account_name", "type", "dr_amount", "cr_amount")
+        fields = ("id", "account_id", "account_name", "type", "dr_amount", "cr_amount", "selected_account_obj")
 
 
 class JournalVoucherDetailSerializer(serializers.ModelSerializer):
