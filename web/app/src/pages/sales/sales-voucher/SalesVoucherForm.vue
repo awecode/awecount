@@ -51,7 +51,7 @@
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " @update:modelValue="onPartyChange" :staticOption="fields.party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" />
+                      " @update:modelValue="onPartyChange" :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)" data-testid="switch-account-group-btn">
@@ -102,10 +102,9 @@
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <!-- {{ formDefaults.options?.default_mode_obj }} -->
               <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
                 endpoint="/v1/sales-voucher/create-defaults/bank_accounts"
-                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
+                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                     @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
