@@ -18,7 +18,7 @@
                   <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name"
                     :error="!!errors.customer_name" v-if="!partyMode || !!fields.customer_name">
                   </q-input>
-                  <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
+                  <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
                       " />
                 </div>
