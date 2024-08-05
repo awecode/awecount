@@ -14,7 +14,8 @@
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
               <n-auto-complete-v2 v-model="modalValue[index].item_id" :options="itemOptions"
-                :endpoint="`v1/challan/create-defaults/items`" :staticOption="modalValue[index].selected_item_obj"
+                 :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
+                 :staticOption="modalValue[index].selected_item_obj"
                 label="Item" :error="!!errors?.[index]
                   ? errors[index].item_id
                     ? errors[index].item_id[0]
@@ -37,7 +38,7 @@
             </div>
             <div class="col-3">
               <n-auto-complete-v2 v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit"
-                :endpoint="`v1/challan/create-defaults/units`" option-value="id" option-label="name" emit-value
+                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" option-value="id" option-label="name" emit-value
                 map-options :error-message="!!errors?.[index]
                   ? errors[index].unit_id
                     ? 'Please Select an Option'
@@ -107,6 +108,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    usedIn: {
+      type: String,
+      default: 'challan',
+    }
   },
   emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
@@ -155,6 +160,10 @@ export default {
         modalValue.value[index].unit_id = props.itemOptions.results[itemIndex].unit_id
       }
     }
+    const choiceEndpointBaseComputed = computed(() => {
+      if (props.usedIn === 'challan') return 'challan'
+      if (props.usedIn === 'purchase-order') return 'purchase-order'
+    })
     return {
       props,
       modalValue,
@@ -164,7 +173,8 @@ export default {
       // InvoiceRow,
       useCalcDiscount,
       rowEmpty,
-      onItemChange
+      onItemChange,
+      choiceEndpointBaseComputed
     }
   },
 }
