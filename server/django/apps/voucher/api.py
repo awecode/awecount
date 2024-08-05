@@ -805,10 +805,10 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     filterset_class = CreditNoteFilterSet
 
     collections = (
-        ("discounts", SalesDiscount, SalesDiscountSerializer),
+        ("discounts", SalesDiscount, SalesDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
         ("items", Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
     )
@@ -816,7 +816,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-id")
