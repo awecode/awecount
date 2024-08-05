@@ -116,6 +116,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     remarks = serializers.CharField(required=False)
     party_name = serializers.ReadOnlyField(source="party.name")
     invoice_nos = serializers.SerializerMethodField()
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
 
     def get_invoice_nos(self, obj):
         return [invoice.voucher_no for invoice in obj.invoices.all()]
@@ -207,6 +208,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             "party_id",
             "party_name",
             "invoice_nos",
+            "selected_bank_account_obj",
         )
 
 
