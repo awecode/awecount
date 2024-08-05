@@ -493,10 +493,10 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     collections = (
         ("parties", Party, PartyMinSerializer),
-        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer),
+        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
         (
             "items",
@@ -562,7 +562,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-date", "-pk")
@@ -577,7 +577,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             "options": {
                 "fiscal_years": FiscalYearSerializer(
                     request.company.get_fiscal_years(), many=True
-                ).data
+                ).data,
+                "default_mode_obj": None
+                if request.company.purchase_setting.mode in ["Cash", "Credit"]
+                else BankAccount.objects.filter(id=request.company.purchase_setting.mode)
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
