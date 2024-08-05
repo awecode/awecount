@@ -65,7 +65,7 @@
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
-                endpoint="/v1/sales-voucher/create-defaults/bank_accounts"
+                endpoint="/v1/credit-note/create-defaults/bank_accounts"
                 :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
