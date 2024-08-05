@@ -275,10 +275,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 ).data,
                 "enable_sales_agents": request.company.enable_sales_agents,
                 "enable_fifo": request.company.inventory_setting.enable_fifo,
-                "default_mode_obj": BankAccount.objects.filter(
-                    id=request.company.sales_setting.mode
-                )
-                .annotate(name=F("short_name" or "bank_name" or "account_number"))
+                "default_mode_obj": None
+                if isinstance(request.company.sales_setting.mode, str)
+                else BankAccount.objects.filter(id=request.company.sales_setting.mode)
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
                 .values("id", "name")
                 .first(),
             },
