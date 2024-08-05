@@ -40,6 +40,7 @@ from ..serializers import (
     AccountSerializer,
     AggregatorSerializer,
     CategorySerializer,
+    CategoryDetailSerializer,
     CategoryTreeSerializer,
     ContentTypeListSerializer,
     JournalEntrySerializer,
@@ -129,6 +130,11 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = CategoryFilterSet
 
     collections = (("categories", Category, CategorySerializer),)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CategoryDetailSerializer
+        return super().get_serializer_class()
 
 
 class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):

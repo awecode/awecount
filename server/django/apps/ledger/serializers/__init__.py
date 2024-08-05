@@ -174,6 +174,9 @@ class CategorySerializer(serializers.ModelSerializer):
         except IntegrityError:
             raise ValidationError({"code": ["Category with this code already exists."]})
 
+class CategoryDetailSerializer(CategorySerializer):
+    selected_parent_obj = GenericSerializer(source="parent", read_only=True)
+
 
 class AccountMinSerializer(serializers.ModelSerializer):
     class Meta:
