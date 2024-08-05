@@ -826,6 +826,8 @@ class ChallanRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = ChallanRow
@@ -847,6 +849,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
+    selected_party_obj = GenericSerializer(source="party", read_only=True)
     rows = ChallanRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):
