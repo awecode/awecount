@@ -307,6 +307,7 @@ class PurchaseOrderRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=False)
     unit_id = serializers.IntegerField(required=False)
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
 
     class Meta:
         model = PurchaseOrderRow
@@ -325,6 +326,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = PurchaseOrderRowSerializer(many=True)
+    selected_party_obj = GenericSerializer(read_only=True, source="party")
 
     class Meta:
         model = PurchaseOrder
