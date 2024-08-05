@@ -276,7 +276,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 "enable_sales_agents": request.company.enable_sales_agents,
                 "enable_fifo": request.company.inventory_setting.enable_fifo,
                 "default_mode_obj": None
-                if isinstance(request.company.sales_setting.mode, str)
+                if request.company.sales_setting.mode in ["Cash", "Credit"]
                 else BankAccount.objects.filter(id=request.company.sales_setting.mode)
                 .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
                 .values("id", "name")
