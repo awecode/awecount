@@ -222,6 +222,7 @@ class SalesVoucherRowSerializer(
     amount_before_discount = serializers.ReadOnlyField()
     hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
     selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     def validate_discount(self, value):
         if not value:
