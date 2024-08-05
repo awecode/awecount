@@ -11,9 +11,9 @@ from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
-from awecount.libs.mixins import ChoiceObjectMixin
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     PurchaseVoucher,
@@ -221,10 +221,7 @@ class SalesVoucherRowSerializer(
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
     hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
-    item_obj = serializers.SerializerMethodField()
-
-    def get_item_obj(self, obj):
-        return ItemSalesSerializer(obj.item).data
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
 
     def validate_discount(self, value):
         if not value:
@@ -308,7 +305,6 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
 
 
 class SalesVoucherCreateSerializer(
-    ChoiceObjectMixin,
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
@@ -320,10 +316,8 @@ class SalesVoucherCreateSerializer(
     voucher_meta = serializers.ReadOnlyField()
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
-    additional_fields = {
-        "party_obj": 'party',
-        "mode_obj": "bank_account",
-    }
+    selected_party_obj = GenericSerializer(source="party", read_only=True)
+    selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
