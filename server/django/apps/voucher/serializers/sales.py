@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item, Category
+from apps.ledger.serializers import PartyMinSerializer
 from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
@@ -319,7 +320,7 @@ class SalesVoucherCreateSerializer(
     voucher_meta = serializers.ReadOnlyField()
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
 
-    selected_party_obj = GenericSerializer(source="party", read_only=True)
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
 
     def assign_voucher_number(self, validated_data, instance):
