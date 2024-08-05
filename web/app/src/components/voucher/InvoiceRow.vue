@@ -364,7 +364,7 @@ export default {
     }
     const choiceEndpointBaseComputed = computed(() => {
       if (props.usedIn === 'sales') return 'sales-voucher'
-      if (props.usedIn === 'purchase') return 'purchase-voucher'
+      if (props.usedIn === 'purchase') return 'purchase-vouchers'
       if (props.usedIn === 'creditNote') return 'credit-note'
       // if (props.usedIn === 'debitNote') return 'debit-notes'
       // if (props.usedIn === 'journal') return 'journal-entries'
