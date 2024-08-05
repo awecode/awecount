@@ -134,7 +134,7 @@
             <div :class="showRowTradeDiscount ? 'col-3' : 'col-6'" v-if="modalValue.discount_type === 'Amount' ||
               modalValue.discount_type === 'Percent'
             ">
-              <n-auto-complete v-model.number="modalValue.discount" label="Discount"
+              <q-input v-model.number="modalValue.discount" label="Discount"
                 :error-message="errors?.discount ? errors.discount[0] : null" :error="errors?.discount ? true : false"
                 data-testid="row-discount-input" />
             </div>
