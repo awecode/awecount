@@ -109,6 +109,11 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
 
 
 class FundTransferSerializer(serializers.ModelSerializer):
+    selected_from_account_obj = GenericSerializer(read_only=True, source="from_account")
+    selected_to_account_obj = GenericSerializer(read_only=True, source="to_account")
+    selected_transaction_fee_account_obj = GenericSerializer(
+        read_only=True, source="transaction_fee_account"
+    )
     class Meta:
         model = FundTransfer
         exclude = ("company",)
