@@ -100,6 +100,10 @@ class CollectionViewSet(object):
         if hasattr(model, "company_id"):
             qs = qs.filter(company_id=request.company_id)
 
+        serach_keyword = request.query_params.get("search")
+        if serach_keyword:
+            qs = qs.filter(name__icontains=serach_keyword)
+
         paginate = True
         if len(collection) > 3:
             paginate = collection[3]
