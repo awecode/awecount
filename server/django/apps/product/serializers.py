@@ -94,6 +94,7 @@ class ItemSerializer(serializers.ModelSerializer):
 class ItemSalesSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
     is_trackable = serializers.ReadOnlyField()
+    default_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = Item
@@ -106,6 +107,7 @@ class ItemSalesSerializer(serializers.ModelSerializer):
             "code",
             "description",
             "is_trackable",
+            "default_unit_obj",
         )
 
 

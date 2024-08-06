@@ -84,6 +84,7 @@ from apps.voucher.serializers.voucher_settings import (
     SalesSettingsSerializer,
     SalesUpdateSettingSerializer,
 )
+
 # from awecount.libs.db import DistinctSum
 from awecount.libs import get_next_voucher_no, zero_for_none
 from awecount.libs.CustomViewSet import (
@@ -95,6 +96,7 @@ from awecount.libs.CustomViewSet import (
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
+
 from .models import (
     CreditNote,
     CreditNoteRow,
@@ -157,7 +159,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
-            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)),
+            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True))
+            .select_related("unit"),
             ItemSalesSerializer,
         ),
     ]
@@ -818,7 +821,11 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
-        ("items", Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
+        (
+            "items",
+            Item.objects.filter(can_be_sold=True).select_related("unit"),
+            ItemSalesSerializer,
+        ),
     )
 
     def get_queryset(self):
@@ -1851,7 +1858,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_sold=True, track_inventory=True),
+            Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
+                "unit"
+            ),
             ItemSalesSerializer,
         ),
     ]
