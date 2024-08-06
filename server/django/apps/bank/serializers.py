@@ -27,6 +27,8 @@ class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSeria
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     # clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
+    selected_benefactor_obj = GenericSerializer(read_only=True, source="benefactor")
 
     def validate_voucher_no(self, attr):
         if attr and attr > 214748364:
