@@ -21,6 +21,13 @@ class BankAccountSerializer(serializers.ModelSerializer):
         model = BankAccount
         exclude = ("company",)
 
+class BankAccountMinSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source="__str__")
+
+    class Meta:
+        model = BankAccount
+        fields = ("id", "name")
+
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
