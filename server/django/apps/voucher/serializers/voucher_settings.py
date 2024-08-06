@@ -40,7 +40,7 @@ class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
-
+    selected_mode_obj = serializers.SerializerMethodField()
     class Meta:
         model = PurchaseSetting
         exclude = ("company",)
@@ -49,6 +49,12 @@ class PurchaseSettingSerializer(serializers.ModelSerializer):
         if obj.mode not in ["Cash", "Credit"]:
             return int(obj.mode)
         return obj.mode
+
+    def get_selected_mode_obj(self, obj):
+        if obj.mode not in ["Cash", "Credit"]:
+            bank_account = BankAccount.objects.filter(id=obj.mode).first()
+            return BankAccountMinSerializer(bank_account, many=False).data
+        return None
 
 
 class SalesSettingCreateSerializer(serializers.ModelSerializer):
