@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from .models import (
     BankAccount,
@@ -11,7 +12,7 @@ from .models import (
     FundTransfer,
     FundTransferTemplate,
 )
-
+from apps.ledger.serializers import PartyMinSerializer
 
 class BankAccountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
@@ -156,6 +157,10 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
             "cheque_no",
         )
 
+class ChequeIssueFormSerializer(ChequeIssueSerializer):
+    selected_bank_account_obj = BankAccountChequeIssueSerializer(read_only=True, source="bank_account")
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
+    selected_dr_account_obj = GenericSerializer(source="dr_account", read_only=True)
 
 class BankCashDepositCreateSerializer(
     StatusReversionMixin, serializers.ModelSerializer
