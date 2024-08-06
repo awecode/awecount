@@ -17,7 +17,8 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
+              <n-auto-complete-v2 label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
+                endpoint="v1/inventory-categories/create-defaults/units" :staticOption="fields.selected_unit_obj"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.default_unit_id" />
             </div>
             <div class="col-12 col-md-6">
