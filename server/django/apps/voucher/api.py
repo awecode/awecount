@@ -412,12 +412,14 @@ class POSViewSet(
             "discounts",
             SalesDiscount.objects.only("name", "type", "value"),
             SalesDiscountMinSerializer,
+            False,
         ),
         ("bank_accounts", BankAccount.objects.only("short_name", "bank_name")),
         (
             "tax_schemes",
             TaxScheme.objects.only("name", "short_name", "rate"),
             TaxSchemeMinSerializer,
+            False,
         ),
     ]
 
