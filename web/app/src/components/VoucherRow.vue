@@ -25,7 +25,7 @@
             :options="props.options"
             :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
-            endpoint="/v1/accounts/choices/"
+            endpoint="v1/journal-voucher/create-defaults/accounts/"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
