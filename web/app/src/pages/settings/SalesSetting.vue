@@ -28,16 +28,16 @@
             </div>
           </div>
           <div class="row q-ml-sm">
-            <q-select class="col-12 col-sm-6" label="Mode" v-model.number="fields.mode" :options="formDefaults.collections.bank_accounts
-              ? formDefaults.collections.bank_accounts.concat(modes)
-              : modes
-              " option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-              :error-message="modeErrors">
-              <!-- TODO: the id of modes in field comes as string must be chnaged to number -->
-              <template v-slot:append>
-                <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
-              </template>
-            </q-select>
+            <div class="col-12 col-sm-6">
+              <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
+                endpoint="v1/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj"
+                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
+                :error-message="modeErrors">
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
+                </template>
+              </n-auto-complete-v2>
+            </div>
           </div>
           <div class="column q-gutter-y-sm q-mb-sm">
             <div>
@@ -136,13 +136,25 @@ export default {
         })
     }
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    const modeOptionsComputed = computed(() => {
+      const obj = {
+        results: [...modes],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      }
+      return obj
+    })
     return {
       ...formData,
       fields,
       modes,
       onUpdateClick,
       modeErrors,
-      formLoading
+      formLoading,
+      modeOptionsComputed
     }
   },
 }
