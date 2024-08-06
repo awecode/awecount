@@ -510,7 +510,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     )
@@ -987,7 +987,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     )
@@ -2036,7 +2036,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_purchased=True, track_inventory=True),
+            Item.objects.filter(
+                can_be_purchased=True, track_inventory=True
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     ]
