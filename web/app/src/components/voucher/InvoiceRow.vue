@@ -120,8 +120,9 @@
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
           <n-auto-complete-v2 v-model="modalValue.unit_id" :options="unitOptions" label="Unit"
+            :staticOption="modalValue.selected_unit_obj"
             :error-message="errors?.unit_id ? errors.unit_id[0] : null" :error="errors?.unit_id ? true : false"
-            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" />
+            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" :emitObj="usedInPos" @updateObj="(val) => modalValue.selected_unit_obj = val"/>
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">

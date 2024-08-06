@@ -82,9 +82,13 @@ export default {
     staticOption: {
       type: [Object, undefined],
       required: false
+    },
+    emitObj: {
+      type: Boolean,
+      default: false
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'updateObj'],
 
   setup(props, { emit }) {
     const isActive = ref(false)
@@ -109,6 +113,14 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
+        if (props.emitObj && filteredOptions.value && filteredOptions.value.length) {
+          const index = filteredOptions.value.findIndex((item) => {
+            return item.id === newValue
+          })
+          if (index > -1) {
+            emit('updateObj', filteredOptions.value[index])
+          }
+        }
       }
     )
 
