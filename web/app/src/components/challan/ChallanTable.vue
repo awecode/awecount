@@ -37,7 +37,7 @@
                   "></q-input>
             </div>
             <div class="col-3">
-              <n-auto-complete-v2 v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit"
+              <n-auto-complete-v2 v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit" :staticOption="modalValue[index].selected_unit_obj"
                 :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" option-value="id" option-label="name" emit-value
                 map-options :error-message="!!errors?.[index]
                   ? errors[index].unit_id
@@ -158,6 +158,7 @@ export default {
       const itemIndex = props.itemOptions.results.findIndex((item) => item.id === modalValue.value[index].item_id)
       if (itemIndex > -1) {
         modalValue.value[index].unit_id = props.itemOptions.results[itemIndex].unit_id
+        modalValue.value[index].selected_unit_obj = props.itemOptions.results[itemIndex].default_unit_obj
       }
     }
     const choiceEndpointBaseComputed = computed(() => {

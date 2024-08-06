@@ -309,6 +309,7 @@ export default {
           modalValue.value.rate = itemObject.rate
           modalValue.value.unit_id = itemObject.unit_id
           modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+          modalValue.value.selected_unit_obj = itemObject.default_unit_obj
         }
       }
     )
