@@ -26,6 +26,7 @@ from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,
     CRULViewSet,
+    GenericSerializer,
 )
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 
@@ -546,8 +547,8 @@ class AccountClosingViewSet(
 
     def get_defaults(self, request=None):
         company = request.company
-        current_fiscal_year_id = company.current_fiscal_year_id
-        return {"fields": {"current_fiscal_year_id": current_fiscal_year_id}}
+        current_fiscal_year = GenericSerializer(company.current_fiscal_year).data
+        return {"fields": {"current_fiscal_year": current_fiscal_year}}
 
     def get_queryset(self):
         return super().get_queryset().filter(company=self.request.company)
