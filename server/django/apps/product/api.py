@@ -48,6 +48,7 @@ from .serializers import (
     BrandSerializer,
     InventoryAccountSerializer,
     InventoryCategorySerializer,
+    InventoryCategoryFormSerializer,
     InventoryCategoryTrialBalanceSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
@@ -721,7 +722,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ("accounts", Account, AccountMinSerializer),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
@@ -790,6 +791,11 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         if self.action == "list":
             qs = qs.order_by("-id")
         return qs
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return InventoryCategoryFormSerializer
+        return super().get_serializer_class()
 
     @action(detail=False, url_path="trial-balance")
     def trial_balance(self, request):

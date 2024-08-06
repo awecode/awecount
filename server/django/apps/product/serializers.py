@@ -209,6 +209,7 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
         return attrs
 
+
     class Meta:
         model = InventoryCategory
         exclude = (
@@ -224,6 +225,8 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
             "indirect_expense_account_category",
         )
 
+class InventoryCategoryFormSerializer(InventoryCategorySerializer):
+    selected_unit_obj = UnitSerializer(read_only=True, source="default_unit")
 
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:
