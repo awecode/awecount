@@ -15,6 +15,9 @@ class InputChoiceMixin(object):
     @action(detail=False)
     def choices(self, request):
         queryset = self.filter_queryset(self.get_queryset())
+        search_keyword = request.query_params.get("search")
+        if search_keyword:
+            queryset = queryset.filter(name__icontains=search_keyword)
         paginator = self.paginator
         page = paginator.paginate_queryset(queryset, request)
         if hasattr(self, "choice_serializer_class"):
