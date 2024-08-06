@@ -83,12 +83,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     collections = (
         ("brands", Brand, BrandSerializer),
-        ("inventory_categories", InventoryCategory, InventoryCategorySerializer),
+        ("inventory_categories", InventoryCategory, InventoryCategoryFormSerializer),
         ("units", Unit, UnitSerializer),
         ("accounts", Account, AccountMinSerializer),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
