@@ -170,6 +170,8 @@ class BankCashDepositCreateSerializer(
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
+    selected_benefactor_obj = GenericSerializer(read_only=True, source="benefactor")
 
     def create(self, validated_data):
         bank_cash_deposit = BankCashDeposit.objects.create(**validated_data)
