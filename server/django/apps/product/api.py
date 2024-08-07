@@ -53,6 +53,7 @@ from .serializers import (
     ItemDetailSerializer,
     ItemListMinSerializer,
     ItemListSerializer,
+    ItemFormSerializer,
     ItemOpeningSerializer,
     ItemPOSSerializer,
     ItemSerializer,
@@ -82,7 +83,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     collections = (
         ("brands", Brand, BrandSerializer),
-        ("inventory_categories", InventoryCategory, InventoryCategoryFormSerializer),
+        (
+            "inventory_categories",
+            InventoryCategory.objects.select_related(
+                "default_unit",
+                "sales_account",
+                "purchase_account",
+                "discount_allowed_account",
+                "discount_received_account",
+            ),
+            InventoryCategoryFormSerializer,
+        ),
         ("units", Unit, UnitSerializer),
         ("accounts", Account, AccountMinSerializer),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
@@ -111,6 +122,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return ItemListSerializer
         if self.action == "list_items":
             return ItemListMinSerializer
+        if self.action == "retrieve":
+            return ItemFormSerializer
         return self.serializer_class
 
     def get_defaults(self, request=None):
@@ -756,6 +769,29 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             AccountMinSerializer,
         ),
     )
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
 
     @transaction.atomic
     def perform_update(self, request, *args, **kwargs):
