@@ -13,8 +13,6 @@ from rest_framework.mixins import DestroyModelMixin
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from awecount.libs.exception import UnprocessableException
-
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
 from apps.ledger.models import Transaction as Ledger
@@ -30,6 +28,7 @@ from apps.voucher.models import (
     SalesVoucherRow,
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
@@ -47,8 +46,8 @@ from .serializers import (
     BookSerializer,
     BrandSerializer,
     InventoryAccountSerializer,
-    InventoryCategorySerializer,
     InventoryCategoryFormSerializer,
+    InventoryCategorySerializer,
     InventoryCategoryTrialBalanceSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
@@ -113,6 +112,29 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         if self.action == "list_items":
             return ItemListMinSerializer
         return self.serializer_class
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
 
     def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
