@@ -95,27 +95,31 @@
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account"
-                @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)" />
+                @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)"
+                :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory" />
               <select-item-accounts-with-types v-if="fields.can_be_purchased"
                 v-model:modelValue="fields.purchase_account" v-model:typeModelValue="fields.purchase_account_type"
                 label="Purchase" :options="formDefaults.collections?.accounts" :itemName="fields.name"
                 :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account"
-                @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" />
+                @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)" 
+                :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory"/>
               <select-item-accounts-with-types v-if="fields.can_be_sold"
                 v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account"
-                @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" />
+                @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)" 
+                :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory"/>
               <select-item-accounts-with-types v-if="fields.can_be_purchased"
                 v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
                 :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account"
-                @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)" />
+                @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)"
+                :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory"/>
             </div>
           </q-card>
           <div class="row justify-between q-pa-sm q-mt-md">
@@ -195,6 +199,7 @@ const images = ref({
 })
 const endpoint = '/v1/items/'
 const injectUnitObj = ref(null)
+const activeInventoryCategory = ref(null)
 const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/items/list/',
@@ -259,6 +264,8 @@ const getOptionCollection = (collections, name) => {
 }
 
 const setCategory = (selected) => {
+  console.log('inventory category updated', selected)
+  activeInventoryCategory.value = selected
   if (!selected) return
   if (selected.hasOwnProperty('extra_fields')) {
     if (fields.value.extra_data === null) {

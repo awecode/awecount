@@ -5,8 +5,8 @@
                 map-options emit-value v-model="type" :options="account_types" :error="false"/>
         </div>
         <div>
-            <n-auto-complete v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
-                v-model="modalValue" :options="props.options"
+            <n-auto-complete-v2 v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
+                v-model="modalValue" :options="props.options" :endpoint="endpointLabelMap[props.label]"
                 :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="error" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
@@ -25,15 +25,20 @@
               </div>
               <div v-else class="w-full">
                 <q-select :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
-                v-model="modalValue" disable :options="props.options" :error="!!error" :error-message="error"></q-select>
+                v-model="modalValue" disable :options="categoryAccountObjComputed ? [categoryAccountObjComputed] : []" :error="!!error" :error-message="error"></q-select>
               </div>
             </div>
             <div v-else-if="type === 'creation' && usedInCategoryForm" class="flex items-center gap-2 h-full">
               <q-icon name="info" size="sm" color="grey-7"></q-icon>
               <div class="text-grey-7">You will be able to choose options while creating item.</div>
             </div>
+            <!-- <div v-else>
+                <q-input :label="label + ' Account'" class="w-full" disable :error="!!error" :error-message="error"
+                 v-model="globalAccountObjComputed.name"></q-input>
+            </div> -->
             <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
-                v-model="modalValue" disable :options="props.options" :error="!!error" :error-message="error"></q-select>
+                v-model="modalValue" disable :options="globalAccountObjComputed.id ? [globalAccountObjComputed] : []"
+                :error="!!error" :error-message="error"></q-select>
         </div>
     </div>
 </template>
@@ -79,7 +84,19 @@ const props = defineProps({
         default: () => false
     },
     dedicatedAccount: {
-      type: Number || null,
+      type: [Number, null],
+      default: () => null
+    },
+    activeCategoryObj: {
+      type: [Object, null],
+      default: () => null
+    },
+    globalAccounts: {
+      type: [Object, null],
+      default: () => null
+    },
+    staticOption: {
+      type: [Object, null],
       default: () => null
     }
 })
@@ -87,6 +104,7 @@ const $q = useQuasar()
 const emits = defineEmits(['update:modelValue', 'update:typeModelValue'])
 const type = ref(props.typeModelValue)
 const modalValue = ref(props.modelValue)
+const injectOption = ref(props.staticOption)
 const account_types = props.usedInCategoryForm ? [
     { value: 'dedicated', label: 'Use a dedicated account for the item' },
     { value: 'global', label: 'Use global account' },
@@ -99,26 +117,12 @@ const account_types = props.usedInCategoryForm ? [
     { value: 'category', label: "Use category's account" },
     { value: 'existing', label: 'Use an existing account' },
 ]
-const getOptionCollection = (collections, name) => {
-    if (collections) {
-        let option = collections.find(item => {
-            if (item.name === name && item.default) {
-                return item;
-            }
-        });
-        if (option) {
-            return option.id;
-        }
-    }
-}
+
 watch([() => type.value, () => props.options], (newValue) => {
     if (newValue[0] === 'category') {
-        if (props.activeCategory && !props.usedInCategoryForm) {
-            const selected = props.inventory_categories.find(item => {
-                if (item.id === props.activeCategory) {
-                    return item;
-                }
-            })
+        // debugger
+        if (props.activeCategoryObj && !props.usedInCategoryForm) {
+            const selected = props.activeCategoryObj
             const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
             if (selected) modalValue.value = selected[fieldType]
             else {
@@ -133,7 +137,7 @@ watch([() => type.value, () => props.options], (newValue) => {
         } else modalValue.value = null
     }
     else if (newValue[0] === 'global') {
-        modalValue.value = getOptionCollection(props.options, globalAccountName[props.label])
+        modalValue.value = globalAccountObjComputed.value.id
     }
     else {
         modalValue.value = null
@@ -163,6 +167,24 @@ const globalAccountName = {
     'Discount Allowed': 'Discount Expenses',
     'Discount Received': 'Discount Income'
 }
+const globalAcIdKeyMap = {
+    'Sales': 'sales_account_id',
+    'Purchase': 'purchase_account_id',
+    'Discount Allowed': 'discount_allowed_account_id',
+    'Discount Received': 'discount_received_account_id'
+}
+const globalAccountObjComputed = computed(() => {
+    const data = {
+        id: null,
+        name: null
+    }
+    if (!props.globalAccounts) return data
+    if (props.globalAccounts.hasOwnProperty(globalAcIdKeyMap[props.label])) {
+        data.id = props.globalAccounts[globalAcIdKeyMap[props.label]]
+        data.name = globalAccountName[props.label]
+    }
+    return data
+})
 const dedicatedAccountName = computed(() => {
   if (props.label === 'Sales') return (props.itemName + ' (Sales)')
   else if (props.label === 'Purchase') return (props.itemName + ' (Purchase)')
@@ -170,4 +192,19 @@ const dedicatedAccountName = computed(() => {
   else if (props.label === 'Discount Received') return ('Discount Received - ' + props.itemName)
   else return ''
 })
+const categoryAccountObjComputed = computed(() => {
+    let data = null
+    if (!props.activeCategoryObj) return data
+    const objKey = props.label.toLowerCase().replaceAll(' ', '_') + '_account_obj'
+    if (props.activeCategoryObj.hasOwnProperty(objKey)) {
+        data = props.activeCategoryObj[objKey]
+    }
+    return data
+})
+const endpointLabelMap = {
+    'Sales': 'v1/items/create-defaults/accounts',
+    'Purchase': 'v1/items/create-defaults/accounts',
+    'Discount Allowed': 'v1/items/create-defaults/discount_allowed_accounts',
+    'Discount Received': 'v1/items/create-defaults/discount_received_accounts'
+}
 </script>
