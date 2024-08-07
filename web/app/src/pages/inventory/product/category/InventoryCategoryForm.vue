@@ -72,7 +72,7 @@
             </div>
           </div>
           <!-- {{ fields.sales_account_obj }} -->
-          <div v-if="fields.hasOwnProperty('sales_account_obj')">
+          <div v-if="isEdit ? fields.hasOwnProperty('sales_account_obj') : true">
             <div>
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
                 v-model:typeModelValue="fields.items_sales_account_type" label="Sales"
