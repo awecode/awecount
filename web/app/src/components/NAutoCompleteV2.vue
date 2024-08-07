@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { withQuery, joinURL } from 'ufo'
 export default {
   props: {
     label: {
@@ -214,7 +215,10 @@ export default {
     }
     const fetchOptions = async () => {
       fetchLoading.value = true
-      const endpoint = props.endpoint + (allOptions.value?.pagination?.page ? `?page=${allOptions.value.pagination.page + 1}` : '')
+      const queryObj = {}
+      if (allOptions.value?.pagination?.page) queryObj.page = allOptions.value.pagination.page + 1
+      if (props.fetchOnMount && modalValue.value) queryObj.id = modalValue.value
+      const endpoint = withQuery(props.endpoint, queryObj)
       try {
         const data = await useApi(endpoint)
         if (data) {
@@ -271,7 +275,9 @@ export default {
       }
     }
     if (props.fetchOnMount && props.endpoint) {
-      fetchOptions()
+      if (modalValue.value) {
+        fetchOptions()
+      }
     }
 
     return {
