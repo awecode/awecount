@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { withQuery, joinURL } from 'ufo'
+import { withQuery } from 'ufo'
 export default {
   props: {
     label: {
@@ -275,9 +275,7 @@ export default {
       }
     }
     if (props.fetchOnMount && props.endpoint) {
-      if (modalValue.value) {
-        fetchOptions()
-      }
+      fetchOptions()
     }
 
     return {
