@@ -236,6 +236,19 @@ class InventoryCategoryFormSerializer(InventoryCategorySerializer):
     discount_allowed_account_obj = AccountMinSerializer(read_only=True, source="discount_allowed_account")
     discount_received_account_obj = AccountMinSerializer(read_only=True, source="discount_received_account")
 
+class ItemFormSerializer(ItemSerializer):
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
+    selected_sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
+    selected_purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
+    selected_discount_received_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_received_account"
+    )
+    selected_discount_allowed_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_allowed_account"
+    )
+    selected_inventory_category_obj = InventoryCategoryFormSerializer(read_only=True, source="category")
+    selected_brand_obj = GenericSerializer(read_only=True, source="brand")
+
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryCategory
