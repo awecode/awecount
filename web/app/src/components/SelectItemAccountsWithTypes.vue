@@ -71,10 +71,6 @@ const props = defineProps({
         type: [String, null],
         default: () => null
     },
-    inventory_categories: {
-        type: Array,
-        default: () => []
-    },
     itemName: {
         type: String,
         required: false

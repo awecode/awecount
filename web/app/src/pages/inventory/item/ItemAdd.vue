@@ -95,7 +95,6 @@
               <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
                 v-model:typeModelValue="fields.sales_account_type" label="Sales"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account"
                 @update:typeModelValue="(value) => onTypeUpdate('sales_account', value)"
                 :defaultCategoryName="fields.selected_category_name"
@@ -103,7 +102,7 @@
               <select-item-accounts-with-types v-if="fields.can_be_purchased"
                 v-model:modelValue="fields.purchase_account" v-model:typeModelValue="fields.purchase_account_type"
                 label="Purchase" :options="formDefaults.collections?.accounts" :itemName="fields.name"
-                :activeCategory="fields.category" :inventory_categories="formDefaults.collections?.inventory_categories"
+                :activeCategory="fields.category"
                 :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account"
                 @update:typeModelValue="(value) => onTypeUpdate('purchase_account', value)"
                 :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory || fields.selected_inventory_category_obj" :staticOption="staticOptions.purchase"/>
@@ -111,7 +110,6 @@
                 v-model:modelValue="fields.discount_allowed_account"
                 v-model:typeModelValue="fields.discount_allowed_account_type" label="Discount Allowed"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account"
                 @update:typeModelValue="(value) => onTypeUpdate('discount_allowed_account', value)"
                 :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory || fields.selected_inventory_category_obj" :staticOption="staticOptions.discount_allowed"/>
@@ -119,7 +117,6 @@
                 v-model:modelValue="fields.discount_received_account"
                 v-model:typeModelValue="fields.discount_received_account_type" label="Discount Received"
                 :options="formDefaults.collections?.accounts" :itemName="fields.name" :activeCategory="fields.category"
-                :inventory_categories="formDefaults.collections?.inventory_categories"
                 :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account"
                 @update:typeModelValue="(value) => onTypeUpdate('discount_received_account', value)"
                 :globalAccounts="formDefaults.options?.global_accounts" :activeCategoryObj="activeInventoryCategory || fields.selected_inventory_category_obj" :staticOption="staticOptions.discount_received"/>
