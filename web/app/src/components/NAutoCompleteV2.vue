@@ -113,13 +113,17 @@ export default {
       () => props.modelValue,
       (newValue) => {
         modalValue.value = newValue
-        if (props.emitObj && filteredOptions.value && filteredOptions.value.length) {
-          const index = filteredOptions.value.findIndex((item) => {
-            return item.id === newValue
-          })
-          if (index > -1) {
-            emit('updateObj', filteredOptions.value[index])
+        if (props.emitObj) {
+          let data = null
+          if (filteredOptions.value && filteredOptions.value.length) {
+            const index = filteredOptions.value.findIndex((item) => {
+              return item.id === newValue
+            })
+            if (index > -1) {
+              data = filteredOptions.value[index]
+            }
           }
+          emit('updateObj', data)
         }
       }
     )
