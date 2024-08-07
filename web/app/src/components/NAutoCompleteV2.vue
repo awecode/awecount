@@ -86,6 +86,10 @@ export default {
     emitObj: {
       type: Boolean,
       default: false
+    },
+    fetchOnMount: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['update:modelValue', 'updateObj'],
@@ -265,6 +269,9 @@ export default {
         allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }
+    }
+    if (props.fetchOnMount && props.endpoint) {
+      fetchOptions()
     }
 
     return {
