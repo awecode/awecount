@@ -114,7 +114,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "list":
-            qs = qs.order_by("-id")
+            qs = qs.order_by("-id").select_related(
+                "category"
+            )
         return qs
 
     def get_serializer_class(self):
