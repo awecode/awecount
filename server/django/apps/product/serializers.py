@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
-from apps.ledger.serializers import AccountBalanceSerializer
+from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -231,6 +231,10 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
 class InventoryCategoryFormSerializer(InventoryCategorySerializer):
     selected_unit_obj = UnitSerializer(read_only=True, source="default_unit")
+    sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
+    purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
+    discount_allowed_account_obj = AccountMinSerializer(read_only=True, source="discount_allowed_account")
+    discount_received_account_obj = AccountMinSerializer(read_only=True, source="discount_received_account")
 
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:
