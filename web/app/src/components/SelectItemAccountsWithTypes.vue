@@ -2,12 +2,12 @@
     <div class="grid lg:grid-cols-2 lg:gap-4">
         <div>
             <q-select class="q-full-width" :label="`${label} A/C Options`" option-value="value" option-label="label"
-                map-options emit-value v-model="type" :options="account_types" :error="false"/>
+                map-options emit-value v-model="type" :options="account_types" :error="false" @update:model-value="onTypeChange"/>
         </div>
         <div>
             <n-auto-complete-v2 v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
                 v-model="modalValue" :options="props.options" :endpoint="endpointLabelMap[props.label]"
-                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="error" />
+                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="error" :staticOption="injectOption" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
                   <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>
@@ -16,7 +16,6 @@
                   <q-icon name="info" size="sm" color="grey-7"></q-icon>
                   <div class="text-grey-7 whitespace-normal">A new {{ props.label }} Account will be created for the Item</div>
                 </div>
-                <!-- {{ props.itemName ? `${props.itemName || ''} (${label})` : '' }} -->
             </div>
             <div v-else-if="type === 'category'" class="flex items-center h-full">
               <div v-if="usedInCategoryForm" class="flex gap-2 items-end no-wrap">
@@ -24,18 +23,14 @@
                 <div class="text-grey-7">Category's {{ props.label }} Account will be used for the Item</div>
               </div>
               <div v-else class="w-full">
-                <q-select :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
-                v-model="modalValue" disable :options="categoryAccountObjComputed ? [categoryAccountObjComputed] : []" :error="!!error" :error-message="error"></q-select>
+                <q-input v-if="modalValue" :label="`${label} Account`" v-model="categoryAccountNameComputed" class="w-full" disable :error="!!error" :error-message="error"></q-input>
+                <q-input v-else :label="`${label} Account`" class="w-full" disable :error="!!error" :error-message="error"></q-input>
               </div>
             </div>
             <div v-else-if="type === 'creation' && usedInCategoryForm" class="flex items-center gap-2 h-full">
               <q-icon name="info" size="sm" color="grey-7"></q-icon>
               <div class="text-grey-7">You will be able to choose options while creating item.</div>
             </div>
-            <!-- <div v-else>
-                <q-input :label="label + ' Account'" class="w-full" disable :error="!!error" :error-message="error"
-                 v-model="globalAccountObjComputed.name"></q-input>
-            </div> -->
             <q-select v-else :label="`${label} Account`" option-value="id" option-label="name" map-options emit-value
                 v-model="modalValue" disable :options="globalAccountObjComputed.id ? [globalAccountObjComputed] : []"
                 :error="!!error" :error-message="error"></q-select>
@@ -52,8 +47,13 @@ const props = defineProps({
         required: true
     },
     options: {
-        type: Array,
-        default: () => []
+        type: Object,
+        default: () => {
+          return {
+            results: [],
+            pagination: {}
+          }
+        }
     },
     error: {
         type: String,
@@ -98,6 +98,10 @@ const props = defineProps({
     staticOption: {
       type: [Object, null],
       default: () => null
+    },
+    defaultCategoryName: {
+      type: String,
+      default: () => null
     }
 })
 const $q = useQuasar()
@@ -117,32 +121,29 @@ const account_types = props.usedInCategoryForm ? [
     { value: 'category', label: "Use category's account" },
     { value: 'existing', label: 'Use an existing account' },
 ]
-
-watch([() => type.value, () => props.options], (newValue) => {
-    if (newValue[0] === 'category') {
-        // debugger
-        if (props.activeCategoryObj && !props.usedInCategoryForm) {
-            const selected = props.activeCategoryObj
-            const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
-            if (selected) modalValue.value = selected[fieldType]
-            else {
-              modalValue.value = null
-              $q.notify({
-                  color: 'orange-6',
-                  message: `Selected Category Has no ${fieldType.replaceAll('_', ' ')} !`,
-                  icon: 'report_problem',
-                  position: 'top-right',
-              })
-            }
-        } else modalValue.value = null
-    }
-    else if (newValue[0] === 'global') {
-        modalValue.value = globalAccountObjComputed.value.id
-    }
-    else {
+const onTypeChange = (newValue) => {
+  if (newValue === 'category' && props.activeCategoryObj) {
+    if (!props.usedInCategoryForm) {
+      const fieldType = props.label.toLowerCase().replaceAll(' ', '_') + '_account'
+      if (props.activeCategoryObj) modalValue.value = props.activeCategoryObj[fieldType]
+      else {
         modalValue.value = null
-    }
-})
+        $q.notify({
+            color: 'orange-6',
+            message: `Selected Category Has no ${fieldType.replaceAll('_', ' ')} !`,
+            icon: 'report_problem',
+            position: 'top-right',
+        })
+      }
+    } else modalValue.value = null
+  }
+  else if (newValue === 'global') {
+    modalValue.value = globalAccountObjComputed.value.id
+  }
+  else {
+    modalValue.value = null
+  }
+}
 watch(
     () => props.modelValue,
     (newValue) => {
@@ -192,19 +193,25 @@ const dedicatedAccountName = computed(() => {
   else if (props.label === 'Discount Received') return ('Discount Received - ' + props.itemName)
   else return ''
 })
-const categoryAccountObjComputed = computed(() => {
-    let data = null
-    if (!props.activeCategoryObj) return data
-    const objKey = props.label.toLowerCase().replaceAll(' ', '_') + '_account_obj'
-    if (props.activeCategoryObj.hasOwnProperty(objKey)) {
-        data = props.activeCategoryObj[objKey]
-    }
-    return data
+const categoryAccountNameComputed = computed(() => {
+  let categoryName = null
+  if (props.activeCategoryObj && props.activeCategory) {
+    categoryName = props.activeCategoryObj.name
+  }
+  else if (props.activeCategory && props.defaultCategoryName) {
+    categoryName = props.defaultCategoryName
+  }
+  if (!categoryName) return null
+  if (props.label === 'Sales') return (categoryName + ' (Sales)')
+  else if (props.label === 'Purchase') return (categoryName + ' (Purchase)')
+  else if (props.label === 'Discount Allowed') return ('Discount Allowed - ' + categoryName)
+  else if (props.label === 'Discount Received') return ('Discount Received - ' + categoryName)
+  return null
 })
 const endpointLabelMap = {
-    'Sales': 'v1/items/create-defaults/accounts',
-    'Purchase': 'v1/items/create-defaults/accounts',
-    'Discount Allowed': 'v1/items/create-defaults/discount_allowed_accounts',
-    'Discount Received': 'v1/items/create-defaults/discount_received_accounts'
+  'Sales': 'v1/items/create-defaults/accounts',
+  'Purchase': 'v1/items/create-defaults/accounts',
+  'Discount Allowed': 'v1/items/create-defaults/discount_allowed_accounts',
+  'Discount Received': 'v1/items/create-defaults/discount_received_accounts'
 }
 </script>
