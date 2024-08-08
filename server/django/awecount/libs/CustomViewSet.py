@@ -115,6 +115,7 @@ class CollectionViewSet(object):
         if paginate:
             page = self.paginate_queryset(qs)
             serializer = serializer_class(page, many=True)
+            self.paginator.page_size = 30
             paginated_response = self.get_paginated_response(serializer.data)
             data = paginated_response.data
             return data

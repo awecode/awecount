@@ -24,6 +24,7 @@ class InputChoiceMixin(object):
             queryset = queryset.exclude(id=append_result_id)
 
         paginator = self.paginator
+        paginator.page_size = 30
         page = paginator.paginate_queryset(queryset, request)
         if hasattr(self, "choice_serializer_class"):
             serializer_class = self.choice_serializer_class
