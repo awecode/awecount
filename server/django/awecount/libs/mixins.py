@@ -16,8 +16,13 @@ class InputChoiceMixin(object):
     def choices(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         search_keyword = request.query_params.get("search")
+        append_result_id = request.query_params.get("id")
         if search_keyword:
             queryset = queryset.filter(name__icontains=search_keyword)
+
+        if append_result_id:
+            queryset = queryset.exclude(id=append_result_id)
+
         paginator = self.paginator
         page = paginator.paginate_queryset(queryset, request)
         if hasattr(self, "choice_serializer_class"):
@@ -25,7 +30,12 @@ class InputChoiceMixin(object):
         else:
             serializer_class = GenericSerializer
         serializer = serializer_class(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        paginated_data = paginator.get_paginated_response(serializer.data)
+        if append_result_id and int(request.query_params.get("page", 0)) < 2:
+            result_qs = self.filter_queryset(self.get_queryset()).filter(id=append_result_id)
+            result_serializer = serializer_class(result_qs, many=True)
+            paginated_data.data["results"].extend(result_serializer.data)
+        return paginated_data
 
 
 class ShortNameChoiceMixin(object):
