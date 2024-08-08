@@ -4,7 +4,7 @@
       :options="filteredOptions" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
       @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error"
       clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn"
-      virtual-scroll-slice-ratio-after="-0.05" @popup-show="isActive = true" @popup-hide="() => isActive = false">
+      :virtual-scroll-slice-ratio-after="0">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
       </template>
@@ -96,7 +96,6 @@ export default {
   emits: ['update:modelValue', 'updateObj'],
 
   setup(props, { emit }) {
-    const isActive = ref(false)
     const valUpdated = (val) => {
       emit('update:modelValue', val)
     }
@@ -255,7 +254,7 @@ export default {
 
     const onScroll = (scrollData) => {
       if (filteredOptionsPagination.value) {
-        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 3 &&
+        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 2 &&
           !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
           fetchLoading.value = true
           const endpoint = props.endpoint + `?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
@@ -269,7 +268,7 @@ export default {
           })
         }
       }
-      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 &&
+      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 2 &&
         allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }
@@ -290,7 +289,6 @@ export default {
       modalValue,
       onScroll,
       fetchLoading,
-      isActive
     }
   },
 }
