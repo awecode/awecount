@@ -6,26 +6,29 @@
               <div v-if="typeof modalValue === 'string'" class="row q-gutter-sm q-pb-sm"
                   style="max-height: 200px; overflow-x: auto; border-radius: 5px;">
                   <span class="q-px-sm" style="border-radius: 10px; padding: 2px 4px 0px 8px;"> {{
-                      options[options.findIndex((item) =>
+                      avaliableOptions[avaliableOptions.findIndex((item) =>
                           item.id ==
                           modalValue)]?.name }}<q-btn dense flat icon="cancel" color="red"
-                          @click="() => removeOption(modalValue)"></q-btn>
+                          @click.stop="() => removeOption(modalValue)"></q-btn>
                   </span>
               </div>
               <div v-else-if="modalValue.length > 0" class="row q-gutter-sm q-pb-sm"
                   style="max-height: 200px; overflow-x: auto; border-radius: 5px;">
                   <span class="text-subtitl2 shadow-md rounded-md bg-blue-100" style="padding: 3px 4px 1px 8px;"
                       v-for="option in modalValue" :key="option"> {{
-                          options[options.findIndex((item) =>
+                          avaliableOptions[avaliableOptions.findIndex((item) =>
                               item.id ==
                               option)]?.name }}<q-btn dense flat class="q-pa-none q-ml-sm" size="md" icon="cancel" color="red"
-                          @click="() => removeOption(option)"></q-btn>
+                          @click.stop="() => removeOption(option)"></q-btn>
                   </span>
               </div>
           </div>
         </div>
         <div>
-            <q-select v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
+            <n-auto-complete-v2 v-if="paginate" v-model="modalValueSelect" :label="`${label}`"
+                :endpoint="endpoint" :fetchOnMount="fetchOnMount" :emitObj="true" @updateObj="onNewSelect">
+            </n-auto-complete-v2>
+            <q-select v-else v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
                 :options="options" map-options emit-value>
             </q-select>
         </div>
@@ -51,10 +54,23 @@ export default {
             type: String,
             default: () => 'Statuses:',
         },
+        endpoint: {
+            type: String,
+            required: true,
+        },
+        paginate: {
+            type: Boolean,
+            default: true,
+        },
+        fetchOnMount: {
+            type: Boolean,
+            default: false
+        }
     },
     emits: ['update:modelValue'],
 
     setup(props, { emit }) {
+        const avaliableOptions = ref(props.options || [])
         const modalValueSelect = ref(null)
         const modalValue: Ref<Array<string>> = ref(props.modelValue)
         const removeOption = (id) => {
@@ -76,6 +92,7 @@ export default {
         watch(
             () => modalValueSelect,
             (newValue) => {
+                if (!newValue.value) return
                 if (!modalValue.value.includes(newValue.value)) {
                     if (typeof modalValue.value === 'string') modalValue.value = [`${modalValue.value}`]
                     modalValue.value.push(newValue.value)
@@ -93,7 +110,12 @@ export default {
             },
             { deep: true }
         )
+        const onNewSelect = (obj) => {
+            avaliableOptions.value.push(obj)
+        }
         return {
+            avaliableOptions,
+            onNewSelect,
             modalValue,
             modalValueSelect,
             removeOption
