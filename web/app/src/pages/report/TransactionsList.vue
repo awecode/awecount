@@ -20,11 +20,11 @@
                 </div>
                 <div class="q-ma-md">
                   <FiltersOptions v-model="filters.account" label="Account"
-                    endpoint="v1/accounts/choices" :fetchOnMount="true" />
-                  <FiltersOptions v-model="filters.source" label="Transaction Type" :paginate="false"
+                    endpoint="v1/accounts/choices" :fetchOnMount="true" :options="filterOptions.collections?.accounts" />
+                  <FiltersOptions v-model="filters.source" label="Transaction Type"
                     :options="filterOptions.collections?.transaction_types" endpoint="v1/transaction/create-defaults/transaction_types" />
                   <FiltersOptions v-model="filters.category" label="Category"
-                    :fetchOnMount="true" endpoint="v1/categories/choices"/>
+                    :fetchOnMount="true" endpoint="v1/categories/choices" :options="filterOptions.collections?.categories"/>
 
                   <div>
                     <h5 class="text-subtitle2 text-grey-8">Group By:</h5>

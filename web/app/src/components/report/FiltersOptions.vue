@@ -25,8 +25,8 @@
           </div>
         </div>
         <div>
-            <n-auto-complete-v2 v-if="paginate" v-model="modalValueSelect" :label="`${label}`"
-                :endpoint="endpoint" :fetchOnMount="fetchOnMount" :emitObj="true" @updateObj="onNewSelect">
+            <n-auto-complete-v2 v-if="paginate" v-model="modalValueSelect" :label="`${label}`" :options="options"
+                :endpoint="endpoint" :emitObj="true" @updateObj="onNewSelect">
             </n-auto-complete-v2>
             <q-select v-else v-model="modalValueSelect" :label="`${label}`" option-value="id" option-label="name"
                 :options="options" map-options emit-value>
@@ -41,8 +41,13 @@ import { Ref } from 'vue'
 export default {
     props: {
         options: {
-            type: Array<string>,
-            default: () => [],
+          type: Array<string>,
+          default: () => {
+            return {
+              results: [],
+              pagination: {},
+            }
+          },
         },
         modelValue: {
             type: Array,
@@ -70,7 +75,7 @@ export default {
     emits: ['update:modelValue'],
 
     setup(props, { emit }) {
-        const avaliableOptions = ref(props.options || [])
+        const avaliableOptions = ref(props.options?.results || [])
         const modalValueSelect = ref(null)
         const modalValue: Ref<Array<string>> = ref(props.modelValue)
         const removeOption = (id) => {
