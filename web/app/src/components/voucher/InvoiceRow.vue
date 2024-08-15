@@ -3,13 +3,16 @@
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'" data-testid="item">
-          <n-auto-complete-v2 v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" :staticOption="modelValue.selected_item_obj" label="Item"
+          <n-auto-complete-v2 v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions"
+            :staticOption="modelValue.selected_item_obj" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
               ? false
               : checkPermissions('InventoryAccountCreate')
                 ? ItemAdd
                 : null
-              " :disabled="usedInPos || hasChallan" :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`" />
+              " :disabled="usedInPos || hasChallan"
+            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`" :emitObj="true"
+            @updateObj="updateItem" />
           <q-input v-else :label="usedInPos ? '' : 'Item'" disable :modelValue="modelValue.name"></q-input>
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
@@ -295,24 +298,6 @@ export default {
       },
       { deep: true }
     )
-    watch(
-      () => props.modelValue.item_id,
-      (newValue) => {
-        if (!!props.itemOptions && !!newValue) {
-          const index = props.itemOptions.results.findIndex(
-            (item) => item.id === newValue
-          )
-          const itemObject = props.itemOptions.results[index]
-          modalValue.value.itemObj = itemObject
-          modalValue.value.item_id = itemObject.id
-          modalValue.value.description = itemObject.description
-          modalValue.value.rate = itemObject.rate
-          modalValue.value.unit_id = itemObject.unit_id
-          modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
-          modalValue.value.selected_unit_obj = itemObject.default_unit_obj
-        }
-      }
-    )
 
     watch(
       () => props.errors,
@@ -364,6 +349,17 @@ export default {
         }
       )
     }
+    const updateItem = (itemObject) => {
+      if (itemObject) {
+        modalValue.value.itemObj = itemObject
+        modalValue.value.item_id = itemObject.id
+        modalValue.value.description = itemObject.description
+        modalValue.value.rate = itemObject.rate
+        modalValue.value.unit_id = itemObject.unit_id
+        modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+        modalValue.value.selected_unit_obj = itemObject.default_unit_obj
+      }
+    }
     const choiceEndpointBaseComputed = computed(() => {
       if (props.usedIn === 'sales') return 'sales-voucher'
       if (props.usedIn === 'purchase') return 'purchase-vouchers'
@@ -382,6 +378,7 @@ export default {
       checkPermissions,
       onAmountInput,
       choiceEndpointBaseComputed,
+      updateItem,
     }
   },
 }
