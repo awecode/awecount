@@ -42,7 +42,7 @@ class SalesVoucherFilterSet(DateFilterSet):
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
-        return queryset.filter(due_date__lt=today).exclude(status="PAID")
+        return queryset.filter(due_date__lt=today).exclude(status="Paid")
 
     class Meta:
         model = SalesVoucher
@@ -70,7 +70,7 @@ class PurchaseVoucherFilterSet(DateFilterSet):
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
-        return queryset.filter(due_date__lt=today).exclude(status="PAID")
+        return queryset.filter(due_date__lt=today).exclude(status="Paid")
 
     class Meta:
         model = PurchaseVoucher
