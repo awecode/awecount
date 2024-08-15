@@ -310,6 +310,7 @@ class PurchaseOrderRowSerializer(serializers.ModelSerializer):
     item_id = serializers.IntegerField(required=False)
     unit_id = serializers.IntegerField(required=False)
     selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = PurchaseOrderRow
