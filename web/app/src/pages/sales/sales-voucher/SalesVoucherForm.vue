@@ -351,11 +351,11 @@ export default {
       let index
       if (!!value && !!formData.formDefaults.value.collections) {
         index =
-          formData.formDefaults.value.collections.parties.findIndex(
+          formData.formDefaults.value.collections.parties.results.findIndex(
             (option) => option.id === value
           )
         formData.fields.value.address =
-          formData.formDefaults.value.collections.parties[index].address
+          formData.formDefaults.value.collections.parties.results[index].address
         if (index) {
           formData.fields.value.mode = 'Credit'
         }
