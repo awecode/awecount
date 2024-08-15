@@ -502,7 +502,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
-        ("bank_accounts", BankAccount, BankAccountSerializer),
+        ("bank_accounts", BankAccount),
         (
             "items",
             Item.objects.filter(
@@ -1135,7 +1135,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     ]
     filterset_class = JournalVoucherFilterSet
 
-    collections = (("accounts", Account, AccountSerializer),)
+    collections = (("accounts", Account.objects.select_related("category", "parent"), AccountSerializer),)
 
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
