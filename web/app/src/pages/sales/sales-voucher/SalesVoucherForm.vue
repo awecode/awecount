@@ -102,9 +102,9 @@
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
+              <n-auto-complete-v2 v-model="fields.mode" label="Mode *"
                 endpoint="/v1/sales-voucher/create-defaults/bank_accounts"
-                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
+                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                     @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>

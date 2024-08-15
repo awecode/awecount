@@ -123,9 +123,9 @@
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
           <n-auto-complete-v2 v-model="modalValue.unit_id" :options="unitOptions" label="Unit"
-            :staticOption="modalValue.selected_unit_obj"
-            :error-message="errors?.unit_id ? errors.unit_id[0] : null" :error="errors?.unit_id ? true : false"
-            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" :emitObj="usedInPos" @updateObj="(val) => modalValue.selected_unit_obj = val"/>
+            :staticOption="modalValue.selected_unit_obj" :error-message="errors?.unit_id ? errors.unit_id[0] : null"
+            :error="errors?.unit_id ? true : false" :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`"
+            :emitObj="usedInPos" @updateObj="(val) => modalValue.selected_unit_obj = val" />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
@@ -133,7 +133,7 @@
               ? 'col-5'
               : 'col-12'
               " data-testid="row-discount-type-div">
-              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions"/>
+              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions" />
             </div>
             <div :class="showRowTradeDiscount ? 'col-3' : 'col-6'" v-if="modalValue.discount_type === 'Amount' ||
               modalValue.discount_type === 'Percent'
@@ -152,8 +152,8 @@
         </div>
         <div class="col-3" data-testid="row-tax-select">
           <n-auto-complete v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax"
-          :error="errors?.tax_scheme_id ? true : null" :error-message="errors?.tax_scheme_id ? 'This field is required' : null"
-          />
+            :error="errors?.tax_scheme_id ? true : null"
+            :error-message="errors?.tax_scheme_id ? 'This field is required' : null" />
         </div>
       </div>
       <div v-if="$route.params.id
@@ -175,15 +175,21 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   props: {
     itemOptions: {
-      type: Array,
+      type: Object,
       default: () => {
-        return []
+        return {
+          results: [],
+          pagination: {},
+        }
       },
     },
     unitOptions: {
       type: Object,
       default: () => {
-        return {}
+        return {
+          results: [],
+          pagination: {},
+        }
       },
     },
     discountOptions: {
