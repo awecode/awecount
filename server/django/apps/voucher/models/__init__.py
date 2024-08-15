@@ -26,7 +26,7 @@ from apps.product.models import (
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, FiscalYear, User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
-from awecount.libs import nepdate
+from awecount.libs import nepdate, decimalize
 from awecount.libs.helpers import merge_dicts
 
 from .agent import SalesAgent
@@ -608,22 +608,22 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         ):
             entries = []
 
-            row_total = row.quantity * row.rate
+            row_total = decimalize(row.quantity) * decimalize(row.rate)
             purchase_value = row_total + 0
 
-            row_discount = 0
+            row_discount = decimalize(0)
             if row.has_discount():
                 row_discount_amount, trade_discount = row.get_discount()
-                row_total -= row_discount_amount
+                row_total -= decimalize(row_discount_amount)
                 if trade_discount:
-                    purchase_value -= row_discount_amount
+                    purchase_value -= decimalize(row_discount_amount)
                 else:
-                    row_discount += row_discount_amount
+                    row_discount += decimalize(row_discount_amount)
 
             if dividend_discount > 0:
                 row_dividend_discount = (
-                    row_total / sub_total_after_row_discounts
-                ) * dividend_discount
+                    decimalize(row_total) / decimalize(sub_total_after_row_discounts)
+                ) * decimalize(dividend_discount)
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     purchase_value -= row_dividend_discount
@@ -635,7 +635,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 entries.append(["cr", item.discount_received_account, row_discount])
 
             if row.tax_scheme:
-                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                row_tax_amount = decimalize(row.tax_scheme.rate) * decimalize(row_total) / 100
                 if row_tax_amount:
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
