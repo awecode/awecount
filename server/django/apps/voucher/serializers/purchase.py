@@ -255,6 +255,8 @@ class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
     discount_obj = PurchaseDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
     hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = PurchaseVoucherRow
