@@ -79,15 +79,26 @@ export default (endpoint, config) => {
           if (data.fields) {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
           }
+
+          // From drop down branch
+          // TODO: resolve and remove this
+          // delete data.collections
+          // Object.assign(formDefaults.value, data)
+          // Object.assign(fields.value, data.fields)
+          // From drop down branch
+
+          // From main
           formDefaults.value = data
           isGetDefaultLoading.value = false
           if (!isGetEditLoading.value) {
             store.isLoading = false
             setModalLoadingFalse()
           }
+          // From main
         }
       )
     }
+
   })
   const getDefaultsFetchUrl = () => {
     return joinURL(endpoint, 'create-defaults/')

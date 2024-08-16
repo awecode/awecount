@@ -18,11 +18,12 @@
           </div>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
             <div>
-              <n-auto-complete v-model="fields.parent" :options="accountChoices" label="Parent" :error="errors?.parent" />
+              <n-auto-complete-v2 v-if="accountChoices" endpoint="v1/accounts/choices" v-model="fields.parent"
+               :options="accountChoices" label="Parent" :error="errors?.parent" :staticOption="fields.selected_parent_obj" />
             </div>
             <div>
-              <n-auto-complete v-model="fields.category" :options="categoryChoices" label="Category *"
-                :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
+              <n-auto-complete-v2 v-if="categoryChoices" endpoint="v1/categories/choices" v-model="fields.category" :options="categoryChoices"
+              label="Category *" :staticOption="fields.selected_category_obj" :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null" :error="errors?.category" />
             </div>
           </div>
         </q-card-section>

@@ -49,9 +49,9 @@
                     :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'"
                     data-testid="customer-name-input">
                   </q-input>
-                  <n-auto-complete v-else v-model="fields.party" :options="formDefaults.collections?.parties"
+                  <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " @update:modelValue="onPartyChange" />
+                      " @update:modelValue="onPartyChange" :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)" data-testid="switch-account-group-btn">
@@ -75,8 +75,9 @@
                 : 'col-12'
                 " data-testid="overall-discount-type-div">
                 <n-auto-complete v-model="fields.discount_type" label="Discount"
-                  :error="errors?.discount_type ? errors?.discount_type : null" :options="discountOptionsComputed"
-                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null">
+                  :error="errors?.discount_type ? errors?.discount_type : null" :options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
+                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                  >
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -100,20 +101,20 @@
           </div>
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode *" class="col-12 col-md-6" :error-message="errors?.mode"
-              :error="!!errors?.mode" :options="staticOptions.modes.concat(
-                formDefaults.collections?.bank_accounts
-              )
-                " option-value="id" option-label="name" map-options emit-value data-testid="mode-input">
-              <template v-slot:append>
-                <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                  @click.stop.prevent="fields.mode = null" /></template></q-select>
+            <div class="col-12 col-md-6">
+              <n-auto-complete-v2 v-model="fields.mode" label="Mode *"
+                endpoint="/v1/sales-voucher/create-defaults/bank_accounts"
+                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj">
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+            </div>
           </div>
         </q-card-section>
       </q-card>
       <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+    " :discountOptions="staticOptions.discount_types.concat(formDefaults.collections?.discounts)" :taxOptions="formDefaults.collections?.tax_schemes"
         v-model="fields.rows" :mainDiscount="{
           discount_type: fields.discount_type,
           discount: fields.discount,
@@ -350,11 +351,11 @@ export default {
       let index
       if (!!value && !!formData.formDefaults.value.collections) {
         index =
-          formData.formDefaults.value.collections.parties.findIndex(
+          formData.formDefaults.value.collections.parties.results.findIndex(
             (option) => option.id === value
           )
         formData.fields.value.address =
-          formData.formDefaults.value.collections.parties[index].address
+          formData.formDefaults.value.collections.parties.results[index].address
         if (index) {
           formData.fields.value.mode = 'Credit'
         }
@@ -376,12 +377,17 @@ export default {
         } else formData.fields.value.mode = 'Credit'
       }
     })
-    const discountOptionsComputed = computed(() => {
-      if (formData?.formDefaults.value?.collections?.discounts) {
-        return staticOptions.discount_types.concat(
-          formData.formDefaults.value.collections.discounts
-        )
-      } else return staticOptions.discount_types
+
+    const modeOptionsComputed = computed(() => {
+      const obj = {
+        results: [...staticOptions.modes],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      }
+      return obj
     })
     return {
       ...formData,
@@ -402,7 +408,7 @@ export default {
       onPartyChange,
       // TODO: temp
       show_row_column_in_voucher_row,
-      discountOptionsComputed
+      modeOptionsComputed
     }
   },
 }

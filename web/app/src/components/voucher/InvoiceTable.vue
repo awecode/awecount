@@ -74,9 +74,12 @@ import useCalcDiscount from 'src/composables/useCalcDiscount.js'
 export default {
   props: {
     itemOptions: {
-      type: Array,
+      type: Object,
       default: () => {
-        return []
+        return {
+          results: [],
+          pagination: {}
+        }
       },
     },
     unitOptions: {

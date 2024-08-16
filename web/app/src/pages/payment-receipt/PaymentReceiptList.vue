@@ -20,10 +20,10 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <SelectWithFetch v-model="filters.party" endpoint="v1/parties/choices/" label="Party" />
+                    <n-auto-complete-v2 v-model="filters.party" :fetchOnMount="true" endpoint="v1/parties/choices/" label="Party" />
                   </div>
                   <div class="q-mx-md">
-                    <SelectWithFetch v-model="filters.sales_agent" endpoint="v1/sales-agent/choices/"
+                    <n-auto-complete-v2 v-model="filters.sales_agent" :fetchOnMount="true" endpoint="v1/sales-agent/choices/"
                       label="Sales Agent" />
                   </div>
                   <div class="q-ma-sm">

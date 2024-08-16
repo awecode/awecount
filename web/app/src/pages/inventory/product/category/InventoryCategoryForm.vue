@@ -17,7 +17,8 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
+              <n-auto-complete-v2 label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
+                endpoint="v1/inventory-categories/create-defaults/units" :staticOption="fields.selected_unit_obj"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.default_unit_id" />
             </div>
             <div class="col-12 col-md-6">
@@ -70,31 +71,38 @@
               </div>
             </div>
           </div>
-          <div>
-            <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
-              v-model:typeModelValue="fields.items_sales_account_type" label="Sales"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account" />
-          </div>
-          <div>
-            <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
-              v-model:typeModelValue="fields.items_purchase_account_type" label="Purchase"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account" />
-          </div>
-          <div>
-            <select-item-accounts-with-types v-if="fields.can_be_sold"
-              v-model:modelValue="fields.discount_allowed_account"
-              v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account" />
-          </div>
-          <div class="col-12 col-lg-6">
-            <select-item-accounts-with-types v-if="fields.can_be_purchased"
-              v-model:modelValue="fields.discount_received_account"
-              v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
-              :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
-              :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account" />
+          <!-- {{ fields.sales_account_obj }} -->
+          <div v-if="isEdit ? fields.hasOwnProperty('sales_account_obj') : true">
+            <div>
+              <select-item-accounts-with-types v-if="fields.can_be_sold" v-model:modelValue="fields.sales_account"
+                v-model:typeModelValue="fields.items_sales_account_type" label="Sales"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
+                :dedicatedAccount="fields.dedicated_sales_account" :error="errors.sales_account"
+                :globalAccounts="formDefaults.options?.global_accounts" :staticOption="fields.sales_account_obj" />
+            </div>
+            <div>
+              <select-item-accounts-with-types v-if="fields.can_be_purchased" v-model:modelValue="fields.purchase_account"
+                v-model:typeModelValue="fields.items_purchase_account_type" label="Purchase"
+                :options="formDefaults.collections?.accounts" :itemName="fields.name" :usedInCategoryForm="true"
+                :dedicatedAccount="fields.dedicated_purchase_account" :error="errors.purchase_account"
+                :globalAccounts="formDefaults.options?.global_accounts" :staticOption="fields.purchase_account_obj" />
+            </div>
+            <div>
+              <select-item-accounts-with-types v-if="fields.can_be_sold"
+                v-model:modelValue="fields.discount_allowed_account"
+                v-model:typeModelValue="fields.items_discount_allowed_account_type" label="Discount Allowed"
+                :options="formDefaults.collections?.discount_allowed_accounts" :itemName="fields.name" :usedInCategoryForm="true"
+                :dedicatedAccount="fields.dedicated_discount_allowed_account" :error="errors.discount_allowed_account"
+                :globalAccounts="formDefaults.options?.global_accounts" :staticOption="fields.discount_allowed_account_obj" />
+            </div>
+            <div class="col-12 col-lg-6">
+              <select-item-accounts-with-types v-if="fields.can_be_purchased"
+                v-model:modelValue="fields.discount_received_account"
+                v-model:typeModelValue="fields.items_discount_received_account_type" label="Discount Received"
+                :options="formDefaults.collections?.discount_received_accounts" :itemName="fields.name" :usedInCategoryForm="true"
+                :dedicatedAccount="fields.dedicated_discount_received_account" :error="errors.discount_received_account"
+                :globalAccounts="formDefaults.options?.global_accounts" :staticOption="fields.discount_received_account_obj" />
+            </div>
           </div>
           <div class="row my-6">
             <div class="col-12 col-md-6 row item-center">

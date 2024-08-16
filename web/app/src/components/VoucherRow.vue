@@ -19,12 +19,13 @@
           <!-- <n-auto-complete v-model="voucher.account_id" :options="props.options" label="Account" :modal-component="LedgerForm" :error="errors?.account_id" /> -->
         </div>
         <div class="col-4">
-          <n-auto-complete
+          <n-auto-complete-v2
             v-model="voucher.account_id"
-            :options="props.options"
             label="Account"
+            :options="props.options"
             :focusOnMount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+            endpoint="v1/journal-voucher/create-defaults/accounts/"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
@@ -32,6 +33,7 @@
                   : null
                 : null
             "
+            :static-option="voucher.selected_account_obj"
           />
         </div>
         <div class="col-2">

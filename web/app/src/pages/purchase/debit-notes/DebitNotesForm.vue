@@ -26,8 +26,9 @@
                   </q-card-section>
                   <q-card-section class="q-mx-lg">
                     <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="text" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
-                    <n-auto-complete v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party">
-                    </n-auto-complete>
+                    <n-auto-complete-v2 v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party"
+                    :endpoint="`/v1/parties/choices/`">
+                    </n-auto-complete-v2>
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->
                     <q-select label="Fiscal Year" v-model="referenceFormData.fiscal_year"
@@ -61,20 +62,19 @@
                 </q-checkbox>
               </div>
             </div>
-            <div class="row col-md-6 col-12">
-              <q-select v-model="fields.mode" label="Mode *" class="col-12" :error-message="errors?.mode"
-                :error="!!errors?.mode" :options="staticOptions.modes.concat(
-                  formDefaults.collections?.bank_accounts
-                )
-                  " option-value="id" option-label="name" map-options emit-value>
+            <div class="col-md-6 col-12">
+              <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
+                :error="!!errors?.mode" :options="modeOptionsComputed" :endpoint="`v1/credit-note/create-defaults/bank_accounts`"
+                :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj"
+                option-value="id" option-label="name" map-options emit-value>
                 <template v-slot:append>
                   <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template></q-select>
+                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
             </div>
           </div>
         </q-card-section>
       </q-card>
-      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+      <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
     " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
@@ -270,6 +270,17 @@ export default {
         )
       } else return staticOptions.discount_types
     })
+    const modeOptionsComputed = computed(() => {
+      const obj = {
+        results: [...staticOptions.modes],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      }
+      return obj
+    })
     return {
       ...formData,
       CategoryForm,
@@ -289,7 +300,8 @@ export default {
       partyChoices,
       checkPermissions,
       updateVoucherMeta,
-      discountOptionsComputed
+      discountOptionsComputed,
+      modeOptionsComputed
     }
   },
   created() {

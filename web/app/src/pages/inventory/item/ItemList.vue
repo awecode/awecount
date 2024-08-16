@@ -37,8 +37,8 @@
                       :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.category" endpoint="v1/inventory-categories/choices/"
-                      label="Category" />
+                    <n-auto-complete-v2 v-model="filters.category" endpoint="v1/inventory-categories/choices/"
+                      label="Category" :fetchOnMount="true" />
                   </div>
                 </div>
                 <div class="q-mx-md row q-gutter-md q-mb-md">

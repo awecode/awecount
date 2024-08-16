@@ -18,8 +18,8 @@
           </div>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
             <div class="lg:col-6 col-12">
-              <n-auto-complete v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *"
-                :error="errors?.parent" />
+              <n-auto-complete-v2 v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *"
+                :error="errors?.parent" :staticOption="fields.selected_parent_obj" endpoint="v1/categories/create-defaults/categories" />
             </div>
           </div>
         </q-card-section>

@@ -11,8 +11,8 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div v-if="!isEdit" class="col-12 col-md-6">
-              <n-auto-complete v-model="fields.item_id" :options="formDefaults.collections?.items" label="Item *"
-                :error="errors?.item_id" :modalComponent="ItemAdd" />
+              <n-auto-complete-v2 v-model="fields.item_id" :options="formDefaults.collections?.items" label="Item *"
+                :error="errors?.item_id" :modalComponent="ItemAdd" endpoint="/v1/item-opening-balance/create-defaults/items" />
             </div>
             <div v-else class="col-12 col-md-6">
               <q-input v-model="fields.name" disable></q-input>

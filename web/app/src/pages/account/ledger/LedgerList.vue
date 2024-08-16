@@ -28,7 +28,7 @@
                     <q-checkbox v-model="filters.has_balance" label="Has Balance?" :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model.number="filters.category" endpoint="v1/categories/choices/"
+                    <n-auto-complete-v2 v-model="filters.category" :fetchOnMount="true" endpoint="v1/categories/choices/"
                       label="Category" />
                   </div>
                 </div>
