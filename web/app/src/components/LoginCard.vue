@@ -74,14 +74,12 @@ const onLoginSubmit = async () => {
       router.push('/dashboard')
     })
     .catch((err) => {
-      console.log(err)
-      errorMessage.value = err.response._data
       $q.notify({
         color: 'red-6',
         message:
-          err.status == '500'
-            ? 'Server Error! Please contact us with the problem.'
-            : 'Please provide valid credentials.',
+          [401, 400].includes(err?.status)
+            ? 'Please provide valid credentials.'
+            : 'Server Error! Please contact us with the problem.',
         icon: 'report_problem',
         position: 'top-right',
       })
