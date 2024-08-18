@@ -51,7 +51,8 @@
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " @update:modelValue="onPartyChange" :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties" />
+                      " :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties"
+                      :emitObj="true" @updateObj="onPartyChange" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchMode(fields)" data-testid="switch-account-group-btn">
@@ -349,19 +350,11 @@ export default {
         }
       }
     }
-    const onPartyChange = (value) => {
-      let index
-      if (!!value && !!formData.formDefaults.value.collections) {
-        index =
-          formData.formDefaults.value.collections.parties.results.findIndex(
-            (option) => option.id === value
-          )
-        formData.fields.value.address =
-          formData.formDefaults.value.collections.parties.results[index].address
-        if (index) {
-          formData.fields.value.mode = 'Credit'
-        }
-      } else if (!index) formData.fields.value.mode = 'Cash'
+    const onPartyChange = (obj) => {
+      if (obj) {
+        formData.fields.value.address = obj.address
+        formData.fields.value.mode = 'Credit'
+      } else formData.fields.value.mode = 'Cash'
     }
     watch(() => formData.formDefaults.value, () => {
       if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
