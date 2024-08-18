@@ -322,6 +322,7 @@ class SalesVoucherCreateSerializer(
 
     selected_party_obj = PartyMinSerializer(source="party", read_only=True)
     selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
+    selected_sales_agent_obj = GenericSerializer(source="sales_agent", read_only=True)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
