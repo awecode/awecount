@@ -136,14 +136,16 @@
             :error="!!errors?.remarks" :error-message="errors?.remarks" data-testid="remarks-input" />
         </div>
         <div class="col-12 col-md-6 row justify-between">
-          <div>
+          <div class="col-3">
             <q-checkbox label="Export?" v-model="fields.is_export" class="q-mt-md col-3"
               data-testid="export-checkbox"></q-checkbox>
           </div>
-          <q-select v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent" label="Sales Agent"
-            class="col-8" :error="!!errors?.sales_agent" :error-message="errors?.sales_agent"
-            :options="formDefaults.collections?.sales_agents" option-value="id" option-label="name" map-options emit-value
-            data-testid="sales-agent-select"></q-select>
+          <div class="col-9">
+            <n-auto-complete-v2 v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent" label="Sales Agent"
+              class="col-8" :error="!!errors?.sales_agent" :options="formDefaults.collections?.sales_agents"
+              :endpoint="`v1/sales-voucher/create-defaults/sales_agents`" :staticOption="fields.selected_sales_agent_obj"
+              data-testid="sales-agent-select"></n-auto-complete-v2>
+          </div>
           <!-- TODO: add sales agent form -->
         </div>
       </div>
