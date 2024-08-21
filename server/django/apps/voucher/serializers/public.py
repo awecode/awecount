@@ -1,15 +1,14 @@
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
+from apps.product.serializers import ItemSerializer
 from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
 )
-from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
@@ -87,72 +86,8 @@ class PublicItemSerializer(serializers.Serializer):
     fixed_asset_account__code = serializers.CharField(required=False)
 
 
-class ItemCreateSerializer(serializers.ModelSerializer):
-    tax_scheme_id = serializers.IntegerField(required=False, allow_null=True)
-    unit_id = serializers.IntegerField(required=False, allow_null=True)
-    extra_fields = serializers.ReadOnlyField(source="category.extra_fields")
-    front_image = Base64FileField(required=False, allow_null=True)
-    back_image = Base64FileField(required=False, allow_null=True)
-
-    def validate_cost_price(self, attr):
-        if attr and attr < 0:
-            raise ValidationError("Cost price cannot be negative.")
-        return attr
-
-    def validate_selling_price(self, attr):
-        if attr and attr < 0:
-            raise ValidationError("Selling price cannot be negative.")
-        return attr
-
-    def validate(self, attrs):
-        # if (
-        #     attrs.get("purchase_account_type") == "Category"
-        #     or attrs.get("sales_account_type") == "Category"
-        #     or attrs.get("discount_received_account_type") == "Category"
-        #     or attrs.get("discount_allowed_account_type") == "Category"
-        # ) and not attrs.get("category"):
-        #     raise serializers.ValidationError(
-        #         {"category": ["Category must be selected to use category account."]}
-        #     )
-
-        type_account_tuples = [
-            ("sales_account_type", "sales_account"),
-            ("purchase_account_type", "purchase_account"),
-            ("discount_received_account_type", "discount_received_account"),
-            ("discount_allowed_account_type", "discount_allowed_account"),
-        ]
-
-        id_required = ["global", "category", "existing"]
-
-        for obj in type_account_tuples:
-            if attrs.get(obj[0]):
-                if attrs.get(obj[0]).lower() in id_required and not attrs.get(obj[1]):
-                    raise ValidationError({obj[1]: ["This field cannot be empty."]})
-
-        return attrs
-
-    @staticmethod
-    def base64_check(validated_data, attributes):
-        for attr in attributes:
-            if validated_data.get(attr) and not isinstance(
-                validated_data.get(attr), ContentFile
-            ):
-                validated_data.pop(attr)
-        return validated_data
-
-    def update(self, instance, validated_data):
-        validated_data = self.base64_check(
-            validated_data, ["front_image", "back_image"]
-        )
-        return super().update(instance, validated_data)
-
-    class Meta:
-        model = Item
-        exclude = (
-            "company",
-            "tax_scheme",
-            "unit",
-        )
+class ItemCreateSerializer(ItemSerializer):
+    pass
 
 
 class PublicPurchaseVoucherRowSerializer(
