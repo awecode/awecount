@@ -27,6 +27,7 @@ from apps.bank.serializers import (
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
     ChequeIssueSerializer,
+    ChequeIssueFormSerializer,
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
@@ -155,6 +156,11 @@ class ChequeIssueViewSet(CRULViewSet):
         if self.action in ["list", "export"]:
             qs = qs.select_related("party")
         return qs.order_by("-pk")
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ChequeIssueFormSerializer
+        return super().get_serializer_class()
 
     @action(detail=False)
     def export(self, request):

@@ -6,12 +6,15 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.product.models import Item, Category
+from apps.ledger.serializers import PartyMinSerializer
+from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     PurchaseVoucher,
@@ -114,6 +117,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     remarks = serializers.CharField(required=False)
     party_name = serializers.ReadOnlyField(source="party.name")
     invoice_nos = serializers.SerializerMethodField()
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
 
     def get_invoice_nos(self, obj):
         return [invoice.voucher_no for invoice in obj.invoices.all()]
@@ -205,6 +209,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             "party_id",
             "party_name",
             "invoice_nos",
+            "selected_bank_account_obj",
         )
 
 
@@ -219,6 +224,8 @@ class SalesVoucherRowSerializer(
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
     hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     def validate_discount(self, value):
         if not value:
@@ -312,6 +319,9 @@ class SalesVoucherCreateSerializer(
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
+
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
+    selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -618,6 +628,8 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     discount_obj = SalesDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
     hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = SalesVoucherRow
@@ -819,6 +831,8 @@ class ChallanRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = ChallanRow
@@ -840,6 +854,7 @@ class ChallanListSerializer(serializers.ModelSerializer):
 class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
+    selected_party_obj = GenericSerializer(source="party", read_only=True)
     rows = ChallanRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):

@@ -26,6 +26,7 @@ from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,
     CRULViewSet,
+    GenericSerializer,
 )
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 
@@ -40,6 +41,7 @@ from ..serializers import (
     AccountSerializer,
     AggregatorSerializer,
     CategorySerializer,
+    CategoryDetailSerializer,
     CategoryTreeSerializer,
     ContentTypeListSerializer,
     JournalEntrySerializer,
@@ -129,6 +131,11 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     filterset_class = CategoryFilterSet
 
     collections = (("categories", Category, CategorySerializer),)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CategoryDetailSerializer
+        return super().get_serializer_class()
 
 
 class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -540,8 +547,8 @@ class AccountClosingViewSet(
 
     def get_defaults(self, request=None):
         company = request.company
-        current_fiscal_year_id = company.current_fiscal_year_id
-        return {"fields": {"current_fiscal_year_id": current_fiscal_year_id}}
+        current_fiscal_year = GenericSerializer(company.current_fiscal_year).data
+        return {"fields": {"current_fiscal_year": current_fiscal_year}}
 
     def get_queryset(self):
         return super().get_queryset().filter(company=self.request.company)

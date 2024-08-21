@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from apps.voucher.models.voucher_settings import PurchaseSetting, SalesSetting
-
+from apps.bank.serializers import BankAccount
+from apps.bank.serializers import BankAccountMinSerializer
 
 class SalesCreateSettingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,7 +40,7 @@ class PurchaseSettingCreateSerializer(serializers.ModelSerializer):
 
 class PurchaseSettingSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
-
+    selected_mode_obj = serializers.SerializerMethodField()
     class Meta:
         model = PurchaseSetting
         exclude = ("company",)
@@ -48,6 +49,12 @@ class PurchaseSettingSerializer(serializers.ModelSerializer):
         if obj.mode not in ["Cash", "Credit"]:
             return int(obj.mode)
         return obj.mode
+
+    def get_selected_mode_obj(self, obj):
+        if obj.mode not in ["Cash", "Credit"]:
+            bank_account = BankAccount.objects.filter(id=obj.mode).first()
+            return BankAccountMinSerializer(bank_account, many=False).data
+        return None
 
 
 class SalesSettingCreateSerializer(serializers.ModelSerializer):
@@ -58,7 +65,7 @@ class SalesSettingCreateSerializer(serializers.ModelSerializer):
 
 class SalesSettingsSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
-
+    selected_mode_obj = serializers.SerializerMethodField()
     class Meta:
         model = SalesSetting
         exclude = ("company", "enable_sales_date_edit")
@@ -67,3 +74,9 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
         if obj.mode not in ["Cash", "Credit"]:
             return int(obj.mode)
         return obj.mode
+    
+    def get_selected_mode_obj(self, obj):
+        if obj.mode not in ["Cash", "Credit"]:
+            bank_account = BankAccount.objects.filter(id=obj.mode).first()
+            return BankAccountMinSerializer(bank_account, many=False).data
+        return None

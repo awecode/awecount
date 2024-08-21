@@ -5,6 +5,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from apps.ledger.models.base import AccountClosing
 from awecount.libs.drf_fields import RoundedField
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     Account,
@@ -51,6 +52,8 @@ class AccountListSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     # current_dr = RoundedField()
     # current_cr = RoundedField()
+    selected_parent_obj = GenericSerializer(source="parent", read_only=True)
+    selected_category_obj = GenericSerializer(source="category", read_only=True)
 
     class Meta:
         model = Account
@@ -170,6 +173,9 @@ class CategorySerializer(serializers.ModelSerializer):
             return super().create(validated_data)
         except IntegrityError:
             raise ValidationError({"code": ["Category with this code already exists."]})
+
+class CategoryDetailSerializer(CategorySerializer):
+    selected_parent_obj = GenericSerializer(source="parent", read_only=True)
 
 
 class AccountMinSerializer(serializers.ModelSerializer):

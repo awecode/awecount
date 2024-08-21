@@ -5,9 +5,11 @@ from apps.voucher.serializers import (
     PurchaseDiscountSerializer,
     PurchaseVoucherRowDetailSerializer,
 )
+from apps.product.serializers import ItemPurchaseSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import DebitNote, DebitNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
@@ -211,6 +213,9 @@ class DebitNoteListSerializer(serializers.ModelSerializer):
             "status",
         )
 
+class DebitNoteRowDetailSerializer(PurchaseVoucherRowDetailSerializer):
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
 class DebitNoteDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
@@ -219,7 +224,7 @@ class DebitNoteDetailSerializer(serializers.ModelSerializer):
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
     address = serializers.ReadOnlyField(source="party.address")
 
-    rows = PurchaseVoucherRowDetailSerializer(many=True)
+    rows = DebitNoteRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(
         source="party.tax_registration_number"
     )

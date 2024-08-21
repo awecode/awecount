@@ -13,8 +13,6 @@ from rest_framework.mixins import DestroyModelMixin
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from awecount.libs.exception import UnprocessableException
-
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
 from apps.ledger.models import Transaction as Ledger
@@ -30,6 +28,7 @@ from apps.voucher.models import (
     SalesVoucherRow,
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
@@ -47,12 +46,14 @@ from .serializers import (
     BookSerializer,
     BrandSerializer,
     InventoryAccountSerializer,
+    InventoryCategoryFormSerializer,
     InventoryCategorySerializer,
     InventoryCategoryTrialBalanceSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
     ItemListMinSerializer,
     ItemListSerializer,
+    ItemFormSerializer,
     ItemOpeningSerializer,
     ItemPOSSerializer,
     ItemSerializer,
@@ -82,12 +83,22 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
     collections = (
         ("brands", Brand, BrandSerializer),
-        ("inventory_categories", InventoryCategory, InventoryCategorySerializer),
+        (
+            "inventory_categories",
+            InventoryCategory.objects.select_related(
+                "default_unit",
+                "sales_account",
+                "purchase_account",
+                "discount_allowed_account",
+                "discount_received_account",
+            ),
+            InventoryCategoryFormSerializer,
+        ),
         ("units", Unit, UnitSerializer),
         ("accounts", Account, AccountMinSerializer),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
@@ -103,7 +114,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "list":
-            qs = qs.order_by("-id")
+            qs = qs.order_by("-id").select_related(
+                "category"
+            )
         return qs
 
     def get_serializer_class(self):
@@ -111,7 +124,32 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return ItemListSerializer
         if self.action == "list_items":
             return ItemListMinSerializer
+        if self.action == "retrieve":
+            return ItemFormSerializer
         return self.serializer_class
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
 
     def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
@@ -721,7 +759,7 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ("accounts", Account, AccountMinSerializer),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
@@ -733,6 +771,29 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             AccountMinSerializer,
         ),
     )
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
 
     @transaction.atomic
     def perform_update(self, request, *args, **kwargs):
@@ -790,6 +851,11 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         if self.action == "list":
             qs = qs.order_by("-id")
         return qs
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return InventoryCategoryFormSerializer
+        return super().get_serializer_class()
 
     @action(detail=False, url_path="trial-balance")
     def trial_balance(self, request):

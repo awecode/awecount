@@ -154,12 +154,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     collections = [
         ("parties", Party, PartyMinSerializer),
         ("units", Unit),
-        ("discounts", SalesDiscount, SalesDiscountMinSerializer),
+        ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
-            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)),
+            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True))
+            .select_related("unit"),
             ItemSalesSerializer,
         ),
     ]
@@ -200,7 +201,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super(SalesVoucherViewSet, self).get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party").prefetch_related(
                 Prefetch(
@@ -279,6 +280,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 ).data,
                 "enable_sales_agents": request.company.enable_sales_agents,
                 "enable_fifo": request.company.inventory_setting.enable_fifo,
+                "default_mode_obj": None
+                if request.company.sales_setting.mode in ["Cash", "Credit"]
+                else BankAccount.objects.filter(id=request.company.sales_setting.mode)
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
@@ -410,12 +417,14 @@ class POSViewSet(
             "discounts",
             SalesDiscount.objects.only("name", "type", "value"),
             SalesDiscountMinSerializer,
+            False,
         ),
         ("bank_accounts", BankAccount.objects.only("short_name", "bank_name")),
         (
             "tax_schemes",
             TaxScheme.objects.only("name", "short_name", "rate"),
             TaxSchemeMinSerializer,
+            False,
         ),
     ]
 
@@ -491,11 +500,11 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     collections = (
         ("parties", Party, PartyMinSerializer),
-        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer),
+        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
-        ("bank_accounts", BankAccount, BankAccountSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        ("bank_accounts", BankAccount),
         (
             "items",
             Item.objects.filter(
@@ -503,7 +512,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     )
@@ -560,7 +569,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-date", "-pk")
@@ -575,7 +584,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             "options": {
                 "fiscal_years": FiscalYearSerializer(
                     request.company.get_fiscal_years(), many=True
-                ).data
+                ).data,
+                "default_mode_obj": None
+                if request.company.purchase_setting.mode in ["Cash", "Credit"]
+                else BankAccount.objects.filter(id=request.company.purchase_setting.mode)
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
@@ -805,18 +820,22 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     filterset_class = CreditNoteFilterSet
 
     collections = (
-        ("discounts", SalesDiscount, SalesDiscountSerializer),
+        ("discounts", SalesDiscount, SalesDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
-        ("items", Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
+        (
+            "items",
+            Item.objects.filter(can_be_sold=True).select_related("unit"),
+            ItemSalesSerializer,
+        ),
     )
 
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-id")
@@ -962,10 +981,10 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     filterset_class = DebitNoteFilterSet
 
     collections = (
-        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer),
+        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
         (
             "items",
@@ -974,7 +993,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     )
@@ -982,7 +1001,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-id")
@@ -1124,7 +1143,7 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     ]
     filterset_class = JournalVoucherFilterSet
 
-    collections = (("accounts", Account, AccountSerializer),)
+    collections = (("accounts", Account.objects.select_related("category", "parent"), AccountSerializer),)
 
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
@@ -1845,7 +1864,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_sold=True, track_inventory=True),
+            Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
+                "unit"
+            ),
             ItemSalesSerializer,
         ),
     ]
@@ -1880,7 +1901,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super(ChallanViewSet, self).get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-pk")
@@ -2021,7 +2042,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_purchased=True, track_inventory=True),
+            Item.objects.filter(
+                can_be_purchased=True, track_inventory=True
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     ]
