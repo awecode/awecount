@@ -136,8 +136,4 @@ class PublicPartyListSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "address",
-            "contact_no",
-            "email",
-            "tax_registration_number",
         )
