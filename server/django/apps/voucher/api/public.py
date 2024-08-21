@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,9 +37,19 @@ class PublicPurchaseVoucherViewset(
         return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.queryset.filter(company_id=self.request.company_id).order_by(
-            "-date", "-pk"
-        )
+        qs = super().get_queryset()
+
+        search_params = self.request.GET.get("q")
+        if search_params:
+            qs = qs.filter(
+                Q(voucher_no__icontains=search_params)
+                | Q(party__name__icontains=search_params)
+                | Q(remarks__icontains=search_params)
+                | Q(party__tax_registration_number__icontains=search_params)
+                | Q(rows__item__name__icontains=search_params)
+            )
+
+        return qs.filter(company_id=self.request.company_id).order_by("-date", "-pk")
 
 
 class PublicPurchaseDiscountViewset(viewsets.GenericViewSet):
