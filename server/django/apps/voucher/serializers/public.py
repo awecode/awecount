@@ -172,7 +172,6 @@ class PublicPurchaseVoucherRowSerializer(
     item_obj = ItemCreateSerializer(required=False, allow_null=True)
 
     def validate_discount(self, value):
-        print(f"Validating discount: {value}")
         if not value:
             value = 0
         elif value < 0:
