@@ -97,7 +97,7 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
 
-from .models import (
+from ..models import (
     CreditNote,
     CreditNoteRow,
     DebitNote,
@@ -111,9 +111,9 @@ from .models import (
     SalesVoucher,
     SalesVoucherRow,
 )
-from .models.invoice_design import InvoiceDesign
-from .models.journal_vouchers import JournalVoucher, JournalVoucherRow
-from .serializers import (
+from ..models.invoice_design import InvoiceDesign
+from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from ..serializers import (
     ChallanCreateSerializer,
     ChallanListSerializer,
     CreditNoteCreateSerializer,
@@ -191,8 +191,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
         if (
-                request.company.enable_sales_agents
-                and sales_agent_tuple not in self.collections
+            request.company.enable_sales_agents
+            and sales_agent_tuple not in self.collections
         ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)
@@ -247,7 +247,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all()
-                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -435,7 +437,7 @@ class POSViewSet(
                         "sales_rows__quantity",
                         filter=Q(
                             sales_rows__voucher__date__gte=timezone.now()
-                                                           - timedelta(days=30)
+                            - timedelta(days=30)
                         ),
                     ),
                     0,
@@ -520,7 +522,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
         if self.model.objects.filter(
-                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
         ).exists():
             raise ValidationError(
                 {
@@ -537,11 +539,11 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         party_id = request.data.get("party", None)
         fiscal_year = request.company.current_fiscal_year
         if (
-                self.model.objects.filter(
-                    voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
-                )
-                        .exclude(id=obj.id)
-                        .exists()
+            self.model.objects.filter(
+                voucher_no=voucher_no, party_id=party_id, fiscal_year=fiscal_year
+            )
+            .exclude(id=obj.id)
+            .exists()
         ):
             raise ValidationError(
                 {
@@ -601,7 +603,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     PurchaseVoucherRow.objects.all()
-                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -766,7 +770,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     for item in sold_items:
                         sum += item[str(row.id)][0]
                     remaining_quantity = (
-                            zero_for_none(row.item.remaining_stock) - row.quantity
+                        zero_for_none(row.item.remaining_stock) - row.quantity
                     )
                     if remaining_quantity <= 0:
                         raise UnprocessableException(
@@ -892,7 +896,9 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     CreditNoteRow.objects.all()
-                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 ),
             )
@@ -914,8 +920,8 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         if (
-                request.company.inventory_setting.enable_fifo
-                and not request.query_params.get("fifo_inconsistency")
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
         ):
             raise UnprocessableException(
                 detail="This may cause inconsistencies in fifo!",
@@ -1054,7 +1060,9 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     DebitNoteRow.objects.all()
-                    .select_related("item", "item__category", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -1076,8 +1084,8 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         if (
-                request.company.inventory_setting.enable_fifo
-                and not request.query_params.get("fifo_inconsistency")
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
         ):
             raise UnprocessableException(
                 detail="This may cause inconsistencies in fifo!",
@@ -1612,9 +1620,7 @@ class PurchaseBookViewSet(
                 ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
                 ws.cell(column=7, row=idx + 7, value=non_taxable)
                 ws.cell(column=8, row=idx + 7, value=taxable)
-                ws.cell(
-                    column=9, row=idx + 7, value=row.get("voucher_meta").get("tax")
-                )
+                ws.cell(column=9, row=idx + 7, value=row.get("voucher_meta").get("tax"))
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
@@ -1885,8 +1891,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_collections(self, request=None):
         sales_agent_tuple = ("sales_agents", SalesAgent)
         if (
-                request.company.enable_sales_agents
-                and sales_agent_tuple not in self.collections
+            request.company.enable_sales_agents
+            and sales_agent_tuple not in self.collections
         ):
             # noinspection PyTypeChecker
             self.collections.append(sales_agent_tuple)

@@ -2,10 +2,12 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.ledger.models.base import Party
 from apps.ledger.serializers.public import (
     PublicJournalVoucherCreateResponseSerializer,
     PublicJournalVoucherCreateSerializer,
     PublicJournalVoucherStatusChangeSerializer,
+    PublicPartyListSerializer,
 )
 from apps.voucher.models.journal_vouchers import JournalVoucher
 
@@ -39,3 +41,16 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
             journal_voucher.status = status
             journal_voucher.save()
         return Response({"detail": "Status changed successfully."})
+
+
+class PublicPartyViewset(viewsets.GenericViewSet):
+    queryset = Party.objects.all()
+
+    @action(detail=False, methods=["get"], url_path="all")
+    def all(self, request):
+        parties = (
+            self.queryset.filter(company_id=request.company_id)
+            .order_by("-pk")
+            .only("id", "name")
+        )
+        return Response(PublicPartyListSerializer(parties, many=True).data)

@@ -14,6 +14,7 @@ from apps.product.views import book_by_isbn
 from apps.report import api as report_api
 from apps.tax import api as tax
 from apps.voucher import api as voucher
+from apps.voucher.api import public as public_voucher
 from awecount.libs.JWTCustomAuthentication import TokenObtainPairView
 
 router = DefaultRouter()
@@ -27,6 +28,23 @@ router.register(
     "public/journal-voucher",
     public_ledger.PublicJournalVoucherViewSet,
     basename="public-journal-voucher",
+)
+router.register(
+    "public/party",
+    public_ledger.PublicPartyViewset,
+    basename="public-party",
+)
+
+router.register(
+    "public/purchase-voucher",
+    public_voucher.PublicPurchaseVoucherViewset,
+    basename="public-purchase-voucher",
+)
+
+router.register(
+    "public/purchase-discount",
+    public_voucher.PublicPurchaseDiscountViewset,
+    basename="public-purchase-discount",
 )
 
 router.register(
