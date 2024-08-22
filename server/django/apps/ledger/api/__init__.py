@@ -130,7 +130,7 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     search_fields = ("code", "name")
     filterset_class = CategoryFilterSet
 
-    collections = (("categories", Category, CategorySerializer),)
+    collections = (("categories", Category, CategorySerializer, True, ["code", "name"]),)
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -390,6 +390,9 @@ class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
             Account.objects.exclude(name__startswith="Opening Balance").filter(
                 account_opening_balances__isnull=True
             ),
+            GenericSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -443,13 +446,15 @@ class TransactionViewSet(
         "content_type", flat=True
     ).distinct()
     collections = [
-        ("accounts", Account),
+        ("accounts", Account, GenericSerializer, True, ["name"]),
         (
             "transaction_types",
             ContentType.objects.filter(id__in=journal_entry_content_type),
             ContentTypeListSerializer,
+            True,
+            ["app_label"],
         ),
-        ("categories", Category),
+        ("categories", Category, GenericSerializer, True, ["name"],),
     ]
 
     def get_serializer_class(self):
@@ -543,7 +548,7 @@ class AccountClosingViewSet(
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
 
-    collections = [("fiscal_years", FiscalYear)]
+    collections = [("fiscal_years", FiscalYear, GenericSerializer, True, ["name"])]
 
     def get_defaults(self, request=None):
         company = request.company

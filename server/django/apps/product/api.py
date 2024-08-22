@@ -51,9 +51,9 @@ from .serializers import (
     InventoryCategoryTrialBalanceSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
+    ItemFormSerializer,
     ItemListMinSerializer,
     ItemListSerializer,
-    ItemFormSerializer,
     ItemOpeningSerializer,
     ItemPOSSerializer,
     ItemSerializer,
@@ -82,7 +82,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     parser_classes = [JSONParser, MultiPartParser]
 
     collections = (
-        ("brands", Brand, BrandSerializer),
+        ("brands", Brand, BrandSerializer, True, ["name"]),
         (
             "inventory_categories",
             InventoryCategory.objects.select_related(
@@ -93,9 +93,11 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 "discount_received_account",
             ),
             InventoryCategoryFormSerializer,
+            True,
+            ["name"],
         ),
-        ("units", Unit, UnitSerializer),
-        ("accounts", Account, AccountMinSerializer),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
+        ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
@@ -103,11 +105,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
         (
             "discount_received_accounts",
             Account.objects.filter(category__name="Discount Income"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -658,6 +664,8 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
                 track_inventory=True, account__opening_balance=0
             ),
             GenericSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -672,6 +680,8 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
                     Q(account__opening_balance=0) | Q(account_id=self.kwargs.get("pk"))
                 ),
                 ItemListSerializer,
+                True,
+                ["name"],
             ),
         )
         return self.get_defaults(request=request)
@@ -717,7 +727,7 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
-    collections = (("brands", Brand, BrandSerializer),)
+    collections = (("brands", Brand, BrandSerializer, True, ["name"]),)
 
     filter_backends = (
         filters.DjangoFilterBackend,
@@ -755,8 +765,8 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
 class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
     collections = (
-        ("units", Unit, UnitSerializer),
-        ("accounts", Account, AccountMinSerializer),
+        ("units", Unit, UnitSerializer, True, ["name"]),
+        ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
@@ -764,11 +774,15 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
         (
             "discount_received_accounts",
             Account.objects.filter(category__name="Discount Income"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
     )
 
