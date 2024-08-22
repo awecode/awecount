@@ -152,16 +152,18 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = SalesVoucher
     row = SalesVoucherRow
     collections = [
-        ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("units", Unit, GenericSerializer, True, ["name"]),
         ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
-        ("bank_accounts", BankAccount),
+        ("bank_accounts", BankAccount, GenericSerializer, True, ["bank_name", "short_name", "account_number"]),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
             Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True))
             .select_related("unit"),
             ItemSalesSerializer,
+            True,
+            ["name"],
         ),
     ]
 
@@ -410,14 +412,20 @@ class POSViewSet(
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     collections = [
-        ("units", Unit.objects.only("name", "short_name")),
+        ("units", Unit.objects.only("name", "short_name"), GenericSerializer, True, ["name"]),
         (
             "discounts",
             SalesDiscount.objects.only("name", "type", "value"),
             SalesDiscountMinSerializer,
             False,
         ),
-        ("bank_accounts", BankAccount.objects.only("short_name", "bank_name")),
+        (
+            "bank_accounts",
+            BankAccount.objects.only("short_name", "bank_name", "account_number"),
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"], 
+        ),
         (
             "tax_schemes",
             TaxScheme.objects.only("name", "short_name", "rate"),
@@ -497,12 +505,12 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     filterset_class = PurchaseVoucherFilterSet
 
     collections = (
-        ("parties", Party, PartyMinSerializer),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
         ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
-        ("units", Unit),
-        ("bank_accounts", BankAccount),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("bank_accounts", BankAccount, GenericSerializer, True, ["short_name", "account_number", "bank_name"]),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
-        ("bank_accounts", BankAccount),
+        ("bank_accounts", BankAccount, GenericSerializer, True, ["short_name", "account_number", "bank_name"]),
         (
             "items",
             Item.objects.filter(
@@ -512,6 +520,8 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 | Q(fixed_asset=True)
             ).select_related("unit"),
             ItemPurchaseSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -817,14 +827,16 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     collections = (
         ("discounts", SalesDiscount, SalesDiscountSerializer, False),
-        ("units", Unit),
-        ("bank_accounts", BankAccount),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("bank_accounts", BankAccount, GenericSerializer, True, ["short_name", "account_number", "bank_name"]),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
-        ("bank_accounts", BankAccount, BankAccountSerializer),
+        ("bank_accounts", BankAccount, BankAccountSerializer, True, ["short_name", "account_number", "bank_name"]),
         (
             "items",
             Item.objects.filter(can_be_sold=True).select_related("unit"),
             ItemSalesSerializer,
+            True,
+            ["name"],
         ),
     )
 
