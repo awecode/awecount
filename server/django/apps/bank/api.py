@@ -27,13 +27,14 @@ from apps.bank.serializers import (
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
     ChequeIssueSerializer,
+    ChequeIssueFormSerializer,
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
 )
 from apps.ledger.models import Account, Party
 from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer
-from awecount.libs.CustomViewSet import CRULViewSet
+from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
 
@@ -53,12 +54,18 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
                 "id",
                 "name",
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
         (
             "bank_accounts",
             BankAccount.objects.filter(is_wallet=False).only(
                 "short_name", "account_number"
             ),
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
         ),
     ]
 
@@ -124,9 +131,11 @@ class ChequeIssueViewSet(CRULViewSet):
             "bank_accounts",
             BankAccount.objects.filter(is_wallet=False),
             BankAccountChequeIssueSerializer,
+            True,
+            ['short_name', 'account_number', 'bank_name'],
         ),
-        ("parties", Party, PartyMinSerializer),
-        ("accounts", Account),
+        ("parties", Party, PartyMinSerializer, True, ['name']),
+        ("accounts", Account, GenericSerializer, True, ['name']),
     )
     filterset_class = ChequeIssueFilterSet
     filter_backends = [
@@ -156,6 +165,11 @@ class ChequeIssueViewSet(CRULViewSet):
             qs = qs.select_related("party")
         return qs.order_by("-pk")
 
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ChequeIssueFormSerializer
+        return super().get_serializer_class()
+
     @action(detail=False)
     def export(self, request):
         queryset = self.filter_queryset(self.get_queryset()).annotate(
@@ -180,6 +194,9 @@ class FundTransferViewSet(CRULViewSet):
                 Q(category__name="Bank Accounts", category__default=True)
                 | Q(category__name="Customers", category__default=True)
             ).order_by("category__name"),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
         (
             "to_account",
@@ -187,12 +204,18 @@ class FundTransferViewSet(CRULViewSet):
                 Q(category__name="Bank Accounts", category__default=True)
                 | Q(category__name="Suppliers", category__default=True)
             ).order_by("category__name"),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
         (
             "transaction_fee_account",
             Account.objects.filter(
                 category__name="Bank Charges", category__default=True
             ),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
     )
 
@@ -252,12 +275,18 @@ class CashDepositViewSet(CRULViewSet):
                 "id",
                 "name",
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
         (
             "bank_accounts",
             BankAccount.objects.filter(is_wallet=False).only(
                 "short_name", "account_number"
             ),
+            GenericSerializer,
+            True,
+            ['name'],
         ),
     ]
 

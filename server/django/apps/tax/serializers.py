@@ -4,6 +4,7 @@ from apps.ledger.serializers import (
     AccountBalanceSerializer,
     JournalEntrySerializer,
     TransactionSerializer,
+    AccountMinSerializer,
 )
 from apps.tax.models import TaxPayment, TaxScheme
 
@@ -42,6 +43,8 @@ class TaxPaymentSerializer(serializers.ModelSerializer):
         model = TaxPayment
         exclude = ("company",)
 
+class TaxPaymentFormSerializer(TaxPaymentSerializer):
+    selected_cr_account_obj = AccountMinSerializer(read_only=True, source="cr_account")
 
 class TaxPaymentJournalEntrySerializer(JournalEntrySerializer):
     transactions = serializers.SerializerMethodField()

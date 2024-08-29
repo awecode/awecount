@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from .models import (
     BankAccount,
@@ -11,7 +12,7 @@ from .models import (
     FundTransfer,
     FundTransferTemplate,
 )
-
+from apps.ledger.serializers import PartyMinSerializer
 
 class BankAccountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
@@ -20,12 +21,21 @@ class BankAccountSerializer(serializers.ModelSerializer):
         model = BankAccount
         exclude = ("company",)
 
+class BankAccountMinSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source="__str__")
+
+    class Meta:
+        model = BankAccount
+        fields = ("id", "name")
+
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     # clearing_date = serializers.ReadOnlyField()
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
+    selected_benefactor_obj = GenericSerializer(read_only=True, source="benefactor")
 
     def validate_voucher_no(self, attr):
         if attr and attr > 214748364:
@@ -106,6 +116,11 @@ class ChequeIssueSerializer(serializers.ModelSerializer):
 
 
 class FundTransferSerializer(serializers.ModelSerializer):
+    selected_from_account_obj = GenericSerializer(read_only=True, source="from_account")
+    selected_to_account_obj = GenericSerializer(read_only=True, source="to_account")
+    selected_transaction_fee_account_obj = GenericSerializer(
+        read_only=True, source="transaction_fee_account"
+    )
     class Meta:
         model = FundTransfer
         exclude = ("company",)
@@ -156,6 +171,10 @@ class BankAccountChequeIssueSerializer(serializers.ModelSerializer):
             "cheque_no",
         )
 
+class ChequeIssueFormSerializer(ChequeIssueSerializer):
+    selected_bank_account_obj = BankAccountChequeIssueSerializer(read_only=True, source="bank_account")
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
+    selected_dr_account_obj = GenericSerializer(source="dr_account", read_only=True)
 
 class BankCashDepositCreateSerializer(
     StatusReversionMixin, serializers.ModelSerializer
@@ -163,6 +182,8 @@ class BankCashDepositCreateSerializer(
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     benefactor_name = serializers.ReadOnlyField(source="benefactor.name")
     voucher_no = serializers.IntegerField(required=False, allow_null=True)
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
+    selected_benefactor_obj = GenericSerializer(read_only=True, source="benefactor")
 
     def create(self, validated_data):
         bank_cash_deposit = BankCashDeposit.objects.create(**validated_data)

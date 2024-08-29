@@ -77,7 +77,6 @@ def fix_book_title(modeladmin, request, queryset):
 
 fix_book_title.short_description = "Fix book title to English"
 
-
 admin.site.register(JournalEntry)
 admin.site.register(InventorySetting)
 
@@ -107,6 +106,15 @@ class CategoryAdmin(admin.ModelAdmin):
         "fixed_asset",
         "direct_expense",
         "indirect_expense",
+    )
+    autocomplete_fields = (
+        "company", "default_unit", "default_tax_scheme", "sales_account", "purchase_account",
+        "discount_allowed_account",
+        "discount_received_account", "sales_account_category", "purchase_account_category",
+        "discount_allowed_account_category", "discount_received_account_category", "fixed_asset_account_category",
+        "direct_expense_account_category", "indirect_expense_account_category",
+        "dedicated_sales_account", "dedicated_purchase_account", "dedicated_discount_allowed_account",
+        "dedicated_discount_received_account",
     )
 
 

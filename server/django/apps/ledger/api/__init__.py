@@ -26,11 +26,12 @@ from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,
     CRULViewSet,
+    GenericSerializer,
 )
 from awecount.libs.mixins import InputChoiceMixin, TransactionsViewMixin
 
-from .models import Account, AccountOpeningBalance, Category, JournalEntry
-from .serializers import (
+from ..models import Account, AccountOpeningBalance, Category, JournalEntry
+from ..serializers import (
     AccountClosingSerializer,
     AccountDetailSerializer,
     AccountFormSerializer,
@@ -40,6 +41,7 @@ from .serializers import (
     AccountSerializer,
     AggregatorSerializer,
     CategorySerializer,
+    CategoryDetailSerializer,
     CategoryTreeSerializer,
     ContentTypeListSerializer,
     JournalEntrySerializer,
@@ -128,7 +130,12 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     search_fields = ("code", "name")
     filterset_class = CategoryFilterSet
 
-    collections = (("categories", Category, CategorySerializer),)
+    collections = (("categories", Category, CategorySerializer, True, ["code", "name"]),)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CategoryDetailSerializer
+        return super().get_serializer_class()
 
 
 class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
@@ -148,15 +155,15 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         qs = Account.objects.filter(company=self.request.company).select_related(
             "category", "parent"
         )
-        if self.action == "list":
-            qs = (
-                qs.annotate(
-                    dr=Coalesce(Sum("transactions__dr_amount"), 0.0),
-                    cr=Coalesce(Sum("transactions__cr_amount"), 0.0),
-                )
-                .annotate(computed_balance=F("dr") - F("cr"))
-                .order_by("-id")
-            )
+        # if self.action == "list":
+        #     qs = (
+        #         qs.annotate(
+        #             dr=Coalesce(Sum("transactions__dr_amount"), 0.0),
+        #             cr=Coalesce(Sum("transactions__cr_amount"), 0.0),
+        #         )
+        #         .annotate(computed_balance=F("dr") - F("cr"))
+        #         .order_by("-id")
+        #     )
         return qs
 
     def get_accounts_by_category_name(self, category_name):
@@ -383,6 +390,9 @@ class AccountOpeningBalanceViewSet(InputChoiceMixin, CRULViewSet):
             Account.objects.exclude(name__startswith="Opening Balance").filter(
                 account_opening_balances__isnull=True
             ),
+            GenericSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -436,13 +446,15 @@ class TransactionViewSet(
         "content_type", flat=True
     ).distinct()
     collections = [
-        ("accounts", Account),
+        ("accounts", Account, GenericSerializer, True, ["name"]),
         (
             "transaction_types",
             ContentType.objects.filter(id__in=journal_entry_content_type),
             ContentTypeListSerializer,
+            True,
+            ["app_label"],
         ),
-        ("categories", Category),
+        ("categories", Category, GenericSerializer, True, ["name"],),
     ]
 
     def get_serializer_class(self):
@@ -536,12 +548,12 @@ class AccountClosingViewSet(
     queryset = AccountClosing.objects.all()
     serializer_class = AccountClosingSerializer
 
-    collections = [("fiscal_years", FiscalYear)]
+    collections = [("fiscal_years", FiscalYear, GenericSerializer, True, ["name"])]
 
     def get_defaults(self, request=None):
         company = request.company
-        current_fiscal_year_id = company.current_fiscal_year_id
-        return {"fields": {"current_fiscal_year_id": current_fiscal_year_id}}
+        current_fiscal_year = GenericSerializer(company.current_fiscal_year).data
+        return {"fields": {"current_fiscal_year": current_fiscal_year}}
 
     def get_queryset(self):
         return super().get_queryset().filter(company=self.request.company)

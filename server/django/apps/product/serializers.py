@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
-from apps.ledger.serializers import AccountBalanceSerializer
+from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -100,6 +100,7 @@ class ItemSerializer(serializers.ModelSerializer):
 class ItemSalesSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source="selling_price")
     is_trackable = serializers.ReadOnlyField()
+    default_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = Item
@@ -112,6 +113,7 @@ class ItemSalesSerializer(serializers.ModelSerializer):
             "code",
             "description",
             "is_trackable",
+            "default_unit_obj",
         )
 
 
@@ -138,6 +140,7 @@ class ItemPOSSerializer(serializers.ModelSerializer):
 class ItemPurchaseSerializer(serializers.ModelSerializer):
     rate = serializers.ReadOnlyField(source="cost_price")
     is_trackable = serializers.ReadOnlyField()
+    default_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = Item
@@ -150,6 +153,7 @@ class ItemPurchaseSerializer(serializers.ModelSerializer):
             "description",
             "is_trackable",
             "track_inventory",
+            "default_unit_obj",
         )
 
 
@@ -214,6 +218,7 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
         return attrs
 
+
     class Meta:
         model = InventoryCategory
         exclude = (
@@ -229,6 +234,25 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
             "indirect_expense_account_category",
         )
 
+class InventoryCategoryFormSerializer(InventoryCategorySerializer):
+    selected_unit_obj = UnitSerializer(read_only=True, source="default_unit")
+    sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
+    purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
+    discount_allowed_account_obj = AccountMinSerializer(read_only=True, source="discount_allowed_account")
+    discount_received_account_obj = AccountMinSerializer(read_only=True, source="discount_received_account")
+
+class ItemFormSerializer(ItemSerializer):
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
+    selected_sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
+    selected_purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
+    selected_discount_received_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_received_account"
+    )
+    selected_discount_allowed_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_allowed_account"
+    )
+    selected_inventory_category_obj = InventoryCategoryFormSerializer(read_only=True, source="category")
+    selected_brand_obj = GenericSerializer(read_only=True, source="brand")
 
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:

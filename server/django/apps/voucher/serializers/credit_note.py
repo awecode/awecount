@@ -3,10 +3,11 @@ from rest_framework.exceptions import ValidationError
 
 from awecount.libs import get_next_voucher_no
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import CreditNote, CreditNoteRow
 from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
-from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer
+from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer, ItemSalesSerializer 
 
 
 class CreditNoteRowSerializer(
@@ -152,6 +153,9 @@ class CreditNoteListSerializer(serializers.ModelSerializer):
             "status",
         )
 
+class CreditNoteRowDetailSerializer(SalesVoucherRowDetailSerializer):
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
 class CreditNoteDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
@@ -160,7 +164,7 @@ class CreditNoteDetailSerializer(serializers.ModelSerializer):
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
     address = serializers.ReadOnlyField(source="party.address")
 
-    rows = SalesVoucherRowDetailSerializer(many=True)
+    rows = CreditNoteRowDetailSerializer(many=True)
     tax_registration_number = serializers.ReadOnlyField(
         source="party.tax_registration_number"
     )
