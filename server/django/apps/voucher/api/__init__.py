@@ -16,6 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.aggregator.views import qs_to_xls
@@ -37,6 +38,7 @@ from apps.product.serializers import (
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.users.serializers import FiscalYearSerializer
+from apps.voucher.fifo_functions import fifo_cancel_sales
 from apps.voucher.filters import (
     ChallanFilterSet,
     CreditNoteFilterSet,
@@ -46,6 +48,7 @@ from apps.voucher.filters import (
     PurchaseDiscountFilterSet,
     PurchaseOrderFilterSet,
     PurchaseVoucherFilterSet,
+    PurchaseVoucherRowFilterSet,
     SalesDiscountFilterSet,
     SalesRowFilterSet,
     SalesVoucherFilterSet,
@@ -69,6 +72,7 @@ from apps.voucher.serializers.debit_note import (
 from apps.voucher.serializers.purchase import (
     PurchaseOrderCreateSerializer,
     PurchaseOrderListSerializer,
+    PurchaseVoucherRowSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
     PurchaseCreateSettingSerializer,
@@ -82,7 +86,7 @@ from apps.voucher.serializers.voucher_settings import (
 )
 
 # from awecount.libs.db import DistinctSum
-from awecount.libs import get_next_voucher_no
+from awecount.libs import get_next_voucher_no, zero_for_none
 from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,
@@ -93,7 +97,7 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin
 from awecount.libs.nepdate import ad2bs, ad2bs_str
 
-from .models import (
+from ..models import (
     CreditNote,
     CreditNoteRow,
     DebitNote,
@@ -107,9 +111,9 @@ from .models import (
     SalesVoucher,
     SalesVoucherRow,
 )
-from .models.invoice_design import InvoiceDesign
-from .models.journal_vouchers import JournalVoucher, JournalVoucherRow
-from .serializers import (
+from ..models.invoice_design import InvoiceDesign
+from ..models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from ..serializers import (
     ChallanCreateSerializer,
     ChallanListSerializer,
     CreditNoteCreateSerializer,
@@ -148,15 +152,25 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     model = SalesVoucher
     row = SalesVoucherRow
     collections = [
-        ("parties", Party, PartyMinSerializer),
-        ("units", Unit),
-        ("discounts", SalesDiscount, SalesDiscountMinSerializer),
-        ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        ("discounts", SalesDiscount, SalesDiscountMinSerializer, False),
+        (
+            "bank_accounts",
+            BankAccount,
+            GenericSerializer,
+            True,
+            ["bank_name", "short_name", "account_number"],
+        ),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
-            Item.objects.filter(Q(can_be_sold=True) | Q(direct_expense=True)),
+            Item.objects.filter(
+                Q(can_be_sold=True) | Q(direct_expense=True)
+            ).select_related("unit"),
             ItemSalesSerializer,
+            True,
+            ["name"],
         ),
     ]
 
@@ -196,7 +210,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super(SalesVoucherViewSet, self).get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party").prefetch_related(
                 Prefetch(
@@ -242,7 +256,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -273,6 +289,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 ).data,
                 "enable_sales_agents": request.company.enable_sales_agents,
                 "enable_fifo": request.company.inventory_setting.enable_fifo,
+                "default_mode_obj": None
+                if request.company.sales_setting.mode in ["Cash", "Credit"]
+                else BankAccount.objects.filter(id=request.company.sales_setting.mode)
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
@@ -285,9 +307,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     def get_update_defaults(self, request=None):
         data = SalesUpdateSettingSerializer(request.company.sales_setting).data
-        data["options"][
-            "can_update_issued"
-        ] = request.company.enable_sales_invoice_update
+        data["options"]["can_update_issued"] = (
+            request.company.enable_sales_invoice_update
+        )
         obj = self.get_object()
         if not obj.voucher_no:
             data["options"]["voucher_no"] = get_next_voucher_no(
@@ -317,6 +339,15 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         obj.apply_transactions()
         return Response({})
 
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_error(self, request):
+        return 1 / 0
+
+    @action(detail=False, permission_classes=[AllowAny])
+    def throw_response(self, request):
+        accounts_count = Account.objects.count()
+        return Response({"success": True, "accounts_count": accounts_count})
+
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         sales_voucher = self.get_object()
@@ -325,24 +356,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
             )
-
-        if sales_voucher.credit_notes.exists():
-            raise RESTValidationError(
-                {
-                    "message": "This sales voucher has credit notes. Please cancel them first."
-                }
+        if request.company.inventory_setting.enable_fifo:
+            fifo_cancel_sales(
+                sales_voucher, request.query_params.get("fifo_inconsistency")
             )
-
-        # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
         sales_voucher.cancel(message)
         return Response({})
 
@@ -362,7 +379,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     SalesVoucherRow.objects.all().select_related(
-                        "item", "unit", "discount_obj", "tax_scheme"
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
                     ),
                 )
             )
@@ -404,17 +421,31 @@ class POSViewSet(
     serializer_class = SalesVoucherCreateSerializer
     model = SalesVoucher
     collections = [
-        ("units", Unit.objects.only("name", "short_name")),
+        (
+            "units",
+            Unit.objects.only("name", "short_name"),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
         (
             "discounts",
             SalesDiscount.objects.only("name", "type", "value"),
             SalesDiscountMinSerializer,
+            False,
         ),
-        ("bank_accounts", BankAccount.objects.only("short_name", "bank_name")),
+        (
+            "bank_accounts",
+            BankAccount.objects.only("short_name", "bank_name", "account_number"),
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
+        ),
         (
             "tax_schemes",
             TaxScheme.objects.only("name", "short_name", "rate"),
             TaxSchemeMinSerializer,
+            False,
         ),
     ]
 
@@ -489,12 +520,24 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     filterset_class = PurchaseVoucherFilterSet
 
     collections = (
-        ("parties", Party, PartyMinSerializer),
-        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer),
-        ("units", Unit),
-        ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
-        ("bank_accounts", BankAccount, BankAccountSerializer),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        (
+            "bank_accounts",
+            BankAccount,
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
+        ),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        (
+            "bank_accounts",
+            BankAccount,
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
+        ),
         (
             "items",
             Item.objects.filter(
@@ -502,8 +545,10 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -559,7 +604,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-date", "-pk")
@@ -574,7 +619,15 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             "options": {
                 "fiscal_years": FiscalYearSerializer(
                     request.company.get_fiscal_years(), many=True
-                ).data
+                ).data,
+                "default_mode_obj": None
+                if request.company.purchase_setting.mode in ["Cash", "Credit"]
+                else BankAccount.objects.filter(
+                    id=request.company.purchase_setting.mode
+                )
+                .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
+                .values("id", "name")
+                .first(),
             },
         }
 
@@ -587,7 +640,9 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     PurchaseVoucherRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -638,6 +693,70 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         except Exception as e:
             raise APIException(str(e))
 
+    # TODO: Optimize and refactor
+    def update_rows(self, rows, row_id):
+        for row in rows:
+            sold_items = row.sold_items
+            quantity = sold_items.pop(str(row_id))
+            purchase_rows = PurchaseVoucherRow.objects.filter(
+                item_id=row.item_id, remaining_quantity__gt=0
+            ).order_by("voucher__date", "id")
+            for purchase_row in purchase_rows:
+                if purchase_row.remaining_quantity == quantity:
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)][0] += quantity
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
+                    else:
+                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
+                    break
+                elif purchase_row.remaining_quantity > quantity:
+                    purchase_row.remaining_quantity -= quantity
+                    purchase_row.save()
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)][0] += quantity
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
+                    else:
+                        sold_items[str(purchase_row.id)] = [quantity, purchase_row.rate]
+                    break
+                else:
+                    quantity -= purchase_row.remaining_quantity
+                    if str(purchase_row.id) in sold_items.keys():
+                        sold_items[str(purchase_row.id)][0] += (
+                            purchase_row.remaining_quantity
+                        )
+                        sold_items[str(purchase_row.id)][1] = purchase_row.rate
+                    else:
+                        sold_items[str(purchase_row.id)] = [
+                            purchase_row.remaining_quantity,
+                            purchase_row.rate,
+                        ]
+                    purchase_row.remaining_quantity = 0
+                    purchase_row.save()
+            row.sold_items = sold_items
+            row.save()
+
+    def fifo_update_sales_rows(self, purchase_voucher):
+        rows = purchase_voucher.rows.select_related("item").all()
+
+        for row in rows:
+            if row.item.track_inventory:
+                row.remaining_quantity = 0
+                row.save()
+
+                # Update sales rows
+                sales_voucher_rows = SalesVoucherRow.objects.filter(
+                    sold_items__has_key=str(row.id)
+                )
+                self.update_rows(sales_voucher_rows, row.id)
+
+                # Update challan rows
+                challan_rows = ChallanRow.objects.filter(
+                    sold_items__has_key=str(row.id)
+                )
+                self.update_rows(challan_rows, row.id)
+
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
         purchase_voucher = self.get_object()
@@ -647,37 +766,59 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 {"message": "message field is required for cancelling invoice!"}
             )
 
-        if purchase_voucher.debit_notes.exists():
-            raise RESTValidationError(
-                {
-                    "message": "This purchase voucher has debit notes. Please cancel them first."
-                }
-            )
-
-        # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
-        # Negative stock check
-        if (
-            request.company.inventory_setting.enable_negative_stock_check
-            and not request.query_params.get("negative_stock")
-        ):
-            if purchase_voucher.rows.filter(
-                item__account__current_balance__lt=0
-            ).count():
+        if request.company.inventory_setting.enable_fifo:
+            row_ids = purchase_voucher.rows.values_list("id", flat=True)
+            str_ids = [str(x) for x in row_ids]
+            if request.query_params.get("fifo_inconsistency"):
+                purchase_voucher.cancel()
+                self.fifo_update_sales_rows(purchase_voucher)
+                return Response({})
+            sales_rows = SalesVoucherRow.objects.filter(sold_items__has_keys=str_ids)
+            challan_rows = ChallanRow.objects.filter(sold_items__has_keys=str_ids)
+            if sales_rows.exists() or challan_rows.exists():
+                # TODO: provide a descriptive message
                 raise UnprocessableException(
-                    detail="Negative Stock Warning!", code="negative_stock"
+                    detail="This action might create inconsistencies in FIFO.",
+                    code="fifo_inconsistency",
                 )
 
-        purchase_voucher.cancel()
-        return Response({})
+            # Negative stock check
+            if request.company.inventory_setting.enable_negative_stock_check:
+                if request.query_params.get("negative_stock"):
+                    purchase_voucher.cancel()
+                    self.fifo_update_sales_rows(purchase_voucher)
+                    return Response({})
+                purchase_rows = purchase_voucher.rows.all()
+                for row in purchase_rows:
+                    sales_rows = SalesVoucherRow.objects.filter(
+                        sold_items__has_key=str(row.id)
+                    )
+                    challan_rows = ChallanRow.objects.filter(
+                        sold_items__has_key=str(row.id)
+                    )
+                    sold_items_challan = list(
+                        challan_rows.values_list("sold_items", flat=True)
+                    )
+                    sold_items_sales = list(
+                        sales_rows.values_list("sold_items", flat=True)
+                    )
+                    sold_items = sold_items_challan + sold_items_sales
+                    sum = 0
+                    for item in sold_items:
+                        sum += item[str(row.id)][0]
+                    remaining_quantity = (
+                        zero_for_none(row.item.remaining_stock) - row.quantity
+                    )
+                    if remaining_quantity <= 0:
+                        raise UnprocessableException(
+                            detail="Negative Stock Warning!", code="negative_stock"
+                        )
+            purchase_voucher.cancel()
+            self.fifo_update_sales_rows(purchase_voucher)
+            return Response({})
+        else:
+            purchase_voucher.cancel()
+            return Response({})
 
     @action(detail=False)
     def export(self, request):
@@ -716,18 +857,36 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
     filterset_class = CreditNoteFilterSet
 
     collections = (
-        ("discounts", SalesDiscount, SalesDiscountSerializer),
-        ("units", Unit),
-        ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
-        ("bank_accounts", BankAccount, BankAccountSerializer),
-        ("items", Item.objects.filter(can_be_sold=True), ItemSalesSerializer),
+        ("discounts", SalesDiscount, SalesDiscountSerializer, False),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        (
+            "bank_accounts",
+            BankAccount,
+            GenericSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
+        ),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        (
+            "bank_accounts",
+            BankAccount,
+            BankAccountSerializer,
+            True,
+            ["short_name", "account_number", "bank_name"],
+        ),
+        (
+            "items",
+            Item.objects.filter(can_be_sold=True).select_related("unit"),
+            ItemSalesSerializer,
+            True,
+            ["name"],
+        ),
     )
 
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-id")
@@ -788,7 +947,9 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     CreditNoteRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 ),
             )
@@ -809,7 +970,6 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
-        # FIFO inconsistency check
         if (
             request.company.inventory_setting.enable_fifo
             and not request.query_params.get("fifo_inconsistency")
@@ -818,7 +978,6 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
                 detail="This may cause inconsistencies in fifo!",
                 code="fifo_inconsistency",
             )
-
         obj = self.get_object()
         try:
             obj.cancel()
@@ -873,10 +1032,10 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     filterset_class = DebitNoteFilterSet
 
     collections = (
-        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer),
+        ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False),
         ("units", Unit),
         ("bank_accounts", BankAccount),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
         (
             "items",
@@ -885,7 +1044,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 | Q(direct_expense=True)
                 | Q(indirect_expense=True)
                 | Q(fixed_asset=True)
-            ),
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     )
@@ -893,7 +1052,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-id")
@@ -952,7 +1111,9 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 Prefetch(
                     "rows",
                     DebitNoteRow.objects.all()
-                    .select_related("item", "unit", "discount_obj", "tax_scheme")
+                    .select_related(
+                        "item", "item__category", "unit", "discount_obj", "tax_scheme"
+                    )
                     .order_by("pk"),
                 )
             )
@@ -981,7 +1142,6 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
                 detail="This may cause inconsistencies in fifo!",
                 code="fifo_inconsistency",
             )
-
         obj = self.get_object()
         try:
             obj.cancel()
@@ -1034,7 +1194,13 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
     ]
     filterset_class = JournalVoucherFilterSet
 
-    collections = (("accounts", Account, AccountSerializer),)
+    collections = (
+        (
+            "accounts",
+            Account.objects.select_related("category", "parent"),
+            AccountSerializer,
+        ),
+    )
 
     def get_queryset(self, **kwargs):
         qs = super().get_queryset()
@@ -1072,16 +1238,6 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
 
     @action(detail=True, methods=["POST"])
     def cancel(self, request, pk):
-        # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
         obj = self.get_object()
         try:
             obj.cancel(reason=request.data.get("message"))
@@ -1187,7 +1343,9 @@ class SalesBookViewSet(
 
         if is_filtered:
             aggregate = queryset.aggregate(
-                total_amount=Sum("total_amount"),
+                total__amount=Sum(
+                    "total_amount"
+                ),  # couldn't use total_amount and total__amount is humanized as total_amount in fe
                 total_meta_discount=Sum("meta_discount"),
                 total_meta_tax=Sum("meta_tax"),
                 total_meta_taxable=Sum("meta_taxable"),
@@ -1234,27 +1392,24 @@ class SalesBookViewSet(
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 if row.get("status") == "Cancelled":
                     ws.cell(column=3, row=idx + 7, value="Cancelled")
+                    ws.cell(column=5, row=idx + 7, value="0")
+                    ws.cell(column=6, row=idx + 7, value="0")
+                    ws.cell(column=7, row=idx + 7, value="0")
                     ws.cell(column=8, row=idx + 7, value="0")
-                    ws.cell(column=9, row=idx + 7, value="0")
-                    ws.cell(column=10, row=idx + 7, value="0")
-                    ws.cell(column=11, row=idx + 7, value="0")
                 else:
                     taxable = row.get("voucher_meta").get("taxable")
                     non_taxable = row.get("voucher_meta").get("non_taxable")
-                    ws.cell(column=8, row=idx + 7, value=taxable + non_taxable)
-                    ws.cell(column=9, row=idx + 7, value=non_taxable)
-                    ws.cell(column=10, row=idx + 7, value=taxable)
+                    ws.cell(column=5, row=idx + 7, value=taxable + non_taxable)
+                    ws.cell(column=6, row=idx + 7, value=non_taxable)
+                    ws.cell(column=7, row=idx + 7, value=taxable)
                     ws.cell(
-                        column=11, row=idx + 7, value=row.get("voucher_meta").get("tax")
+                        column=8, row=idx + 7, value=row.get("voucher_meta").get("tax")
                     )
                     ws.cell(column=3, row=idx + 7, value=row.get("buyers_name"))
                     ws.cell(column=4, row=idx + 7, value=row.get("buyers_pan"))
-                ws.cell(column=5, row=idx + 7, value=row.get("item_names"))
-                ws.cell(column=6, row=idx + 7, value=row.get("total_quantity"))
-                ws.cell(column=7, row=idx + 7, value=row.get("units"))
 
                 if row.get("is_export"):
-                    ws.cell(column=12, row=idx + 7, value=row.get("grand_total"))
+                    ws.cell(column=9, row=idx + 7, value=row.get("grand_total"))
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
@@ -1334,6 +1489,75 @@ class SalesRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
                 Count("voucher", distinct=True),
                 Count("voucher__party", distinct=True),
                 Count("voucher__sales_agent", distinct=True),
+            )
+            self.paginator.aggregate = aggregate
+        return self.get_paginated_response(data)
+
+    @action(detail=False, url_path="by-category")
+    def by_category(self, request):
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        qs = self.get_queryset()
+        if start_date:
+            qs = qs.filter(voucher__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(voucher__date__lte=end_date)
+        qs = (
+            qs.values("item__category", "item__category__name")
+            .annotate(
+                quantity=Sum("quantity"),
+                discount_amount=Sum("discount_amount"),
+                tax_amount=Sum("tax_amount"),
+                net_amount=Sum("net_amount"),
+            )
+            .order_by("-net_amount")
+        )
+        return Response(qs)
+
+
+class PurchaseVoucherRowViewSet(CompanyViewSetMixin, viewsets.GenericViewSet):
+    serializer_class = PurchaseVoucherRowSerializer
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    filterset_class = PurchaseVoucherRowFilterSet
+
+    search_fields = [
+        "voucher__party__name",
+        "voucher__party__tax_registration_number",
+        "item__name",
+    ]
+
+    def get_queryset(self, **kwargs):
+        qs = PurchaseVoucherRow.objects.filter(
+            voucher__company_id=self.request.company_id
+        ).select_related("item", "voucher__party")
+        return qs.order_by("-pk")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        data = serializer.data
+
+        is_filtered = any(
+            x in self.request.query_params if self.request.query_params.get(x) else None
+            for x in self.filterset_class.base_filters.keys()
+        )
+        if is_filtered:
+            aggregate = queryset.aggregate(
+                Sum("quantity"),
+                Sum("discount_amount"),
+                Sum("tax_amount"),
+                Sum("net_amount"),
+                Avg("rate"),
+                Count("item", distinct=True),
+                Count("voucher", distinct=True),
+                Count("voucher__party", distinct=True),
+                # Count("voucher__sales_agent", distinct=True),
             )
             self.paginator.aggregate = aggregate
         return self.get_paginated_response(data)
@@ -1450,15 +1674,10 @@ class PurchaseBookViewSet(
                 ws.cell(column=2, row=idx + 7, value=row.get("voucher_no"))
                 ws.cell(column=4, row=idx + 7, value=row.get("party_name"))
                 ws.cell(column=5, row=idx + 7, value=row.get("tax_registration_number"))
-                ws.cell(column=6, row=idx + 7, value=row.get("item_names"))
-                ws.cell(column=7, row=idx + 7, value=row.get("total_quantity"))
-                ws.cell(column=8, row=idx + 7, value=row.get("units"))
-                ws.cell(column=9, row=idx + 7, value=taxable + non_taxable)
-                ws.cell(column=10, row=idx + 7, value=non_taxable)
-                ws.cell(column=11, row=idx + 7, value=taxable)
-                ws.cell(
-                    column=12, row=idx + 7, value=row.get("voucher_meta").get("tax")
-                )
+                ws.cell(column=6, row=idx + 7, value=taxable + non_taxable)
+                ws.cell(column=7, row=idx + 7, value=non_taxable)
+                ws.cell(column=8, row=idx + 7, value=taxable)
+                ws.cell(column=9, row=idx + 7, value=row.get("voucher_meta").get("tax"))
 
             years = [
                 ad2bs(self.request.query_params.get("start_date"))[0],
@@ -1702,7 +1921,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_sold=True, track_inventory=True),
+            Item.objects.filter(can_be_sold=True, track_inventory=True).select_related(
+                "unit"
+            ),
             ItemSalesSerializer,
         ),
     ]
@@ -1737,7 +1958,7 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def get_queryset(self, **kwargs):
         qs = super(ChallanViewSet, self).get_queryset()
         if self.action == "retrieve":
-            qs = qs.prefetch_related("rows")
+            qs = qs.prefetch_related("rows", "rows__item", "rows__unit")
         elif self.action == "list":
             qs = qs.select_related("party")
         return qs.order_by("-pk")
@@ -1810,17 +2031,8 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             raise RESTValidationError(
                 {"message": "message field is required for cancelling invoice!"}
             )
-
-        # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
+        if request.company.inventory_setting.enable_fifo:
+            fifo_cancel_sales(challan, request.query_params.get("fifo_inconsistency"))
         challan.cancel(message)
         return Response({})
 
@@ -1887,7 +2099,9 @@ class PurchaseOrderViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ("units", Unit),
         (
             "items",
-            Item.objects.filter(can_be_purchased=True, track_inventory=True),
+            Item.objects.filter(
+                can_be_purchased=True, track_inventory=True
+            ).select_related("unit"),
             ItemPurchaseSerializer,
         ),
     ]

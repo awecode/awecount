@@ -51,6 +51,7 @@ class AccountAdmin(admin.ModelAdmin):
     search_fields = ("company__name", "code", "name")
     list_filter = ("company", "default", "category")
     # readonly_fields = ('default',)
+    autocomplete_fields = ("company", "category", "parent")
 
 
 class TransactionAdmin(admin.ModelAdmin):

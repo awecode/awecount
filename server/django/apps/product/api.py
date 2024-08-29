@@ -28,6 +28,7 @@ from apps.voucher.models import (
     SalesVoucherRow,
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import InputChoiceMixin, ShortNameChoiceMixin
 
 from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
@@ -45,10 +46,12 @@ from .serializers import (
     BookSerializer,
     BrandSerializer,
     InventoryAccountSerializer,
+    InventoryCategoryFormSerializer,
     InventoryCategorySerializer,
     InventoryCategoryTrialBalanceSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
+    ItemFormSerializer,
     ItemListMinSerializer,
     ItemListSerializer,
     ItemOpeningSerializer,
@@ -79,29 +82,47 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
     parser_classes = [JSONParser, MultiPartParser]
 
     collections = (
-        ("brands", Brand, BrandSerializer),
-        ("inventory_categories", InventoryCategory, InventoryCategorySerializer),
-        ("units", Unit, UnitSerializer),
-        ("accounts", Account, AccountMinSerializer),
+        ("brands", Brand, BrandSerializer, True, ["name"]),
+        (
+            "inventory_categories",
+            InventoryCategory.objects.select_related(
+                "default_unit",
+                "sales_account",
+                "purchase_account",
+                "discount_allowed_account",
+                "discount_received_account",
+            ),
+            InventoryCategoryFormSerializer,
+            True,
+            ["name"],
+        ),
+        ("units", Unit, UnitSerializer, True, ["name", "short_name"]),
+        ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
         (
             "discount_received_accounts",
             Account.objects.filter(category__name="Discount Income"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
     )
 
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == "list":
-            qs = qs.order_by("-id")
+            qs = qs.order_by("-id").select_related(
+                "category"
+            )
         return qs
 
     def get_serializer_class(self):
@@ -109,7 +130,32 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             return ItemListSerializer
         if self.action == "list_items":
             return ItemListMinSerializer
+        if self.action == "retrieve":
+            return ItemFormSerializer
         return self.serializer_class
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
 
     def merge_items(self, item_ids, config=None):
         items = Item.objects.filter(id__in=item_ids)
@@ -425,6 +471,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         serializer = GenericSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, url_path="purchase-choices")
+    def purchase_choices(self, request):
+        queryset = self.get_queryset().filter(can_be_purchased=True)
+        serializer = GenericSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     @action(detail=False, methods=["POST"], url_path="import")
     def import_from_file(self, request):
         file = request.FILES["file"]
@@ -521,6 +573,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         purchase_account.suggest_code(item)
                         accounts_to_create.append(purchase_account)
                         item.purchase_account = purchase_account
+                        item.purchase_account_type = "dedicated"
+                        item.dedicated_purchase_account = purchase_account
 
                         name = "Discount Received - " + item.name
                         discount_received_acc = Account(name=name, company=item.company)
@@ -528,6 +582,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         discount_received_acc.suggest_code(item)
                         accounts_to_create.append(discount_received_acc)
                         item.discount_received_account = discount_received_acc
+                        item.discount_received_account_type = "dedicated"
+                        item.dedicated_discount_received_account = discount_received_acc
 
                     if item.can_be_sold:
                         name = item.name + " (Sales)"
@@ -536,6 +592,8 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         sales_account.suggest_code(item)
                         accounts_to_create.append(sales_account)
                         item.sales_account = sales_account
+                        item.sales_account_type = "dedicated"
+                        item.dedicated_sales_account = sales_account
 
                         name = "Discount Allowed - " + item.name
                         discount_allowed_account = Account(
@@ -545,6 +603,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         discount_allowed_account.suggest_code(item)
                         accounts_to_create.append(discount_allowed_account)
                         item.discount_allowed_account = discount_allowed_account
+                        item.discount_allowed_account_type = "dedicated"
+                        item.dedicated_discount_allowed_account = (
+                            discount_allowed_account
+                        )
 
                     items_to_update.append(item)
 
@@ -556,6 +618,14 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         "sales_account",
                         "discount_received_account",
                         "discount_allowed_account",
+                        "purchase_account_type",
+                        "dedicated_purchase_account",
+                        "discount_received_account_type",
+                        "dedicated_discount_received_account",
+                        "sales_account_type",
+                        "dedicated_sales_account",
+                        "discount_allowed_account_type",
+                        "dedicated_discount_allowed_account",
                     ],
                 )
 
@@ -594,6 +664,8 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
                 track_inventory=True, account__opening_balance=0
             ),
             GenericSerializer,
+            True,
+            ["name"],
         ),
     )
 
@@ -608,6 +680,8 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
                     Q(account__opening_balance=0) | Q(account_id=self.kwargs.get("pk"))
                 ),
                 ItemListSerializer,
+                True,
+                ["name"],
             ),
         )
         return self.get_defaults(request=request)
@@ -651,7 +725,7 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
 
 
 class BookViewSet(InputChoiceMixin, CRULViewSet):
-    collections = (("brands", Brand, BrandSerializer),)
+    collections = (("brands", Brand, BrandSerializer, True, ["name"]),)
 
     filter_backends = (
         filters.DjangoFilterBackend,
@@ -689,22 +763,78 @@ class UnitViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
 class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewSet):
     serializer_class = InventoryCategorySerializer
     collections = (
-        ("units", Unit, UnitSerializer),
-        ("accounts", Account, AccountMinSerializer),
+        ("units", Unit, UnitSerializer, True, ["name"]),
+        ("accounts", Account, AccountMinSerializer, True, ["name"]),
         # ('purchase_accounts', Account.objects.filter(category__name="Purchase"), AccountMinSerializer),
         # ('sales_accounts', Account.objects.filter(category__name="Sales"), AccountMinSerializer),
-        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer),
+        ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
             Account.objects.filter(category__name="Discount Expenses"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
         (
             "discount_received_accounts",
             Account.objects.filter(category__name="Discount Income"),
             AccountMinSerializer,
+            True,
+            ["name"],
         ),
     )
+
+    def get_defaults(self, request=None):
+        account_names = [
+            "Sales Account", 
+            "Purchase Account", 
+            "Discount expenses", 
+            "Discount Income"
+        ]
+        accounts = Account.objects.filter(
+            company=request.company,
+            name__in=account_names
+        ).values_list('name', 'id')
+        account_ids = {name: id for name, id in accounts}
+        return {
+            "options": {
+                "global_accounts": {
+                    "sales_account_id": account_ids.get("Sales Account"),
+                    "purchase_account_id": account_ids.get("Purchase Account"),
+                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
+                    "discount_received_account_id": account_ids.get("Discount Income"),
+                }
+            },
+        }
+
+    @transaction.atomic
+    def perform_update(self, request, *args, **kwargs):
+        category = self.get_object()
+        apply_changes = self.request.query_params.get("Account Changes Detected")
+        if (
+            (category.items_sales_account_type != self.request.data.get("items_sales_account_type"))
+            or (
+                category.items_purchase_account_type
+                != self.request.data.get("items_purchase_account_type")
+            )
+            or (
+                category.items_discount_allowed_account_type
+                != self.request.data.get("items_discount_allowed_account_type")
+            )
+            or (
+                category.items_discount_received_account_type
+                != self.request.data.get("items_discount_received_account_type")
+            )
+        ) and apply_changes is None:
+            raise UnprocessableException(
+                detail="Changes in account settings detected! Do you want the changes to be applied to the items belonging to this category?",
+                code="Account Changes Detected",
+            )
+        super().perform_update(request, *args, **kwargs)
+        if apply_changes == "true":
+            category.refresh_from_db()
+            category.apply_account_settings_to_items()
+
 
     def get_collections(self, request=None):
         collections_data = super().get_collections(self.request)
@@ -733,6 +863,11 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         if self.action == "list":
             qs = qs.order_by("-id")
         return qs
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return InventoryCategoryFormSerializer
+        return super().get_serializer_class()
 
     @action(detail=False, url_path="trial-balance")
     def trial_balance(self, request):

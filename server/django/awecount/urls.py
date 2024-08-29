@@ -8,11 +8,13 @@ from apps.aggregator import api as aggregator
 from apps.aggregator import views as aggregator_views
 from apps.bank import api as bank
 from apps.ledger import api as ledger
+from apps.ledger.api import public as public_ledger
 from apps.product import api as item
 from apps.product.views import book_by_isbn
 from apps.report import api as report_api
 from apps.tax import api as tax
 from apps.voucher import api as voucher
+from apps.voucher.api import public as public_voucher
 from awecount.libs.JWTCustomAuthentication import TokenObtainPairView
 
 router = DefaultRouter()
@@ -21,6 +23,29 @@ router = DefaultRouter()
 router.register("parties", ledger.PartyViewSet, basename="parties")
 router.register("categories", ledger.CategoryViewSet, basename="categories")
 router.register("accounts", ledger.AccountViewSet, basename="accounts")
+
+router.register(
+    "public/journal-voucher",
+    public_ledger.PublicJournalVoucherViewSet,
+    basename="public-journal-voucher",
+)
+router.register(
+    "public/party",
+    public_ledger.PublicPartyViewset,
+    basename="public-party",
+)
+
+router.register(
+    "public/purchase-voucher",
+    public_voucher.PublicPurchaseVoucherViewset,
+    basename="public-purchase-voucher",
+)
+
+router.register(
+    "public/purchase-discount",
+    public_voucher.PublicPurchaseDiscountViewset,
+    basename="public-purchase-discount",
+)
 
 router.register(
     "inventory-account", item.InventoryAccountViewSet, basename="inventory-account"
@@ -50,7 +75,7 @@ router.register(
 
 # voucher
 router.register("sales-voucher", voucher.SalesVoucherViewSet)
-router.register("pos", voucher.POSViewSet)
+router.register("pos", voucher.POSViewSet, basename="pos")
 router.register(
     "sales-discount", voucher.SalesDiscountViewSet, basename="sales-discount"
 )
@@ -59,6 +84,11 @@ router.register(
 )
 router.register(
     "purchase-vouchers", voucher.PurchaseVoucherViewSet, basename="purchase-vouchers"
+)
+router.register(
+    "purchase-voucher-row",
+    voucher.PurchaseVoucherRowViewSet,
+    basename="purchase-voucher-row",
 )
 router.register(
     "purchase-discount", voucher.PurchaseDiscountViewSet, basename="purchase-discount"

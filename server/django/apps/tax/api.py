@@ -15,6 +15,7 @@ from apps.tax.models import TaxPayment, TaxScheme
 from apps.tax.serializers import (
     TaxAccountSerializer,
     TaxPaymentJournalEntrySerializer,
+    TaxPaymentFormSerializer,
     TaxPaymentSerializer,
     TaxSchemeMinSerializer,
     TaxSchemeSerializer,
@@ -58,8 +59,8 @@ class TaxSchemeViewSet(
 class TaxPaymentViewSet(CRULViewSet):
     serializer_class = TaxPaymentSerializer
     collections = (
-        ("cr_accounts", Account.get_payment_accounts(), AccountMinSerializer),
-        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer),
+        ("cr_accounts", Account.get_payment_accounts(), AccountMinSerializer, True, ["name"]),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
     )
 
     filter_backends = [
@@ -84,6 +85,10 @@ class TaxPaymentViewSet(CRULViewSet):
             .select_related("tax_scheme", "cr_account")
             .order_by("-id")
         )
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return TaxPaymentFormSerializer
+        return super().get_serializer_class()
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):

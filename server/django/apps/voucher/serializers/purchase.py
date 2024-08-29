@@ -1,8 +1,13 @@
+from django.core.exceptions import SuspiciousOperation
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from apps.ledger.serializers import PartyMinSerializer
+from apps.product.models import Item
+from apps.product.serializers import ItemPurchaseSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
+from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
@@ -30,9 +35,15 @@ class PurchaseVoucherRowSerializer(
     item_id = serializers.IntegerField(required=True)
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+    item = serializers.ReadOnlyField(source="item.name")
+    buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
+    voucher__date = serializers.ReadOnlyField(source="voucher.date")
+    voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
+    voucher_id = serializers.ReadOnlyField(source="voucher.id")
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     def validate_discount(self, value):
-        print(f"Validating discount: {value}")
         if not value:
             value = 0
         elif value < 0:
@@ -41,7 +52,7 @@ class PurchaseVoucherRowSerializer(
 
     class Meta:
         model = PurchaseVoucherRow
-        exclude = ("item", "tax_scheme", "voucher", "unit", "discount_obj")
+        exclude = ("tax_scheme", "voucher", "unit", "discount_obj")
 
         extra_kwargs = {
             "discount": {"required": False, "allow_null": True},
@@ -57,6 +68,8 @@ class PurchaseVoucherCreateSerializer(
 ):
     rows = PurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
+    selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
 
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
@@ -72,14 +85,15 @@ class PurchaseVoucherCreateSerializer(
     def validate(self, data):
         company = self.context["request"].company
 
-        if (
-            not data.get("party")
-            and data.get("mode") == "Credit"
-            and data.get("status") != "Draft"
-        ):
+        party = data.get("party")
+        if not party and data.get("mode") == "Credit" and data.get("status") != "Draft":
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
+
+        if party and (party.company_id != company.id):
+            raise SuspiciousOperation("Modifying object owned by other company!")
+
         request = self.context["request"]
 
         if data.get("discount") and data.get("discount") < 0:
@@ -102,7 +116,6 @@ class PurchaseVoucherCreateSerializer(
                     code="fifo_inconsistency",
                 )
 
-        party = data.get("party")
         fiscal_year = self.context["request"].company.current_fiscal_year
         voucher_no = data.get("voucher_no")
 
@@ -127,7 +140,7 @@ class PurchaseVoucherCreateSerializer(
 
         # if request.query_params.get("fifo_inconsistency"):
         #     return data
-        # else:
+        # else:#
         #     if request.company.inventory_setting.enable_fifo:
         #         item_ids = [x.get("item_id") for x in data.get("rows")]
         #         date = data["date"]
@@ -137,6 +150,11 @@ class PurchaseVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
+            item = Item.objects.filter(pk=row.get("item_id")).first()
+            if not item:
+                raise serializers.ValidationError({"item_id": ["Item not found."]})
+            if item.company_id != self.context["request"].company_id:
+                raise SuspiciousOperation("Modifying object owned by other company!")
             if row.get("discount_type") == "":
                 row["discount_type"] = None
             row_serializer = PurchaseVoucherRowSerializer(data=row)
@@ -227,6 +245,9 @@ class PurchaseVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     discount_obj = PurchaseDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = PurchaseVoucherRow
@@ -263,12 +284,6 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
         source="party.tax_registration_number"
     )
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
-    item_names = serializers.ReadOnlyField()
-    total_quantity = serializers.SerializerMethodField()
-
-    def get_total_quantity(self, obj):
-        # Annotate this on queryset on api that uses this serializer
-        return obj.total_quantity
 
     class Meta:
         model = PurchaseVoucher
@@ -278,9 +293,6 @@ class PurchaseBookExportSerializer(serializers.ModelSerializer):
             "tax_registration_number",
             "voucher_no",
             "voucher_meta",
-            "item_names",
-            "units",
-            "total_quantity",
         )
 
 
@@ -288,6 +300,8 @@ class PurchaseOrderRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=False)
     unit_id = serializers.IntegerField(required=False)
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = PurchaseOrderRow
@@ -306,6 +320,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
     rows = PurchaseOrderRowSerializer(many=True)
+    selected_party_obj = GenericSerializer(read_only=True, source="party")
 
     class Meta:
         model = PurchaseOrder

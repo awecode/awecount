@@ -26,7 +26,7 @@ from apps.product.models import (
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, FiscalYear, User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
-from awecount.libs import nepdate
+from awecount.libs import decimalize, nepdate
 from awecount.libs.helpers import merge_dicts
 
 from .agent import SalesAgent
@@ -94,6 +94,9 @@ class Challan(TransactionModel, InvoiceModel):
     key = "Challan"
 
     def apply_inventory_transactions(self):
+        if self.status == "Draft":
+            return
+
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
         ):
@@ -603,22 +606,22 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         ):
             entries = []
 
-            row_total = row.quantity * row.rate
+            row_total = decimalize(row.quantity) * decimalize(row.rate)
             purchase_value = row_total + 0
 
-            row_discount = 0
+            row_discount = decimalize(0)
             if row.has_discount():
                 row_discount_amount, trade_discount = row.get_discount()
-                row_total -= row_discount_amount
+                row_total -= decimalize(row_discount_amount)
                 if trade_discount:
-                    purchase_value -= row_discount_amount
+                    purchase_value -= decimalize(row_discount_amount)
                 else:
-                    row_discount += row_discount_amount
+                    row_discount += decimalize(row_discount_amount)
 
             if dividend_discount > 0:
                 row_dividend_discount = (
-                    row_total / sub_total_after_row_discounts
-                ) * dividend_discount
+                    decimalize(row_total) / decimalize(sub_total_after_row_discounts)
+                ) * decimalize(dividend_discount)
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     purchase_value -= row_dividend_discount
@@ -630,7 +633,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 entries.append(["cr", item.discount_received_account, row_discount])
 
             if row.tax_scheme:
-                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                row_tax_amount = (
+                    decimalize(row.tax_scheme.rate) * decimalize(row_total) / 100
+                )
                 if row_tax_amount:
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
@@ -682,6 +687,7 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
+    key = "PurchaseVoucher"
 
     def save(self, *args, **kwargs):
         if not self.item.cost_price:
@@ -1143,7 +1149,7 @@ class PaymentReceipt(TransactionModel):
     def voucher_no(self):
         return self.id
 
-    def apply_transactions(self):
+    def apply_transactions(self, force_update=False):
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
@@ -1162,13 +1168,14 @@ class PaymentReceipt(TransactionModel):
         if self.mode != "Cheque":
             entries.append(["dr", dr_acc, self.amount])
             cr_amount += self.amount
-        if self.tds_amount:
+        if force_update or self.tds_amount:
             entries.append(
                 ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
             )
             cr_amount += self.tds_amount
         if cr_amount:
             entries.append(["cr", self.party.customer_account, cr_amount])
+
         if len(entries):
             set_ledger_transactions(self, self.date, *entries, clear=True)
 

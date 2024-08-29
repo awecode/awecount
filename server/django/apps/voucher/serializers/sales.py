@@ -6,12 +6,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
-from apps.product.models import Item
+from apps.product.models import Item, Category
+from apps.ledger.serializers import PartyMinSerializer
+from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     PurchaseVoucher,
@@ -113,6 +116,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
     remarks = serializers.CharField(required=False)
     party_name = serializers.ReadOnlyField(source="party.name")
     invoice_nos = serializers.SerializerMethodField()
+    selected_bank_account_obj = GenericSerializer(read_only=True, source="bank_account")
 
     def get_invoice_nos(self, obj):
         return [invoice.voucher_no for invoice in obj.invoices.all()]
@@ -158,6 +162,9 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         cheque_deposit_data = self.validated_data.pop("cheque_deposit", {})
         if self.validated_data["mode"] == "Cheque":
             cheque_deposit_data["bank_account"] = self.validated_data["bank_account"]
+
+        old_instance_dict = vars(self.instance).copy() if self.instance else None
+
         instance = super().save(**kwargs)
         if instance.amount >= self.total_amount and instance.mode in [
             "Cash",
@@ -184,7 +191,12 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             if not instance.cheque_deposit:
                 instance.cheque_deposit = cheque_deposit
                 instance.save()
-        instance.apply_transactions()
+
+        force_update_txns = (
+            old_instance_dict and old_instance_dict["tds_amount"] != instance.tds_amount
+        )
+
+        instance.apply_transactions(force_update=force_update_txns)
         return instance
 
     class Meta:
@@ -204,6 +216,7 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             "party_id",
             "party_name",
             "invoice_nos",
+            "selected_bank_account_obj",
         )
 
 
@@ -217,6 +230,9 @@ class SalesVoucherRowSerializer(
     item_name = serializers.ReadOnlyField(source="item.name")
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
+    hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     def validate_discount(self, value):
         if not value:
@@ -255,17 +271,44 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 #     item_obj.name = data['item_obj'].get('name')
                 #     item_obj.save()
             except Item.DoesNotExist:
-                item_obj = Item.objects.create(
-                    code=str(data["item_obj"].get("code")),
-                    name=str(
+                item_obj_data = {
+                    'code': str(data["item_obj"].get("code")),
+                    'name': str(
                         data["item_obj"].get("name") or data["item_obj"].get("code")
                     ),
-                    unit_id=data["unit_id"],
-                    category_id=data.get("category_id"),
-                    selling_price=data["rate"],
-                    tax_scheme_id=data["tax_scheme_id"],
-                    company_id=self.context["request"].company_id,
-                )
+                    "unit_id": data["unit_id"],
+                    "category_id": data["item_obj"].get("category_id"),
+                    "selling_price": data["rate"],
+                    "tax_scheme_id": data["tax_scheme_id"],
+                    "company_id": self.context["request"].company_id,
+                }
+                sales_account = None
+                purchase_account = None
+                discount_allowed_account = None
+                discount_received_account = None
+                if data["item_obj"].get("category_id"):
+                    item_category = Category.objects.filter(id=data["item_obj"].get("category_id"), company_id=self.context["request"].company_id).first()
+                    if item_category:
+                        sales_account = item_category.dedicated_sales_account
+                        purchase_account = item_category.dedicated_purchase_account
+                        discount_allowed_account = item_category.dedicated_discount_allowed_account
+                        discount_received_account = item_category.dedicated_discount_received_account
+
+                if sales_account:
+                    item_obj_data['sales_account_type'] = 'category'
+                    item_obj_data['sales_account'] = sales_account
+                if purchase_account:
+                    item_obj_data['purchase_account_type'] = 'category'
+                    item_obj_data['purchase_account'] = purchase_account
+                if discount_allowed_account:
+                    item_obj_data['discount_allowed_account_type'] = 'category'
+                    item_obj_data['discount_allowed_account'] = discount_allowed_account
+                if discount_received_account:
+                    item_obj_data['discount_received_account_type'] = 'category'
+                    item_obj_data['discount_received_account'] = discount_received_account
+
+                item_obj = Item.objects.create(**item_obj_data)
+
             data["item_id"] = item_obj.id
             del data["item_obj"]
 
@@ -283,6 +326,10 @@ class SalesVoucherCreateSerializer(
     rows = SalesVoucherRowSerializer(many=True)
     voucher_meta = serializers.ReadOnlyField()
     challan_numbers = serializers.ReadOnlyField(source="challan_voucher_numbers")
+
+    selected_party_obj = PartyMinSerializer(source="party", read_only=True)
+    selected_mode_obj = GenericSerializer(source="bank_account", read_only=True)
+    selected_sales_agent_obj = GenericSerializer(source="sales_agent", read_only=True)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
@@ -304,7 +351,7 @@ class SalesVoucherCreateSerializer(
             raise ValidationError(
                 {"date": ["Date not in current fiscal year."]},
             )
-
+ 
     def validate(self, data):
         # TODO: Find why due date is null and fix the issue
         request = self.context["request"]
@@ -549,6 +596,9 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
     unit_name = serializers.ReadOnlyField(source="unit.name")
     discount_obj = SalesDiscountSerializer()
     tax_scheme = TaxSchemeSerializer()
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = SalesVoucherRow
@@ -557,6 +607,7 @@ class SalesVoucherRowDetailSerializer(serializers.ModelSerializer):
 
 class SalesVoucherDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
+    party_contact_no = serializers.ReadOnlyField(source="party.contact_no")
     bank_account_name = serializers.ReadOnlyField(source="bank_account.friendly_name")
     discount_obj = SalesDiscountSerializer()
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
@@ -687,12 +738,6 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
     buyers_name = serializers.ReadOnlyField(source="buyer_name")
     buyers_pan = serializers.ReadOnlyField(source="party.tax_registration_number")
     voucher_meta = serializers.ReadOnlyField(source="get_voucher_meta")
-    item_names = serializers.ReadOnlyField()
-    total_quantity = serializers.SerializerMethodField()
-
-    def get_total_quantity(self, obj):
-        # Annotate this on queryset on api that uses this serializer
-        return obj.total_quantity
 
     class Meta:
         model = SalesVoucher
@@ -703,9 +748,6 @@ class SalesBookExportSerializer(serializers.ModelSerializer):
             "voucher_no",
             "voucher_meta",
             "is_export",
-            "item_names",
-            "units",
-            "total_quantity",
             "status",
         )
 
@@ -758,6 +800,8 @@ class ChallanRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+    selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = ChallanRow
@@ -779,16 +823,19 @@ class ChallanListSerializer(serializers.ModelSerializer):
 class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField()
     print_count = serializers.ReadOnlyField()
+    selected_party_obj = GenericSerializer(source="party", read_only=True)
     rows = ChallanRowSerializer(many=True)
 
     def assign_voucher_number(self, validated_data, instance):
         if instance and instance.voucher_no:
             return
+        if validated_data.get("status") in ["Draft", "Cancelled"]:
+            return
         next_voucher_no = get_next_voucher_no(
-            Challan, self.context["request"].company_id
-        )
+                Challan, self.context["request"].company_id
+         )
         validated_data["voucher_no"] = next_voucher_no
-
+   
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
             return

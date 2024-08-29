@@ -23,6 +23,7 @@ from .models import (
     CreditNote,
     PurchaseOrder,
     PurchaseVoucher,
+    PurchaseVoucherRow,
     SalesVoucher,
 )
 
@@ -41,7 +42,7 @@ class SalesVoucherFilterSet(DateFilterSet):
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
-        return queryset.filter(due_date__lt=today).exclude(status="PAID")
+        return queryset.filter(due_date__lt=today).exclude(status="Paid")
 
     class Meta:
         model = SalesVoucher
@@ -69,11 +70,25 @@ class PurchaseVoucherFilterSet(DateFilterSet):
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
-        return queryset.filter(due_date__lt=today).exclude(status="PAID")
+        return queryset.filter(due_date__lt=today).exclude(status="Paid")
 
     class Meta:
         model = PurchaseVoucher
         fields = ()
+
+class PurchaseVoucherRowFilterSet(filters.FilterSet):
+    start_date = filters.DateFilter(field_name="voucher__date", lookup_expr="gte")
+    end_date = filters.DateFilter(field_name="voucher__date", lookup_expr="lte")
+    purchase_agent = filters.CharFilter(field_name="voucher__sales_agent")
+    status = filters.MultipleChoiceFilter(
+        field_name="voucher__status", choices=STATUSES
+    )
+    party = filters.CharFilter(field_name="voucher__party")
+    item_category = filters.CharFilter(field_name="item__category")
+
+    class Meta:
+        model = PurchaseVoucherRow
+        fields = ("purchase_agent", "tax_scheme", "item")
 
 
 class CreditNoteFilterSet(DateFilterSet):

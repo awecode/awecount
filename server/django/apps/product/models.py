@@ -9,11 +9,12 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 
-from apps.ledger.models import Account
+from apps.ledger.models import Account, Transaction as LedgerTransaction
 from apps.ledger.models import Category as AccountCategory
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
 from awecount.libs import none_for_zero, zero_for_none
+from django.core.validators import MinValueValidator
 
 
 class Unit(models.Model):
@@ -78,6 +79,7 @@ class Category(models.Model):
     default_unit = models.ForeignKey(
         Unit, blank=True, null=True, on_delete=models.SET_NULL
     )
+    hs_code = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1000)],)
     default_tax_scheme = models.ForeignKey(
         TaxScheme,
         blank=True,
@@ -269,7 +271,6 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate_unique()
-
         post_save = kwargs.pop("post_save", True)
         if not self.code:
             self.suggest_code()
@@ -439,8 +440,273 @@ class Category(models.Model):
             # if self.use_account_subcategory and self.account_category_id and self.account_category:
             #     with transaction.atomic():
             #         AccountCategory.objects.rebuild()
-
             self.save(post_save=False)
+
+    def apply_account_settings_to_items(self):
+        sales_account = None
+        discount_allowed_account = None
+        purchase_account = None
+        discount_received_account = None
+
+        if self.can_be_sold:
+            if self.items_sales_account_type == "global":
+                sales_account = Account.objects.get(
+                    name="Sales Account", default=True, company=self.company
+                )
+            elif self.items_sales_account_type == "existing":
+                sales_account = self.sales_account
+            elif self.items_sales_account_type == "category":
+                if not self.dedicated_sales_account:
+                    sales_account_name = self.name + " (Sales)"
+                    ledger = Account(name=sales_account_name, company=self.company)
+                    ledger.add_category("Sales")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    sales_account = ledger
+                else:
+                    sales_account = self.dedicated_sales_account
+
+            if self.items_discount_allowed_account_type == "global":
+                discount_allowed_account = Account.objects.get(
+                    name="Discount Expenses", default=True, company=self.company
+                )
+            elif self.items_discount_allowed_account_type == "existing":
+                discount_allowed_account = self.discount_allowed_account
+            elif self.items_discount_allowed_account_type == "category":
+                if not self.dedicated_discount_allowed_account:
+                    discount_allowed_account_name = "Discount Allowed - " + self.name
+                    ledger = Account(
+                        name=discount_allowed_account_name, company=self.company
+                    )
+                    ledger.add_category("Discount Expenses")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    discount_allowed_account = ledger
+                else:
+                    discount_allowed_account = self.dedicated_discount_allowed_account
+
+        if self.can_be_purchased:
+            if self.items_purchase_account_type == "global":
+                purchase_account = Account.objects.get(
+                    name="Purchase Account", default=True, company=self.company
+                )
+            elif self.items_purchase_account_type == "existing":
+                purchase_account = self.purchase_account
+            elif self.items_purchase_account_type == "category":
+                if not self.dedicated_purchase_account:
+                    purchase_account_name = self.name + " (Purchase)"
+                    ledger = Account(
+                        name=purchase_account_name, company=self.company
+                    )
+                    ledger.add_category("Purchase")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    purchase_account = ledger
+                else:
+                    purchase_account = self.dedicated_purchase_account
+
+            if self.items_discount_received_account_type == "global":
+                discount_received_account = Account.objects.get(
+                    name="Discount Income", default=True, company=self.company
+                )
+            elif self.items_discount_received_account_type == "existing":
+                discount_received_account = self.discount_received_account
+            elif self.items_discount_received_account_type == "category":
+                if not self.dedicated_discount_received_account:
+                    discount_received_account_name = "Discount Received - " + self.name
+                    ledger = Account(
+                        name=discount_received_account_name, company=self.company
+                    )
+                    ledger.add_category("Discount expenses")
+                    ledger.suggest_code(self, prefix="C")
+                    ledger.save()
+                    discount_received_account = ledger
+                else:
+                    discount_received_account = self.dedicated_discount_received_account
+        # To prevent curcular import
+        from apps.voucher.models import SalesVoucherRow, PurchaseVoucherRow, CreditNoteRow, DebitNoteRow
+
+        update_fields = {}
+        if sales_account is not None:
+            update_fields["sales_account"] = sales_account
+            update_fields["sales_account_type"] = self.items_sales_account_type
+        if discount_allowed_account is not None:
+            update_fields["discount_allowed_account"] = discount_allowed_account
+            update_fields["discount_allowed_account_type"] = self.items_discount_allowed_account_type
+        if purchase_account is not None:
+            update_fields["purchase_account"] = purchase_account
+            update_fields["purchase_account_type"] = self.items_purchase_account_type
+        if discount_received_account is not None:
+            update_fields["discount_received_account"] = discount_received_account
+            update_fields["discount_received_account_type"] = self.items_discount_received_account_type
+        if update_fields:
+            items_list = Item.objects.filter(category=self, company=self.company).select_related(
+                "sales_account", "purchase_account", "discount_allowed_account", "discount_received_account"
+            )
+            for item in items_list:
+                sales_voucher_row_ids = SalesVoucherRow.objects.filter(item=item).values_list("id", flat=True)
+                credit_note_row_ids = CreditNoteRow.objects.filter(item=item).values_list("id", flat=True)
+                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(item=item).values_list("id", flat=True)
+                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list("id", flat=True)
+                if (sales_account):
+                    LedgerTransaction.objects.filter(
+                        journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
+                        journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
+                        account= item.sales_account
+                    ).update(account=sales_account)
+
+                if (discount_allowed_account):
+                    LedgerTransaction.objects.filter(
+                        journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
+                        journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
+                        account= item.discount_allowed_account
+                    ).update(account=discount_allowed_account)
+
+                if (purchase_account):
+                    LedgerTransaction.objects.filter(
+                        journal_entry__object_id__in= [*purchase_voucher_row_ids, *debit_note_row_ids],
+                        journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
+                        account= item.purchase_account
+                    ).update(account=purchase_account)
+
+                if (discount_received_account):
+                    LedgerTransaction.objects.filter(
+                        journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
+                        journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
+                        account= item.discount_received_account
+                    ).update(account=discount_received_account)
+
+            Item.objects.filter(category=self, company=self.company).update(**update_fields)
+
+        if "dedicated" in {
+            self.items_sales_account_type,
+            self.items_discount_allowed_account_type,
+            self.items_purchase_account_type,
+            self.items_discount_received_account_type,
+        }:
+
+            items_list = Item.objects.filter(category=self, company=self.company).select_related(
+                "sales_account",
+                "discount_allowed_account",
+                "purchase_account",
+                "discount_received_account",
+                "dedicated_sales_account",
+                "dedicated_discount_allowed_account",
+                "dedicated_purchase_account",
+                "dedicated_discount_received_account",
+            )
+            for item in items_list:
+                sales_voucher_row_ids = SalesVoucherRow.objects.filter(item=item).values_list("id", flat=True)
+                credit_note_row_ids = CreditNoteRow.objects.filter(item=item).values_list("id", flat=True)
+                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(item=item).values_list("id", flat=True)
+                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list("id", flat=True)
+                if self.can_be_sold:
+                    if self.items_sales_account_type == "dedicated":
+                        item.sales_account_type = "dedicated"
+                        sales_ledger_transactions = LedgerTransaction.objects.filter(
+                            journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
+                            journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
+                            account= item.sales_account
+                        )
+                        if not item.dedicated_sales_account:
+                            sales_account_name = item.name + " (Sales)"
+                            account = Account(name=sales_account_name, company=self.company)
+                            if self.sales_account_category is not None:
+                                account.category = self.sales_account_category
+                            else:
+                                account.add_category("Sales")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_sales_account = account
+                            item.sales_account = account
+                        else:
+                            item.sales_account = item.dedicated_sales_account
+                        sales_ledger_transactions.update(account=item.dedicated_sales_account)
+
+                    if self.items_discount_allowed_account_type == "dedicated":
+                        item.discount_allowed_account_type = "dedicated"
+                        discount_allowed_transactions = LedgerTransaction.objects.filter(
+                            journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
+                            journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
+                            account= item.discount_allowed_account
+                        )
+                        if not item.dedicated_discount_allowed_account:
+                            discount_allowed_account_name = "Discount Allowed - " + item.name
+                            account = Account(
+                                name=discount_allowed_account_name, company=self.company
+                            )
+                            if self.discount_allowed_account_category is not None:
+                                account.category = self.discount_allowed_account_category
+                            else:
+                                account.add_category("Discount expenses")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_discount_allowed_account = account
+                            item.discount_allowed_account = account
+                        else:
+                            item.discount_allowed_account = item.dedicated_discount_allowed_account
+                        discount_allowed_transactions.update(account=item.dedicated_discount_allowed_account)
+
+                    if self.items_purchase_account_type == "dedicated":
+                        item.purchase_account_type = "dedicated"
+                        purchase_ledger_transactions = LedgerTransaction.objects.filter(
+                            journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
+                            journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
+                            account= item.purchase_account
+                        )
+                        if not item.dedicated_purchase_account:
+                            purchase_account_name = item.name + " (Purchase)"
+                            account = Account(name=purchase_account_name, company=self.company)
+                            if self.purchase_account_category is not None:
+                                account.category = self.purchase_account_category
+                            else:
+                                account.add_category("Purchase")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_purchase_account = account
+                            item.purchase_account = account
+                        else:
+                            item.purchase_account = item.dedicated_purchase_account
+                        purchase_ledger_transactions.update(account=item.dedicated_purchase_account)
+
+                    if self.items_discount_received_account_type == "dedicated":
+                        item.discount_received_account_type = "dedicated"
+                        discount_received_transactions = LedgerTransaction.objects.filter(
+                            journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
+                            journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
+                            account= item.discount_received_account
+                        )
+                        if not item.dedicated_discount_received_account:
+                            discount_received_account_name = "Discount Received - " + item.name
+                            account = Account(
+                                name=discount_received_account_name, company=self.company
+                            )
+                            if self.discount_received_account_category is not None:
+                                account.category = self.discount_received_account_category
+                            else:
+                                account.add_category("Discount expenses")
+                            account.suggest_code(item)
+                            account.save()
+                            item.dedicated_discount_received_account = account
+                            item.discount_received_account = account
+                        else:
+                            item.discount_received_account = item.dedicated_discount_received_account
+                        discount_received_transactions.update(account=item.dedicated_discount_received_account)
+            # TODO: fileds can be filtered for optimization
+            Item.objects.bulk_update(items_list, [
+                "sales_account",
+                "sales_account_type",
+                "dedicated_sales_account",
+                "discount_allowed_account",
+                "discount_allowed_account_type",
+                "dedicated_discount_allowed_account",
+                "purchase_account",
+                "purchase_account_type",
+                "dedicated_purchase_account",
+                "discount_received_account",
+                "discount_received_account_type",
+                "dedicated_discount_received_account"
+            ])
 
     def __str__(self):
         return self.name
