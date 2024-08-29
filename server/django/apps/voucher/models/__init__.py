@@ -1253,7 +1253,7 @@ class PaymentReceipt(TransactionModel):
     def voucher_no(self):
         return self.id
 
-    def apply_transactions(self):
+    def apply_transactions(self, force_update=False):
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
@@ -1272,13 +1272,14 @@ class PaymentReceipt(TransactionModel):
         if self.mode != "Cheque":
             entries.append(["dr", dr_acc, self.amount])
             cr_amount += self.amount
-        if self.tds_amount:
+        if force_update or self.tds_amount:
             entries.append(
                 ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
             )
             cr_amount += self.tds_amount
         if cr_amount:
             entries.append(["cr", self.party.customer_account, cr_amount])
+
         if len(entries):
             set_ledger_transactions(self, self.date, *entries, clear=True)
 

@@ -163,6 +163,9 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
         cheque_deposit_data = self.validated_data.pop("cheque_deposit", {})
         if self.validated_data["mode"] == "Cheque":
             cheque_deposit_data["bank_account"] = self.validated_data["bank_account"]
+
+        old_instance_dict = vars(self.instance).copy() if self.instance else None
+
         instance = super().save(**kwargs)
         if instance.amount >= self.total_amount and instance.mode in [
             "Cash",
@@ -189,7 +192,12 @@ class PaymentReceiptFormSerializer(serializers.ModelSerializer):
             if not instance.cheque_deposit:
                 instance.cheque_deposit = cheque_deposit
                 instance.save()
-        instance.apply_transactions()
+
+        force_update_txns = (
+            old_instance_dict and old_instance_dict["tds_amount"] != instance.tds_amount
+        )
+
+        instance.apply_transactions(force_update=force_update_txns)
         return instance
 
     class Meta:
