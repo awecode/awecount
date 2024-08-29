@@ -1,5 +1,6 @@
 import datetime
 
+from django.db.models import F
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -9,7 +10,6 @@ from apps.product.models import Item, Category
 from apps.ledger.serializers import PartyMinSerializer
 from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
-from apps.voucher.fifo_functions import fifo_cancel_sales, fifo_handle_sales_create
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
 from awecount.libs.exception import UnprocessableException
@@ -18,7 +18,6 @@ from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     PurchaseVoucher,
-    PurchaseVoucherRow,
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
@@ -373,46 +372,54 @@ class SalesVoucherCreateSerializer(
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
 
-        if request.company.inventory_setting.enable_fifo:
-            if request.query_params.get("fifo_inconsistency"):
-                return data
-            item_ids = [row["item_id"] for row in request.data.get("rows")]
+        item_ids = [row["item_id"] for row in data["rows"]]
+        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
+
+        inventory_setting = request.company.inventory_setting
+
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
             date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
-            sales_rows = SalesVoucherRow.objects.filter(
-                item_id__in=item_ids, voucher__date__gt=date
-            ).exclude(voucher__status__in=["Draft", "Cancelled"])
-            challan_rows = ChallanRow.objects.filter(
-                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+
+            sales_rows_exists = (
+                SalesVoucherRow.objects.filter(
+                    item_id__in=item_ids, voucher__date__gt=date
+                )
+                .exclude(voucher__status__in=["Draft", "Cancelled"])
+                .exists()
             )
-            if sales_rows.exists() or challan_rows.exists():
+
+            challan_rows_exists = ChallanRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+            ).exists()
+
+            if sales_rows_exists or challan_rows_exists:
                 raise UnprocessableException(
                     detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
                     code="fifo_inconsistency",
                 )
 
-            # Check negative stock
-            if request.company.inventory_setting.enable_negative_stock_check:
-                if request.query_params.get("negative_stock"):
-                    return data
-                rows = data["rows"]
-                for row in rows:
-                    # TODO: Improve queries
-                    item = Item.objects.get(id=row["item_id"])
-                    # if item.negative_stock(row["quantity"]):
-                    if item.remaining_stock < row["quantity"]:
-                        raise UnprocessableException(
-                            detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
-                            code="negative_stock",
-                        )
-                    if (
-                        not request.query_params.get("negative_stock")
-                        and item.remaining_stock
-                        and item.remaining_stock < row["quantity"]
-                    ):
-                        raise UnprocessableException(
-                            detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
-                            code="negative_stock",
-                        )
+        # Check negative stock
+        if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+
+            remaining_stock_map = {item.id: item.remaining for item in items}
+
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
         return data
 
     def validate_invoice_date(self, data, voucher_no=None):
@@ -446,35 +453,6 @@ class SalesVoucherCreateSerializer(
             )
             if due_date < validation_date:
                 raise ValidationError("Due date cannot be before invoice date.")
-
-    def update_purchase_rows(self, request, row):
-        if request.company.inventory_setting.enable_fifo:
-            item_id = row.get("item_id")
-            quantity = row.get("quantity")
-            purchase_rows = PurchaseVoucherRow.objects.filter(
-                item_id=item_id, remaining_quantity__gt=0
-            ).order_by("voucher__date", "id")
-            sold_items = {}
-            for purchase_row in purchase_rows:
-                if purchase_row.remaining_quantity == quantity:
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
-                    break
-                elif purchase_row.remaining_quantity > quantity:
-                    purchase_row.remaining_quantity -= quantity
-                    purchase_row.save()
-                    sold_items[purchase_row.id] = [quantity, purchase_row.rate]
-                    break
-                else:
-                    quantity -= purchase_row.remaining_quantity
-                    sold_items[purchase_row.id] = [
-                        purchase_row.remaining_quantity,
-                        purchase_row.rate,
-                    ]
-                    purchase_row.remaining_quantity = 0
-                    purchase_row.save()
-            return sold_items
 
     def check_challans(self, challans, rows):
         voucher_items = []
@@ -531,11 +509,6 @@ class SalesVoucherCreateSerializer(
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
             # if row.item.track_inventory:
-            if request.company.inventory_setting.enable_fifo and not request.data.get(
-                "invoices"
-            ):
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             # TODO: Verify if id is required or not
             if row.get("id"):
                 row.pop("id")
@@ -550,14 +523,6 @@ class SalesVoucherCreateSerializer(
         return instance
 
     def update(self, instance, validated_data):
-        request = self.context["request"]
-        if request.company.inventory_setting.enable_fifo:
-            res = fifo_cancel_sales(instance, False)
-            # if request.query_params.get("fifo_inconsistency"):
-            #     res = fifo_cancel_sales(instance, False)
-            # else:
-            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
-
         if validated_data["status"] == "Issued":
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
@@ -579,11 +544,6 @@ class SalesVoucherCreateSerializer(
 
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo and not request.data.get(
-                "invoices"
-            ):
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             SalesVoucherRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )
@@ -905,43 +865,53 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
             )
 
         request = self.context["request"]
+        item_ids = [row["item_id"] for row in data["rows"]]
+        quantities = {row["item_id"]: row["quantity"] for row in data["rows"]}
 
-        inventory_settings = request.company.inventory_setting
-        if inventory_settings.enable_fifo:
-            if not request.query_params.get("fifo_inconsistency"):
-                rows = data["rows"]
-                # validate back date entry
-                item_ids = [row["item_id"] for row in rows]
-                date = datetime.datetime.strptime(request.data.get("date"), "%Y-%m-%d")
-                sales_rows = SalesVoucherRow.objects.filter(
+        inventory_setting = request.company.inventory_setting
+
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+
+            sales_rows_exists = (
+                SalesVoucherRow.objects.filter(
                     item_id__in=item_ids, voucher__date__gt=date
-                ).exclude(voucher__status__in=["Draft", "Cancelled"])
-                challan_rows = ChallanRow.objects.filter(
-                    item_id__in=item_ids,
-                    voucher__date__gt=date,
-                    voucher__status="Issued",
                 )
-                if sales_rows.exists() or challan_rows.exists():
-                    raise UnprocessableException(
-                        detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
-                        code="fifo_inconsistency",
-                    )
-            else:
-                return data
+                .exclude(voucher__status__in=["Draft", "Cancelled"])
+                .exists()
+            )
 
-            # Check Negative Stock
-            if inventory_settings.enable_negative_stock_check:
-                if not request.query_params.get("negative_stock"):
-                    for row in rows:
-                        # TODO: Improve queries
-                        item = Item.objects.get(id=row["item_id"])
-                        if item.remaining_stock < row["quantity"]:
-                            raise UnprocessableException(
-                                detail=f"You do not have enough stock for item {item.name} in your inventory to create this challan. Available stock: {item.remaining_stock} {item.unit.name if item.unit else 'units'}",
-                                code="negative_stock",
-                            )
-                else:
-                    return data
+            challan_rows_exists = ChallanRow.objects.filter(
+                item_id__in=item_ids, voucher__date__gt=date, voucher__status="Issued"
+            ).exists()
+
+            if sales_rows_exists or challan_rows_exists:
+                raise UnprocessableException(
+                    detail="There are Challans or SalesVouchers on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
+
+        if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+
+            remaining_stock_map = {item.id: item.remaining for item in items}
+
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
         return data
 
     def create(self, validated_data):
@@ -953,9 +923,6 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         validated_data["user_id"] = request.user.id
         instance = Challan.objects.create(**validated_data)
         for index, row in enumerate(rows_data):
-            if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             ChallanRow.objects.create(voucher=instance, **row)
         instance.apply_inventory_transactions()
         # TODO: Sync with CBMS
@@ -963,23 +930,12 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         return instance
 
     def update(self, instance, validated_data):
-        request = self.context["request"]
-        if request.company.inventory_setting.enable_fifo:
-            res = fifo_cancel_sales(instance, False)
-            # if request.query_params.get("fifo_inconsistency"):
-            #     res = fifo_cancel_sales(instance, False)
-            # else:
-            #     raise UnprocessableException(detail="This action might cause inconsistency in FIFO.", code="fifo_inconsistency")
-
         rows_data = validated_data.pop("rows")
         self.assign_fiscal_year(validated_data, instance=instance)
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
         Challan.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
-            if request.company.inventory_setting.enable_fifo:
-                sold_items = fifo_handle_sales_create(row)
-                row["sold_items"] = sold_items
             ChallanRow.objects.update_or_create(
                 voucher=instance, pk=row.get("id"), defaults=row
             )

@@ -698,7 +698,6 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
         if not opening_balance:
             raise ValidationError({"opening_balance": ["Opening balance is required."]})
         account.opening_balance = data.get("opening_balance")
-        account.opening_quantity = data.get("opening_balance")
         account.opening_balance_rate = data.get("opening_balance_rate")
         account.save()
         fiscal_year = self.request.company.current_fiscal_year
@@ -713,7 +712,6 @@ class ItemOpeningBalanceViewSet(DestroyModelMixin, CRULViewSet):
     def destroy(self, request, *args, **kwargs):
         account = self.get_object()
         account.opening_balance = 0
-        account.opening_quantity = 0
         account.opening_balance_rate = 0
         account.save()
         fiscal_year = self.request.company.current_fiscal_year

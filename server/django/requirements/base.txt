@@ -1,5 +1,5 @@
-Django==4.1.1
-psycopg2-binary
+Django==4.2.10
+psycopg[binary]==3.1.18
 Pillow
 django-rest-framework
 djangorestframework-simplejwt
