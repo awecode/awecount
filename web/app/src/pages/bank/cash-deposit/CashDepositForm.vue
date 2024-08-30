@@ -11,11 +11,13 @@
         <q-card class="q-pa-lg">
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
+              <n-auto-complete-v2 v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
+                endpoint="v1/bank-cash-deposits/create-defaults/bank_accounts" :staticOption="fields.selected_bank_account_obj"
                 label="Bank Account *" :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null" :error="errors?.bank_account" />
             </div>
             <div class="col-md-6 col-12">
-              <n-auto-complete v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
+              <n-auto-complete-v2 v-model="fields.benefactor" :options="formDefaults.collections?.benefactors"
+                endpoint="v1/bank-cash-deposits/create-defaults/benefactors" :staticOption="fields.selected_benefactor_obj"
                 label="Benefactor *" :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null" :error="errors?.benefactor" />
             </div>
           </div>

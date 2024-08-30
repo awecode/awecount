@@ -14,9 +14,12 @@
                             close.
                         </div>
                         <div class="q-my-md row">
-                            <q-select v-model="fields.fiscal_year" class="col-12 col-sm-6" label="Financial Year"
+                          <div class="col-12 col-sm-6">
+                            <n-auto-complete-v2 v-model="fields.fiscal_year" label="Financial Year"
+                                endpoint="/v1/account-closing/create-defaults/fiscal_years" :staticOption="formDefaults?.fields?.current_fiscal_year"
                                 :options="formDefaults.collections?.fiscal_years" option-value="id" option-label="name"
-                                map-options emit-value></q-select>
+                                map-options emit-value></n-auto-complete-v2>
+                          </div>
                         </div>
                         <q-btn v-if="checkPermissions('AccountClosingCreate')" class="q-mt-md" color="green" type="submit" :loading="loading">
                             Close Accounts
@@ -42,8 +45,8 @@ const { fields, formDefaults, submitForm, loading } = useForm(endpoint, {
 
 })
 watch(() => formDefaults.value, (newVal) => {
-    if (newVal.fields.current_fiscal_year_id) {
-        fields.value.fiscal_year = newVal.fields.current_fiscal_year_id
+    if (newVal.fields.current_fiscal_year?.id) {
+      fields.value.fiscal_year = newVal.fields.current_fiscal_year.id
     }
 })
 </script>

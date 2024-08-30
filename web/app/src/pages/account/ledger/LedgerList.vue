@@ -1,8 +1,8 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account" class="add-btn"
-        icon-right="add" />
+      <q-btn v-if="checkPermissions('AccountCreate')" color="green" to="/account/add/" label="New Account"
+        class="add-btn" icon-right="add" />
     </div>
 
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
@@ -28,7 +28,7 @@
                     <q-checkbox v-model="filters.has_balance" label="Has Balance?" :false-value="null"></q-checkbox>
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model.number="filters.category" endpoint="v1/categories/choices/"
+                    <n-auto-complete-v2 v-model="filters.category" :fetchOnMount="true" endpoint="v1/categories/choices/"
                       label="Category" />
                   </div>
                 </div>
@@ -119,27 +119,27 @@ export default {
         field: 'category',
         sortable: true
       },
-      {
-        name: 'dr',
-        label: 'Dr',
-        align: 'left',
-        field: 'dr',
-        sortable: true
-      },
-      {
-        name: 'cr',
-        label: 'Cr',
-        align: 'left',
-        field: 'cr',
-        sortable: true
-      },
-      {
-        name: 'computed_balance',
-        label: 'Balance',
-        align: 'left',
-        field: 'computed_balance',
-        sortable: true
-      },
+      // {
+      //   name: 'dr',
+      //   label: 'Dr',
+      //   align: 'left',
+      //   field: 'dr',
+      //   sortable: true
+      // },
+      // {
+      //   name: 'cr',
+      //   label: 'Cr',
+      //   align: 'left',
+      //   field: 'cr',
+      //   sortable: true
+      // },
+      // {
+      //   name: 'computed_balance',
+      //   label: 'Balance',
+      //   align: 'left',
+      //   field: 'computed_balance',
+      //   sortable: true
+      // },
       {
         name: 'actions',
         label: 'Actions',

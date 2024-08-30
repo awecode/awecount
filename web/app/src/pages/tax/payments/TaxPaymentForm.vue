@@ -24,9 +24,12 @@
               :error="!!errors.amount" type="number" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.cr_account" label="Paid From/By *" class="col-12 col-md-6"
-              :options="formDefaults.collections?.cr_accounts" option-value="id" option-label="name" map-options
-              emit-value :error="!!errors.cr_account" :error-message="errors.cr_account"></q-select>
+            <div class="col-12 col-md-6">
+              <n-auto-complete-v2 v-model="fields.cr_account" label="Paid From/By *"
+                :endpoint="`v1/tax-payments/create-defaults/cr_accounts`" :staticOption="fields.selected_cr_account_obj"
+                :options="formDefaults.collections?.cr_accounts" option-value="id" option-label="name" map-options
+                emit-value :error="!!errors.cr_account" :error-message="errors.cr_account"></n-auto-complete-v2>
+            </div>
           </div>
           <q-input v-model="fields.remarks" type="textarea" autogrow label="Remarks" class="col-12 q-mt-sm"
             :error="!!errors.remarks" :error-message="errors.remarks" />

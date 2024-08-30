@@ -696,6 +696,21 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/purchase-voucher-row/',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: 'list/',
+        component: () =>
+          import('src/pages/purchase/row/PurchaseVoucherRowList.vue'),
+        name: 'PurchaseVoucher Rows',
+        meta: {
+          breadcrumb: ['Home', 'Purchase Rows'],
+        },
+      },
+    ],
+  },
+  {
     path: '/purchase-book',
     component: () => import('layouts/MainLayout.vue'),
     children: [

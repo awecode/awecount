@@ -17,11 +17,13 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete v-model="fields.from_account" :options="formDefaults.collections?.from_account"
+              <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account"
+                endpoint="v1/fund-transfer/create-defaults/from_account" :staticOption="fields.selected_from_account_obj"
                 label="From Account *" :error="errors?.from_account" />
             </div>
             <div class="col-12 col-md-6">
-              <n-auto-complete v-model="fields.to_account" :options="formDefaults.collections?.to_account"
+              <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account"
+                endpoint="v1/fund-transfer/create-defaults/to_account" :staticOption="fields.selected_to_account_obj"
                 label="To Account *" :error="errors?.to_account" />
             </div>
           </div>
@@ -34,7 +36,9 @@
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete v-model="fields.transaction_fee_account"
+              <n-auto-complete-v2 v-model="fields.transaction_fee_account"
+                endpoint="v1/fund-transfer/create-defaults/transaction_fee_account"
+                :staticOption="fields.selected_transaction_fee_account_obj"
                 :options="formDefaults.collections?.transaction_fee_account" label="Fees Account"
                 :error="errors?.transaction_fee_account" />
             </div>

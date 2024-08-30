@@ -25,7 +25,8 @@
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus
+                      type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <q-select class="q-mt-md" label="Fiscal Year" v-model="referenceFormData.fiscal_year"
                       :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options
                       emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year"></q-select>
@@ -37,8 +38,9 @@
               </q-dialog>
             </div>
             <div class="col-md-6 col-12">
-              <n-auto-complete v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
-                :error="errors?.party ? errors?.party : ''"
+              <n-auto-complete-v2 v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
+                :error="errors?.party ? errors?.party : ''" :staticOption="fields.selected_party_obj"
+                endpoint="/v1/sales-voucher/create-defaults/parties"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
             </div>
             <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
@@ -50,7 +52,8 @@
                 : 'col-12'
                 ">
                 <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type"
-                  :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
+                  :options="discountOptionsComputed"
+                  :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null">
                 </n-auto-complete>
               </div>
               <div class="col-6 row">
@@ -77,14 +80,15 @@
           </div>
 
           <div class="row q-col-gutter-md">
-            <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6" :error-message="errors.mode"
-              :error="!!errors.mode" :options="staticOptions.modes.concat(
-                formDefaults.collections?.bank_accounts
-              )
-                " option-value="id" option-label="name" map-options emit-value>
-              <template v-slot:append>
-                <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                  @click.stop.prevent="fields.mode = null" /></template></q-select>
+            <div class="col-md-6 col-12">
+              <n-auto-complete-v2 v-model="fields.mode" label="Mode" :error-message="errors.mode" :error="!!errors.mode"
+                :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj"
+                :options="modeOptionsComputed" endpoint="v1/purchase-vouchers/create-defaults/bank_accounts"
+                option-value="id" option-label="name" map-options emit-value>
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+            </div>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
               v-model="fields.due_date" class="col-md-6 col-12" :error-message="errors?.due_date"
               :error="!!errors?.due_date" :toLimit="fields.date"></date-picker>
@@ -92,9 +96,10 @@
           <!-- {{ fields.date }} -->
         </q-card-section>
       </q-card>
-      <invoice-table :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
-        " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+      <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
+        " usedIn="purchase" :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
+    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+        v-model="fields.rows" :mainDiscount="{
     discount_type: fields.discount_type,
     discount: fields.discount,
   }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
@@ -121,13 +126,14 @@
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Save Draft" type="submit" />
-        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'" :loading="loading"
-          @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
+        <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
+          :loading="loading" @click.prevent="() => onSubmitClick('Draft')" color="orange" label="Update Draft"
           type="submit" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued')" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status)" color="green" :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status)" color="green"
+          :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
       </div>
     </q-card>
   </q-form>
@@ -321,6 +327,17 @@ export default {
         )
       } else return staticOptions.discount_types
     })
+    const modeOptionsComputed = computed(() => {
+      const obj = {
+        results: [...staticOptions.modes],
+        pagination: {},
+      }
+      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      }
+      return obj
+    })
     return {
       ...formData,
       CategoryForm,
@@ -334,7 +351,8 @@ export default {
       importPurchaseOrder,
       referenceFormData,
       fetchInvoice,
-      discountOptionsComputed
+      discountOptionsComputed,
+      modeOptionsComputed
     }
   },
 }

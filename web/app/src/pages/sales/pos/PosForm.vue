@@ -95,12 +95,12 @@
               <div>
                 <div class="flex -my-2 items-center gap-x-8">
                   <div class="flex-grow min-w-[225px]">
-                    <q-select v-model="fields.mode" label="Mode" class="col-12 col-md-6"
-                      :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="['Cash'].concat(formDefaults.collections?.bank_accounts)
-                        " option-value="id" option-label="name" map-options emit-value>
+                    <n-auto-complete-v2 v-model="fields.mode" label="Mode" class="col-12 col-md-6"
+                      :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="modeOptionsComputed"
+                      endpoint="v1/pos/create-defaults/bank_accounts" option-value="id" option-label="name" map-options emit-value>
                       <template v-slot:append>
                         <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                          @click.stop.prevent="fields.mode = null" /></template></q-select>
+                          @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
                   </div>
                   <div class="flex items-center gap-x-8 gap-y-4">
                     <q-btn class="f-open-btn" icon="mdi-menu">
@@ -115,7 +115,8 @@
                                     : null
                                     " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                                   </q-input>
-                                  <n-auto-complete v-else v-model="fields.party" :options="partyChoices" label="Party"
+                                  <n-auto-complete-v2 v-else v-model="fields.party" :options="partyChoices" label="Party"
+                                    endpoint="v1/parties/choices/"
                                     :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate')
                                       ? PartyForm
                                       : null
@@ -432,6 +433,18 @@ onMounted(() => {
   if (window) {
     window.addEventListener('keydown', handleKeyDown)
   }
+})
+
+const modeOptionsComputed = computed(() => {
+  const obj = {
+    results: ['Cash'],
+    pagination: {},
+  }
+  if (formDefaults.value?.collections?.bank_accounts?.results) {
+    obj.results = obj.results.concat(formDefaults.value.collections.bank_accounts.results)
+    Object.assign(obj.pagination, formDefaults.value.collections.bank_accounts.pagination)
+  }
+  return obj
 })
 </script>
 

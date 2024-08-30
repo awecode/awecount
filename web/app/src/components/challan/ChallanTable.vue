@@ -13,12 +13,15 @@
         <div v-for="(row, index) in modalValue" :key="index">
           <div class="row q-col-gutter-md no-wrap">
             <div class="col-5">
-              <n-auto-complete v-model="modalValue[index].item_id" :options="itemOptions" label="Item" :error="!!errors?.[index]
-                ? errors[index].item_id
-                  ? errors[index].item_id[0]
-                  : rowEmpty ? 'This field is required' : ''
-                : ''
-                " :modal-component="ItemAdd" @update:modelValue="onItemChange(index)" />
+              <n-auto-complete-v2 v-model="modalValue[index].item_id" :options="itemOptions"
+                 :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`"
+                 :staticOption="modalValue[index].selected_item_obj"
+                label="Item" :error="!!errors?.[index]
+                  ? errors[index].item_id
+                    ? errors[index].item_id[0]
+                    : rowEmpty ? 'This field is required' : ''
+                  : ''
+                  " :modal-component="ItemAdd" @update:modelValue="onItemChange(index)" />
             </div>
             <div class="col-3">
               <q-input v-model.number="modalValue[index].quantity" label="Quantity" type="number" :error-message="!!errors?.[index]
@@ -27,30 +30,31 @@
                   : ''
                 : ''
                 " :error="!!errors?.[index]
-    ? errors[index].quantity
-      ? true
-      : false
-    : false
-    "></q-input>
+                  ? errors[index].quantity
+                    ? true
+                    : false
+                  : false
+                  "></q-input>
             </div>
             <div class="col-3">
-              <q-select v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit" option-value="id"
-                option-label="name" emit-value map-options :error-message="!!errors?.[index]
+              <n-auto-complete-v2 v-model="modalValue[index].unit_id" :options="unitOptions" label="Unit" :staticOption="modalValue[index].selected_unit_obj"
+                :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`" option-value="id" option-label="name" emit-value
+                map-options :error-message="!!errors?.[index]
                   ? errors[index].unit_id
                     ? 'Please Select an Option'
                     : ''
                   : ''
                   " :error="!!errors?.[index]
-    ? errors[index].unit_id
-      ? true
-      : false
-    : false
-    ">
+                    ? errors[index].unit_id
+                      ? true
+                      : false
+                    : false
+                    ">
                 <template v-slot:append v-if="modalValue[index].unit_id">
                   <q-icon name="close" size="xs" @click.stop.prevent="modalValue[index].unit_id = null"
                     class="cursor-pointer" />
                 </template>
-              </q-select>
+              </n-auto-complete-v2>
             </div>
             <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
               <q-btn flat @click="() => removeRow(index)" class="q-pa-sm" color="transparent">
@@ -104,6 +108,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    usedIn: {
+      type: String,
+      default: 'challan',
+    }
   },
   emits: ['update:modelValue', 'deleteRow'],
   setup(props, { emit }) {
@@ -147,11 +155,16 @@ export default {
       modalValue.value.splice(index, 1)
     }
     const onItemChange = (index) => {
-      const itemIndex = props.itemOptions.findIndex((item) => item.id === modalValue.value[index].item_id)
+      const itemIndex = props.itemOptions.results.findIndex((item) => item.id === modalValue.value[index].item_id)
       if (itemIndex > -1) {
-        modalValue.value[index].unit_id = props.itemOptions[itemIndex].unit_id
+        modalValue.value[index].unit_id = props.itemOptions.results[itemIndex].unit_id
+        modalValue.value[index].selected_unit_obj = props.itemOptions.results[itemIndex].default_unit_obj
       }
     }
+    const choiceEndpointBaseComputed = computed(() => {
+      if (props.usedIn === 'challan') return 'challan'
+      if (props.usedIn === 'purchase-order') return 'purchase-order'
+    })
     return {
       props,
       modalValue,
@@ -161,7 +174,8 @@ export default {
       // InvoiceRow,
       useCalcDiscount,
       rowEmpty,
-      onItemChange
+      onItemChange,
+      choiceEndpointBaseComputed
     }
   },
 }

@@ -35,7 +35,7 @@
           <q-th rowspan="2" style="text-align: center">Total Sales</q-th>
           <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Non Taxable Sales</q-th>
           <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Export Sales</q-th>
-          <q-th rowspan="2" style="text-align: center">Discount</q-th>
+          <!-- <q-th rowspan="2" style="text-align: center">Discount</q-th> -->
           <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Sales</q-th>
         </q-tr>
         <q-tr>
@@ -112,7 +112,7 @@ export default {
         remove: true,
         label: 'Total Sales',
         align: 'left',
-        field: (row) => row.voucher_meta.grand_total,
+        field: (row) => row.voucher_meta.sub_total_after_row_discounts,
       },
       {
         name: 'non_taxable_sales',
@@ -129,13 +129,13 @@ export default {
         field: '',
       },
       // TODO: add export sales
-      {
-        name: 'discount',
-        label: 'Discount',
-        align: 'left',
-        field: 'meta_discount',
-        remove: true,
-      },
+      // {
+      //   name: 'discount',
+      //   label: 'Discount',
+      //   align: 'left',
+      //   field: 'meta_discount',
+      //   remove: true,
+      // },
       {
         name: 'amount',
         label: 'Amount',

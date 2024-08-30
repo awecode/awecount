@@ -33,10 +33,12 @@
               :error-message="errors.tds_amount" :error="!!errors.tds_amount" type="number"></q-input>
           </div>
           <div v-if="fields.mode === 'Bank Deposit' || fields.mode === 'Cheque'" class="row q-col-gutter-md">
-            <q-select class="col-md-6 col-12" label="Bank Account *" v-model="fields.bank_account"
-              :error-message="errors.bank_account" :error="!!errors.bank_account"
-              :options="formDefaults.collections?.bank_accounts" option-value="id" option-label="name" map-options
-              emit-value></q-select>
+            <div class="col-md-6 col-12">
+              <n-auto-complete-v2 label="Bank Account *" v-model="fields.bank_account"
+                :error-message="errors.bank_account" endpoint="/v1/payment-receipt/create-defaults/bank_accounts" :error="!!errors.bank_account"
+                :staticOption="fields.selected_bank_account_obj" :options="formDefaults.collections?.bank_accounts" option-value="id" option-label="name" map-options
+                emit-value></n-auto-complete-v2>
+            </div>
           </div>
           <div v-if="fields.mode === 'Cheque'">
             <div class="row q-col-gutter-md">

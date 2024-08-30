@@ -23,7 +23,7 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.bank_account" endpoint="v1/bank-account/choices/"
+                    <n-auto-complete-v2 v-model="filters.bank_account" :fetchOnMount="true" endpoint="v1/bank-account/choices/"
                       label="Bank Account" />
                   </div>
                   <div class="q-ma-sm">

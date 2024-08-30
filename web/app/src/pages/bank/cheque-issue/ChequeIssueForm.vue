@@ -13,9 +13,9 @@
           <q-card-section>
             <div class="row q-col-gutter-md">
               <div class="col-md-6 col-12">
-                <n-auto-complete v-model="fields.bank_account" :options="formDefaults.collections?.bank_accounts"
-                  label="Bank Account *" :disabled="isEdit" :error="errors?.bank_account"
-                  @update:modelValue="updateBankAccount" />
+                <n-auto-complete-v2 v-model="fields.bank_account" endpoint="v1/cheque-issue/create-defaults/bank_accounts"
+                 :options="formDefaults.collections?.bank_accounts" label="Bank Account *" :disabled="isEdit"
+                 :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
               </div>
               <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date"
                 :error="!!errors.date"></date-picker>
@@ -28,8 +28,8 @@
             </div>
             <div class="row q-col-gutter-md">
               <div class="col-8">
-                <n-auto-complete v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties"
-                  label="Party *" :error="errors?.party" />
+                <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties"
+                  :staticOption="fields.selected_party_obj" endpoint="v1/cheque-issue/create-defaults/parties" label="Party *" :error="errors?.party" />
                 <div class="row" v-else>
                   <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to"
                     :error="!!errors.issued_to" />
@@ -41,8 +41,8 @@
             </div>
             <div class="row q-col-gutter-md" v-if="showDrAccount">
               <div class="col-8">
-                <n-auto-complete v-model="fields.dr_account" :options="formDefaults.collections?.accounts"
-                  label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
+                <n-auto-complete-v2 v-model="fields.dr_account" :options="formDefaults.collections?.accounts"
+                  :staticOption="fields.selected_dr_account_obj" endpoint="v1/cheque-issue/create-defaults/accounts" label="Dr Account" :modal-component="BenefactorForm" :error="errors?.dr_account" />
               </div>
             </div>
           </q-card-section>
@@ -179,7 +179,7 @@ export default {
     }
     const updateBankAccount = () => {
       const { bank_account } = formData.fields.value
-      const bank_accounts = formData.formDefaults.value.collections.bank_accounts
+      const bank_accounts = formData.formDefaults.value.collections.bank_accounts.results
       if (bank_accounts && bank_account && !formData.fields.value.id) {
         const selected = bank_accounts.find((account) => {
           return bank_account === account.id;

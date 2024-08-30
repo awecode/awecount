@@ -34,7 +34,7 @@
         </div>
       </div>
       <div class="sm:mt-6 mb-4 sm:mb-0 mt-2 px-2">
-        <div class="row q-col-gutter-md print-hide">
+        <div class="row q-col-gutter-md print-hide items-center">
           <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
           <div v-if="startDate != null || endDate != null">
             <q-btn @click.prevent="resetDate" square color="red" icon="fa-solid fa-xmark" class="q-mt-md" />

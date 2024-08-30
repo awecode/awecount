@@ -3,13 +3,16 @@
     <div class="row q-col-gutter-md no-wrap">
       <div class="col-5 row">
         <div :class="usedIn === 'creditNote' ? 'col-10' : 'col-12'" data-testid="item">
-          <n-auto-complete v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions" label="Item"
+          <n-auto-complete-v2 v-if="!usedInPos" v-model="modalValue.item_id" :options="itemOptions"
+            :staticOption="modelValue.selected_item_obj" label="Item"
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''" :modal-component="usedInPos || hasChallan
               ? false
               : checkPermissions('InventoryAccountCreate')
                 ? ItemAdd
                 : null
-              " :disabled="usedInPos || hasChallan" />
+              " :disabled="usedInPos || hasChallan"
+            :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/items`" :emitObj="true"
+            @updateObj="updateItem" />
           <q-input v-else :label="usedInPos ? '' : 'Item'" disable :modelValue="modelValue.name"></q-input>
         </div>
         <div v-if="usedIn === 'creditNote'" class="col-2 row justify-center">
@@ -119,9 +122,10 @@
     <div v-if="expandedState">
       <div class="row q-col-gutter-md q-px-lg">
         <div class="col-grow" data-testid="unit-select">
-          <q-select v-model="modalValue.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
-            emit-value map-options :error-message="errors?.unit_id ? errors.unit_id[0] : null"
-            :error="errors?.unit_id ? true : false" />
+          <n-auto-complete-v2 v-model="modalValue.unit_id" :options="unitOptions" label="Unit"
+            :staticOption="modalValue.selected_unit_obj" :error-message="errors?.unit_id ? errors.unit_id[0] : null"
+            :error="errors?.unit_id ? true : false" :endpoint="`v1/${choiceEndpointBaseComputed}/create-defaults/units`"
+            :emitObj="usedInPos" @updateObj="(val) => modalValue.selected_unit_obj = val" />
         </div>
         <div class="col-5">
           <div class="row q-col-gutter-md">
@@ -129,35 +133,34 @@
               ? 'col-5'
               : 'col-12'
               " data-testid="row-discount-type-div">
-              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions">
-              </n-auto-complete>
+              <n-auto-complete v-model="modalValue.discount_type" label="Discount" :options="discountOptions" />
             </div>
             <div :class="showRowTradeDiscount ? 'col-3' : 'col-6'" v-if="modalValue.discount_type === 'Amount' ||
               modalValue.discount_type === 'Percent'
-              ">
+            ">
               <q-input v-model.number="modalValue.discount" label="Discount"
                 :error-message="errors?.discount ? errors.discount[0] : null" :error="errors?.discount ? true : false"
-                data-testid="row-discount-input"></q-input>
+                data-testid="row-discount-input" />
             </div>
             <div class="col-3 row" v-if="['Amount', 'Percent'].includes(modalValue.discount_type) &&
               showRowTradeDiscount
-              ">
+            ">
               <q-checkbox v-model="modalValue.trade_discount" label="Trade Discount?"
                 data-testid="row-trade-discount-checkbox"></q-checkbox>
             </div>
           </div>
         </div>
         <div class="col-3" data-testid="row-tax-select">
-          <q-select v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax" option-value="id"
-            option-label="name" emit-value map-options :error="errors?.tax_scheme_id ? true : null" :error-message="errors?.tax_scheme_id ? 'This field is required' : null
-              " />
+          <n-auto-complete v-model="modalValue.tax_scheme_id" :options="taxOptions" label="Tax"
+            :error="errors?.tax_scheme_id ? true : null"
+            :error-message="errors?.tax_scheme_id ? 'This field is required' : null" />
         </div>
       </div>
       <div v-if="$route.params.id
         ? (!!modalValue.item_id || !!modalValue.itemObj) &&
         enableRowDescription
         : !!modalValue.itemObj && enableRowDescription
-        ">
+      ">
         <q-input label="Description" v-model="modalValue.description" type="textarea" class="q-mb-lg"
           data-testid="row-description-input">
         </q-input>
@@ -172,15 +175,21 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   props: {
     itemOptions: {
-      type: Array,
+      type: Object,
       default: () => {
-        return []
+        return {
+          results: [],
+          pagination: {},
+        }
       },
     },
     unitOptions: {
       type: Object,
       default: () => {
-        return {}
+        return {
+          results: [],
+          pagination: {},
+        }
       },
     },
     discountOptions: {
@@ -295,23 +304,6 @@ export default {
       },
       { deep: true }
     )
-    watch(
-      () => props.modelValue.item_id,
-      (newValue) => {
-        if (!!props.itemOptions && !!newValue) {
-          const index = props.itemOptions.findIndex(
-            (item) => item.id === newValue
-          )
-          const itemObject = props.itemOptions[index]
-          modalValue.value.itemObj = itemObject
-          modalValue.value.item_id = itemObject.id
-          modalValue.value.description = itemObject.description
-          modalValue.value.rate = itemObject.rate
-          modalValue.value.unit_id = itemObject.unit_id
-          modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
-        }
-      }
-    )
 
     watch(
       () => props.errors,
@@ -363,6 +355,24 @@ export default {
         }
       )
     }
+    const updateItem = (itemObject) => {
+      if (itemObject) {
+        modalValue.value.itemObj = itemObject
+        modalValue.value.item_id = itemObject.id
+        modalValue.value.description = itemObject.description
+        modalValue.value.rate = itemObject.rate
+        modalValue.value.unit_id = itemObject.unit_id
+        modalValue.value.tax_scheme_id = itemObject.tax_scheme_id
+        modalValue.value.selected_unit_obj = itemObject.default_unit_obj
+      }
+    }
+    const choiceEndpointBaseComputed = computed(() => {
+      if (props.usedIn === 'sales') return 'sales-voucher'
+      if (props.usedIn === 'purchase') return 'purchase-vouchers'
+      if (props.usedIn === 'creditNote') return 'credit-note'
+      // if (props.usedIn === 'debitNote') return 'debit-notes'
+      // if (props.usedIn === 'journal') return 'journal-entries'
+    })
     return {
       ItemAdd,
       expandedState,
@@ -373,6 +383,8 @@ export default {
       deleteRow,
       checkPermissions,
       onAmountInput,
+      choiceEndpointBaseComputed,
+      updateItem,
     }
   },
 }

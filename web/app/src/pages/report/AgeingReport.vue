@@ -119,7 +119,7 @@ export default {
         // watch(() => route.query, () => {
         //     fetchData()
         // })
-        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate, onDownloadXls }
+        return { reportData, fetchData, date, newColumns, checkPermissions, pagination, onRequest, onUpdate, onDownloadXls, loading }
     },
     created() {
         if (!this.date) {
