@@ -16,19 +16,15 @@ from apps.voucher.models import (
 from apps.voucher.models.journal_vouchers import JournalVoucher
 
 from .models import (
-    ADJUSTMENT_STATUS_CHOICES,
     CHALLAN_STATUSES,
     CREDIT_NOTE_STATUSES,
     PURCHASE_ORDER_STATUS_CHOICES,
     STATUSES,
-    CONVERSION_CHOICES,
     CreditNote,
     PurchaseOrder,
     PurchaseVoucher,
     PurchaseVoucherRow,
     SalesVoucher,
-    InventoryAdjustmentVoucher,
-    InventoryConversionVoucher,
 )
 
 
@@ -79,6 +75,7 @@ class PurchaseVoucherFilterSet(DateFilterSet):
     class Meta:
         model = PurchaseVoucher
         fields = ()
+
 
 class PurchaseVoucherRowFilterSet(filters.FilterSet):
     start_date = filters.DateFilter(field_name="voucher__date", lookup_expr="gte")
@@ -159,20 +156,4 @@ class PurchaseOrderFilterSet(DateFilterSet):
 
     class Meta:
         model = PurchaseOrder
-        fields = []
-
-
-class InventoryAdjustmentVoucherFilterSet(DateFilterSet):
-    status = filters.MultipleChoiceFilter(choices=ADJUSTMENT_STATUS_CHOICES)
-
-    class Meta:
-        model = InventoryAdjustmentVoucher
-        fields = []
-
-
-class InventoryConversionVoucherFilterSet(DateFilterSet):
-    status = filters.MultipleChoiceFilter(choices=CONVERSION_CHOICES)
-
-    class Meta:
-        model = InventoryConversionVoucher
         fields = []

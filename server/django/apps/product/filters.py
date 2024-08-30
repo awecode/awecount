@@ -1,6 +1,15 @@
 from django_filters import rest_framework as filters
 
-from .models import InventoryAccount, Item
+from apps.voucher.filters import DateFilterSet
+
+from .models import (
+    ADJUSTMENT_STATUS_CHOICES,
+    CONVERSION_CHOICES,
+    InventoryAccount,
+    InventoryAdjustmentVoucher,
+    InventoryConversionVoucher,
+    Item,
+)
 
 
 class ItemFilterSet(filters.FilterSet):
@@ -28,3 +37,19 @@ class BookFilterSet(filters.FilterSet):
             "search_data",
             "brand",
         )
+
+
+class InventoryAdjustmentVoucherFilterSet(DateFilterSet):
+    status = filters.MultipleChoiceFilter(choices=ADJUSTMENT_STATUS_CHOICES)
+
+    class Meta:
+        model = InventoryAdjustmentVoucher
+        fields = []
+
+
+class InventoryConversionVoucherFilterSet(DateFilterSet):
+    status = filters.MultipleChoiceFilter(choices=CONVERSION_CHOICES)
+
+    class Meta:
+        model = InventoryConversionVoucher
+        fields = []

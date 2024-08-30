@@ -1,12 +1,18 @@
+import datetime
+
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.db.models import F, Q
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
+from apps.product.models import Item, Transaction
 from apps.tax.serializers import TaxSchemeSerializer
+from awecount.libs import get_next_voucher_no
 from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.exception import UnprocessableException
 
 from .models import (
     BillOfMaterial,
@@ -14,10 +20,12 @@ from .models import (
     Brand,
     Category,
     InventoryAccount,
+    InventoryAdjustmentVoucher,
+    InventoryAdjustmentVoucherRow,
+    InventoryConversionVoucher,
+    InventoryConversionVoucherRow,
     InventorySetting,
-    Item,
     JournalEntry,
-    Transaction,
     Unit,
 )
 from .models import (
@@ -218,7 +226,6 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
 
         return attrs
 
-
     class Meta:
         model = InventoryCategory
         exclude = (
@@ -234,25 +241,40 @@ class InventoryCategorySerializer(serializers.ModelSerializer):
             "indirect_expense_account_category",
         )
 
+
 class InventoryCategoryFormSerializer(InventoryCategorySerializer):
     selected_unit_obj = UnitSerializer(read_only=True, source="default_unit")
     sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
-    purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
-    discount_allowed_account_obj = AccountMinSerializer(read_only=True, source="discount_allowed_account")
-    discount_received_account_obj = AccountMinSerializer(read_only=True, source="discount_received_account")
+    purchase_account_obj = AccountMinSerializer(
+        read_only=True, source="purchase_account"
+    )
+    discount_allowed_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_allowed_account"
+    )
+    discount_received_account_obj = AccountMinSerializer(
+        read_only=True, source="discount_received_account"
+    )
+
 
 class ItemFormSerializer(ItemSerializer):
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
-    selected_sales_account_obj = AccountMinSerializer(read_only=True, source="sales_account")
-    selected_purchase_account_obj = AccountMinSerializer(read_only=True, source="purchase_account")
+    selected_sales_account_obj = AccountMinSerializer(
+        read_only=True, source="sales_account"
+    )
+    selected_purchase_account_obj = AccountMinSerializer(
+        read_only=True, source="purchase_account"
+    )
     selected_discount_received_account_obj = AccountMinSerializer(
         read_only=True, source="discount_received_account"
     )
     selected_discount_allowed_account_obj = AccountMinSerializer(
         read_only=True, source="discount_allowed_account"
     )
-    selected_inventory_category_obj = InventoryCategoryFormSerializer(read_only=True, source="category")
+    selected_inventory_category_obj = InventoryCategoryFormSerializer(
+        read_only=True, source="category"
+    )
     selected_brand_obj = GenericSerializer(read_only=True, source="brand")
+
 
 class InventoryCategoryTrialBalanceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -420,50 +442,378 @@ class InventorySettingCreateSerializer(serializers.ModelSerializer):
         model = InventorySetting
         exclude = ["company"]
 
+
 class BillOfMaterialRowSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
+
     class Meta:
         model = BillOfMaterialRow
-        exclude = ("item", "unit", 'bill_of_material')
+        exclude = ("item", "unit", "bill_of_material")
+
 
 class BillOfMaterialCreateSerializer(serializers.ModelSerializer):
     unit_id = serializers.IntegerField(required=True)
     rows = BillOfMaterialRowSerializer(many=True)
     finished_product_name = serializers.ReadOnlyField(source="finished_product.name")
 
-    def validate(self,data):
-        finished_product=data.get("finished_product")
-        for row in data['rows']:
-            if row['item_id'] == finished_product.id:
-                raise ValidationError({"detail": "Finished product cannot be part of its own bill of material."})
+    def validate(self, data):
+        finished_product = data.get("finished_product")
+        for row in data["rows"]:
+            if row["item_id"] == finished_product.id:
+                raise ValidationError(
+                    {
+                        "detail": "Finished product cannot be part of its own bill of material."
+                    }
+                )
         return data
-    
+
     def create(self, validated_data):
-        rows = validated_data.pop('rows')
+        rows = validated_data.pop("rows")
         instance = BillOfMaterial.objects.create(**validated_data)
         for row in rows:
             BillOfMaterialRow.objects.create(bill_of_material=instance, **row)
         return instance
-    
+
     def update(self, instance, validated_data):
-        rows = validated_data.pop('rows')
-        validated_data.pop('finished_product')
+        rows = validated_data.pop("rows")
+        validated_data.pop("finished_product")
         for row in rows:
             BillOfMaterialRow.objects.update_or_create(
-              bill_of_material=instance,  pk=row.get("id"), defaults=row
+                bill_of_material=instance, pk=row.get("id"), defaults=row
             )
         return super().update(instance, validated_data)
-    
+
     class Meta:
         model = BillOfMaterial
         exclude = ("company", "unit")
 
+
 class BillOfMaterialListSerializer(serializers.ModelSerializer):
     item = serializers.ReadOnlyField(source="finished_product.name")
+
     class Meta:
         model = BillOfMaterial
-        fields = ['id', 'item']
+        fields = ["id", "item"]
 
-        
+
+class InventoryAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=True)
+    item_name = serializers.ReadOnlyField(source="item.name")
+    unit_name = serializers.ReadOnlyField(source="unit.name")
+
+    class Meta:
+        model = InventoryAdjustmentVoucherRow
+        exclude = (
+            "item",
+            "voucher",
+            "unit",
+        )
+
+
+class InventoryAdjustmentVoucherCreateSerializer(serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
+    rows = InventoryAdjustmentVoucherRowSerializer(many=True)
+    total_amount = serializers.ReadOnlyField()
+
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get("status") in ["Cancelled"]:
+            return
+        next_voucher_no = get_next_voucher_no(
+            InventoryAdjustmentVoucher, self.context["request"].company_id
+        )
+        validated_data["voucher_no"] = next_voucher_no
+
+    def validate(self, data):
+        request = self.context["request"]
+        data = super().validate(data)
+        inventory_setting = request.company.inventory_setting
+        item_ids = {row["item_id"] for row in data["rows"]}
+        if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+            and not data.get("purpose") == "Stock In"
+        ):
+            quantities = {}
+            for row in data["rows"]:
+                item_id = row["item_id"]
+                quantity = row["quantity"]
+                if quantities.get(item_id):
+                    quantities[item_id] += quantity
+                else:
+                    quantities[item_id] = quantity
+            items = (
+                Item.objects.filter(id__in=item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+            remaining_stock_map = {item.id: item.remaining for item in items}
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+            items_transactions = Transaction.objects.filter(
+                Q(account__item__id__in=item_ids) & Q(journal_entry__date__gt=date)
+            )
+            if items_transactions.exists():
+                raise UnprocessableException(
+                    detail="There are Transactions on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
+        return data
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop("rows")
+        self.assign_voucher_number(validated_data, instance=None)
+        instance = InventoryAdjustmentVoucher.objects.create(**validated_data)
+        total_amount = 0
+        for index, row in enumerate(rows_data):
+            if row.get("id"):
+                row.pop("id")
+            quantity = row.get("quantity")
+            rate = row.get("rate")
+            total_amount += rate * quantity
+            InventoryAdjustmentVoucherRow.objects.create(voucher=instance, **row)
+        instance.total_amount = total_amount
+        instance.save()
+        instance.apply_transactions()
+        return instance
+
+    def update(self, instance, validated_data):
+        # prevent form updating purpose
+        validated_data.pop("purpose")
+        rows_data = validated_data.pop("rows")
+        total_amount = 0
+        InventoryAdjustmentVoucher.objects.filter(pk=instance.id).update(
+            **validated_data
+        )
+        for index, row in enumerate(rows_data):
+            InventoryAdjustmentVoucherRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
+            quantity = row.get("quantity")
+            rate = row.get("rate")
+            total_amount += rate * quantity
+        if instance.total_amount != total_amount:
+            instance.total_amount = total_amount
+            instance.save()
+        instance.apply_transactions()
+        return instance
+
+    class Meta:
+        model = InventoryAdjustmentVoucher
+        exclude = ("company",)
+
+
+class InventoryAdjustmentVoucherListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryAdjustmentVoucher
+        fields = ["id", "voucher_no", "date", "status", "purpose", "total_amount"]
+
+
+class InventoryAdjustmentVoucherDetailSerializer(serializers.ModelSerializer):
+    rows = InventoryAdjustmentVoucherRowSerializer(many=True)
+
+    class Meta:
+        model = InventoryAdjustmentVoucher
+        exclude = ("company",)
+
+
+class InventoryConversionVoucherRowSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=True)
+    unit_id = serializers.IntegerField(required=True)
+    item_name = serializers.ReadOnlyField(source="item.name")
+    unit_name = serializers.ReadOnlyField(source="unit.name")
+
+    def validate(self, attrs):
+        transaction_type = attrs.get("transaction_type")
+        rate = attrs.get("rate", None)
+
+        if transaction_type == "Dr" and not rate:
+            raise serializers.ValidationError(
+                {"rate": "Rate is required for debit transaction."}
+            )
+
+        if transaction_type == "Cr" and rate:
+            raise serializers.ValidationError(
+                {"detail": "Rate is not allowed for credit transaction."}
+            )
+
+        return super().validate(attrs)
+
+    class Meta:
+        model = InventoryConversionVoucherRow
+        exclude = (
+            "item",
+            "voucher",
+            "unit",
+        )
+
+
+class InventoryConversionVoucherCreateSerializer(serializers.ModelSerializer):
+    voucher_no = serializers.ReadOnlyField()
+    rows = InventoryConversionVoucherRowSerializer(many=True)
+
+    def assign_voucher_number(self, validated_data, instance):
+        if instance and instance.voucher_no:
+            return
+        if validated_data.get("status") in ["Cancelled"]:
+            return
+        next_voucher_no = get_next_voucher_no(
+            InventoryConversionVoucher, self.context["request"].company_id
+        )
+        validated_data["voucher_no"] = next_voucher_no
+
+    def validate(self, data):
+        request = self.context["request"]
+        bill_of_material = data.get("finished_product", None)
+        if bill_of_material is not None:
+            finished_product = bill_of_material.finished_product
+
+        dr_item_ids = []
+        cr_item_ids = []
+
+        for row in data["rows"]:
+            if row.get("transaction_type") == "Dr":
+                dr_item_ids.append(row["item_id"])
+            else:
+                cr_item_ids.append(row["item_id"])
+
+        if (not cr_item_ids) or (not dr_item_ids):
+            raise ValidationError(
+                {"detail": "Finished product and raw material are required"}
+            )
+
+        if finished_product is not None:
+            for item_id in dr_item_ids:
+                if item_id != finished_product.id:
+                    dr_item_ids.append(finished_product.id)
+
+        for row in data["rows"]:
+            if row["item_id"] in cr_item_ids and row["item_id"] in dr_item_ids:
+                raise ValidationError(
+                    {
+                        "detail": "Finished product and raw material cannot have same item"
+                    }
+                )
+
+        quantities = {
+            row["item_id"]: row["quantity"]
+            for row in data["rows"]
+            if row.get("transaction_type") == "Cr"
+        }
+
+        # Check negative stock
+        inventory_setting = request.company.inventory_setting
+        if (
+            inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            items = (
+                Item.objects.filter(id__in=cr_item_ids)
+                .annotate(remaining=F("account__current_balance"))
+                .only("id")
+            )
+
+            remaining_stock_map = {item.id: item.remaining for item in items}
+
+            for item in items:
+                if remaining_stock_map[item.id] < quantities[item.id]:
+                    raise UnprocessableException(
+                        detail=f"You do not have enough stock for item {item.name} in your inventory to create this sales. Available stock: {item.remaining} {item.unit.name if item.unit else 'units'}",
+                        code="negative_stock",
+                    )
+
+        if inventory_setting.enable_fifo and not request.query_params.get(
+            "fifo_inconsistency"
+        ):
+            item_ids = [row["item_id"] for row in data["rows"]]
+            date = datetime.datetime.strptime(request.data["date"], "%Y-%m-%d")
+            items_transactions = Transaction.objects.filter(
+                Q(account__item__id__in=item_ids) & Q(journal_entry__date__gt=date)
+            )
+            if items_transactions.exists():
+                raise UnprocessableException(
+                    detail="There are Transactions on later dates. This might create insonsistencies in FIFO.",
+                    code="fifo_inconsistency",
+                )
+        return data
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop("rows")
+        self.assign_voucher_number(validated_data, instance=None)
+        instance = InventoryConversionVoucher.objects.create(**validated_data)
+        for row in rows_data:
+            if row.get("id"):
+                row.pop("id")
+            InventoryConversionVoucherRow.objects.create(voucher=instance, **row)
+        instance.apply_inventory_transactions()
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        # prevent form updating finished_product
+        validated_data.pop("finished_product", None)
+        rows_data = validated_data.pop("rows")
+        InventoryConversionVoucher.objects.filter(pk=instance.id).update(
+            **validated_data
+        )
+        for row in rows_data:
+            InventoryConversionVoucherRow.objects.update_or_create(
+                voucher=instance, pk=row.get("id"), defaults=row
+            )
+            instance.apply_inventory_transactions()
+            instance.save()
+        return instance
+
+    class Meta:
+        model = InventoryConversionVoucher
+        exclude = ("company",)
+
+
+class InventoryConversionVoucherListSerializer(serializers.ModelSerializer):
+    finished_product_name = serializers.ReadOnlyField(
+        source="finished_product.finished_product.name"
+    )
+
+    class Meta:
+        model = InventoryConversionVoucher
+        fields = [
+            "id",
+            "voucher_no",
+            "date",
+            "status",
+            "finished_product_name",
+        ]
+
+
+class InventoryConversionVoucherDetailSerializer(serializers.ModelSerializer):
+    rows = InventoryConversionVoucherRowSerializer(many=True)
+    finished_product_name = serializers.ReadOnlyField(
+        source="finished_product.finished_product.name"
+    )
+
+    class Meta:
+        model = InventoryConversionVoucher
+        exclude = ("company",)
+
+
+class InventoryConversionFinishedProductList(serializers.Serializer):
+    name = serializers.ReadOnlyField()
+    id = serializers.ReadOnlyField()
+
+    class Meta:
+        fields = ("id", "name")

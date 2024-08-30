@@ -8,7 +8,6 @@ from apps.voucher.models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
-    InventoryConversionVoucher,
     PaymentReceipt,
     PurchaseDiscount,
     PurchaseVoucher,
@@ -17,7 +16,6 @@ from apps.voucher.models import (
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
-    InventoryAdjustmentVoucher,
 )
 from apps.voucher.models.invoice_design import InvoiceDesign
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
@@ -250,18 +248,3 @@ class PurchaseVoucherRowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PurchaseVoucherRow, PurchaseVoucherRowAdmin)
-
-class InventoryAdjustmentVoucherAdmin(admin.ModelAdmin):
-    search_fields = (
-        "voucher_no",
-        "company__name",
-    )
-    list_filter = ("company",)
-    list_display = (
-        "voucher_no",
-    )
-admin.site.register(InventoryAdjustmentVoucher, InventoryAdjustmentVoucherAdmin)
-
-
-
-admin.site.register(InventoryConversionVoucher)

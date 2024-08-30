@@ -16,15 +16,13 @@ from rest_framework.response import Response
 from apps.ledger.models import Account
 from apps.ledger.models import Category as AccountCategory
 from apps.ledger.models import Transaction as Ledger
-from apps.ledger.serializers import AccountMinSerializer
+from apps.ledger.serializers import AccountMinSerializer, SalesJournalEntrySerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
 from apps.voucher.models import (
     ChallanRow,
     CreditNoteRow,
     DebitNoteRow,
-    InventoryAdjustmentVoucherRow,
-    InventoryConversionVoucherRow,
     PurchaseOrderRow,
     PurchaseVoucherRow,
     SalesVoucherRow,
@@ -33,13 +31,21 @@ from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin, ShortNameChoiceMixin
 
-from .filters import BookFilterSet, InventoryAccountFilterSet, ItemFilterSet
+from .filters import (
+    BookFilterSet,
+    InventoryAccountFilterSet,
+    InventoryAdjustmentVoucherFilterSet,
+    InventoryConversionVoucherFilterSet,
+    ItemFilterSet,
+)
 from .models import (
     BillOfMaterial,
     BillOfMaterialRow,
     Brand,
     Category,
     InventoryAccount,
+    InventoryAdjustmentVoucher,
+    InventoryConversionVoucher,
     Item,
     JournalEntry,
     Transaction,
@@ -52,9 +58,15 @@ from .serializers import (
     BookSerializer,
     BrandSerializer,
     InventoryAccountSerializer,
+    InventoryAdjustmentVoucherCreateSerializer,
+    InventoryAdjustmentVoucherDetailSerializer,
+    InventoryAdjustmentVoucherListSerializer,
     InventoryCategoryFormSerializer,
     InventoryCategorySerializer,
     InventoryCategoryTrialBalanceSerializer,
+    InventoryConversionVoucherCreateSerializer,
+    InventoryConversionVoucherDetailSerializer,
+    InventoryConversionVoucherListSerializer,
     InventorySettingCreateSerializer,
     ItemDetailSerializer,
     ItemFormSerializer,
@@ -1033,12 +1045,22 @@ class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
                 track_inventory=True, bill_of_material__isnull=True
             ),
             GenericSerializer,
+            True,
+            ["name"],
         ],
-        ["units", Unit],
+        [
+            "units",
+            Unit,
+            GenericSerializer,
+            True,
+            ["name"],
+        ],
         [
             "items",
             Item.objects.only("id", "name").filter(track_inventory=True),
             GenericSerializer,
+            True,
+            ["name"],
         ],
     ]
     filter_backends = [
@@ -1059,3 +1081,135 @@ class BillOfMaterialViewSet(DeleteRows, CRULViewSet):
         if self.action == "list":
             return BillOfMaterialListSerializer
         return BillOfMaterialCreateSerializer
+
+
+class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
+    queryset = InventoryAdjustmentVoucher.objects.all()
+    serializer_class = InventoryAdjustmentVoucherCreateSerializer
+    model = InventoryAdjustmentVoucher
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    filterset_class = InventoryAdjustmentVoucherFilterSet
+    search_fields = [
+        "remarks",
+        "total_amount",
+        "date",
+        "purpose",
+        "voucher_no",
+    ]
+
+    def get_queryset(self, **kwargs):
+        qs = super(InventoryAdjustmentVoucherViewSet, self).get_queryset()
+        return qs.order_by("-date", "-voucher_no")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return InventoryAdjustmentVoucherListSerializer
+        elif self.action == "retrieve":
+            return InventoryAdjustmentVoucherDetailSerializer
+        return InventoryAdjustmentVoucherCreateSerializer
+
+    collections = [
+        (
+            "items",
+            Item.objects.only("id", "name").filter(track_inventory=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
+            "units",
+            Unit,
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    ]
+
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        inventory_adjustment_voucher = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise ValidationError(
+                {"message": "message field is required for cancelling voucher!"}
+            )
+        inventory_adjustment_voucher.cancel(message=message)
+        return Response({})
+
+    @action(detail=True, url_path="journal-entries")
+    def journal_entries(self, request, pk):
+        inventory_adjustment_voucher = get_object_or_404(
+            InventoryAdjustmentVoucher, pk=pk
+        )
+        journals = inventory_adjustment_voucher.journal_entries()
+        return Response(SalesJournalEntrySerializer(journals, many=True).data)
+
+
+class InventoryConversionVoucherViewSet(DeleteRows, CRULViewSet):
+    queryset = InventoryConversionVoucher.objects.all()
+    serializer_class = InventoryConversionVoucherCreateSerializer
+    model = InventoryConversionVoucher
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+    search_fields = [
+        "voucher_no",
+        "date",
+        "finished_product__finished_product__name",
+        "rows__item__name",
+    ]
+    filterset_class = InventoryConversionVoucherFilterSet
+
+    def get_queryset(self, **kwargs):
+        qs = super(InventoryConversionVoucherViewSet, self).get_queryset()
+        return qs.order_by("-date", "-voucher_no")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return InventoryConversionVoucherListSerializer
+        elif self.action == "retrieve":
+            return InventoryConversionVoucherDetailSerializer
+        return InventoryConversionVoucherCreateSerializer
+
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        inventory_conversion_voucher = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise ValidationError(
+                {"message": "message field is required for cancelling voucher!"}
+            )
+        inventory_conversion_voucher.cancel(message=message)
+        return Response({})
+
+    collections = [
+        (
+            "items",
+            Item.objects.only("id", "name").filter(track_inventory=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
+            "units",
+            Unit,
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
+            "finished_products",
+            BillOfMaterial.objects.prefetch_related("finished_product").only(
+                "id", "finished_product"
+            ),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    ]

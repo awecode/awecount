@@ -18,7 +18,6 @@ from apps.ledger.models import (
 )
 from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.product.models import (
-    BillOfMaterial,
     Item,
     Unit,
     find_obsolete_transactions,
@@ -1271,115 +1270,6 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
-class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
-    voucher_no = models.PositiveIntegerField(blank=True, null=True)
-    date = models.DateField()
-    issue_datetime = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=225, choices=ADJUSTMENT_STATUS_CHOICES)
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="inventory_adjustment_voucher"
-    )
-    purpose = models.CharField(max_length=225, choices=PURPOSE_CHOICES)
-    remarks = models.TextField()
-    total_amount = models.FloatField(null=True, blank=True)
-
-    def apply_inventory_transactions(self):
-        for row in self.rows.filter(
-            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
-        ):
-            quantity = int(row.quantity)
-            if self.purpose == "Stock In":
-                transaction_type = "dr"
-            else:
-                transaction_type = "cr"
-            set_inventory_transactions(
-                row,
-                self.date,
-                [transaction_type, row.item.account, quantity, row.rate],
-            )
-
-    def apply_transactions(self, voucher_meta=None):
-        if self.status == "Cancelled":
-            self.cancel_transactions()
-            return
-
-        # filter bypasses rows cached by prefetching
-        if self.purpose in ["Damaged", "Expired"]:
-            for row in self.rows.filter().select_related(
-                "item__purchase_account",
-            ):
-                row_amount = row.quantity * row.rate
-                entries = [["cr", row.item.purchase_account, row_amount]]
-                if self.purpose == "Damaged":
-                    # TODO: Do not fetch account with name
-                    entries.append(
-                        ["dr", get_account(self.company, "Damage Expense"), row_amount]
-                    )
-                elif self.purpose == "Expired":
-                    entries.append(
-                        ["dr", get_account(self.company, "Expiry Expense"), row_amount]
-                    )
-                set_ledger_transactions(row, self.date, *entries, clear=True)
-
-        self.apply_inventory_transactions()
-
-
-class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(
-        InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
-    )
-    item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, related_name="inventory_adjustment_rows"
-    )
-    rate = models.FloatField()
-    quantity = models.PositiveSmallIntegerField(default=1)
-    amount = models.FloatField(blank=True, null=True)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-
-
-class InventoryConversionVoucher(TransactionModel, InvoiceModel):
-    voucher_no = models.PositiveIntegerField(blank=True, null=True)
-    date = models.DateField()
-    finished_product = models.ForeignKey(
-        BillOfMaterial,
-        on_delete=models.SET_NULL,
-        related_name="inventory_conversion_voucher",
-        null=True,
-        blank=True,
-    )
-    issue_datetime = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=225, choices=CONVERSION_CHOICES)
-    company = models.ForeignKey(
-        Company, on_delete=models.CASCADE, related_name="inventory_conversion_voucher"
-    )
-    remarks = models.TextField()
-
-    def apply_inventory_transactions(self):
-        for row in self.rows.filter(Q(item__track_inventory=True)):
-            quantity = int(row.quantity)
-            set_inventory_transactions(
-                row,
-                self.date,
-                [row.transaction_type.lower(), row.item.account, quantity, row.rate],
-            )
-
-
-class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
-    voucher = models.ForeignKey(
-        InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
-    )
-    item = models.ForeignKey(
-        Item, on_delete=models.CASCADE, related_name="inventory_conversion_voucher_rows"
-    )
-    rate = models.FloatField(blank=True, null=True)
-    quantity = models.PositiveSmallIntegerField(default=1)
-    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    transaction_type = models.CharField(
-        max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
-    )
-
-
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
@@ -1390,7 +1280,3 @@ auditlog.register(CreditNote)
 auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
-auditlog.register(InventoryAdjustmentVoucher)
-auditlog.register(InventoryAdjustmentVoucherRow)
-auditlog.register(InventoryConversionVoucher)
-auditlog.register(InventoryConversionVoucherRow)
