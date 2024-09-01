@@ -504,6 +504,8 @@ class InventoryAdjustmentVoucherRowSerializer(serializers.ModelSerializer):
     unit_id = serializers.IntegerField(required=True)
     item_name = serializers.ReadOnlyField(source="item.name")
     unit_name = serializers.ReadOnlyField(source="unit.name")
+    selected_item_obj = GenericSerializer(read_only=True, source="item")
+    selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
     class Meta:
         model = InventoryAdjustmentVoucherRow

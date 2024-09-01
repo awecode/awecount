@@ -1103,6 +1103,8 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
 
     def get_queryset(self, **kwargs):
         qs = super(InventoryAdjustmentVoucherViewSet, self).get_queryset()
+        if self.action == "retrieve":
+            qs = qs.prefetch_related("item", "unit")
         return qs.order_by("-date", "-voucher_no")
 
     def get_serializer_class(self):
