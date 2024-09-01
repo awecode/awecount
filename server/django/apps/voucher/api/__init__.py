@@ -16,7 +16,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.aggregator.views import qs_to_xls
@@ -52,7 +51,12 @@ from apps.voucher.filters import (
     SalesRowFilterSet,
     SalesVoucherFilterSet,
 )
-from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
+from apps.voucher.models import (
+    Challan,
+    ChallanRow,
+    PaymentReceipt,
+    SalesAgent,
+)
 from apps.voucher.resources import (
     CreditNoteResource,
     CreditNoteRowResource,
@@ -85,7 +89,7 @@ from apps.voucher.serializers.voucher_settings import (
 )
 
 # from awecount.libs.db import DistinctSum
-from awecount.libs import get_next_voucher_no, zero_for_none
+from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import (
     CollectionViewSet,
     CompanyViewSetMixin,

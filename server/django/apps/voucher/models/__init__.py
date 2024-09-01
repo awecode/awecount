@@ -62,6 +62,19 @@ MODES = (
     ("Bank Deposit", "Bank Deposit"),
 )
 
+ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+PURPOSE_CHOICES = (
+    ("Stock In", "Stock In"),
+    ("Stock Out", "Stock Out"),
+    ("Damaged", "Damaged"),
+    ("Expired", "Expired"),
+)
+CONVERSION_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+TRANSACTION_TYPE_CHOICES = [
+    ("Cr", "Cr"),
+    ("Dr", "Dr"),
+]
+
 
 class Challan(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)

@@ -72,6 +72,11 @@ router.register(
     item.ItemOpeningBalanceViewSet,
     basename="item-opening-balance",
 )
+router.register(
+    "bill-of-material",
+    item.BillOfMaterialViewSet,
+    basename="bill-of-material",
+)
 
 # voucher
 router.register("sales-voucher", voucher.SalesVoucherViewSet)
@@ -104,6 +109,16 @@ router.register("invoice-design", voucher.InvoiceDesignViewSet)
 router.register("sales-book", voucher.SalesBookViewSet, basename="sales-book")
 router.register("sales-row", voucher.SalesRowViewSet, basename="sales-row")
 router.register("sales-agent", voucher.SalesAgentViewSet, basename="sales-agent")
+router.register(
+    "inventory-adjustment",
+    item.InventoryAdjustmentVoucherViewSet,
+    basename="inventory-adjustment",
+)
+router.register(
+    "inventory-conversion",
+    item.InventoryConversionVoucherViewSet,
+    basename="inventory-conversion",
+)
 router.register(
     "sales-settings", voucher.SalesSettingsViewSet, basename="sales-settings"
 )
