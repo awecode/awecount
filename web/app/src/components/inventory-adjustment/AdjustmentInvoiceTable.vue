@@ -12,9 +12,11 @@
       </div>
       <div v-for="(row, index) in modalValue" :key="row" class="row mt-1 q-col-gutter-md">
         <div :class="minimal ? 'col-7' : 'col-3'">
-          <n-auto-complete label="Item" v-model="row.item_id" :options="itemOptions"
-            @update:model-value="onItemChange(index)"
-            :error="rowEmpty ? 'This field is required.' : errors && errors[index]?.item_id ? errors[index].item_id[0] : null" />
+          <n-auto-complete-v2 v-model="row.item_id" :options="itemOptions"
+            :staticOption="row.selected_item_obj" label="Item"
+            :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''"
+            :endpoint="`v1/inventory-adjustment/create-defaults/items`" :emitObj="true"
+            @updateObj="onItemChange" />
         </div>
         <div class="col-2 text-center">
           <q-input v-model.number="row.quantity" label="Quantity" type="number" data-testid="quantity-input"
@@ -29,9 +31,10 @@
           </q-input>
         </div>
         <div class="col-2">
-          <q-select v-model="row.unit_id" :options="unitOptions" label="Unit" option-value="id" option-label="name"
-            emit-value map-options data-testid="unit-select" :error="errors && errors[index]?.unit_id ? true : false"
-            :error-message="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''" />
+          <n-auto-complete-v2 v-model="row.unit_id" :options="unitOptions"
+            :staticOption="row.selected_unit_obj" label="Unit"
+            :error="errors && errors[index]?.unit_id ? errors[index].unit_id[0] : ''"
+            :endpoint="`v1/inventory-adjustment/create-defaults/units`" />
         </div>
         <div class="col-2 row items-center justify-center" v-if="!minimal">{{ row.rate * row.quantity }}</div>
         <div class="col-1 row no-wrap q-gutter-x-sm justify-center items-center">
@@ -81,15 +84,21 @@ const props = defineProps({
     }]
   },
   itemOptions: {
-    type: Array,
+    type: Object,
     default: () => {
-      return []
+      return {
+        pagination: {},
+        results: [],
+      }
     },
   },
   unitOptions: {
     type: Object,
     default: () => {
-      return []
+      return {
+        pagination: {},
+        results: [],
+      }
     },
   },
   errors: {
@@ -155,8 +164,8 @@ const rowEmpty = computed(() => {
   if (props.errors && typeof props.errors === 'string') val = true
   return val
 })
-const onItemChange = (index) => {
-  if (!modalValue.value || !modalValue.value.length || !props.finishedProduct) return
+const onItemChange = (itemObj) => {
+  if (!itemObj || !props.finishedProduct) return
   const itemIds = modalValue.value.map(item => item.item_id)
   if (itemIds.includes(props.finishedProduct)) {
     $q.notify({
