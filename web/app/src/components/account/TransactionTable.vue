@@ -75,8 +75,8 @@
                 fields.aggregate.total.dr +
                 fields.aggregate.opening.dr -
                 (fields.aggregate.total.cr + fields.aggregate.opening.cr),
-                2
-              )
+            2
+            )
             }}
           </td>
         </tr>
@@ -105,8 +105,8 @@
               fields.page_cumulative.current.dr +
               fields.page_cumulative.next.dr +
               fields.aggregate.opening.dr,
-              2
-            )
+          2
+          )
           }}
         </td>
         <td class="text-left">
@@ -116,7 +116,7 @@
               fields.page_cumulative.next.cr +
               fields.aggregate.opening.cr,
               2
-            )
+          )
           }}
         </td>
         <td class="text-left">
@@ -129,7 +129,7 @@
                 fields.page_cumulative.next.cr +
                 fields.aggregate.opening.cr),
               2
-            )
+          )
           }}
         </td>
       </tr>
@@ -143,7 +143,7 @@
               fields.page_cumulative.current.dr +
               fields.page_cumulative.next.dr,
               2
-            )
+          )
           }}
         </td>
         <td class="text-left">
@@ -152,7 +152,7 @@
               fields.page_cumulative.current.cr +
               fields.page_cumulative.next.cr,
               2
-            )
+          )
           }}
         </td>
         <td class="text-left">
@@ -163,7 +163,7 @@
               (fields.page_cumulative.current.cr +
                 fields.page_cumulative.next.cr),
               2
-            )
+          )
           }}
         </td>
       </tr>
@@ -196,12 +196,12 @@
         <td>
           <span v-if="transaction.dr_amount">{{
             $nf(transaction.dr_amount, 2)
-            }}</span>
+          }}</span>
         </td>
         <td>
           <span v-if="transaction.cr_amount">{{
             $nf(transaction.cr_amount, 2)
-            }}</span>
+          }}</span>
         </td>
         <td v-if="runningBalance && Object.keys(runningBalance).length">
           {{ $nf((runningBalance[index].dr - runningBalance[index].cr), 2) }}
@@ -227,8 +227,8 @@
             $nf(
               (fields.aggregate.total.dr_amount__sum || 0) -
               (fields.aggregate.total.cr_amount__sum || 0),
-              2
-            )
+          2
+          )
           }}
         </td>
       </tr>
@@ -396,6 +396,7 @@ export default {
       if (source_type === 'Bank Cash Deposit')
         return `/bank/cash/cash-deposit/${row.source_id}/edit/`
       if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+      if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
       console.error(source_type + ' not handled!')
     }
     const getPermissionsWithSourceType = {
@@ -413,6 +414,7 @@ export default {
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
       'Item': 'ItemView',
+      'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView'
     }
     const runningBalance = computed(() => {
       const runningBalanceData: Record<

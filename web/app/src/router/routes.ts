@@ -64,6 +64,119 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Items', 'Stock Opening', 'Update'],
         },
       },
+      {
+        path: 'inventory-adjustment/list',
+        name: 'Inventory Adjustment',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment'],
+        },
+      },
+      {
+        path: 'inventory-adjustment/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Create'],
+        },
+      },
+      {
+        path: 'inventory-adjustment/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Update'],
+        },
+      },
+      {
+        path: 'inventory-adjustment/:id/view',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-adjustment/InventoryAdjustmentView.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Adjustment', 'Details'],
+        },
+      },
+      {
+        path: 'bill-of-material/list',
+        name: 'Bill of Material',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bills of Material'],
+        },
+      },
+      {
+        path: 'bill-of-material/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bill of Material', 'Create'],
+        },
+      },
+      {
+        path: 'bill-of-material/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Bill of Material', 'Update'],
+        },
+      },
+      {
+        path: 'inventory-conversion/list',
+        name: 'Inventory Conversion',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion'],
+        },
+      },
+      {
+        path: 'inventory-conversion/add',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Create'],
+        },
+      },
+      {
+        path: 'inventory-conversion/:id',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Update'],
+        },
+      },
+      {
+        path: 'inventory-conversion/:id/view',
+        component: () =>
+          import(
+            'src/pages/inventory/product/inventory-conversion/InventoryConversionView.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Items', 'Inventory Conversion', 'Detail'],
+        },
+      },
     ],
   },
   {

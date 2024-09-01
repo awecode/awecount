@@ -23,7 +23,7 @@
               <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
             <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
               @click="store.isCalendarInAD = !store.isCalendarInAD">{{
-                activeDateFormat }}
+          activeDateFormat }}
               <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
             <a target="_blank" href="https://docs.awecount.com/" style="color: inherit;">
@@ -235,6 +235,24 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'edit_note',
         link: '/items/opening/',
         hide: !checkPermissions('AccountOpeningBalanceView')
+      },
+      {
+        title: 'Inventory Adjustment',
+        icon: 'mdi-swap-horizontal',
+        link: '/items/inventory-adjustment/list',
+        hide: !checkPermissions('InventoryAdjustmentVoucherView')
+      },
+      {
+        title: 'Bill of Material',
+        icon: 'mdi-receipt',
+        link: '/items/bill-of-material/list',
+        hide: !checkPermissions('BillOfMaterialView')
+      },
+      {
+        title: 'Inventory Conversion',
+        icon: 'mdi-shuffle-variant',
+        link: '/items/inventory-conversion/list',
+        hide: !checkPermissions('InventoryConversionVoucherView')
       },
     ],
   },
