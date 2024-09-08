@@ -2,6 +2,7 @@ from datetime import datetime
 from inspect import isclass
 
 from django.http import Http404
+from django.db.models import Q
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
@@ -100,13 +101,23 @@ class CollectionViewSet(object):
         if hasattr(model, "company_id"):
             qs = qs.filter(company_id=request.company_id)
 
-        serach_keyword = request.query_params.get("search")
-        if serach_keyword:
-            qs = qs.filter(name__icontains=serach_keyword)
-
         paginate = True
         if len(collection) > 3:
             paginate = collection[3]
+        
+        search_fields = []
+        if len(collection) > 4:
+            search_fields = collection[4]
+
+        search_keyword = request.query_params.get("search")
+        if search_keyword and search_fields:
+            query = Q()
+            for field in search_fields:
+                query |= Q(**{f"{field}__icontains": search_keyword})
+
+            # Apply the filter to the queryset
+            qs = qs.filter(query)
+            # qs = qs.filter(name__icontains=search_keyword)
 
         serializer_class = GenericSerializer
         if len(collection) > 2:

@@ -99,14 +99,18 @@ class DebitNoteCreateSerializer(
                 row_data = next(
                     (item for item in rows_data if item["id"] == row.id), None
                 )
+                if not row_data:
+                    continue
                 debit_note_row = instance.rows.get(item_id=row_data["item_id"])
-                if row.remaining_quantity < row_data["quantity"] and not self.context[
-                    "request"
-                ].query_params.get("fifo_inconsistency"):
-                    raise UnprocessableException(
-                        detail="This action may cause inconsistency in fifo.",
-                        code="fifo_inconsistency",
-                    )
+                # TODO: with Transaction-FIFO, how to handle this?
+                # if row.remaining_quantity < row_data["quantity"] and not self.context[
+                #     "request"
+                # ].query_params.get("fifo_inconsistency"):
+                #     raise UnprocessableException(
+                #         detail="This action may cause inconsistency in fifo.",
+                #         code="fifo_inconsistency",
+                #     )
+                # FIXME: The transcation has already been applied. Because of which the remaning quantity has already been deducted.
                 if row_data["quantity"] > row.item.remaining_stock and not (
                     self.context["request"].query_params.get("negative_stock")
                     or self.context["request"].query_params.get("fifo_inconsistency")
@@ -115,41 +119,40 @@ class DebitNoteCreateSerializer(
                         detail="This can cause inconsistency in fifo.",
                         code="negative_stock",
                     )
-                if row.remaining_quantity < row_data["quantity"]:
-                    diff = row_data["quantity"] - row.remaining_quantity
-                    debit_note_row.purchase_row_data[
-                        str(row.id)
-                    ] = row.remaining_quantity
-                    row.remaining_quantity = 0
-                    row.save()
-                    available_rows = row.item.purchase_rows.filter(
-                        remaining_quantity__gt=0
-                    ).order_by("-voucher__date", "-id")
-                    for row in available_rows:
-                        if row.remaining_quantity > diff:
-                            debit_note_row.purchase_row_data[str(row.id)] = diff
-                            row.remaining_quantity -= diff
-                            row.save()
-                            break
-                        else:
-                            debit_note_row.purchase_row_data[
-                                str(row.id)
-                            ] = row.remaining_quantity
-                            diff -= row.remaining_quantity
-                            row.remaining_quantity = 0
-                            row.save()
-                            continue
-                else:
-                    debit_note_row.purchase_row_data[str(row.id)] = row_data["quantity"]
-                    row.remaining_quantity -= row_data["quantity"]
-                    row.save()
+                    # TODO: with Transaction-FIFO, how to handle this?
+
+                # if row.remaining_quantity < row_data["quantity"]:
+                #     diff = row_data["quantity"] - row.remaining_quantity
+                #     debit_note_row.purchase_row_data[
+                #         str(row.id)
+                #     ] = row.remaining_quantity
+                #     row.remaining_quantity = 0
+                #     row.save()
+                #     available_rows = row.item.purchase_rows.filter(
+                #         remaining_quantity__gt=0
+                #     ).order_by("-voucher__date", "-id")
+                #     for row in available_rows:
+                #         if row.remaining_quantity > diff:
+                #             debit_note_row.purchase_row_data[str(row.id)] = diff
+                #             row.remaining_quantity -= diff
+                #             row.save()
+                #             break
+                #         else:
+                #             debit_note_row.purchase_row_data[
+                #                 str(row.id)
+                #             ] = row.remaining_quantity
+                #             diff -= row.remaining_quantity
+                #             row.remaining_quantity = 0
+                #             row.save()
+                #             continue
+                # else:
+                # row.remaining_quantity -= row_data["quantity"]
+                # row.save()
+                debit_note_row.purchase_row_data[str(row.id)] = row_data["quantity"]
                 debit_note_row.save()
 
     def create(self, validated_data):
-        from copy import deepcopy
-
         rows_data = validated_data.pop("rows")
-        rows_data_copy = deepcopy(rows_data)
         invoices = validated_data.pop("invoices")
         request = self.context["request"]
         self.assign_fiscal_year(validated_data)
@@ -159,15 +162,15 @@ class DebitNoteCreateSerializer(
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = DebitNote.objects.create(**validated_data)
+
         for index, row in enumerate(rows_data):
-            row.pop("id")
+            row["purchase_row_data"] = {"id": row.pop("id")}
             row = self.assign_discount_obj(row)
             DebitNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
         instance.apply_transactions()
-        if self.context["request"].company.inventory_setting.enable_fifo:
-            self.cancel_purchase(instance, rows_data_copy)
+
         return instance
 
     def update(self, instance, validated_data):

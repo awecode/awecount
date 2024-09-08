@@ -20,6 +20,7 @@ MODULES = [
     *gdp("InventoryAccount"),
     *gdp("InventoryCategory"),
     *gdp("Book"),
+    *gdp("BillOfMaterial"),
     # Ledger
     *gdp("Category"),
     *gdp("Party"),
@@ -47,6 +48,9 @@ MODULES = [
     *gdp("InvoiceDesign"),
     *gdp("PurchaseOrder"),
     "PurchaseOrderCancel",
+    *gdp("InventoryConversionVoucher"),
+    *gdp("InventoryAdjustmentVoucher"),
+
     # Bank
     *gdp("BankAccount"),
     *gdp("BankBranch"),
@@ -70,6 +74,8 @@ MODULES = [
     *gdp("TransactionCharge"),
     *gdp("AccountOpeningBalance"),
     *gdp("Transaction"),
+    
+    
 ]
 
 MODULES.sort()

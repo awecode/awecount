@@ -1,18 +1,31 @@
 from collections import OrderedDict
 
+from auditlog.registry import auditlog
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models, transaction
-from django.db.models import F, JSONField, Sum
+from django.db.models import F, Func, JSONField, Q, Sum, Window
+from django.db.models.functions import Cast, Coalesce
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
+from django.utils import timezone
 
-from apps.ledger.models import Account, Transaction as LedgerTransaction
+from apps.ledger.models import (
+    Account,
+    JournalEntry,
+    Transaction,
+    TransactionModel,
+    get_account,
+)
 from apps.ledger.models import Category as AccountCategory
+from apps.ledger.models import Transaction as LedgerTransaction
+from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.tax.models import TaxScheme
 from apps.users.models import Company
+from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import none_for_zero, zero_for_none
-from django.core.validators import MinValueValidator
 
 
 class Unit(models.Model):
@@ -77,7 +90,11 @@ class Category(models.Model):
     default_unit = models.ForeignKey(
         Unit, blank=True, null=True, on_delete=models.SET_NULL
     )
-    hs_code = models.PositiveIntegerField(blank=True, null=True, validators=[MinValueValidator(1000)],)
+    hs_code = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1000)],
+    )
     default_tax_scheme = models.ForeignKey(
         TaxScheme,
         blank=True,
@@ -493,9 +510,7 @@ class Category(models.Model):
             elif self.items_purchase_account_type == "category":
                 if not self.dedicated_purchase_account:
                     purchase_account_name = self.name + " (Purchase)"
-                    ledger = Account(
-                        name=purchase_account_name, company=self.company
-                    )
+                    ledger = Account(name=purchase_account_name, company=self.company)
                     ledger.add_category("Purchase")
                     ledger.suggest_code(self, prefix="C")
                     ledger.save()
@@ -522,7 +537,12 @@ class Category(models.Model):
                 else:
                     discount_received_account = self.dedicated_discount_received_account
         # To prevent curcular import
-        from apps.voucher.models import SalesVoucherRow, PurchaseVoucherRow, CreditNoteRow, DebitNoteRow
+        from apps.voucher.models import (
+            CreditNoteRow,
+            DebitNoteRow,
+            PurchaseVoucherRow,
+            SalesVoucherRow,
+        )
 
         update_fields = {}
         if sales_account is not None:
@@ -530,51 +550,94 @@ class Category(models.Model):
             update_fields["sales_account_type"] = self.items_sales_account_type
         if discount_allowed_account is not None:
             update_fields["discount_allowed_account"] = discount_allowed_account
-            update_fields["discount_allowed_account_type"] = self.items_discount_allowed_account_type
+            update_fields["discount_allowed_account_type"] = (
+                self.items_discount_allowed_account_type
+            )
         if purchase_account is not None:
             update_fields["purchase_account"] = purchase_account
             update_fields["purchase_account_type"] = self.items_purchase_account_type
         if discount_received_account is not None:
             update_fields["discount_received_account"] = discount_received_account
-            update_fields["discount_received_account_type"] = self.items_discount_received_account_type
+            update_fields["discount_received_account_type"] = (
+                self.items_discount_received_account_type
+            )
         if update_fields:
-            items_list = Item.objects.filter(category=self, company=self.company).select_related(
-                "sales_account", "purchase_account", "discount_allowed_account", "discount_received_account"
+            items_list = Item.objects.filter(
+                category=self, company=self.company
+            ).select_related(
+                "sales_account",
+                "purchase_account",
+                "discount_allowed_account",
+                "discount_received_account",
             )
             for item in items_list:
-                sales_voucher_row_ids = SalesVoucherRow.objects.filter(item=item).values_list("id", flat=True)
-                credit_note_row_ids = CreditNoteRow.objects.filter(item=item).values_list("id", flat=True)
-                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(item=item).values_list("id", flat=True)
-                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list("id", flat=True)
-                if (sales_account):
+                sales_voucher_row_ids = SalesVoucherRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                credit_note_row_ids = CreditNoteRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list(
+                    "id", flat=True
+                )
+                if sales_account:
                     LedgerTransaction.objects.filter(
-                        journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
-                        journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
-                        account= item.sales_account
+                        journal_entry__object_id__in=[
+                            *sales_voucher_row_ids,
+                            *credit_note_row_ids,
+                        ],
+                        journal_entry__content_type__model__in=[
+                            "salesvoucherrow",
+                            "creditnoterow",
+                        ],
+                        account=item.sales_account,
                     ).update(account=sales_account)
 
-                if (discount_allowed_account):
+                if discount_allowed_account:
                     LedgerTransaction.objects.filter(
-                        journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
-                        journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
-                        account= item.discount_allowed_account
+                        journal_entry__object_id__in=[
+                            *sales_voucher_row_ids,
+                            *credit_note_row_ids,
+                        ],
+                        journal_entry__content_type__model__in=[
+                            "salesvoucherrow",
+                            "creditnoterow",
+                        ],
+                        account=item.discount_allowed_account,
                     ).update(account=discount_allowed_account)
 
-                if (purchase_account):
+                if purchase_account:
                     LedgerTransaction.objects.filter(
-                        journal_entry__object_id__in= [*purchase_voucher_row_ids, *debit_note_row_ids],
-                        journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
-                        account= item.purchase_account
+                        journal_entry__object_id__in=[
+                            *purchase_voucher_row_ids,
+                            *debit_note_row_ids,
+                        ],
+                        journal_entry__content_type__model__in=[
+                            "purchasevoucherrow",
+                            "debitnoterow",
+                        ],
+                        account=item.purchase_account,
                     ).update(account=purchase_account)
 
-                if (discount_received_account):
+                if discount_received_account:
                     LedgerTransaction.objects.filter(
-                        journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
-                        journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
-                        account= item.discount_received_account
+                        journal_entry__object_id__in=[
+                            *purchase_voucher_row_ids,
+                            *debit_note_row_ids,
+                        ],
+                        journal_entry__content_type__model__in=[
+                            "purchasevoucherrow",
+                            "debitnoterow",
+                        ],
+                        account=item.discount_received_account,
                     ).update(account=discount_received_account)
 
-            Item.objects.filter(category=self, company=self.company).update(**update_fields)
+            Item.objects.filter(category=self, company=self.company).update(
+                **update_fields
+            )
 
         if "dedicated" in {
             self.items_sales_account_type,
@@ -582,8 +645,9 @@ class Category(models.Model):
             self.items_purchase_account_type,
             self.items_discount_received_account_type,
         }:
-
-            items_list = Item.objects.filter(category=self, company=self.company).select_related(
+            items_list = Item.objects.filter(
+                category=self, company=self.company
+            ).select_related(
                 "sales_account",
                 "discount_allowed_account",
                 "purchase_account",
@@ -594,21 +658,37 @@ class Category(models.Model):
                 "dedicated_discount_received_account",
             )
             for item in items_list:
-                sales_voucher_row_ids = SalesVoucherRow.objects.filter(item=item).values_list("id", flat=True)
-                credit_note_row_ids = CreditNoteRow.objects.filter(item=item).values_list("id", flat=True)
-                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(item=item).values_list("id", flat=True)
-                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list("id", flat=True)
+                sales_voucher_row_ids = SalesVoucherRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                credit_note_row_ids = CreditNoteRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                purchase_voucher_row_ids = PurchaseVoucherRow.objects.filter(
+                    item=item
+                ).values_list("id", flat=True)
+                debit_note_row_ids = DebitNoteRow.objects.filter(item=item).values_list(
+                    "id", flat=True
+                )
                 if self.can_be_sold:
                     if self.items_sales_account_type == "dedicated":
                         item.sales_account_type = "dedicated"
                         sales_ledger_transactions = LedgerTransaction.objects.filter(
-                            journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
-                            journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
-                            account= item.sales_account
+                            journal_entry__object_id__in=[
+                                *sales_voucher_row_ids,
+                                *credit_note_row_ids,
+                            ],
+                            journal_entry__content_type__model__in=[
+                                "salesvoucherrow",
+                                "creditnoterow",
+                            ],
+                            account=item.sales_account,
                         )
                         if not item.dedicated_sales_account:
                             sales_account_name = item.name + " (Sales)"
-                            account = Account(name=sales_account_name, company=self.company)
+                            account = Account(
+                                name=sales_account_name, company=self.company
+                            )
                             if self.sales_account_category is not None:
                                 account.category = self.sales_account_category
                             else:
@@ -619,22 +699,36 @@ class Category(models.Model):
                             item.sales_account = account
                         else:
                             item.sales_account = item.dedicated_sales_account
-                        sales_ledger_transactions.update(account=item.dedicated_sales_account)
+                        sales_ledger_transactions.update(
+                            account=item.dedicated_sales_account
+                        )
 
                     if self.items_discount_allowed_account_type == "dedicated":
                         item.discount_allowed_account_type = "dedicated"
-                        discount_allowed_transactions = LedgerTransaction.objects.filter(
-                            journal_entry__object_id__in=[*sales_voucher_row_ids, *credit_note_row_ids],
-                            journal_entry__content_type__model__in=["salesvoucherrow", "creditnoterow"],
-                            account= item.discount_allowed_account
+                        discount_allowed_transactions = (
+                            LedgerTransaction.objects.filter(
+                                journal_entry__object_id__in=[
+                                    *sales_voucher_row_ids,
+                                    *credit_note_row_ids,
+                                ],
+                                journal_entry__content_type__model__in=[
+                                    "salesvoucherrow",
+                                    "creditnoterow",
+                                ],
+                                account=item.discount_allowed_account,
+                            )
                         )
                         if not item.dedicated_discount_allowed_account:
-                            discount_allowed_account_name = "Discount Allowed - " + item.name
+                            discount_allowed_account_name = (
+                                "Discount Allowed - " + item.name
+                            )
                             account = Account(
                                 name=discount_allowed_account_name, company=self.company
                             )
                             if self.discount_allowed_account_category is not None:
-                                account.category = self.discount_allowed_account_category
+                                account.category = (
+                                    self.discount_allowed_account_category
+                                )
                             else:
                                 account.add_category("Discount expenses")
                             account.suggest_code(item)
@@ -642,19 +736,31 @@ class Category(models.Model):
                             item.dedicated_discount_allowed_account = account
                             item.discount_allowed_account = account
                         else:
-                            item.discount_allowed_account = item.dedicated_discount_allowed_account
-                        discount_allowed_transactions.update(account=item.dedicated_discount_allowed_account)
+                            item.discount_allowed_account = (
+                                item.dedicated_discount_allowed_account
+                            )
+                        discount_allowed_transactions.update(
+                            account=item.dedicated_discount_allowed_account
+                        )
 
                     if self.items_purchase_account_type == "dedicated":
                         item.purchase_account_type = "dedicated"
                         purchase_ledger_transactions = LedgerTransaction.objects.filter(
-                            journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
-                            journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
-                            account= item.purchase_account
+                            journal_entry__object_id__in=[
+                                *purchase_voucher_row_ids,
+                                *debit_note_row_ids,
+                            ],
+                            journal_entry__content_type__model__in=[
+                                "purchasevoucherrow",
+                                "debitnoterow",
+                            ],
+                            account=item.purchase_account,
                         )
                         if not item.dedicated_purchase_account:
                             purchase_account_name = item.name + " (Purchase)"
-                            account = Account(name=purchase_account_name, company=self.company)
+                            account = Account(
+                                name=purchase_account_name, company=self.company
+                            )
                             if self.purchase_account_category is not None:
                                 account.category = self.purchase_account_category
                             else:
@@ -665,22 +771,37 @@ class Category(models.Model):
                             item.purchase_account = account
                         else:
                             item.purchase_account = item.dedicated_purchase_account
-                        purchase_ledger_transactions.update(account=item.dedicated_purchase_account)
+                        purchase_ledger_transactions.update(
+                            account=item.dedicated_purchase_account
+                        )
 
                     if self.items_discount_received_account_type == "dedicated":
                         item.discount_received_account_type = "dedicated"
-                        discount_received_transactions = LedgerTransaction.objects.filter(
-                            journal_entry__object_id__in=[*purchase_voucher_row_ids, *debit_note_row_ids],
-                            journal_entry__content_type__model__in=["purchasevoucherrow", "debitnoterow"],
-                            account= item.discount_received_account
+                        discount_received_transactions = (
+                            LedgerTransaction.objects.filter(
+                                journal_entry__object_id__in=[
+                                    *purchase_voucher_row_ids,
+                                    *debit_note_row_ids,
+                                ],
+                                journal_entry__content_type__model__in=[
+                                    "purchasevoucherrow",
+                                    "debitnoterow",
+                                ],
+                                account=item.discount_received_account,
+                            )
                         )
                         if not item.dedicated_discount_received_account:
-                            discount_received_account_name = "Discount Received - " + item.name
+                            discount_received_account_name = (
+                                "Discount Received - " + item.name
+                            )
                             account = Account(
-                                name=discount_received_account_name, company=self.company
+                                name=discount_received_account_name,
+                                company=self.company,
                             )
                             if self.discount_received_account_category is not None:
-                                account.category = self.discount_received_account_category
+                                account.category = (
+                                    self.discount_received_account_category
+                                )
                             else:
                                 account.add_category("Discount expenses")
                             account.suggest_code(item)
@@ -688,23 +809,30 @@ class Category(models.Model):
                             item.dedicated_discount_received_account = account
                             item.discount_received_account = account
                         else:
-                            item.discount_received_account = item.dedicated_discount_received_account
-                        discount_received_transactions.update(account=item.dedicated_discount_received_account)
+                            item.discount_received_account = (
+                                item.dedicated_discount_received_account
+                            )
+                        discount_received_transactions.update(
+                            account=item.dedicated_discount_received_account
+                        )
             # TODO: fileds can be filtered for optimization
-            Item.objects.bulk_update(items_list, [
-                "sales_account",
-                "sales_account_type",
-                "dedicated_sales_account",
-                "discount_allowed_account",
-                "discount_allowed_account_type",
-                "dedicated_discount_allowed_account",
-                "purchase_account",
-                "purchase_account_type",
-                "dedicated_purchase_account",
-                "discount_received_account",
-                "discount_received_account_type",
-                "dedicated_discount_received_account"
-            ])
+            Item.objects.bulk_update(
+                items_list,
+                [
+                    "sales_account",
+                    "sales_account_type",
+                    "dedicated_sales_account",
+                    "discount_allowed_account",
+                    "discount_allowed_account_type",
+                    "dedicated_discount_allowed_account",
+                    "purchase_account",
+                    "purchase_account_type",
+                    "dedicated_purchase_account",
+                    "discount_received_account",
+                    "discount_received_account_type",
+                    "dedicated_discount_received_account",
+                ],
+            )
 
     def __str__(self):
         return self.name
@@ -721,7 +849,6 @@ class InventoryAccount(models.Model):
     current_balance = models.FloatField(default=0)
     opening_balance = models.FloatField(default=0)
     opening_balance_rate = models.FloatField(blank=True, null=True)
-    opening_quantity = models.FloatField(default=0)
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="inventory"
     )
@@ -811,6 +938,12 @@ class Transaction(models.Model):
     journal_entry = models.ForeignKey(
         JournalEntry, related_name="transactions", on_delete=models.CASCADE
     )
+    rate = models.FloatField(null=True, blank=True)
+    remaining_quantity = models.PositiveIntegerField(null=True, blank=True)
+    consumption_data = models.JSONField(null=True, blank=True)
+    fifo_inconsistency_quantity = models.FloatField(
+        null=True, blank=True
+    )  # This is the quantity that is not accounted for in the fifo, or say which is not consumed
 
     def __str__(self):
         return (
@@ -900,6 +1033,33 @@ def find_obsolete_transactions(model, date, *args):
         obsolete_transactions.delete()
 
 
+def fifo_avg(consumption_data, required_quantity):
+    # sort consumption data by key
+    consumption_data = OrderedDict(
+        sorted(consumption_data.items(), key=lambda x: int(x[0]))
+    )
+    cumulative_quantity = 0
+    cumulative_rate = 0
+
+    # in fifo, we can't consume more than the total quantity
+    # if the required quantity is more than the total quantity,
+    # we'll calculate the average rate for the total quantity
+    required_quantity = min(
+        required_quantity, sum([x[0] for x in consumption_data.values()])
+    )
+
+    for quantity, rate in consumption_data.values():
+        if cumulative_quantity + quantity <= required_quantity:
+            cumulative_quantity += quantity
+            cumulative_rate += quantity * rate
+        else:
+            remaining_quantity = required_quantity - cumulative_quantity
+            cumulative_rate += remaining_quantity * rate
+            break
+
+    return cumulative_rate / required_quantity
+
+
 def set_inventory_transactions(model, date, *args, clear=True):
     args = [arg for arg in args if arg is not None]
 
@@ -941,18 +1101,227 @@ def set_inventory_transactions(model, date, *args, clear=True):
             transaction = matches[0]
             diff = zero_for_none(transaction.cr_amount)
             diff -= zero_for_none(transaction.dr_amount)
-        if arg[0] == "dr":
-            transaction.dr_amount = float(arg[2])
+        if arg[0] in ["dr", "ob"]:
             transaction.cr_amount = None
+            transaction.dr_amount = float(arg[2])
+            transaction.remaining_quantity = float(arg[2])
             diff += float(arg[2])
+
+            # check if a transaction with later date has been created
+            # if yes, then we'll recalculate the fifo for all transactions referencing transaction after this date
+            future_dr_transactions = Transaction.objects.filter(
+                account=arg[1],
+                journal_entry__date__gt=date,
+                dr_amount__gt=0,
+            ).values_list("id", flat=True)
+
+            future_dr_transactions = list(future_dr_transactions)
+
+            # if the transaction is already created, then we'll add it to the list
+            if transaction.id:
+                future_dr_transactions.append(transaction.id)
+
+            updated_txns = []
+
+            dr_txns = {
+                txn.id: txn
+                for txn in Transaction.objects.filter(id__in=future_dr_transactions)
+            }
+
+            for txn in Transaction.objects.filter(
+                consumption_data__has_any_keys=future_dr_transactions
+            ):
+                txn.fifo_inconsistency_quantity = zero_for_none(
+                    txn.fifo_inconsistency_quantity
+                )
+
+                for key, value in list(txn.consumption_data.items()):
+                    dr_txn = dr_txns[int(key)]
+                    dr_txn.remaining_quantity += value[0]
+                    updated_txns.append(dr_txn)
+                    txn.fifo_inconsistency_quantity += value[0]
+                    txn.consumption_data.pop(key)
+
+                updated_txns.append(txn)
+
+            Transaction.objects.bulk_update(
+                updated_txns,
+                [
+                    "fifo_inconsistency_quantity",
+                    "consumption_data",
+                    "remaining_quantity",
+                ],
+            )
+
+            # check if the transaction is for Credit Note. If yes, then find the corresponding sales voucher row and transaction
+            if content_type.model == "creditnoterow":
+                t = Transaction.objects.get(
+                    journal_entry__object_id=model.sales_row_data["id"],
+                    journal_entry__content_type__model="salesvoucherrow",
+                )
+                arg[3] = fifo_avg(t.consumption_data, float(arg[2]))
+
         elif arg[0] == "cr":
+            transaction.consumption_data = transaction.consumption_data or {}
             transaction.cr_amount = float(arg[2])
             transaction.dr_amount = None
             diff -= float(arg[2])
-        elif arg[0] == "ob":
-            transaction.dr_amount = float(arg[2])
-            transaction.cr_amount = None
-            diff += float(arg[2])
+
+            # check first if the transaction is for Debit Note, as it requires different handling
+            if content_type.model == "debitnoterow":
+                # find the corresponding purchase voucher row and transaction
+
+                t = Transaction.objects.get(
+                    journal_entry__object_id=model.purchase_row_data["id"],
+                    journal_entry__content_type__model="purchasevoucherrow",
+                )
+                t.remaining_quantity = t.dr_amount - float(arg[2])
+                t.save()
+
+                # here we assume that all transaction referencing this transaction has been affetcted and
+                # we'll recalulate the fifo for all of them
+                (
+                    Transaction.objects.filter(
+                        consumption_data__has_key=str(t.id)
+                    ).update(
+                        fifo_inconsistency_quantity=(
+                            Coalesce(F("fifo_inconsistency_quantity"), 0)
+                            + Cast(
+                                F(f"consumption_data__{t.id}__0"), models.FloatField()
+                            )
+                        ),
+                        consumption_data=F("consumption_data") - str(t.id),
+                    ),
+                )
+
+                transaction.consumption_data[t.id] = [
+                    float(arg[2]),
+                    t.rate,
+                ]
+
+            else:
+                if Transaction.objects.filter(
+                    account=arg[1], cr_amount__gt=0, fifo_inconsistency_quantity__gt=0
+                ).exists():
+                    transaction.fifo_inconsistency_quantity = float(arg[2])
+                else:
+                    # check if transaction is for back date; if so, then will have to declare all credit transactions as fifo_inconsistency_quantity, and put the used quantity back to the respective dr transactions
+                    future_transactions = Transaction.objects.filter(
+                        account=arg[1], journal_entry__date__gt=date, cr_amount__gt=0
+                    )
+
+                    dr_ids = (
+                        future_transactions.annotate(
+                            keys=Func(
+                                F("consumption_data"), function="jsonb_object_keys"
+                            )
+                        )
+                        .values_list("keys", flat=True)
+                        .distinct()
+                    )
+
+                    dr_ids = list(dr_ids)
+
+                    if transaction.id:
+                        dr_ids.extend(
+                            [
+                                key
+                                for key in transaction.consumption_data.keys()
+                                if key not in dr_ids
+                            ]
+                        )
+
+                    dr_txns = {
+                        txn.id: txn for txn in Transaction.objects.filter(id__in=dr_ids)
+                    }
+
+                    updated_txns = []
+
+                    for txn in future_transactions:
+                        txn.fifo_inconsistency_quantity = txn.cr_amount
+                        for key, value in txn.consumption_data.items():
+                            dr_txn = dr_txns[int(key)]
+                            dr_txn.remaining_quantity += value[0]
+                            updated_txns.append(dr_txn)
+                        txn.consumption_data = {}
+                        updated_txns.append(txn)
+
+                    Transaction.objects.bulk_update(
+                        updated_txns,
+                        [
+                            "fifo_inconsistency_quantity",
+                            "consumption_data",
+                            "remaining_quantity",
+                        ],
+                    )
+
+                    # Consumption data
+                    req_qty = float(arg[2])
+
+                    base_txn_qs = (
+                        Transaction.objects.filter(
+                            account=arg[1], cr_amount=None, remaining_quantity__gt=0
+                        )
+                        .annotate(
+                            running=Window(
+                                expression=Sum("remaining_quantity"),
+                                order_by=["journal_entry__date", "id"],
+                            )
+                        )
+                        .order_by("journal_entry__date", "id")
+                        .only("id", "remaining_quantity")
+                    )
+
+                    txn_qs = base_txn_qs.filter(running__lte=req_qty)
+                    count = len(txn_qs)
+                    if count:
+                        updated_txns = []
+
+                        # if the cumulative remaining quantity of the transactions is less than the required quantity fetch the next transaction as well
+
+                        # the last transaction i.e. the one with the highest running (< req_qty)
+                        txn_highest = txn_qs[count - 1]
+
+                        if txn_highest.running < req_qty:
+                            tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                            req_qty -= txn_highest.running
+                            if tx_next:
+                                tx_next.remaining_quantity -= req_qty
+                                updated_txns.append(tx_next)
+                                transaction.consumption_data[tx_next.id] = [
+                                    req_qty,
+                                    tx_next.rate,
+                                ]
+                            else:
+                                transaction.fifo_inconsistency_quantity = req_qty
+
+                        for txn in txn_qs:
+                            transaction.consumption_data[txn.id] = [
+                                txn.remaining_quantity,
+                                txn.rate,
+                            ]
+
+                        updated_txns += [
+                            txn
+                            for txn in txn_qs
+                            if not setattr(txn, "remaining_quantity", 0)
+                        ]
+
+                        Transaction.objects.bulk_update(
+                            updated_txns, ["remaining_quantity"]
+                        )
+
+                    else:  # possibly the required quantity is lesser than any cumulative remaining quantity
+                        tx_next = base_txn_qs.filter(running__gt=req_qty).first()
+                        if tx_next:
+                            tx_next.remaining_quantity -= req_qty
+                            tx_next.save()
+                            transaction.consumption_data[tx_next.id] = [
+                                req_qty,
+                                tx_next.rate,
+                            ]
+                        else:
+                            transaction.fifo_inconsistency_quantity = req_qty
         else:
             raise Exception('Transactions can only be either "dr" or "cr".')
         transaction.account = arg[1]
@@ -962,6 +1331,7 @@ def set_inventory_transactions(model, date, *args, clear=True):
             )
         transaction.account.current_balance += diff
         transaction.current_balance = transaction.account.current_balance
+        transaction.rate = arg[3]
         transaction.account.save()
         journal_entry.transactions.add(transaction, bulk=False)
         alter(transaction.account, date, diff)
@@ -973,6 +1343,83 @@ def set_inventory_transactions(model, date, *args, clear=True):
         )
         if obsolete_transactions.count():
             obsolete_transactions.delete()
+
+
+class TransatcionRemovalLog(models.Model):
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    row_id = models.PositiveIntegerField(primary_key=True)
+    transaction_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("Ledger", "Ledger"),
+            ("Inventory", "Inventory"),
+        ],
+    )
+    row_dump = models.JSONField(null=True, blank=True)
+
+
+@receiver(pre_delete, sender=Transaction)
+def _transaction_delete(sender, instance, **kwargs):
+    # if a tarnsaction is deleted, find the transaction which has consumed from this transaction
+    # and remove reference from it, and add the quantity to fifo_inconsistency_quantity
+    # using the fifo_inconsistency_quantity field, we can find the transactions which
+    # have been affected by this transaction and recalculate the fifo
+
+    if instance.dr_amount:
+        Transaction.objects.filter(consumption_data__has_key=str(instance.id)).update(
+            fifo_inconsistency_quantity=(
+                Coalesce(F("fifo_inconsistency_quantity"), 0)
+                + Cast(F(f"consumption_data__{instance.id}__0"), models.FloatField())
+            ),
+            consumption_data=F("consumption_data") - str(instance.id),
+        )
+
+    if instance.cr_amount:
+        later_transactions = Transaction.objects.filter(
+            account=instance.account,
+            journal_entry__date__gte=instance.journal_entry.date,
+            id__gte=instance.id,
+            cr_amount__gt=0,
+        )
+
+        dr_ids = (
+            later_transactions.annotate(
+                keys=Func(F("consumption_data"), function="jsonb_object_keys")
+            )
+            .values_list("keys", flat=True)
+            .distinct()
+        )
+
+        dr_txns = {
+            txn.id: txn for txn in Transaction.objects.filter(id__in=list(dr_ids))
+        }
+
+        updated_txns = []
+
+        for txn in later_transactions:
+            txn.fifo_inconsistency_quantity = txn.cr_amount
+            for key, value in txn.consumption_data.items():
+                dr_txn = dr_txns[int(key)]
+                dr_txn.remaining_quantity += value[0]
+                updated_txns.append(dr_txn)
+            txn.consumption_data = {}
+            if txn.id != instance.id:
+                updated_txns.append(txn)
+
+        Transaction.objects.bulk_update(
+            updated_txns,
+            [
+                "fifo_inconsistency_quantity",
+                "consumption_data",
+                "remaining_quantity",
+            ],
+        )
+
+    TransatcionRemovalLog.objects.create(
+        row_id=instance.id,
+        transaction_type="Inventory",
+        row_dump=model_to_dict(instance),
+    )
 
 
 class Item(models.Model):
@@ -1136,7 +1583,12 @@ class Item(models.Model):
         set_inventory_transactions(
             self,
             date,
-            ["dr", self.account, self.account.opening_balance],
+            [
+                "dr",
+                self.account,
+                self.account.opening_balance,
+                self.account.opening_balance_rate,
+            ],
         )
 
     def get_source_id(self):
@@ -1396,35 +1848,19 @@ class Item(models.Model):
             # prevents recursion
             self.save(post_save=False)
 
+    # TODO: Why make a new property for this?
     @property
     def remaining_stock(self):
-        remaining = (
-            self.purchase_rows.filter(remaining_quantity__gt=0).aggregate(
-                rem_qt=Sum("remaining_quantity")
-            )["rem_qt"]
-            or 0
-        )
-        if self.account:
-            remaining += zero_for_none(self.account.opening_quantity)
-        return remaining
+        return self.account.current_balance
 
     @property
     def available_stock_data(self):
-        data = list(
-            self.purchase_rows.filter(remaining_quantity__gt=0)
-            .order_by("id")
+        qs = (
+            self.account.transactions.filter(remaining_quantity__gt=0)
+            .order_by("journal_entry__date", "id")
             .values("remaining_quantity", "rate")
         )
-        if self.account:
-            ob = self.account.opening_quantity
-            if ob:
-                obj = {
-                    "remaining_quantity": ob,
-                    "rate": self.account.opening_balance_rate,
-                }
-                data.insert(0, obj)
-
-        return data
+        return list(qs)
 
     class Meta:
         unique_together = (
@@ -1443,3 +1879,161 @@ class InventorySetting(models.Model):
 
     def __str__(self) -> str:
         return "Inventory Setting - {}".format(self.company.name)
+
+
+class BillOfMaterial(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="bill_of_material"
+    )
+    quantity = models.FloatField()
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    rate = models.FloatField()
+    finished_product = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="bill_of_material"
+    )
+    remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self) -> str:
+        return self.finished_product.name
+
+
+class BillOfMaterialRow(models.Model):
+    bill_of_material = models.ForeignKey(
+        BillOfMaterial, on_delete=models.CASCADE, related_name="rows"
+    )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.FloatField()
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return "Bill of Material Row - {}".format(self.item.name)
+
+
+ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+PURPOSE_CHOICES = (
+    ("Stock In", "Stock In"),
+    ("Stock Out", "Stock Out"),
+    ("Damaged", "Damaged"),
+    ("Expired", "Expired"),
+)
+CONVERSION_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+TRANSACTION_TYPE_CHOICES = [
+    ("Cr", "Cr"),
+    ("Dr", "Dr"),
+]
+
+
+class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveIntegerField(blank=True, null=True)
+    date = models.DateField()
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=225, choices=ADJUSTMENT_STATUS_CHOICES)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="inventory_adjustment_voucher"
+    )
+    purpose = models.CharField(max_length=225, choices=PURPOSE_CHOICES)
+    remarks = models.TextField()
+    total_amount = models.FloatField(null=True, blank=True)
+
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ):
+            quantity = int(row.quantity)
+            if self.purpose == "Stock In":
+                transaction_type = "dr"
+            else:
+                transaction_type = "cr"
+            set_inventory_transactions(
+                row,
+                self.date,
+                [transaction_type, row.item.account, quantity, row.rate],
+            )
+
+    def apply_transactions(self, voucher_meta=None):
+        if self.status == "Cancelled":
+            self.cancel_transactions()
+            return
+
+        # filter bypasses rows cached by prefetching
+        if self.purpose in ["Damaged", "Expired"]:
+            for row in self.rows.filter().select_related(
+                "item__purchase_account",
+            ):
+                row_amount = row.quantity * row.rate
+                entries = [["cr", row.item.purchase_account, row_amount]]
+                if self.purpose == "Damaged":
+                    # TODO: Do not fetch account with name
+                    entries.append(
+                        ["dr", get_account(self.company, "Damage Expense"), row_amount]
+                    )
+                elif self.purpose == "Expired":
+                    entries.append(
+                        ["dr", get_account(self.company, "Expiry Expense"), row_amount]
+                    )
+                set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        self.apply_inventory_transactions()
+
+
+class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(
+        InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
+    )
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="inventory_adjustment_rows"
+    )
+    rate = models.FloatField()
+    quantity = models.PositiveSmallIntegerField(default=1)
+    amount = models.FloatField(blank=True, null=True)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+
+class InventoryConversionVoucher(TransactionModel, InvoiceModel):
+    voucher_no = models.PositiveIntegerField(blank=True, null=True)
+    date = models.DateField()
+    finished_product = models.ForeignKey(
+        BillOfMaterial,
+        on_delete=models.SET_NULL,
+        related_name="inventory_conversion_voucher",
+        null=True,
+        blank=True,
+    )
+    issue_datetime = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=225, choices=CONVERSION_CHOICES)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="inventory_conversion_voucher"
+    )
+    remarks = models.TextField()
+
+    def apply_inventory_transactions(self):
+        for row in self.rows.filter(Q(item__track_inventory=True)):
+            quantity = int(row.quantity)
+            set_inventory_transactions(
+                row,
+                self.date,
+                [row.transaction_type.lower(), row.item.account, quantity, row.rate],
+            )
+
+
+class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
+    voucher = models.ForeignKey(
+        InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
+    )
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="inventory_conversion_voucher_rows"
+    )
+    rate = models.FloatField(blank=True, null=True)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
+    transaction_type = models.CharField(
+        max_length=16, null=True, blank=True, choices=TRANSACTION_TYPE_CHOICES
+    )
+
+
+auditlog.register(InventoryAdjustmentVoucher)
+auditlog.register(InventoryAdjustmentVoucherRow)
+auditlog.register(InventoryConversionVoucher)
+auditlog.register(InventoryConversionVoucherRow)

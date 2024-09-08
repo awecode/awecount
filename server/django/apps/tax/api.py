@@ -59,7 +59,7 @@ class TaxSchemeViewSet(
 class TaxPaymentViewSet(CRULViewSet):
     serializer_class = TaxPaymentSerializer
     collections = (
-        ("cr_accounts", Account.get_payment_accounts(), AccountMinSerializer),
+        ("cr_accounts", Account.get_payment_accounts(), AccountMinSerializer, True, ["name"]),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
     )
 
