@@ -25,7 +25,7 @@
           </q-input>
         </div>
         <div v-if="!minimal" class="col-2 text-center">
-          <q-input v-model.number="row.rate" label="Rate" data-testid="quantity-input"
+          <q-input v-model.number="row.rate" label="Rate" type="number" data-testid="quantity-input"
             :error="errors && errors[index]?.rate ? true : false"
             :error-message="errors && errors[index]?.rate ? errors[index].rate[0] : ''">
           </q-input>
