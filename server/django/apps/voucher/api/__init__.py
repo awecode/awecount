@@ -1124,6 +1124,8 @@ class JournalVoucherViewSet(DeleteRows, CRULViewSet):
             "accounts",
             Account.objects.select_related("category", "parent"),
             AccountSerializer,
+            True,
+            ["code", "name"],
         ),
     )
 
