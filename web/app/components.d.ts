@@ -8,6 +8,7 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AccountList: typeof import('./src/components/account/AccountList.vue')['default']
+    AdjustmentInvoiceTable: typeof import('./src/components/inventory-adjustment/AdjustmentInvoiceTable.vue')['default']
     BalanceSheetTableNode: typeof import('./src/components/report/BalanceSheetTableNode.vue')['default']
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
@@ -21,6 +22,7 @@ declare module '@vue/runtime-core' {
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     FormSkeleton: typeof import('./src/components/FormSkeleton.vue')['default']
+    InventoryConversionTable: typeof import('./src/components/inventory-conversion/InventoryConversionTable.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
     ItemImport: typeof import('./src/components/ItemImport.vue')['default']

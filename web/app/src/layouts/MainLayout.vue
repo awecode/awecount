@@ -236,6 +236,24 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/items/opening/',
         hide: !checkPermissions('AccountOpeningBalanceView')
       },
+      {
+        title: 'Inventory Adjustment',
+        icon: 'mdi-swap-horizontal',
+        link: '/items/inventory-adjustment/list',
+        hide: !checkPermissions('InventoryAdjustmentVoucherView')
+      },
+      // {
+      //   title: 'Bill of Material',
+      //   icon: 'mdi-receipt',
+      //   link: '/items/bill-of-material/list',
+      //   hide: !checkPermissions('BillOfMaterialView')
+      // },
+      // {
+      //   title: 'Inventory Conversion',
+      //   icon: 'mdi-shuffle-variant',
+      //   link: '/items/inventory-conversion/list',
+      //   hide: !checkPermissions('InventoryConversionVoucherView')
+      // },
     ],
   },
   // {

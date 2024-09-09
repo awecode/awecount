@@ -83,15 +83,15 @@ export default {
       },
     },
     unitOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     discountOptions: {
-      type: Object,
+      type: Array,
       default: () => {
-        return {}
+        return []
       },
     },
     taxOptions: {
