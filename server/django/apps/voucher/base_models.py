@@ -1,12 +1,12 @@
 from datetime import datetime
 
 import requests
+from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from apps.ledger.models import JournalEntry
-from apps.product.models import JournalEntry as InventoryJournalEntry
 from awecount.libs import nepdate, wGenerator
 
 
@@ -185,6 +185,8 @@ class InvoiceModel(models.Model):
         self.cancel_transactions()
 
     def cancel_transactions(self):
+        InventoryJournalEntry = apps.get_model("product", "JournalEntry")
+
         content_type = ContentType.objects.get(
             model=self.__class__.__name__.lower() + "row"
         )
