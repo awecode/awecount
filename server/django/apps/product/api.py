@@ -45,6 +45,8 @@ from .models import (
     Category,
     InventoryAccount,
     InventoryAdjustmentVoucher,
+    InventoryAdjustmentVoucherRow,
+    # InventoryConversionVoucherRow,
     InventoryConversionVoucher,
     Item,
     JournalEntry,
@@ -234,10 +236,10 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         )
         inventory_adjustment_rows.update(item=item)
 
-        inventory_conversion_rows = InventoryConversionVoucherRow.objects.filter(
-            item__id__in=item_ids
-        )
-        inventory_conversion_rows.update(item=item)
+        # inventory_conversion_rows = InventoryConversionVoucherRow.objects.filter(
+        #     item__id__in=item_ids
+        # )
+        # inventory_conversion_rows.update(item=item)
 
         if has_inventory_account or has_purchase_account or has_sales_account:
             if has_inventory_account:
@@ -307,6 +309,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_purchase_account_ids = remaining_items.values_list(
                 "purchase_account", flat=True
             )
+            remaining_items_dedicated_purchase_account_ids = (
+                remaining_items.values_list("dedicated_purchase_account", flat=True)
+            )
+            remaining_items_dedicated_purchase_accounts = Account.objects.filter(
+                id__in=remaining_items_dedicated_purchase_account_ids
+            )
             remaining_items_purchase_accounts = Account.objects.filter(
                 id__in=remaining_items_purchase_account_ids
             )
@@ -320,11 +328,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             #         je.transactions.all().delete()
             #         je.delete()
             purchase_transactions.update(account=purchase_account)
-            remaining_items_purchase_accounts.delete()
+            remaining_items_dedicated_purchase_accounts.delete()
 
             discount_received_account = item.discount_received_account
             remaining_items_discount_received_account_ids = remaining_items.values_list(
                 "discount_received_account", flat=True
+            )
+            remaining_items_dedicated_discount_received_account_ids = remaining_items.values_list(
+                "dedicated_discount_received_account", flat=True
+            )
+            remaining_items_dedicated_discount_received_accounts = Account.objects.filter(
+                id__in=remaining_items_dedicated_discount_received_account_ids
             )
             remaining_items_discount_received_accounts = Account.objects.filter(
                 id__in=remaining_items_discount_received_account_ids
@@ -333,7 +347,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                 account__in=remaining_items_discount_received_accounts
             )
             discount_received_transactions.update(account=discount_received_account)
-            remaining_items_discount_received_accounts.delete()
+            remaining_items_dedicated_discount_received_accounts.delete()
 
         if has_sales_account:
             sales_account = item.sales_account
@@ -342,6 +356,12 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             )
             remaining_items_sales_accounts = Account.objects.filter(
                 id__in=remaining_items_sales_account_ids
+            )
+            remaining_items_dedicated_sales_accounts_ids = remaining_items.values_list(
+                "dedicated_sales_account", flat=True
+            )
+            remaining_items_dedicated_sales_accounts = Account.objects.filter(
+                id__in=remaining_items_dedicated_sales_accounts_ids
             )
             sales_transactions = Ledger.objects.filter(
                 account__in=remaining_items_sales_accounts
@@ -353,7 +373,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             #         je.transactions.all().delete()
             #         je.delete()
             sales_transactions.update(account=sales_account)
-            remaining_items_sales_accounts.delete()
+            remaining_items_dedicated_sales_accounts.delete()
 
             discount_allowed_account = item.discount_allowed_account
             remaining_items_discount_allowed_account_ids = remaining_items.values_list(
@@ -362,11 +382,17 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_discount_allowed_accounts = Account.objects.filter(
                 id__in=remaining_items_discount_allowed_account_ids
             )
+            remaining_items_dedicated_discount_allowed_accounts_ids = remaining_items.values_list(
+                "dedicated_discount_allowed_account", flat=True
+            )
+            remaining_items_dedicated_discount_allowed_accounts = Account.objects.filter(
+                id__in=remaining_items_dedicated_discount_allowed_accounts_ids
+            )
             discount_allowed_transactions = Ledger.objects.filter(
                 account__in=remaining_items_discount_allowed_accounts
             )
             discount_allowed_transactions.update(account=discount_allowed_account)
-            remaining_items_discount_allowed_accounts.delete()
+            remaining_items_dedicated_discount_allowed_accounts.delete()
 
         # Delete other items
         if remaining_items_inventory_accounts:
