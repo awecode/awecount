@@ -14,8 +14,6 @@ from django.utils import timezone
 
 from apps.ledger.models import (
     Account,
-    JournalEntry,
-    Transaction,
     TransactionModel,
     get_account,
 )
