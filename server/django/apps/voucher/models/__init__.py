@@ -334,16 +334,24 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             if royalty_ledger_info:
                 royalty_amount = row_total * royalty_ledger_info["royalty_rate"]
                 entries.append(
-                    ["dr", royalty_ledger_info["royalty_expense_account"], royalty_amount]
+                    [
+                        "dr",
+                        royalty_ledger_info["royalty_expense_account"],
+                        royalty_amount,
+                    ]
                 )
-                party_payable_account = royalty_ledger_info["party_payable_account"]
-                tds_amount = royalty_amount * royalty_ledger_info["tds_rate"]
-                entries.append(
-                    ["cr", royalty_ledger_info["party_royalty_tds_accout"], tds_amount]
-                )
-                entries.append(
-                    ["cr", party_payable_account, royalty_amount - tds_amount]
-                )
+                for party in royalty_ledger_info["parties"]:
+                    party_royalty_amount = (
+                        party["total_amount"] * royalty_ledger_info["royalty_rate"]
+                    )
+                    party_payable_account = party["payable_account"]
+                    tds_amount = party_royalty_amount * royalty_ledger_info["tds_rate"]
+                    entries.append(
+                        ["cr", party["royalty_tds_account"], tds_amount]
+                    )
+                    entries.append(
+                        ["cr", party_payable_account, party_royalty_amount - tds_amount]
+                    )
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()

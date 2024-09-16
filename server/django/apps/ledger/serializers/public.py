@@ -142,17 +142,23 @@ class PublicPartyListSerializer(serializers.ModelSerializer):
         )
 
 
+class PartyIdentifySerializer(serializers.Serializer):
+    tax_registration_number = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    total_amount = serializers.FloatField(required=True)
+
+    payable_account = None
+    royalty_tds_account = None
+
+
 class RoyaltyLedgerInfo(serializers.Serializer):
     royalty_expense_account_id = serializers.IntegerField(required=True)
     royalty_rate = serializers.FloatField(required=True)
     tds_category_id = serializers.IntegerField(required=True)
     tds_rate = serializers.FloatField(required=True)
-    party_tax_registration_number = serializers.CharField(required=True)
-    party_name = serializers.CharField(required=True)
+    parties = PartyIdentifySerializer(many=True, required=True)
 
     royalty_expense_account = None
-    party_payable_account = None
-    party_royalty_tds_accout = None
 
 
 class PublicSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
@@ -168,44 +174,46 @@ class PublicSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
         except Account.DoesNotExist:
             raise ValidationError("Royalty expense account not found.")
 
-        try:
-            party = Party.objects.get(
-                tax_registration_number=royalty_ledger_info[
-                    "party_tax_registration_number"
-                ],
-                company_id=self.context["request"].company_id,
-            )
-        except Party.DoesNotExist:
-            party = Party(
-                name=royalty_ledger_info["party_name"],
-                tax_registration_number=royalty_ledger_info[
-                    "party_tax_registration_number"
-                ],
-                company_id=self.context["request"].company_id,
-            )
-            party.save()
-        except Party.MultipleObjectsReturned:
-            raise ValidationError("Multiple parties found.")
+        for royalty_party in royalty_ledger_info["parties"]:
+            try:
+                party = Party.objects.get(
+                    tax_registration_number=royalty_party[
+                        "tax_registration_number"
+                    ],
+                    company_id=self.context["request"].company_id,
+                )
+            except Party.DoesNotExist:
+                party = Party(
+                    name=royalty_party["name"],
+                    tax_registration_number=royalty_party[
+                        "tax_registration_number"
+                    ],
+                    company_id=self.context["request"].company_id,
+                )
+                party.save()
+            except Party.MultipleObjectsReturned:
+                raise ValidationError("Multiple parties found.")
 
-        royalty_ledger_info["party_payable_account"] = party.supplier_account
+            royalty_party["payable_account"] = party.supplier_account
 
-        try:
-            party_royalty_tds_accout = Account.objects.get(
-                source=party.supplier_account,
-                category_id=royalty_ledger_info["tds_category_id"],
-                company_id=self.context["request"].company_id,
-            )
-        except Account.DoesNotExist:
-            party_royalty_tds_accout = Account(
-                name="Royalty TDS - " + party.name,
-                source=party.supplier_account,
-                category_id=royalty_ledger_info["tds_category_id"],
-                company_id=self.context["request"].company_id,
-            )
-            party_royalty_tds_accout.save()
-        except Account.MultipleObjectsReturned:
-            raise ValidationError("Multiple party royalty TDS accounts found.")
-        royalty_ledger_info["party_royalty_tds_accout"] = party_royalty_tds_accout
+            try:
+                party_royalty_tds_account = Account.objects.get(
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+            except Account.DoesNotExist:
+                party_royalty_tds_account = Account(
+                    name="Royalty TDS - " + party.name,
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+                party_royalty_tds_account.save()
+            except Account.MultipleObjectsReturned:
+                raise ValidationError("Multiple party royalty TDS accounts found.")
+            royalty_party["royalty_tds_account"] = party_royalty_tds_account
+
         return royalty_ledger_info
 
     def create(self, validated_data):
