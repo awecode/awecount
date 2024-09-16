@@ -8,8 +8,15 @@ from apps.ledger.serializers.public import (
     PublicJournalVoucherCreateSerializer,
     PublicJournalVoucherStatusChangeSerializer,
     PublicPartyListSerializer,
+    PublicSalesVoucherAccessSerializer,
 )
+from apps.voucher.api import SalesVoucherViewSet
 from apps.voucher.models.journal_vouchers import JournalVoucher
+from apps.voucher.serializers.sales import (
+    SalesVoucherChoiceSerializer,
+    SalesVoucherCreateSerializer,
+    SalesVoucherListSerializer,
+)
 
 
 class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
@@ -54,3 +61,14 @@ class PublicPartyViewset(viewsets.GenericViewSet):
             .only("id", "name")
         )
         return Response(PublicPartyListSerializer(parties, many=True).data)
+
+
+class PublicSalesVoucherViewSet(SalesVoucherViewSet):
+    def get_serializer_class(self):
+        if self.request.META.get("HTTP_SECRET"):
+            return PublicSalesVoucherAccessSerializer
+        if self.action == "choices":
+            return SalesVoucherChoiceSerializer
+        if self.action == "list":
+            return SalesVoucherListSerializer
+        return SalesVoucherCreateSerializer

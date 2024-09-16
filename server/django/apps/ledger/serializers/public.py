@@ -1,10 +1,13 @@
 from decimal import Decimal
 
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models.base import Account, Party
+from apps.voucher.models import SalesVoucher, SalesVoucherRow
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from apps.voucher.serializers.sales import SalesVoucherAccessSerializer
 from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
 
@@ -137,3 +140,105 @@ class PublicPartyListSerializer(serializers.ModelSerializer):
             "id",
             "name",
         )
+
+
+class RoyaltyLedgerInfo(serializers.Serializer):
+    royalty_expense_account_id = serializers.IntegerField(required=True)
+    royalty_rate = serializers.FloatField(required=True)
+    tds_category_id = serializers.IntegerField(required=True)
+    tds_rate = serializers.FloatField(required=True)
+    party_tax_registration_number = serializers.CharField(required=True)
+    party_name = serializers.CharField(required=True)
+
+    royalty_expense_account = None
+    party_payable_account = None
+    party_royalty_tds_accout = None
+
+
+class PublicSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
+    royalty_ledger_info = RoyaltyLedgerInfo(required=False)
+
+    @transaction.atomic
+    def validate_royalty_ledger_info(self, royalty_ledger_info):
+        try:
+            royalty_ledger_info["royalty_expense_account"] = Account.objects.get(
+                id=royalty_ledger_info["royalty_expense_account_id"],
+                company_id=self.context["request"].company_id,
+            )
+        except Account.DoesNotExist:
+            raise ValidationError("Royalty expense account not found.")
+
+        try:
+            party = Party.objects.get(
+                tax_registration_number=royalty_ledger_info[
+                    "party_tax_registration_number"
+                ],
+                company_id=self.context["request"].company_id,
+            )
+        except Party.DoesNotExist:
+            party = Party(
+                name=royalty_ledger_info["party_name"],
+                tax_registration_number=royalty_ledger_info[
+                    "party_tax_registration_number"
+                ],
+                company_id=self.context["request"].company_id,
+            )
+            party.save()
+        except Party.MultipleObjectsReturned:
+            raise ValidationError("Multiple parties found.")
+
+        royalty_ledger_info["party_payable_account"] = party.supplier_account
+
+        try:
+            party_royalty_tds_accout = Account.objects.get(
+                source=party.supplier_account,
+                category_id=royalty_ledger_info["tds_category_id"],
+                company_id=self.context["request"].company_id,
+            )
+        except Account.DoesNotExist:
+            party_royalty_tds_accout = Account(
+                name="Royalty TDS - " + party.name,
+                source=party.supplier_account,
+                category_id=royalty_ledger_info["tds_category_id"],
+                company_id=self.context["request"].company_id,
+            )
+            party_royalty_tds_accout.save()
+        except Account.MultipleObjectsReturned:
+            raise ValidationError("Multiple party royalty TDS accounts found.")
+        royalty_ledger_info["party_royalty_tds_accout"] = party_royalty_tds_accout
+        return royalty_ledger_info
+
+    def create(self, validated_data):
+        rows_data = validated_data.pop("rows")
+        royalty_ledger_info = validated_data.pop("royalty_ledger_info", None)
+        challans = validated_data.pop("challans", None)
+        if challans:
+            self.check_challans(challans, rows_data)
+        request = self.context["request"]
+        self.assign_fiscal_year(validated_data, instance=None)
+        self.assign_voucher_number(validated_data, instance=None)
+        self.assign_discount_obj(validated_data)
+        self.assign_mode(validated_data)
+        validated_data["company_id"] = request.company_id
+        validated_data["user_id"] = request.user.id
+        self.validate_invoice_date(validated_data)
+        if validated_data.get("due_date"):
+            self.validate_due_date(validated_data["due_date"])
+        instance = SalesVoucher.objects.create(**validated_data)
+        for index, row in enumerate(rows_data):
+            row = self.assign_discount_obj(row)
+            # if row.item.track_inventory:
+            # TODO: Verify if id is required or not
+            if row.get("id"):
+                row.pop("id")
+            SalesVoucherRow.objects.create(voucher=instance, **row)
+        if challans:
+            instance.challans.clear()
+            instance.challans.add(*challans)
+        meta = instance.generate_meta(update_row_data=True)
+        instance.apply_transactions(
+            voucher_meta=meta, royalty_ledger_info=royalty_ledger_info
+        )
+        # TODO: synchronize with CBMS
+        # instance.synchronize()
+        return instance

@@ -243,7 +243,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     ["cr", row.item.account, quantity, row.rate],
                 )
 
-    def apply_transactions(self, voucher_meta=None):
+    def apply_transactions(self, voucher_meta=None, royalty_ledger_info=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta["grand_total"]:
             self.total_amount = voucher_meta["grand_total"]
@@ -330,6 +330,20 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     )
             else:
                 entries.append(["dr", dr_acc, row_total])
+
+            if royalty_ledger_info:
+                royalty_amount = row_total * royalty_ledger_info["royalty_rate"]
+                entries.append(
+                    ["dr", royalty_ledger_info["royalty_expense_account"], royalty_amount]
+                )
+                party_payable_account = royalty_ledger_info["party_payable_account"]
+                tds_amount = royalty_amount * royalty_ledger_info["tds_rate"]
+                entries.append(
+                    ["cr", royalty_ledger_info["party_royalty_tds_accout"], tds_amount]
+                )
+                entries.append(
+                    ["cr", party_payable_account, royalty_amount - tds_amount]
+                )
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
         self.apply_inventory_transactions()
