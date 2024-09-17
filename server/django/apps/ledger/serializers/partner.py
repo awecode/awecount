@@ -12,7 +12,7 @@ from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
 
 
-class PublicAccountSerializer(serializers.Serializer):
+class PartnerAccountSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
@@ -34,8 +34,8 @@ class PublicAccountSerializer(serializers.Serializer):
     customer_detail__tax_registration_number = serializers.IntegerField(required=False)
 
 
-class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
-    account = PublicAccountSerializer(default={})
+class PartnerJournalVoucherRowSerializer(serializers.ModelSerializer):
+    account = PartnerAccountSerializer(default={})
     account_id = serializers.IntegerField(required=False)
     dr_amount = serializers.DecimalField(
         max_digits=None, decimal_places=None, required=False
@@ -56,14 +56,14 @@ class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class PublicJournalVoucherCreateSerializer(
+class PartnerJournalVoucherCreateSerializer(
     DisableCancelEditMixin, serializers.ModelSerializer
 ):
     voucher_no = serializers.CharField(required=False)
     status = serializers.ChoiceField(
         choices=JournalVoucher.STATUSES, default="Approved"
     )
-    rows = PublicJournalVoucherRowSerializer(many=True)
+    rows = PartnerJournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
         dr_total = Decimal(0)
@@ -119,11 +119,11 @@ class PublicJournalVoucherCreateSerializer(
         fields = ("voucher_no", "date", "narration", "status", "rows")
 
 
-class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
+class PartnerJournalVoucherCreateResponseSerializer(serializers.Serializer):
     voucher_no = serializers.CharField()
 
 
-class PublicJournalVoucherStatusChangeSerializer(
+class PartnerJournalVoucherStatusChangeSerializer(
     serializers.ModelSerializer, DisableCancelEditMixin
 ):
     reason = serializers.CharField(required=False)
@@ -133,7 +133,7 @@ class PublicJournalVoucherStatusChangeSerializer(
         fields = ("voucher_no", "status", "reason")
 
 
-class PublicPartyListSerializer(serializers.ModelSerializer):
+class PartnerPartyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
         fields = (
@@ -161,7 +161,7 @@ class RoyaltyLedgerInfo(serializers.Serializer):
     royalty_expense_account = None
 
 
-class PublicSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
+class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
     royalty_ledger_info = RoyaltyLedgerInfo(required=False)
 
     @transaction.atomic
