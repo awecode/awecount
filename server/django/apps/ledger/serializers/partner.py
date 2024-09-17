@@ -214,25 +214,26 @@ class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
         return royalty_ledger_info
 
     def create(self, validated_data):
-        royalty_ledger_info = validated_data.pop("royalty_ledger_info")
-        extra_entries = []
-        for party in royalty_ledger_info["parties"]:
-            extra_entries.append(
-                [
-                    "dr",
-                    royalty_ledger_info["royalty_expense_account"],
-                    party["royalty_amount"],
-                ]
-            )
-            extra_entries.append(
-                ["cr", party["royalty_tds_account"], party["tds_amount"]]
-            )
-            extra_entries.append(
-                [
-                    "cr",
-                    party["payable_account"],
-                    party["royalty_amount"] - party["tds_amount"],
-                ]
-            )
-        validated_data["extra_entries"] = extra_entries
+        royalty_ledger_info = validated_data.pop("royalty_ledger_info", None)
+        if royalty_ledger_info:
+            extra_entries = []
+            for party in royalty_ledger_info["parties"]:
+                extra_entries.append(
+                    [
+                        "dr",
+                        royalty_ledger_info["royalty_expense_account"],
+                        party["royalty_amount"],
+                    ]
+                )
+                extra_entries.append(
+                    ["cr", party["royalty_tds_account"], party["tds_amount"]]
+                )
+                extra_entries.append(
+                    [
+                        "cr",
+                        party["payable_account"],
+                        party["royalty_amount"] - party["tds_amount"],
+                    ]
+                )
+            validated_data["extra_entries"] = extra_entries
         return super().create(validated_data)
