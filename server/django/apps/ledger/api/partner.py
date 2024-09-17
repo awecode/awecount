@@ -12,11 +12,6 @@ from apps.ledger.serializers.partner import (
 )
 from apps.voucher.api import SalesVoucherViewSet
 from apps.voucher.models.journal_vouchers import JournalVoucher
-from apps.voucher.serializers.sales import (
-    SalesVoucherChoiceSerializer,
-    SalesVoucherCreateSerializer,
-    SalesVoucherListSerializer,
-)
 
 
 class PartnerJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
@@ -67,8 +62,4 @@ class PartnerSalesVoucherViewSet(SalesVoucherViewSet):
     def get_serializer_class(self):
         if self.request.META.get("HTTP_SECRET"):
             return PartnerSalesVoucherAccessSerializer
-        if self.action == "choices":
-            return SalesVoucherChoiceSerializer
-        if self.action == "list":
-            return SalesVoucherListSerializer
-        return SalesVoucherCreateSerializer
+        super().get_serializer_class()
