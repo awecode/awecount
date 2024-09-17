@@ -214,7 +214,7 @@ class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
         return royalty_ledger_info
 
     def create(self, validated_data):
-        royalty_ledger_info = validated_data["royalty_ledger_info"]
+        royalty_ledger_info = validated_data.pop("royalty_ledger_info")
         extra_entries = []
         for party in royalty_ledger_info["parties"]:
             extra_entries.append(
