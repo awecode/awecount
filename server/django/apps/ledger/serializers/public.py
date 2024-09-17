@@ -142,10 +142,12 @@ class PublicPartyListSerializer(serializers.ModelSerializer):
         )
 
 
-class PartyIdentifySerializer(serializers.Serializer):
+class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
     tax_registration_number = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
-    total_amount = serializers.FloatField(required=True)
+
+    royalty_amount = serializers.FloatField(required=True)
+    tds_amount = serializers.FloatField(required=True)
 
     payable_account = None
     royalty_tds_account = None
@@ -153,10 +155,8 @@ class PartyIdentifySerializer(serializers.Serializer):
 
 class RoyaltyLedgerInfo(serializers.Serializer):
     royalty_expense_account_id = serializers.IntegerField(required=True)
-    royalty_rate = serializers.FloatField(required=True)
     tds_category_id = serializers.IntegerField(required=True)
-    tds_rate = serializers.FloatField(required=True)
-    parties = PartyIdentifySerializer(many=True, required=True)
+    parties = RoyaltyLedgerInfoPartySerializer(many=True, required=True)
 
     royalty_expense_account = None
 
@@ -177,17 +177,13 @@ class PublicSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
         for royalty_party in royalty_ledger_info["parties"]:
             try:
                 party = Party.objects.get(
-                    tax_registration_number=royalty_party[
-                        "tax_registration_number"
-                    ],
+                    tax_registration_number=royalty_party["tax_registration_number"],
                     company_id=self.context["request"].company_id,
                 )
             except Party.DoesNotExist:
                 party = Party(
                     name=royalty_party["name"],
-                    tax_registration_number=royalty_party[
-                        "tax_registration_number"
-                    ],
+                    tax_registration_number=royalty_party["tax_registration_number"],
                     company_id=self.context["request"].company_id,
                 )
                 party.save()

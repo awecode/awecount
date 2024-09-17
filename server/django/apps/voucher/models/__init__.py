@@ -331,29 +331,36 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             else:
                 entries.append(["dr", dr_acc, row_total])
 
-            if royalty_ledger_info:
-                royalty_amount = row_total * royalty_ledger_info["royalty_rate"]
-                entries.append(
+            set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        if royalty_ledger_info:
+            party_royalty_ledger_entries = []
+            for party in royalty_ledger_info["parties"]:
+                party_royalty_ledger_entries.append(
                     [
                         "dr",
                         royalty_ledger_info["royalty_expense_account"],
-                        royalty_amount,
+                        party["royalty_amount"],
                     ]
                 )
-                for party in royalty_ledger_info["parties"]:
-                    party_royalty_amount = (
-                        party["total_amount"] * royalty_ledger_info["royalty_rate"]
-                    )
-                    party_payable_account = party["payable_account"]
-                    tds_amount = party_royalty_amount * royalty_ledger_info["tds_rate"]
-                    entries.append(
-                        ["cr", party["royalty_tds_account"], tds_amount]
-                    )
-                    entries.append(
-                        ["cr", party_payable_account, party_royalty_amount - tds_amount]
-                    )
+                party_royalty_ledger_entries.append(
+                    ["cr", party["royalty_tds_account"], party["tds_amount"]]
+                )
+                party_royalty_ledger_entries.append(
+                    [
+                        "cr",
+                        party["payable_account"],
+                        party["royalty_amount"] - party["tds_amount"],
+                    ]
+                )
 
-            set_ledger_transactions(row, self.date, *entries, clear=True)
+            set_ledger_transactions(
+                self,
+                self.date,
+                *party_royalty_ledger_entries,
+                clear=True,
+            )
+
         self.apply_inventory_transactions()
 
     def save(self, *args, **kwargs):
