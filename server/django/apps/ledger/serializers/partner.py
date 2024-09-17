@@ -235,4 +235,4 @@ class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
                 ]
             )
         validated_data["extra_entries"] = extra_entries
-        super().create(validated_data)
+        return super().create(validated_data)
