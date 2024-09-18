@@ -1,6 +1,7 @@
 import datetime
 
 from auditlog.registry import auditlog
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -242,6 +243,17 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     self.date,
                     ["cr", row.item.account, quantity, row.rate],
                 )
+
+    def cancel_transactions(self):
+        InventoryJournalEntry = apps.get_model("product", "JournalEntry")
+        row_ids = self.rows.values_list("id", flat=True)
+        JournalEntry.objects.filter(
+            Q(object_id__in=[*row_ids], content_type__model="salesvoucherrow") |
+            Q(object_id=self.id, content_type__model="salesvoucher"),
+        ).delete()
+        InventoryJournalEntry.objects.filter(
+            content_type__model="salesvoucherrow", object_id__in=row_ids
+        ).delete()
 
     def apply_transactions(self, voucher_meta=None, extra_entries=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
