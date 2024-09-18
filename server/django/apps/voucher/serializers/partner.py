@@ -283,10 +283,6 @@ class PartnerPurchaseVoucherCreateSerializer(
         for _, row in enumerate(rows_data):
             row.pop("item")
             row = self.assign_discount_obj(row)
-            if request.company.inventory_setting.enable_fifo:
-                item = Item.objects.get(id=row["item_id"])
-                if item.track_inventory:
-                    row["remaining_quantity"] = row["quantity"]
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         if purchase_orders:
             instance.purchase_orders.clear()
