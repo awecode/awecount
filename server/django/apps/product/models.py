@@ -1054,8 +1054,8 @@ def fifo_avg(consumption_data, required_quantity):
             remaining_quantity = required_quantity - cumulative_quantity
             cumulative_rate += remaining_quantity * rate
             break
-
-    return cumulative_rate / required_quantity
+    # TODO: temp fix for 0 required_quantity
+    return cumulative_rate / (required_quantity or 1)
 
 
 def set_inventory_transactions(model, date, *args, clear=True):
