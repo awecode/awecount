@@ -6,19 +6,19 @@ from rest_framework.response import Response
 
 from apps.voucher.models import PurchaseVoucher
 from apps.voucher.models.discounts import PurchaseDiscount
-from apps.voucher.serializers.public import (
-    PublicPurchaseDiscountSerializer,
-    PublicPurchaseVoucherCreateSerializer,
+from apps.voucher.serializers.partner import (
+    PartnerPurchaseDiscountSerializer,
+    PartnerPurchaseVoucherCreateSerializer,
 )
 
 
-class PublicPurchaseVoucherViewset(
+class PartnerPurchaseVoucherViewset(
     viewsets.GenericViewSet,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
 ):
-    serializer_class = PublicPurchaseVoucherCreateSerializer
-    queryset = PublicPurchaseVoucherCreateSerializer.Meta.model.objects.all()
+    serializer_class = PartnerPurchaseVoucherCreateSerializer
+    queryset = PartnerPurchaseVoucherCreateSerializer.Meta.model.objects.all()
 
     def create(self, request, *args, **kwargs):
         voucher_no = request.data.get("voucher_no", None)
@@ -52,10 +52,10 @@ class PublicPurchaseVoucherViewset(
         return qs.filter(company_id=self.request.company_id).order_by("-date", "-pk")
 
 
-class PublicPurchaseDiscountViewset(viewsets.GenericViewSet):
+class PartnerPurchaseDiscountViewset(viewsets.GenericViewSet):
     queryset = PurchaseDiscount.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
     def all(self, request):
         parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
-        return Response(PublicPurchaseDiscountSerializer(parties, many=True).data)
+        return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)

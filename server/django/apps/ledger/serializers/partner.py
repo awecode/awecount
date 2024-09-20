@@ -1,15 +1,17 @@
 from decimal import Decimal
 
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models.base import Account, Party
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
+from apps.voucher.serializers.sales import SalesVoucherAccessSerializer
 from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
 
 
-class PublicAccountSerializer(serializers.Serializer):
+class PartnerAccountSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
@@ -31,8 +33,8 @@ class PublicAccountSerializer(serializers.Serializer):
     customer_detail__tax_registration_number = serializers.IntegerField(required=False)
 
 
-class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
-    account = PublicAccountSerializer(default={})
+class PartnerJournalVoucherRowSerializer(serializers.ModelSerializer):
+    account = PartnerAccountSerializer(default={})
     account_id = serializers.IntegerField(required=False)
     dr_amount = serializers.DecimalField(
         max_digits=None, decimal_places=None, required=False
@@ -53,14 +55,14 @@ class PublicJournalVoucherRowSerializer(serializers.ModelSerializer):
         )
 
 
-class PublicJournalVoucherCreateSerializer(
+class PartnerJournalVoucherCreateSerializer(
     DisableCancelEditMixin, serializers.ModelSerializer
 ):
     voucher_no = serializers.CharField(required=False)
     status = serializers.ChoiceField(
         choices=JournalVoucher.STATUSES, default="Approved"
     )
-    rows = PublicJournalVoucherRowSerializer(many=True)
+    rows = PartnerJournalVoucherRowSerializer(many=True)
 
     def validate(self, attrs):
         dr_total = Decimal(0)
@@ -116,11 +118,11 @@ class PublicJournalVoucherCreateSerializer(
         fields = ("voucher_no", "date", "narration", "status", "rows")
 
 
-class PublicJournalVoucherCreateResponseSerializer(serializers.Serializer):
+class PartnerJournalVoucherCreateResponseSerializer(serializers.Serializer):
     voucher_no = serializers.CharField()
 
 
-class PublicJournalVoucherStatusChangeSerializer(
+class PartnerJournalVoucherStatusChangeSerializer(
     serializers.ModelSerializer, DisableCancelEditMixin
 ):
     reason = serializers.CharField(required=False)
@@ -130,10 +132,108 @@ class PublicJournalVoucherStatusChangeSerializer(
         fields = ("voucher_no", "status", "reason")
 
 
-class PublicPartyListSerializer(serializers.ModelSerializer):
+class PartnerPartyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Party
         fields = (
             "id",
             "name",
         )
+
+
+class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
+    tax_registration_number = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+
+    royalty_amount = serializers.FloatField(required=True)
+    tds_amount = serializers.FloatField(required=True)
+
+    payable_account = None
+    royalty_tds_account = None
+
+
+class RoyaltyLedgerInfo(serializers.Serializer):
+    royalty_expense_account_id = serializers.IntegerField(required=True)
+    tds_category_id = serializers.IntegerField(required=True)
+    parties = RoyaltyLedgerInfoPartySerializer(many=True, required=True)
+
+    royalty_expense_account = None
+
+
+class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
+    royalty_ledger_info = RoyaltyLedgerInfo(required=False)
+
+    extra_entries = None
+
+    @transaction.atomic
+    def validate_royalty_ledger_info(self, royalty_ledger_info):
+        try:
+            royalty_ledger_info["royalty_expense_account"] = Account.objects.get(
+                id=royalty_ledger_info["royalty_expense_account_id"],
+                company_id=self.context["request"].company_id,
+            )
+        except Account.DoesNotExist:
+            raise ValidationError("Royalty expense account not found.")
+
+        for royalty_party in royalty_ledger_info["parties"]:
+            try:
+                party = Party.objects.get(
+                    tax_registration_number=royalty_party["tax_registration_number"],
+                    company_id=self.context["request"].company_id,
+                )
+            except Party.DoesNotExist:
+                party = Party(
+                    name=royalty_party["name"],
+                    tax_registration_number=royalty_party["tax_registration_number"],
+                    company_id=self.context["request"].company_id,
+                )
+                party.save()
+            except Party.MultipleObjectsReturned:
+                raise ValidationError("Multiple parties found.")
+
+            royalty_party["payable_account"] = party.supplier_account
+
+            try:
+                party_royalty_tds_account = Account.objects.get(
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+            except Account.DoesNotExist:
+                party_royalty_tds_account = Account(
+                    name="Royalty TDS - " + party.name,
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+                party_royalty_tds_account.save()
+            except Account.MultipleObjectsReturned:
+                raise ValidationError("Multiple party royalty TDS accounts found.")
+            royalty_party["royalty_tds_account"] = party_royalty_tds_account
+
+        return royalty_ledger_info
+
+    def create(self, validated_data):
+        royalty_ledger_info = validated_data.pop("royalty_ledger_info", None)
+        if royalty_ledger_info:
+            extra_entries = []
+            for party in royalty_ledger_info["parties"]:
+                extra_entries.append(
+                    [
+                        "dr",
+                        royalty_ledger_info["royalty_expense_account"],
+                        party["royalty_amount"],
+                    ]
+                )
+                extra_entries.append(
+                    ["cr", party["royalty_tds_account"], party["tds_amount"]]
+                )
+                extra_entries.append(
+                    [
+                        "cr",
+                        party["payable_account"],
+                        party["royalty_amount"] - party["tds_amount"],
+                    ]
+                )
+            validated_data["extra_entries"] = extra_entries
+        return super().create(validated_data)

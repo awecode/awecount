@@ -1,4 +1,4 @@
-# Public Journal Voucher API
+# Partner Journal Voucher API
 
 ### Fields:
 

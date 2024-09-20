@@ -3,28 +3,30 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.ledger.models.base import Party
-from apps.ledger.serializers.public import (
-    PublicJournalVoucherCreateResponseSerializer,
-    PublicJournalVoucherCreateSerializer,
-    PublicJournalVoucherStatusChangeSerializer,
-    PublicPartyListSerializer,
+from apps.ledger.serializers.partner import (
+    PartnerJournalVoucherCreateResponseSerializer,
+    PartnerJournalVoucherCreateSerializer,
+    PartnerJournalVoucherStatusChangeSerializer,
+    PartnerPartyListSerializer,
+    PartnerSalesVoucherAccessSerializer,
 )
+from apps.voucher.api import SalesVoucherViewSet
 from apps.voucher.models.journal_vouchers import JournalVoucher
 
 
-class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
-    serializer_class = PublicJournalVoucherCreateSerializer
-    queryset = PublicJournalVoucherCreateSerializer.Meta.model.objects.all()
+class PartnerJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+    serializer_class = PartnerJournalVoucherCreateSerializer
+    queryset = PartnerJournalVoucherCreateSerializer.Meta.model.objects.all()
 
     def create(self, request, *args, **kwargs):
         res = super().create(request, *args, **kwargs)
-        serializer = PublicJournalVoucherCreateResponseSerializer(data=res.data)
+        serializer = PartnerJournalVoucherCreateResponseSerializer(data=res.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="change-status")
     def change_status(self, request):
-        serializer = PublicJournalVoucherStatusChangeSerializer(data=request.data)
+        serializer = PartnerJournalVoucherStatusChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             journal_voucher = JournalVoucher.objects.get(
@@ -43,7 +45,7 @@ class PublicJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMix
         return Response({"detail": "Status changed successfully."})
 
 
-class PublicPartyViewset(viewsets.GenericViewSet):
+class PartnerPartyViewset(viewsets.GenericViewSet):
     queryset = Party.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
@@ -53,4 +55,11 @@ class PublicPartyViewset(viewsets.GenericViewSet):
             .order_by("-pk")
             .only("id", "name")
         )
-        return Response(PublicPartyListSerializer(parties, many=True).data)
+        return Response(PartnerPartyListSerializer(parties, many=True).data)
+
+
+class PartnerSalesVoucherViewSet(SalesVoucherViewSet):
+    def get_serializer_class(self):
+        if self.request.META.get("HTTP_SECRET"):
+            return PartnerSalesVoucherAccessSerializer
+        return super().get_serializer_class()

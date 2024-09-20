@@ -13,7 +13,7 @@ from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
 
 
-class PublicItemSerializer(serializers.Serializer):
+class PartnerItemSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(required=False)
     code = serializers.CharField(required=False)
@@ -90,7 +90,7 @@ class ItemCreateSerializer(ItemSerializer):
     pass
 
 
-class PublicPurchaseVoucherRowSerializer(
+class PartnerPurchaseVoucherRowSerializer(
     DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
 ):
     id = serializers.IntegerField(required=False)
@@ -103,7 +103,7 @@ class PublicPurchaseVoucherRowSerializer(
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
 
     item_id = serializers.IntegerField(required=False)
-    item = PublicItemSerializer(default={})
+    item = PartnerItemSerializer(default={})
     item_obj = ItemCreateSerializer(required=False, allow_null=True)
 
     def validate_discount(self, value):
@@ -123,13 +123,13 @@ class PublicPurchaseVoucherRowSerializer(
         }
 
 
-class PublicPurchaseVoucherCreateSerializer(
+class PartnerPurchaseVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
     ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
-    rows = PublicPurchaseVoucherRowSerializer(many=True)
+    rows = PartnerPurchaseVoucherRowSerializer(many=True)
     purchase_order_numbers = serializers.ReadOnlyField()
 
     def assign_fiscal_year(self, validated_data, instance=None):
@@ -258,7 +258,7 @@ class PublicPurchaseVoucherCreateSerializer(
 
             if row.get("discount_type") == "":
                 row["discount_type"] = None
-            row_serializer = PublicPurchaseVoucherRowSerializer(data=row)
+            row_serializer = PartnerPurchaseVoucherRowSerializer(data=row)
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
@@ -300,7 +300,7 @@ class PublicPurchaseVoucherCreateSerializer(
         exclude = ("company", "user", "bank_account", "discount_obj", "fiscal_year")
 
 
-class PublicPurchaseDiscountSerializer(serializers.ModelSerializer):
+class PartnerPurchaseDiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseDiscount
         exclude = ("company",)

@@ -6,15 +6,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
-from apps.product.models import Item, Category
 from apps.ledger.serializers import PartyMinSerializer
+from apps.product.models import Category, Item
 from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
+from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
-from awecount.libs.CustomViewSet import GenericSerializer
 
 from ..models import (
     PurchaseVoucher,
@@ -493,6 +493,7 @@ class SalesVoucherCreateSerializer(
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         challans = validated_data.pop("challans", None)
+        extra_entries = validated_data.pop("extra_entries", None)
         if challans:
             self.check_challans(challans, rows_data)
         request = self.context["request"]
@@ -517,7 +518,7 @@ class SalesVoucherCreateSerializer(
             instance.challans.clear()
             instance.challans.add(*challans)
         meta = instance.generate_meta(update_row_data=True)
-        instance.apply_transactions(voucher_meta=meta)
+        instance.apply_transactions(voucher_meta=meta, extra_entries=extra_entries)
         # TODO: synchronize with CBMS
         # instance.synchronize()
         return instance

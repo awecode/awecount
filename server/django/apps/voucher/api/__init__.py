@@ -225,8 +225,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         return qs.order_by("-date", "-voucher_no")
 
     def get_serializer_class(self):
-        if self.request.META.get("HTTP_SECRET"):
-            return SalesVoucherAccessSerializer
         if self.action == "choices":
             return SalesVoucherChoiceSerializer
         if self.action == "list":

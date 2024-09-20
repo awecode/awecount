@@ -112,6 +112,13 @@ class Account(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="ledger_accounts"
     )
+    source = models.ForeignKey(
+        "self",
+        blank=True,
+        null=True,
+        related_name="source_accounts",
+        on_delete=models.SET_NULL,
+    )
 
     def get_absolute_url(self):
         # return '/ledger/' + str(self.id)
@@ -1157,7 +1164,6 @@ def handle_company_creation(sender, **kwargs):
         company=company,
         default=True,
     )
-
 
 
 def get_account(request_or_company, name):
