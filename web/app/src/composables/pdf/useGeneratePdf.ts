@@ -87,7 +87,7 @@ export default function useGeneratePdf(
         compayInfo.logo_url ? '' : 'display: none;'
       }"/>
   <div style="text-align:center; padding-left: 10px;">
-    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${
       compayInfo.name
     } ${
         compayInfo.organization_type === 'private_limited'
@@ -138,7 +138,7 @@ export default function useGeneratePdf(
     } else {
       header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
-      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${
+      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${
         compayInfo.name
       } ${
         compayInfo.organization_type === 'private_limited'
