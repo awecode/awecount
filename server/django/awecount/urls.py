@@ -10,6 +10,7 @@ from apps.bank import api as bank
 from apps.ledger import api as ledger
 from apps.ledger.api import partner as partner_ledger
 from apps.product import api as item
+from apps.product.api import partner as partner_item
 from apps.product.views import book_by_isbn
 from apps.report import api as report_api
 from apps.tax import api as tax
@@ -81,6 +82,10 @@ router.register(
     "bill-of-material",
     item.BillOfMaterialViewSet,
     basename="bill-of-material",
+)
+
+router.register(
+    "partner/item", partner_item.PartnerItemViewSet, basename="partner-item"
 )
 
 # voucher

@@ -14,7 +14,7 @@ from awecount.libs.Base64FileField import Base64FileField
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 
-from .models import (
+from ..models import (
     BillOfMaterial,
     BillOfMaterialRow,
     Brand,
@@ -28,7 +28,7 @@ from .models import (
     JournalEntry,
     Unit,
 )
-from .models import (
+from ..models import (
     Category as InventoryCategory,
 )
 

@@ -31,14 +31,14 @@ from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin, ShortNameChoiceMixin
 
-from .filters import (
+from ..filters import (
     BookFilterSet,
     InventoryAccountFilterSet,
     InventoryAdjustmentVoucherFilterSet,
     InventoryConversionVoucherFilterSet,
     ItemFilterSet,
 )
-from .models import (
+from ..models import (
     BillOfMaterial,
     BillOfMaterialRow,
     Brand,
@@ -53,8 +53,8 @@ from .models import (
     Transaction,
     Unit,
 )
-from .models import Category as InventoryCategory
-from .serializers import (
+from ..models import Category as InventoryCategory
+from ..serializers import (
     BillOfMaterialCreateSerializer,
     BillOfMaterialListSerializer,
     BookSerializer,
