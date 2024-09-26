@@ -77,15 +77,15 @@ export default function useGeneratePdf(
   let html = ''
   if (!onlyBody) {
     let header = ''
-    if (compayInfo.invoice_template === 2) {
+    if ([2, 3].includes(compayInfo.invoice_template)) {
       header = `
     <div>
     <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute ${
+    }" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${
         compayInfo.logo_url ? '' : 'display: none;'
-      }"/>
+      } ${ compayInfo.invoice_template == 3 ? 'left: 40px;' : '' }" />
   <div style="text-align:center; padding-left: 10px;">
     <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${
       compayInfo.name
@@ -205,7 +205,7 @@ export default function useGeneratePdf(
 
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
-    ${compayInfo.invoice_template === 2 ? `${emptyRows()}` : ''}
+    ${[2, 3].includes(compayInfo.invoice_template) ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
@@ -232,7 +232,7 @@ export default function useGeneratePdf(
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? compayInfo.invoice_template === 2 ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
+              ? [2, 3].includes(compayInfo.invoice_template) ? (`${invoiceInfo.rows[taxIndex].tax_scheme.rate} % ` + `${invoiceInfo.rows[taxIndex].tax_scheme.name}`) : (`${invoiceInfo.rows[taxIndex].tax_scheme.name} ` +
                 `${invoiceInfo.rows[taxIndex].tax_scheme.rate} %`)
               : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax)}</span>
@@ -306,7 +306,7 @@ export default function useGeneratePdf(
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${
       invoiceInfo.address
     }</div>
-    <div style="${compayInfo.invoice_template === 2 && invoiceInfo.party_contact_no ? '' : 'display: none;'}">${
+    <div style="${[2, 3].includes(compayInfo.invoice_template) && invoiceInfo.party_contact_no ? '' : 'display: none;'}">${
       invoiceInfo.party_contact_no
     }</div>
       ${
