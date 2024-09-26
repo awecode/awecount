@@ -97,6 +97,7 @@ class PartnerPurchaseVoucherRowSerializer(
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
     item = serializers.ReadOnlyField(source="item.name")
+    item__account__current_balance = serializers.ReadOnlyField(source="item.account.current_balance")
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
