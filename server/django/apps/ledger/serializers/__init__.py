@@ -54,6 +54,7 @@ class AccountSerializer(serializers.ModelSerializer):
     # current_cr = RoundedField()
     selected_parent_obj = GenericSerializer(source="parent", read_only=True)
     selected_category_obj = GenericSerializer(source="category", read_only=True)
+    selected_source_obj = GenericSerializer(source="source", read_only=True)
 
     class Meta:
         model = Account

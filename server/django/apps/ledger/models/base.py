@@ -112,6 +112,13 @@ class Account(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="ledger_accounts"
     )
+    source = models.ForeignKey(
+        "self",
+        blank=True,
+        null=True,
+        related_name="source_accounts",
+        on_delete=models.SET_NULL,
+    )
 
     def get_absolute_url(self):
         # return '/ledger/' + str(self.id)
@@ -1128,6 +1135,32 @@ def handle_company_creation(sender, **kwargs):
         name="Opening Balance Difference",
         code="O-OBD",
         category=root["Opening Balance Difference"],
+        company=company,
+        default=True,
+    )
+
+    # For Inventory Adjustemnt
+    # ==========================
+    inventory_write_off_account = Category.objects.create(
+        name="Inventory write-off",
+        parent=indirect_expenses,
+        code="E-I-DE-IWO",
+        company=company,
+        default=True,
+    )
+
+    Account.objects.create(
+        name="Damage Expense",
+        code="E-I-DE-IWO-DE",
+        category=inventory_write_off_account,
+        company=company,
+        default=True,
+    )
+
+    Account.objects.create(
+        name="Expiry Expense",
+        code="E-I-DE-IWO-EE",
+        category=inventory_write_off_account,
         company=company,
         default=True,
     )

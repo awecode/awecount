@@ -76,6 +76,7 @@ class PurchaseVoucherFilterSet(DateFilterSet):
         model = PurchaseVoucher
         fields = ()
 
+
 class PurchaseVoucherRowFilterSet(filters.FilterSet):
     start_date = filters.DateFilter(field_name="voucher__date", lookup_expr="gte")
     end_date = filters.DateFilter(field_name="voucher__date", lookup_expr="lte")
@@ -153,6 +154,6 @@ class ChallanFilterSet(DateFilterSet):
 class PurchaseOrderFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=PURCHASE_ORDER_STATUS_CHOICES)
 
-    class MEta:
+    class Meta:
         model = PurchaseOrder
         fields = []

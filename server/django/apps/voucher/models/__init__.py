@@ -1,6 +1,7 @@
 import datetime
 
 from auditlog.registry import auditlog
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -26,7 +27,7 @@ from apps.product.models import (
 from apps.tax.models import TaxScheme
 from apps.users.models import Company, FiscalYear, User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
-from awecount.libs import nepdate, decimalize
+from awecount.libs import decimalize, nepdate
 from awecount.libs.helpers import merge_dicts
 
 from .agent import SalesAgent
@@ -62,6 +63,19 @@ MODES = (
     ("Bank Deposit", "Bank Deposit"),
 )
 
+ADJUSTMENT_STATUS_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+PURPOSE_CHOICES = (
+    ("Stock In", "Stock In"),
+    ("Stock Out", "Stock Out"),
+    ("Damaged", "Damaged"),
+    ("Expired", "Expired"),
+)
+CONVERSION_CHOICES = (("Issued", "Issued"), ("Cancelled", "Cancelled"))
+TRANSACTION_TYPE_CHOICES = [
+    ("Cr", "Cr"),
+    ("Dr", "Dr"),
+]
+
 
 class Challan(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -96,18 +110,19 @@ class Challan(TransactionModel, InvoiceModel):
     def apply_inventory_transactions(self):
         if self.status == "Draft":
             return
-        
-        for row in self.rows.filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True)):
+
+        for row in self.rows.filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
+        ):
             set_inventory_transactions(
                 row,
                 self.date,
-                ["cr", row.item.account, int(row.quantity)],
+                ["cr", row.item.account, int(row.quantity), 0],
             )
 
     def mark_as_resolved(self):
         if self.status == "Issued":
             self.status = "Resolved"
-            self.rows.update(sold_items={})
             self.save()
         else:
             raise ValueError("This voucher cannot be mark as resolved!")
@@ -124,7 +139,6 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, blank=True, null=True)
-    sold_items = models.JSONField(blank=True, null=True)
 
     # Model key for module based permission
     key = "Challan"
@@ -227,10 +241,21 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 set_inventory_transactions(
                     row,
                     self.date,
-                    ["cr", row.item.account, quantity],
+                    ["cr", row.item.account, quantity, row.rate],
                 )
 
-    def apply_transactions(self, voucher_meta=None):
+    def cancel_transactions(self):
+        InventoryJournalEntry = apps.get_model("product", "JournalEntry")
+        row_ids = self.rows.values_list("id", flat=True)
+        JournalEntry.objects.filter(
+            Q(object_id__in=[*row_ids], content_type__model="salesvoucherrow") |
+            Q(object_id=self.id, content_type__model="salesvoucher"),
+        ).delete()
+        InventoryJournalEntry.objects.filter(
+            content_type__model="salesvoucherrow", object_id__in=row_ids
+        ).delete()
+
+    def apply_transactions(self, voucher_meta=None, extra_entries=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta["grand_total"]:
             self.total_amount = voucher_meta["grand_total"]
@@ -319,6 +344,10 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 entries.append(["dr", dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        if extra_entries:
+            set_ledger_transactions(self, self.date, *extra_entries, clear=True)
+
         self.apply_inventory_transactions()
 
     def save(self, *args, **kwargs):
@@ -418,8 +447,6 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     discount_amount = models.FloatField(blank=True, null=True)
     tax_amount = models.FloatField(blank=True, null=True)
     net_amount = models.FloatField(blank=True, null=True)
-
-    sold_items = models.JSONField(blank=True, null=True)
 
     # Model key for module based permission
     key = "Sales"
@@ -564,7 +591,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             set_inventory_transactions(
                 row,
                 self.date,
-                ["dr", row.item.account, int(row.quantity)],
+                ["dr", row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self, voucher_meta=None):
@@ -635,7 +662,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 entries.append(["cr", item.discount_received_account, row_discount])
 
             if row.tax_scheme:
-                row_tax_amount = decimalize(row.tax_scheme.rate) * decimalize(row_total) / 100
+                row_tax_amount = (
+                    decimalize(row.tax_scheme.rate) * decimalize(row_total) / 100
+                )
                 if row_tax_amount:
                     entries.append(["dr", row.tax_scheme.receivable, row_tax_amount])
                     row_total += row_tax_amount
@@ -682,8 +711,6 @@ class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
     tax_scheme = models.ForeignKey(
         TaxScheme, blank=True, null=True, on_delete=models.SET_NULL
     )
-
-    remaining_quantity = models.FloatField(blank=True, null=True)
 
     # Computed values
     discount_amount = models.FloatField(blank=True, null=True)
@@ -774,103 +801,16 @@ class CreditNote(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
     def cancel(self):
-        if self.company.inventory_setting.enable_fifo:
-            rows = self.rows.all()
-            sales_vouchers = self.invoices.all()
-            for voucher in sales_vouchers:
-                sales_rows = voucher.rows.all()
-                for row in sales_rows:
-                    credit_note_row = rows.get(item=row.item)
-                    sold_items = row.sold_items
-                    quantity = credit_note_row.quantity
-                    if not sold_items:
-                        break
-                    opening = None
-                    if sold_items.get("OB"):
-                        inv_account = row.item.account
-                        ob = sold_items.pop("OB")
-                        if quantity > inv_account.opening_quantity:
-                            opening = ob + inv_account.opening_quantity
-                            quantity -= inv_account.opening_quantity
-                            inv_account.opening_quantity = 0
-                            inv_account.save()
-                            inv_account.save()
-                        else:
-                            inv_account.opening_quantity -= quantity
-                            inv_account.save()
-                            opening = ob + quantity
-                            row.sold_items["OB"] = opening
-                            row.save()
-                            return
-                    purchase_row_ids = [key for key, value in sold_items.items()]
-                    purchase_voucher_rows = PurchaseVoucherRow.objects.filter(
-                        id__in=purchase_row_ids
-                    ).order_by("-voucher__date", "-id")
-                    if purchase_voucher_rows.exists():
-                        for purchase_row in purchase_voucher_rows:
-                            # can_be_reduced = purchase_row.remaining_quantity
-                            # diff = quantity - can_be_reduced
-                            if quantity > purchase_row.remaining_quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                quantity -= purchase_row.remaining_quantity
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[
-                                    str(purchase_row.id)
-                                ] = purchase_row.quantity
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += can_be_reduced
-                                row.save()
-                                continue
-                            else:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                # if not row.sold_items.get(str(purchase_row.id)):
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                # else:
-                                #     row.sold_items[str(purchase_row.id)] += quantity
-                                row.save()
-                                break
-                    if quantity > 0:
-                        purchase_rows = row.item.purchase_rows.filter(
-                            remaining_quantity__gt=0
-                        ).order_by("voucher__date", "id")
-                        for purchase_row in purchase_rows:
-                            if purchase_row.remaining_quantity == quantity:
-                                purchase_row.remaining_quantity = 0
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                row.save()
-                                break
-                            elif purchase_row.remaining_quantity > quantity:
-                                purchase_row.remaining_quantity -= quantity
-                                purchase_row.save()
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                row.save()
-                                break
-                            else:
-                                quantity -= purchase_row.remaining_quantity
-                                sold_items[
-                                    str(purchase_row.id)
-                                ] = purchase_row.remaining_quantity
-                                purchase_row.remaining_quantity = 0
-                                row.sold_items[str(purchase_row.id)] = quantity
-                                purchase_row.save()
-                                row.save()
-                    if opening:
-                        row.sold_items["OB"] = opening
-                        row.save()
         return super().cancel()
 
     def apply_inventory_transaction(voucher):
-        for row in (
-            voucher.rows.filter(is_returned=True)
-            .filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True))
+        for row in voucher.rows.filter(is_returned=True).filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
         ):
             set_inventory_transactions(
                 row,
                 voucher.date,
-                ["dr", row.item.account, int(row.quantity)],
+                ["dr", row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self):
@@ -1012,6 +952,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     tax_scheme = models.ForeignKey(
         TaxScheme, on_delete=models.CASCADE, related_name="credit_note_rows"
     )
+    sales_row_data = models.JSONField(blank=True, null=True)
 
 
 class DebitNote(TransactionModel, InvoiceModel):
@@ -1057,32 +998,16 @@ class DebitNote(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
     def cancel(self):
-        if self.company.inventory_setting.enable_fifo:
-            rows = self.rows.all()
-            for row in rows:
-                purchase_row_data = row.purchase_row_data
-                if purchase_row_data == {}:
-                    return
-                keys = [int(k) for k, v in purchase_row_data.items()]
-                purchase_rows = PurchaseVoucherRow.objects.filter(id__in=keys)
-                for purchase_row in purchase_rows:
-                    purchase_row.remaining_quantity += purchase_row_data[
-                        str(purchase_row.id)
-                    ]
-                    row.purchase_row_data.pop(str(purchase_row.id))
-                    row.save()
-                    purchase_row.save()
         return super().cancel()
 
     def apply_inventory_transaction(self):
-        for row in (
-            self.rows.filter(is_returned=True)
-            .filter(Q(item__track_inventory=True) | Q(item__fixed_asset=True))
+        for row in self.rows.filter(is_returned=True).filter(
+            Q(item__track_inventory=True) | Q(item__fixed_asset=True)
         ):
             set_inventory_transactions(
                 row,
                 self.date,
-                ["cr", row.item.account, int(row.quantity)],
+                ["cr", row.item.account, int(row.quantity), row.rate],
             )
 
     def apply_transactions(self):
@@ -1253,7 +1178,7 @@ class PaymentReceipt(TransactionModel):
     def voucher_no(self):
         return self.id
 
-    def apply_transactions(self):
+    def apply_transactions(self, force_update=False):
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
@@ -1272,13 +1197,14 @@ class PaymentReceipt(TransactionModel):
         if self.mode != "Cheque":
             entries.append(["dr", dr_acc, self.amount])
             cr_amount += self.amount
-        if self.tds_amount:
+        if force_update or self.tds_amount:
             entries.append(
                 ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
             )
             cr_amount += self.tds_amount
         if cr_amount:
             entries.append(["cr", self.party.customer_account, cr_amount])
+
         if len(entries):
             set_ledger_transactions(self, self.date, *entries, clear=True)
 

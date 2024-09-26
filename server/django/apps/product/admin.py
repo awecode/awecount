@@ -3,9 +3,12 @@ from django.contrib import admin, messages
 from django.db import models, transaction
 
 from apps.product.models import (
+    BillOfMaterial,
     Brand,
     Category,
     InventoryAccount,
+    InventoryAdjustmentVoucher,
+    InventoryConversionVoucher,
     InventorySetting,
     Item,
     JournalEntry,
@@ -107,12 +110,23 @@ class CategoryAdmin(admin.ModelAdmin):
         "indirect_expense",
     )
     autocomplete_fields = (
-        "company", "default_unit", "default_tax_scheme", "sales_account", "purchase_account",
+        "company",
+        "default_unit",
+        "default_tax_scheme",
+        "sales_account",
+        "purchase_account",
         "discount_allowed_account",
-        "discount_received_account", "sales_account_category", "purchase_account_category",
-        "discount_allowed_account_category", "discount_received_account_category", "fixed_asset_account_category",
-        "direct_expense_account_category", "indirect_expense_account_category",
-        "dedicated_sales_account", "dedicated_purchase_account", "dedicated_discount_allowed_account",
+        "discount_received_account",
+        "sales_account_category",
+        "purchase_account_category",
+        "discount_allowed_account_category",
+        "discount_received_account_category",
+        "fixed_asset_account_category",
+        "direct_expense_account_category",
+        "indirect_expense_account_category",
+        "dedicated_sales_account",
+        "dedicated_purchase_account",
+        "dedicated_discount_allowed_account",
         "dedicated_discount_received_account",
     )
 
@@ -161,3 +175,21 @@ class InventoryAccountAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     raw_id_fields = ("journal_entry",)
+
+
+admin.site.register(BillOfMaterial)
+
+
+class InventoryAdjustmentVoucherAdmin(admin.ModelAdmin):
+    search_fields = (
+        "voucher_no",
+        "company__name",
+    )
+    list_filter = ("company",)
+    list_display = ("voucher_no",)
+
+
+admin.site.register(InventoryAdjustmentVoucher, InventoryAdjustmentVoucherAdmin)
+
+
+admin.site.register(InventoryConversionVoucher)

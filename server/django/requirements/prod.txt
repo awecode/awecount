@@ -1,4 +1,3 @@
 -r base.txt
-circus
-chaussette
+gunicorn
 sentry-sdk[django]
