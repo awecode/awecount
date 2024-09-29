@@ -38,29 +38,26 @@
                       v-model:endDate="filters.end_date"
                     />
                   </div>
-                  <!-- <div class="q-mx-sm">
-                      <SelectWithFetch v-model="filters.purchase_agent" endpoint="v1/purchase-agent/choices/"
-                        label="Purchase Agent" />
-                    </div> -->
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.party"
-                      endpoint="v1/parties/choices/"
-                      label="Party"
+                    <NAutoCompleteV2 v-model="filters.party"
+                      endpoint="v1/parties/choices"
+                      label="Party" fetchOnMount
                     />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
+                    <NAutoCompleteV2
                       v-model="filters.tax_scheme"
-                      endpoint="v1/tax_scheme/choices/"
+                      endpoint="v1/tax_scheme/choices"
                       label="Tax Scheme"
+                      fetchOnMount
                     />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
+                    <NAutoCompleteV2
                       v-model="filters.item_category"
-                      endpoint="v1/inventory-categories/choices/"
+                      endpoint="v1/inventory-categories/choices"
                       label="Item Category"
+                      fetchOnMount
                     />
                   </div>
                   <div class="q-mx-sm">
