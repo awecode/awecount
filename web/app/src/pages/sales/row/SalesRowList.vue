@@ -20,18 +20,20 @@
                     <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.sales_agent" endpoint="v1/sales-agent/choices/"
-                      label="Sales Agent" />
+                    <n-auto-complete-v2 v-model="filters.category" label="Sales Agent"
+                      :endpoint="`v1/sales-agent/choices`" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.party" endpoint="v1/parties/choices/" label="Party" />
+                    <n-auto-complete-v2 v-model="filters.party" endpoint="v1/parties/choices" label="Party"
+                      fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.tax_scheme" endpoint="v1/tax_scheme/choices/" label="Tax Scheme" />
+                    <n-auto-complete-v2 v-model="filters.tax_scheme" endpoint="v1/tax_scheme/choices/"
+                      label="Tax Scheme" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.item_category" endpoint="v1/inventory-categories/choices/"
-                      label="Item Category" />
+                    <n-auto-complete-v2 v-model="filters.item_category" endpoint="v1/inventory-categories/choices/"
+                      label="Item Category" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
                     <SelectWithFetch v-model="filters.item" endpoint="v1/items/sales-choices/" label="Items" />
