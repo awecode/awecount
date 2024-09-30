@@ -938,7 +938,7 @@ class Transaction(models.Model):
     )
     rate = models.FloatField(null=True, blank=True)
     remaining_quantity = models.PositiveIntegerField(null=True, blank=True)
-    consumption_data = models.JSONField(null=True, blank=True, default=dict)
+    consumption_data = models.JSONField(blank=True, default=dict)
     fifo_inconsistency_quantity = models.FloatField(
         null=True, blank=True
     )  # This is the quantity that is not accounted for in the fifo, or say which is not consumed
