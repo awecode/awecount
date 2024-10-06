@@ -248,8 +248,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         InventoryJournalEntry = apps.get_model("product", "JournalEntry")
         row_ids = self.rows.values_list("id", flat=True)
         JournalEntry.objects.filter(
-            Q(object_id__in=[*row_ids], content_type__model="salesvoucherrow") |
-            Q(object_id=self.id, content_type__model="salesvoucher"),
+            Q(object_id__in=[*row_ids], content_type__model="salesvoucherrow")
+            | Q(object_id=self.id, content_type__model="salesvoucher"),
         ).delete()
         InventoryJournalEntry.objects.filter(
             content_type__model="salesvoucherrow", object_id__in=row_ids
@@ -332,10 +332,20 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             # Handle wallet commissions
             if self.mode == "Bank Deposit" and self.bank_account.is_wallet:
-                commission = (
-                    row_total * self.bank_account.transaction_commission_percent / 100
-                )
+                commission = 0
+
+                if (
+                    self.bank_account
+                    and self.bank_account.transaction_commission_percent
+                ):
+                    commission = (
+                        row_total
+                        * self.bank_account.transaction_commission_percent
+                        / 100
+                    )
+
                 entries.append(["dr", dr_acc, row_total - commission])
+
                 if commission:
                     entries.append(
                         ["dr", self.bank_account.commission_account, commission]
