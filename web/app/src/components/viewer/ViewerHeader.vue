@@ -3,10 +3,12 @@
     <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
       <div v-if="fields?.party_name" class="col-12 col-md-6 row">
         <div class="col-6">Party</div>
-        <div class="col-6">{{ fields?.party_name }}</div>
+        <div class="col-6">
+          {{ fields?.customer_name ? fields?.customer_name : fields?.party_name }}
+        </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
-        <div class="col-6">{{fields?.customer_name ? 'Customer' : ''}}</div>
+        <div class="col-6">{{ fields?.customer_name ? 'Customer' : '' }}</div>
         <div class="col-6">{{ fields?.customer_name || '' }}</div>
       </div>
       <div class="col-12 col-md-6 row">
