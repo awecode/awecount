@@ -63,7 +63,7 @@
               </div>
               <div>
                 <n-auto-complete v-if="fields.party && aliases.length > 0" v-model="fields.customer_name"
-                  class="col-md-6 col-12" label="Customer Name" :options="aliases"
+                  class="col-md-6 col-12" label="Name on Invoice" :options="aliases"
                   :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null"
                   :error="errors?.customer_name ? errors?.customer_name : null" data-testid="alias-select">
                 </n-auto-complete>
@@ -239,7 +239,7 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      if (!partyMode.value){
+      if (!partyMode.value) {
         if (aliases.value.length === 0) {
           formData.fields.value.customer_name = null
         }
@@ -375,7 +375,9 @@ export default {
       if (obj) {
         formData.fields.value.address = obj.address
         formData.fields.value.mode = 'Credit'
-        aliases.value = obj.aliases
+        if (obj.aliases && obj.aliases.length > 0) {
+          aliases.value = [{ name: obj.name, id: null }, ...obj.aliases.map((item) => ({ name: item, id: item }))]
+        }
       } else formData.fields.value.mode = 'Cash'
     }
     watch(() => formData.formDefaults.value, () => {
