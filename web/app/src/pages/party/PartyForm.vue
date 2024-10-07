@@ -27,16 +27,16 @@
               class="col-12 col-md-6" :error-message="errors.tax_registration_number"
               :error="!!errors.tax_registration_number" />
           </div>
-          <PartyAlias v-model="fields.aliases" :errors="errors?.aliases" index="1">
-          </PartyAlias>
           <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1">
           </PartyRepresentative>
+          <PartyAlias v-model="fields.aliases" :errors="errors?.aliases" index="1">
+          </PartyAlias>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn @click.prevent="addAlias(fields)" color="green" outline label="Add new Alias" :loading="loading"
             class="q-mb-sm" />
           <span v-if="isEdit" class="flex gap-4">
-            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
+            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add New Representative"
               :loading="loading" class="q-mb-sm" />
             <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
               :loading="loading" class="q-mb-sm" />
