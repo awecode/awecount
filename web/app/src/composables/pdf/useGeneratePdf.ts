@@ -300,7 +300,7 @@ export default function useGeneratePdf(
       <div style="font-weight: 600; color: grey;">Billed To:</div>
       <div>${
         invoiceInfo.party
-          ? invoiceInfo.party_name
+          ? invoiceInfo.customer_name || invoiceInfo.party_name
           : invoiceInfo.customer_name || ''
       }</div>
       <div style="${invoiceInfo.address ? '' : 'display: none;'}">${

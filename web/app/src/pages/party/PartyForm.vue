@@ -29,10 +29,14 @@
           </div>
           <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1">
           </PartyRepresentative>
+          <PartyAlias v-model="fields.aliases" :errors="errors?.aliases" index="1">
+          </PartyAlias>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
+          <q-btn @click.prevent="addAlias(fields)" color="green" outline label="Add new Alias" :loading="loading"
+            class="q-mb-sm" />
           <span v-if="isEdit" class="flex gap-4">
-            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
+            <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add New Representative"
               :loading="loading" class="q-mb-sm" />
             <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
               :loading="loading" class="q-mb-sm" />
@@ -49,12 +53,14 @@
 
 <script>
 import useForm from '/src/composables/useForm'
+import PartyAlias from '/src/pages/party/PartyAlias.vue'
 import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useRouter } from 'vue-router'
 export default {
   components: {
     PartyRepresentative,
+    PartyAlias,
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
@@ -75,6 +81,13 @@ export default {
     const addRepresentetive = (fields) => {
       fields.representative.push({})
     }
+
+    const addAlias = (fields) => {
+      fields.aliases = fields.aliases || []
+      fields.aliases.push(null)
+    }
+
+
     function onDeletClick() {
       $q.dialog({
         title: '<span class="text-red">Delete?</span>',
@@ -101,6 +114,7 @@ export default {
 
     return {
       ...formData,
+      addAlias,
       addRepresentetive,
       onDeletClick,
       checkPermissions

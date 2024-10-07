@@ -72,13 +72,15 @@
       <template v-slot:body-cell-party_name="props">
         <q-td :props="props">
           <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
+            <!-- We neeed to know show party icons if both customer name and party name is available, as that means customer name is actually an alias of that party -->
+            <q-icon v-if="props.row.party_name" name="domain" size="sm" class="text-grey-8 q-mr-sm"></q-icon>
             {{ props.row.customer_name }}
           </div>
           <div v-else>
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
-            }}</span>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">
+              {{ props.row.party_name }}
+            </span>
           </div>
         </q-td>
       </template>
