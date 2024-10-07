@@ -1,12 +1,20 @@
 <template>
   <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2">
     <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
-      <div v-if="fields?.party_name" class="col-12 col-md-6 row">
-        <div class="col-6">Party</div>
-        <div class="col-6">
-          {{ fields?.customer_name ? fields?.customer_name : fields?.party_name }}
+      <template v-if="fields?.party_name">
+        <div class="col-12 col-md-6 row">
+          <div class="col-6">Party</div>
+          <div class="col-6">
+            {{ fields?.party_name }}
+          </div>
         </div>
-      </div>
+        <div v-if="fields?.customer_name" class="col-12 col-md-6 row">
+          <div class="col-6">Name on Invoice</div>
+          <div class="col-6">
+            {{ fields?.customer_name }}
+          </div>
+        </div>
+      </template>
       <div v-else class="col-12 col-md-6 row">
         <div class="col-6">{{ fields?.customer_name ? 'Customer' : '' }}</div>
         <div class="col-6">{{ fields?.customer_name || '' }}</div>
