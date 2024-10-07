@@ -4,6 +4,7 @@ from decimal import ROUND_HALF_UP, localcontext
 from dateutil.utils import today
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, ProtectedError, Q, Sum
@@ -258,6 +259,8 @@ class Party(models.Model):
     customer_account = models.OneToOneField(
         Account, null=True, related_name="customer_detail", on_delete=models.SET_NULL
     )
+
+    aliases = ArrayField(models.CharField(max_length=255), blank=True, default=list)
 
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="parties"
