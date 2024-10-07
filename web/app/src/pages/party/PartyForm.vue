@@ -33,9 +33,9 @@
           </PartyRepresentative>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
+          <q-btn @click.prevent="addAlias(fields)" color="green" outline label="Add new Alias" :loading="loading"
+            class="q-mb-sm" />
           <span v-if="isEdit" class="flex gap-4">
-            <q-btn @click.prevent="addAlias(fields)" color="green" outline label="Add new Alias" :loading="loading"
-              class="q-mb-sm" />
             <q-btn @click.prevent="addRepresentetive(fields)" color="green" outline label="Add new Representative"
               :loading="loading" class="q-mb-sm" />
             <q-btn v-if="checkPermissions('PartyDelete')" @click.prevent="onDeletClick" color="red-6" label="Delete"
@@ -83,6 +83,7 @@ export default {
     }
 
     const addAlias = (fields) => {
+      fields.aliases = fields.aliases || []
       fields.aliases.push(null)
     }
 
