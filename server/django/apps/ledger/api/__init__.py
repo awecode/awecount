@@ -463,7 +463,7 @@ class TransactionViewSet(
         return super().get_serializer_class()
 
     def get_queryset(self):
-        qs = Transaction.objects.prefetch_related(
+        qs = Transaction.objects.filter(company_id=self.request.company_id).prefetch_related(
             "account", "journal_entry__content_type"
         ).order_by("-journal_entry__date")
         start_date = self.request.GET.get("start_date")
