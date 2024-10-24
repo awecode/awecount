@@ -126,6 +126,10 @@ class TransactionFeeConfig:
         if fee_type not in FeeType.__members__.values():
             raise ValueError(f"Invalid fee type: {fee_type}")
 
+        if fee_type in [FeeType.FIXED, FeeType.PERCENTAGE]:
+            if "value" not in self.fee_config:
+                raise ValueError("Amount must be specified")
+
         if fee_type == FeeType.SLAB_BASED:
             if "slabs" not in self.fee_config:
                 raise ValueError("Slabs must be specified")
@@ -147,6 +151,28 @@ class TransactionFeeConfig:
             if min_fee > max_fee:
                 raise ValueError("Minimum fee cannot be greater than maximum fee")
 
+        if "extra_fee" in self.fee_config:
+            if not isinstance(self.fee_config["extra_fee"], dict):
+                raise ValueError("Extra fee must be a dictionary")
+
+            if "type" not in self.fee_config["extra_fee"]:
+                raise ValueError("Extra fee type must be specified")
+
+            if self.fee_config["extra_fee"]["type"] not in [
+                FeeType.FIXED,
+                FeeType.PERCENTAGE,
+            ]:
+                raise ValueError(
+                    "Invalid extra fee type. Expected 'fixed' or 'percentage'"
+                )
+
+            if "value" not in self.fee_config["extra_fee"]:
+                raise ValueError("Value must be specified for extra fee")
+
+            # if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+            #     if not 0 <= self.fee_config["extra_fee"]["value"] <= 100:
+            #         raise ValueError("Extra fee percentage must be between 0 and 100")
+
     def _apply_fee_limits(self, fee: Decimal) -> Decimal:
         if "min_fee" in self.fee_config:
             fee = max(fee, Decimal(str(self.fee_config["min_fee"])))
@@ -155,7 +181,10 @@ class TransactionFeeConfig:
             fee = min(fee, Decimal(str(self.fee_config["max_fee"])))
 
         if "extra_fee" in self.fee_config:
-            fee += Decimal(str(self.fee_config["extra_fee"]))
+            if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+                fee += fee * Decimal(str(self.fee_config["extra_fee"]["value"])) / 100
+            elif self.fee_config["extra_fee"]["type"] == FeeType.FIXED:
+                fee += Decimal(str(self.fee_config["extra_fee"]))
 
         return fee
 
@@ -187,10 +216,10 @@ class TransactionFeeConfig:
         fee = Decimal("0")
 
         if fee_type == FeeType.FIXED:
-            fee = Decimal(str(self.fee_config["amount"]))
+            fee = Decimal(str(self.fee_config["value"]))
 
         elif fee_type == FeeType.PERCENTAGE:
-            fee = amount * Decimal(str(self.fee_config["percentage"])) / 100
+            fee = amount * Decimal(str(self.fee_config["value"])) / 100
 
         elif fee_type == FeeType.SLAB_BASED:
             fee = self._calculate_slab_based_fee(amount, self.fee_config["slabs"])
