@@ -432,6 +432,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
 
+    def clean(self):
+        super().clean()
+        if self.mode != "Credit" and not self.payment_mode:
+            raise ValidationError(
+                "Payment mode is required for non-credit transactions."
+            )
+
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
         challan_dct = {}
@@ -481,11 +488,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.mode == "Credit":
             dr_acc = self.party.customer_account
         elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
+            dr_acc = self.payment_mode.account
             self.status = "Paid"
             self.payment_date = timezone.now().date()
         elif self.mode == "Bank Deposit":
-            dr_acc = self.bank_account.ledger
+            dr_acc = self.payment_mode.account
             self.status = "Paid"
         else:
             raise ValueError("No such mode!")
@@ -540,28 +547,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             entries.append(["cr", row.item.sales_account, sales_value])
 
-            # Handle wallet commissions
-            if self.mode == "Bank Deposit" and self.bank_account.is_wallet:
-                commission = 0
+            fee = 0
+            if self.payment_mode and (
+                fee := self.payment_mode.calculate_fee(row_total)
+            ):
+                entries.append(["dr", self.payment_mode.transaction_fee_account, fee])
 
-                if (
-                    self.bank_account
-                    and self.bank_account.transaction_commission_percent
-                ):
-                    commission = (
-                        row_total
-                        * self.bank_account.transaction_commission_percent
-                        / 100
-                    )
-
-                entries.append(["dr", dr_acc, row_total - commission])
-
-                if commission:
-                    entries.append(
-                        ["dr", self.bank_account.commission_account, commission]
-                    )
-            else:
-                entries.append(["dr", dr_acc, row_total])
+            entries.append(["dr", dr_acc, row_total - fee])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
