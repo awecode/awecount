@@ -230,7 +230,7 @@ class SalesVoucherRowSerializer(
     item_name = serializers.ReadOnlyField(source="item.name")
     amount_before_tax = serializers.ReadOnlyField()
     amount_before_discount = serializers.ReadOnlyField()
-    hs_code=serializers.ReadOnlyField(source="item.category.hs_code")
+    hs_code = serializers.ReadOnlyField(source="item.category.hs_code")
     selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
@@ -272,8 +272,8 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 #     item_obj.save()
             except Item.DoesNotExist:
                 item_obj_data = {
-                    'code': str(data["item_obj"].get("code")),
-                    'name': str(
+                    "code": str(data["item_obj"].get("code")),
+                    "name": str(
                         data["item_obj"].get("name") or data["item_obj"].get("code")
                     ),
                     "unit_id": data["unit_id"],
@@ -287,25 +287,34 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
                 discount_allowed_account = None
                 discount_received_account = None
                 if data["item_obj"].get("category_id"):
-                    item_category = Category.objects.filter(id=data["item_obj"].get("category_id"), company_id=self.context["request"].company_id).first()
+                    item_category = Category.objects.filter(
+                        id=data["item_obj"].get("category_id"),
+                        company_id=self.context["request"].company_id,
+                    ).first()
                     if item_category:
                         sales_account = item_category.dedicated_sales_account
                         purchase_account = item_category.dedicated_purchase_account
-                        discount_allowed_account = item_category.dedicated_discount_allowed_account
-                        discount_received_account = item_category.dedicated_discount_received_account
+                        discount_allowed_account = (
+                            item_category.dedicated_discount_allowed_account
+                        )
+                        discount_received_account = (
+                            item_category.dedicated_discount_received_account
+                        )
 
                 if sales_account:
-                    item_obj_data['sales_account_type'] = 'category'
-                    item_obj_data['sales_account'] = sales_account
+                    item_obj_data["sales_account_type"] = "category"
+                    item_obj_data["sales_account"] = sales_account
                 if purchase_account:
-                    item_obj_data['purchase_account_type'] = 'category'
-                    item_obj_data['purchase_account'] = purchase_account
+                    item_obj_data["purchase_account_type"] = "category"
+                    item_obj_data["purchase_account"] = purchase_account
                 if discount_allowed_account:
-                    item_obj_data['discount_allowed_account_type'] = 'category'
-                    item_obj_data['discount_allowed_account'] = discount_allowed_account
+                    item_obj_data["discount_allowed_account_type"] = "category"
+                    item_obj_data["discount_allowed_account"] = discount_allowed_account
                 if discount_received_account:
-                    item_obj_data['discount_received_account_type'] = 'category'
-                    item_obj_data['discount_received_account'] = discount_received_account
+                    item_obj_data["discount_received_account_type"] = "category"
+                    item_obj_data["discount_received_account"] = (
+                        discount_received_account
+                    )
 
                 item_obj = Item.objects.create(**item_obj_data)
 
@@ -351,7 +360,7 @@ class SalesVoucherCreateSerializer(
             raise ValidationError(
                 {"date": ["Date not in current fiscal year."]},
             )
- 
+
     def validate(self, data):
         # TODO: Find why due date is null and fix the issue
         request = self.context["request"]
@@ -833,10 +842,10 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
         if validated_data.get("status") in ["Draft", "Cancelled"]:
             return
         next_voucher_no = get_next_voucher_no(
-                Challan, self.context["request"].company_id
-         )
+            Challan, self.context["request"].company_id
+        )
         validated_data["voucher_no"] = next_voucher_no
-   
+
     def assign_fiscal_year(self, validated_data, instance=None):
         if instance and instance.fiscal_year_id:
             return
