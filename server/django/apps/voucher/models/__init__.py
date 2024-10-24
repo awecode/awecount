@@ -208,6 +208,7 @@ class TransactionFeeConfig:
 
 
 class PaymentMode(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     enabled_for_sales = models.BooleanField(default=True)
     enabled_for_purchase = models.BooleanField(default=True)
@@ -215,9 +216,11 @@ class PaymentMode(models.Model):
         "ledger.Account", on_delete=models.CASCADE, related_name="payment_modes"
     )
 
-    transaction_fee_config = models.JSONField(blank=True, default=dict)
+    transaction_fee_config = models.JSONField(blank=True, null=True)
     transaction_fee_account = models.ForeignKey(
         "ledger.Account",
+        blank=True,
+        null=True,
         on_delete=models.CASCADE,
         related_name="payment_mode_transaction_fee",
     )
@@ -227,14 +230,27 @@ class PaymentMode(models.Model):
 
     def clean(self):
         super().clean()
-        if self.transaction_fee_config:
-            try:
-                TransactionFeeConfig(self.transaction_fee_config)
-            except ValueError as e:
-                raise ValidationError({"transaction_fee": str(e)})
+
+        if not self.transaction_fee_config:
+            return
+
+        try:
+            TransactionFeeConfig(self.transaction_fee_config)
+        except ValueError as e:
+            raise ValidationError({"transaction_fee": str(e)})
+
+        if not self.transaction_fee_account:
+            raise ValidationError(
+                {
+                    "transaction_fee_account": "Transaction fee account is required when transaction fee is enabled"
+                }
+            )
 
     def calculate_fee(self, amount: Decimal) -> Decimal:
         """Calculate the transaction fee for a given amount"""
+        if not self.transaction_fee_config:
+            return Decimal("0")
+
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
 
