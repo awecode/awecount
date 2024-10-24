@@ -1,4 +1,6 @@
 import datetime
+from decimal import Decimal
+from enum import Enum
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -75,6 +77,165 @@ TRANSACTION_TYPE_CHOICES = [
     ("Cr", "Cr"),
     ("Dr", "Dr"),
 ]
+
+
+class FeeType(str, Enum):
+    FIXED = "fixed"
+    PERCENTAGE = "percentage"
+    SLAB_BASED = "slab_based"
+    SLIDING_SCALE = "sliding_scale"
+    TIME_BASED = "time_based"  # Not implemented yet
+
+
+class TransactionFeeConfig:
+    def __init__(self, fee_config: dict):
+        self.fee_config = fee_config
+        self.validate()
+
+    def _validate_slabs(self):
+        slabs = self.fee_config["slabs"]
+        if not isinstance(slabs, list):
+            raise ValueError("Slabs must be a list")
+
+        prev_max = Decimal("0")
+        for slab in slabs:
+            if not all(key in slab for key in ["min_amount", "rate"]):
+                raise ValueError("Each slab must specify min_amount and rate")
+
+            current_min = Decimal(str(slab["min_amount"]))
+            if current_min != prev_max:
+                raise ValueError("Slabs must be continuous without gaps")
+
+            if "max_amount" in slab:
+                prev_max = Decimal(str(slab["max_amount"]))
+            else:
+                # Last slab can have no max_amount
+                if slab != slabs[-1]:
+                    raise ValueError("Only the last slab can have no maximum amount")
+                prev_max = Decimal("infinity")
+
+    def validate(self):
+        if not isinstance(self.fee_config, dict):
+            raise ValueError("Fee config must be a dictionary")
+
+        if "type" not in self.fee_config:
+            raise ValueError("Fee type must be specified")
+
+        fee_type = self.fee_config["type"]
+
+        if fee_type not in FeeType.__members__.values():
+            raise ValueError(f"Invalid fee type: {fee_type}")
+
+        if fee_type == FeeType.SLAB_BASED:
+            if "slabs" not in self.fee_config:
+                raise ValueError("Slabs must be specified")
+            try:
+                self._validate_slabs()
+            except Exception as e:
+                raise e
+
+        if fee_type == FeeType.SLIDING_SCALE:
+            if "slabs" not in self.fee_config:
+                raise ValueError("Slabs must be specified")
+            for slab in self.fee_config["slabs"]:
+                if not all(key in slab for key in ["min_amount", "rate"]):
+                    raise ValueError("Each slab must specify min_amount and rate")
+
+        if "min_fee" in self.fee_config and "max_fee" in self.fee_config:
+            min_fee = Decimal(str(self.fee_config["min_fee"]))
+            max_fee = Decimal(str(self.fee_config["max_fee"]))
+            if min_fee > max_fee:
+                raise ValueError("Minimum fee cannot be greater than maximum fee")
+
+    def _apply_fee_limits(self, fee: Decimal) -> Decimal:
+        if "min_fee" in self.fee_config:
+            fee = max(fee, Decimal(str(self.fee_config["min_fee"])))
+
+        if "max_fee" in self.fee_config:
+            fee = min(fee, Decimal(str(self.fee_config["max_fee"])))
+
+        if "extra_fee" in self.fee_config:
+            fee += Decimal(str(self.fee_config["extra_fee"]))
+
+        return fee
+
+    def _calculate_slab_based_fee(self, amount: Decimal, slabs: list[dict]) -> Decimal:
+        total_fee = Decimal("0")
+        remaining_amount = amount
+
+        for slab in slabs:
+            min_amount = Decimal(str(slab["min_amount"]))
+            max_amount = Decimal(str(slab.get("max_amount", float("inf"))))
+            rate = Decimal(str(slab["rate"]))
+
+            # Calculate the amount that falls in this slab
+            if remaining_amount <= 0:
+                break
+
+            slab_amount = min(remaining_amount, max_amount - min_amount)
+            slab_fee = slab_amount * rate / 100
+            total_fee += slab_fee
+
+            remaining_amount -= slab_amount
+
+        return total_fee
+
+    def calculate_fee(self, amount: Decimal) -> Decimal:
+        fee_type = self.fee_config["type"]
+
+        # Calculate base fee
+        fee = Decimal("0")
+
+        if fee_type == FeeType.FIXED:
+            fee = Decimal(str(self.fee_config["amount"]))
+
+        elif fee_type == FeeType.PERCENTAGE:
+            fee = amount * Decimal(str(self.fee_config["percentage"])) / 100
+
+        elif fee_type == FeeType.SLAB_BASED:
+            fee = self._calculate_slab_based_fee(amount, self.fee_config["slabs"])
+
+        elif fee_type == FeeType.SLIDING_SCALE:
+            _fee = Decimal("0")
+            for slab in self.fee_config["slabs"]:
+                if amount >= Decimal(str(slab["min_amount"])):
+                    _fee = amount * Decimal(str(slab["rate"])) / 100
+                else:
+                    break
+            fee = _fee
+
+        return self._apply_fee_limits(fee)
+
+
+class PaymentMode(models.Model):
+    name = models.CharField(max_length=255)
+    enabled_for_sales = models.BooleanField(default=True)
+    enabled_for_purchase = models.BooleanField(default=True)
+    account = models.ForeignKey(
+        "ledger.Account", on_delete=models.CASCADE, related_name="payment_modes"
+    )
+
+    transaction_fee_config = models.JSONField(blank=True, default=dict)
+    transaction_fee_account = models.ForeignKey(
+        "ledger.Account",
+        on_delete=models.CASCADE,
+        related_name="payment_mode_transaction_fee",
+    )
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.transaction_fee_config:
+            try:
+                TransactionFeeConfig(self.transaction_fee_config)
+            except ValueError as e:
+                raise ValidationError({"transaction_fee": str(e)})
+
+    def calculate_fee(self, amount: Decimal) -> Decimal:
+        """Calculate the transaction fee for a given amount"""
+        return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
 
 class Challan(TransactionModel, InvoiceModel):
@@ -176,9 +337,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         on_delete=models.SET_NULL,
         related_name="sales",
     )
+
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
+    payment_mode = models.ForeignKey(
+        PaymentMode, blank=True, null=True, on_delete=models.SET_NULL
     )
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
