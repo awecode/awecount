@@ -44,7 +44,8 @@ class SalesSetting(models.Model):
     @property
     def fields(self):
         return {
-            "mode": self.payment_mode_id,
+            "mode": self.bank_account_id or self.mode,
+            "payment_mode": self.payment_mode_id,
             "trade_discount": self.is_trade_discount_in_voucher,
         }
 
