@@ -291,33 +291,37 @@ class PaymentMode(models.Model):
 
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
+    # TODO: remove float
     def build_ledger_entries(
         self,
-        amount: Decimal,
+        amount: Decimal | float,
         entry_type: Literal["dr", "cr"],
         creditor_account=None,
     ) -> list[list]:
         """Get ledger entries for this payment mode"""
 
-        fee = self.calculate_fee(amount)
+        if entry_type not in ("dr", "cr"):
+            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'")
+
+        # ensure amount is Decimal
+        amount = Decimal(str(amount)) if isinstance(amount, float) else amount
 
         if self.is_credit:
             if not creditor_account:
                 raise ValueError("Creditor account is required for credit payment mode")
-            return [[entry_type, creditor_account, amount]]
+            return [[entry_type, creditor_account, float(amount)]]
 
-        if entry_type == "dr":
-            return [
-                ["dr", self.account, amount - fee],
-                ["dr", self.transaction_fee_account, fee],
-            ]
-        elif entry_type == "cr":
-            return [
-                ["cr", self.account, amount + fee],
-                ["cr", self.transaction_fee_account, fee],
-            ]
-        else:
-            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'.")
+        fee = self.calculate_fee(amount)
+        entries = []
+
+        entry_amount = (amount - fee) if entry_type == "dr" else (amount + fee)
+
+        entries.append([entry_type, self.account, float(entry_amount)])
+
+        if fee:
+            entries.append([entry_type, self.transaction_fee_account, float(fee)])
+
+        return entries
 
 
 class Challan(TransactionModel, InvoiceModel):
