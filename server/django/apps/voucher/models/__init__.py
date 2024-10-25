@@ -290,6 +290,34 @@ class PaymentMode(models.Model):
 
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
+    def build_ledger_entries(
+        self,
+        amount: Decimal,
+        entry_type: Literal["dr", "cr"],
+        creditor_account=None,
+    ) -> list[list]:
+        """Get ledger entries for this payment mode"""
+
+        fee = self.calculate_fee(amount)
+
+        if self.is_credit:
+            if not creditor_account:
+                raise ValueError("Creditor account is required for credit payment mode")
+            return [[entry_type, creditor_account, amount]]
+
+        if entry_type == "dr":
+            return [
+                ["dr", self.account, amount - fee],
+                ["dr", self.transaction_fee_account, fee],
+            ]
+        elif entry_type == "cr":
+            return [
+                ["cr", self.account, amount + fee],
+                ["cr", self.transaction_fee_account, fee],
+            ]
+        else:
+            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'.")
+
 
 class Challan(TransactionModel, InvoiceModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
