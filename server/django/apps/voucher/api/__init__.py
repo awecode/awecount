@@ -1682,7 +1682,7 @@ class PurchaseSettingsViewSet(CRULViewSet):
 
 class SalesSettingsViewSet(CRULViewSet):
     serializer_class = SalesSettingCreateSerializer
-    collections = (("bank_accounts", BankAccount),)
+    collections = (("payment_modes", PaymentMode),)
 
     def get_defaults(self, request=None):
         s_setting = self.request.company.sales_setting
