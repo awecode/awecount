@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 from enum import Enum
+from typing import Literal
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -423,9 +424,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
-    payment_mode = models.ForeignKey(
-        PaymentMode, blank=True, null=True, on_delete=models.SET_NULL
-    )
+    payment_mode = models.ForeignKey(PaymentMode, on_delete=models.PROTECT)
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
 
@@ -470,9 +469,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
     def clean(self):
         super().clean()
-        if self.mode != "Credit" and not self.payment_mode:
+        if not self.payment_mode.enabled_for_sales:
             raise ValidationError(
-                "Payment mode is required for non-credit transactions."
+                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
             )
 
     def apply_inventory_transactions(self):
@@ -521,19 +520,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            dr_acc = self.party.customer_account
-        elif self.mode == "Cash":
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
-            self.payment_date = timezone.now().date()
-        elif self.mode == "Bank Deposit":
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
-        else:
-            raise ValueError("No such mode!")
 
-        self.save()
+        creditor_account = self.party.customer_account
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
@@ -583,13 +571,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             entries.append(["cr", row.item.sales_account, sales_value])
 
-            fee = 0
-            if self.payment_mode and (
-                fee := self.payment_mode.calculate_fee(row_total)
-            ):
-                entries.append(["dr", self.payment_mode.transaction_fee_account, fee])
+            payment_entries = self.payment_mode.build_ledger_entries(
+                amount=row_total,
+                entry_type="dr",
+                creditor_account=creditor_account,
+            )
 
-            entries.append(["dr", dr_acc, row_total - fee])
+            entries.append(*payment_entries)
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
