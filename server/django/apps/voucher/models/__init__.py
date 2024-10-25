@@ -239,10 +239,15 @@ class TransactionFeeConfig:
 class PaymentMode(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    is_credit = models.BooleanField(default=False)
     enabled_for_sales = models.BooleanField(default=True)
     enabled_for_purchase = models.BooleanField(default=True)
     account = models.ForeignKey(
-        "ledger.Account", on_delete=models.CASCADE, related_name="payment_modes"
+        "ledger.Account",
+        on_delete=models.CASCADE,
+        related_name="payment_modes",
+        blank=True,
+        null=True,
     )
 
     transaction_fee_config = models.JSONField(blank=True, null=True)
@@ -259,6 +264,9 @@ class PaymentMode(models.Model):
 
     def clean(self):
         super().clean()
+
+        if not self.is_credit and not self.account:
+            raise ValidationError("Account is required for non-credit payment modes")
 
         if not self.transaction_fee_config:
             return
@@ -277,7 +285,7 @@ class PaymentMode(models.Model):
 
     def calculate_fee(self, amount: Decimal) -> Decimal:
         """Calculate the transaction fee for a given amount"""
-        if not self.transaction_fee_config:
+        if not self.transaction_fee_config or self.is_credit:
             return Decimal("0")
 
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
