@@ -577,7 +577,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                 creditor_account=creditor_account,
             )
 
-            entries.append(*payment_entries)
+            entries.extend(payment_entries)
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
