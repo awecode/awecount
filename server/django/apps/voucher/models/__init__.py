@@ -424,7 +424,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
-    payment_mode = models.ForeignKey(PaymentMode, on_delete=models.PROTECT)
+    payment_mode = models.ForeignKey(
+        PaymentMode, on_delete=models.PROTECT, blank=True, null=True
+    )
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
 
