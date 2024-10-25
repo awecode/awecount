@@ -105,6 +105,7 @@ from ..models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    PaymentMode,
     PurchaseDiscount,
     PurchaseOrder,
     PurchaseOrderRow,
@@ -164,6 +165,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             GenericSerializer,
             True,
             ["bank_name", "short_name", "account_number"],
+        ),
+        (
+            "payment_modes",
+            PaymentMode,
+            GenericSerializer,
+            True,
+            ["name"],
         ),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
