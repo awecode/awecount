@@ -665,6 +665,7 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
             "company",
             "user",
             "bank_account",
+            "payment_mode",
         )
 
 
