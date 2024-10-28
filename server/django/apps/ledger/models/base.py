@@ -799,7 +799,6 @@ def handle_company_creation(sender, **kwargs):
 
     PaymentMode = apps.get_model("voucher", "PaymentMode")
     PaymentMode.objects.create(name="Cash", account=cash_account, company=company)
-    PaymentMode.objects.create(name="Credit", is_credit=True, company=company)
     # Account.objects.create(name='Merchandise', category=assets, code='A-M', company=company, default=True)
     cash_equivalent_account = Category.objects.create(
         name="Cash Equivalent Account",
