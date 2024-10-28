@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
 
 from dateutil.utils import today
+from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -781,16 +782,23 @@ def handle_company_creation(sender, **kwargs):
         code="A-TR-TDS",
     )
 
-    cash_account = Category.objects.create(
+    cash_account_category = Category.objects.create(
         name="Cash Accounts",
         code="A-C",
         parent=root["Assets"],
         company=company,
         default=True,
     )
-    Account.objects.create(
-        company=company, default=True, name="Cash", category=cash_account, code="A-C-C"
+    cash_account = Account.objects.create(
+        company=company,
+        default=True,
+        name="Cash",
+        category=cash_account_category,
+        code="A-C-C",
     )
+
+    PaymentMode = apps.get_model("voucher", "PaymentMode")
+    PaymentMode.objects.create(name="Cash", account=cash_account, company=company)
     # Account.objects.create(name='Merchandise', category=assets, code='A-M', company=company, default=True)
     cash_equivalent_account = Category.objects.create(
         name="Cash Equivalent Account",

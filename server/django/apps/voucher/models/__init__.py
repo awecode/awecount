@@ -1,4 +1,7 @@
 import datetime
+from decimal import Decimal
+from enum import Enum
+from typing import Literal
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -75,6 +78,240 @@ TRANSACTION_TYPE_CHOICES = [
     ("Cr", "Cr"),
     ("Dr", "Dr"),
 ]
+
+
+class FeeType(str, Enum):
+    FIXED = "fixed"
+    PERCENTAGE = "percentage"
+    SLAB_BASED = "slab_based"
+    SLIDING_SCALE = "sliding_scale"
+    TIME_BASED = "time_based"  # Not implemented yet
+
+
+class TransactionFeeConfig:
+    def __init__(self, fee_config: dict):
+        self.fee_config = fee_config
+        self.validate()
+
+    def _validate_slabs(self):
+        slabs = self.fee_config["slabs"]
+        if not isinstance(slabs, list):
+            raise ValueError("Slabs must be a list")
+
+        prev_max = Decimal("0")
+        for slab in slabs:
+            if not all(key in slab for key in ["min_amount", "rate"]):
+                raise ValueError("Each slab must specify min_amount and rate")
+
+            current_min = Decimal(str(slab["min_amount"]))
+            if current_min != prev_max:
+                raise ValueError("Slabs must be continuous without gaps")
+
+            if "max_amount" in slab:
+                prev_max = Decimal(str(slab["max_amount"]))
+            else:
+                # Last slab can have no max_amount
+                if slab != slabs[-1]:
+                    raise ValueError("Only the last slab can have no maximum amount")
+                prev_max = Decimal("infinity")
+
+    def validate(self):
+        if not isinstance(self.fee_config, dict):
+            raise ValueError("Fee config must be a dictionary")
+
+        if "type" not in self.fee_config:
+            raise ValueError("Fee type must be specified")
+
+        fee_type = self.fee_config["type"]
+
+        if fee_type not in FeeType.__members__.values():
+            raise ValueError(f"Invalid fee type: {fee_type}")
+
+        if fee_type in [FeeType.FIXED, FeeType.PERCENTAGE]:
+            if "value" not in self.fee_config:
+                raise ValueError("Amount must be specified")
+
+        if fee_type == FeeType.SLAB_BASED:
+            if "slabs" not in self.fee_config:
+                raise ValueError("Slabs must be specified")
+            try:
+                self._validate_slabs()
+            except Exception as e:
+                raise e
+
+        if fee_type == FeeType.SLIDING_SCALE:
+            if "slabs" not in self.fee_config:
+                raise ValueError("Slabs must be specified")
+            for slab in self.fee_config["slabs"]:
+                if not all(key in slab for key in ["min_amount", "rate"]):
+                    raise ValueError("Each slab must specify min_amount and rate")
+
+        if "min_fee" in self.fee_config and "max_fee" in self.fee_config:
+            min_fee = Decimal(str(self.fee_config["min_fee"]))
+            max_fee = Decimal(str(self.fee_config["max_fee"]))
+            if min_fee > max_fee:
+                raise ValueError("Minimum fee cannot be greater than maximum fee")
+
+        if "extra_fee" in self.fee_config:
+            if not isinstance(self.fee_config["extra_fee"], dict):
+                raise ValueError("Extra fee must be a dictionary")
+
+            if "type" not in self.fee_config["extra_fee"]:
+                raise ValueError("Extra fee type must be specified")
+
+            if self.fee_config["extra_fee"]["type"] not in [
+                FeeType.FIXED,
+                FeeType.PERCENTAGE,
+            ]:
+                raise ValueError(
+                    "Invalid extra fee type. Expected 'fixed' or 'percentage'"
+                )
+
+            if "value" not in self.fee_config["extra_fee"]:
+                raise ValueError("Value must be specified for extra fee")
+
+            # if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+            #     if not 0 <= self.fee_config["extra_fee"]["value"] <= 100:
+            #         raise ValueError("Extra fee percentage must be between 0 and 100")
+
+    def _apply_fee_limits(self, fee: Decimal) -> Decimal:
+        if "min_fee" in self.fee_config:
+            fee = max(fee, Decimal(str(self.fee_config["min_fee"])))
+
+        if "max_fee" in self.fee_config:
+            fee = min(fee, Decimal(str(self.fee_config["max_fee"])))
+
+        if "extra_fee" in self.fee_config:
+            if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+                fee += fee * Decimal(str(self.fee_config["extra_fee"]["value"])) / 100
+            elif self.fee_config["extra_fee"]["type"] == FeeType.FIXED:
+                fee += Decimal(str(self.fee_config["extra_fee"]))
+
+        return fee
+
+    def _calculate_slab_based_fee(self, amount: Decimal, slabs: list[dict]) -> Decimal:
+        total_fee = Decimal("0")
+        remaining_amount = amount
+
+        for slab in slabs:
+            min_amount = Decimal(str(slab["min_amount"]))
+            max_amount = Decimal(str(slab.get("max_amount", float("inf"))))
+            rate = Decimal(str(slab["rate"]))
+
+            # Calculate the amount that falls in this slab
+            if remaining_amount <= 0:
+                break
+
+            slab_amount = min(remaining_amount, max_amount - min_amount)
+            slab_fee = slab_amount * rate / 100
+            total_fee += slab_fee
+
+            remaining_amount -= slab_amount
+
+        return total_fee
+
+    def calculate_fee(self, amount: Decimal) -> Decimal:
+        fee_type = self.fee_config["type"]
+
+        # Calculate base fee
+        fee = Decimal("0")
+
+        if fee_type == FeeType.FIXED:
+            fee = Decimal(str(self.fee_config["value"]))
+
+        elif fee_type == FeeType.PERCENTAGE:
+            fee = amount * Decimal(str(self.fee_config["value"])) / 100
+
+        elif fee_type == FeeType.SLAB_BASED:
+            fee = self._calculate_slab_based_fee(amount, self.fee_config["slabs"])
+
+        elif fee_type == FeeType.SLIDING_SCALE:
+            _fee = Decimal("0")
+            for slab in self.fee_config["slabs"]:
+                if amount >= Decimal(str(slab["min_amount"])):
+                    _fee = amount * Decimal(str(slab["rate"])) / 100
+                else:
+                    break
+            fee = _fee
+
+        return self._apply_fee_limits(fee)
+
+
+class PaymentMode(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    enabled_for_sales = models.BooleanField(default=True)
+    enabled_for_purchase = models.BooleanField(default=True)
+    account = models.ForeignKey(
+        "ledger.Account",
+        on_delete=models.CASCADE,
+        related_name="payment_modes",
+        blank=True,
+        null=True,
+    )
+
+    transaction_fee_config = models.JSONField(blank=True, null=True)
+    transaction_fee_account = models.ForeignKey(
+        "ledger.Account",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="payment_mode_transaction_fee",
+    )
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+
+        if not self.transaction_fee_config:
+            return
+
+        try:
+            TransactionFeeConfig(self.transaction_fee_config)
+        except ValueError as e:
+            raise ValidationError({"transaction_fee": str(e)})
+
+        if not self.transaction_fee_account:
+            raise ValidationError(
+                {
+                    "transaction_fee_account": "Transaction fee account is required when transaction fee is enabled"
+                }
+            )
+
+    def calculate_fee(self, amount: Decimal) -> Decimal:
+        """Calculate the transaction fee for a given amount"""
+        if not self.transaction_fee_config:
+            return Decimal("0")
+
+        return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
+
+    # TODO: remove float
+    def build_ledger_entries(
+        self,
+        amount: Decimal | float,
+        entry_type: Literal["dr", "cr"],
+    ) -> list[list]:
+        """Get ledger entries for this payment mode"""
+
+        if entry_type not in ("dr", "cr"):
+            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'")
+
+        # ensure amount is Decimal
+        amount = Decimal(str(amount)) if isinstance(amount, float) else amount
+
+        fee = self.calculate_fee(amount)
+        entries = []
+
+        entry_amount = (amount - fee) if entry_type == "dr" else (amount + fee)
+
+        entries.append([entry_type, self.account, float(entry_amount)])
+
+        if fee:
+            entries.append([entry_type, self.transaction_fee_account, float(fee)])
+
+        return entries
 
 
 class Challan(TransactionModel, InvoiceModel):
@@ -176,9 +413,19 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         on_delete=models.SET_NULL,
         related_name="sales",
     )
-    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+
+    mode = models.CharField(
+        choices=MODES, default=MODES[0][0], max_length=15, null=True, blank=True
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
+    )
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this sales invoice. Null means it is not paid (credit).",
     )
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
@@ -221,6 +468,13 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     @property
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
+
+    def clean(self):
+        super().clean()
+        if not self.payment_mode.enabled_for_sales:
+            raise ValidationError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
+            )
 
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
@@ -268,19 +522,8 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            dr_acc = self.party.customer_account
-        elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
-            self.status = "Paid"
-            self.payment_date = timezone.now().date()
-        elif self.mode == "Bank Deposit":
-            dr_acc = self.bank_account.ledger
-            self.status = "Paid"
-        else:
-            raise ValueError("No such mode!")
 
-        self.save()
+        creditor_account = self.party.customer_account
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
@@ -330,28 +573,15 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             entries.append(["cr", row.item.sales_account, sales_value])
 
-            # Handle wallet commissions
-            if self.mode == "Bank Deposit" and self.bank_account.is_wallet:
-                commission = 0
+            if self.payment_mode:
+                payment_entries = self.payment_mode.build_ledger_entries(
+                    amount=row_total,
+                    entry_type="dr",
+                )
 
-                if (
-                    self.bank_account
-                    and self.bank_account.transaction_commission_percent
-                ):
-                    commission = (
-                        row_total
-                        * self.bank_account.transaction_commission_percent
-                        / 100
-                    )
-
-                entries.append(["dr", dr_acc, row_total - commission])
-
-                if commission:
-                    entries.append(
-                        ["dr", self.bank_account.commission_account, commission]
-                    )
+                entries.extend(payment_entries)
             else:
-                entries.append(["dr", dr_acc, row_total])
+                entries.append(["dr", creditor_account, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 

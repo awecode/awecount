@@ -105,6 +105,7 @@ from ..models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    PaymentMode,
     PurchaseDiscount,
     PurchaseOrder,
     PurchaseOrderRow,
@@ -164,6 +165,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             GenericSerializer,
             True,
             ["bank_name", "short_name", "account_number"],
+        ),
+        (
+            "payment_modes",
+            PaymentMode,
+            GenericSerializer,
+            True,
+            ["name"],
         ),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
@@ -276,9 +284,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
-        # Return available bank accounts to enable editing the mode.
-        data["available_bank_accounts"] = GenericSerializer(
-            BankAccount.objects.filter(company=request.company), many=True
+        data["available_payment_modes"] = GenericSerializer(
+            PaymentMode.objects.filter(company=request.company), many=True
         ).data
         return Response(data)
 
@@ -337,6 +344,17 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         else:
             obj.mode = mode
             obj.bank_account_id = None
+        obj.apply_transactions()
+        return Response({})
+
+    @action(detail=True, methods=["POST"], url_path="update-payment-mode")
+    def update_payment_mode(self, request, pk):
+        obj = self.get_object()
+        payment_mode = request.data.get("payment_mode")
+        if payment_mode and str(payment_mode).isdigit():
+            obj.payment_mode_id = payment_mode
+        else:
+            raise RESTValidationError({"payment_mode": "Invalid payment mode"})
         obj.apply_transactions()
         return Response({})
 
@@ -1674,7 +1692,7 @@ class PurchaseSettingsViewSet(CRULViewSet):
 
 class SalesSettingsViewSet(CRULViewSet):
     serializer_class = SalesSettingCreateSerializer
-    collections = (("bank_accounts", BankAccount),)
+    collections = (("payment_modes", PaymentMode),)
 
     def get_defaults(self, request=None):
         s_setting = self.request.company.sales_setting
