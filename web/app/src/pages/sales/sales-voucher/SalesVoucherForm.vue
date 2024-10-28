@@ -218,13 +218,15 @@ export default {
 
     const customerMode = ref(false)
     const switchMode = (fields) => {
-      if (fields.mode !== 'Credit') {
-        customerMode.value = !customerMode.value
-      } else
+      if (fields.payment_mode === null && !customerMode.value) {
         $q.notify({
           color: 'orange-4',
           message: 'Credit customer must be a party!',
         })
+        return
+      }
+
+      customerMode.value = !customerMode.value
     }
     const deleteRowErr = (index, errors, deleteObj) => {
       if (deleteObj) {
@@ -379,16 +381,6 @@ export default {
       }
     }
 
-    const onPaymentModeChange = (obj) => {
-      // if customer is not party then credit mode can not be selected
-      if (obj && obj.is_credit && partyMode.value) {
-        console.log('here')
-        $q.notify({
-          color: 'orange-4',
-          message: 'Can not select credit mode for non-party customer!',
-        })
-      }
-    }
 
     watch(() => formData.formDefaults.value, () => {
       if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
@@ -414,6 +406,18 @@ export default {
       }
       return obj
     })
+
+    const onPaymentModeChange = (obj) => {
+      // if customer is not party then credit mode can not be selected
+      if (obj && obj.id === null && customerMode.value) {
+        $q.notify({
+          color: 'orange-4',
+          message: 'Can not select credit mode for non-party customer!',
+        })
+        formData.fields.value.payment_mode = modeOptionsComputed.value.results[1].id
+      }
+    }
+
     return {
       ...formData,
       CategoryForm,
