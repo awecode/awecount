@@ -424,7 +424,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         related_name="sales",
     )
 
-    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    mode = models.CharField(
+        choices=MODES, default=MODES[0][0], max_length=15, null=True, blank=True
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
