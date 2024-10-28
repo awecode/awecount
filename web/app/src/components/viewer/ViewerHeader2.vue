@@ -69,8 +69,9 @@
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12" :options="props.paymentModeOptions"
-              option-value="id" option-label="name" map-options emit-value></q-select>
+            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12"
+              :options="[{ id: null, name: 'Credit' }, ...props.paymentModeOptions]" option-value="id"
+              option-label="name" map-options emit-value></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
             <q-btn label="update" color="orange-5" class="q-mt-md"
