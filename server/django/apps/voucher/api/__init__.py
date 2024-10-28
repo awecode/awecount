@@ -72,7 +72,6 @@ from apps.voucher.serializers.debit_note import (
     DebitNoteDetailSerializer,
     DebitNoteListSerializer,
 )
-from apps.voucher.serializers.payment_mode import PaymentModeSerializer
 from apps.voucher.serializers.purchase import (
     PurchaseOrderCreateSerializer,
     PurchaseOrderListSerializer,
@@ -170,7 +169,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         (
             "payment_modes",
             PaymentMode,
-            PaymentModeSerializer,
+            GenericSerializer,
             True,
             ["name"],
         ),
@@ -285,7 +284,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
-        data["available_payment_modes"] = PaymentModeSerializer(
+        data["available_payment_modes"] = GenericSerializer(
             PaymentMode.objects.filter(company=request.company), many=True
         ).data
         return Response(data)
