@@ -111,7 +111,7 @@
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.payment_mode" label="Mode *"
+              <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *"
                 endpoint="/v1/sales-voucher/create-defaults/payment_modes" :error="!!errors?.payment_mode"
                 :options="modeOptionsComputed"
                 :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
