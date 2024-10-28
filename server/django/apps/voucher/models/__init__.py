@@ -240,7 +240,6 @@ class TransactionFeeConfig:
 class PaymentMode(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    is_credit = models.BooleanField(default=False)
     enabled_for_sales = models.BooleanField(default=True)
     enabled_for_purchase = models.BooleanField(default=True)
     account = models.ForeignKey(
@@ -266,9 +265,6 @@ class PaymentMode(models.Model):
     def clean(self):
         super().clean()
 
-        if not self.is_credit and not self.account:
-            raise ValidationError("Account is required for non-credit payment modes")
-
         if not self.transaction_fee_config:
             return
 
@@ -286,7 +282,7 @@ class PaymentMode(models.Model):
 
     def calculate_fee(self, amount: Decimal) -> Decimal:
         """Calculate the transaction fee for a given amount"""
-        if not self.transaction_fee_config or self.is_credit:
+        if not self.transaction_fee_config:
             return Decimal("0")
 
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
@@ -296,7 +292,6 @@ class PaymentMode(models.Model):
         self,
         amount: Decimal | float,
         entry_type: Literal["dr", "cr"],
-        creditor_account=None,
     ) -> list[list]:
         """Get ledger entries for this payment mode"""
 
@@ -305,11 +300,6 @@ class PaymentMode(models.Model):
 
         # ensure amount is Decimal
         amount = Decimal(str(amount)) if isinstance(amount, float) else amount
-
-        if self.is_credit:
-            if not creditor_account:
-                raise ValueError("Creditor account is required for credit payment mode")
-            return [[entry_type, creditor_account, float(amount)]]
 
         fee = self.calculate_fee(amount)
         entries = []
@@ -431,7 +421,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
     payment_mode = models.ForeignKey(
-        PaymentMode, on_delete=models.PROTECT, blank=True, null=True
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this sales invoice. Null means it is not paid (credit).",
     )
 
     challans = models.ManyToManyField(Challan, related_name="sales", blank=True)
@@ -579,13 +573,15 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
             entries.append(["cr", row.item.sales_account, sales_value])
 
-            payment_entries = self.payment_mode.build_ledger_entries(
-                amount=row_total,
-                entry_type="dr",
-                creditor_account=creditor_account,
-            )
+            if self.payment_mode:
+                payment_entries = self.payment_mode.build_ledger_entries(
+                    amount=row_total,
+                    entry_type="dr",
+                )
 
-            entries.extend(payment_entries)
+                entries.extend(payment_entries)
+            else:
+                entries.append(["dr", creditor_account, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
