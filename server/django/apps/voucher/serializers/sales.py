@@ -23,7 +23,7 @@ from ..models import (
     SalesVoucherRow,
 )
 from ..models.invoice_design import InvoiceDesign
-from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
+from .mixins import DiscountObjectTypeSerializerMixin
 
 
 class SalesDiscountSerializer(serializers.ModelSerializer):
@@ -327,7 +327,6 @@ class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
 class SalesVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
     voucher_no = serializers.ReadOnlyField()
@@ -509,7 +508,6 @@ class SalesVoucherCreateSerializer(
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         self.validate_invoice_date(validated_data)
@@ -544,7 +542,6 @@ class SalesVoucherCreateSerializer(
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         # Check if there are invoices in later date
         validated_data["company_id"] = self.context["request"].company_id
         validated_data["fiscal_year_id"] = instance.fiscal_year_id
@@ -665,7 +662,6 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
             "company",
             "user",
             "bank_account",
-            "payment_mode",
         )
 
 
