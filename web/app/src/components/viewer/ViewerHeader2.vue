@@ -40,22 +40,16 @@
         <div class="col-6">{{ dateComputed }}</div>
       </div>
       <div v-if="changeModes" class="col-12 col-md-6 row">
-        <div class="col-6">Mode</div>
+        <div class="col-6">Payment Mode</div>
         <div class="col-6">
-          <span class="q-mr-sm">{{ modeComputed }}</span><q-btn @click="() => (isChangeOpen = true)" icon="edit"
+          <span class="q-mr-sm">{{ paymentModeComputed }}</span><q-btn @click="() => (isChangeOpen = true)" icon="edit"
             size="sm"></q-btn>
         </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
-        <div class="col-6">Mode</div>
+        <div class="col-6">Payment Mode</div>
         <div class="col-6">
-          {{ fields?.mode }}
-        </div>
-      </div>
-      <div v-if="fields.mode === 'Bank Deposit'" class="col-12 col-md-6 row">
-        <div class="col-6">Bank Account</div>
-        <div class="col-6">
-          {{ fields?.bank_account_name }}
+          {{ fields?.payment_mode }}
         </div>
       </div>
       <div v-if="fields.challan_numbers && fields.challan_numbers.length > 0" class="col-12 col-md-6 row">
@@ -69,16 +63,14 @@
       <q-card style="min-width: min(40vw, 500px)">
         <q-card-section class="bg-grey-4">
           <div class="text-h6 flex justify-between">
-            <span class="q-mx-md">Edit Mode</span>
+            <span class="q-mx-md">Edit Payment Mode</span>
             <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
           </div>
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select v-model="modesValue" label="Mode" class="col-12" :options="props.modeOptions.length > 0
-              ? modes.concat(props.modeOptions)
-              : modes
-              " option-value="id" option-label="name" map-options emit-value></q-select>
+            <q-select v-model="paymentModeValue" label="Payment Mode" class="col-12" :options="props.paymentModeOptions"
+              option-value="id" option-label="name" map-options emit-value></q-select>
           </div>
           <div class="row q-mt-lg justify-end">
             <q-btn label="update" color="orange-5" class="q-mt-md"
@@ -109,7 +101,7 @@ export default {
         return false
       },
     },
-    modeOptions: {
+    paymentModeOptions: {
       type: Array,
       default: () => {
         return []
@@ -122,13 +114,13 @@ export default {
   },
   emits: ['updateMode'],
   setup(props, { emit }) {
-    const modesValue: Ref<number | null> = ref(props.fields?.mode)
+    const paymentModeValue: Ref<number | null> = ref(props.fields?.payment_mode)
     const $q = useQuasar()
     const store = useLoginStore()
     watch(
-      () => props.fields?.mode,
+      () => props.fields?.payment_mode,
       (newValue) => {
-        modesValue.value = newValue
+        paymentModeValue.value = newValue
       }
     )
     const dateComputed = computed(() => {
@@ -137,13 +129,13 @@ export default {
         store.isCalendarInAD ? 'ad' : 'bs'
       )
     })
-    const modeComputed: Ref<string> = computed(() => {
-      if (typeof props.fields?.mode === 'number') {
-        const index: number = props.modeOptions.findIndex(
-          (item) => item.id === props.fields?.mode
+    const paymentModeComputed: Ref<string> = computed(() => {
+      if (typeof props.fields?.payment_mode === 'number') {
+        const index: number = props.paymentModeOptions.findIndex(
+          (item) => item.id === props.fields?.payment_mode
         )
-        return props.modeOptions[index].name
-      } else return props.fields?.mode
+        return props.paymentModeOptions[index].name
+      } else return props.fields?.payment_mode
     })
     const discountComputed = computed(() => {
       if (props.fields?.discount_obj) {
@@ -161,15 +153,15 @@ export default {
       } else return false
     })
     const submitChangeModes = (id: number) => {
-      const endpoint = `v1/sales-voucher/${id}/update-mode/`
-      const body: object = { method: 'POST', body: { mode: modesValue.value } }
+      const endpoint = `v1/sales-voucher/${id}/update-payment-mode/`
+      const body: object = { method: 'POST', body: { payment_mode: paymentModeValue.value } }
       useApi(endpoint, body)
         .then(() => {
-          emit('updateMode', modesValue.value)
+          emit('updateMode', paymentModeValue.value)
           isChangeOpen.value = false
           $q.notify({
             color: 'positive',
-            message: 'Mode Updated!',
+            message: 'Payment Mode Updated!',
             icon: 'check_circle',
           })
         })
@@ -180,10 +172,10 @@ export default {
       props,
       discountComputed,
       isChangeOpen,
-      modesValue,
+      paymentModeValue,
       modes,
       submitChangeModes,
-      modeComputed,
+      paymentModeComputed,
       dateComputed,
     }
   },

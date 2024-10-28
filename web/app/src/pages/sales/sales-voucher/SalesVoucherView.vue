@@ -4,12 +4,13 @@
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
           <div class="text-h6 d-print-none">
-            <span>Sales Invoice | {{ fields?.status }} <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
+            <span>Sales Invoice | {{ fields?.status }} <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no
+                }}</span>
             </span>
           </div>
         </q-card-section>
-        <ViewerHeader :fields="fields" :changeModes="true" @updateMode="(newValue) => updateMode(newValue)"
-          :modeOptions="modeOptions" />
+        <ViewerHeader2 :fields="fields" :changeModes="true" @updateMode="(newValue) => updatePaymentMode(newValue)"
+          :paymentModeOptions="paymentModeOptions" />
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
         <q-card-section>
@@ -21,8 +22,9 @@
           <q-card-section>
             <div class="row">
               <div class="col-3">Receipt #
-                <router-link v-if="checkPermissions('PaymentReceiptView')" style="font-weight: 500; text-decoration: none"
-                  class="text-blue" :to="`//payment-receipt/${receipt.id}/view`">
+                <router-link v-if="checkPermissions('PaymentReceiptView')"
+                  style="font-weight: 500; text-decoration: none" class="text-blue"
+                  :to="`//payment-receipt/${receipt.id}/view`">
                   {{ receipt.id }}
                 </router-link>
               </div>
@@ -90,6 +92,7 @@
 </template>
 
 <script lang="ts">
+import ViewerHeader2 from 'src/components/viewer/ViewerHeader2.vue'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
@@ -100,7 +103,7 @@ interface Fields {
   remarks: string
   print_count: number
   id: number
-  mode: number
+  payment_mode: number
 }
 export default {
   setup() {
@@ -111,7 +114,7 @@ export default {
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
     const loading: Ref<boolean> = ref(false)
-    const modeOptions: Ref<Array<object> | null> = ref(null)
+    const paymentModeOptions: Ref<Array<object> | null> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const errors = ref({})
@@ -170,11 +173,12 @@ export default {
           }
         })
     }
-    const updateMode = (newValue: number) => {
+    const updatePaymentMode = (newValue: number) => {
       if (fields.value) {
-        fields.value.mode = newValue
+        fields.value.payment_mode = newValue
       }
     }
+
     const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
       if (!noApiCall) {
         const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
@@ -205,8 +209,8 @@ export default {
       submitChangeStatus,
       isDeleteOpen,
       deleteMsg,
-      updateMode,
-      modeOptions,
+      updatePaymentMode,
+      paymentModeOptions,
       onPrintclick,
       checkPermissions,
       useGeneratePdf,
@@ -219,7 +223,7 @@ export default {
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
-        this.modeOptions = data.available_bank_accounts
+        this.paymentModeOptions = data.available_payment_modes
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {

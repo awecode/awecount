@@ -81,17 +81,17 @@ export default function useGeneratePosPdf(
   }
   let html = ''
   let header = ''
-  if (compayInfo.invoice_template === 2) {
+  if ([2, 3].includes(compayInfo.invoice_template)) {
     header = `
     <div>
     <div style="position: relative; margin-bottom: 10px;">
     <img src="${
       compayInfo.logo_url
-    }" alt="Compony Logo" style="height: 110px; max-width:160px; object-fit: contain; position: absolute ${
+    }" alt="Compony Logo" style="height: 110px; object-fit: contain; max-width:160px; position: absolute; ${
         compayInfo.logo_url ? '' : 'display: none;'
-      }"/>
+      } ${ compayInfo.invoice_template == 3 ? 'left: 40px;' : '' }" />
   <div style="text-align:center; padding-left: 10px;">
-    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 500;">${
+    <h1 style="line-height: normal; margin: 5px 0; font-size: 35px; font-weight: 700;">${
       compayInfo.name
     } ${
         compayInfo.organization_type === 'private_limited'
@@ -142,7 +142,7 @@ export default function useGeneratePosPdf(
   } else {
     header = `<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
     <div>
-      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">${
+      <h1 style="margin: 5px 0; font-size: 35px; font-weight: 700;">${
         compayInfo.name
       } ${
       compayInfo.organization_type === 'private_limited'
@@ -207,7 +207,7 @@ export default function useGeneratePosPdf(
       })</th>
     </tr>
     ${invoiceInfo.rows ? tableRow(invoiceInfo.rows) : ''}
-    ${compayInfo.invoice_template === 2 ? `${emptyRows()}` : ''}
+    ${[2, 3].includes(compayInfo.invoice_template) ? `${emptyRows()}` : ''}
   </table>
   <div style="display: flex; justify-content: space-between; align-items: center; font-family: Arial, Helvetica, sans-serif; border: 2px solid #b9b9b9; border-top: none; padding: 20px; padding-top: 0;">
       <div>
@@ -230,7 +230,7 @@ export default function useGeneratePosPdf(
         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 2px solid #b9b9b9;">
           <span style="font-weight: 600; color: lightgray;">${
             sameTax
-              ? compayInfo.invoice_template === 2 ? (`${sameTaxObj.rate} % ` + `${sameTaxObj.name}`) : (`${sameTaxObj.name} ` +
+              ? [2, 3].includes(compayInfo.invoice_template) ? (`${sameTaxObj.rate} % ` + `${sameTaxObj.name}`) : (`${sameTaxObj.name} ` +
                 `${sameTaxObj.rate} %`)
               : 'TAX'
           }</span> <span>${formatNumberWithComma(invoiceInfo.voucher_meta.tax) }</span>
