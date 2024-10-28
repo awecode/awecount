@@ -46,7 +46,7 @@
               <div class="row">
                 <div class="col-10">
                   <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors?.customer_name"
-                    :error="!!errors?.customer_name" v-if="partyMode" data-testid="customer-name-input">
+                    :error="!!errors?.customer_name" v-if="customerMode" data-testid="customer-name-input">
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
@@ -61,8 +61,8 @@
                 </div>
               </div>
               <div>
-                <n-auto-complete v-if="fields.party && aliases.length > 0" v-model="fields.customer_name"
-                  class="col-md-6 col-12" label="Name on Invoice" :options="aliases"
+                <n-auto-complete v-if="!customerMode && fields.party && aliases.length > 0"
+                  v-model="fields.customer_name" class="col-md-6 col-12" label="Name on Invoice" :options="aliases"
                   :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null"
                   :error="errors?.customer_name ? errors?.customer_name : null" data-testid="alias-select">
                 </n-auto-complete>
@@ -215,10 +215,11 @@ export default {
             : 'Sales Invoice Add') + ' | Awecount',
       }
     })
-    const partyMode = ref(false)
+
+    const customerMode = ref(false)
     const switchMode = (fields) => {
       if (fields.mode !== 'Credit') {
-        partyMode.value = !partyMode.value
+        customerMode.value = !customerMode.value
       } else
         $q.notify({
           color: 'orange-4',
@@ -239,7 +240,7 @@ export default {
     const onSubmitClick = async (status) => {
       const originalStatus = formData.fields.value.status
       formData.fields.value.status = status
-      if (!partyMode.value) {
+      if (!customerMode.value) {
         if (aliases.value.length === 0) {
           formData.fields.value.customer_name = null
         }
@@ -313,10 +314,10 @@ export default {
                 'remarks',
               ]
               if (data.customer_name) {
-                partyMode.value = true
+                customerMode.value = true
               }
               if (data.party) {
-                partyMode.value = false
+                customerMode.value = false
               }
               removeArr.forEach((item) => {
                 delete data[item]
@@ -394,7 +395,7 @@ export default {
         formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
       }
       if (formData.isEdit.value) {
-        if (formData.fields.value.customer_name) partyMode.value = true
+        if (formData.fields.value.customer_name) customerMode.value = true
       } else {
         if (formData.formDefaults.value.fields?.payment_mode) {
           formData.fields.value.payment_mode = formData.formDefaults.value.fields.payment_mode
@@ -404,7 +405,7 @@ export default {
 
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [],
+        results: [{ id: null, name: 'Credit' }],
         pagination: {},
       }
       if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
@@ -421,7 +422,7 @@ export default {
       SalesDiscountForm,
       staticOptions,
       InvoiceTable,
-      partyMode,
+      customerMode,
       switchMode,
       deleteRowErr,
       onSubmitClick,
