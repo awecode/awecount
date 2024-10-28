@@ -46,8 +46,7 @@
               <div class="row">
                 <div class="col-10">
                   <q-input v-model="fields.customer_name" label="Customer Name" :error-message="errors?.customer_name"
-                    :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'"
-                    data-testid="customer-name-input">
+                    :error="!!errors?.customer_name" v-if="partyMode" data-testid="customer-name-input">
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
@@ -112,13 +111,14 @@
           <!-- <div class="row q-col-gutter-md"></div> -->
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.mode" label="Mode *"
-                endpoint="/v1/sales-voucher/create-defaults/bank_accounts" :error="!!errors?.mode"
+              <n-auto-complete-v2 v-model="fields.payment_mode" label="Mode *"
+                endpoint="/v1/sales-voucher/create-defaults/payment_modes" :error="!!errors?.payment_mode"
                 :options="modeOptionsComputed"
-                :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj">
+                :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
+                @updateObj="onPaymentModeChange" data-testid="payment-mode-select" :emitObj="true" :mapOptions="true">
                 <template v-slot:append>
-                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+                  <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.payment_mode = null" /></template></n-auto-complete-v2>
             </div>
           </div>
         </q-card-section>
@@ -314,11 +314,9 @@ export default {
               ]
               if (data.customer_name) {
                 partyMode.value = true
-                fields.mode = 'Cash'
               }
               if (data.party) {
                 partyMode.value = false
-                fields.mode = 'Credit'
               }
               removeArr.forEach((item) => {
                 delete data[item]
@@ -374,12 +372,23 @@ export default {
     const onPartyChange = (obj) => {
       if (obj) {
         formData.fields.value.address = obj.address
-        formData.fields.value.mode = 'Credit'
         if (obj.aliases && obj.aliases.length > 0) {
           aliases.value = [{ name: obj.name, id: null }, ...obj.aliases.map((item) => ({ name: item, id: item }))]
         }
-      } else formData.fields.value.mode = 'Cash'
+      }
     }
+
+    const onPaymentModeChange = (obj) => {
+      // if customer is not party then credit mode can not be selected
+      if (obj && obj.is_credit && partyMode.value) {
+        console.log('here')
+        $q.notify({
+          color: 'orange-4',
+          message: 'Can not select credit mode for non-party customer!',
+        })
+      }
+    }
+
     watch(() => formData.formDefaults.value, () => {
       if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
         formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
@@ -387,24 +396,20 @@ export default {
       if (formData.isEdit.value) {
         if (formData.fields.value.customer_name) partyMode.value = true
       } else {
-        if (formData.formDefaults.value.fields?.mode) {
-          if (isNaN(formData.formDefaults.value.fields?.mode)) {
-            formData.fields.value.mode = formData.formDefaults.value.fields.mode
-          } else {
-            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
-          }
-        } else formData.fields.value.mode = 'Credit'
+        if (formData.formDefaults.value.fields?.payment_mode) {
+          formData.fields.value.payment_mode = formData.formDefaults.value.fields.payment_mode
+        }
       }
     })
 
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [...staticOptions.modes],
+        results: [],
         pagination: {},
       }
-      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.payment_modes.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.payment_modes.pagination)
       }
       return obj
     })
@@ -429,7 +434,8 @@ export default {
       onPartyChange,
       // TODO: temp
       show_row_column_in_voucher_row,
-      modeOptionsComputed
+      modeOptionsComputed,
+      onPaymentModeChange,
     }
   },
 }
