@@ -97,15 +97,16 @@ class PartnerPurchaseVoucherRowSerializer(
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
     item = serializers.ReadOnlyField(source="item.name")
-    item__account__current_balance = serializers.ReadOnlyField(source="item.account.current_balance")
+    item__account__current_balance = serializers.ReadOnlyField(
+        source="item.account.current_balance"
+    )
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
 
     item_id = serializers.IntegerField(required=False)
-    item = PartnerItemSerializer(default={})
-    item_obj = ItemCreateSerializer(required=False, allow_null=True)
+    item_obj = PartnerItemSerializer(default={})
 
     def validate_discount(self, value):
         if not value:
@@ -216,11 +217,11 @@ class PartnerPurchaseVoucherCreateSerializer(
 
             item_id = row.get("item_id")
             if item_id:
-                row["item"]["id"] = item_id
+                item_obj["id"] = item_id
 
             try:
                 item = Item.objects.get(
-                    **row.get("item"), company_id=self.context["request"].company_id
+                    **item_obj, company_id=self.context["request"].company_id
                 )
                 if item_obj:
                     if item_obj.get("name"):
@@ -233,7 +234,7 @@ class PartnerPurchaseVoucherCreateSerializer(
             except Item.DoesNotExist:
                 if item_obj is None:
                     raise ValidationError(
-                        "No item found for the given details. " + str(row.get("item"))
+                        "No item found for the given details. " + str(item_obj)
                     )
                 category = item_obj.get("category")
                 new_item = Item(
@@ -254,7 +255,7 @@ class PartnerPurchaseVoucherCreateSerializer(
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
                     "More than one item found for the given details. "
-                    + str(row.get("item"))
+                    + str(item_obj)
                 )
 
             if row.get("discount_type") == "":
@@ -282,7 +283,6 @@ class PartnerPurchaseVoucherCreateSerializer(
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
         for _, row in enumerate(rows_data):
-            row.pop("item")
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         if purchase_orders:
