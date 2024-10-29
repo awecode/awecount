@@ -240,22 +240,37 @@ class PartnerPurchaseVoucherCreateSerializer(
                 new_item = Item(
                     company_id=self.context["request"].company_id,
                     **item_obj,
-                    sales_account_type=category.items_sales_account_type,
-                    sales_account=category.dedicated_sales_account,
-                    purchase_account_type=category.items_purchase_account_type,
-                    purchase_account=category.dedicated_purchase_account,
-                    discount_allowed_account_type=category.items_discount_allowed_account_type,
-                    discount_allowed_account=category.dedicated_discount_allowed_account,
-                    discount_received_account_type=category.items_discount_received_account_type,
-                    discount_received_account=category.dedicated_discount_received_account,
+                    sales_account_type=category.items_sales_account_type
+                    if category
+                    else None,
+                    sales_account=category.dedicated_sales_account
+                    if category
+                    else None,
+                    purchase_account_type=category.items_purchase_account_type
+                    if category
+                    else None,
+                    purchase_account=category.dedicated_purchase_account
+                    if category
+                    else None,
+                    discount_allowed_account_type=category.items_discount_allowed_account_type
+                    if category
+                    else None,
+                    discount_allowed_account=category.dedicated_discount_allowed_account
+                    if category
+                    else None,
+                    discount_received_account_type=category.items_discount_received_account_type
+                    if category
+                    else None,
+                    discount_received_account=category.dedicated_discount_received_account
+                    if category
+                    else None,
                 )
                 new_item.save()
                 row["item_id"] = new_item.id
 
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
-                    "More than one item found for the given details. "
-                    + str(item_obj)
+                    "More than one item found for the given details. " + str(item_obj)
                 )
 
             if row.get("discount_type") == "":
