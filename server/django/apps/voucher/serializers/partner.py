@@ -107,6 +107,7 @@ class PartnerPurchaseVoucherRowSerializer(
 
     item_id = serializers.IntegerField(required=False)
     item_obj = PartnerItemSerializer(default={})
+    item = ItemCreateSerializer(required=False)
 
     def validate_discount(self, value):
         if not value:
