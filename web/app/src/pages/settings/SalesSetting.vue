@@ -151,7 +151,7 @@ export default {
     watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [],
+        results: [{ id: null, name: 'Credit' }],
         pagination: {},
       }
       if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
