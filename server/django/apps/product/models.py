@@ -1134,11 +1134,11 @@ def set_inventory_transactions(model, date, *args, clear=True):
                 )
 
                 for key, value in list(txn.consumption_data.items()):
-                    dr_txn = dr_txns[int(key)]
-                    dr_txn.remaining_quantity += value[0]
-                    updated_txns.append(dr_txn)
-                    txn.fifo_inconsistency_quantity += value[0]
-                    txn.consumption_data.pop(key)
+                    if dr_txn := dr_txns.get(int(key), None):
+                        dr_txn.remaining_quantity += value[0]
+                        updated_txns.append(dr_txn)
+                        txn.fifo_inconsistency_quantity += value[0]
+                        txn.consumption_data.pop(key)
 
                 updated_txns.append(txn)
 
