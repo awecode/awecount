@@ -1391,6 +1391,20 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Inventory Settings'],
         },
       },
+      {
+        path: 'payment-mode/',
+        component: () => import('src/pages/settings/PaymentModeList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Mode'],
+        },
+      },
+      {
+        path: 'payment-mode/create/',
+        component: () => import('src/pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Payment Mode', 'Create'],
+        },
+      }
     ],
   },
   {
