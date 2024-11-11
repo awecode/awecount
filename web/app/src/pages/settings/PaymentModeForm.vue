@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" @submit.prevent="onSubmit" v-if="fields">
+  <q-form class="q-pa-lg" @submit.prevent="submitForm" v-if="fields">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">Payment Mode</div>
@@ -21,8 +21,9 @@
             <n-auto-complete-v2
               v-model="fields.account"
               label="Account"
-              :options="accountOptions"
-              endpoint="v1/ledger/accounts"
+              :options="formDefaults?.collections?.accounts"
+              :staticOption="isEdit ? fields.selected_account_obj : null"
+              endpoint="v1/payment-modes/create-defaults/accounts"
               option-value="id"
               option-label="name"
               :rules="[v => !!v || 'Account is required']"
@@ -44,14 +45,17 @@
             />
           </div>
 
-          <!-- Transaction Fee Configuration -->
           <div class="col-12">
+            <q-checkbox
+              v-model="hasTransactionFee"
+              label="Transaction Fee?"
+              @update:model-value="onTransactionFeeToggle"
+            />
+          </div>
+
+          <!-- Transaction Fee Configuration -->
+          <div class="col-12" v-if="hasTransactionFee">
             <q-card>
-              <q-card-section
-                class="bg-grey text-white"
-              >
-                <div class="text-h6">Transaction Fee Configuration</div>
-              </q-card-section>
                 <q-card-section>
                   <div class="row q-col-gutter-md">
                     <div class="col-12 col-md-6">
@@ -70,7 +74,8 @@
                       <n-auto-complete-v2
                         v-model="fields.transaction_fee_account"
                         label="Transaction Fee Account"
-                        :options="accountOptions"
+                        :options="formDefaults?.collections?.accounts"
+                        :staticOption="isEdit ? fields.selected_transaction_fee_account_obj : null"
                         endpoint="v1/ledger/accounts"
                         option-value="id"
                         option-label="name"
@@ -218,6 +223,11 @@
 
       <q-card-actions align="right" class="q-pa-md">
         <q-btn
+          color="red"
+          @click="cancel"
+          label="Cancel"
+        />
+        <q-btn
           type="submit"
           color="primary"
           :loading="loading"
@@ -228,55 +238,39 @@
   </q-form>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useQuasar } from 'quasar'
+<script setup>
+import { ref } from 'vue'
 
-// @ts-expect-error not typed
-import useApi from '/src/composables/useApi'
 
-interface PaymentModeFields {
-  id?: number
-  name: string
-  enabled_for_sales: boolean
-  enabled_for_purchase: boolean
-  account: number | null
-  transaction_fee_config: {
-    type: string | null
-    value?: number
-    slabs?: Array<{
-      min_amount: number
-      max_amount?: number
-      rate: number
-    }>
-    min_fee?: number
-    max_fee?: number
-    extra_fee?: {
-      type: string
-      value: number
-    }
-  }
-  transaction_fee_account: number | null
-}
-
-const $q = useQuasar()
-const loading = ref(false)
-const hasExtraFee = ref(false)
-
-const fields = ref<PaymentModeFields>({
-  name: '',
-  enabled_for_sales: true,
-  enabled_for_purchase: true,
-  account: null,
-  transaction_fee_account: null,
-  transaction_fee_config: {
-    type: 'fixed',
-    value: 0
-  }
+const { fields, errors, formDefaults, isEdit, submitForm, cancel, cancelForm, loading } = useForm('v1/payment-modes/', {
+  getDefaults: true,
+  successRoute: '/settings/payment-mode/list/',
 })
 
+fields.value.enabled_for_sales = true
+fields.value.enabled_for_purchase = true
+fields.value.account = null
+fields.value.transaction_fee_account = null
+
+
+const hasTransactionFee = ref(!!fields.value.transaction_fee_config)
+const hasExtraFee = ref(false)
+
+const onTransactionFeeToggle = (value) => {
+  if (value) {
+    fields.value.transaction_fee_config = {
+      type: 'fixed',
+      value: 0,
+      min_fee: 0,
+      max_fee: 0,
+      extra_fee: null
+    }
+  } else {
+    fields.value.transaction_fee_config = null
+  }
+}
+
 const feeTypeOptions = [
-  { label: 'None', value: null },
   { label: 'Fixed', value: 'fixed' },
   { label: 'Percentage', value: 'percentage' },
   { label: 'Slab Based', value: 'slab_based' },
@@ -288,24 +282,21 @@ const extraFeeTypeOptions = [
   { label: 'Percentage', value: 'percentage' }
 ]
 
-const accountOptions = computed(() => ({
-  results: [],
-  pagination: {}
-}))
-
-const onFeeTypeChange = (type: { label: string; value: string }) => {
-  if (type.value === null ) {
-    fields.value.transaction_fee_config = { type: null }
+const onFeeTypeChange = (type) => {
+  if (type.value === null) {
+    fields.value.transaction_fee_config = null
     return
   }
   fields.value.transaction_fee_config = {
     type: type.value,
     ...(type.value === 'slab_based' ? { slabs: [] } : { value: 0 })
   }
-  console.log(fields.value.transaction_fee_config)
+  if (type.value === 'slab_based') {
+    addSlab()
+  }
 }
 
-const onExtraFeeToggle = (value: boolean) => {
+const onExtraFeeToggle = (value) => {
   if (value) {
     fields.value.transaction_fee_config.extra_fee = {
       type: 'fixed',
@@ -329,7 +320,7 @@ const addSlab = () => {
   })
 }
 
-const removeSlab = (index: number) => {
+const removeSlab = (index) => {
   if (!fields.value.transaction_fee_config.slabs) return
   fields.value.transaction_fee_config.slabs.splice(index, 1)
 
@@ -340,50 +331,4 @@ const removeSlab = (index: number) => {
   }
 }
 
-const onSubmit = async () => {
-  try {
-    loading.value = true
-    const endpoint = fields.value.id
-      ? `v1/payment-modes/${fields.value.id}/`
-      : 'v1/payment-modes/'
-
-    const method = fields.value.id ? 'PUT' : 'POST'
-
-    const response = await useApi(endpoint, {
-      method,
-      body: fields.value
-    })
-
-    $q.notify({
-      color: 'positive',
-      message: 'Payment mode saved successfully',
-      icon: 'check'
-    })
-
-    // Emit save event or handle navigation
-  } catch (error: any) {
-    $q.notify({
-      color: 'negative',
-      message: error.data?.message || 'An error occurred while saving',
-      icon: 'error'
-    })
-  } finally {
-    loading.value = false
-  }
-}
-
-// Optionally fetch existing payment mode data if editing
-const fetchPaymentMode = async (id: number) => {
-  try {
-    const data = await useApi(`v1/payment-modes/${id}/`)
-    fields.value = data
-    hasExtraFee.value = !!data.transaction_fee_config.extra_fee
-  } catch (error) {
-    $q.notify({
-      color: 'negative',
-      message: 'Failed to fetch payment mode data',
-      icon: 'error'
-    })
-  }
-}
 </script>
