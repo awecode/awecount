@@ -750,6 +750,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this purchase. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -847,16 +854,11 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            cr_acc = self.party.supplier_account
-        elif self.mode == "Cash":
-            cr_acc = get_account(self.company, "Cash")
-            self.status = "Paid"
-        elif self.mode == "Bank Deposit":
-            cr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            cr_acc = self.payment_mode.account
             self.status = "Paid"
         else:
-            raise ValueError("No such mode!")
+            cr_acc = self.party.supplier_account
 
         self.save()
 
@@ -911,7 +913,16 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
             entries.append(["dr", item.dr_account, purchase_value])
 
-            entries.append(["cr", cr_acc, row_total])
+            if self.payment_mode:
+                payment_entries = self.payment_mode.build_ledger_entries(
+                    amount=row_total,
+                    entry_type="cr",
+                )
+
+                entries.extend(payment_entries)
+            else:
+                entries.append(["cr", cr_acc, row_total])
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()
@@ -1021,6 +1032,13 @@ class CreditNote(TransactionModel, InvoiceModel):
         related_name="credit_notes",
     )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this credit note. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -1068,16 +1086,11 @@ class CreditNote(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            cr_acc = self.party.customer_account
-        elif self.mode == "Cash":
-            cr_acc = get_account(self.company, "Cash")
-            self.status = "Resolved"
-        elif self.mode == "Bank Deposit":
-            cr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            cr_acc = self.payment_mode.account
             self.status = "Resolved"
         else:
-            raise ValueError("No such mode!")
+            cr_acc = self.party.customer_account
 
         self.save()
 
@@ -1128,7 +1141,16 @@ class CreditNote(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["dr", row.item.sales_account, sales_value])
-            entries.append(["cr", cr_acc, row_total])
+
+            if self.payment_mode:
+                payment_entries = self.payment_mode.build_ledger_entries(
+                    amount=row_total,
+                    entry_type="cr",
+                )
+
+                entries.extend(payment_entries)
+            else:
+                entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -1220,6 +1242,13 @@ class DebitNote(TransactionModel, InvoiceModel):
         related_name="debit_notes",
     )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this debit note. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -1263,16 +1292,11 @@ class DebitNote(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            dr_acc = self.party.supplier_account
-        elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
-            self.status = "Resolved"
-        elif self.mode == "Bank Deposit":
-            dr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            dr_acc = self.payment_mode.account
             self.status = "Resolved"
         else:
-            raise ValueError("No such mode!")
+            dr_acc = self.party.supplier_account
 
         self.save()
 
@@ -1325,7 +1349,16 @@ class DebitNote(TransactionModel, InvoiceModel):
 
             entries.append(["cr", item.dr_account, purchase_value])
 
-            entries.append(["dr", dr_acc, row_total])
+            if self.payment_mode:
+                payment_entries = self.payment_mode.build_ledger_entries(
+                    amount=row_total,
+                    entry_type="dr",
+                )
+
+                entries.extend(payment_entries)
+            else:
+                entries.append(["dr", dr_acc, row_total])
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
         self.apply_inventory_transaction()
