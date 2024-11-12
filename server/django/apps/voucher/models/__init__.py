@@ -280,38 +280,15 @@ class PaymentMode(models.Model):
                 }
             )
 
-    def calculate_fee(self, amount: Decimal) -> Decimal:
+    def calculate_fee(self, amount: Decimal | float) -> Decimal:
         """Calculate the transaction fee for a given amount"""
         if not self.transaction_fee_config:
             return Decimal("0")
 
+        if isinstance(amount, float):
+            amount = Decimal(str(amount))
+
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
-
-    # TODO: remove float
-    def build_ledger_entries(
-        self,
-        amount: Decimal | float,
-        entry_type: Literal["dr", "cr"],
-    ) -> list[list]:
-        """Get ledger entries for this payment mode"""
-
-        if entry_type not in ("dr", "cr"):
-            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'")
-
-        # ensure amount is Decimal
-        amount = Decimal(str(amount)) if isinstance(amount, float) else amount
-
-        fee = self.calculate_fee(amount)
-        entries = []
-
-        entry_amount = (amount - fee) if entry_type == "dr" else (amount + fee)
-
-        entries.append([entry_type, self.account, float(entry_amount)])
-
-        if fee:
-            entries.append([entry_type, self.transaction_fee_account, float(fee)])
-
-        return entries
 
 
 class Challan(TransactionModel, InvoiceModel):
@@ -522,8 +499,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-
-        creditor_account = self.party.customer_account
+        if self.payment_mode:
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
+        else:
+            dr_acc = self.party.customer_account
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
@@ -572,16 +552,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["cr", row.item.sales_account, sales_value])
-
-            if self.payment_mode:
-                payment_entries = self.payment_mode.build_ledger_entries(
-                    amount=row_total,
-                    entry_type="dr",
-                )
-
-                entries.extend(payment_entries)
-            else:
-                entries.append(["dr", creditor_account, row_total])
+            entries.append(["dr", dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -912,16 +883,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["dr", item.dr_account, purchase_value])
-
-            if self.payment_mode:
-                payment_entries = self.payment_mode.build_ledger_entries(
-                    amount=row_total,
-                    entry_type="cr",
-                )
-
-                entries.extend(payment_entries)
-            else:
-                entries.append(["cr", cr_acc, row_total])
+            entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -1142,15 +1104,7 @@ class CreditNote(TransactionModel, InvoiceModel):
 
             entries.append(["dr", row.item.sales_account, sales_value])
 
-            if self.payment_mode:
-                payment_entries = self.payment_mode.build_ledger_entries(
-                    amount=row_total,
-                    entry_type="cr",
-                )
-
-                entries.extend(payment_entries)
-            else:
-                entries.append(["cr", cr_acc, row_total])
+            entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -1349,15 +1303,7 @@ class DebitNote(TransactionModel, InvoiceModel):
 
             entries.append(["cr", item.dr_account, purchase_value])
 
-            if self.payment_mode:
-                payment_entries = self.payment_mode.build_ledger_entries(
-                    amount=row_total,
-                    entry_type="dr",
-                )
-
-                entries.extend(payment_entries)
-            else:
-                entries.append(["dr", dr_acc, row_total])
+            entries.append(["dr", dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
