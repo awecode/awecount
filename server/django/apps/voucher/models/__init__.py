@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Literal
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -273,7 +272,7 @@ class PaymentMode(models.Model):
         except ValueError as e:
             raise ValidationError({"transaction_fee": str(e)})
 
-        if not self.transaction_fee_account:
+        if not self.transaction_fee_account and self.transaction_fee_config:
             raise ValidationError(
                 {
                     "transaction_fee_account": "Transaction fee account is required when transaction fee is enabled"
@@ -558,6 +557,17 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
         if extra_entries:
             set_ledger_transactions(self, self.date, *extra_entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transactions()
 
@@ -887,6 +897,17 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
+
         self.apply_inventory_transaction()
 
 
@@ -1108,6 +1129,17 @@ class CreditNote(TransactionModel, InvoiceModel):
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
+
         self.apply_inventory_transaction()
 
     def cbms_nepal_data(self, conf):
@@ -1306,6 +1338,17 @@ class DebitNote(TransactionModel, InvoiceModel):
             entries.append(["dr", dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transaction()
 
