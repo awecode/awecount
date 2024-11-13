@@ -91,6 +91,7 @@
                           v-model.number="fields.transaction_fee_config.value"
                           label="Fixed Amount"
                           type="number"
+                          step="any"
                           filled
                           :rules="[v => v > 0 || 'Amount must be greater than 0']"
                         />
@@ -104,6 +105,7 @@
                           v-model.number="fields.transaction_fee_config.value"
                           label="Percentage"
                           type="number"
+                          step="any"
                           filled
                           :rules="[
                             v => v > 0 || 'Percentage must be greater than 0',
@@ -123,6 +125,7 @@
                               v-model.number="slab.min_amount"
                               label="Min Amount"
                               type="number"
+                              step="any"
                               filled
                             />
                           </div>
@@ -131,6 +134,7 @@
                               v-model.number="slab.max_amount"
                               label="Max Amount"
                               type="number"
+                              step="any"
                               filled
                             />
                           </div>
@@ -139,6 +143,7 @@
                               v-model.number="slab.rate"
                               label="Rate (%)"
                               type="number"
+                              step="any"
                               filled
                             />
                           </div>
@@ -171,6 +176,7 @@
                           v-model.number="fields.transaction_fee_config.min_fee"
                           label="Minimum Fee"
                           type="number"
+                          step="any"
                           filled
                         />
                       </div>
@@ -179,6 +185,7 @@
                         v-model.number="fields.transaction_fee_config.max_fee"
                         label="Maximum Fee"
                         type="number"
+                        step="any"
                         filled
                       />
                       </div>
@@ -208,6 +215,7 @@
                           v-model.number="fields.transaction_fee_config.extra_fee.value"
                           :label="fields.transaction_fee_config.extra_fee.type === 'fixed' ? 'Amount' : 'Percentage'"
                           type="number"
+                          step="any"
                           filled
                         />
                       </div>
