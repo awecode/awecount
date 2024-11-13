@@ -261,10 +261,19 @@ fields.value.account = null
 fields.value.transaction_fee_account = null
 
 
-const hasTransactionFee = ref(!!fields.value.transaction_fee_config)
+const hasTransactionFee = ref(false)
+watch(() => fields.value.transaction_fee_config, (value) => {
+  hasTransactionFee.value = !!value
+}, { immediate: true })
+
+
 const hasExtraFee = ref(false)
 
 const onTransactionFeeToggle = (value) => {
+  if (!!fields.value.transaction_fee_config) {
+    return
+  }
+
   if (value) {
     fields.value.transaction_fee_config = {
       type: 'fixed',
