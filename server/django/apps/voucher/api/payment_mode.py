@@ -18,13 +18,6 @@ class PaymentModeViewSet(CRULViewSet):
             True,
             ["code", "name"],
         ),
-        # (
-        #     "transaction_fee_account",
-        #     Account,
-        #     AccountListSerializer,
-        #     True,
-        #     ["code", "name"],
-        # ),
     )
 
     def get_serializer_class(self):
