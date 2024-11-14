@@ -558,14 +558,19 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if extra_entries:
             set_ledger_transactions(self, self.date, *extra_entries, clear=True)
 
-        commission_entries = []
-        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
-
-        if commission > 0:
-            commission_entries.append(
-                ["dr", self.payment_mode.transaction_fee_account, commission]
+        if (
+            self.payment_mode
+            and (
+                commission := self.payment_mode.calculate_fee(
+                    voucher_meta["grand_total"]
+                )
             )
-            commission_entries.append(["cr", self.payment_mode.account, commission])
+            and commission > 0
+        ):
+            commission_entries = [
+                ["dr", self.payment_mode.transaction_fee_account, commission],
+                ["cr", self.payment_mode.account, commission],
+            ]
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
@@ -904,14 +909,19 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        commission_entries = []
-        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
-
-        if commission > 0:
-            commission_entries.append(
-                ["dr", self.payment_mode.transaction_fee_account, commission]
+        if (
+            self.payment_mode
+            and (
+                commission := self.payment_mode.calculate_fee(
+                    voucher_meta["grand_total"]
+                )
             )
-            commission_entries.append(["cr", self.payment_mode.account, commission])
+            and commission > 0
+        ):
+            commission_entries = [
+                ["dr", self.payment_mode.transaction_fee_account, commission],
+                ["cr", self.payment_mode.account, commission],
+            ]
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
@@ -1136,14 +1146,19 @@ class CreditNote(TransactionModel, InvoiceModel):
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        commission_entries = []
-        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
-
-        if commission > 0:
-            commission_entries.append(
-                ["dr", self.payment_mode.transaction_fee_account, commission]
+        if (
+            self.payment_mode
+            and (
+                commission := self.payment_mode.calculate_fee(
+                    voucher_meta["grand_total"]
+                )
             )
-            commission_entries.append(["cr", self.payment_mode.account, commission])
+            and commission > 0
+        ):
+            commission_entries = [
+                ["dr", self.payment_mode.transaction_fee_account, commission],
+                ["cr", self.payment_mode.account, commission],
+            ]
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
@@ -1346,14 +1361,19 @@ class DebitNote(TransactionModel, InvoiceModel):
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
-        commission_entries = []
-        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
-
-        if commission > 0:
-            commission_entries.append(
-                ["dr", self.payment_mode.transaction_fee_account, commission]
+        if (
+            self.payment_mode
+            and (
+                commission := self.payment_mode.calculate_fee(
+                    voucher_meta["grand_total"]
+                )
             )
-            commission_entries.append(["cr", self.payment_mode.account, commission])
+            and commission > 0
+        ):
+            commission_entries = [
+                ["dr", self.payment_mode.transaction_fee_account, commission],
+                ["cr", self.payment_mode.account, commission],
+            ]
 
             set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
