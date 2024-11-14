@@ -1012,11 +1012,10 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 )
             aggregate = transactions.aggregate(Sum("dr_amount"), Sum("cr_amount"))
 
-        last_transaction, first_transaction = len(transactions) and (
-            transactions[0],
-            transactions[len(transactions) - 1],
-        )
-        opening, closing = 0, 0
+        first_transaction = transactions.first()
+        last_transaction = transactions.last()
+        opening = 0
+        closing = 0
 
         if first_transaction:
             opening = (
