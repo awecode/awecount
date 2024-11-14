@@ -802,6 +802,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
 
+    def clean(self) -> None:
+        super().clean()
+        if not self.payment_mode.enabled_for_purchase:
+            raise ValidationError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for purchase."
+            )
+
     def find_invalid_transaction(self):
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
