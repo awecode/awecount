@@ -85,6 +85,13 @@ class PurchaseSetting(models.Model):
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
     mode = models.CharField(default="Credit", max_length=15)
+    payment_mode = models.ForeignKey(
+        "voucher.PaymentMode",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="purchase_setting",
+    )
 
     enable_row_description = models.BooleanField(default=False)
     enable_purchase_order_import = models.BooleanField(default=False)
@@ -109,6 +116,7 @@ class PurchaseSetting(models.Model):
     def fields(self):
         return {
             "mode": self.bank_account_id or self.mode,
+            "payment_mode": self.payment_mode_id,
             "trade_discount": self.is_trade_discount_in_voucher,
         }
 

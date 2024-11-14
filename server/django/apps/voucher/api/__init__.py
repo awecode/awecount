@@ -1695,7 +1695,7 @@ class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
 
 class PurchaseSettingsViewSet(CRULViewSet):
     serializer_class = PurchaseSettingCreateSerializer
-    collections = (("bank_accounts", BankAccount),)
+    collections = (("payment_modes", BankAccount),)
 
     def get_defaults(self, request=None):
         p_setting = self.request.company.purchase_setting
