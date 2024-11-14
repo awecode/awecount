@@ -2,12 +2,16 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from awecount.libs import get_next_voucher_no
-from awecount.libs.serializers import StatusReversionMixin
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.serializers import StatusReversionMixin
 
 from ..models import CreditNote, CreditNoteRow
-from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
-from .sales import SalesDiscountSerializer, SalesVoucherRowDetailSerializer, ItemSalesSerializer 
+from .mixins import DiscountObjectTypeSerializerMixin
+from .sales import (
+    ItemSalesSerializer,
+    SalesDiscountSerializer,
+    SalesVoucherRowDetailSerializer,
+)
 
 
 class CreditNoteRowSerializer(
@@ -37,7 +41,6 @@ class CreditNoteRowSerializer(
 class CreditNoteCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
     voucher_no = serializers.ReadOnlyField()
@@ -93,7 +96,6 @@ class CreditNoteCreateSerializer(
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = CreditNote.objects.create(**validated_data)
@@ -115,7 +117,6 @@ class CreditNoteCreateSerializer(
         self.validate_voucher_status(validated_data, instance)
         self.assign_voucher_number(validated_data, instance)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         CreditNote.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
@@ -153,9 +154,11 @@ class CreditNoteListSerializer(serializers.ModelSerializer):
             "status",
         )
 
+
 class CreditNoteRowDetailSerializer(SalesVoucherRowDetailSerializer):
     selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
+
 
 class CreditNoteDetailSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
