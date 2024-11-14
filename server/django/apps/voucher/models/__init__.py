@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from enum import Enum
+from typing import Literal
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -79,14 +79,6 @@ TRANSACTION_TYPE_CHOICES = [
 ]
 
 
-class FeeType(str, Enum):
-    FIXED = "fixed"
-    PERCENTAGE = "percentage"
-    SLAB_BASED = "slab_based"
-    SLIDING_SCALE = "sliding_scale"
-    TIME_BASED = "time_based"  # Not implemented yet
-
-
 class TransactionFeeConfig:
     def __init__(self, fee_config: dict):
         self.fee_config = fee_config
@@ -123,14 +115,20 @@ class TransactionFeeConfig:
 
         fee_type = self.fee_config["type"]
 
-        if fee_type not in FeeType.__members__.values():
+        if fee_type not in [
+            "fixed",
+            "percentage",
+            "slab_based",
+            "sliding_scale",
+            "time_based",
+        ]:
             raise ValueError(f"Invalid fee type: {fee_type}")
 
-        if fee_type in [FeeType.FIXED, FeeType.PERCENTAGE]:
+        if fee_type in ["fixed", "percentage"]:
             if "value" not in self.fee_config:
                 raise ValueError("Amount must be specified")
 
-        if fee_type == FeeType.SLAB_BASED:
+        if fee_type == "slab_based":
             if "slabs" not in self.fee_config:
                 raise ValueError("Slabs must be specified")
             try:
@@ -138,7 +136,7 @@ class TransactionFeeConfig:
             except Exception as e:
                 raise e
 
-        if fee_type == FeeType.SLIDING_SCALE:
+        if fee_type == "sliding_scale":
             if "slabs" not in self.fee_config:
                 raise ValueError("Slabs must be specified")
             for slab in self.fee_config["slabs"]:
@@ -158,10 +156,7 @@ class TransactionFeeConfig:
             if "type" not in self.fee_config["extra_fee"]:
                 raise ValueError("Extra fee type must be specified")
 
-            if self.fee_config["extra_fee"]["type"] not in [
-                FeeType.FIXED,
-                FeeType.PERCENTAGE,
-            ]:
+            if self.fee_config["extra_fee"]["type"] not in ["fixed", "percentage"]:
                 raise ValueError(
                     "Invalid extra fee type. Expected 'fixed' or 'percentage'"
                 )
@@ -169,7 +164,7 @@ class TransactionFeeConfig:
             if "value" not in self.fee_config["extra_fee"]:
                 raise ValueError("Value must be specified for extra fee")
 
-            # if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+            # if self.fee_config["extra_fee"]["type"] == "percentage":
             #     if not 0 <= self.fee_config["extra_fee"]["value"] <= 100:
             #         raise ValueError("Extra fee percentage must be between 0 and 100")
 
@@ -181,9 +176,9 @@ class TransactionFeeConfig:
             fee = min(fee, Decimal(str(self.fee_config["max_fee"])))
 
         if "extra_fee" in self.fee_config:
-            if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
+            if self.fee_config["extra_fee"]["type"] == "percentage":
                 fee += fee * Decimal(str(self.fee_config["extra_fee"]["value"])) / 100
-            elif self.fee_config["extra_fee"]["type"] == FeeType.FIXED:
+            elif self.fee_config["extra_fee"]["type"] == "fixed":
                 fee += Decimal(str(self.fee_config["extra_fee"]))
 
         return fee
@@ -215,16 +210,16 @@ class TransactionFeeConfig:
         # Calculate base fee
         fee = Decimal("0")
 
-        if fee_type == FeeType.FIXED:
+        if fee_type == "fixed":
             fee = Decimal(str(self.fee_config["value"]))
 
-        elif fee_type == FeeType.PERCENTAGE:
+        elif fee_type == "percentage":
             fee = amount * Decimal(str(self.fee_config["value"])) / 100
 
-        elif fee_type == FeeType.SLAB_BASED:
+        elif fee_type == "slab_based":
             fee = self._calculate_slab_based_fee(amount, self.fee_config["slabs"])
 
-        elif fee_type == FeeType.SLIDING_SCALE:
+        elif fee_type == "sliding_scale":
             _fee = Decimal("0")
             for slab in self.fee_config["slabs"]:
                 if amount >= Decimal(str(slab["min_amount"])):
