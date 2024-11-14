@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Literal
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -273,45 +272,22 @@ class PaymentMode(models.Model):
         except ValueError as e:
             raise ValidationError({"transaction_fee": str(e)})
 
-        if not self.transaction_fee_account:
+        if not self.transaction_fee_account and self.transaction_fee_config:
             raise ValidationError(
                 {
                     "transaction_fee_account": "Transaction fee account is required when transaction fee is enabled"
                 }
             )
 
-    def calculate_fee(self, amount: Decimal) -> Decimal:
+    def calculate_fee(self, amount: Decimal | float) -> Decimal:
         """Calculate the transaction fee for a given amount"""
         if not self.transaction_fee_config:
             return Decimal("0")
 
+        if isinstance(amount, float):
+            amount = Decimal(str(amount))
+
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
-
-    # TODO: remove float
-    def build_ledger_entries(
-        self,
-        amount: Decimal | float,
-        entry_type: Literal["dr", "cr"],
-    ) -> list[list]:
-        """Get ledger entries for this payment mode"""
-
-        if entry_type not in ("dr", "cr"):
-            raise ValueError("Invalid entry_type; must be either 'dr' or 'cr'")
-
-        # ensure amount is Decimal
-        amount = Decimal(str(amount)) if isinstance(amount, float) else amount
-
-        fee = self.calculate_fee(amount)
-        entries = []
-
-        entry_amount = (amount - fee) if entry_type == "dr" else (amount + fee)
-
-        entries.append([entry_type, self.account, float(entry_amount)])
-
-        if fee:
-            entries.append([entry_type, self.transaction_fee_account, float(fee)])
-
-        return entries
 
 
 class Challan(TransactionModel, InvoiceModel):
@@ -522,8 +498,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-
-        creditor_account = self.party.customer_account
+        if self.payment_mode:
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
+        else:
+            dr_acc = self.party.customer_account
 
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
@@ -572,21 +551,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["cr", row.item.sales_account, sales_value])
-
-            if self.payment_mode:
-                payment_entries = self.payment_mode.build_ledger_entries(
-                    amount=row_total,
-                    entry_type="dr",
-                )
-
-                entries.extend(payment_entries)
-            else:
-                entries.append(["dr", creditor_account, row_total])
+            entries.append(["dr", dr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
         if extra_entries:
             set_ledger_transactions(self, self.date, *extra_entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transactions()
 
@@ -750,6 +731,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this purchase. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -847,16 +835,11 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            cr_acc = self.party.supplier_account
-        elif self.mode == "Cash":
-            cr_acc = get_account(self.company, "Cash")
-            self.status = "Paid"
-        elif self.mode == "Bank Deposit":
-            cr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            cr_acc = self.payment_mode.account
             self.status = "Paid"
         else:
-            raise ValueError("No such mode!")
+            cr_acc = self.party.supplier_account
 
         self.save()
 
@@ -910,9 +893,20 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["dr", item.dr_account, purchase_value])
-
             entries.append(["cr", cr_acc, row_total])
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transaction()
 
@@ -1021,6 +1015,13 @@ class CreditNote(TransactionModel, InvoiceModel):
         related_name="credit_notes",
     )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this credit note. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -1068,16 +1069,11 @@ class CreditNote(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            cr_acc = self.party.customer_account
-        elif self.mode == "Cash":
-            cr_acc = get_account(self.company, "Cash")
-            self.status = "Resolved"
-        elif self.mode == "Bank Deposit":
-            cr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            cr_acc = self.payment_mode.account
             self.status = "Resolved"
         else:
-            raise ValueError("No such mode!")
+            cr_acc = self.party.customer_account
 
         self.save()
 
@@ -1128,9 +1124,21 @@ class CreditNote(TransactionModel, InvoiceModel):
                     row_total += row_tax_amount
 
             entries.append(["dr", row.item.sales_account, sales_value])
+
             entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transaction()
 
@@ -1220,6 +1228,13 @@ class DebitNote(TransactionModel, InvoiceModel):
         related_name="debit_notes",
     )
     mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    payment_mode = models.ForeignKey(
+        PaymentMode,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Payment mode for this debit note. Null means it is not paid (credit).",
+    )
     bank_account = models.ForeignKey(
         BankAccount, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -1263,16 +1278,11 @@ class DebitNote(TransactionModel, InvoiceModel):
             return
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
-        if self.mode == "Credit":
-            dr_acc = self.party.supplier_account
-        elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
-            self.status = "Resolved"
-        elif self.mode == "Bank Deposit":
-            dr_acc = self.bank_account.ledger
+        if self.payment_mode:
+            dr_acc = self.payment_mode.account
             self.status = "Resolved"
         else:
-            raise ValueError("No such mode!")
+            dr_acc = self.party.supplier_account
 
         self.save()
 
@@ -1326,7 +1336,19 @@ class DebitNote(TransactionModel, InvoiceModel):
             entries.append(["cr", item.dr_account, purchase_value])
 
             entries.append(["dr", dr_acc, row_total])
+
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        commission_entries = []
+        commission = self.payment_mode.calculate_fee(voucher_meta["grand_total"])
+
+        if commission > 0:
+            commission_entries.append(
+                ["dr", self.payment_mode.transaction_fee_account, commission]
+            )
+            commission_entries.append(["cr", self.payment_mode.account, commission])
+
+            set_ledger_transactions(self, self.date, *commission_entries, clear=True)
 
         self.apply_inventory_transaction()
 

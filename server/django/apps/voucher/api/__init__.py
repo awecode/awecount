@@ -569,6 +569,13 @@ class PurchaseVoucherViewSet(
             ["short_name", "account_number", "bank_name"],
         ),
         (
+            "payment_modes",
+            PaymentMode,
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
             "items",
             Item.objects.filter(
                 Q(can_be_purchased=True)
@@ -658,6 +665,7 @@ class PurchaseVoucherViewSet(
                 .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
                 .values("id", "name")
                 .first(),
+                "default_payment_mode_obj": None,
             },
         }
 
@@ -768,6 +776,13 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
             GenericSerializer,
             True,
             ["short_name", "account_number", "bank_name"],
+        ),
+        (
+            "payment_modes",
+            PaymentMode,
+            GenericSerializer,
+            True,
+            ["name"],
         ),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
@@ -942,6 +957,13 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
+        (
+            "payment_modes",
+            PaymentMode,
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
         (
             "items",
             Item.objects.filter(
