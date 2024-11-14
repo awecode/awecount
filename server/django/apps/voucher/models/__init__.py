@@ -735,7 +735,9 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     date = models.DateField(default=timezone.now)
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(choices=STATUSES, default=STATUSES[0][0], max_length=15)
-    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    mode = models.CharField(
+        choices=MODES, default=MODES[0][0], max_length=15, blank=True, null=True
+    )
     payment_mode = models.ForeignKey(
         PaymentMode,
         on_delete=models.PROTECT,
@@ -1031,7 +1033,9 @@ class CreditNote(TransactionModel, InvoiceModel):
         on_delete=models.SET_NULL,
         related_name="credit_notes",
     )
-    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    mode = models.CharField(
+        choices=MODES, default=MODES[0][0], max_length=15, blank=True, null=True
+    )
     payment_mode = models.ForeignKey(
         PaymentMode,
         on_delete=models.PROTECT,
@@ -1249,7 +1253,9 @@ class DebitNote(TransactionModel, InvoiceModel):
         on_delete=models.SET_NULL,
         related_name="debit_notes",
     )
-    mode = models.CharField(choices=MODES, default=MODES[0][0], max_length=15)
+    mode = models.CharField(
+        choices=MODES, default=MODES[0][0], max_length=15, blank=True, null=True
+    )
     payment_mode = models.ForeignKey(
         PaymentMode,
         on_delete=models.PROTECT,
