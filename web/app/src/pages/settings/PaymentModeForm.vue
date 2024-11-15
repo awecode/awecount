@@ -103,6 +103,7 @@
                           type="number"
                           step="any"
                           filled
+                          min="0"
                           :rules="[v => v > 0 || 'Amount must be greater than 0']"
                         />
                       </div>
@@ -117,6 +118,7 @@
                           type="number"
                           step="any"
                           filled
+                          min="0"
                           :rules="[
                             v => v > 0 || 'Percentage must be greater than 0',
                             v => v <= 100 || 'Percentage must be less than or equal to 100'
@@ -137,6 +139,10 @@
                               type="number"
                               step="any"
                               filled
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.min_amount"
+                              min="0"
+                              :rules="[v => v >= 0 || 'Minimum amount must be greater than or equal to 0']"
                             />
                           </div>
                           <div class="col-12 col-md-3" v-if="fields.transaction_fee_config.type === 'slab_based'">
@@ -146,6 +152,10 @@
                               type="number"
                               step="any"
                               filled
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.max_amount"
+                              min="0"
+                              :rules="[v => v >= 0 || 'Maximum amount must be greater than or equal to 0']"
                             />
                           </div>
                           <div class="col-12 col-md-3">
@@ -157,6 +167,8 @@
                               emit-value
                               map-options
                               @update:model-value="onSlabFeeTypeChange(index)"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.fee_type"
                             />
                           </div>
                           <div class="col-12 col-md-2">
@@ -167,6 +179,10 @@
                               type="number"
                               step="any"
                               filled
+                              min="0"
+                              :rules="[v => v >= 0 || 'Rate must be greater than or equal to 0', v => v <= 100 || 'Rate must be less than or equal to 100']"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.rate"
                             />
                             <q-input
                               v-else
@@ -175,6 +191,10 @@
                               type="number"
                               step="any"
                               filled
+                              min="0"
+                              :rules="[v => v >= 0 || 'Amount must be greater than or equal to 0']"
+                              :error="!!validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
+                              :error-message="validationErrors.transaction_fee_config?.slabs?.[index]?.amount"
                             />
                           </div>
                           <div class="col-12 col-md-1 flex items-center">
@@ -208,6 +228,8 @@
                           type="number"
                           step="any"
                           filled
+                          min="0"
+                          :rules="[v => v >= 0 || 'Minimum fee must be greater than or equal to 0']"
                         />
                       </div>
                       <div class="col-12 col-md-6">
@@ -217,6 +239,8 @@
                         type="number"
                         step="any"
                         filled
+                        min="0"
+                        :rules="[v => v >= 0 || 'Maximum fee must be greater than or equal to 0']"
                       />
                       </div>
                       </div>
@@ -268,6 +292,18 @@
                       </div>
                     </div>
                   </div>
+                  <div class="text-negative">
+                    <div v-if="validationErrors.transaction_fee_config?.slabs">
+                      <div v-for="(error, index) in validationErrors.transaction_fee_config.slabs" :key="index">
+                        <div v-for="(message, key) in error" :key="key">
+                          {{ key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }}: {{ message }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else-if="validationErrors.transaction_fee_config">
+                      {{ validationErrors.transaction_fee_config }}
+                    </div>
+                  </div>
                 </q-card-section>
             </q-card>
           </div>
@@ -285,6 +321,7 @@
           color="primary"
           :loading="loading"
           label="Save"
+          :disable="loading || !!Object.keys(validationErrors).length || Object.keys(errors).length"
         />
       </q-card-actions>
     </q-card>
@@ -292,7 +329,195 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { rules } from '@unocss/preset-wind';
+import { ref, computed } from 'vue'
+
+const useTransactionFeeValidation = () => {
+  const validationErrors = ref({})
+
+  const VALID_FEE_TYPES = ['fixed', 'percentage', 'slab_based', 'sliding_scale']
+  const VALID_EXTRA_FEE_TYPES = ['fixed', 'percentage']
+
+  const validateFeeConfig = (config) => {
+    validationErrors.value = {}
+
+    if (!config) {
+      return true
+    }
+
+    try {
+      if (typeof config !== 'object') {
+        validationErrors.value.transaction_fee_config = 'Fee configuration must be an object'
+        return false
+      }
+
+      if (!config.type) {
+        validationErrors.value.transaction_fee_config = 'Fee type must be specified'
+        return false
+      }
+
+      if (!VALID_FEE_TYPES.includes(config.type)) {
+        validationErrors.value.transaction_fee_config = `Invalid fee type: ${config.type}`
+        return false
+      }
+
+      const validationFunctions = {
+        fixed: validateSimpleFee,
+        percentage: validateSimpleFee,
+        slab_based: validateSlabBased,
+        sliding_scale: validateSlidingScale
+      }
+
+      if (!validationFunctions[config.type](config)) {
+        return false
+      }
+
+      return validateFeeLimits(config)
+    } catch (error) {
+      validationErrors.value.transaction_fee_config = error.message
+      return false
+    }
+  }
+
+  const validateSimpleFee = (config) => {
+    if (!('value' in config)) {
+      validationErrors.value.transaction_fee_config = 'Value must be specified'
+      return false
+    }
+
+    if (config.type === 'percentage' && (config.value < 0 || config.value > 100)) {
+      validationErrors.value.transaction_fee_config = 'Percentage must be between 0 and 100'
+      return false
+    }
+
+    return true
+  }
+
+  const validateSlabBased = (config) => {
+    if (!config.slabs || !Array.isArray(config.slabs) || config.slabs.length === 0) {
+      validationErrors.value.transaction_fee_config = 'Slabs must be specified and non-empty'
+      return false
+    }
+
+    let prevMax = 0
+    const slabErrors = []
+
+    for (let i = 0; i < config.slabs.length; i++) {
+      const slab = config.slabs[i]
+      const slabError = {}
+
+      // Check required min_amount
+      if (!('min_amount' in slab)) {
+        slabError.min_amount = 'Minimum amount must be specified'
+      } else if (slab.min_amount !== prevMax) {
+        slabError.min_amount = 'Slabs must be continuous without gaps'
+      }
+
+      // Check fee type (rate or amount, but not both)
+      if (('rate' in slab) === ('amount' in slab)) {
+        slabError.fee_type = 'Each slab must specify either rate or amount, but not both'
+      }
+
+      // Validate max_amount for all except last slab
+      if (i < config.slabs.length - 1) {
+        if (!('max_amount' in slab)) {
+          slabError.max_amount = 'All slabs except the last must specify maximum amount'
+        } else if (slab.max_amount <= slab.min_amount) {
+          slabError.max_amount = 'Maximum amount must be greater than minimum amount'
+        }
+      }
+
+      if (Object.keys(slabError).length > 0) {
+        slabErrors[i] = slabError
+      }
+
+      prevMax = slab.max_amount || Infinity
+    }
+
+    if (slabErrors.length > 0) {
+      validationErrors.value.transaction_fee_config = { slabs: slabErrors }
+      return false
+    }
+
+    return true
+  }
+
+  const validateSlidingScale = (config) => {
+    if (!config.slabs || !Array.isArray(config.slabs) || config.slabs.length === 0) {
+      validationErrors.value.transaction_fee_config = 'Slabs must be specified and non-empty'
+      return false
+    }
+
+    const slabErrors = []
+
+    for (let i = 0; i < config.slabs.length; i++) {
+      const slab = config.slabs[i]
+      const slabError = {}
+
+      if (!('min_amount' in slab)) {
+        slabError.min_amount = 'Minimum amount must be specified'
+      }
+
+      if (('rate' in slab) === ('amount' in slab)) {
+        slabError.fee_type = 'Each slab must specify either rate or amount, but not both'
+      }
+
+      if (Object.keys(slabError).length > 0) {
+        slabErrors[i] = slabError
+      }
+    }
+
+    if (slabErrors.length > 0) {
+      validationErrors.value.transaction_fee_config = { slabs: slabErrors }
+      return false
+    }
+
+    return true
+  }
+
+  const validateFeeLimits = (config) => {
+    if ('min_fee' in config && 'max_fee' in config) {
+      if (Number(config.min_fee) > Number(config.max_fee)) {
+        validationErrors.value.transaction_fee_config = 'Minimum fee cannot be greater than maximum fee'
+        return false
+      }
+    }
+
+    if (config.extra_fee) {
+      if (typeof config.extra_fee !== 'object') {
+        validationErrors.value.transaction_fee_config = 'Extra fee must be an object'
+        return false
+      }
+
+      if (!config.extra_fee.type) {
+        validationErrors.value.transaction_fee_config = 'Extra fee type must be specified'
+        return false
+      }
+
+      if (!VALID_EXTRA_FEE_TYPES.includes(config.extra_fee.type)) {
+        validationErrors.value.transaction_fee_config = 'Invalid extra fee type'
+        return false
+      }
+
+      if (!('value' in config.extra_fee)) {
+        validationErrors.value.transaction_fee_config = 'Value must be specified for extra fee'
+        return false
+      }
+
+      if (config.extra_fee.type === 'percentage' && (config.extra_fee.value < 0 || config.extra_fee.value > 100)) {
+        validationErrors.value.transaction_fee_config = 'Extra fee percentage must be between 0 and 100'
+        return false
+      }
+    }
+
+    return true
+  }
+
+  return {
+    validationErrors: computed(() => validationErrors.value),
+    validateFeeConfig
+  }
+}
 
 
 const { fields, errors, formDefaults, isEdit, submitForm, cancel, cancelForm, loading } = useForm('v1/payment-modes/', {
@@ -305,11 +530,19 @@ fields.value.enabled_for_purchase = true
 fields.value.account = null
 fields.value.transaction_fee_account = null
 
+const { validationErrors, validateFeeConfig } = useTransactionFeeValidation()
 
 const hasTransactionFee = ref(false)
 watch(() => fields.value.transaction_fee_config, (value) => {
   hasTransactionFee.value = !!value
-}, { immediate: true })
+  console.log('watching transaction_fee_config', value)
+  if (value) {
+    validateFeeConfig(value)
+  }
+}, {
+  immediate: true ,
+  deep: true
+})
 
 
 const hasExtraFee = ref(false)
@@ -354,12 +587,12 @@ const onFeeTypeChange = (type) => {
     fields.value.transaction_fee_config = null
     return
   }
-  
+
   fields.value.transaction_fee_config = {
     type: type.value,
     ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 })
   }
-  
+
   if (type.value === 'slab_based' || type.value === 'sliding_scale') {
     addSlab()
   }
