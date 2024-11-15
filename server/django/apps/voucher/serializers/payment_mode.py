@@ -16,15 +16,13 @@ class PaymentModeCreateSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate(self, data):
-        if data.get("transaction_fee_config") and not data.get(
-            "transaction_fee_account"
-        ):
+    def validate_transaction_fee_account(self, value):
+        # Check if transaction_fee_account is provided when transaction_fee_config exists
+        if not value and self.initial_data.get("transaction_fee_config"):
             raise serializers.ValidationError(
                 "Transaction Fee Account is required if Transaction Fee Config is provided"
             )
-
-        return
+        return value
 
     class Meta:
         model = PaymentMode
@@ -55,15 +53,12 @@ class PaymentModeRetrieveSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate(self, data):
-        if data.get("transaction_fee_config") and not data.get(
-            "transaction_fee_account"
-        ):
+    def validate_transaction_fee_account(self, value):
+        if not value and self.initial_data.get("transaction_fee_config"):
             raise serializers.ValidationError(
                 "Transaction Fee Account is required if Transaction Fee Config is provided"
             )
-
-        return
+        return value
 
     class Meta:
         model = PaymentMode
