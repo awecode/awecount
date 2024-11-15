@@ -1,4 +1,5 @@
 import datetime
+from copy import deepcopy
 from decimal import Decimal
 from typing import Union
 
@@ -96,7 +97,7 @@ class TransactionFeeConfig:
 
     def _convert_to_decimal(self, config: dict) -> dict:
         """Convert all numeric values in the configuration to Decimal."""
-        converted = config.copy()
+        converted = deepcopy(config)
 
         # Convert direct numeric values
         for key in ["value", "min_fee", "max_fee"]:
