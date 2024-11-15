@@ -168,7 +168,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ),
         (
             "payment_modes",
-            PaymentMode,
+            PaymentMode.objects.filter(enabled_for_sales=True),
             GenericSerializer,
             True,
             ["name"],
@@ -285,7 +285,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
         data["available_payment_modes"] = GenericSerializer(
-            PaymentMode.objects.filter(company=request.company), many=True
+            PaymentMode.objects.filter(company=request.company, enabled_for_sales=True),
+            many=True,
         ).data
         return Response(data)
 
@@ -564,7 +565,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ),
         (
             "payment_modes",
-            PaymentMode,
+            PaymentMode.objects.filter(enabled_for_purchase=True),
             GenericSerializer,
             True,
             ["name"],
@@ -814,7 +815,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         ),
         (
             "payment_modes",
-            PaymentMode,
+            PaymentMode.objects.filter(enabled_for_purchase=True),
             GenericSerializer,
             True,
             ["name"],
@@ -994,7 +995,7 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount, BankAccountSerializer),
         (
             "payment_modes",
-            PaymentMode,
+            PaymentMode.objects.filter(enabled_for_sales=True),
             GenericSerializer,
             True,
             ["name"],
@@ -1695,7 +1696,15 @@ class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
 
 class PurchaseSettingsViewSet(CRULViewSet):
     serializer_class = PurchaseSettingCreateSerializer
-    collections = (("payment_modes", PaymentMode),)
+    collections = (
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_purchase=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    )
 
     def get_defaults(self, request=None):
         p_setting = self.request.company.purchase_setting
@@ -1714,7 +1723,15 @@ class PurchaseSettingsViewSet(CRULViewSet):
 
 class SalesSettingsViewSet(CRULViewSet):
     serializer_class = SalesSettingCreateSerializer
-    collections = (("payment_modes", PaymentMode),)
+    collections = (
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    )
 
     def get_defaults(self, request=None):
         s_setting = self.request.company.sales_setting
