@@ -103,11 +103,12 @@ class TransactionFeeConfig:
             if key in converted:
                 converted[key] = Decimal(str(converted[key]))
 
-        # Convert extra fee value
-        if "extra_fee" in converted and "value" in converted["extra_fee"]:
-            converted["extra_fee"]["value"] = Decimal(
-                str(converted["extra_fee"]["value"])
-            )
+        # Convert extra fee value if it exists and is not None
+        if "extra_fee" in converted and converted["extra_fee"] is not None:
+            if "value" in converted["extra_fee"]:
+                converted["extra_fee"]["value"] = Decimal(
+                    str(converted["extra_fee"]["value"])
+                )
 
         # Convert slab values
         if "slabs" in converted:
@@ -199,17 +200,18 @@ class TransactionFeeConfig:
 
         if "extra_fee" in self.fee_config:
             extra_fee = self.fee_config["extra_fee"]
-            if not isinstance(extra_fee, dict):
-                raise ValueError("Extra fee must be a dictionary")
+            if extra_fee is not None:  # Only validate if extra_fee is not None
+                if not isinstance(extra_fee, dict):
+                    raise ValueError("Extra fee must be a dictionary")
 
-            if "type" not in extra_fee:
-                raise ValueError("Extra fee type must be specified")
+                if "type" not in extra_fee:
+                    raise ValueError("Extra fee type must be specified")
 
-            if extra_fee["type"] not in self.VALID_EXTRA_FEE_TYPES:
-                raise ValueError("Invalid extra fee type")
+                if extra_fee["type"] not in self.VALID_EXTRA_FEE_TYPES:
+                    raise ValueError("Invalid extra fee type")
 
-            if "value" not in extra_fee:
-                raise ValueError("Value must be specified for extra fee")
+                if "value" not in extra_fee:
+                    raise ValueError("Value must be specified for extra fee")
 
     def calculate_fee(self, amount: Union[Decimal, float, int]) -> Decimal:
         """
@@ -287,7 +289,7 @@ class TransactionFeeConfig:
         if "max_fee" in self.fee_config:
             fee = min(fee, self.fee_config["max_fee"])
 
-        if "extra_fee" in self.fee_config:
+        if "extra_fee" in self.fee_config and self.fee_config["extra_fee"] is not None:
             extra_fee = self.fee_config["extra_fee"]
             if extra_fee["type"] == "percentage":
                 fee += fee * extra_fee["value"] / 100
