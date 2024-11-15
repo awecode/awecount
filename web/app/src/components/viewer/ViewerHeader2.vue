@@ -49,7 +49,7 @@
       <div v-else class="col-12 col-md-6 row">
         <div class="col-6">Payment Mode</div>
         <div class="col-6">
-          {{ fields?.payment_mode }}
+          {{ fields?.payment_mode ?? 'Credit' }}
         </div>
       </div>
       <div v-if="fields.challan_numbers && fields.challan_numbers.length > 0" class="col-12 col-md-6 row">
@@ -136,6 +136,8 @@ export default {
           (item) => item.id === props.fields?.payment_mode
         )
         return props.paymentModeOptions[index].name
+      } else if (props.fields?.payment_mode === null) {
+        return 'Credit'
       } else return props.fields?.payment_mode
     })
     const discountComputed = computed(() => {
