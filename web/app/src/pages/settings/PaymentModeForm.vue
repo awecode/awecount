@@ -329,7 +329,6 @@
 </template>
 
 <script setup>
-import { rules } from '@unocss/preset-wind';
 import { ref, computed } from 'vue'
 
 const useTransactionFeeValidation = () => {
