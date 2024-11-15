@@ -34,8 +34,8 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-6">Mode</div>
-            <div class="col-6">{{ fields?.mode }}</div>
+            <div class="col-6">Payment Mode</div>
+            <div class="col-6">{{ fields?.payment_mode ?? 'Credit' }}</div>
           </div>
         </div>
       </q-card>
