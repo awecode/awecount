@@ -274,9 +274,9 @@ class TransactionFeeConfig:
         for slab in self.fee_config["slabs"]:
             if amount >= slab["min_amount"]:
                 if "rate" in slab:
-                    total_fee += amount * slab["rate"] / 100
+                    total_fee = amount * slab["rate"] / 100
                 else:
-                    total_fee += slab["amount"]
+                    total_fee = slab["amount"]
             else:
                 break
 
