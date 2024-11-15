@@ -138,11 +138,11 @@ export default {
       { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
       {
-        name: 'mode',
-        label: 'Mode',
+        name: 'payment_mode',
+        label: 'Payment Mode',
         align: 'left',
-        field: 'mode',
-        sortable: true
+        field: 'payment_mode',
+        sortable: false
       },
       {
         name: 'total_amount',
