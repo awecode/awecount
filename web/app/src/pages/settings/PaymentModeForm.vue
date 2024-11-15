@@ -14,6 +14,8 @@
               label="Name"
               :rules="[v => !!v || 'Name is required']"
               filled
+              :error="!!errors.name"
+              :error-message="errors.name"
             />
           </div>
 
@@ -28,6 +30,8 @@
               option-label="name"
               :rules="[v => !!v || 'Account is required']"
               filled
+              :error="!!errors.account"
+              :error-message="errors.account"
             />
           </div>
 
@@ -35,6 +39,8 @@
             <q-checkbox
               v-model="fields.enabled_for_sales"
               label="Enable for Sales"
+              :error="!!errors.enabled_for_sales"
+              :error-message="errors.enabled_for_sales"
             />
           </div>
 
@@ -42,6 +48,8 @@
             <q-checkbox
               v-model="fields.enabled_for_purchase"
               label="Enable for Purchase"
+              :error="!!errors.enabled_for_purchase"
+              :error-message="errors.enabled_for_purchase"
             />
           </div>
 
@@ -76,11 +84,13 @@
                         label="Transaction Fee Account"
                         :options="formDefaults?.collections?.accounts"
                         :staticOption="isEdit ? fields.selected_transaction_fee_account_obj : null"
-                        endpoint="v1/ledger/accounts"
+                        endpoint="v1/payment-modes/create-defaults/accounts"
                         option-value="id"
                         option-label="name"
                         :rules="[v => !fields.transaction_fee_config || !!v || 'Fee account is required when fee is enabled']"
                         filled
+                        :error="!!errors.transaction_fee_account"
+                        :error-message="errors.transaction_fee_account"
                       />
                     </div>
 
@@ -116,9 +126,9 @@
                     </template>
 
                     <!-- Slab Based Fee -->
-                    <template v-if="fields.transaction_fee_config.type === 'slab_based'">
+                    <template v-if="fields.transaction_fee_config.type === 'slab_based' || fields.transaction_fee_config.type === 'sliding_scale'">
                       <div class="col-12">
-                        <div class="text-subtitle2 q-mb-sm">Fee Slabs</div>
+                        <div class="text-subtitle2 q-mb-sm">{{ fields.transaction_fee_config.type === 'slab_based' ? 'Fee Slabs' : 'Sliding Scale Slabs' }}</div>
                         <div v-for="(slab, index) in fields.transaction_fee_config.slabs" :key="index" class="row q-col-gutter-sm q-mb-md">
                           <div class="col-12 col-md-3">
                             <q-input
@@ -129,7 +139,7 @@
                               filled
                             />
                           </div>
-                          <div class="col-12 col-md-3">
+                          <div class="col-12 col-md-3" v-if="fields.transaction_fee_config.type === 'slab_based'">
                             <q-input
                               v-model.number="slab.max_amount"
                               label="Max Amount"
@@ -139,15 +149,35 @@
                             />
                           </div>
                           <div class="col-12 col-md-3">
+                            <q-select
+                              v-model="slab.fee_type"
+                              :options="slabFeeTypeOptions"
+                              label="Fee Type"
+                              filled
+                              emit-value
+                              map-options
+                              @update:model-value="onSlabFeeTypeChange(index)"
+                            />
+                          </div>
+                          <div class="col-12 col-md-2">
                             <q-input
                               v-model.number="slab.rate"
+                              v-if="slab.fee_type === 'rate'"
                               label="Rate (%)"
                               type="number"
                               step="any"
                               filled
                             />
+                            <q-input
+                              v-else
+                              v-model.number="slab.amount"
+                              label="Fixed Amount"
+                              type="number"
+                              step="any"
+                              filled
+                            />
                           </div>
-                          <div class="col-12 col-md-3 flex items-center">
+                          <div class="col-12 col-md-1 flex items-center">
                             <q-btn
                               flat
                               round
@@ -159,7 +189,7 @@
                         </div>
                         <q-btn
                           color="primary"
-                          label="Add Slab"
+                          :label="`Add ${fields.transaction_fee_config.type === 'slab_based' ? 'Slab' : 'Scale'}`"
                           @click="addSlab"
                           class="q-mb-md"
                         />
@@ -207,6 +237,7 @@
                           :options="extraFeeTypeOptions"
                           label="Extra Fee Type"
                           filled
+                          emit-value
                           map-options
                         />
                       </div>
@@ -223,6 +254,20 @@
                     </template>
                   </div>
 
+                </q-card-section>
+
+                <!-- errors -->
+                <q-card-section v-if="fields.transaction_fee_config">
+                  <div class="text-negative">
+                    <div v-if="errors.transaction_fee_config">
+                      {{ errors.transaction_fee_config }}
+                    </div>
+                    <div v-else-if="errors.transaction_fee_config?.slabs">
+                      <div v-for="(error, index) in errors.transaction_fee_config.slabs" :key="index">
+                        {{ error }}
+                      </div>
+                    </div>
+                  </div>
                 </q-card-section>
             </q-card>
           </div>
@@ -299,17 +344,35 @@ const extraFeeTypeOptions = [
   { label: 'Percentage', value: 'percentage' }
 ]
 
+const slabFeeTypeOptions = [
+  { label: 'Rate (%)', value: 'rate' },
+  { label: 'Fixed Amount', value: 'amount' }
+]
+
 const onFeeTypeChange = (type) => {
   if (type.value === null) {
     fields.value.transaction_fee_config = null
     return
   }
+  
   fields.value.transaction_fee_config = {
     type: type.value,
-    ...(type.value === 'slab_based' ? { slabs: [] } : { value: 0 })
+    ...(type.value === 'slab_based' || type.value === 'sliding_scale' ? { slabs: [] } : { value: 0 })
   }
-  if (type.value === 'slab_based') {
+  
+  if (type.value === 'slab_based' || type.value === 'sliding_scale') {
     addSlab()
+  }
+}
+
+const onSlabFeeTypeChange = (index) => {
+  const slab = fields.value.transaction_fee_config.slabs[index]
+  if (slab.fee_type === 'rate') {
+    delete slab.amount
+    slab.rate = 0
+  } else {
+    delete slab.rate
+    slab.amount = 0
   }
 }
 
@@ -328,13 +391,19 @@ const addSlab = () => {
   if (!fields.value.transaction_fee_config.slabs) return
 
   const lastSlab = fields.value.transaction_fee_config.slabs[fields.value.transaction_fee_config.slabs.length - 1]
-  const minAmount = lastSlab ? lastSlab.max_amount || 0 : 0
+  const minAmount = lastSlab ? (fields.value.transaction_fee_config.type === 'slab_based' ? lastSlab.max_amount : lastSlab.min_amount) || 0 : 0
 
-  fields.value.transaction_fee_config.slabs.push({
+  const newSlab = {
     min_amount: minAmount,
-    max_amount: minAmount + 1000,
+    fee_type: 'rate',
     rate: 0
-  })
+  }
+
+  if (fields.value.transaction_fee_config.type === 'slab_based') {
+    newSlab.max_amount = minAmount + 1000
+  }
+
+  fields.value.transaction_fee_config.slabs.push(newSlab)
 }
 
 const removeSlab = (index) => {
