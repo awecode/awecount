@@ -229,7 +229,15 @@
                           step="any"
                           filled
                           min="0"
-                          :rules="[v => v >= 0 || 'Minimum fee must be greater than or equal to 0']"
+                          :rules="[v => {
+                            if (v && v < 0) {
+                              return 'Minimum fee must be greater than or equal to 0'
+                            }
+                            if (v && fields.transaction_fee_config.max_fee && v > fields.transaction_fee_config.max_fee) {
+                              return 'Minimum fee must be less than or equal to maximum fee'
+                            }
+                            return true
+                          }]"
                         />
                       </div>
                       <div class="col-12 col-md-6">
@@ -240,7 +248,15 @@
                         step="any"
                         filled
                         min="0"
-                        :rules="[v => v >= 0 || 'Maximum fee must be greater than or equal to 0']"
+                        :rules="[v => {
+                          if (v && v < 0) {
+                            return 'Maximum fee must be greater than or equal to 0'
+                          }
+                          if (v && fields.transaction_fee_config.min_fee && v < fields.transaction_fee_config.min_fee) {
+                            return 'Maximum fee must be greater than or equal to minimum fee'
+                          }
+                          return true
+                        }]"
                       />
                       </div>
                       </div>
