@@ -203,7 +203,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "date",
         "address",
         "rows__item__name",
-        "mode",
+        "payment_mode__name",
         "bank_account__bank_name",
         "bank_account__short_name",
     ]
