@@ -61,14 +61,14 @@
                   ? 'col-6'
                   : 'col-12'
                   " v-if="fields.discount_type === 'Amount' ||
-    fields.discount_type === 'Percent'
-    ">
+                    fields.discount_type === 'Percent'
+                  ">
                   <q-input class="col-6" v-model.number="fields.discount" label="Discount"
                     :error-message="errors.discount" :error="!!errors.discount"></q-input>
                 </div>
                 <div class="col-3 row" v-if="formDefaults.options?.show_trade_discount_in_voucher &&
                   ['Percent', 'Amount'].includes(fields.discount_type)
-                  ">
+                ">
                   <q-checkbox v-model="fields.trade_discount" label="Trade Discount?"></q-checkbox>
                 </div>
               </div>
@@ -81,13 +81,14 @@
 
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2 v-model="fields.mode" label="Mode" :error-message="errors.mode" :error="!!errors.mode"
-                :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj"
-                :options="modeOptionsComputed" endpoint="v1/purchase-vouchers/create-defaults/bank_accounts"
+              <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode"
+                :error-message="errors.payment_mode" :error="!!errors.payment_mode"
+                :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
+                :options="modeOptionsComputed" endpoint="v1/purchase-vouchers/create-defaults/payment_modes"
                 option-value="id" option-label="name" map-options emit-value>
                 <template v-slot:append>
-                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+                  <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.payment_mode = null" /></template></n-auto-complete-v2>
             </div>
             <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date"
               v-model="fields.due_date" class="col-md-6 col-12" :error-message="errors?.due_date"
@@ -98,12 +99,12 @@
       </q-card>
       <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
         " usedIn="purchase" :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
-    " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
+          " :discountOptions="discountOptionsComputed" :taxOptions="formDefaults.collections?.tax_schemes"
         v-model="fields.rows" :mainDiscount="{
-    discount_type: fields.discount_type,
-    discount: fields.discount,
-  }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-  " :enableRowDescription="formDefaults.options?.enable_row_description"
+          discount_type: fields.discount_type,
+          discount: fields.discount,
+        }" :errors="!!errors.rows ? errors.rows : null" @deleteRowErr="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
+          " :enableRowDescription="formDefaults.options?.enable_row_description"
         :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"></invoice-table>
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -132,8 +133,8 @@
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
           @click.prevent="() => onSubmitClick('Issued')" color="green" label="Issue" />
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && isEdit" :loading="loading"
-          @click.prevent="() => onSubmitClick(fields.status === 'Draft'? 'Issued' : fields.status)" color="green"
-          :label="fields.status === 'Draft'? 'Issue from Draft' : 'Update'" />
+          @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" color="green"
+          :label="fields.status === 'Draft' ? 'Issue from Draft' : 'Update'" />
       </div>
     </q-card>
   </q-form>
@@ -319,6 +320,8 @@ export default {
       if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
         formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
       }
+
+
     })
     const discountOptionsComputed = computed(() => {
       if (formData?.formDefaults.value?.collections?.discounts) {
@@ -329,12 +332,12 @@ export default {
     })
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [...staticOptions.modes],
+        results: [{ id: null, name: 'Credit' }],
         pagination: {},
       }
-      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.payment_modes.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.payment_modes.pagination)
       }
       return obj
     })
