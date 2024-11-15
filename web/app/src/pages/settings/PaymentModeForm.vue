@@ -553,6 +553,12 @@ watch(() => fields.value.transaction_fee_config, (value) => {
   console.log('watching transaction_fee_config', value)
   if (value) {
     validateFeeConfig(value)
+    if(value.min_fee === '') {
+      delete fields.value.transaction_fee_config.min_fee
+    }
+    if(value.max_fee === '') {
+      delete fields.value.transaction_fee_config.max_fee
+    }
   }
 }, {
   immediate: true ,
@@ -571,8 +577,6 @@ const onTransactionFeeToggle = (value) => {
     fields.value.transaction_fee_config = {
       type: 'fixed',
       value: 0,
-      min_fee: 0,
-      max_fee: 0,
       extra_fee: null
     }
   } else {
