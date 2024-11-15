@@ -568,6 +568,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         else:
             dr_acc = self.party.customer_account
 
+        self.save()
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
         dividend_discount, dividend_trade_discount = self.get_discount(
