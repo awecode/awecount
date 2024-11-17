@@ -49,7 +49,7 @@ class SalesVoucherFilterSet(DateFilterSet):
         _value = value.lower()
         if _value == "credit":
             return queryset.filter(payment_mode__isnull=True)
-        return queryset.filter(payment_mode__iexact=_value)
+        return queryset.filter(payment_mode_id=_value)
 
     class Meta:
         model = SalesVoucher
@@ -84,7 +84,7 @@ class PurchaseVoucherFilterSet(DateFilterSet):
         _value = value.lower()
         if _value == "credit":
             return queryset.filter(payment_mode__isnull=True)
-        return queryset.filter(payment_mode__iexact=_value)
+        return queryset.filter(payment_mode_id=_value)
 
     class Meta:
         model = PurchaseVoucher
