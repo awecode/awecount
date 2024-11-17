@@ -27,7 +27,6 @@ from apps.voucher.models import (
     PurchaseVoucherRow,
     SalesVoucherRow,
 )
-from awecount.libs import zero_for_none
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import DeleteRows, InputChoiceMixin, ShortNameChoiceMixin
@@ -1012,30 +1011,12 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
                 )
             aggregate = transactions.aggregate(Sum("dr_amount"), Sum("cr_amount"))
 
-        last_transaction, first_transaction = len(transactions) and (
-            transactions[0],
-            transactions[len(transactions) - 1],
-        )
-        opening, closing = 0, 0
-
-        if first_transaction:
-            opening = (
-                zero_for_none(first_transaction.current_balance)
-                + zero_for_none(first_transaction.cr_amount)
-                - zero_for_none(first_transaction.dr_amount)
-            )
-
-        if last_transaction:
-            closing = zero_for_none(last_transaction.current_balance)
-
         # Only show 5 because fetching voucher_no is expensive because of GFK, GFK to be cached
         # self.paginator.page_size = 5
         page = self.paginate_queryset(transactions)
         serializer = TransactionEntrySerializer(page, many=True)
         data["transactions"] = self.paginator.get_response_data(serializer.data)
         data["aggregate"] = aggregate
-        data["opening_balance"] = opening
-        data["closing_balance"] = closing
         return Response(data)
 
     @action(detail=False, url_path="trial-balance")

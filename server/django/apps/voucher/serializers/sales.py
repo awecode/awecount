@@ -674,6 +674,7 @@ class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
 class SalesVoucherListSerializer(serializers.ModelSerializer):
     party_name = serializers.ReadOnlyField(source="party.name")
     payment_receipts = serializers.SerializerMethodField()
+    payment_mode = serializers.SerializerMethodField()
 
     def get_payment_receipts(self, obj):
         receipts = []
@@ -688,6 +689,11 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
             )
         return receipts
 
+    def get_payment_mode(self, obj):
+        if not obj.payment_mode:
+            return "Credit"
+        return obj.payment_mode.name
+
     class Meta:
         model = SalesVoucher
         fields = (
@@ -699,6 +705,7 @@ class SalesVoucherListSerializer(serializers.ModelSerializer):
             "customer_name",
             "total_amount",
             "payment_receipts",
+            "payment_mode",
         )
 
 

@@ -220,9 +220,15 @@ class PurchaseVoucherCreateSerializer(
 class PurchaseVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source="party.name")
     name = serializers.SerializerMethodField()
+    payment_mode = serializers.SerializerMethodField()
 
     def get_name(self, obj):
         return "{}".format(obj.voucher_no)
+
+    def get_payment_mode(self, obj):
+        if not obj.payment_mode:
+            return "Credit"
+        return obj.payment_mode.name
 
     class Meta:
         model = PurchaseVoucher
@@ -234,7 +240,7 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
             "name",
             "status",
             "total_amount",
-            "mode",
+            "payment_mode",
         )
 
 

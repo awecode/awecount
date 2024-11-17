@@ -1,6 +1,7 @@
 import datetime
+from copy import deepcopy
 from decimal import Decimal
-from enum import Enum
+from typing import Union
 
 from auditlog.registry import auditlog
 from django.apps import apps
@@ -79,42 +80,48 @@ TRANSACTION_TYPE_CHOICES = [
 ]
 
 
-class FeeType(str, Enum):
-    FIXED = "fixed"
-    PERCENTAGE = "percentage"
-    SLAB_BASED = "slab_based"
-    SLIDING_SCALE = "sliding_scale"
-    TIME_BASED = "time_based"  # Not implemented yet
-
-
 class TransactionFeeConfig:
+    VALID_FEE_TYPES = {"fixed", "percentage", "slab_based", "sliding_scale"}
+    VALID_EXTRA_FEE_TYPES = {"fixed", "percentage"}
+
     def __init__(self, fee_config: dict):
-        self.fee_config = fee_config
+        """
+        Initialize the fee configuration.
+
+        Args:
+            fee_config: Dictionary containing fee configuration parameters
+        """
+        # Convert all numeric values to Decimal at initialization
+        self.fee_config = self._convert_to_decimal(fee_config)
         self.validate()
 
-    def _validate_slabs(self):
-        slabs = self.fee_config["slabs"]
-        if not isinstance(slabs, list):
-            raise ValueError("Slabs must be a list")
+    def _convert_to_decimal(self, config: dict) -> dict:
+        """Convert all numeric values in the configuration to Decimal."""
+        converted = deepcopy(config)
 
-        prev_max = Decimal("0")
-        for slab in slabs:
-            if not all(key in slab for key in ["min_amount", "rate"]):
-                raise ValueError("Each slab must specify min_amount and rate")
+        # Convert direct numeric values
+        for key in ["value", "min_fee", "max_fee"]:
+            if key in converted:
+                converted[key] = Decimal(str(converted[key]))
 
-            current_min = Decimal(str(slab["min_amount"]))
-            if current_min != prev_max:
-                raise ValueError("Slabs must be continuous without gaps")
+        # Convert extra fee value if it exists and is not None
+        if "extra_fee" in converted and converted["extra_fee"] is not None:
+            if "value" in converted["extra_fee"]:
+                converted["extra_fee"]["value"] = Decimal(
+                    str(converted["extra_fee"]["value"])
+                )
 
-            if "max_amount" in slab:
-                prev_max = Decimal(str(slab["max_amount"]))
-            else:
-                # Last slab can have no max_amount
-                if slab != slabs[-1]:
-                    raise ValueError("Only the last slab can have no maximum amount")
-                prev_max = Decimal("infinity")
+        # Convert slab values
+        if "slabs" in converted:
+            for slab in converted["slabs"]:
+                for key in ["min_amount", "max_amount", "rate", "amount"]:
+                    if key in slab:
+                        slab[key] = Decimal(str(slab[key]))
 
-    def validate(self):
+        return converted
+
+    def validate(self) -> None:
+        """Validate the fee configuration."""
         if not isinstance(self.fee_config, dict):
             raise ValueError("Fee config must be a dictionary")
 
@@ -122,118 +129,175 @@ class TransactionFeeConfig:
             raise ValueError("Fee type must be specified")
 
         fee_type = self.fee_config["type"]
-
-        if fee_type not in FeeType.__members__.values():
+        if fee_type not in self.VALID_FEE_TYPES:
             raise ValueError(f"Invalid fee type: {fee_type}")
 
-        if fee_type in [FeeType.FIXED, FeeType.PERCENTAGE]:
-            if "value" not in self.fee_config:
-                raise ValueError("Amount must be specified")
+        # Validate based on fee type
+        validators = {
+            "fixed": self._validate_simple_fee,
+            "percentage": self._validate_simple_fee,
+            "slab_based": self._validate_slab_based,
+            "sliding_scale": self._validate_sliding_scale,
+        }
+        validators[fee_type]()
+        self._validate_fee_limits()
 
-        if fee_type == FeeType.SLAB_BASED:
-            if "slabs" not in self.fee_config:
-                raise ValueError("Slabs must be specified")
-            try:
-                self._validate_slabs()
-            except Exception as e:
-                raise e
+    def _validate_simple_fee(self) -> None:
+        """Validate fixed and percentage fee configurations."""
+        if "value" not in self.fee_config:
+            raise ValueError("Value must be specified")
 
-        if fee_type == FeeType.SLIDING_SCALE:
-            if "slabs" not in self.fee_config:
-                raise ValueError("Slabs must be specified")
-            for slab in self.fee_config["slabs"]:
-                if not all(key in slab for key in ["min_amount", "rate"]):
-                    raise ValueError("Each slab must specify min_amount and rate")
+    def _validate_slab_based(self) -> None:
+        """Validate slab-based fee configuration."""
+        if "slabs" not in self.fee_config:
+            raise ValueError("Slabs must be specified")
 
+        slabs = self.fee_config["slabs"]
+        if not isinstance(slabs, list):
+            raise ValueError("Slabs must be a list")
+
+        prev_max = Decimal("0")
+        for i, slab in enumerate(slabs):
+            if "min_amount" not in slab:
+                raise ValueError("Each slab must specify min_amount")
+
+            if ("rate" in slab) == ("amount" in slab):
+                raise ValueError(
+                    "Each slab must specify either rate or amount, but not both"
+                )
+
+            if slab["min_amount"] != prev_max:
+                raise ValueError("Slabs must be continuous without gaps")
+
+            if "max_amount" in slab:
+                prev_max = slab["max_amount"]
+            elif i < len(slabs) - 1:
+                raise ValueError("Only the last slab can have no maximum amount")
+            else:
+                prev_max = Decimal("infinity")
+
+    def _validate_sliding_scale(self) -> None:
+        """Validate sliding scale fee configuration."""
+        if "slabs" not in self.fee_config:
+            raise ValueError("Slabs must be specified")
+
+        slabs = self.fee_config["slabs"]
+        if not isinstance(slabs, list):
+            raise ValueError("Slabs must be a list")
+
+        for slab in slabs:
+            if "min_amount" not in slab:
+                raise ValueError("Each slab must specify min_amount")
+            if ("rate" in slab) == ("amount" in slab):
+                raise ValueError(
+                    "Each slab must specify either rate or amount, but not both"
+                )
+
+    def _validate_fee_limits(self) -> None:
+        """Validate fee limits and extra fee configuration."""
         if "min_fee" in self.fee_config and "max_fee" in self.fee_config:
-            min_fee = Decimal(str(self.fee_config["min_fee"]))
-            max_fee = Decimal(str(self.fee_config["max_fee"]))
-            if min_fee > max_fee:
+            if self.fee_config["min_fee"] > self.fee_config["max_fee"]:
                 raise ValueError("Minimum fee cannot be greater than maximum fee")
 
         if "extra_fee" in self.fee_config:
-            if not isinstance(self.fee_config["extra_fee"], dict):
-                raise ValueError("Extra fee must be a dictionary")
+            extra_fee = self.fee_config["extra_fee"]
+            if extra_fee is not None:  # Only validate if extra_fee is not None
+                if not isinstance(extra_fee, dict):
+                    raise ValueError("Extra fee must be a dictionary")
 
-            if "type" not in self.fee_config["extra_fee"]:
-                raise ValueError("Extra fee type must be specified")
+                if "type" not in extra_fee:
+                    raise ValueError("Extra fee type must be specified")
 
-            if self.fee_config["extra_fee"]["type"] not in [
-                FeeType.FIXED,
-                FeeType.PERCENTAGE,
-            ]:
-                raise ValueError(
-                    "Invalid extra fee type. Expected 'fixed' or 'percentage'"
-                )
+                if extra_fee["type"] not in self.VALID_EXTRA_FEE_TYPES:
+                    raise ValueError("Invalid extra fee type")
 
-            if "value" not in self.fee_config["extra_fee"]:
-                raise ValueError("Value must be specified for extra fee")
+                if "value" not in extra_fee:
+                    raise ValueError("Value must be specified for extra fee")
 
-            # if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
-            #     if not 0 <= self.fee_config["extra_fee"]["value"] <= 100:
-            #         raise ValueError("Extra fee percentage must be between 0 and 100")
+    def calculate_fee(self, amount: Union[Decimal, float, int]) -> Decimal:
+        """
+        Calculate the fee for a given amount.
 
-    def _apply_fee_limits(self, fee: Decimal) -> Decimal:
-        if "min_fee" in self.fee_config:
-            fee = max(fee, Decimal(str(self.fee_config["min_fee"])))
+        Args:
+            amount: The transaction amount
 
-        if "max_fee" in self.fee_config:
-            fee = min(fee, Decimal(str(self.fee_config["max_fee"])))
+        Returns:
+            The calculated fee amount
+        """
+        amount = Decimal(str(amount))
+        fee_type = self.fee_config["type"]
 
-        if "extra_fee" in self.fee_config:
-            if self.fee_config["extra_fee"]["type"] == FeeType.PERCENTAGE:
-                fee += fee * Decimal(str(self.fee_config["extra_fee"]["value"])) / 100
-            elif self.fee_config["extra_fee"]["type"] == FeeType.FIXED:
-                fee += Decimal(str(self.fee_config["extra_fee"]))
+        # Calculate base fee
+        calculators = {
+            "fixed": self._calculate_fixed_fee,
+            "percentage": self._calculate_percentage_fee,
+            "slab_based": self._calculate_slab_based_fee,
+            "sliding_scale": self._calculate_sliding_scale_fee,
+        }
 
-        return fee
+        base_fee = calculators[fee_type](amount)
+        return self._apply_fee_limits(base_fee)
 
-    def _calculate_slab_based_fee(self, amount: Decimal, slabs: list[dict]) -> Decimal:
+    def _calculate_fixed_fee(self, _: Decimal) -> Decimal:
+        """Calculate fixed fee."""
+        return self.fee_config["value"]
+
+    def _calculate_percentage_fee(self, amount: Decimal) -> Decimal:
+        """Calculate percentage-based fee."""
+        return amount * self.fee_config["value"] / 100
+
+    def _calculate_slab_based_fee(self, amount: Decimal) -> Decimal:
+        """Calculate slab-based fee."""
         total_fee = Decimal("0")
         remaining_amount = amount
 
-        for slab in slabs:
-            min_amount = Decimal(str(slab["min_amount"]))
-            max_amount = Decimal(str(slab.get("max_amount", float("inf"))))
-            rate = Decimal(str(slab["rate"]))
-
-            # Calculate the amount that falls in this slab
+        for slab in self.fee_config["slabs"]:
             if remaining_amount <= 0:
                 break
 
-            slab_amount = min(remaining_amount, max_amount - min_amount)
-            slab_fee = slab_amount * rate / 100
-            total_fee += slab_fee
+            max_amount = slab.get("max_amount", Decimal("infinity"))
+            slab_amount = min(remaining_amount, max_amount - slab["min_amount"])
+
+            if "rate" in slab:
+                total_fee += slab_amount * slab["rate"] / 100
+            else:
+                total_fee += slab["amount"]
 
             remaining_amount -= slab_amount
 
         return total_fee
 
-    def calculate_fee(self, amount: Decimal) -> Decimal:
-        fee_type = self.fee_config["type"]
+    def _calculate_sliding_scale_fee(self, amount: Decimal) -> Decimal:
+        """Calculate sliding scale fee."""
+        total_fee = Decimal("0")
 
-        # Calculate base fee
-        fee = Decimal("0")
-
-        if fee_type == FeeType.FIXED:
-            fee = Decimal(str(self.fee_config["value"]))
-
-        elif fee_type == FeeType.PERCENTAGE:
-            fee = amount * Decimal(str(self.fee_config["value"])) / 100
-
-        elif fee_type == FeeType.SLAB_BASED:
-            fee = self._calculate_slab_based_fee(amount, self.fee_config["slabs"])
-
-        elif fee_type == FeeType.SLIDING_SCALE:
-            _fee = Decimal("0")
-            for slab in self.fee_config["slabs"]:
-                if amount >= Decimal(str(slab["min_amount"])):
-                    _fee = amount * Decimal(str(slab["rate"])) / 100
+        for slab in self.fee_config["slabs"]:
+            if amount >= slab["min_amount"]:
+                if "rate" in slab:
+                    total_fee = amount * slab["rate"] / 100
                 else:
-                    break
-            fee = _fee
+                    total_fee = slab["amount"]
+            else:
+                break
 
-        return self._apply_fee_limits(fee)
+        return total_fee
+
+    def _apply_fee_limits(self, fee: Decimal) -> Decimal:
+        """Apply minimum, maximum, and extra fee constraints."""
+        if "min_fee" in self.fee_config:
+            fee = max(fee, self.fee_config["min_fee"])
+
+        if "max_fee" in self.fee_config:
+            fee = min(fee, self.fee_config["max_fee"])
+
+        if "extra_fee" in self.fee_config and self.fee_config["extra_fee"] is not None:
+            extra_fee = self.fee_config["extra_fee"]
+            if extra_fee["type"] == "percentage":
+                fee += fee * extra_fee["value"] / 100
+            else:  # fixed
+                fee += extra_fee["value"]
+
+        return fee
 
 
 class PaymentMode(models.Model):
@@ -485,6 +549,26 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             content_type__model="salesvoucherrow", object_id__in=row_ids
         ).delete()
 
+    def _get_or_create_bank_payment_mode(company, bank_account):
+        kwargs = {
+            "company": company,
+            "account": bank_account.ledger,
+            "name": bank_account.bank_name or bank_account.account_name,
+        }
+        if bank_account.commission_account:
+            kwargs["transaction_fee_account"] = bank_account.commission_account
+
+        if bank_account.transaction_commission_percent:
+            kwargs["transaction_fee_config"] = {
+                "type": "percentage",
+                "value": str(
+                    Decimal.from_float(bank_account.transaction_commission_percent)
+                ),
+            }
+
+        payment_mode, _ = PaymentMode.objects.get_or_create(**kwargs)
+        return payment_mode
+
     def apply_transactions(self, voucher_meta=None, extra_entries=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta["grand_total"]:
@@ -501,9 +585,26 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.payment_mode:
             dr_acc = self.payment_mode.account
             self.status = "Paid"
+        elif self.mode == "Cash":
+            self.payment_mode = PaymentMode.objects.get_or_create(
+                company=self.company, name="Cash"
+            )[0]
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
+        elif self.mode == "Bank Deposit" and self.bank_account:
+            self.payment_mode = self._get_or_create_bank_payment_mode(
+                self.company, self.bank_account
+            )
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
         else:
+            if not self.party:
+                raise ValueError(
+                    "Party is required for sales invoice, when not paid in cash!"
+                )
             dr_acc = self.party.customer_account
 
+        self.save()
         sub_total_after_row_discounts = self.get_total_after_row_discounts()
 
         dividend_discount, dividend_trade_discount = self.get_discount(

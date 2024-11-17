@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "auditlog",
     "mptt",
     "django_q",
+    "dbbackup",
     "apps.users",
     "apps.voucher",
     "apps.ledger",
@@ -122,3 +123,7 @@ Q_CLUSTER = {
         "db": 0,
     },
 }
+
+
+DBBACKUP_FILENAME_TEMPLATE = "{databasename}-{servername}-{datetime}.{extension}"
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
