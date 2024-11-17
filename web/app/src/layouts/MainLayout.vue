@@ -565,6 +565,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('WidgetView')
       },
       {
+        title: 'Payment Modes',
+        icon: 'mdi-cash',
+        link: '/settings/payment-mode/list/',
+        hide: !checkPermissions('PaymentModeView')
+      },
+      {
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
         link: '/settings/sales/',

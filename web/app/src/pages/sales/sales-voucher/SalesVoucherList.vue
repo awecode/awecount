@@ -181,6 +181,13 @@ export default {
       },
       { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       {
+        name: 'payment_mode',
+        label: 'Payment Mode',
+        align: 'left',
+        field: 'payment_mode',
+        sortable: false
+      },
+      {
         name: 'total_amount',
         label: 'Total amount',
         align: 'left',

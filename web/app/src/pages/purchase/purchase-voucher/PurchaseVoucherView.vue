@@ -27,9 +27,9 @@
               <div class="col-6">{{ getDate }}</div>
             </div>
             <div class="col-12 col-md-6 row">
-              <div class="col-6">Mode</div>
+              <div class="col-6">Payment Mode</div>
               <div class="col-6">
-                {{ fields?.mode }}
+                {{ fields?.payment_mode ?? 'Credit' }}
               </div>
             </div>
           </div>

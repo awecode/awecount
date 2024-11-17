@@ -22,7 +22,7 @@
               </q-checkbox>
             </div>
           </div>
-          <div class="row q-ml-sm">
+          <!-- <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
               <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
                 :staticOption="fields.selected_mode_obj" endpoint="v1/purchase-settings/create-defaults/bank_accounts"
@@ -30,6 +30,19 @@
                 :error-message="modeErrors">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
+                </template>
+              </n-auto-complete-v2>
+            </div>
+          </div> -->
+          <div class="row q-ml-sm">
+            <div class="col-12 col-sm-6">
+              <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed"
+                endpoint="v1/purchase-settings/create-defaults/payment_modes" :staticOption="fields.selected_mode_obj"
+                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
+                :error-message="modeErrors">
+                <template v-slot:append>
+                  <q-icon v-if="fields.payment_mode" name="close" @click.stop.prevent="fields.payment_mode = null"
+                    class="cursor-pointer" />
                 </template>
               </n-auto-complete-v2>
             </div>
@@ -142,12 +155,12 @@ export default {
     const onupdateErrors = () => emailListErrors.value = null
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [...modes],
+        results: [{ id: null, name: 'Credit' }],
         pagination: {},
       }
-      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.payment_modes.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.payment_modes.pagination)
       }
       return obj
     })

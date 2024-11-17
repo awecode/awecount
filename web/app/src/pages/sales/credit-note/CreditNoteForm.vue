@@ -64,12 +64,12 @@
               </div>
             </div>
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2 v-model="fields.mode" label="Mode *" :error-message="errors?.mode"
-                endpoint="/v1/credit-note/create-defaults/bank_accounts"
-                :error="!!errors?.mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_mode_obj : formDefaults.options?.default_mode_obj" data-testid="mode-input">
+              <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *" :error-message="errors?.payment_mode"
+                endpoint="/v1/credit-note/create-defaults/payment_modes"
+                :error="!!errors?.payment_mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj" data-testid="mode-input">
                 <template v-slot:append>
-                  <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
-                    @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
+                  <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
+                    @click.stop.prevent="fields.payment_mode = null" /></template></n-auto-complete-v2>
             </div>
           </div>
         </q-card-section>
@@ -157,7 +157,7 @@ export default {
     })
     const partyMode = ref(false)
     const switchMode = (fields) => {
-      if (fields.mode !== 'Credit') {
+      if (fields.payment_mode) {
         partyMode.value = !partyMode.value
       } else
         $q.notify({
@@ -275,7 +275,7 @@ export default {
     }
     formData.fields.value.date = formData.today
     formData.fields.value.is_export = false
-    formData.fields.value.mode = 'Credit'
+    formData.fields.value.payment_mode = null
     formData.fields.value.party = ''
     formData.fields.value.discount_type = null
     formData.fields.value.trade_discount = false
@@ -298,12 +298,12 @@ export default {
 
     const modeOptionsComputed = computed(() => {
       const obj = {
-        results: [...staticOptions.modes],
+        results: [{ id: null, name: 'Credit' }],
         pagination: {},
       }
-      if (formData?.formDefaults.value?.collections?.bank_accounts?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.bank_accounts.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.bank_accounts.pagination)
+      if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
+        obj.results = obj.results.concat(formData.formDefaults.value.collections.payment_modes.results)
+        Object.assign(obj.pagination, formData.formDefaults.value.collections.payment_modes.pagination)
       }
       return obj
     })
