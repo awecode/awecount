@@ -37,6 +37,10 @@
                 <div class="q-mx-md">
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
+                <div class="q-mx-sm">
+                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                      label="Payment Mode" :fetchOnMount="true" />
+                  </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
