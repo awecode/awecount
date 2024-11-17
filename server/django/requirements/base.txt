@@ -21,3 +21,5 @@ openpyxl==3.0.10
 XlsxWriter
 whitenoise
 thefuzz
+django-dbbackup
+django-storages[boto3]

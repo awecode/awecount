@@ -16,6 +16,7 @@ from apps.report import api as report_api
 from apps.tax import api as tax
 from apps.voucher import api as voucher
 from apps.voucher.api import partner as partner_voucher
+from apps.voucher.api.payment_mode import PaymentModeViewSet
 from awecount.libs.JWTCustomAuthentication import TokenObtainPairView
 
 router = DefaultRouter()
@@ -24,6 +25,7 @@ router = DefaultRouter()
 router.register("parties", ledger.PartyViewSet, basename="parties")
 router.register("categories", ledger.CategoryViewSet, basename="categories")
 router.register("accounts", ledger.AccountViewSet, basename="accounts")
+router.register("payment-modes", PaymentModeViewSet, basename="payment-modes")
 
 router.register(
     "partner/journal-voucher",

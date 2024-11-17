@@ -7,7 +7,6 @@ from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
-    ModeCumBankSerializerMixin,
 )
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
@@ -97,7 +96,9 @@ class PartnerPurchaseVoucherRowSerializer(
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
     item = serializers.ReadOnlyField(source="item.name")
-    item__account__current_balance = serializers.ReadOnlyField(source="item.account.current_balance")
+    item__account__current_balance = serializers.ReadOnlyField(
+        source="item.account.current_balance"
+    )
     buyers_name = serializers.ReadOnlyField(source="voucher.buyer_name")
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
@@ -127,7 +128,6 @@ class PartnerPurchaseVoucherRowSerializer(
 class PartnerPurchaseVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
     rows = PartnerPurchaseVoucherRowSerializer(many=True)
@@ -277,7 +277,6 @@ class PartnerPurchaseVoucherCreateSerializer(
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)

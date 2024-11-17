@@ -39,10 +39,17 @@ class DateFilterSet(filters.FilterSet):
 class SalesVoucherFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=STATUSES)
     is_due = filters.BooleanFilter(method="is_due_filter")
+    payment_mode = filters.CharFilter(method="payment_mode_filter")
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
         return queryset.filter(due_date__lt=today).exclude(status="Paid")
+
+    def payment_mode_filter(self, queryset, name, value):
+        _value = value.lower()
+        if _value == "credit":
+            return queryset.filter(payment_mode__isnull=True)
+        return queryset.filter(payment_mode__iexact=_value)
 
     class Meta:
         model = SalesVoucher
@@ -67,10 +74,17 @@ class SalesRowFilterSet(filters.FilterSet):
 class PurchaseVoucherFilterSet(DateFilterSet):
     status = filters.MultipleChoiceFilter(choices=STATUSES)
     is_due = filters.BooleanFilter(method="is_due_filter")
+    payment_mode = filters.CharFilter(method="payment_mode_filter")
 
     def is_due_filter(self, queryset, name, value):
         today = date.today()
         return queryset.filter(due_date__lt=today).exclude(status="Paid")
+
+    def payment_mode_filter(self, queryset, name, value):
+        _value = value.lower()
+        if _value == "credit":
+            return queryset.filter(payment_mode__isnull=True)
+        return queryset.filter(payment_mode__iexact=_value)
 
     class Meta:
         model = PurchaseVoucher

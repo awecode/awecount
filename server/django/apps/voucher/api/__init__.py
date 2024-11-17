@@ -105,6 +105,7 @@ from ..models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    PaymentMode,
     PurchaseDiscount,
     PurchaseOrder,
     PurchaseOrderRow,
@@ -165,6 +166,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             True,
             ["bank_name", "short_name", "account_number"],
         ),
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "items",
@@ -195,7 +203,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         "date",
         "address",
         "rows__item__name",
-        "mode",
+        "payment_mode__name",
         "bank_account__bank_name",
         "bank_account__short_name",
     ]
@@ -276,9 +284,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
-        # Return available bank accounts to enable editing the mode.
-        data["available_bank_accounts"] = GenericSerializer(
-            BankAccount.objects.filter(company=request.company), many=True
+        data["available_payment_modes"] = GenericSerializer(
+            PaymentMode.objects.filter(company=request.company, enabled_for_sales=True),
+            many=True,
         ).data
         return Response(data)
 
@@ -337,6 +345,17 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         else:
             obj.mode = mode
             obj.bank_account_id = None
+        obj.apply_transactions()
+        return Response({})
+
+    @action(detail=True, methods=["POST"], url_path="update-payment-mode")
+    def update_payment_mode(self, request, pk):
+        obj = self.get_object()
+        payment_mode = request.data.get("payment_mode")
+        if payment_mode and str(payment_mode).isdigit():
+            obj.payment_mode_id = payment_mode
+        else:
+            raise RESTValidationError({"payment_mode": "Invalid payment mode"})
         obj.apply_transactions()
         return Response({})
 
@@ -545,6 +564,13 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             ["short_name", "account_number", "bank_name"],
         ),
         (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_purchase=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
             "items",
             Item.objects.filter(
                 Q(can_be_purchased=True)
@@ -634,6 +660,7 @@ class PurchaseVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 .annotate(name=F("short_name") or F("bank_name") or F("account_number"))
                 .values("id", "name")
                 .first(),
+                "default_payment_mode_obj": None,
             },
         }
 
@@ -785,6 +812,13 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
             GenericSerializer,
             True,
             ["short_name", "account_number", "bank_name"],
+        ),
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_purchase=True),
+            GenericSerializer,
+            True,
+            ["name"],
         ),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         (
@@ -959,6 +993,13 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         ("bank_accounts", BankAccount),
         ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
         ("bank_accounts", BankAccount, BankAccountSerializer),
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
         (
             "items",
             Item.objects.filter(
@@ -1655,7 +1696,15 @@ class SalesAgentViewSet(InputChoiceMixin, CRULViewSet):
 
 class PurchaseSettingsViewSet(CRULViewSet):
     serializer_class = PurchaseSettingCreateSerializer
-    collections = (("bank_accounts", BankAccount),)
+    collections = (
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_purchase=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    )
 
     def get_defaults(self, request=None):
         p_setting = self.request.company.purchase_setting
@@ -1674,7 +1723,15 @@ class PurchaseSettingsViewSet(CRULViewSet):
 
 class SalesSettingsViewSet(CRULViewSet):
     serializer_class = SalesSettingCreateSerializer
-    collections = (("bank_accounts", BankAccount),)
+    collections = (
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+    )
 
     def get_defaults(self, request=None):
         s_setting = self.request.company.sales_setting

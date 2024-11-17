@@ -18,7 +18,7 @@ from ..models import (
     PurchaseVoucher,
     PurchaseVoucherRow,
 )
-from .mixins import DiscountObjectTypeSerializerMixin, ModeCumBankSerializerMixin
+from .mixins import DiscountObjectTypeSerializerMixin
 
 
 class PurchaseDiscountSerializer(serializers.ModelSerializer):
@@ -63,7 +63,6 @@ class PurchaseVoucherRowSerializer(
 class PurchaseVoucherCreateSerializer(
     StatusReversionMixin,
     DiscountObjectTypeSerializerMixin,
-    ModeCumBankSerializerMixin,
     serializers.ModelSerializer,
 ):
     rows = PurchaseVoucherRowSerializer(many=True)
@@ -179,7 +178,6 @@ class PurchaseVoucherCreateSerializer(
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         validated_data["company_id"] = request.company_id
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
@@ -200,7 +198,6 @@ class PurchaseVoucherCreateSerializer(
         purchase_orders = validated_data.pop("purchase_orders", None)
         self.assign_fiscal_year(validated_data, instance=instance)
         self.assign_discount_obj(validated_data)
-        self.assign_mode(validated_data)
         PurchaseVoucher.objects.filter(pk=instance.id).update(**validated_data)
         for index, row in enumerate(rows_data):
             row = self.assign_discount_obj(row)
@@ -223,9 +220,15 @@ class PurchaseVoucherCreateSerializer(
 class PurchaseVoucherListSerializer(serializers.ModelSerializer):
     party = serializers.ReadOnlyField(source="party.name")
     name = serializers.SerializerMethodField()
+    payment_mode = serializers.SerializerMethodField()
 
     def get_name(self, obj):
         return "{}".format(obj.voucher_no)
+
+    def get_payment_mode(self, obj):
+        if not obj.payment_mode:
+            return "Credit"
+        return obj.payment_mode.name
 
     class Meta:
         model = PurchaseVoucher
@@ -237,7 +240,7 @@ class PurchaseVoucherListSerializer(serializers.ModelSerializer):
             "name",
             "status",
             "total_amount",
-            "mode",
+            "payment_mode",
         )
 
 
