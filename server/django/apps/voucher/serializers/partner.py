@@ -105,8 +105,8 @@ class PartnerPurchaseVoucherRowSerializer(
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
 
     item_id = serializers.IntegerField(required=False)
-    item = PartnerItemSerializer(default={})
-    item_obj = ItemCreateSerializer(required=False, allow_null=True)
+    item_obj = PartnerItemSerializer(default={})
+    item = ItemCreateSerializer(required=False)
 
     def validate_discount(self, value):
         if not value:
@@ -216,11 +216,11 @@ class PartnerPurchaseVoucherCreateSerializer(
 
             item_id = row.get("item_id")
             if item_id:
-                row["item"]["id"] = item_id
+                item_obj["id"] = item_id
 
             try:
                 item = Item.objects.get(
-                    **row.get("item"), company_id=self.context["request"].company_id
+                    **item_obj, company_id=self.context["request"].company_id
                 )
                 if item_obj:
                     if item_obj.get("name"):
@@ -233,28 +233,43 @@ class PartnerPurchaseVoucherCreateSerializer(
             except Item.DoesNotExist:
                 if item_obj is None:
                     raise ValidationError(
-                        "No item found for the given details. " + str(row.get("item"))
+                        "No item found for the given details. " + str(item_obj)
                     )
                 category = item_obj.get("category")
                 new_item = Item(
                     company_id=self.context["request"].company_id,
                     **item_obj,
-                    sales_account_type=category.items_sales_account_type,
-                    sales_account=category.dedicated_sales_account,
-                    purchase_account_type=category.items_purchase_account_type,
-                    purchase_account=category.dedicated_purchase_account,
-                    discount_allowed_account_type=category.items_discount_allowed_account_type,
-                    discount_allowed_account=category.dedicated_discount_allowed_account,
-                    discount_received_account_type=category.items_discount_received_account_type,
-                    discount_received_account=category.dedicated_discount_received_account,
+                    sales_account_type=category.items_sales_account_type
+                    if category
+                    else None,
+                    sales_account=category.dedicated_sales_account
+                    if category
+                    else None,
+                    purchase_account_type=category.items_purchase_account_type
+                    if category
+                    else None,
+                    purchase_account=category.dedicated_purchase_account
+                    if category
+                    else None,
+                    discount_allowed_account_type=category.items_discount_allowed_account_type
+                    if category
+                    else None,
+                    discount_allowed_account=category.dedicated_discount_allowed_account
+                    if category
+                    else None,
+                    discount_received_account_type=category.items_discount_received_account_type
+                    if category
+                    else None,
+                    discount_received_account=category.dedicated_discount_received_account
+                    if category
+                    else None,
                 )
                 new_item.save()
                 row["item_id"] = new_item.id
 
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
-                    "More than one item found for the given details. "
-                    + str(row.get("item"))
+                    "More than one item found for the given details. " + str(item_obj)
                 )
 
             if row.get("discount_type") == "":
@@ -281,7 +296,6 @@ class PartnerPurchaseVoucherCreateSerializer(
         validated_data["user_id"] = request.user.id
         instance = PurchaseVoucher.objects.create(**validated_data)
         for _, row in enumerate(rows_data):
-            row.pop("item")
             row = self.assign_discount_obj(row)
             PurchaseVoucherRow.objects.create(voucher=instance, **row)
         if purchase_orders:

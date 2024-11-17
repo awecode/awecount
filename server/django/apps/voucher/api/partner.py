@@ -10,10 +10,12 @@ from apps.voucher.serializers.partner import (
     PartnerPurchaseDiscountSerializer,
     PartnerPurchaseVoucherCreateSerializer,
 )
+from awecount.libs.mixins import CancelPurchaseVoucherMixin
 
 
 class PartnerPurchaseVoucherViewset(
     viewsets.GenericViewSet,
+    CancelPurchaseVoucherMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
 ):

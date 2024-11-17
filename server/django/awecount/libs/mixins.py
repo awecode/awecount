@@ -1,10 +1,12 @@
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.response import Response
 
 from apps.ledger.models import Transaction
 from apps.ledger.serializers import TransactionEntrySerializer
 from awecount.libs import delete_rows
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import ShortNameChoiceSerializer
 
 
@@ -300,3 +302,46 @@ class TransactionsViewMixin(object):
         }
 
         return Response(data)
+
+
+class CancelPurchaseVoucherMixin:
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        purchase_voucher = self.get_object()
+        message = request.data.get("message")
+        if not message:
+            raise RESTValidationError(
+                {"message": "message field is required for cancelling invoice!"}
+            )
+
+        if purchase_voucher.debit_notes.exists():
+            raise RESTValidationError(
+                {
+                    "message": "This purchase voucher has debit notes. Please cancel them first."
+                }
+            )
+
+        # FIFO inconsistency check
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
+        # Negative stock check
+        if (
+            request.company.inventory_setting.enable_negative_stock_check
+            and not request.query_params.get("negative_stock")
+        ):
+            if purchase_voucher.rows.filter(
+                item__account__current_balance__lt=0
+            ).count():
+                raise UnprocessableException(
+                    detail="Negative Stock Warning!", code="negative_stock"
+                )
+
+        purchase_voucher.cancel()
+        return Response({})
