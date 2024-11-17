@@ -549,6 +549,26 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             content_type__model="salesvoucherrow", object_id__in=row_ids
         ).delete()
 
+    def _get_or_create_bank_payment_mode(company, bank_account):
+        kwargs = {
+            "company": company,
+            "account": bank_account.ledger,
+            "name": bank_account.bank_name or bank_account.account_name,
+        }
+        if bank_account.commission_account:
+            kwargs["transaction_fee_account"] = bank_account.commission_account
+
+        if bank_account.transaction_commission_percent:
+            kwargs["transaction_fee_config"] = {
+                "type": "percentage",
+                "value": str(
+                    Decimal.from_float(bank_account.transaction_commission_percent)
+                ),
+            }
+
+        payment_mode, _ = PaymentMode.objects.get_or_create(**kwargs)
+        return payment_mode
+
     def apply_transactions(self, voucher_meta=None, extra_entries=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
         if self.total_amount != voucher_meta["grand_total"]:
@@ -565,7 +585,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.payment_mode:
             dr_acc = self.payment_mode.account
             self.status = "Paid"
+        elif self.mode == "Cash":
+            self.payment_mode = PaymentMode.objects.get_or_create(
+                company=self.company, name="Cash"
+            )[0]
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
+        elif self.mode == "Bank Deposit" and self.bank_account:
+            self.payment_mode = self._get_or_create_bank_payment_mode(
+                self.company, self.bank_account
+            )
+            dr_acc = self.payment_mode.account
+            self.status = "Paid"
         else:
+            if not self.party:
+                raise ValueError(
+                    "Party is required for sales invoice, when not paid in cash!"
+                )
             dr_acc = self.party.customer_account
 
         self.save()
