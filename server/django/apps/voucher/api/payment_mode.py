@@ -24,7 +24,7 @@ class PaymentModeViewSet(InputChoiceMixin, CRULViewSet):
     )
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ["create", "update"]:
             return PaymentModeCreateSerializer
         if self.action == "retrieve":
             return PaymentModeRetrieveSerializer
