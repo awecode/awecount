@@ -548,9 +548,14 @@ fields.value.transaction_fee_account = null
 const { validationErrors, validateFeeConfig } = useTransactionFeeValidation()
 
 const hasTransactionFee = ref(false)
+const hasExtraFee = ref(false)
+
 watch(() => fields.value.transaction_fee_config, (value) => {
   hasTransactionFee.value = !!value
+
   if (value) {
+    hasExtraFee.value = !!value.extra_fee
+    
     validateFeeConfig(value)
     if(value.min_fee === '') {
       delete fields.value.transaction_fee_config.min_fee
@@ -565,7 +570,7 @@ watch(() => fields.value.transaction_fee_config, (value) => {
 })
 
 
-const hasExtraFee = ref(false)
+
 
 const onTransactionFeeToggle = (value) => {
   if (!!fields.value.transaction_fee_config) {
