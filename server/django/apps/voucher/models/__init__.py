@@ -509,13 +509,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
 
-    def clean(self):
-        super().clean()
-        if not self.payment_mode.enabled_for_sales:
-            raise ValidationError(
-                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
-            )
-
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
         challan_dct = {}
@@ -583,18 +576,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
         # TODO Also keep record of cash payment for party in party ledger [To show transactions for particular party]
         if self.payment_mode:
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
-        elif self.mode == "Cash":
-            self.payment_mode = PaymentMode.objects.get_or_create(
-                company=self.company, name="Cash"
-            )[0]
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
-        elif self.mode == "Bank Deposit" and self.bank_account:
-            self.payment_mode = self._get_or_create_bank_payment_mode(
-                self.company, self.bank_account
-            )
             dr_acc = self.payment_mode.account
             self.status = "Paid"
         else:
@@ -678,6 +659,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transactions()
 
     def save(self, *args, **kwargs):
+        if not self.payment_mode and self.mode == "Cash":
+            self.payment_mode = PaymentMode.objects.get_or_create(
+                company=self.company, name="Cash"
+            )[0]
+
+        elif (
+            not self.payment_mode and self.mode == "Bank Deposit" and self.bank_account
+        ):
+            self.payment_mode = self._get_or_create_bank_payment_mode(
+                self.company, self.bank_account
+            )
+
+        if self.payment_mode and not self.payment_mode.enabled_for_sales:
+            raise ValueError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
+            )
+
         if self.status not in ["Draft", "Cancelled"] and not self.voucher_no:
             raise ValueError("Issued invoices need a voucher number!")
         super().save(*args, **kwargs)
@@ -910,13 +908,6 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
 
-    def clean(self) -> None:
-        super().clean()
-        if not self.payment_mode.enabled_for_purchase:
-            raise ValidationError(
-                f"Payment mode '{self.payment_mode.name}' is not enabled for purchase."
-            )
-
     def find_invalid_transaction(self):
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
@@ -936,6 +927,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 self.date,
                 ["dr", row.item.account, int(row.quantity), row.rate],
             )
+
+    def save(self, *args, **kwargs):
+        if self.payment_mode and not self.payment_mode.enabled_for_purchase:
+            raise ValidationError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for purchase."
+            )
+        super().save(*args, **kwargs)
 
     def apply_transactions(self, voucher_meta=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()
