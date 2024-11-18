@@ -550,7 +550,6 @@ const { validationErrors, validateFeeConfig } = useTransactionFeeValidation()
 const hasTransactionFee = ref(false)
 watch(() => fields.value.transaction_fee_config, (value) => {
   hasTransactionFee.value = !!value
-  console.log('watching transaction_fee_config', value)
   if (value) {
     validateFeeConfig(value)
     if(value.min_fee === '') {
