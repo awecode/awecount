@@ -1,17 +1,38 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="container-padding-left">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md">
+    <q-header
+      elevated
+      class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md"
+    >
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title class="flex items-center" style="gap: 16px;">
-          <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px;">
-            <img style="max-width: 60px; max-height: 40px; object-fit: contain;" :src="store.companyInfo.logo_url"
-              alt="Company Logo">
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
+        <q-toolbar-title class="flex items-center" style="gap: 16px">
+          <RouterLink
+            v-if="store.companyInfo?.logo_url"
+            to="/"
+            style="max-width: 60px; max-height: 40px"
+          >
+            <img
+              style="max-width: 60px; max-height: 40px; object-fit: contain"
+              :src="store.companyInfo.logo_url"
+              alt="Company Logo"
+            />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
-              :to="{ name: breadCrum }" />
+            <q-breadcrumbs-el
+              v-for="breadCrum in breadCrums"
+              :key="breadCrum"
+              :label="breadCrum"
+              :to="{ name: breadCrum }"
+            />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
@@ -19,19 +40,40 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn class="gt-sm">{{ store.companyInfo?.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
-            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="store.isCalendarInAD = !store.isCalendarInAD">{{
-                activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
+            <q-btn class="gt-sm"
+              >{{ store.companyInfo?.current_fiscal_year }}
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Fiscal Yaar</q-tooltip
+              ></q-btn
+            >
+            <q-btn
+              v-if="store.companyInfo?.config_template === 'np'"
+              class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="store.isCalendarInAD = !store.isCalendarInAD"
+              >{{ activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]"
+                >Change Date Format</q-tooltip
+              >
             </q-btn>
-            <a target="_blank" href="https://docs.awecount.com/" style="color: inherit;">
-              <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
-                  :offset="[0, 10]">Help</q-tooltip></q-btn>
+            <a
+              target="_blank"
+              href="https://docs.awecount.com/"
+              style="color: inherit"
+            >
+              <q-btn class="gt-sm"
+                ><q-icon name="mdi-help-circle-outline"></q-icon
+                ><q-tooltip :delay="1000" :offset="[0, 10]"
+                  >Help</q-tooltip
+                ></q-btn
+              >
             </a>
-            <q-btn @click="logoutDiologueOpen = true"><q-icon name="mdi-logout" /><q-tooltip :delay="1000"
-                :offset="[0, 10]">Logout</q-tooltip></q-btn>
+            <q-btn @click="logoutDiologueOpen = true"
+              ><q-icon name="mdi-logout" /><q-tooltip
+                :delay="1000"
+                :offset="[0, 10]"
+                >Logout</q-tooltip
+              ></q-btn
+            >
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
@@ -39,9 +81,21 @@
                     <span>Are you sure you want to logout?</span>
                   </div>
                   <div class="q-mb-md" style="margin-top: 40px">
-                    <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
-                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false"></q-btn>
-                      <q-btn flat label="Yes" class="text-red" @click="onLogoutClick()"></q-btn>
+                    <div
+                      class="text-right text-blue-6 row justify-end q-gutter-x-lg"
+                    >
+                      <q-btn
+                        flat
+                        label="Cancel"
+                        class="text-grey-8"
+                        @click="logoutDiologueOpen = false"
+                      ></q-btn>
+                      <q-btn
+                        flat
+                        label="Yes"
+                        class="text-red"
+                        @click="onLogoutClick()"
+                      ></q-btn>
                     </div>
                   </div>
                 </div>
@@ -52,8 +106,17 @@
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer drawer persistent overlay show-if-above :mini="miniState" @mouseover="miniState = false"
-      @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
+    <q-drawer
+      drawer
+      persistent
+      overlay
+      show-if-above
+      :mini="miniState"
+      @mouseover="miniState = false"
+      @mouseout="miniState = true"
+      v-model="leftDrawerOpen"
+      class="shadow-6"
+    >
       <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
@@ -76,11 +139,15 @@
       </template>
       <RouterView /> -->
       <div v-if="store.isLoading" class="relative">
-        <div class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full">
+        <div
+          class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full"
+        >
           <q-card class="mt-2">
             <q-skeleton height="64px" square class="bg-green" />
             <q-card class="q-mx-lg q-pt-md pb-8 px-3">
-              <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
+              <div
+                class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6"
+              >
                 <div class="flex gap-4">
                   <div class="flex grow gap-1">
                     <q-skeleton height="45px" type="rect" class="grow">
@@ -108,32 +175,32 @@
                 <q-card>
                   <q-card-section class="q-pa-lg">
                     <div class="pt-8 pb-6">
-                      <hr class="h-[2px] bg-gray-300 b-0">
+                      <hr class="h-[2px] bg-gray-300 b-0" />
                     </div>
                     <div class="grid grid-cols-12 gap-6">
                       <div class="flex grow gap-1 col-span-5">
                         <q-skeleton height="45px" type="rect" class="grow">
                         </q-skeleton>
-                        <q-skeleton height="45px" width="45px" type="QBtn" square>
+                        <q-skeleton
+                          height="45px"
+                          width="45px"
+                          type="QBtn"
+                          square
+                        >
                         </q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect">
-                        </q-skeleton>
+                        <q-skeleton height="45px" type="rect"> </q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect">
-                        </q-skeleton>
+                        <q-skeleton height="45px" type="rect"> </q-skeleton>
                       </div>
                       <div class="col-span-2">
-                        <q-skeleton height="45px" type="rect">
-                        </q-skeleton>
+                        <q-skeleton height="45px" type="rect"> </q-skeleton>
                       </div>
                       <div class="col-span-1 grid grid-cols-2 gap-2">
-                        <q-skeleton type="rect">
-                        </q-skeleton>
-                        <q-skeleton type="rect">
-                        </q-skeleton>
+                        <q-skeleton type="rect"> </q-skeleton>
+                        <q-skeleton type="rect"> </q-skeleton>
                       </div>
                     </div>
                     <div class="sm:grid grid-cols-8 py-8">
@@ -152,19 +219,25 @@
                         <q-skeleton type="text" height="30px" class="w-">
                         </q-skeleton>
                       </div>
-
                     </div>
                   </q-card-section>
                 </q-card>
               </div>
               <div class="flex justify-right">
-                <q-skeleton type="QBtn" class="bg-green" height="36px"></q-skeleton>
+                <q-skeleton
+                  type="QBtn"
+                  class="bg-green"
+                  height="36px"
+                ></q-skeleton>
               </div>
             </q-card>
           </q-card>
         </div>
       </div>
-      <RouterView :class="store.isLoading ? 'opacity-0' : ''" class="transition-all" />
+      <RouterView
+        :class="store.isLoading ? 'opacity-0' : ''"
+        class="transition-all"
+      />
     </q-page-container>
   </q-layout>
 </template>
@@ -204,43 +277,43 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'All Items',
         icon: 'mdi-view-headline',
         link: '/items/list/',
-        hide: !checkPermissions('ItemView')
+        hide: !checkPermissions('ItemView'),
       },
       {
         title: 'Units',
         icon: 'mdi-scale-balance',
         link: '/units/list/',
-        hide: !checkPermissions('UnitView')
+        hide: !checkPermissions('UnitView'),
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
         link: '/inventory-category/list/',
-        hide: !checkPermissions('CategoryView')
+        hide: !checkPermissions('CategoryView'),
       },
       {
         title: 'Brands',
         icon: 'mdi-domain',
         link: '/brand/list/',
-        hide: !checkPermissions('BrandView')
+        hide: !checkPermissions('BrandView'),
       },
       {
         title: 'Inventory Ledger',
         icon: 'inventory',
         link: '/inventory-account/list/',
-        hide: !checkPermissions('InventoryAccountView')
+        hide: !checkPermissions('InventoryAccountView'),
       },
       {
         title: 'Opening Stock',
         icon: 'edit_note',
         link: '/items/opening/',
-        hide: !checkPermissions('AccountOpeningBalanceView')
+        hide: !checkPermissions('AccountOpeningBalanceView'),
       },
       {
         title: 'Inventory Adjustment',
         icon: 'mdi-swap-horizontal',
         link: '/items/inventory-adjustment/list',
-        hide: !checkPermissions('InventoryAdjustmentVoucherView')
+        hide: !checkPermissions('InventoryAdjustmentVoucherView'),
       },
       // {
       //   title: 'Bill of Material',
@@ -269,44 +342,43 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Sales Invoices',
         icon: 'mdi-point-of-sale',
         link: '/sales-voucher/list/',
-        hide: !checkPermissions('SalesView')
-
+        hide: !checkPermissions('SalesView'),
       },
       {
         title: 'Credit Notes',
         icon: 'mdi-clipboard-arrow-down',
         link: '/credit-note/list/',
-        hide: !checkPermissions('CreditNoteView')
+        hide: !checkPermissions('CreditNoteView'),
       },
       {
         title: 'Challans',
         icon: 'mdi-clipboard-arrow-right',
         link: '/challan/list/',
-        hide: !checkPermissions('ChallanView')
+        hide: !checkPermissions('ChallanView'),
       },
       {
         title: 'Payment Receipts',
         icon: 'mdi-receipt',
         link: '/payment-receipt/list/',
-        hide: !checkPermissions('PaymentReceiptView')
+        hide: !checkPermissions('PaymentReceiptView'),
       },
       {
         title: 'Sales Discounts',
         icon: 'mdi-sale',
         link: '/sales-discount/list/',
-        hide: !checkPermissions('SalesDiscountView')
+        hide: !checkPermissions('SalesDiscountView'),
       },
       {
         title: 'Sales Report',
         icon: 'mdi-format-list-bulleted',
         link: '/sales-row/list/',
-        hide: !checkPermissions('SalesView')
+        hide: !checkPermissions('SalesView'),
       },
       {
         title: 'Sales Book',
         icon: 'mdi-book',
         link: '/sales-book/list/',
-        hide: !checkPermissions('SalesView')
+        hide: !checkPermissions('SalesView'),
       },
     ],
   },
@@ -318,25 +390,25 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Purchases/Expenses',
         icon: 'shopping_cart',
         link: '/purchase-voucher/list/',
-        hide: !checkPermissions('PurchaseVoucherView')
+        hide: !checkPermissions('PurchaseVoucherView'),
       },
       {
         title: 'Debit Notes',
         icon: 'mdi-clipboard-arrow-up',
         link: '/debit-note/list/',
-        hide: !checkPermissions('DebitNoteView')
+        hide: !checkPermissions('DebitNoteView'),
       },
       {
         title: 'Purchase Order',
         icon: 'mdi-clipboard-arrow-left',
         link: '/purchase-order/list/',
-        hide: !checkPermissions('DebitNoteView')
+        hide: !checkPermissions('DebitNoteView'),
       },
       {
         title: 'Purchase Discounts',
         icon: 'mdi-sale',
         link: '/purchase-discount/list/',
-        hide: !checkPermissions('PurchaseDiscountView')
+        hide: !checkPermissions('PurchaseDiscountView'),
       },
       {
         title: 'Purchase Report',
@@ -348,7 +420,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Purchase Book',
         icon: 'book',
         link: '/purchase-book/list/',
-        hide: !checkPermissions('PurchaseVoucherView')
+        hide: !checkPermissions('PurchaseVoucherView'),
       },
     ],
   },
@@ -360,31 +432,31 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Ledger',
         icon: 'mdi-notebook-multiple',
         link: '/account/?has_balance=true',
-        hide: !checkPermissions('AccountView')
+        hide: !checkPermissions('AccountView'),
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
         link: '/account-category/list',
-        hide: !checkPermissions('CategoryView')
+        hide: !checkPermissions('CategoryView'),
       },
       {
         title: 'Journal Vouchers',
         icon: 'mdi-shuffle',
         link: '/journal-voucher/',
-        hide: !checkPermissions('JournalVoucherView')
+        hide: !checkPermissions('JournalVoucherView'),
       },
       {
         title: 'All Accounts',
         icon: 'mdi-notebook-multiple',
         link: '/account/',
-        hide: !checkPermissions('AccountView')
+        hide: !checkPermissions('AccountView'),
       },
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
         link: '/account-opening-balance/',
-        hide: !checkPermissions('AccountOpeningBalanceView')
+        hide: !checkPermissions('AccountOpeningBalanceView'),
       },
     ],
   },
@@ -396,7 +468,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Categories Tree',
         icon: 'mdi-file-tree',
         link: '/report/category-tree/',
-        hide: !checkPermissions('CategoryView')
+        hide: !checkPermissions('CategoryView'),
       },
       {
         title: 'Sales By Category',
@@ -407,7 +479,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Periodic Tax Summary',
         icon: 'mdi-currency-usd-off',
         link: '/report/tax-summary/',
-        hide: !checkPermissions('TaxPaymentView')
+        hide: !checkPermissions('TaxPaymentView'),
       },
       {
         title: 'Collection Report',
@@ -443,7 +515,13 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Transactions',
         icon: 'mdi-reorder-horizontal',
         link: '/report/transactions/',
-        hide: !checkPermissions('TransactionView')
+        hide: !checkPermissions('TransactionView'),
+      },
+      {
+        title: 'Day Book',
+        icon: 'mdi-reorder-vertical',
+        link: '/report/day-book/',
+        hide: !checkPermissions('TransactionView'),
       },
       {
         title: 'Customer Ageing Report',
@@ -460,31 +538,31 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Bank Accounts',
         icon: 'mdi-bank',
         link: '/bank-accounts/list/',
-        hide: !checkPermissions('BankAccountView')
+        hide: !checkPermissions('BankAccountView'),
       },
       {
         title: 'Cheque Issues',
         icon: 'mdi-checkbook',
         link: '/cheque-issue/list/',
-        hide: !checkPermissions('ChequeIssueView')
+        hide: !checkPermissions('ChequeIssueView'),
       },
       {
         title: 'Cheque Deposits',
         icon: 'mdi-ballot',
         link: '/cheque-deposit/list/',
-        hide: !checkPermissions('ChequeDepositView')
+        hide: !checkPermissions('ChequeDepositView'),
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
         link: '/cash-deposit/list/',
-        hide: !checkPermissions('BankCashDepositView')
+        hide: !checkPermissions('BankCashDepositView'),
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
         link: '/fund-transfer/list/',
-        hide: !checkPermissions('FundTransferView')
+        hide: !checkPermissions('FundTransferView'),
       },
     ],
   },
@@ -497,19 +575,19 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Tax Schemes',
         icon: 'mdi-file-percent',
         link: '/taxes/list/',
-        hide: !checkPermissions('TaxSchemeView')
+        hide: !checkPermissions('TaxSchemeView'),
       },
       {
         title: 'Tax Payments',
         icon: 'mdi-cash-marker',
         link: '/tax-payment/list/',
-        hide: !checkPermissions('TaxPaymentView')
+        hide: !checkPermissions('TaxPaymentView'),
       },
       {
         title: 'Periodic Summary',
         icon: 'mdi-file-chart',
         link: '/report/tax-summary/',
-        hide: !checkPermissions('TaxPaymentView')
+        hide: !checkPermissions('TaxPaymentView'),
       },
     ],
   },
@@ -521,25 +599,25 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Parties',
         icon: 'mdi-account-group',
         link: '/party/list/',
-        hide: !checkPermissions('PartyView')
+        hide: !checkPermissions('PartyView'),
       },
       {
         title: 'Customers',
         icon: 'mdi-domain',
         link: '/parties/customers/',
-        hide: !checkPermissions('PartyView')
+        hide: !checkPermissions('PartyView'),
       },
       {
         title: 'Suppliers',
         icon: 'mdi-account',
         link: '/parties/suppliers/',
-        hide: !checkPermissions('PartyView')
+        hide: !checkPermissions('PartyView'),
       },
       {
         title: 'Sales Agent',
         icon: 'mdi-face-agent',
         link: '/sales-agent/list/',
-        hide: !checkPermissions('SalesAgentView')
+        hide: !checkPermissions('SalesAgentView'),
       },
     ],
   },
@@ -551,7 +629,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Audit Logs',
         icon: 'mdi-view-list',
         link: '/audit-log/list/',
-        hide: !checkPermissions('LogEntryView')
+        hide: !checkPermissions('LogEntryView'),
       },
       {
         title: 'Import/Exports',
@@ -562,25 +640,25 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Dashboard Widgets',
         icon: 'mdi-widgets',
         link: '/dashboard-widgets/list/',
-        hide: !checkPermissions('WidgetView')
+        hide: !checkPermissions('WidgetView'),
       },
       {
         title: 'Payment Modes',
         icon: 'mdi-cash',
         link: '/settings/payment-mode/list/',
-        hide: !checkPermissions('PaymentModeView')
+        hide: !checkPermissions('PaymentModeView'),
       },
       {
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
         link: '/settings/sales/',
-        hide: !checkPermissions('SalesSettingView')
+        hide: !checkPermissions('SalesSettingView'),
       },
       {
         title: 'Purchase Settings',
         icon: 'mdi-shopping',
         link: '/settings/purchase/',
-        hide: !checkPermissions('PurchaseSettingView')
+        hide: !checkPermissions('PurchaseSettingView'),
       },
       {
         title: 'Inventory Settings',
@@ -591,7 +669,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Account Closing',
         icon: 'mdi-calendar-multiple-check',
         link: '/settings/account-closing/',
-        hide: !checkPermissions('AccountClosingCreate')
+        hide: !checkPermissions('AccountClosingCreate'),
       },
       {
         title: 'Item Merge',
@@ -605,7 +683,7 @@ const essentialLinks: EssentialLinkProps[] = [
     title: 'POS ',
     icon: 'mdi-cart-arrow-right',
     link: '/pos',
-    hide: !checkPermissions('SalesCreate') && !checkPermissions('SalesView')
+    hide: !checkPermissions('SalesCreate') && !checkPermissions('SalesView'),
   },
 
   // {
