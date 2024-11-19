@@ -599,8 +599,6 @@ class TransactionViewSet(
             results[account_id] = (
                 opening_balance,
                 closing_balance,
-                curr_data["today_dr"],
-                curr_data["today_cr"],
             )
 
         return results
@@ -631,7 +629,7 @@ class TransactionViewSet(
             account_id = transaction.account_id
 
             if account_id not in account_transactions:
-                opening_balance, closing_balance, today_dr, today_cr = account_balances[
+                opening_balance, closing_balance = account_balances[
                     account_id
                 ]
 
@@ -643,19 +641,7 @@ class TransactionViewSet(
                     },
                     "opening_balance": opening_balance,
                     "closing_balance": closing_balance,
-                    "total_dr": today_dr,
-                    "total_cr": today_cr,
-                    "transactions": [],
                 }
-
-            account_transactions[account_id]["transactions"].append(
-                {
-                    "id": transaction.id,
-                    "dr_amount": transaction.dr_amount or 0,
-                    "cr_amount": transaction.cr_amount or 0,
-                    "voucher_no": transaction.journal_entry.source_voucher_no,
-                }
-            )
 
         return Response(account_transactions.values())
 
