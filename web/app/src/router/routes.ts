@@ -936,6 +936,13 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'day-book/',
+        component: () => import('src/pages/report/DayBook.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Day Book'],
+        },
+      },
+      {
         path: 'stock-trial-balance/',
         component: () => import('src/pages/report/StockTrialBalance.vue'),
         meta: {

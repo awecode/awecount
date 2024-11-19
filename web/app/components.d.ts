@@ -45,6 +45,7 @@ declare module '@vue/runtime-core' {
     TablePagination: typeof import('./src/components/account/TablePagination.vue')['default']
     TransactionTable: typeof import('./src/components/account/TransactionTable.vue')['default']
     ViewerHeader: typeof import('./src/components/viewer/ViewerHeader.vue')['default']
+    ViewerHeader2: typeof import('./src/components/viewer/ViewerHeader2.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
     VoucherRow: typeof import('./src/components/VoucherRow.vue')['default']
   }
