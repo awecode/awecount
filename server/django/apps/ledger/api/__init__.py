@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Case, F, Max, Q, Sum, When
+from django.db.models import Case, F, FloatField, Max, Q, Sum, When
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -130,7 +130,9 @@ class CategoryViewSet(InputChoiceMixin, CRULViewSet):
     search_fields = ("code", "name")
     filterset_class = CategoryFilterSet
 
-    collections = (("categories", Category, CategorySerializer, True, ["code", "name"]),)
+    collections = (
+        ("categories", Category, CategorySerializer, True, ["code", "name"]),
+    )
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -454,7 +456,13 @@ class TransactionViewSet(
             True,
             ["app_label"],
         ),
-        ("categories", Category, GenericSerializer, True, ["name"],),
+        (
+            "categories",
+            Category,
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
     ]
 
     def get_serializer_class(self):
@@ -463,9 +471,11 @@ class TransactionViewSet(
         return super().get_serializer_class()
 
     def get_queryset(self):
-        qs = Transaction.objects.filter(company_id=self.request.company_id).prefetch_related(
-            "account", "journal_entry__content_type"
-        ).order_by("-journal_entry__date")
+        qs = (
+            Transaction.objects.filter(company_id=self.request.company_id)
+            .prefetch_related("account", "journal_entry__content_type")
+            .order_by("-journal_entry__date")
+        )
         start_date = self.request.GET.get("start_date")
         end_date = self.request.GET.get("end_date")
         accounts = list(filter(None, self.request.GET.getlist("account")))
@@ -539,6 +549,101 @@ class TransactionViewSet(
         else:
             params = [("Transactions", queryset, TransactionGroupResource)]
             return qs_to_xls(params)
+
+    def calculate_balances(self, account_ids, date):
+        """
+        Calculate both opening and closing balances for multiple accounts
+        Returns a dictionary where keys are account IDs and values are tuples of
+        (opening_balance, closing_balance, today_dr_total, today_cr_total)
+        """
+        results = {}
+
+        transactions_until_date = Transaction.objects.filter(
+            account_id__in=account_ids, journal_entry__date__lte=date
+        )
+
+        previous_days = (
+            transactions_until_date.filter(journal_entry__date__lt=date)
+            .values("account_id")
+            .annotate(
+                total_dr=Coalesce(Sum("dr_amount"), 0.0, output_field=FloatField()),
+                total_cr=Coalesce(Sum("cr_amount"), 0.0, output_field=FloatField()),
+            )
+        )
+
+        current_day = (
+            transactions_until_date.filter(journal_entry__date=date)
+            .values("account_id")
+            .annotate(
+                today_dr=Coalesce(Sum("dr_amount"), 0.0, output_field=FloatField()),
+                today_cr=Coalesce(Sum("cr_amount"), 0.0, output_field=FloatField()),
+            )
+        )
+
+        previous_days_dict = {entry["account_id"]: entry for entry in previous_days}
+        current_day_dict = {entry["account_id"]: entry for entry in current_day}
+
+        for account_id in account_ids:
+            prev_data = previous_days_dict.get(
+                account_id, {"total_dr": 0.0, "total_cr": 0.0}
+            )
+            curr_data = current_day_dict.get(
+                account_id, {"today_dr": 0.0, "today_cr": 0.0}
+            )
+
+            opening_balance = prev_data["total_dr"] - prev_data["total_cr"]
+            closing_balance = opening_balance + (
+                curr_data["today_dr"] - curr_data["today_cr"]
+            )
+
+            results[account_id] = (
+                opening_balance,
+                closing_balance,
+            )
+
+        return results
+
+    @action(detail=False, url_path="day-book")
+    def day_book(self, request):
+        date_str = self.request.GET.get("date") or datetime.now().date().isoformat()
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return ValidationError("Invalid date format. Use YYYY-MM-DD.")
+
+        daily_transactions = (
+            Transaction.objects.filter(
+                journal_entry__date=target_date, company=request.company
+            )
+            .select_related("account")
+            .prefetch_related("journal_entry")
+        )
+
+        account_ids = daily_transactions.values_list("account_id", flat=True)
+
+        account_balances = self.calculate_balances(account_ids, target_date)
+
+        account_transactions = {}
+
+        for transaction in daily_transactions:
+            account_id = transaction.account_id
+
+            if account_id not in account_transactions:
+                opening_balance, closing_balance = account_balances[
+                    account_id
+                ]
+
+                account_transactions[account_id] = {
+                    "account": {
+                        "id": account_id,
+                        "name": transaction.account.name,
+                        "code": transaction.account.code,
+                    },
+                    "opening_balance": opening_balance,
+                    "closing_balance": closing_balance,
+                }
+
+        return Response(account_transactions.values())
 
 
 class AccountClosingViewSet(
