@@ -621,6 +621,15 @@ class TransactionViewSet(
 
         account_ids = daily_transactions.values_list("account_id", flat=True)
 
+        cash_and_bank_accounts = Account.objects.filter(
+            company=request.company,
+            category__name__in=["Cash Accounts", "Bank Accounts"],
+        ).exclude(id__in=account_ids)
+
+        cash_and_bank_account_ids = cash_and_bank_accounts.values_list("id", flat=True)
+
+        account_ids = list(set(account_ids) | set(cash_and_bank_account_ids))
+
         account_balances = self.calculate_balances(account_ids, target_date)
 
         account_transactions = {}
@@ -629,9 +638,7 @@ class TransactionViewSet(
             account_id = transaction.account_id
 
             if account_id not in account_transactions:
-                opening_balance, closing_balance = account_balances[
-                    account_id
-                ]
+                opening_balance, closing_balance = account_balances[account_id]
 
                 account_transactions[account_id] = {
                     "account": {
@@ -642,6 +649,20 @@ class TransactionViewSet(
                     "opening_balance": opening_balance,
                     "closing_balance": closing_balance,
                 }
+
+        for account in cash_and_bank_accounts.all():
+            account_id = account.id
+            opening_balance, closing_balance = account_balances[account_id]
+
+            account_transactions[account_id] = {
+                "account": {
+                    "id": account_id,
+                    "name": account.name,
+                    "code": account.code,
+                },
+                "opening_balance": opening_balance,
+                "closing_balance": closing_balance,
+            }
 
         return Response(account_transactions.values())
 
