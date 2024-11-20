@@ -578,6 +578,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.payment_mode:
             dr_acc = self.payment_mode.account
             self.status = "Paid"
+            self.payment_date = timezone.now().date()
         else:
             if not self.party:
                 raise ValueError(
