@@ -550,121 +550,99 @@ class TransactionViewSet(
             params = [("Transactions", queryset, TransactionGroupResource)]
             return qs_to_xls(params)
 
-    def calculate_balances(self, account_ids, date):
-        """
-        Calculate both opening and closing balances for multiple accounts
-        Returns a dictionary where keys are account IDs and values are tuples of
-        (opening_balance, closing_balance, today_dr_total, today_cr_total)
-        """
-        results = {}
-
-        transactions_until_date = Transaction.objects.filter(
-            account_id__in=account_ids, journal_entry__date__lte=date
-        )
-
-        previous_days = (
-            transactions_until_date.filter(journal_entry__date__lt=date)
-            .values("account_id")
-            .annotate(
-                total_dr=Coalesce(Sum("dr_amount"), 0.0, output_field=FloatField()),
-                total_cr=Coalesce(Sum("cr_amount"), 0.0, output_field=FloatField()),
-            )
-        )
-
-        current_day = (
-            transactions_until_date.filter(journal_entry__date=date)
-            .values("account_id")
-            .annotate(
-                today_dr=Coalesce(Sum("dr_amount"), 0.0, output_field=FloatField()),
-                today_cr=Coalesce(Sum("cr_amount"), 0.0, output_field=FloatField()),
-            )
-        )
-
-        previous_days_dict = {entry["account_id"]: entry for entry in previous_days}
-        current_day_dict = {entry["account_id"]: entry for entry in current_day}
-
-        for account_id in account_ids:
-            prev_data = previous_days_dict.get(
-                account_id, {"total_dr": 0.0, "total_cr": 0.0}
-            )
-            curr_data = current_day_dict.get(
-                account_id, {"today_dr": 0.0, "today_cr": 0.0}
-            )
-
-            opening_balance = prev_data["total_dr"] - prev_data["total_cr"]
-            closing_balance = opening_balance + (
-                curr_data["today_dr"] - curr_data["today_cr"]
-            )
-
-            results[account_id] = (
-                opening_balance,
-                closing_balance,
-            )
-
-        return results
-
     @action(detail=False, url_path="day-book")
     def day_book(self, request):
         date_str = self.request.GET.get("date") or datetime.now().date().isoformat()
         try:
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
-            return ValidationError("Invalid date format. Use YYYY-MM-DD.")
+            raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
 
-        daily_transactions = (
-            Transaction.objects.filter(
-                journal_entry__date=target_date, company=request.company
+        combined_accounts = (
+            Account.objects.filter(company=request.company)
+            .annotate(
+                today_dr=Coalesce(
+                    Sum(
+                        Case(
+                            When(
+                                transactions__journal_entry__date=target_date,
+                                then="transactions__dr_amount",
+                            ),
+                            default=0.0,
+                            output_field=FloatField(),
+                        )
+                    ),
+                    0.0,
+                ),
+                today_cr=Coalesce(
+                    Sum(
+                        Case(
+                            When(
+                                transactions__journal_entry__date=target_date,
+                                then="transactions__cr_amount",
+                            ),
+                            default=0.0,
+                            output_field=FloatField(),
+                        )
+                    ),
+                    0.0,
+                ),
+                total_dr=Coalesce(
+                    Sum(
+                        Case(
+                            When(
+                                transactions__journal_entry__date__lte=target_date,
+                                then="transactions__dr_amount",
+                            ),
+                            default=0.0,
+                            output_field=FloatField(),
+                        )
+                    ),
+                    0.0,
+                ),
+                total_cr=Coalesce(
+                    Sum(
+                        Case(
+                            When(
+                                transactions__journal_entry__date__lte=target_date,
+                                then="transactions__cr_amount",
+                            ),
+                            default=0.0,
+                            output_field=FloatField(),
+                        )
+                    ),
+                    0.0,
+                ),
             )
-            .select_related("account")
-            .prefetch_related("journal_entry")
+            .filter(
+                Case(
+                    When(
+                        category__name__in=["Cash Accounts", "Bank Accounts"],
+                        then=True,
+                    ),
+                    When(transactions__isnull=False, then=True),
+                    default=False,
+                )
+            )
+            .distinct()
         )
 
-        account_ids = daily_transactions.values_list("account_id", flat=True)
-
-        cash_and_bank_accounts = Account.objects.filter(
-            company=request.company,
-            category__name__in=["Cash Accounts", "Bank Accounts"],
-        ).exclude(id__in=account_ids)
-
-        cash_and_bank_account_ids = cash_and_bank_accounts.values_list("id", flat=True)
-
-        account_ids = list(set(account_ids) | set(cash_and_bank_account_ids))
-
-        account_balances = self.calculate_balances(account_ids, target_date)
-
-        account_transactions = {}
-
-        for transaction in daily_transactions:
-            account_id = transaction.account_id
-
-            if account_id not in account_transactions:
-                opening_balance, closing_balance = account_balances[account_id]
-
-                account_transactions[account_id] = {
-                    "account": {
-                        "id": account_id,
-                        "name": transaction.account.name,
-                        "code": transaction.account.code,
-                    },
-                    "opening_balance": opening_balance,
-                    "closing_balance": closing_balance,
-                }
-
-        for account in cash_and_bank_accounts.all():
-            account_id = account.id
-            opening_balance, closing_balance = account_balances[account_id]
-
-            account_transactions[account_id] = {
+        account_transactions = [
+            {
                 "account": {
-                    "id": account_id,
+                    "id": account.id,
                     "name": account.name,
                     "code": account.code,
                 },
-                "opening_balance": opening_balance,
-                "closing_balance": closing_balance,
+                "opening_balance": account.total_dr
+                - account.total_cr
+                - (account.today_dr - account.today_cr),
+                "closing_balance": account.total_dr - account.total_cr,
             }
+            for account in combined_accounts
+        ]
 
-        return Response(account_transactions.values())
+        return Response(account_transactions)
 
 
 class AccountClosingViewSet(
