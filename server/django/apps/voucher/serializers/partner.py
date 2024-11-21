@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.product.models import Category, Item
+from apps.product.models import Item
 from apps.product.serializers import ItemSerializer
 from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.models.discounts import PurchaseDiscount
