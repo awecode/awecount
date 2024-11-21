@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.product.models import Item
+from apps.product.models import Category, Item
 from apps.product.serializers import ItemSerializer
 from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.models.discounts import PurchaseDiscount
@@ -235,35 +235,33 @@ class PartnerPurchaseVoucherCreateSerializer(
                     raise ValidationError(
                         "No item found for the given details. " + str(item_obj)
                     )
-                category = item_obj.get("category")
                 new_item = Item(
                     company_id=self.context["request"].company_id,
-                    **item_obj,
-                    sales_account_type=category.items_sales_account_type
-                    if category
-                    else None,
-                    sales_account=category.dedicated_sales_account
-                    if category
-                    else None,
-                    purchase_account_type=category.items_purchase_account_type
-                    if category
-                    else None,
-                    purchase_account=category.dedicated_purchase_account
-                    if category
-                    else None,
-                    discount_allowed_account_type=category.items_discount_allowed_account_type
-                    if category
-                    else None,
-                    discount_allowed_account=category.dedicated_discount_allowed_account
-                    if category
-                    else None,
-                    discount_received_account_type=category.items_discount_received_account_type
-                    if category
-                    else None,
-                    discount_received_account=category.dedicated_discount_received_account
-                    if category
-                    else None,
+                    name=item_obj.get("name"),
+                    code=item_obj.get("code"),
                 )
+                category_id = item_obj.get("category__id")
+                if category_id:
+                    category = Category.objects.get(
+                        id=category_id, company_id=self.context["request"].company_id
+                    )
+                    if category.sales_account:
+                        new_item.sales_account_type = "category"
+                        new_item.sales_account = category.dedicated_sales_account
+                    if category.purchase_account:
+                        new_item.purchase_account_type = "category"
+                        new_item.purchase_account = category.dedicated_purchase_account
+                    if category.discount_allowed_account:
+                        new_item.discount_allowed_account_type = "category"
+                        new_item.discount_allowed_account = (
+                            category.dedicated_discount_allowed_account
+                        )
+                    if category.discount_received_account:
+                        new_item.discount_received_account_type = "category"
+                        new_item.discount_received_account = (
+                            category.dedicated_discount_received_account
+                        )
+
                 new_item.save()
                 row["item_id"] = new_item.id
 
