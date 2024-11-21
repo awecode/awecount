@@ -213,6 +213,7 @@ class PartnerPurchaseVoucherCreateSerializer(
     def validate_rows(self, rows):
         for row in rows:
             item_obj = row.pop("item_obj")
+            row_item = row.get("item")
 
             item_id = row.get("item_id")
             if item_id:
@@ -222,50 +223,45 @@ class PartnerPurchaseVoucherCreateSerializer(
                 item = Item.objects.get(
                     **item_obj, company_id=self.context["request"].company_id
                 )
-                if item_obj:
-                    if item_obj.get("name"):
-                        item.name = item_obj.get("name")
-                    if item_obj.get("cost_price"):
-                        item.cost_price = item_obj.get("cost_price")
+                if row_item:
+                    if row_item.get("name"):
+                        item.name = row_item.get("name")
+                    if row_item.get("cost_price"):
+                        item.cost_price = row_item.get("cost_price")
                     item.save()
 
-                row["item_id"] = item.id
             except Item.DoesNotExist:
-                if item_obj is None:
+                if row_item is None:
                     raise ValidationError(
                         "No item found for the given details. " + str(item_obj)
                     )
-                category = item_obj.get("category")
-                new_item = Item(
+                item = Item(
                     company_id=self.context["request"].company_id,
-                    **item_obj,
-                    sales_account_type=category.items_sales_account_type
-                    if category
-                    else None,
-                    sales_account=category.dedicated_sales_account
-                    if category
-                    else None,
-                    purchase_account_type=category.items_purchase_account_type
-                    if category
-                    else None,
-                    purchase_account=category.dedicated_purchase_account
-                    if category
-                    else None,
-                    discount_allowed_account_type=category.items_discount_allowed_account_type
-                    if category
-                    else None,
-                    discount_allowed_account=category.dedicated_discount_allowed_account
-                    if category
-                    else None,
-                    discount_received_account_type=category.items_discount_received_account_type
-                    if category
-                    else None,
-                    discount_received_account=category.dedicated_discount_received_account
-                    if category
-                    else None,
+                    **row_item,
                 )
-                new_item.save()
-                row["item_id"] = new_item.id
+                category = row_item.get("category")
+                if category:
+                    if(category.company_id != self.context["request"].company_id):
+                        raise ValidationError(
+                            "Category does not belong to the company."
+                        )
+                    if category.sales_account:
+                        item.sales_account_type = "category"
+                        item.sales_account = category.dedicated_sales_account
+                    if category.purchase_account:
+                        item.purchase_account_type = "category"
+                        item.purchase_account = category.dedicated_purchase_account
+                    if category.discount_allowed_account:
+                        item.discount_allowed_account_type = "category"
+                        item.discount_allowed_account = (
+                            category.dedicated_discount_allowed_account
+                        )
+                    if category.discount_received_account:
+                        item.discount_received_account_type = "category"
+                        item.discount_received_account = (
+                            category.dedicated_discount_received_account
+                        )
+                item.save()
 
             except Item.MultipleObjectsReturned:
                 raise ValidationError(
@@ -274,9 +270,10 @@ class PartnerPurchaseVoucherCreateSerializer(
 
             if row.get("discount_type") == "":
                 row["discount_type"] = None
-            row_serializer = PartnerPurchaseVoucherRowSerializer(data=row)
-            if not row_serializer.is_valid():
-                raise serializers.ValidationError(row_serializer.errors)
+
+            row["item_id"] = item.id
+            row["item"] = item
+
         return rows
 
     # def validate_discount_type(self, attr):
