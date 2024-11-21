@@ -78,7 +78,7 @@
                                         <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         <span style="display: inline-block; width: 40px; margin-left: -5px;">
                                             <q-btn class="expand-btn" dense flat round
-                                                :class="loginStore.stockTrialBalanceCollapseId.includes(parent.id) ? 'expanded' : ''"
+                                                :class="loginStore.stockTrialBalanceCollapseId.includes(parent.id) ? '' : 'expanded'"
                                                 @click="changeExpandStatus(parent.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                                     viewBox="0 0 24 24" class="text-grey-7">
@@ -475,23 +475,3 @@ export default {
     },
 }
 </script>
-<style lang="scss">
-.expand-btn {
-    width: 20px;
-
-    svg {
-        padding: 5px;
-        // width: 20px;
-        // width: 100%;
-        translate: 0.5px 1px;
-        transition: all 0.2s ease-in;
-    }
-
-    &.expanded {
-        svg {
-            translate: 1px 1px;
-            transform: rotate(-90deg);
-        }
-    }
-
-}</style>

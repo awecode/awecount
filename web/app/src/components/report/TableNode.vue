@@ -357,24 +357,3 @@ export default {
   },
 }
 </script>
-
-
-<style lang="scss">
-.expand-btn {
-  width: 20px;
-
-  svg {
-    padding: 5px;
-    translate: 0.5px 1px;
-    transition: all 0.2s ease-in;
-  }
-
-  &.expanded {
-    svg {
-      translate: 1px 1px;
-      transform: rotate(-90deg);
-    }
-  }
-
-}
-</style>
