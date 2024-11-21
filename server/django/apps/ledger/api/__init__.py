@@ -620,7 +620,7 @@ class TransactionViewSet(
                         category__name__in=["Cash Accounts", "Bank Accounts"],
                         then=True,
                     ),
-                    When(transactions__isnull=False, then=True),
+                    When(transactions__journal_entry__date=target_date, then=True),
                     default=False,
                 )
             )
