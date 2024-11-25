@@ -534,7 +534,9 @@ class SalesVoucherCreateSerializer(
         if validated_data["status"] == "Issued":
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
-                instance.issue_datetime = timezone.now
+            if instance.status == "Draft":
+                instance.status = "Issued"
+                instance.issue_datetime = timezone.now()
                 instance.date = timezone.now().date
         rows_data = validated_data.pop("rows")
         challans = validated_data.pop("challans", None)
