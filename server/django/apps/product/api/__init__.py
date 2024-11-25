@@ -1167,6 +1167,48 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
             )
         inventory_adjustment_voucher.cancel(message=message)
         return Response({})
+    
+    @action(detail=False, methods=["POST"], url_path="import")
+    def import_from_file(self, request):
+        file = request.FILES["file"]
+        wb = load_workbook(file, data_only=True)
+        ws = wb.active
+        ws.delete_rows(1)
+        items = []
+        unadjusted_items = []
+        
+        def get_item(name):
+            if not name:
+                return None
+            else:
+                qs = Item.objects.filter(
+                    code__iexact=str(name), company_id=request.company.id
+                ).select_related("unit")
+                if qs.exists():
+                    return qs.first()
+                else:
+                    return None
+                
+        for row in ws.iter_rows(values_only=True):
+            if not get_item(row[0]):
+                unadjusted_items.append(row[0])
+            else:
+                item = {
+                "company_id": request.company.id,
+                "item_id": get_item(row[0]).id,
+                "unit_id": get_item(row[0]).unit.id if get_item(row[0]).unit else None,
+                "quantity": row[1],
+                "rate": row[2],
+                "description": row[3],
+                "selected_item_obj":(GenericSerializer(get_item(row[0]))).data,
+                "selected_unit_obj":(GenericSerializer(get_item(row[0]).unit)).data if get_item(row[0]).unit else None,
+            }
+                items.append(item)
+        response = {
+            "items": items,
+            "unadjusted_items": unadjusted_items
+        }
+        return Response(response, status=200) 
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):
