@@ -602,22 +602,22 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         ):
             entries = []
 
-            row_total = row.quantity * row.rate
-            sales_value = row_total + 0
+            row_total = decimalize(row.quantity) * decimalize(row.rate)
+            sales_value = row_total
 
-            row_discount = 0
+            row_discount = decimalize(0)
             if row.has_discount():
                 row_discount_amount, trade_discount = row.get_discount()
-                row_total -= row_discount_amount
+                row_total -= decimalize(row_discount_amount)
                 if trade_discount:
-                    sales_value -= row_discount_amount
+                    sales_value -= decimalize(row_discount_amount)
                 else:
-                    row_discount += row_discount_amount
+                    row_discount += decimalize(row_discount_amount)
 
             if dividend_discount > 0:
                 row_dividend_discount = (
-                    row_total / sub_total_after_row_discounts
-                ) * dividend_discount
+                    row_total / decimalize(sub_total_after_row_discounts)
+                ) * decimalize(dividend_discount)
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     sales_value -= row_dividend_discount
@@ -625,16 +625,22 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(["dr", row.item.discount_allowed_account, row_discount])
+                entries.append(
+                    ["dr", row.item.discount_allowed_account, float(row_discount)]
+                )
 
             if row.tax_scheme:
-                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                row_tax_amount = (
+                    decimalize(row.tax_scheme.rate) * row_total / decimalize(100)
+                )
                 if row_tax_amount:
-                    entries.append(["cr", row.tax_scheme.payable, row_tax_amount])
+                    entries.append(
+                        ["cr", row.tax_scheme.payable, float(row_tax_amount)]
+                    )
                     row_total += row_tax_amount
 
-            entries.append(["cr", row.item.sales_account, sales_value])
-            entries.append(["dr", dr_acc, row_total])
+            entries.append(["cr", row.item.sales_account, float(sales_value)])
+            entries.append(["dr", dr_acc, float(row_total)])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
