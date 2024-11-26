@@ -89,13 +89,80 @@ class ItemCreateSerializer(ItemSerializer):
     pass
 
 
+class PartnerItemSelectSerializer(serializers.Serializer):
+    item_id = serializers.IntegerField(required=False)
+    item_obj = PartnerItemSerializer(default={})
+    item = ItemCreateSerializer(required=False)
+
+    def validate(self, attrs):
+        item_obj = attrs.pop("item_obj")
+        row_item = attrs.get("item")
+
+        item_id = attrs.get("item_id")
+        if item_id:
+            item_obj["id"] = item_id
+
+        try:
+            item = Item.objects.get(
+                **item_obj, company_id=self.context["request"].company_id
+            )
+            if row_item:
+                if row_item.get("name"):
+                    item.name = row_item.get("name")
+                if row_item.get("cost_price"):
+                    item.cost_price = row_item.get("cost_price")
+                item.save()
+
+        except Item.DoesNotExist:
+            if row_item is None:
+                raise ValidationError(
+                    "No item found for the given details. " + str(item_obj)
+                )
+            item = Item(
+                company_id=self.context["request"].company_id,
+                **row_item,
+            )
+            category = row_item.get("category")
+            if category:
+                if category.company_id != self.context["request"].company_id:
+                    raise ValidationError("Category does not belong to the company.")
+                if category.sales_account:
+                    item.sales_account_type = "category"
+                    item.sales_account = category.dedicated_sales_account
+                if category.purchase_account:
+                    item.purchase_account_type = "category"
+                    item.purchase_account = category.dedicated_purchase_account
+                if category.discount_allowed_account:
+                    item.discount_allowed_account_type = "category"
+                    item.discount_allowed_account = (
+                        category.dedicated_discount_allowed_account
+                    )
+                if category.discount_received_account:
+                    item.discount_received_account_type = "category"
+                    item.discount_received_account = (
+                        category.dedicated_discount_received_account
+                    )
+            item.save()
+
+        except Item.MultipleObjectsReturned:
+            raise ValidationError(
+                "More than one item found for the given details. " + str(item_obj)
+            )
+
+        attrs["item_id"] = item.id
+        attrs["item"] = item
+
+        return attrs
+
+
 class PartnerPurchaseVoucherRowSerializer(
-    DiscountObjectTypeSerializerMixin, serializers.ModelSerializer
+    DiscountObjectTypeSerializerMixin,
+    serializers.ModelSerializer,
+    PartnerItemSelectSerializer,
 ):
     id = serializers.IntegerField(required=False)
     tax_scheme_id = serializers.IntegerField(required=True)
     unit_id = serializers.IntegerField(required=False)
-    item = serializers.ReadOnlyField(source="item.name")
     item__account__current_balance = serializers.ReadOnlyField(
         source="item.account.current_balance"
     )
@@ -104,9 +171,10 @@ class PartnerPurchaseVoucherRowSerializer(
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
 
-    item_id = serializers.IntegerField(required=False)
-    item_obj = PartnerItemSerializer(default={})
-    item = ItemCreateSerializer(required=False)
+    def validate_discount_type(self, value):
+        if value == "":
+            return None
+        return value
 
     def validate_discount(self, value):
         if not value:
@@ -209,77 +277,6 @@ class PartnerPurchaseVoucherCreateSerializer(
         #         if PurchaseVoucherRow.objects.filter(voucher__date__gt=date, item__in=item_ids, item__track_inventory=True).exists():
         #             raise UnprocessableException(detail="Creating a purchase on a past date when purchase for the same item on later dates exist may cause inconsistencies in FIFO.", code="fifo_inconsistency")
         #     return data
-
-    def validate_rows(self, rows):
-        for row in rows:
-            item_obj = row.pop("item_obj")
-            row_item = row.get("item")
-
-            item_id = row.get("item_id")
-            if item_id:
-                item_obj["id"] = item_id
-
-            try:
-                item = Item.objects.get(
-                    **item_obj, company_id=self.context["request"].company_id
-                )
-                if row_item:
-                    if row_item.get("name"):
-                        item.name = row_item.get("name")
-                    if row_item.get("cost_price"):
-                        item.cost_price = row_item.get("cost_price")
-                    item.save()
-
-            except Item.DoesNotExist:
-                if row_item is None:
-                    raise ValidationError(
-                        "No item found for the given details. " + str(item_obj)
-                    )
-                item = Item(
-                    company_id=self.context["request"].company_id,
-                    **row_item,
-                )
-                category = row_item.get("category")
-                if category:
-                    if(category.company_id != self.context["request"].company_id):
-                        raise ValidationError(
-                            "Category does not belong to the company."
-                        )
-                    if category.sales_account:
-                        item.sales_account_type = "category"
-                        item.sales_account = category.dedicated_sales_account
-                    if category.purchase_account:
-                        item.purchase_account_type = "category"
-                        item.purchase_account = category.dedicated_purchase_account
-                    if category.discount_allowed_account:
-                        item.discount_allowed_account_type = "category"
-                        item.discount_allowed_account = (
-                            category.dedicated_discount_allowed_account
-                        )
-                    if category.discount_received_account:
-                        item.discount_received_account_type = "category"
-                        item.discount_received_account = (
-                            category.dedicated_discount_received_account
-                        )
-                item.save()
-
-            except Item.MultipleObjectsReturned:
-                raise ValidationError(
-                    "More than one item found for the given details. " + str(item_obj)
-                )
-
-            if row.get("discount_type") == "":
-                row["discount_type"] = None
-
-            row["item_id"] = item.id
-            row["item"] = item
-
-        return rows
-
-    # def validate_discount_type(self, attr):
-    #     if not attr:
-    #         attr = 0
-    #     return attr
 
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
