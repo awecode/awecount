@@ -537,7 +537,7 @@ class SalesVoucherCreateSerializer(
             if instance.status == "Draft":
                 validated_data["status"] = "Issued"
                 validated_data["issue_datetime"] = timezone.now()
-                validated_data["date"] = timezone.now().date
+                validated_data["date"] = timezone.now().date().strftime("%Y-%m-%d")
         rows_data = validated_data.pop("rows")
         challans = validated_data.pop("challans", None)
         self.assign_fiscal_year(validated_data, instance=instance)
