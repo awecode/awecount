@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from django.db import transaction
@@ -5,8 +6,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models.base import Account, Party
+from apps.voucher.models import SalesVoucherRow
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
-from apps.voucher.serializers.sales import SalesVoucherAccessSerializer
+from apps.voucher.serializers.partner import PartnerItemSelectSerializer
+from apps.voucher.serializers.sales import (
+    SalesVoucherCreateSerializer,
+    SalesVoucherRowSerializer,
+)
 from awecount.libs import decimalize, get_next_voucher_no
 from awecount.libs.serializers import DisableCancelEditMixin
 
@@ -160,7 +166,28 @@ class RoyaltyLedgerInfo(serializers.Serializer):
     royalty_expense_account = None
 
 
-class PartnerSalesVoucherAccessSerializer(SalesVoucherAccessSerializer):
+class SalesVoucherRowAccessSerializer(
+    PartnerItemSelectSerializer, SalesVoucherRowSerializer
+):
+    class Meta:
+        model = SalesVoucherRow
+        exclude = ("tax_scheme", "voucher", "unit", "discount_obj")
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False},
+        }
+
+
+class PartnerSalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
+    """
+    {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
+
+    """
+
+    date = serializers.DateField(default=datetime.datetime.today().date)
+    rows = SalesVoucherRowAccessSerializer(many=True)
+    pdf_url = serializers.ReadOnlyField()
+    view_url = serializers.ReadOnlyField()
     royalty_ledger_info = RoyaltyLedgerInfo(required=False)
 
     extra_entries = None

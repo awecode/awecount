@@ -146,7 +146,6 @@ from ..serializers import (
     SalesDiscountMinSerializer,
     SalesDiscountSerializer,
     SalesRowSerializer,
-    SalesVoucherAccessSerializer,
     SalesVoucherChoiceSerializer,
     SalesVoucherCreateSerializer,
     SalesVoucherDetailSerializer,

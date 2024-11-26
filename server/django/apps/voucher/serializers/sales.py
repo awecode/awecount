@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.ledger.serializers import PartyMinSerializer
-from apps.product.models import Category, Item
+from apps.product.models import Item
 from apps.product.serializers import ItemSalesSerializer
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
@@ -248,80 +248,6 @@ class SalesVoucherRowSerializer(
             "discount": {"allow_null": True, "required": False},
             "discount_type": {"allow_null": True, "required": False},
         }
-
-
-class SalesVoucherRowAccessSerializer(SalesVoucherRowSerializer):
-    item_id = serializers.IntegerField(required=False)
-    item_obj = serializers.DictField(required=False)
-    item_code = serializers.ReadOnlyField(source="item.code")
-
-    def validate(self, data):
-        data = super().validate(data)
-        if "item_id" not in data:
-            if "item_obj" not in data:
-                raise ValidationError({"item": ["item_id or item_obj is required."]})
-            if "code" not in data["item_obj"]:
-                raise ValidationError({"item": ["item_obj.code is required."]})
-            try:
-                item_obj = Item.objects.get(
-                    code=data["item_obj"].get("code"),
-                    company_id=self.context["request"].company_id,
-                )
-                # if data['item_obj'].get('name') and item_obj.name != data['item_obj'].get('name'):
-                #     item_obj.name = data['item_obj'].get('name')
-                #     item_obj.save()
-            except Item.DoesNotExist:
-                item_obj_data = {
-                    "code": str(data["item_obj"].get("code")),
-                    "name": str(
-                        data["item_obj"].get("name") or data["item_obj"].get("code")
-                    ),
-                    "unit_id": data["unit_id"],
-                    "category_id": data["item_obj"].get("category_id"),
-                    "selling_price": data["rate"],
-                    "tax_scheme_id": data["tax_scheme_id"],
-                    "company_id": self.context["request"].company_id,
-                }
-                sales_account = None
-                purchase_account = None
-                discount_allowed_account = None
-                discount_received_account = None
-                if data["item_obj"].get("category_id"):
-                    item_category = Category.objects.filter(
-                        id=data["item_obj"].get("category_id"),
-                        company_id=self.context["request"].company_id,
-                    ).first()
-                    if item_category:
-                        sales_account = item_category.dedicated_sales_account
-                        purchase_account = item_category.dedicated_purchase_account
-                        discount_allowed_account = (
-                            item_category.dedicated_discount_allowed_account
-                        )
-                        discount_received_account = (
-                            item_category.dedicated_discount_received_account
-                        )
-
-                if sales_account:
-                    item_obj_data["sales_account_type"] = "category"
-                    item_obj_data["sales_account"] = sales_account
-                if purchase_account:
-                    item_obj_data["purchase_account_type"] = "category"
-                    item_obj_data["purchase_account"] = purchase_account
-                if discount_allowed_account:
-                    item_obj_data["discount_allowed_account_type"] = "category"
-                    item_obj_data["discount_allowed_account"] = discount_allowed_account
-                if discount_received_account:
-                    item_obj_data["discount_received_account_type"] = "category"
-                    item_obj_data["discount_received_account"] = (
-                        discount_received_account
-                    )
-
-                item_obj = Item.objects.create(**item_obj_data)
-
-            data["item_id"] = item_obj.id
-            del data["item_obj"]
-
-        return data
 
 
 class SalesVoucherCreateSerializer(
@@ -575,18 +501,6 @@ class SalesVoucherCreateSerializer(
             "discount_obj",
             "fiscal_year",
         )
-
-
-class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
-    """
-    {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
-
-    """
-
-    date = serializers.DateField(default=datetime.datetime.today().date)
-    rows = SalesVoucherRowAccessSerializer(many=True)
-    pdf_url = serializers.ReadOnlyField()
-    view_url = serializers.ReadOnlyField()
 
 
 class SalesAgentSerializer(serializers.ModelSerializer):
