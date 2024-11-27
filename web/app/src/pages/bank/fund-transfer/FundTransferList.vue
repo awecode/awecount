@@ -6,10 +6,11 @@
     </div>
     <q-card class="p-4 mt-4" v-if="data?.templates && data.templates.length">
       <h5 class="q-my-none q-mb-sm text-h6 text-grey-8">Templates:</h5>
-      <router-link v-for="template in data.templates" :key="template.id"
-        :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }">
-        <q-btn class="add-btn" icon-right="add" color="green" :label="template.name" />
-      </router-link>
+      <div class="flex gap-4">
+        <q-btn v-for="template in data.templates" :key="template.id" class="add-btn" icon-right="add" color="green"
+          :label="template.name"
+          :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }" />
+      </div>
     </q-card>
     <q-table title="Fund Transfer" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
