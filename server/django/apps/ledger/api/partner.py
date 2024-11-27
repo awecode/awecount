@@ -45,7 +45,7 @@ class PartnerJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMi
         return Response({"detail": "Status changed successfully."})
 
 
-class PartnerPartyViewset(viewsets.GenericViewSet):
+class PartnerPartyViewSet(viewsets.GenericViewSet):
     queryset = Party.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")

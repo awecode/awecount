@@ -16,7 +16,7 @@ from awecount.libs.CustomViewSet import CompanyViewSetMixin
 from awecount.libs.mixins import CancelPurchaseVoucherMixin
 
 
-class PartnerPurchaseVoucherViewset(
+class PartnerPurchaseVoucherViewSet(
     viewsets.GenericViewSet,
     CancelPurchaseVoucherMixin,
     mixins.CreateModelMixin,
@@ -57,7 +57,7 @@ class PartnerPurchaseVoucherViewset(
         return qs.filter(company_id=self.request.company_id).order_by("-date", "-pk")
 
 
-class PartnerPurchaseDiscountViewset(viewsets.GenericViewSet):
+class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
     queryset = PurchaseDiscount.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
@@ -66,15 +66,14 @@ class PartnerPurchaseDiscountViewset(viewsets.GenericViewSet):
         return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)
 
 
-class PartnerCreditNoteViewset(
+class PartnerCreditNoteViewSet(
     CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     serializer_class = PartnerCreditNoteCreateSerializer
 
 
-class PartnerDebitNoteViewset(
+class PartnerDebitNoteViewSet(
     CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     serializer_class = PartnerDebitNoteCreateSerializer
-    queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all(
-)
+    queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all()
