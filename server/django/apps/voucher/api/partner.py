@@ -8,6 +8,7 @@ from apps.voucher.models import PurchaseVoucher
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.partner import (
     PartnerCreditNoteCreateSerializer,
+    PartnerDebitNoteCreateSerializer,
     PartnerPurchaseDiscountSerializer,
     PartnerPurchaseVoucherCreateSerializer,
 )
@@ -69,3 +70,11 @@ class PartnerCreditNoteViewset(
     CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     serializer_class = PartnerCreditNoteCreateSerializer
+
+
+class PartnerDebitNoteViewset(
+    CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    serializer_class = PartnerDebitNoteCreateSerializer
+    queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all(
+)
