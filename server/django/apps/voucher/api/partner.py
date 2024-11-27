@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from apps.voucher.models import PurchaseVoucher
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.partner import (
+    PartnerCreditNoteCreateSerializer,
     PartnerPurchaseDiscountSerializer,
     PartnerPurchaseVoucherCreateSerializer,
 )
+from awecount.libs.CustomViewSet import CompanyViewSetMixin
 from awecount.libs.mixins import CancelPurchaseVoucherMixin
 
 
@@ -61,3 +63,9 @@ class PartnerPurchaseDiscountViewset(viewsets.GenericViewSet):
     def all(self, request):
         parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
         return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)
+
+
+class PartnerCreditNoteViewset(
+    CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    serializer_class = PartnerCreditNoteCreateSerializer

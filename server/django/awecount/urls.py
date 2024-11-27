@@ -56,6 +56,12 @@ router.register(
 )
 
 router.register(
+    "partner/credit-note",
+    partner_voucher.PartnerCreditNoteViewset,
+    basename="partner-credit-note",
+)
+
+router.register(
     "inventory-account", item.InventoryAccountViewSet, basename="inventory-account"
 )
 router.register(

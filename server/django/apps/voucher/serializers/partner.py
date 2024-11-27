@@ -3,8 +3,12 @@ from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
 from apps.product.serializers import ItemSerializer
-from apps.voucher.models import PurchaseVoucher, PurchaseVoucherRow
+from apps.voucher.models import CreditNoteRow, PurchaseVoucher, PurchaseVoucherRow
 from apps.voucher.models.discounts import PurchaseDiscount
+from apps.voucher.serializers.credit_note import (
+    CreditNoteCreateSerializer,
+    CreditNoteRowSerializer,
+)
 from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
 )
@@ -309,3 +313,19 @@ class PartnerPurchaseDiscountSerializer(serializers.ModelSerializer):
         model = PurchaseDiscount
         exclude = ("company",)
         extra_kwargs = {"name": {"required": True}}
+
+
+class PartnerCreditNoteRowSerializer(
+    PartnerItemSelectSerializer, CreditNoteRowSerializer
+):
+    class Meta:
+        model = CreditNoteRow
+        exclude = ("tax_scheme", "voucher", "unit", "discount_obj")
+        extra_kwargs = {
+            "discount": {"allow_null": True, "required": False},
+            "discount_type": {"allow_null": True, "required": False},
+        }
+
+
+class PartnerCreditNoteCreateSerializer(CreditNoteCreateSerializer):
+    rows = PartnerCreditNoteRowSerializer(many=True)
