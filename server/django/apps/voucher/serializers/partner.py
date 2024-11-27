@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Item
-from apps.product.serializers import ItemSerializer
+from apps.product.serializers import ItemPurchaseSerializer, ItemSerializer
 from apps.voucher.models import (
     CreditNoteRow,
     DebitNoteRow,
@@ -105,7 +105,7 @@ class ItemCreateSerializer(ItemSerializer):
 class PartnerItemSelectSerializer(serializers.Serializer):
     item_id = serializers.IntegerField(required=False)
     item_obj = PartnerItemSerializer(default={})
-    item = ItemCreateSerializer(required=False)
+    item = ItemCreateSerializer(required=False, write_only=True)
 
     def validate(self, attrs):
         item_obj = attrs.pop("item_obj")
@@ -183,6 +183,7 @@ class PartnerPurchaseVoucherRowSerializer(
     voucher__date = serializers.ReadOnlyField(source="voucher.date")
     voucher__voucher_no = serializers.ReadOnlyField(source="voucher.voucher_no")
     voucher_id = serializers.ReadOnlyField(source="voucher.id")
+    selected_item_obj = ItemPurchaseSerializer(read_only=True, source="item")
 
     def validate_discount_type(self, value):
         if value == "":

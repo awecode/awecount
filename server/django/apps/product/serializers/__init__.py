@@ -157,6 +157,7 @@ class ItemPurchaseSerializer(serializers.ModelSerializer):
             "name",
             "unit_id",
             "rate",
+            "code",
             "tax_scheme_id",
             "description",
             "is_trackable",
