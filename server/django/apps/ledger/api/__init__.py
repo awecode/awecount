@@ -444,6 +444,7 @@ class TransactionViewSet(
     filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
     search_fields = ["account__name", "account__category__name"]
+    exculde_content_type_models = ["salesvoucher", "purchasevoucher", "creditnote", "debitnote"]
     journal_entry_content_type = JournalEntry.objects.values_list(
         "content_type", flat=True
     ).distinct()
@@ -451,7 +452,9 @@ class TransactionViewSet(
         ("accounts", Account, GenericSerializer, True, ["name"]),
         (
             "transaction_types",
-            ContentType.objects.filter(id__in=journal_entry_content_type),
+            ContentType.objects.filter(id__in=journal_entry_content_type).exclude(
+                model__in=exculde_content_type_models
+            ),
             ContentTypeListSerializer,
             True,
             ["app_label"],
