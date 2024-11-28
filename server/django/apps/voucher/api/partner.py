@@ -13,7 +13,10 @@ from apps.voucher.serializers.partner import (
     PartnerPurchaseVoucherCreateSerializer,
 )
 from awecount.libs.CustomViewSet import CompanyViewSetMixin
-from awecount.libs.mixins import CancelPurchaseVoucherMixin
+from awecount.libs.mixins import (
+    CancelCreditOrDebitNoteMixin,
+    CancelPurchaseVoucherMixin,
+)
 
 
 class PartnerPurchaseVoucherViewSet(
@@ -67,13 +70,19 @@ class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
 
 
 class PartnerCreditNoteViewSet(
-    CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+    CompanyViewSetMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+    CancelCreditOrDebitNoteMixin,
 ):
     serializer_class = PartnerCreditNoteCreateSerializer
 
 
 class PartnerDebitNoteViewSet(
-    CompanyViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+    CompanyViewSetMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+    CancelCreditOrDebitNoteMixin,
 ):
     serializer_class = PartnerDebitNoteCreateSerializer
     queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all()
