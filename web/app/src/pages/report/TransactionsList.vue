@@ -207,6 +207,9 @@ export default {
       if (source_type === 'Bank Cash Deposit')
         return `/bank/cash/cash-deposit/${row.source_id}/edit/`
       if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+      if (source_type === 'Inventory Adjustment Voucher')
+        return `/items/inventory-adjustment/${row.source_id}/view`
+      debugger
       console.error(source_type + ' not handled!')
     }
     const getPermissionsWithSourceType = {
