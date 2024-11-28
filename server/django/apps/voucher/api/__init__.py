@@ -372,7 +372,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 {"message": "message field is required for cancelling invoice!"}
             )
 
-        if sales_voucher.credit_notes.exists():
+        if sales_voucher.credit_notes.exclude(status="Cancelled").exists():
             raise RESTValidationError(
                 {
                     "message": "This sales voucher has credit notes. Please cancel them first."
