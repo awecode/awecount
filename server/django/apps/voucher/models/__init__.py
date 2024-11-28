@@ -509,13 +509,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
     def challan_voucher_numbers(self):
         return self.challans.values_list("voucher_no", flat=True)
 
-    def clean(self):
-        super().clean()
-        if not self.payment_mode.enabled_for_sales:
-            raise ValidationError(
-                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
-            )
-
     def apply_inventory_transactions(self):
         challan_enabled = self.company.sales_setting.enable_import_challan
         challan_dct = {}
@@ -585,18 +578,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         if self.payment_mode:
             dr_acc = self.payment_mode.account
             self.status = "Paid"
-        elif self.mode == "Cash":
-            self.payment_mode = PaymentMode.objects.get_or_create(
-                company=self.company, name="Cash"
-            )[0]
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
-        elif self.mode == "Bank Deposit" and self.bank_account:
-            self.payment_mode = self._get_or_create_bank_payment_mode(
-                self.company, self.bank_account
-            )
-            dr_acc = self.payment_mode.account
-            self.status = "Paid"
+            self.payment_date = timezone.now().date()
         else:
             if not self.party:
                 raise ValueError(
@@ -620,22 +602,22 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         ):
             entries = []
 
-            row_total = row.quantity * row.rate
-            sales_value = row_total + 0
+            row_total = decimalize(row.quantity) * decimalize(row.rate)
+            sales_value = row_total
 
-            row_discount = 0
+            row_discount = decimalize(0)
             if row.has_discount():
                 row_discount_amount, trade_discount = row.get_discount()
-                row_total -= row_discount_amount
+                row_total -= decimalize(row_discount_amount)
                 if trade_discount:
-                    sales_value -= row_discount_amount
+                    sales_value -= decimalize(row_discount_amount)
                 else:
-                    row_discount += row_discount_amount
+                    row_discount += decimalize(row_discount_amount)
 
             if dividend_discount > 0:
                 row_dividend_discount = (
-                    row_total / sub_total_after_row_discounts
-                ) * dividend_discount
+                    row_total / decimalize(sub_total_after_row_discounts)
+                ) * decimalize(dividend_discount)
                 row_total -= row_dividend_discount
                 if dividend_trade_discount:
                     sales_value -= row_dividend_discount
@@ -643,16 +625,22 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                     row_discount += row_dividend_discount
 
             if row_discount > 0:
-                entries.append(["dr", row.item.discount_allowed_account, row_discount])
+                entries.append(
+                    ["dr", row.item.discount_allowed_account, float(row_discount)]
+                )
 
             if row.tax_scheme:
-                row_tax_amount = row.tax_scheme.rate * row_total / 100
+                row_tax_amount = (
+                    decimalize(row.tax_scheme.rate) * row_total / decimalize(100)
+                )
                 if row_tax_amount:
-                    entries.append(["cr", row.tax_scheme.payable, row_tax_amount])
+                    entries.append(
+                        ["cr", row.tax_scheme.payable, float(row_tax_amount)]
+                    )
                     row_total += row_tax_amount
 
-            entries.append(["cr", row.item.sales_account, sales_value])
-            entries.append(["dr", dr_acc, row_total])
+            entries.append(["cr", row.item.sales_account, float(sales_value)])
+            entries.append(["dr", dr_acc, float(row_total)])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
 
@@ -678,6 +666,23 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transactions()
 
     def save(self, *args, **kwargs):
+        if not self.payment_mode and self.mode == "Cash":
+            self.payment_mode = PaymentMode.objects.get_or_create(
+                company=self.company, name="Cash"
+            )[0]
+
+        elif (
+            not self.payment_mode and self.mode == "Bank Deposit" and self.bank_account
+        ):
+            self.payment_mode = self._get_or_create_bank_payment_mode(
+                self.company, self.bank_account
+            )
+
+        if self.payment_mode and not self.payment_mode.enabled_for_sales:
+            raise ValueError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for sales."
+            )
+
         if self.status not in ["Draft", "Cancelled"] and not self.voucher_no:
             raise ValueError("Issued invoices need a voucher number!")
         super().save(*args, **kwargs)
@@ -910,13 +915,6 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
     def purchase_order_numbers(self):
         return self.purchase_orders.values_list("voucher_no", flat=True)
 
-    def clean(self) -> None:
-        super().clean()
-        if not self.payment_mode.enabled_for_purchase:
-            raise ValidationError(
-                f"Payment mode '{self.payment_mode.name}' is not enabled for purchase."
-            )
-
     def find_invalid_transaction(self):
         for row in self.rows.filter(
             Q(item__track_inventory=True) | Q(item__fixed_asset=True)
@@ -936,6 +934,13 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
                 self.date,
                 ["dr", row.item.account, int(row.quantity), row.rate],
             )
+
+    def save(self, *args, **kwargs):
+        if self.payment_mode and not self.payment_mode.enabled_for_purchase:
+            raise ValidationError(
+                f"Payment mode '{self.payment_mode.name}' is not enabled for purchase."
+            )
+        super().save(*args, **kwargs)
 
     def apply_transactions(self, voucher_meta=None):
         voucher_meta = voucher_meta or self.get_voucher_meta()

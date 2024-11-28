@@ -296,7 +296,7 @@ class SalesVoucherCreateSerializer(
             data["due_date"] = request.data["due_date"]
         if (
             not data.get("party")
-            and data.get("mode") == "Credit"
+            and not data.get("payment_mode")
             and data.get("status") != "Draft"
         ):
             raise ValidationError(
@@ -460,8 +460,10 @@ class SalesVoucherCreateSerializer(
         if validated_data["status"] == "Issued":
             if not instance.company.current_fiscal_year == instance.fiscal_year:
                 instance.fiscal_year = instance.company.current_fiscal_year
-                instance.issue_datetime = timezone.now
-                instance.date = timezone.now().date
+            if instance.status == "Draft":
+                validated_data["status"] = "Issued"
+                validated_data["issue_datetime"] = timezone.now()
+                validated_data["date"] = timezone.now().date().strftime("%Y-%m-%d")
         rows_data = validated_data.pop("rows")
         challans = validated_data.pop("challans", None)
         self.assign_fiscal_year(validated_data, instance=instance)

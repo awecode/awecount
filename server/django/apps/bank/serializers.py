@@ -146,6 +146,9 @@ class FundTransferListSerializer(serializers.ModelSerializer):
 
 
 class FundTransferTemplateSerializer(serializers.ModelSerializer):
+    selected_from_account_obj = GenericSerializer(read_only=True, source="from_account")
+    selected_to_account_obj = GenericSerializer(read_only=True, source="to_account")
+    selected_transaction_fee_account_obj = GenericSerializer(read_only=True, source="transaction_fee_account")
     class Meta:
         model = FundTransferTemplate
         fields = (
@@ -155,6 +158,9 @@ class FundTransferTemplateSerializer(serializers.ModelSerializer):
             "to_account",
             "transaction_fee_account",
             "transaction_fee",
+            "selected_from_account_obj",
+            "selected_to_account_obj",
+            "selected_transaction_fee_account_obj",
         )
 
 

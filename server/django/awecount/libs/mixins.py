@@ -315,7 +315,7 @@ class CancelPurchaseVoucherMixin:
                 {"message": "message field is required for cancelling invoice!"}
             )
 
-        if purchase_voucher.debit_notes.exists():
+        if purchase_voucher.debit_notes.exclude(status="Cancelled").exists():
             raise RESTValidationError(
                 {
                     "message": "This purchase voucher has debit notes. Please cancel them first."

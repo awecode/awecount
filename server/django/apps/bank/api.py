@@ -258,7 +258,7 @@ class FundTransferViewSet(CRULViewSet):
         serializer = self.get_serializer(page, many=True)
         paginated_response = self.get_paginated_response(serializer.data)
         data = paginated_response.data
-        templates = FundTransferTemplate.objects.filter(company=request.company)
+        templates = FundTransferTemplate.objects.filter(company=request.company).select_related("from_account", "to_account", "transaction_fee_account")
         data["templates"] = FundTransferTemplateSerializer(templates, many=True).data
         return Response(data)
 
