@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.response import Response
 
@@ -345,3 +346,23 @@ class CancelPurchaseVoucherMixin:
 
         purchase_voucher.cancel()
         return Response({})
+
+
+class CancelCreditOrDebitNoteMixin:
+    @action(detail=True, methods=["POST"])
+    def cancel(self, request, pk):
+        if (
+            request.company.inventory_setting.enable_fifo
+            and not request.query_params.get("fifo_inconsistency")
+        ):
+            raise UnprocessableException(
+                detail="This may cause inconsistencies in fifo!",
+                code="fifo_inconsistency",
+            )
+
+        obj = self.get_object()
+        try:
+            obj.cancel()
+            return Response({})
+        except Exception as e:
+            raise APIException(str(e))

@@ -98,6 +98,7 @@ from awecount.libs.CustomViewSet import (
 )
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.mixins import (
+    CancelCreditOrDebitNoteMixin,
     CancelPurchaseVoucherMixin,
     DeleteRows,
     InputChoiceMixin,
@@ -747,7 +748,7 @@ class PurchaseVoucherViewSet(
         return qs_to_xls(params)
 
 
-class CreditNoteViewSet(DeleteRows, CRULViewSet):
+class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
     serializer_class = CreditNoteCreateSerializer
     model = CreditNote
     row = CreditNoteRow
@@ -886,25 +887,6 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         except Exception as e:
             raise APIException(str(e))
 
-    @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
-        # FIFO inconsistency check
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
-        obj = self.get_object()
-        try:
-            obj.cancel()
-            return Response({})
-        except Exception as e:
-            raise APIException(str(e))
-
     @action(detail=True, methods=["POST"], url_path="log-print")
     def log_print(self, request, pk):
         obj = self.get_object()
@@ -931,7 +913,7 @@ class CreditNoteViewSet(DeleteRows, CRULViewSet):
         return qs_to_xls(params)
 
 
-class DebitNoteViewSet(DeleteRows, CRULViewSet):
+class DebitNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):
     serializer_class = DebitNoteCreateSerializer
     model = DebitNote
     row = DebitNoteRow
@@ -1055,24 +1037,6 @@ class DebitNoteViewSet(DeleteRows, CRULViewSet):
         obj = self.get_object()
         try:
             obj.mark_as_resolved()
-            return Response({})
-        except Exception as e:
-            raise APIException(str(e))
-
-    @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
-        if (
-            request.company.inventory_setting.enable_fifo
-            and not request.query_params.get("fifo_inconsistency")
-        ):
-            raise UnprocessableException(
-                detail="This may cause inconsistencies in fifo!",
-                code="fifo_inconsistency",
-            )
-
-        obj = self.get_object()
-        try:
-            obj.cancel()
             return Response({})
         except Exception as e:
             raise APIException(str(e))
