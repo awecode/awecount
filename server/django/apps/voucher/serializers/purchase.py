@@ -85,7 +85,7 @@ class PurchaseVoucherCreateSerializer(
         company = self.context["request"].company
 
         party = data.get("party")
-        if not party and data.get("mode") == "Credit" and data.get("status") != "Draft":
+        if not party and not data.get("payment_mode") and data.get("status") != "Draft":
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
