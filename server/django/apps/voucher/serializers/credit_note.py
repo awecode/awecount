@@ -92,6 +92,7 @@ class CreditNoteCreateSerializer(
     def create(self, validated_data):
         rows_data = validated_data.pop("rows")
         invoices = validated_data.pop("invoices")
+        extra_entries = validated_data.pop("extra_entries", None)
         request = self.context["request"]
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_voucher_number(validated_data, instance=None)
@@ -107,7 +108,7 @@ class CreditNoteCreateSerializer(
             CreditNoteRow.objects.create(voucher=instance, **row)
         instance.invoices.clear()
         instance.invoices.add(*invoices)
-        instance.apply_transactions()
+        instance.apply_transactions(extra_entries=extra_entries)
         # instance.synchronize()
         return instance
 

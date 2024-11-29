@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -14,7 +13,10 @@ from apps.voucher.serializers.sales import (
     SalesVoucherRowSerializer,
 )
 from awecount.libs import decimalize, get_next_voucher_no
-from awecount.libs.serializers import DisableCancelEditMixin
+from awecount.libs.serializers import (
+    DisableCancelEditMixin,
+    RoyaltyLedgerInfoSerializer,
+)
 
 
 class PartnerAccountSerializer(serializers.Serializer):
@@ -147,24 +149,6 @@ class PartnerPartyListSerializer(serializers.ModelSerializer):
         )
 
 
-class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
-    tax_registration_number = serializers.CharField(required=True)
-    name = serializers.CharField(required=True)
-
-    royalty_amount = serializers.FloatField(required=True)
-    tds_amount = serializers.FloatField(required=True)
-
-    payable_account = None
-    royalty_tds_account = None
-
-
-class RoyaltyLedgerInfo(serializers.Serializer):
-    royalty_expense_account_id = serializers.IntegerField(required=True)
-    tds_category_id = serializers.IntegerField(required=True)
-    parties = RoyaltyLedgerInfoPartySerializer(many=True, required=True)
-
-    royalty_expense_account = None
-
 
 class SalesVoucherRowAccessSerializer(
     PartnerItemSelectSerializer, SalesVoucherRowSerializer
@@ -178,7 +162,9 @@ class SalesVoucherRowAccessSerializer(
         }
 
 
-class PartnerSalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
+class PartnerSalesVoucherAccessSerializer(
+    SalesVoucherCreateSerializer, RoyaltyLedgerInfoSerializer
+):
     """
     {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
 
@@ -188,57 +174,6 @@ class PartnerSalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
     rows = SalesVoucherRowAccessSerializer(many=True)
     pdf_url = serializers.ReadOnlyField()
     view_url = serializers.ReadOnlyField()
-    royalty_ledger_info = RoyaltyLedgerInfo(required=False)
-
-    extra_entries = None
-
-    @transaction.atomic
-    def validate_royalty_ledger_info(self, royalty_ledger_info):
-        try:
-            royalty_ledger_info["royalty_expense_account"] = Account.objects.get(
-                id=royalty_ledger_info["royalty_expense_account_id"],
-                company_id=self.context["request"].company_id,
-            )
-        except Account.DoesNotExist:
-            raise ValidationError("Royalty expense account not found.")
-
-        for royalty_party in royalty_ledger_info["parties"]:
-            try:
-                party = Party.objects.get(
-                    tax_registration_number=royalty_party["tax_registration_number"],
-                    company_id=self.context["request"].company_id,
-                )
-            except Party.DoesNotExist:
-                party = Party(
-                    name=royalty_party["name"],
-                    tax_registration_number=royalty_party["tax_registration_number"],
-                    company_id=self.context["request"].company_id,
-                )
-                party.save()
-            except Party.MultipleObjectsReturned:
-                raise ValidationError("Multiple parties found.")
-
-            royalty_party["payable_account"] = party.supplier_account
-
-            try:
-                party_royalty_tds_account = Account.objects.get(
-                    source=party.supplier_account,
-                    category_id=royalty_ledger_info["tds_category_id"],
-                    company_id=self.context["request"].company_id,
-                )
-            except Account.DoesNotExist:
-                party_royalty_tds_account = Account(
-                    name="Royalty TDS - " + party.name,
-                    source=party.supplier_account,
-                    category_id=royalty_ledger_info["tds_category_id"],
-                    company_id=self.context["request"].company_id,
-                )
-                party_royalty_tds_account.save()
-            except Account.MultipleObjectsReturned:
-                raise ValidationError("Multiple party royalty TDS accounts found.")
-            royalty_party["royalty_tds_account"] = party_royalty_tds_account
-
-        return royalty_ledger_info
 
     def create(self, validated_data):
         royalty_ledger_info = validated_data.pop("royalty_ledger_info", None)

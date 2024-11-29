@@ -22,7 +22,10 @@ from apps.voucher.serializers.mixins import (
     DiscountObjectTypeSerializerMixin,
 )
 from awecount.libs.exception import UnprocessableException
-from awecount.libs.serializers import StatusReversionMixin
+from awecount.libs.serializers import (
+    RoyaltyLedgerInfoSerializer,
+    StatusReversionMixin,
+)
 
 
 class PartnerItemSerializer(serializers.Serializer):
@@ -337,8 +340,36 @@ class PartnerCreditNoteRowSerializer(
         }
 
 
-class PartnerCreditNoteCreateSerializer(CreditNoteCreateSerializer):
+class PartnerCreditNoteCreateSerializer(
+    CreditNoteCreateSerializer, RoyaltyLedgerInfoSerializer
+):
     rows = PartnerCreditNoteRowSerializer(many=True)
+
+    def create(self, validated_data):
+        royalty_ledger_info = validated_data.pop("royalty_ledger_info", None)
+        if royalty_ledger_info:
+            extra_entries = []
+            for party in royalty_ledger_info["parties"]:
+                extra_entries.append(
+                    [
+                        "cr",
+                        royalty_ledger_info["royalty_expense_account"],
+                        party["royalty_amount"],
+                    ]
+                )
+                extra_entries.append(
+                    ["dr", party["royalty_tds_account"], party["tds_amount"]]
+                )
+                extra_entries.append(
+                    [
+                        "dr",
+                        party["payable_account"],
+                        party["royalty_amount"] - party["tds_amount"],
+                    ]
+                )
+            validated_data["extra_entries"] = extra_entries
+        return super().create(validated_data)
+
 
 
 class PartnerDebitNoteRowSerializer(

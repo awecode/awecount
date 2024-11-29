@@ -1,5 +1,8 @@
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from apps.ledger.models.base import Account, Party
 
 
 class ShortNameChoiceSerializer(serializers.Serializer):
@@ -50,3 +53,76 @@ class DisableCancelEditMixin(object):
             raise ValidationError(
                 {"detail": "Cancelled vouchers cannot be reverted."},
             )
+
+
+class RoyaltyLedgerInfoPartySerializer(serializers.Serializer):
+    tax_registration_number = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+
+    royalty_amount = serializers.FloatField(required=True)
+    tds_amount = serializers.FloatField(required=True)
+
+    payable_account = None
+    royalty_tds_account = None
+
+
+class RoyaltyLedgerInfo(serializers.Serializer):
+    royalty_expense_account_id = serializers.IntegerField(required=True)
+    tds_category_id = serializers.IntegerField(required=True)
+    parties = RoyaltyLedgerInfoPartySerializer(many=True, required=True)
+
+    royalty_expense_account = None
+
+
+class RoyaltyLedgerInfoSerializer(serializers.Serializer):
+    royalty_ledger_info = RoyaltyLedgerInfo(required=False)
+
+    extra_entries = None
+
+    @transaction.atomic
+    def validate_royalty_ledger_info(self, royalty_ledger_info):
+        try:
+            royalty_ledger_info["royalty_expense_account"] = Account.objects.get(
+                id=royalty_ledger_info["royalty_expense_account_id"],
+                company_id=self.context["request"].company_id,
+            )
+        except Account.DoesNotExist:
+            raise ValidationError("Royalty expense account not found.")
+
+        for royalty_party in royalty_ledger_info["parties"]:
+            try:
+                party = Party.objects.get(
+                    tax_registration_number=royalty_party["tax_registration_number"],
+                    company_id=self.context["request"].company_id,
+                )
+            except Party.DoesNotExist:
+                party = Party(
+                    name=royalty_party["name"],
+                    tax_registration_number=royalty_party["tax_registration_number"],
+                    company_id=self.context["request"].company_id,
+                )
+                party.save()
+            except Party.MultipleObjectsReturned:
+                raise ValidationError("Multiple parties found.")
+
+            royalty_party["payable_account"] = party.supplier_account
+
+            try:
+                party_royalty_tds_account = Account.objects.get(
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+            except Account.DoesNotExist:
+                party_royalty_tds_account = Account(
+                    name="Royalty TDS - " + party.name,
+                    source=party.supplier_account,
+                    category_id=royalty_ledger_info["tds_category_id"],
+                    company_id=self.context["request"].company_id,
+                )
+                party_royalty_tds_account.save()
+            except Account.MultipleObjectsReturned:
+                raise ValidationError("Multiple party royalty TDS accounts found.")
+            royalty_party["royalty_tds_account"] = party_royalty_tds_account
+
+        return royalty_ledger_info
