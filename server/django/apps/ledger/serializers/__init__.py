@@ -464,6 +464,7 @@ class TransactionEntrySerializer(serializers.Serializer):
 
 class TransactionReportSerializer(serializers.ModelSerializer):
     voucher_no = serializers.ReadOnlyField(source="journal_entry.source_voucher_no")
+    source_id = serializers.ReadOnlyField(source="journal_entry.source_voucher_id")
     date = serializers.ReadOnlyField(source="journal_entry.date")
     account = AccountMinSerializer()
     source_type = serializers.SerializerMethodField()
@@ -495,6 +496,7 @@ class TransactionReportSerializer(serializers.ModelSerializer):
             "cr_amount",
             "account_name",
             "category_id",
+            "source_id",
         ]
 
 
