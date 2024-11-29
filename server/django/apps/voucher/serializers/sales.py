@@ -780,7 +780,7 @@ class ChallanCreateSerializer(StatusReversionMixin, serializers.ModelSerializer)
     def validate(self, data):
         if (
             not data.get("party")
-            and data.get("mode") == "Credit"
+            and not data.get("payment_mode")
             and data.get("status") != "Draft"
         ):
             raise ValidationError(
