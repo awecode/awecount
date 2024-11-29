@@ -149,7 +149,7 @@ class PartnerPurchaseVoucherCreateSerializer(
 
         if (
             not data.get("party")
-            and data.get("mode") == "Credit"
+            and not data.get("payment_mode")
             and data.get("status") != "Draft"
         ):
             raise ValidationError(
@@ -241,7 +241,7 @@ class PartnerPurchaseVoucherCreateSerializer(
                 )
                 category = row_item.get("category")
                 if category:
-                    if(category.company_id != self.context["request"].company_id):
+                    if category.company_id != self.context["request"].company_id:
                         raise ValidationError(
                             "Category does not belong to the company."
                         )
