@@ -19,12 +19,13 @@
                   <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-md">
-                  <FiltersOptions v-model="filters.account" label="Account"
-                    endpoint="v1/accounts/choices" :fetchOnMount="true" :options="filterOptions.collections?.accounts" />
+                  <FiltersOptions v-model="filters.account" label="Account" endpoint="v1/accounts/choices"
+                    :fetchOnMount="true" :options="filterOptions.collections?.accounts" />
                   <FiltersOptions v-model="filters.source" label="Transaction Type"
-                    :options="filterOptions.collections?.transaction_types" endpoint="v1/transaction/create-defaults/transaction_types" />
-                  <FiltersOptions v-model="filters.category" label="Category"
-                    :fetchOnMount="true" endpoint="v1/categories/choices" :options="filterOptions.collections?.categories"/>
+                    :options="filterOptions.collections?.transaction_types"
+                    endpoint="v1/transaction/create-defaults/transaction_types" />
+                  <FiltersOptions v-model="filters.category" label="Category" :fetchOnMount="true"
+                    endpoint="v1/categories/choices" :options="filterOptions.collections?.categories" />
 
                   <div>
                     <h5 class="text-subtitle2 text-grey-8">Group By:</h5>
@@ -51,6 +52,18 @@
           </q-btn>
         </div>
       </template>
+      <template v-slot:body-cell-voucher_no="props">
+        <q-td :props="props">
+          <RouterLink
+            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
+            style="
+                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
+                          props.row.voucher_no
+                        }}
+          </RouterLink>
+          <span v-else> {{ props.row.voucher_no }}</span>
+        </q-td>
+      </template>
       <template v-slot:body-cell-account="props">
         <q-td :props="props">
           <RouterLink style="text-decoration: none" target="_blank"
@@ -62,7 +75,9 @@
       </template>
       <template v-slot:body-cell-type="props">
         <q-td :props="props">
-          <RouterLink v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])" style="
+          <RouterLink
+            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
+            style="
                         text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
                           props.row.source_type
                         }}
@@ -197,19 +212,13 @@ export default {
         return `/payment-receipt/${row.source_id}/view/`
       if (source_type === 'Cheque Issue')
         return `/cheque-issue/${row.source_id}/`
-      if (source_type === 'Challan') return `/challan/${row.source_id}/`
-      if (source_type === 'Account Opening Balance')
-        return `/account-opening-balance/${row.source_id}/`
-      if (source_type === 'Item') return `/items/details/${row.source_id}/`
-      // added
+      if (source_type === 'Account Opening Balance') return
       if (source_type === 'Fund Transfer')
-        return `/bank/fund/fund-transfer/${row.source_id}/edit/`
-      if (source_type === 'Bank Cash Deposit')
-        return `/bank/cash/cash-deposit/${row.source_id}/edit/`
+        return `/fund-transfer/${row.source_id}`
+      if (source_type === 'Bank Cash Deposit') return `/cash-deposit/${row.source_id}`
       if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
       if (source_type === 'Inventory Adjustment Voucher')
         return `/items/inventory-adjustment/${row.source_id}/view`
-      debugger
       console.error(source_type + ' not handled!')
     }
     const getPermissionsWithSourceType = {
@@ -226,7 +235,8 @@ export default {
       'Fund Transfer': 'FundTransferModify',
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
-      'Item': 'ItemView'
+      'Item': 'ItemView',
+      'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
     }
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
   },
