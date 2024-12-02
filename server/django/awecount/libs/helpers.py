@@ -1,3 +1,7 @@
+from django.core.signing import BadSignature, Signer
+from django.utils.crypto import constant_time_compare
+
+
 def merge_dicts(dict1, dict2):
     for k in set(dict1.keys()).union(dict2.keys()):
         if k in dict1 and k in dict2:
@@ -19,3 +23,22 @@ def choice_parser(options, add_blank=False):
     if add_blank:
         data.insert(0, {"value": "", "text": "--------"})
     return data
+
+
+def get_verification_hash(value: str):
+    signer = Signer(salt="awecount.verification.hash")
+    return signer.sign(value)
+
+
+def check_verification_hash(hash_to_check, value):
+    """
+    Checks the received verification hash against this order number.
+    Returns False if the verification failed, True otherwise.
+    """
+    signer = Signer(salt="awecount.verification.hash")
+    try:
+        signed_number = signer.unsign(hash_to_check)
+    except BadSignature:
+        return False
+
+    return constant_time_compare(signed_number, value)

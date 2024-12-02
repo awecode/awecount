@@ -14,7 +14,7 @@ from rest_framework import filters as rf_filters
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
-from rest_framework.exceptions import ValidationError as RESTValidationError
+from rest_framework.exceptions import ValidationError as RESTValidationError, AuthenticationFailed
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -97,6 +97,7 @@ from awecount.libs.CustomViewSet import (
     GenericSerializer,
 )
 from awecount.libs.exception import UnprocessableException
+from awecount.libs.helpers import check_verification_hash
 from awecount.libs.mixins import (
     CancelPurchaseVoucherMixin,
     DeleteRows,
@@ -146,7 +147,6 @@ from ..serializers import (
     SalesDiscountMinSerializer,
     SalesDiscountSerializer,
     SalesRowSerializer,
-    SalesVoucherAccessSerializer,
     SalesVoucherChoiceSerializer,
     SalesVoucherCreateSerializer,
     SalesVoucherDetailSerializer,
@@ -260,8 +260,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         journals = sale_voucher.journal_entries()
         return Response(SalesJournalEntrySerializer(journals, many=True).data)
 
-    @action(detail=True)
-    def details(self, request, pk):
+    def get_voucher_details(self, pk):
         qs = (
             super()
             .get_queryset()
@@ -287,12 +286,30 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             )
         )
         data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
-        data["can_update_issued"] = request.company.enable_sales_invoice_update
+        data["can_update_issued"] = self.request.company.enable_sales_invoice_update
         data["available_payment_modes"] = GenericSerializer(
-            PaymentMode.objects.filter(company=request.company, enabled_for_sales=True),
+            PaymentMode.objects.filter(
+                company=self.request.company, enabled_for_sales=True
+            ),
             many=True,
         ).data
-        return Response(data)
+        return data
+
+    @action(detail=True)
+    def details(self, request, pk):
+        return Response(self.get_voucher_details(pk))
+    
+    @action(detail=True, permission_classes=[], url_path="details-by-hash")
+    def details_by_hash(self, request, pk):
+        hash = request.GET.get("hash")
+        if not hash:
+            raise AuthenticationFailed("No hash provided")
+        if check_verification_hash(hash, 'sales-invoice-{}'.format(pk)) is False:
+            raise AuthenticationFailed("Invalid hash")
+        obj = SalesVoucher.objects.get(pk=pk)
+        self.request.company = obj.company
+        self.request.company_id = obj.company_id 
+        return Response(self.get_voucher_details(pk))
 
     def get_defaults(self, request=None):
         return {
