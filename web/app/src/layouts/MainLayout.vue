@@ -1,7 +1,11 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="container-padding-left">
+  <q-layout
+    view="lHh Lpr lFf"
+    :class="{ 'container-padding-left': store.isLoggedIn }"
+  >
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
     <q-header
+      v-if="store.isLoggedIn"
       elevated
       class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md"
     >
@@ -107,6 +111,7 @@
       </q-toolbar>
     </q-header>
     <q-drawer
+      v-if="store.isLoggedIn"
       drawer
       persistent
       overlay

@@ -9,7 +9,7 @@
             </span>
           </div>
         </q-card-section>
-        <ViewerHeader2 :fields="fields" :changeModes="true" @updateMode="(newValue) => updatePaymentMode(newValue)"
+        <ViewerHeader2 :fields="fields" :changeModes="isLoggedIn" @updateMode="(newValue) => updatePaymentMode(newValue)"
           :paymentModeOptions="paymentModeOptions" />
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
@@ -53,7 +53,7 @@
               icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
         </div>
-        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end" v-if="isLoggedIn">
           <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0)}`
@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import ViewerHeader2 from 'src/components/viewer/ViewerHeader2.vue'
+import { useLoginStore } from 'src/stores/login-info.js'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
@@ -118,6 +118,7 @@ export default {
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const errors = ref({})
+    const isLoggedIn = useLoginStore().isLoggedIn
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
@@ -215,11 +216,15 @@ export default {
       checkPermissions,
       useGeneratePdf,
       loading,
-      errors
+      errors,
+      isLoggedIn,
     }
   },
   created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    let endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    if(!this.isLoggedIn && this.$route.query.hash) {
+      endpoint = `/v1/sales-voucher/${this.$route.params.id}/details-by-hash/?hash=${this.$route.query.hash}`
+    }
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
