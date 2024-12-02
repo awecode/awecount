@@ -637,6 +637,7 @@ class TransactionViewSet(
                     "name": account.name,
                     "code": account.code,
                 },
+                "has_transactions": account.today_dr - account.today_cr != 0,
                 "opening_balance": account.total_dr
                 - account.total_cr
                 - (account.today_dr - account.today_cr),
