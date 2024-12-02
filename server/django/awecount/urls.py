@@ -34,7 +34,7 @@ router.register(
 )
 router.register(
     "partner/party",
-    partner_ledger.PartnerPartyViewset,
+    partner_ledger.PartnerPartyViewSet,
     basename="partner-party",
 )
 router.register(
@@ -45,14 +45,26 @@ router.register(
 
 router.register(
     "partner/purchase-voucher",
-    partner_voucher.PartnerPurchaseVoucherViewset,
+    partner_voucher.PartnerPurchaseVoucherViewSet,
     basename="partner-purchase-voucher",
 )
 
 router.register(
     "partner/purchase-discount",
-    partner_voucher.PartnerPurchaseDiscountViewset,
+    partner_voucher.PartnerPurchaseDiscountViewSet,
     basename="partner-purchase-discount",
+)
+
+router.register(
+    "partner/credit-note",
+    partner_voucher.PartnerCreditNoteViewSet,
+    basename="partner-credit-note",
+)
+
+router.register(
+    "partner/debit-note",
+    partner_voucher.PartnerDebitNoteViewSet,
+    basename="partner-debit-note",
 )
 
 router.register(

@@ -1181,7 +1181,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                 ["dr", row.item.account, int(row.quantity), row.rate],
             )
 
-    def apply_transactions(self):
+    def apply_transactions(self, extra_entries=None):
         voucher_meta = self.get_voucher_meta()
 
         # import ipdb; ipdb.set_trace()
@@ -1255,6 +1255,9 @@ class CreditNote(TransactionModel, InvoiceModel):
             entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        if extra_entries:
+            set_ledger_transactions(self, self.date, *extra_entries, clear=True)
 
         if (
             self.payment_mode
