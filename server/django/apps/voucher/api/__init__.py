@@ -316,7 +316,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         details = self.get_voucher_details(pk)
         return Response({**details, "company": CompanySerializer(obj.company).data})
 
-    @action(detail=True, url_path="send-pdf", methods=["POST"])
+    @action(detail=True, url_path="send-invoice-in-email", methods=["POST"])
     def send_invoice_in_email(self, request, pk):
         serializer = SendInvoiceInEmailRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
