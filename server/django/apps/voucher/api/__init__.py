@@ -37,7 +37,7 @@ from apps.product.serializers import (
 )
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeMinSerializer
-from apps.users.serializers import FiscalYearSerializer
+from apps.users.serializers import CompanySerializer, FiscalYearSerializer
 from apps.voucher.filters import (
     ChallanFilterSet,
     CreditNoteFilterSet,
@@ -313,7 +313,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         obj = SalesVoucher.objects.get(pk=pk)
         self.request.company = obj.company
         self.request.company_id = obj.company_id
-        return Response(self.get_voucher_details(pk))
+        details = self.get_voucher_details(pk)
+        return Response({**details, "company": CompanySerializer(obj.company).data})
 
     @action(detail=True, url_path="send-pdf", methods=["POST"])
     def send_invoice_in_email(self, request, pk):
