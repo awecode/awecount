@@ -53,19 +53,19 @@
               icon="cancel" @click.prevent="() => (isDeleteOpen = true)" :loading="loading" />
           </div>
         </div>
-        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end" v-if="isLoggedIn">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
+        <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0)}`
             }` : ''}`
             " icon="print" />
-          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
-          <q-btn color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
+          <q-btn  v-if="isLoggedIn" color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
+          <q-btn v-if="isLoggedIn && fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
@@ -195,7 +195,9 @@ export default {
     }
 
     const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher)
+      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher,
+        isLoggedIn ? null : fields.value.company
+      )
       usePrintPdfWindow(printData)
     }
 
