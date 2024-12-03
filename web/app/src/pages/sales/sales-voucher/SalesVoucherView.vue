@@ -9,8 +9,8 @@
             </span>
           </div>
         </q-card-section>
-        <ViewerHeader2 :fields="fields" :changeModes="isLoggedIn" @updateMode="(newValue) => updatePaymentMode(newValue)"
-          :paymentModeOptions="paymentModeOptions" />
+        <ViewerHeader2 :fields="fields" :changeModes="isLoggedIn"
+          @updateMode="(newValue) => updatePaymentMode(newValue)" :paymentModeOptions="paymentModeOptions" />
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
         <q-card-section>
@@ -64,7 +64,10 @@
             : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
-          <q-btn  v-if="isLoggedIn" color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
+          <q-btn v-if="isLoggedIn && fields.email" @click="isSendInvoiceModalOpen = true" label="Send email"
+            data-testid="send-email" />
+          <q-btn v-if="isLoggedIn" color="blue-7" label="Materialized View" icon="mdi-table" @click="sendInvoiceInEmail"
+            :to="`/sales-voucher/${fields?.id}/mv`" />
           <q-btn v-if="isLoggedIn && fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
@@ -88,6 +91,26 @@
         </q-dialog>
       </div>
     </div>
+
+    <q-dialog v-model="isSendInvoiceModalOpen" @hide="resetSendInvoicePayload">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-grey-4">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Send invoice in email</span>
+            <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md">
+          <q-checkbox v-model="sendInvoicePayload.attach_pdf" label="Attach PDF"></q-checkbox>
+          <q-file v-model="sendInvoicePayload.attachments" label="Attachments" multiple></q-file>
+          <div class="row q-mt-lg justify-end">
+            <q-btn label="Send" color="orange-5" class="q-mt-md" @click="sendInvoiceInEmail"></q-btn>
+          </div>
+        </q-card-section>
+
+
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -201,6 +224,43 @@ export default {
       usePrintPdfWindow(printData)
     }
 
+    const isSendInvoiceModalOpen: Ref<boolean> = ref(false)
+
+    const sendInvoicePayload: Ref<object> = ref({
+      attach_pdf: true,
+      attachments: [],
+    })
+
+    function resetSendInvoicePayload() {
+      sendInvoicePayload.value = {
+        attach_pdf: true,
+        attachments: [],
+      }
+    }
+
+    function sendInvoiceInEmail() {
+      const endpoint = `v1/sales-voucher/${fields.value.id}/send-invoice-in-email/`
+      const formData = new FormData()
+      formData.append('attach_pdf', sendInvoicePayload.value.attach_pdf ? 'true' : 'false')
+      sendInvoicePayload.value.attachments.forEach((file: File) => {
+        formData.append('attachments', file)
+      })
+      useApi(endpoint, {
+        body: formData,
+        method: 'POST',
+      })
+        .then(() => {
+          isSendInvoiceModalOpen.value = false
+          resetSendInvoicePayload()
+          $q.notify({
+            color: 'positive',
+            message: 'Invoice Sent!',
+            icon: 'check_circle',
+          })
+        })
+        .catch((err) => console.log('err from the api', err))
+    }
+
     return {
       allowPrint: false,
       bodyOnly: false,
@@ -220,11 +280,15 @@ export default {
       loading,
       errors,
       isLoggedIn,
+      isSendInvoiceModalOpen,
+      sendInvoicePayload,
+      sendInvoiceInEmail,
+      resetSendInvoicePayload,
     }
   },
   created() {
     let endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
-    if(!this.isLoggedIn && this.$route.query.hash) {
+    if (!this.isLoggedIn && this.$route.query.hash) {
       endpoint = `/v1/sales-voucher/${this.$route.params.id}/details-by-hash/?hash=${this.$route.query.hash}`
     }
     useApi(endpoint, { method: 'GET' }, false, true)
