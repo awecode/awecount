@@ -1,15 +1,19 @@
 import datetime
 from copy import deepcopy
 from decimal import Decimal
+from io import BytesIO
 from typing import Union
 
 from auditlog.registry import auditlog
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.db import models
 from django.db.models import Prefetch, Q
+from django.template.loader import render_to_string
 from django.utils import timezone
+from xhtml2pdf import pisa
 
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import (
@@ -31,7 +35,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import Company, FiscalYear, User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import merge_dicts
+from awecount.libs.helpers import get_verification_hash, merge_dicts
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -712,6 +716,89 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(data, conf["data"]))
         merged_data = dict(merge_dicts(merged_data, conf["sales_invoice_data"]))
         return merged_data, conf["sales_invoice_endpoint"]
+
+    def send_invoice_in_email(self, attachments, attach_pdf, origin):
+        if not self.email:
+            raise Exception("Email is required to send invoice in email")
+        pdf_stream = None
+        if attach_pdf:
+            html_template = render_to_string(
+                "sales_invoice_pdf.html",
+                {
+                    "invoice": {
+                        "company": {
+                            "name": self.company.name,
+                            "address": self.company.address,
+                            "contact": self.company.contact_no,
+                            "email": ", ".join(self.company.emails),
+                        },
+                        "customer_name": self.customer_name,
+                        "address": self.address,
+                        "fiscal_year": self.fiscal_year.name,
+                        "date": self.date,
+                        "miti": nepdate.string_from_tuple(
+                            nepdate.ad2bs(str(self.date))
+                        ),
+                        "payment_mode": self.payment_mode.name
+                        if self.payment_mode
+                        else "Credit",
+                        "rows": [
+                            {
+                                "item": {
+                                    "hs_code": row.item.code,
+                                    "name": row.item.name,
+                                },
+                                "unit": row.unit.name,
+                                "quantity": row.quantity,
+                                "rate": row.rate,
+                                "amount": row.quantity * row.rate,
+                            }
+                            for row in self.rows.all()
+                        ],
+                        "in_words": self.amount_in_words,
+                        "voucher_meta": self.get_voucher_meta(),
+                        "voucher_no": self.voucher_no,
+                        "remarks": self.remarks,
+                    }
+                },
+            )
+
+            pdf_stream = BytesIO()
+            pdf_status = pisa.CreatePDF(
+                src=BytesIO(html_template.encode("utf-8")),
+                dest=pdf_stream,
+            )
+
+            if pdf_status.err:
+                raise Exception("Error generating PDF")
+            pdf_stream.seek(0)
+
+        pk_hash = get_verification_hash(f"sales-invoice-{self.pk}")
+        invoice_url = f"{origin}/sales-voucher/{self.pk}/view/?hash={pk_hash}"
+        email_body = f'View it online <a href="{invoice_url}">here</a>'
+        if attach_pdf:
+            email_body += (
+                "<br> You can also view the invoice in PDF format attached below."
+            )
+
+        email = EmailMessage(
+            subject="Sales Invoice {}".format(self.voucher_no),
+            body=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[self.email],
+        )
+        if attach_pdf:
+            email.attach(
+                f"Sales Invoice {self.voucher_no}.pdf",
+                pdf_stream.getvalue(),
+                "application/pdf",
+            )
+
+        for attachment in attachments:
+            email.attach(attachment.name, attachment.file.read(), attachment.content_type)
+
+        email.content_subtype = "html"
+        email.send()
 
     @property
     def pdf_url(self):

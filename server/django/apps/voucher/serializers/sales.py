@@ -591,6 +591,11 @@ class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
     view_url = serializers.ReadOnlyField()
 
 
+class SendInvoiceInEmailRequestSerializer(serializers.Serializer):
+    attachments = serializers.ListField(child=serializers.FileField(), default=list)
+    attach_pdf = serializers.BooleanField()
+
+
 class SalesAgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesAgent

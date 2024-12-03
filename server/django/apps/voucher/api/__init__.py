@@ -9,12 +9,13 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils import timezone
 from django_filters import rest_framework as filters
+from django_q.tasks import async_task
 from openpyxl.writer.excel import save_virtual_workbook
 from rest_framework import filters as rf_filters
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
-from rest_framework.exceptions import ValidationError as RESTValidationError, AuthenticationFailed
+from rest_framework.exceptions import APIException, AuthenticationFailed
+from rest_framework.exceptions import ValidationError as RESTValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -76,6 +77,9 @@ from apps.voucher.serializers.purchase import (
     PurchaseOrderCreateSerializer,
     PurchaseOrderListSerializer,
     PurchaseVoucherRowSerializer,
+)
+from apps.voucher.serializers.sales import (
+    SendInvoiceInEmailRequestSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
     PurchaseCreateSettingSerializer,
@@ -298,18 +302,32 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     @action(detail=True)
     def details(self, request, pk):
         return Response(self.get_voucher_details(pk))
-    
+
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
     def details_by_hash(self, request, pk):
         hash = request.GET.get("hash")
         if not hash:
             raise AuthenticationFailed("No hash provided")
-        if check_verification_hash(hash, 'sales-invoice-{}'.format(pk)) is False:
+        if check_verification_hash(hash, "sales-invoice-{}".format(pk)) is False:
             raise AuthenticationFailed("Invalid hash")
         obj = SalesVoucher.objects.get(pk=pk)
         self.request.company = obj.company
-        self.request.company_id = obj.company_id 
+        self.request.company_id = obj.company_id
         return Response(self.get_voucher_details(pk))
+
+    @action(detail=True, url_path="send-pdf", methods=["POST"])
+    def send_invoice_in_email(self, request, pk):
+        serializer = SendInvoiceInEmailRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = self.get_object()
+        origin = request.headers.get("Origin")
+        async_task(
+            "apps.voucher.models.SalesVoucher.send_invoice_in_email",
+            obj,
+            **serializer.validated_data,
+            origin=origin,
+        )
+        return Response({})
 
     def get_defaults(self, request=None):
         return {

@@ -1,0 +1,213 @@
+{% load commafies from filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Invoice</title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .invoice-container {
+            width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .company-info {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .company-info strong {
+            font-size: 24px;
+        }
+
+        .details {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .details-table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .details-table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .totals {
+            width: 100%;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .totals-table th, .totals-table td {
+            padding: 5px;
+            text-align: right;
+        }
+
+        .totals-table th {
+            text-align: left;
+        }
+
+        .in-words {
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .spacer {
+            height: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <div class="company-info">
+                <strong><h1>{{ invoice.company.name }}</h1></strong><br>
+                {% if invoice.company.address %}
+                Address: {{ invoice.company.address }}<br>
+                {% endif %}
+                {% if invoice.company.email %}
+                Email: {{ invoice.company.email }}<br>
+                {% endif %}
+                {% if invoice.company.contact %}
+                Contact: {{ invoice.company.contact }}
+                {% endif %}
+            </div>
+            <h2>Tax Invoice</h2>
+        </div>
+
+        <div class="details">
+            <table class="details-table">
+                <tr>
+                    <td>
+                        <strong>Billed To:</strong> {{ invoice.customer_name }}<br>
+                        {% if invoice.address %}
+                            {{ invoice.address }}<br>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>INV No.:</strong> {{ invoice.fiscal_year }}-<strong>{{ invoice.voucher_no }}</strong><br>
+                        <strong>Date:</strong> {{ invoice.date }}<br>
+                        <strong>Miti:</strong> {{ invoice.miti }}<br>
+                        <strong>Mode:</strong> {{ invoice.payment_mode }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>H.S. Code</th>
+                    <th>Particular</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Amount(NRS)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in invoice.rows %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.item.hs_code }}</td>
+                        <td>{{ row.item.name }}</td>
+                        <td>{{ row.quantity }} {{ row.unit }}</td>
+                        <td>{{ row.rate }}</td>
+                        <td>{{ row.amount }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="in-words">
+                <strong>In words:</strong><br>
+                {{ invoice.in_words | capfirst }}
+            </div>
+            <table class="totals-table">
+                <tr>
+                    <th>SUB TOTAL</th>
+                    <td>{{ invoice.voucher_meta.sub_total | commafies }}</td>
+                </tr>
+                {% if invoice.voucher_meta.discount %}
+                    <tr>
+                        <th>Discount</th>
+                        <td>{{ invoice.voucher_meta.discount | commafies }}</td>
+                    </tr>
+                {% endif %}
+                {% if invoice.voucher_meta.tax %}
+                    <tr>
+                        <th>TAX</th>
+                        <td>{{ invoice.voucher_meta.tax | commafies }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th>GRAND TOTAL</th>
+                    <td>{{ invoice.voucher_meta.grand_total | commafies }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {% if invoice.remarks %}
+            <div class="footer">
+                <strong>Remarks:</strong> {{ invoice.remarks }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
