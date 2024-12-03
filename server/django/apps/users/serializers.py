@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from apps.users.models import Company, FiscalYear, Role, User
+from apps.company.models import Company, FiscalYear
+from apps.users.models import Role, User
 
 
 class CompanySerializer(serializers.ModelSerializer):

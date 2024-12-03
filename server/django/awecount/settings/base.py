@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "apps.product",
     "apps.bank",
     "apps.aggregator",
+    "apps.company",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
