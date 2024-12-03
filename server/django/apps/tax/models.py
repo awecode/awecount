@@ -1,7 +1,7 @@
 from django.db import models
 
+from apps.company.models import Company
 from apps.ledger.models import Account, JournalEntry, set_ledger_transactions
-from apps.users.models import Company
 
 
 class TaxScheme(models.Model):

@@ -7,6 +7,7 @@ from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 
+from apps.company.models import Company, FiscalYear
 from apps.ledger.models import handle_company_creation
 from apps.product.models import Brand, Item, Unit
 from apps.product.models import Category as InventoryCategory
@@ -15,7 +16,7 @@ from apps.voucher.models.voucher_settings import (
     handle_company_creation as create_settings,
 )
 
-from .models import AccessKey, Company, FiscalYear, Role, User
+from .models import AccessKey, Role, User
 
 admin.site.unregister(Group)
 

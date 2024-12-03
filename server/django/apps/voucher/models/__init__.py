@@ -12,6 +12,7 @@ from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from apps.bank.models import BankAccount, ChequeDeposit
+from apps.company.models import Company, FiscalYear
 from apps.ledger.models import (
     JournalEntry,
     Party,
@@ -28,7 +29,7 @@ from apps.product.models import (
     set_inventory_transactions,
 )
 from apps.tax.models import TaxScheme
-from apps.users.models import Company, FiscalYear, User
+from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
 from awecount.libs.helpers import merge_dicts

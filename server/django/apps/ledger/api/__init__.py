@@ -15,11 +15,11 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from apps.aggregator.views import qs_to_xls
+from apps.company.models import FiscalYear
 from apps.ledger.filters import AccountFilterSet, CategoryFilterSet
 from apps.ledger.models.base import AccountClosing, Transaction
 from apps.ledger.resources import TransactionGroupResource, TransactionResource
 from apps.tax.models import TaxScheme
-from apps.users.models import FiscalYear
 from apps.voucher.models import PurchaseVoucher, SalesVoucher
 from apps.voucher.serializers import SaleVoucherOptionsSerializer
 from awecount.libs.CustomViewSet import (
@@ -444,7 +444,12 @@ class TransactionViewSet(
     filter_backends = [DjangoFilterBackend, rf_filters.SearchFilter]
     # filterset_class = TransactionFilterSet
     search_fields = ["account__name", "account__category__name"]
-    exculde_content_type_models = ["salesvoucher", "purchasevoucher", "creditnote", "debitnote"]
+    exculde_content_type_models = [
+        "salesvoucher",
+        "purchasevoucher",
+        "creditnote",
+        "debitnote",
+    ]
     journal_entry_content_type = JournalEntry.objects.values_list(
         "content_type", flat=True
     ).distinct()

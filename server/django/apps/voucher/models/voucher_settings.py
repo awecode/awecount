@@ -3,8 +3,8 @@ from django.db import models
 from django.dispatch import receiver
 
 from apps.bank.models import BankAccount
+from apps.company.models import Company
 from apps.product.models import InventorySetting
-from apps.users.models import Company
 from apps.users.signals import company_creation
 
 

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.users.models import Company
+from apps.company.models import Company
 
 DISCOUNT_TYPES = (
     ("Amount", "Amount"),
