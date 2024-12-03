@@ -59,7 +59,7 @@
             : `# ${(fields?.print_count || 0)}`
             }` : ''}`
             " icon="print" />
-          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) || !isLoggedIn
             ? ''
             : `# ${(fields?.print_count || 0) + 1}`
             }`
