@@ -36,9 +36,7 @@ export default route(function (/* { store, ssrContext } */) {
   })
   // Token validation
 
-  const hashPathRegexes = [
-    '^/sales-voucher/\\d+/view$',
-  ]
+  const hashPathRegexes = ['^/sales-voucher/\\d+/view/?$']
 
   function isHashPath(path: string) {
     return hashPathRegexes.some((regex) => new RegExp(regex).test(path))
