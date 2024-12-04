@@ -1,8 +1,6 @@
 from crum import get_current_user
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import models
-
-User = get_user_model()
 
 
 class TimeAuditModel(models.Model):
@@ -25,14 +23,14 @@ class UserAuditModel(models.Model):
     """To path when the record was created and last modified"""
 
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="%(class)s_created_by",
         verbose_name="Created By",
         null=True,
     )
     updated_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="%(class)s_updated_by",
         verbose_name="Last Modified By",
