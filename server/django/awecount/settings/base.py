@@ -22,13 +22,13 @@ INSTALLED_APPS = [
     "django_q",
     "dbbackup",
     "apps.users",
+    "apps.company",
     "apps.voucher",
     "apps.ledger",
     "apps.tax",
     "apps.product",
     "apps.bank",
     "apps.aggregator",
-    "apps.company",
     "apps.api",
 ]
 

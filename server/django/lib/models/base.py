@@ -1,7 +1,7 @@
-from django.db import models
+from .mixins import TimeAuditModel
 
 
-class BaseModel(models.Model):
+class BaseModel(TimeAuditModel):
     class Meta:
         abstract = True
 

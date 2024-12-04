@@ -251,15 +251,16 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
+        "alternate_email",
         "tax_registration_number",
     )
     list_display = (
         "name",
         "address",
-        "contact_no",
-        "emails",
+        "phone",
+        "email",
         "tax_registration_number",
     )
     list_filter = ("organization_type",)
