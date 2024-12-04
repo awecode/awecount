@@ -55,7 +55,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-    roles = models.ManyToManyField(Role, blank=True, related_name="users")
+    permissions = models.ManyToManyField(Role, blank=True, related_name="users")
     company = models.ForeignKey(
         Company, on_delete=models.SET_NULL, related_name="users", null=True
     )
@@ -70,7 +70,7 @@ class User(AbstractBaseUser):
     @cached_property
     def role_modules(self):
         modules = []
-        for role in self.roles.all():
+        for role in self.permissions.all():
             modules.extend(role.modules)
         return modules
 
