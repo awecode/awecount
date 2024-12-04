@@ -16,6 +16,7 @@ from django.utils import timezone
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
+from apps.company.models import Company, FiscalYear
 from apps.ledger.models import (
     JournalEntry,
     Party,
@@ -32,7 +33,7 @@ from apps.product.models import (
     set_inventory_transactions,
 )
 from apps.tax.models import TaxScheme
-from apps.users.models import Company, FiscalYear, User
+from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
 from awecount.libs.helpers import get_verification_hash, merge_dicts
@@ -1259,7 +1260,7 @@ class CreditNote(TransactionModel, InvoiceModel):
                 ["dr", row.item.account, int(row.quantity), row.rate],
             )
 
-    def apply_transactions(self):
+    def apply_transactions(self, extra_entries=None):
         voucher_meta = self.get_voucher_meta()
 
         # import ipdb; ipdb.set_trace()
@@ -1333,6 +1334,9 @@ class CreditNote(TransactionModel, InvoiceModel):
             entries.append(["cr", cr_acc, row_total])
 
             set_ledger_transactions(row, self.date, *entries, clear=True)
+
+        if extra_entries:
+            set_ledger_transactions(self, self.date, *extra_entries, clear=True)
 
         if (
             self.payment_mode

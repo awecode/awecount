@@ -1,6 +1,8 @@
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.users.models import AccessKey, Company, User
+from apps.api.models import AccessKey
+from apps.company.models import Company
+from apps.users.models import User
 
 
 class CompanyMiddleware(object):

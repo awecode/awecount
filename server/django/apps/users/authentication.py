@@ -1,6 +1,6 @@
 from rest_framework import authentication, exceptions
 
-from apps.users.models import AccessKey
+from apps.api.models import AccessKey
 
 
 class AccessKeyAuthentication(authentication.BaseAuthentication):

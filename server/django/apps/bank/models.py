@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework.exceptions import ValidationError as RestValidatoinError
 
+from apps.company.models import Company
 from apps.ledger.models import (
     Account,
     JournalEntry,
@@ -11,7 +12,6 @@ from apps.ledger.models import (
     TransactionModel,
     set_ledger_transactions,
 )
-from apps.users.models import Company
 from awecount.libs import wGenerator
 
 

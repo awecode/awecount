@@ -7,13 +7,19 @@ from rest_framework.response import Response
 from apps.voucher.models import PurchaseVoucher
 from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.partner import (
+    PartnerCreditNoteCreateSerializer,
+    PartnerDebitNoteCreateSerializer,
     PartnerPurchaseDiscountSerializer,
     PartnerPurchaseVoucherCreateSerializer,
 )
-from awecount.libs.mixins import CancelPurchaseVoucherMixin
+from awecount.libs.CustomViewSet import CompanyViewSetMixin
+from awecount.libs.mixins import (
+    CancelCreditOrDebitNoteMixin,
+    CancelPurchaseVoucherMixin,
+)
 
 
-class PartnerPurchaseVoucherViewset(
+class PartnerPurchaseVoucherViewSet(
     viewsets.GenericViewSet,
     CancelPurchaseVoucherMixin,
     mixins.CreateModelMixin,
@@ -54,10 +60,29 @@ class PartnerPurchaseVoucherViewset(
         return qs.filter(company_id=self.request.company_id).order_by("-date", "-pk")
 
 
-class PartnerPurchaseDiscountViewset(viewsets.GenericViewSet):
+class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
     queryset = PurchaseDiscount.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
     def all(self, request):
         parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
         return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)
+
+
+class PartnerCreditNoteViewSet(
+    CompanyViewSetMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+    CancelCreditOrDebitNoteMixin,
+):
+    serializer_class = PartnerCreditNoteCreateSerializer
+
+
+class PartnerDebitNoteViewSet(
+    CompanyViewSetMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+    CancelCreditOrDebitNoteMixin,
+):
+    serializer_class = PartnerDebitNoteCreateSerializer
+    queryset = PartnerDebitNoteCreateSerializer.Meta.model.objects.all()
