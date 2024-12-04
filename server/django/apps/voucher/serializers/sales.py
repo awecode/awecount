@@ -594,6 +594,14 @@ class SalesVoucherAccessSerializer(SalesVoucherCreateSerializer):
 class SendInvoiceInEmailRequestSerializer(serializers.Serializer):
     attachments = serializers.ListField(child=serializers.FileField(), default=list)
     attach_pdf = serializers.BooleanField()
+    to = serializers.ListField(child=serializers.EmailField())
+    subject = serializers.CharField()
+    message = serializers.CharField()
+
+    def validate_to(self, value):
+        if not value:
+            raise serializers.ValidationError("To field is required.")
+        return value
 
 
 class SalesAgentSerializer(serializers.ModelSerializer):

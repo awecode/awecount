@@ -101,7 +101,7 @@ from awecount.libs.CustomViewSet import (
     GenericSerializer,
 )
 from awecount.libs.exception import UnprocessableException
-from awecount.libs.helpers import check_verification_hash
+from awecount.libs.helpers import check_verification_hash, get_verification_hash
 from awecount.libs.mixins import (
     CancelPurchaseVoucherMixin,
     DeleteRows,
@@ -301,7 +301,14 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=True)
     def details(self, request, pk):
-        return Response(self.get_voucher_details(pk))
+        details = self.get_voucher_details(pk)
+        hash = get_verification_hash("sales-invoice-{}".format(pk))
+        return Response(
+            {
+                **details,
+                "hash": hash,
+            }
+        )
 
     @action(detail=True, permission_classes=[], url_path="details-by-hash")
     def details_by_hash(self, request, pk):
@@ -321,12 +328,10 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         serializer = SendInvoiceInEmailRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = self.get_object()
-        origin = request.headers.get("Origin")
         async_task(
             "apps.voucher.models.SalesVoucher.send_invoice_in_email",
             obj,
             **serializer.validated_data,
-            origin=origin,
         )
         return Response({})
 

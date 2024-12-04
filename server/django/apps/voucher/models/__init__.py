@@ -717,9 +717,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(merged_data, conf["sales_invoice_data"]))
         return merged_data, conf["sales_invoice_endpoint"]
 
-    def send_invoice_in_email(self, attachments, attach_pdf, origin):
-        if not self.email:
-            raise Exception("Email is required to send invoice in email")
+    def send_invoice_in_email(self, to, subject, message, attachments, attach_pdf):
+        if self.status in ["Draft", "Cancelled"]:
+            raise Exception("Draft or Cancelled invoices cannot be sent!")
         pdf_stream = None
         if attach_pdf:
             html_template = render_to_string(
@@ -770,19 +770,11 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             HTML(string=html_template).write_pdf(pdf_stream)
             pdf_stream.seek(0)
 
-        pk_hash = get_verification_hash(f"sales-invoice-{self.pk}")
-        invoice_url = f"{origin}/sales-voucher/{self.pk}/view/?hash={pk_hash}"
-        email_body = f'View it online <a href="{invoice_url}">here</a>'
-        if attach_pdf:
-            email_body += (
-                "<br> You can also view the invoice in PDF format attached below."
-            )
-
         email = EmailMessage(
-            subject="Sales Invoice {}".format(self.voucher_no),
-            body=email_body,
+            subject=subject,
+            body=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[self.email],
+            to=to,
         )
         if attach_pdf:
             email.attach(
