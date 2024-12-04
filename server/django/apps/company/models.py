@@ -1,7 +1,10 @@
+import uuid
 from datetime import timedelta
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
+from lib.models import BaseModel
 
 ORGANIZATION_TYPES = (
     ("private_limited", "Private Limited"),
@@ -29,13 +32,21 @@ class FiscalYear(models.Model):
         return self.start - timedelta(days=1)
 
 
-class Company(models.Model):
+class Company(BaseModel):
     TEMPLATE_CHOICES = [
         (1, "Template 1"),
         (2, "Template 2"),
         (3, "Template 3"),
         # (4, "Template 4")
     ]
+
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        primary_key=True,
+    )
 
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
