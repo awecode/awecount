@@ -1,27 +1,14 @@
 import uuid
+import warnings
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from lib.constants import RESTRICTED_COMPANY_SLUGS
 from lib.models import BaseModel
-
-
-class FiscalYear(models.Model):
-    name = models.CharField(max_length=255)
-    start = models.DateField()
-    end = models.DateField()
-
-    def __str__(self):
-        return self.name
-
-    def includes(self, date):
-        return self.start <= date <= self.end
-
-    @property
-    def previous_day(self):
-        return self.start - timedelta(days=1)
 
 
 def slug_validator(value):
@@ -98,10 +85,6 @@ class Company(BaseModel):
     alternate_email = models.EmailField(max_length=255, blank=True, null=True)
     website = models.URLField(max_length=255, blank=True, null=True)
 
-    current_fiscal_year = models.ForeignKey(
-        FiscalYear, on_delete=models.CASCADE, related_name="companies"
-    )
-
     # config
     enable_sales_invoice_update = models.BooleanField(default=False)
     enable_cheque_deposit_update = models.BooleanField(default=False)
@@ -122,10 +105,101 @@ class Company(BaseModel):
         """Return name of the Company"""
         return self.name
 
+    @property
+    def current_fiscal_year(self):
+        return self.company_fiscalyears.filter(is_current=True).first()
+
+    @property
+    def current_fiscal_year_id(self):
+        return self.current_fiscal_year.id
+
     def get_fiscal_years(self):
-        # TODO Assign fiscal years to companies (m2m), return related fiscal years here
-        return sorted(
-            FiscalYear.objects.all(),
-            key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
-            reverse=True,
+        return self.company_fiscalyears.all()
+
+
+class CompanyBaseModel(BaseModel):
+    company = models.ForeignKey(
+        Company,
+        models.CASCADE,
+        related_name="company_%(class)s",
+    )
+
+    class Meta:
+        abstract = True
+
+
+class FiscalYear(CompanyBaseModel):
+    name = models.CharField(max_length=24)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_current = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Indicates if this is the currently selected fiscal year for the company"
+        ),
+    )
+
+    class Meta:
+        unique_together = ["company", "start_date", "end_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company", "is_current"],
+                condition=Q(is_current=True),
+                name="unique_current_fiscal_year_per_company",
+            ),
+        ]
+        verbose_name = "Company Fiscal Year"
+        verbose_name_plural = "Company Fiscal Years"
+        ordering = ("-start_date", "is_current")
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def previous_day(self):
+        return self.start_date - timedelta(days=1)
+
+    def contains_date(self, date):
+        return self.start_date <= date <= self.end_date
+
+    def includes(self, date):
+        warnings.warn(
+            "FiscalYear.includes() is deprecated, use FiscalYear.contains_date() instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
+        return self.contains_date(date)
+
+    def clean(self):
+        super().clean()
+        if self.start_date and self.end_date:
+            if self.start_date >= self.end_date:
+                raise ValidationError(
+                    {"end_date": _("End date must be after start date.")}
+                )
+
+            overlapping = (
+                FiscalYear.objects.filter(company=self.company)
+                .exclude(pk=self.pk)
+                .filter(
+                    Q(start_date__lte=self.end_date) & Q(end_date__gte=self.start_date)
+                )
+                .exists()
+            )
+
+            if overlapping:
+                raise ValidationError(
+                    _(
+                        "This fiscal year overlaps with an existing fiscal year for this company."
+                    )
+                )
+
+    def save(self, *args, **kwargs):
+        if self.is_current:
+            (
+                FiscalYear.objects.filter(company=self.company, is_current=True)
+                .exclude(pk=self.pk)
+                .update(is_current=False)
+            )
+        self.full_clean()
+        super().save(*args, **kwargs)
