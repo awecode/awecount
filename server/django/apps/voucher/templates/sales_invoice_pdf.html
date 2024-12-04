@@ -8,79 +8,163 @@
     <style type="text/css">
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        body {
+        @page {
+            margin: 4mm 6mm ;
+            size: A4;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+            }
+        }
+
+        html {
+            font-size: 12px;
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            margin: 0;
-            padding: 20px;
         }
 
         .invoice-container {
-            width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
+            max-width: 100%;
         }
 
         .header {
+            margin-bottom: 4px;
             text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            text-transform: uppercase;
+            page-break-inside: avoid;
         }
 
         .company-info {
-            margin-top: 10px;
-            font-size: 14px;
-            text-align: center;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ddd;
         }
 
-        .company-info strong {
-            font-size: 24px;
+        .company-info h1 {
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+            font-size: 32px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-top: 4px;
+            margin-bottom: 4dvb;
+            font-weight: bold;
         }
 
         .details {
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
         }
 
         .details-table {
             width: 100%;
-            border-spacing: 0;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
 
         .details-table td {
-            padding: 5px;
+            padding: 2px;
             vertical-align: top;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
+        .details-table td:last-child {
+            text-align: right;
         }
 
-        table th, table td {
-            border: 1px solid #ccc;
-            padding: 10px;
+        /* Items Table Styles */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .items-table thead {
+            display: table-header-group;
+            background-color: #f8f9fa;
+        }
+
+        .items-table tbody {
+            display: table-row-group;
+        }
+
+        .items-table tr {
+            page-break-inside: avoid;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 3px 2px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
             text-align: center;
         }
 
+        .items-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Right align numeric columns */
+        .items-table td:nth-child(4),
+        .items-table td:nth-child(5),
+        .items-table td:nth-child(6) {
+            text-align: right;
+        }
+
+        /* Column widths for items table */
+        .items-table th:nth-child(1),
+        .items-table td:nth-child(1) {
+            width: 5%;
+        }
+
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2) {
+            width: 15%;
+        }
+
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3) {
+            width: 40%;
+        }
+
+        .items-table th:nth-child(4),
+        .items-table td:nth-child(4),
+        .items-table th:nth-child(5),
+        .items-table td:nth-child(5),
+        .items-table th:nth-child(6),
+        .items-table td:nth-child(6) {
+            width: 13.33%;
+        }
+
+        /* Totals Section */
         .totals {
+            display: table;
             width: 100%;
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
+            margin-top: 12px;
+            page-break-inside: avoid;
+            page-break-before: auto;
+        }
+
+        .in-words {
+            display: table-cell;
+            width: 55%;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .totals-table-container {
+            display: table-cell;
+            width: 40%;
+            padding-left: 5%;
+            vertical-align: top;
         }
 
         .totals-table {
@@ -88,27 +172,50 @@
             border-collapse: collapse;
         }
 
-        .totals-table th, .totals-table td {
-            padding: 5px;
-            text-align: right;
+        .totals-table th,
+        .totals-table td {
+            padding: 2px;
+            border: 1px solid #ddd;
         }
 
         .totals-table th {
             text-align: left;
+            background-color: #f8f9fa;
         }
 
-        .in-words {
-            margin-top: 20px;
-            font-style: italic;
+        .totals-table td {
+            text-align: right;
+        }
+
+        .totals-table tr:last-child {
+            font-weight: bold;
+            background-color: #f8f9fa;
         }
 
         .footer {
-            margin-top: 20px;
-            font-size: 12px;
+            margin-top: 12px;
+            padding: 4px;
+            border-top: 1px solid #ddd;
+            font-style: italic;
+            page-break-inside: avoid;
         }
 
-        .spacer {
-            height: 10px;
+        .signature-section {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 14px;
+            margin-bottom: 4px;
         }
     </style>
 </head>
@@ -125,8 +232,10 @@
                 {% endif %}
                 {% if invoice.company.contact %}
                 Contact: {{ invoice.company.contact }}
-                {% endif %}
+                {% endif %}<br>
+                VAT Reg. No.: {{ invoice.company.tax_registration_number }}<br>
             </div>
+
             <h2>Tax Invoice</h2>
         </div>
 
