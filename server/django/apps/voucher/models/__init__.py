@@ -13,7 +13,7 @@ from django.db import models
 from django.db.models import Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
-from xhtml2pdf import pisa
+from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
 from apps.ledger.models import (
@@ -731,6 +731,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                             "address": self.company.address,
                             "contact": self.company.contact_no,
                             "email": ", ".join(self.company.emails),
+                            "tax_registration_number": self.company.tax_registration_number,
                         },
                         "customer_name": self.customer_name,
                         "address": self.address,
@@ -745,7 +746,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                         "rows": [
                             {
                                 "item": {
-                                    "hs_code": row.item.code,
+                                    "hs_code": row.item.category.hs_code
+                                    if row.item.category and row.item.category.hs_code
+                                    else "",
                                     "name": row.item.name,
                                 },
                                 "unit": row.unit.name,
@@ -764,13 +767,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             )
 
             pdf_stream = BytesIO()
-            pdf_status = pisa.CreatePDF(
-                src=BytesIO(html_template.encode("utf-8")),
-                dest=pdf_stream,
-            )
-
-            if pdf_status.err:
-                raise Exception("Error generating PDF")
+            HTML(string=html_template).write_pdf(pdf_stream)
             pdf_stream.seek(0)
 
         pk_hash = get_verification_hash(f"sales-invoice-{self.pk}")
@@ -795,7 +792,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             )
 
         for attachment in attachments:
-            email.attach(attachment.name, attachment.file.read(), attachment.content_type)
+            email.attach(
+                attachment.name, attachment.file.read(), attachment.content_type
+            )
 
         email.content_subtype = "html"
         email.send()
