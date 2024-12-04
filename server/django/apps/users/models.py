@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
@@ -42,6 +44,13 @@ class Role(models.Model):
 
 
 class User(AbstractBaseUser):
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        primary_key=True,
+    )
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_superuser = models.BooleanField(default=False)
