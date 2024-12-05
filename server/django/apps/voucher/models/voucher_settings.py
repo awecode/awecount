@@ -40,6 +40,7 @@ class SalesSetting(models.Model):
     invoice_footer_text = models.CharField(max_length=255, null=True, blank=True)
     persist_pos_items = models.BooleanField(default=False)
     enable_sales_date_edit = models.BooleanField(default=False)
+    default_email_attachments = ArrayField(models.CharField(max_length=255), default=list, blank=True)
 
     @property
     def fields(self):
