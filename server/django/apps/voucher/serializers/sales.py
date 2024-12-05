@@ -584,6 +584,10 @@ class SalesVoucherDetailSerializer(serializers.ModelSerializer):
         options = {}
         amt_qt_setting = obj.company.sales_setting.show_rate_quantity_in_voucher
         options["show_rate_quantity_in_voucher"] = amt_qt_setting
+        if self.context.get("request").user.id:
+            options["default_email_attachments"] = (
+                obj.company.sales_setting.default_email_attachments
+            )
         return options
 
     class Meta:

@@ -290,7 +290,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 "discount_obj", "bank_account", "company__sales_setting", "party"
             )
         )
-        data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data = SalesVoucherDetailSerializer(
+            get_object_or_404(pk=pk, queryset=qs), context={"request": self.request}
+        ).data
         data["can_update_issued"] = self.request.company.enable_sales_invoice_update
         data["available_payment_modes"] = GenericSerializer(
             PaymentMode.objects.filter(
