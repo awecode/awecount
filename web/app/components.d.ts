@@ -20,6 +20,7 @@ declare module '@vue/runtime-core' {
     EmailList: typeof import('./src/components/settings/EmailList.vue')['default']
     EssentialLink: typeof import('./src/components/EssentialLink.vue')['default']
     ExampleComponent: typeof import('./src/components/ExampleComponent.vue')['default']
+    FileUploader: typeof import('./src/components/FileUploader.vue')['default']
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     FormSkeleton: typeof import('./src/components/FormSkeleton.vue')['default']
     InventoryConversionTable: typeof import('./src/components/inventory-conversion/InventoryConversionTable.vue')['default']

@@ -74,24 +74,28 @@
               </q-checkbox>
             </div>
             <div class="row q-pl-sm">
-              <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow label="Invoice footer text" />
+              <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow
+                label="Invoice footer text" />
             </div>
             <div>
               <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?">
               </q-checkbox>
             </div>
+            <file-uploader multiple v-model="fields.default_email_attachments" label="Default Email Attachments" />
           </div>
         </div>
         <!-- {{ formDefaults.collections }} -->
       </q-card-section>
       <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" :loading="formLoading" />
+        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit"
+          :loading="formLoading" />
       </div>
     </q-card>
   </q-form>
 </template>
 
 <script>
+import { uploadFiles } from 'src/utils/file-upload';
 import useForm from '/src/composables/useForm'
 import { modes } from 'src/helpers/constants/invoice'
 export default {
@@ -109,8 +113,9 @@ export default {
     const fields = ref(null)
     const modeErrors = ref(null)
     const formLoading = ref(false)
-    const onUpdateClick = (fields) => {
+    const onUpdateClick = async (fields) => {
       formLoading.value = true
+      fields.default_email_attachments = await uploadFiles(fields.default_email_attachments, 'default_email_attachments')
       useApi(`v1/sales-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
