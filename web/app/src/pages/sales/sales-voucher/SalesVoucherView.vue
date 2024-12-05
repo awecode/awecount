@@ -248,10 +248,10 @@ export default {
       sendInvoicePayload.value = {
         attach_pdf: true,
         attachments: [],
-        to: fields.value.email ? [fields.value.email] : [],
+        to: [fields.value.email, fields.value.party_email].filter(Boolean),
         subject: `Sales Invoice #${fields.value.voucher_no}`,
         message: `
-          <p>Hello <b>${fields.value.customer_name || '[]'}</b>,</p>
+          <p>Hello <b>${fields.value.customer_name || fields.value.party_name}</b>,</p>
 
           <p>I hope this message finds you well.</p>
 
