@@ -110,7 +110,7 @@ TEMPLATE_CHOICES = [
 
 def get_company_logo_path(instance, filename):
     _, ext = filename.split(".")
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    filename = f"{uuid.uuid4()}.{ext}"
     return f"{instance.slug}/logo/{filename}"
 
 
