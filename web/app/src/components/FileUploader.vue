@@ -1,9 +1,6 @@
 <template>
   <q-field :label="label" stack-label>
     <div class="relative flex flex-wrap items-center p-3 w-full" @click="onFieldClick">
-      <div v-if="!modelValue || (Array.isArray(modelValue) && modelValue.length === 0)" class="text-center">
-        <q-icon name="add" size="lg" color="grey" />
-      </div>
       <div v-for="(file, index) in fileList" :key="index" class="relative w-32 h-32 m-2 flex items-center">
         <q-img v-if="file.isImage" :src="file.preview" class="w-full h-full object-cover rounded overflow-hidden"
           alt="Preview" />
