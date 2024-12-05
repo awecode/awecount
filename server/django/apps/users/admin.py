@@ -283,10 +283,10 @@ class FiscalYearAdmin(admin.ModelAdmin):
     list_display = ("name", "start_date", "end_date")
 
     def start_date(self, obj):
-        return obj.start.strftime("%d-%m-%Y")
+        return obj.start_date.strftime("%d-%m-%Y")
 
     def end_date(self, obj):
-        return obj.end.strftime("%d-%m-%Y")
+        return obj.end_date.strftime("%d-%m-%Y")
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
