@@ -66,11 +66,11 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <router-link v-if="checkPermissions('FundTransferModify')" class="text-blue text-weight-medium"
-            style="text-decoration: none" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no
+          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no
             }}</router-link>
-          <span v-else> {{ props.row.voucher_no }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"> {{ props.row.voucher_no }}</span>
         </q-td>
       </template>
     </q-table>

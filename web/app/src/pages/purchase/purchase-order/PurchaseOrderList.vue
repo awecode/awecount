@@ -24,8 +24,8 @@
                   </div>
                 </div>
                 <div class="q-mx-md">
-                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" :error="true"
-                    :error-message="'asgcvagscvg'" />
+                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date"
+                    :error="true" :error-message="'asgcvagscvg'" />
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
@@ -70,13 +70,16 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="props.row.voucher_no">
             <router-link v-if="checkPermissions('PurchaseOrderModify')" :to="`/purchase-order/${props.row.id}/`"
-              style="font-weight: 500; text-decoration: none" class="text-blue">
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+              class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+              {{ props.row.voucher_no }}
+            </span>
           </span>
         </q-td>
       </template>

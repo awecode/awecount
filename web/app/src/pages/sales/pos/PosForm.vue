@@ -18,7 +18,7 @@
     formDefaults.collections?.items.results
 " :key="item.id">
           <div class="col-8">
-            <router-link v-if="hasItemModifyAccess" style="text-decoration: none" class="text-blue" target="_blank"
+            <router-link v-if="hasItemModifyAccess" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%;" class="text-blue" target="_blank"
               :title="item.code" :to="`/items/${item.id}/`">
               {{ item.name }}
             </router-link>

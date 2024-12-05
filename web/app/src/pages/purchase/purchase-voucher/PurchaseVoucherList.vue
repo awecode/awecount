@@ -38,9 +38,9 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
-                      label="Payment Mode" :fetchOnMount="true" />
-                  </div>
+                  <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    label="Payment Mode" :fetchOnMount="true" />
+                </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
@@ -74,7 +74,7 @@
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
               props.row.party
-            }}</span>
+              }}</span>
           </div>
         </q-td>
       </template>
@@ -89,13 +89,17 @@
         <!-- TODO: add modals -->
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="props.row.voucher_no">
             <router-link v-if="checkPermissions('PurchaseVoucherView')" :to="`/purchase-voucher/${props.row.id}/view`"
-              style="font-weight: 500; text-decoration: none" class="text-blue" data-testid="voucher-no">
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+              class="text-blue" data-testid="voucher-no">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else data-testid="voucher-no">{{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+              data-testid="voucher-no">
+              {{ props.row.voucher_no }}
+            </span>
           </span>
         </q-td>
       </template>

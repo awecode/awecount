@@ -38,9 +38,9 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
-                      label="Payment Mode" :fetchOnMount="true" />
-                  </div>
+                  <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    label="Payment Mode" :fetchOnMount="true" />
+                </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
@@ -110,15 +110,17 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
             <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no"
-              :to="`/sales-voucher/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none"
+              :to="`/sales-voucher/${props.row.id}/view/`"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
               class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
           </span>
-          <span v-else data-testid="voucher-no">
+          <span v-else data-testid="voucher-no"
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
             {{ props.row.voucher_no }}
           </span>
         </q-td>

@@ -61,13 +61,13 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="props.row.voucher_no">
             <router-link v-if="checkPermissions('JournalVoucherView')" :to="`/challan/${props.row.id}/`"
-              style="font-weight: 500; text-decoration: none" class="text-blue">
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.voucher_no }}</span>
           </span>
         </q-td>
       </template>

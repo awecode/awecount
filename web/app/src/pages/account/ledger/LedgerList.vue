@@ -53,11 +53,11 @@
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none"
+        <q-td :props="props" style="padding: 0;">
+          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
             class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{ props.row.category.name
             }}</router-link>
-          <span v-else>{{ props.row.category.name }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.category.name }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-dr="props">
@@ -76,12 +76,12 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.id}/view/`"
-            style="font-weight: 500; text-decoration: none" class="text-blue">
+          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" class="text-blue">
             {{ props.row.name }}
           </router-link>
-          <span v-else>{{ props.row.name }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>

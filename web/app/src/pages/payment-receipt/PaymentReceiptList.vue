@@ -20,11 +20,12 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <n-auto-complete-v2 v-model="filters.party" :fetchOnMount="true" endpoint="v1/parties/choices/" label="Party" />
+                    <n-auto-complete-v2 v-model="filters.party" :fetchOnMount="true" endpoint="v1/parties/choices/"
+                      label="Party" />
                   </div>
                   <div class="q-mx-md">
-                    <n-auto-complete-v2 v-model="filters.sales_agent" :fetchOnMount="true" endpoint="v1/sales-agent/choices/"
-                      label="Sales Agent" />
+                    <n-auto-complete-v2 v-model="filters.sales_agent" :fetchOnMount="true"
+                      endpoint="v1/sales-agent/choices/" label="Sales Agent" />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip :options="['Issued', 'Cleared', 'Cancelled']" v-model="filters.status" />
@@ -73,16 +74,16 @@
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
               props.row.party_name
-            }}</span>
+              }}</span>
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-invoices="props">
-        <q-td :props="props">
-          <div class="row align-center text-subtitle2 text-grey-8">
-            <span v-for=" invoice  in  props.row.invoices " :key="invoice.id">
-              <router-link v-if="checkPermissions('SalesView')" class="text-blue" style="text-decoration: none"
-                :to="`/sales-voucher/${invoice.id}/view`">
+        <q-td :props="props" style="padding: 0;">
+          <div class="row align-center text-subtitle2 text-grey-8" style="padding: 8px 8px 8px 16px;">
+            <span v-for="invoice in props.row.invoices" :key="invoice.id" style="margin-right: 8px;">
+              <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${invoice.id}/view`"
+                style="text-decoration: none; display: flex; align-items: center;" class="text-blue">
                 #{{ invoice.voucher_no }}
               </router-link>
               <span v-else>#{{ invoice.voucher_no }}</span>
@@ -138,14 +139,14 @@ export default {
         .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
-      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true},
+      { name: 'date', label: 'Date', align: 'left', field: 'date', sortable: true },
       {
         name: 'party_name',
         label: 'Party',
         align: 'left',
         field: 'party_name',
       },
-      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true},
+      { name: 'status', label: 'Status', align: 'center', field: 'status', sortable: true },
       {
         name: 'mode',
         label: 'Mode',

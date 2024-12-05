@@ -60,7 +60,7 @@
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
               props.row.party
-            }}</span>
+              }}</span>
           </div>
         </q-td>
       </template>
@@ -73,13 +73,16 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="props.row.voucher_no">
             <router-link v-if="checkPermissions('DebitNoteView')" :to="`/debit-note/${props.row.id}/view/`"
-              style="font-weight: 500; text-decoration: none" class="text-blue">
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+              class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+              {{ props.row.voucher_no }}
+            </span>
           </span>
         </q-td>
       </template>

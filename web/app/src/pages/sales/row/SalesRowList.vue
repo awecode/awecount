@@ -59,13 +59,16 @@
       </template>
 
       <template v-slot:body-cell-voucher_id="props">
-        <q-td :props="props">
-          <div class="row align-center">
-            <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
-              class="text-blue l-view-btn" :to="`/sales-voucher/${props.row.voucher_id}/view`">
+        <q-td :props="props" style="padding: 0;">
+          <div class="row align-center" style="height: 100%;">
+            <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${props.row.voucher_id}/view`"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px;"
+              class="text-blue l-view-btn">
               {{ props.row.voucher__voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher__voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+              {{ props.row.voucher__voucher_no }}
+            </span>
           </div>
         </q-td>
       </template>
@@ -78,7 +81,7 @@
             <q-icon name="domain" size="sm" class="text-grey-8"></q-icon>
             <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
               props.row.party_name
-            }}</span>
+              }}</span>
           </div>
         </q-td>
       </template>

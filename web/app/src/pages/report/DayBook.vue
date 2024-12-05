@@ -160,7 +160,7 @@ function filterData() {
               <template v-slot:body-cell-action="props">
                 <q-td>
                   <RouterLink
-                    style="text-decoration: none"
+                    style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
                     class="text-blue-6"
                     target="_blank"
                     :to="`/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"

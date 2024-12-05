@@ -101,19 +101,17 @@
       </template>
 
       <template v-slot:body-cell-voucher_id="props">
-        <q-td :props="props">
-          <div class="row align-center">
+        <q-td  :props="props" style="padding: 0;">
             <router-link
               v-if="checkPermissions('PurchaseVoucherView')"
-              style="font-weight: 500; text-decoration: none"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
               class="text-blue l-view-btn"
               :to="`/purchase-voucher/${props.row.voucher_id}/view`"
             >
               {{ props.row.voucher_id }}
               {{ props.row.voucher__voucher_no }}
             </router-link>
-            <span v-else>{{ props.row.voucher__voucher_no }}</span>
-          </div>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.voucher__voucher_no }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-party_name="props">

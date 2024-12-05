@@ -7,12 +7,12 @@
     <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue l-edit-btn whitespace-normal" style="text-decoration: none"
+        <q-td style="padding: 0;" :props="props">
+          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue l-edit-btn whitespace-normal" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
             :to="`/sales-agent/${props.row.id}/`">
             {{ props.row.name }}
           </router-link>
-          <span class="whitespace-normal" v-else>{{ props.row.name }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>

@@ -51,16 +51,14 @@
       </template>
 
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
-          <div class="row align-center">
+        <q-td :props="props" style="padding: 0;">
             <router-link
-              style="font-weight: 500; text-decoration: none"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
               class="text-blue l-view-btn"
               :to="`/purchase-voucher/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
             </router-link>
-          </div>
         </q-td>
       </template>
       <template v-slot:header="props">

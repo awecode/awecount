@@ -5,7 +5,8 @@
       <template v-slot:top>
         <div class="row q-col-gutter-md full-width" style="justify-content: space-between">
           <div class="row items-center q-gutter-x-md">
-            <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" :hideBtns="true" />
+            <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date"
+              :hideBtns="true" />
             <div class="flex gap-4 items-center">
               <q-btn class="f-submit-btn" label="Filter" color="green" @click="onFilterUpdate"></q-btn>
               <q-btn v-if="filters.start_date || filters.end_date" class="f-reset-btn" icon="close" color="red"
@@ -19,13 +20,16 @@
       </template>
 
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
-          <div class="row align-center">
-            <router-link v-if="checkPermissions('SalesView')" style="font-weight: 500; text-decoration: none"
-              class="text-blue l-view-btn" :to="`/sales-voucher/${props.row.id}/view`">
+        <q-td :props="props" style="padding: 0;">
+          <div class="row align-center" style="height: 100%;">
+            <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${props.row.id}/view`"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; padding: 8px 8px 8px 16px;"
+              class="text-blue l-view-btn">
               {{ props.row.voucher_no }}
             </router-link>
-            <span v-else> {{ props.row.voucher_no }}</span>
+            <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+              {{ props.row.voucher_no }}
+            </span>
           </div>
         </q-td>
       </template>

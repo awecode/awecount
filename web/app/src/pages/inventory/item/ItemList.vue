@@ -61,14 +61,19 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('ItemView')" :to="`/items/details/${props.row.id}/`"
-            style="font-weight: 500; text-decoration: none" class="text-blue">
-            {{ props.row.name }}
-          </router-link>
-          <span v-else>{{ props.row.name }}</span>
-        </q-td>
-      </template>
+  <q-td :props="props" style="padding: 0;">
+    <router-link 
+      v-if="checkPermissions('ItemView')" 
+      :to="`/items/details/${props.row.id}/`"
+      style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" 
+      class="text-blue">
+      {{ props.row.name }}
+    </router-link>
+    <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+      {{ props.row.name }}
+    </span>
+  </q-td>
+</template>
       <template v-slot:body-cell-category="props">
         <q-td :props="props">
           <router-link v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
