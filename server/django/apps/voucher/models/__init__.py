@@ -2,6 +2,7 @@ import datetime
 from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
+import os
 from typing import Union
 
 from auditlog.registry import auditlog
@@ -785,9 +786,16 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             )
 
         for attachment in attachments:
-            email.attach(
-                attachment.name, attachment.file.read(), attachment.content_type
-            )
+            if isinstance(attachment, str):
+                attachment_fileurl = os.path.join(settings.MEDIA_ROOT, attachment)
+                with open(attachment_fileurl, "rb") as file:
+                    email.attach(
+                        attachment.split("/")[-1], file.read(), "application/pdf"
+                    )
+            else:
+                email.attach(
+                    attachment.name, attachment.file.read(), attachment.content_type
+                )
 
         email.content_subtype = "html"
         email.send()

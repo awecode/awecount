@@ -15,6 +15,7 @@ from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from ..models import (
     PurchaseVoucher,
@@ -505,8 +506,24 @@ class SalesVoucherCreateSerializer(
         )
 
 
+class FileOrStringField(serializers.Field):
+    def to_internal_value(self, data):
+        if isinstance(data, InMemoryUploadedFile):
+            return data
+
+        if isinstance(data, str):
+            return data
+
+        raise serializers.ValidationError(
+            "This field must be either a file or a string."
+        )
+
+    def to_representation(self, value):
+        return value
+
+
 class SendInvoiceInEmailRequestSerializer(serializers.Serializer):
-    attachments = serializers.ListField(child=serializers.FileField(), default=list)
+    attachments = serializers.ListField(child=FileOrStringField(), default=list)
     attach_pdf = serializers.BooleanField()
     to = serializers.ListField(child=serializers.EmailField())
     subject = serializers.CharField()
