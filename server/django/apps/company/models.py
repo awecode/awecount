@@ -384,6 +384,13 @@ class CompanyMember(BaseModel):
 
 
 class CompanyMemberInvite(BaseModel):
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        primary_key=True,
+    )
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
