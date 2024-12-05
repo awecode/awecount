@@ -1,6 +1,8 @@
+import re
 import uuid
 import warnings
 from datetime import timedelta
+from typing import Dict
 
 from django.apps import apps
 from django.conf import settings
@@ -13,16 +15,84 @@ from lib.constants import RESTRICTED_COMPANY_SLUGS
 from lib.models import BaseModel
 
 
-def get_default_permissions():
-    return {
-        model.PermissionMeta.key: getattr(
-            model.PermissionMeta,
-            "default_permissions",
-            {"view": True, "add": False, "change": False, "delete": False},
-        )
-        for model in apps.get_models()
-        if hasattr(model, "PermissionMeta")
-    }
+def get_default_permissions() -> Dict[str, Dict[str, bool]]:
+    """
+    Dynamically generate default permissions for Django models with PermissionsMeta.
+
+    This utility function scans through all registered Django models and extracts
+    their permission configurations based on a simple list of actions.
+
+    By default, all actions in the list are set to True.
+
+    Example:
+    ```python
+    class UserModel(models.Model):
+        class PermissionsMeta:
+            key = 'user' # Optional, defaults to model._meta.model_name.lower()
+            actions = ['view', 'create', 'update', 'delete', 'custom_action] # Required
+            # or, actions = {'view': True, 'create': True, ...}
+            # or, actions = ['view', 'create', {'update': False}, ...]
+    ```
+
+    Returns:
+        Dict[str, Dict[str, bool]]: A dictionary mapping model keys to their
+        permission configurations.
+
+    Raises:
+        ValueError: If the permission configuration is improperly defined.
+    """
+
+    ret = {}
+    for model in apps.get_models():
+        # Skip models without PermissionsMeta
+        if not hasattr(model, "PermissionsMeta"):
+            continue
+
+        # Determine the key for the model's permissions
+        key = getattr(model.PermissionsMeta, "key", model._meta.model_name).lower()
+
+        # Validate key contains only alphabetical characters
+        if not re.match(r"^[a-z]+$", key):
+            raise ValueError(
+                f"PermissionsMeta key for {model.__name__} "
+                "can only contain lowercase alphabetical characters"
+            )
+
+        # Validate presence of actions
+        if not hasattr(model.PermissionsMeta, "actions"):
+            raise TypeError(
+                f"Model {model.__name__} must define 'actions' "
+                "in its PermissionsMeta"
+            )
+
+        # Validate and normalize actions
+        actions = getattr(model.PermissionsMeta, "actions")
+
+        if not isinstance(actions, (list, dict)):
+            raise TypeError(
+                f"PermissionsMeta actions for {model.__name__} "
+                "must be a list or dictionary"
+            )
+
+        if isinstance(actions, list):
+            _actions = {}
+            for action in actions:
+                if isinstance(action, str):
+                    _actions[action] = True
+                elif isinstance(action, dict) and len(action) == 1:
+                    for key, value in action.items():
+                        _actions[key] = value
+                else:
+                    raise TypeError(
+                        f"PermissionsMeta actions for {model.__name__} "
+                        "must be a list of strings or dictionaries with a single key-value pair"
+                    )
+
+            actions = _actions
+
+        ret[key] = actions
+
+    return ret
 
 
 def slug_validator(value):
@@ -276,14 +346,8 @@ class CompanyMember(BaseModel):
         verbose_name_plural = "Company Members"
         ordering = ("-created_at",)
 
-    class PermissionMeta:
-        key = "company_member"
-        default_permissions = {
-            "view": True,
-            "add": False,
-            "change": False,
-            "delete": False,
-        }
+    class PermissionsMeta:
+        actions = ["view", "add", "change", "delete"]
 
     def __str__(self):
         """Return members of the company"""
@@ -344,14 +408,8 @@ class CompanyMemberInvite(BaseModel):
         verbose_name_plural = "Company Member Invites"
         ordering = ("-created_at",)
 
-    class PermissionMeta:
-        key = "company_invite"
-        default_permissions = {
-            "view": True,
-            "add": False,
-            "change": False,
-            "delete": False,
-        }
+    class PermissionsMeta:
+        actions = ["view", "add", "change", "delete"]
 
     def __str__(self):
         return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
