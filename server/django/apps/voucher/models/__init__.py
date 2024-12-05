@@ -1,8 +1,8 @@
 import datetime
+import os
 from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
-import os
 from typing import Union
 
 from auditlog.registry import auditlog
@@ -37,7 +37,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import get_verification_hash, merge_dicts
+from awecount.libs.helpers import merge_dicts
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -735,7 +735,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                             "email": ", ".join(self.company.emails),
                             "tax_registration_number": self.company.tax_registration_number,
                         },
-                        "customer_name": self.customer_name,
+                        "billed_to": self.party_name(),
                         "address": self.address,
                         "fiscal_year": self.fiscal_year.name,
                         "date": self.date,
