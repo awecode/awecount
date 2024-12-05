@@ -9,6 +9,12 @@ from apps.users.models import User
 
 class AccessKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(
+        "company.Company",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     key = models.UUIDField(default=uuid.uuid4)
     enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
@@ -18,7 +24,7 @@ class AccessKey(models.Model):
         try:
             return (
                 cls.objects.filter(enabled=True)
-                .select_related("user__company")
+                .select_related("company")
                 .get(key=key)
                 .user
             )
@@ -30,7 +36,7 @@ class AccessKey(models.Model):
         try:
             return (
                 cls.objects.filter(enabled=True)
-                .select_related("user__company")
+                .select_related("company")
                 .get(key=key)
                 .user.company
             )
