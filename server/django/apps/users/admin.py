@@ -294,9 +294,9 @@ admin.site.register(FiscalYear, FiscalYearAdmin)
 
 class AccessKeyAdmin(admin.ModelAdmin):
     list_display = ("user", "key", "enabled")
-    list_filter = ("user", "user__company", "enabled")
+    list_filter = ("user", "company", "enabled")
     readonly_fields = ("created_at",)
-    search_fields = ("user__full_name", "user__company__name", "key")
+    search_fields = ("user__full_name", "company__name", "key")
 
 
 admin.site.register(AccessKey, AccessKeyAdmin)

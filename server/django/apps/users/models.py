@@ -56,9 +56,6 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     permissions = models.ManyToManyField(Role, blank=True, related_name="users")
-    company = models.ForeignKey(
-        Company, on_delete=models.SET_NULL, related_name="users", null=True
-    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
@@ -73,6 +70,10 @@ class User(AbstractBaseUser):
         for role in self.permissions.all():
             modules.extend(role.modules)
         return modules
+
+    @property
+    def company(self):
+        return Company.objects.filter(company_members__member=self).first()
 
     def __str__(self):
         return self.full_name
