@@ -2,6 +2,8 @@ import uuid
 import warnings
 from datetime import timedelta
 
+from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -9,6 +11,18 @@ from django.utils.translation import gettext_lazy as _
 
 from lib.constants import RESTRICTED_COMPANY_SLUGS
 from lib.models import BaseModel
+
+
+def get_default_permissions():
+    return {
+        model.PermissionMeta.key: getattr(
+            model.PermissionMeta,
+            "default_permissions",
+            {"view": True, "add": False, "change": False, "delete": False},
+        )
+        for model in apps.get_models()
+        if hasattr(model, "PermissionMeta")
+    }
 
 
 def slug_validator(value):
@@ -203,3 +217,141 @@ class FiscalYear(CompanyBaseModel):
             )
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class Permission(BaseModel):
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="company_permissions",
+    )
+    name = models.CharField(max_length=80, verbose_name="Permission Name")
+    permissions = models.JSONField(default=get_default_permissions)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["company", "name"]
+        verbose_name = "Company Permission"
+        verbose_name_plural = "Company Permissions"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.name} <{self.company.name}>"
+
+
+class CompanyMember(BaseModel):
+    class AccessLevel(models.TextChoices):
+        OWNER = "owner", "Owner"  # owner can do anything
+        ADMIN = "admin", "Admin"  # admin can do anything except deleting the company
+        MEMBER = "member", "Member"
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="company_members",
+    )
+    member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="member_company",
+    )
+    access_level = models.CharField(
+        max_length=20, choices=AccessLevel.choices, default=AccessLevel.MEMBER
+    )
+    permissions = models.ManyToManyField(Permission, related_name="member_permission")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["company", "member"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company", "access_level"],
+                condition=models.Q(
+                    access_level="owner"
+                ),  # FIXME: Refactor this to use AccessLevel.OWNER
+                name="company_unique_owner",
+            ),
+        ]
+        verbose_name = "Company Member"
+        verbose_name_plural = "Company Members"
+        ordering = ("-created_at",)
+
+    class PermissionMeta:
+        key = "company_member"
+        default_permissions = {
+            "view": True,
+            "add": False,
+            "change": False,
+            "delete": False,
+        }
+
+    def __str__(self):
+        """Return members of the company"""
+        return f"{self.member.email} <{self.company.name}>"
+
+    @property
+    def is_owner(self):
+        """Check if the member has owner role"""
+        return self.access_level == self.AccessLevel.OWNER
+
+    @property
+    def is_admin(self):
+        """Check if the member has admin role"""
+        return self.access_level == self.AccessLevel.ADMIN
+
+    @property
+    def is_member(self):
+        """Check if the member has member role"""
+        return self.access_level == self.AccessLevel.MEMBER
+
+    def clean(self):
+        """Validate that there is only one owner per company"""
+        if self.access_level == self.AccessLevel.OWNER and not self.pk:
+            if CompanyMember.objects.filter(
+                company=self.company,
+                role_type=self.AccessLevel.OWNER,
+            ).exists():
+                raise ValidationError("Company already has an owner")
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+
+class CompanyMemberInvite(BaseModel):
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="company_memberinvites",
+    )
+    email = models.CharField(max_length=255)
+    accepted = models.BooleanField(default=False)
+    token = models.CharField(max_length=255)
+    message = models.TextField(null=True)
+    responded_at = models.DateTimeField(null=True)
+    access_level = models.CharField(
+        max_length=20,
+        choices=CompanyMember.AccessLevel.choices,
+        default=CompanyMember.AccessLevel.MEMBER,
+    )
+    permissions = models.ManyToManyField(Permission, related_name="invite_permission")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["email", "company"]
+        verbose_name = "Company Member Invite"
+        verbose_name_plural = "Company Member Invites"
+        ordering = ("-created_at",)
+
+    class PermissionMeta:
+        key = "company_invite"
+        default_permissions = {
+            "view": True,
+            "add": False,
+            "change": False,
+            "delete": False,
+        }
+
+    def __str__(self):
+        return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
