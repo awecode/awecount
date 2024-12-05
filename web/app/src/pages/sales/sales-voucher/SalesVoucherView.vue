@@ -109,7 +109,7 @@
             :error="!!sendInvoiceInEmailErrors?.errors?.subject" />
           <q-editor v-model="sendInvoicePayload.message" />
           <q-checkbox v-model="sendInvoicePayload.attach_pdf" label="Attach PDF"></q-checkbox>
-          <q-file v-model="sendInvoicePayload.attachments" label="Attachments" multiple></q-file>
+          <file-uploader v-model="sendInvoicePayload.attachments" label="Attachments" multiple />
           <div class="row justify-end">
             <q-btn label="Send" color="orange-5" class="q-mt-md" @click="sendInvoiceInEmail"></q-btn>
           </div>
@@ -247,7 +247,7 @@ export default {
       sendInvoiceInEmailErrors.value = {}
       sendInvoicePayload.value = {
         attach_pdf: true,
-        attachments: [],
+        attachments: fields.value?.options?.default_email_attachments || [],
         to: [fields.value.email, fields.value.party_email].filter(Boolean),
         subject: `Sales Invoice #${fields.value.voucher_no}`,
         message: `
@@ -257,7 +257,7 @@ export default {
 
           <p>Please find attached the invoice <b>#${fields.value?.voucher_no}</b></p>
 
-          <p>You can view and download the invoice using the following link: <a href="${ window.location.protocol + '//' + window.location.host + window.location.pathname}?hash=${fields.value?.hash}">View Invoice</a>.</p>
+          <p>You can view and download the invoice using the following link: <a href="${window.location.protocol + '//' + window.location.host + window.location.pathname}?hash=${fields.value?.hash}">View Invoice</a>.</p>
 
           <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
 
@@ -285,7 +285,8 @@ export default {
       })
         .then(() => {
           isSendInvoiceModalOpen.value = false
-          resetSendInvoicePayload()
+          if (isLoggedIn)
+            resetSendInvoicePayload()
           $q.notify({
             color: 'positive',
             message: 'Invoice Sent!',
