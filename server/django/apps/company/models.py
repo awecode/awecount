@@ -2,6 +2,7 @@ import re
 import uuid
 import warnings
 from datetime import timedelta
+from functools import cached_property
 from typing import Dict
 
 from django.apps import apps
@@ -11,7 +12,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from lib.constants import RESTRICTED_COMPANY_SLUGS
+from apps.company.constants import RESTRICTED_COMPANY_SLUGS
 from lib.models import BaseModel
 
 
@@ -367,6 +368,31 @@ class CompanyMember(BaseModel):
     def is_member(self):
         """Check if the member has member role"""
         return self.access_level == self.AccessLevel.MEMBER
+
+    @cached_property
+    def permissions_dict(self):
+        """Merge permissions from all permission dictionaries"""
+
+        permissions = self.permissions.values_list("permissions", flat=True)
+
+        # Initialize the merged permissions with the first dictionary
+        merged = permissions[0] if permissions else {}
+
+        # Iterate through the remaining permission dictionaries
+        for perm_dict in permissions[1:]:
+            for category, perms in perm_dict.items():
+                # If category doesn't exist in merged, add it
+                if category not in merged:
+                    merged[category] = perms
+                    continue
+
+                # Merge permissions for existing category
+                for action, value in perms.items():
+                    # If the new value is True, override the existing value
+                    if value is True:
+                        merged[category][action] = True
+
+        return merged
 
     def clean(self):
         """Validate that there is only one owner per company"""

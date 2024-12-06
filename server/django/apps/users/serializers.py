@@ -58,3 +58,18 @@ class FiscalYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = FiscalYear
         exclude = ()
+
+
+class UserLiteSerializer(BaseSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "avatar",
+            "avatar_url",
+            "is_bot",
+            "display_name",
+        ]
+        read_only_fields = ["id", "is_bot"]
