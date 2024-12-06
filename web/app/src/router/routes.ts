@@ -1378,6 +1378,13 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'invoice/',
+        component: () => import('src/pages/settings/InvoiceSettings.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Invoice Settings'],
+        },
+      },
+      {
         path: 'account-closing/',
         component: () => import('src/pages/settings/AccountsClosing.vue'),
         meta: {
@@ -1418,7 +1425,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Home', 'Payment Mode', 'Update'],
         },
-      }
+      },
     ],
   },
   {

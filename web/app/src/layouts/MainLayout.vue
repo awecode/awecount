@@ -660,6 +660,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('SalesSettingView'),
       },
       {
+        title: 'Invoice Settings',
+        icon: 'mdi-point-of-sale',
+        link: '/settings/invoice/',
+        hide: !checkPermissions('SalesSettingView'),
+      },
+      {
         title: 'Purchase Settings',
         icon: 'mdi-shopping',
         link: '/settings/purchase/',
