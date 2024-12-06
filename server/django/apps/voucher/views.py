@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from xhtml2pdf import pisa
 
+from apps.company.models import Company
+
 from .models import SalesVoucher
 
 
@@ -54,3 +56,17 @@ class FileUploadView(APIView):
             file_urls.append(filename)
 
         return Response(file_urls)
+
+
+class InvoiceSettingUpdateView(APIView):
+    model = Company
+    permission_classes = (IsAuthenticated,)
+
+    def patch(self, request, *args, **kwargs):
+        invoice_template = request.data.get("invoice_template")
+        if invoice_template not in dict(Company.TEMPLATE_CHOICES):
+            return Response({"message": "Invalid invoice template"}, status=400)
+        company = Company.objects.get(pk=request.company_id)
+        company.invoice_template = invoice_template
+        company.save()
+        return Response({})
