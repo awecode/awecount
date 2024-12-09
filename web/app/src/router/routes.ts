@@ -1190,6 +1190,20 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/bank-reconciliation',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '/',
+        name: 'Bank Reconciliation',
+        component: () => import('src/pages/bank/reconciliation/IndexPage.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Reconciliation'],
+        },
+      },
+    ],
+  },
+  {
     path: '/taxes',
     component: () => import('layouts/MainLayout.vue'),
     children: [
