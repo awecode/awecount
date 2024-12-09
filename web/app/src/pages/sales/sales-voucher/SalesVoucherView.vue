@@ -94,7 +94,7 @@
 
     <q-dialog v-model="isSendInvoiceModalOpen" @hide="resetSendInvoicePayload">
       <q-card style="min-width: min(40vw, 500px)">
-        <q-card-section class="bg-grey-4">
+        <q-card-section class="bg-primary text-white">
           <div class="text-h6 flex justify-between">
             <span class="q-mx-md">Send invoice in email</span>
             <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
