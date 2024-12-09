@@ -15,6 +15,7 @@ from apps.bank.filters import (
 from apps.bank.models import (
     BankAccount,
     BankCashDeposit,
+    BankReconciliation,
     ChequeDeposit,
     FundTransferTemplate,
 )
@@ -24,10 +25,11 @@ from apps.bank.serializers import (
     BankAccountSerializer,
     BankCashDepositCreateSerializer,
     BankCashDepositListSerializer,
+    BankReconciliationSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
-    ChequeIssueSerializer,
     ChequeIssueFormSerializer,
+    ChequeIssueSerializer,
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
@@ -331,3 +333,15 @@ class CashDepositViewSet(CRULViewSet):
         obj = self.get_object()
         obj.cancel()
         return Response({})
+
+
+class BankReconciliationViewSet(CRULViewSet):
+    queryset = BankReconciliation.objects.all()
+    serializer_class = BankReconciliationSerializer
+    model = BankReconciliation
+
+
+    @action(detail=False, url_path="banks")
+    def get_banks(self, request):
+        banks = BankAccount.objects.filter(company=request.company).only("id", "short_name", "account_number")
+        return Response(BankAccountChequeIssueSerializer(banks, many=True).data)

@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework.exceptions import ValidationError as RestValidatoinError
@@ -435,3 +436,24 @@ class BankCashDeposit(TransactionModel):
         self.status = "Cancelled"
         self.save()
         self.cancel_transactions()
+        
+
+BANK_RECONCILIATION_STATUS = (
+    ("Reconciled", "Reconciled"),
+    ("Unreconciled", "Unreconciled"),
+)
+        
+
+class BankReconciliation(models.Model):
+    bank_account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    status = models.CharField(choices=BANK_RECONCILIATION_STATUS, default=BANK_RECONCILIATION_STATUS[0][0], max_length=20)
+    date = models.DateField()
+    dr_amount = models.FloatField(null=True, blank=True)
+    cr_amount = models.FloatField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    transaction_ids = ArrayField(models.IntegerField(), default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.date)

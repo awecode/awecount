@@ -11,6 +11,7 @@ from .models import (
     ChequeIssue,
     FundTransfer,
     FundTransferTemplate,
+    BankReconciliation
 )
 from apps.ledger.serializers import PartyMinSerializer
 
@@ -206,3 +207,11 @@ class BankCashDepositCreateSerializer(
     class Meta:
         model = BankCashDeposit
         exclude = ("company",)
+
+
+class BankReconciliationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BankReconciliation
+        exclude = ("company", "transaction_ids")
+        

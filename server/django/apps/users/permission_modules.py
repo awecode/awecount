@@ -75,6 +75,7 @@ MODULES = [
     *gdp("AccountOpeningBalance"),
     *gdp("Transaction"),
     *gdp("PaymentMode"),
+    *gdp("BankReconciliation"),
 ]
 
 MODULES.sort()
