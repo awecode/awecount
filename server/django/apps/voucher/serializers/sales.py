@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import serializers
@@ -7,15 +8,15 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.ledger.serializers import PartyMinSerializer
-from apps.product.models import Item
+from apps.product.models import Item, Unit
 from apps.product.serializers import ItemSalesSerializer
+from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.serializers import StatusReversionMixin
-from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from ..models import (
     PurchaseVoucher,
@@ -235,6 +236,38 @@ class SalesVoucherRowSerializer(
     selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
+    def validate(self, attrs):
+        request = self.context["request"]
+        if attrs.get("discount_type") and str(attrs.get("discount_type")).isdigit():
+            if not SalesDiscount.objects.filter(
+                id=attrs.get("discount_type"), company_id=request.company_id
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exists."]},
+                )
+            
+        if not Item.objects.filter(
+            id=attrs.get("item_id"), company_id=request.company_id
+        ).exists():
+            raise serializers.ValidationError({"item_id": ["Item does not exist."]})
+
+        if not TaxScheme.objects.filter(
+            id=attrs.get("tax_scheme_id"), company_id=request.company_id
+        ).exists():
+            raise serializers.ValidationError(
+                {"tax_scheme_id": ["Tax Scheme does not exist."]}
+            )
+
+        if (
+            attrs.get("unit_id")
+            and not Unit.objects.filter(
+                id=attrs.get("unit_id"), company_id=request.company_id
+            ).exists()
+        ):
+            raise serializers.ValidationError({"unit_id": ["Unit does not exist."]})
+
+        return super().validate(attrs)
+
     def validate_discount(self, value):
         if not value:
             value = 0
@@ -302,6 +335,35 @@ class SalesVoucherCreateSerializer(
         ):
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
+            )
+
+        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
+            if not SalesDiscount.objects.filter(
+                id=data.get("discount_type"), company_id=request.company_id
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exists."]},
+                )
+
+        if data.get("party") and data.get("party").company_id != request.company_id:
+            raise ValidationError(
+                {"party": ["Party does not belong to the company."]},
+            )
+
+        if (
+            data.get("payment_mode")
+            and data.get("payment_mode").company_id != request.company_id
+        ):
+            raise ValidationError(
+                {"payment_mode": ["Payment mode does not belong to the company."]},
+            )
+
+        if (
+            data.get("sales_agent")
+            and data.get("sales_agent").company_id != request.company_id
+        ):
+            raise ValidationError(
+                {"sales_agent": ["Sales agent does not belong to the company."]},
             )
 
         if data.get("discount") and data.get("discount") < 0:
@@ -374,7 +436,9 @@ class SalesVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
-            row_serializer = SalesVoucherRowSerializer(data=row)
+            row_serializer = SalesVoucherRowSerializer(data=row, context={
+                "request": self.context["request"]
+            })
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
