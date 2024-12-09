@@ -1,3 +1,5 @@
+from itertools import combinations, groupby
+
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
@@ -26,6 +28,7 @@ from apps.bank.serializers import (
     BankCashDepositCreateSerializer,
     BankCashDepositListSerializer,
     BankReconciliationSerializer,
+    BankReconciliationStatementImportSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
     ChequeIssueFormSerializer,
@@ -36,6 +39,7 @@ from apps.bank.serializers import (
 )
 from apps.ledger.models import Account, Party
 from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer
+from apps.product.models import Transaction
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -340,8 +344,67 @@ class BankReconciliationViewSet(CRULViewSet):
     serializer_class = BankReconciliationSerializer
     model = BankReconciliation
 
+    def reconcile(self, company, statement_transactions, start_date, end_date):
+        system_transactions = Transaction.objects.filter(
+            company=company, date__range=[start_date, end_date]
+        ).order_by("date")
+        # order statement transactions by date, date is in YYYY-MM-DD format in string
+        statement_transactions = sorted(
+            statement_transactions, key=lambda x: x["date"].replace("-", "")
+        )
+        # group transactions by date
+        statement_transactions = {
+            date: list(transactions)
+            for date, transactions in groupby(
+                statement_transactions, key=lambda x: x["date"]
+            )
+        }
+        # group system transactions by date
+        system_transactions = {
+            date: list(transactions)
+            for date, transactions in groupby(system_transactions, key=lambda x: x.date)
+        }
+
+        # iterate over statement transactions, if there is a matching system transaction, reconcile, add transaction_id to statement transaction
+        for date, transactions in statement_transactions.items():
+            for statement_transaction in transactions:
+                for system_transaction in system_transactions.get(date, []):
+                    if statement_transaction["amount"] == system_transaction.amount:
+                        statement_transaction["transaction_id"] = system_transaction.id
+                        system_transactions[date].remove(system_transaction)
+                        break
+
+        # in system_transactions that doesnt have transaction_id,
+        # Reconcile transactions by sum
+        for date, transactions in system_transactions.items():
+            system_transactions_for_date = system_transactions.get(date, [])
+            for system_transaction in system_transactions_for_date:
+                # Filter out already reconciled transactions
+                unreconciled_transactions = [
+                    t for t in transactions if "transaction_id" not in t
+                ]
+                for i in range(1, len(unreconciled_transactions) + 1):
+                    for combination in combinations(unreconciled_transactions, i):
+                        statement_transactions_sum = sum(
+                            transaction["amount"] for transaction in combination
+                        )
+                        if statement_transactions_sum == system_transaction.amount:
+                            for statement_transaction in combination:
+                                statement_transaction["transaction_id"] = (
+                                    system_transaction.id
+                                )
+                            break
 
     @action(detail=False, url_path="banks")
     def get_banks(self, request):
-        banks = BankAccount.objects.filter(company=request.company).only("id", "short_name", "account_number")
+        banks = BankAccount.objects.filter(company=request.company).only(
+            "id", "short_name", "account_number"
+        )
         return Response(BankAccountChequeIssueSerializer(banks, many=True).data)
+
+    @action(detail=False, url_path="import-statement", methods=["POST"])
+    def import_statement(self, request):
+        serializer = BankReconciliationStatementImportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        transactions = serializer.validated_data["transactions"]

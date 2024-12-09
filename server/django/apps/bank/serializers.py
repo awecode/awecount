@@ -1,19 +1,20 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from awecount.libs.serializers import StatusReversionMixin
+from apps.ledger.serializers import PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
+from awecount.libs.serializers import StatusReversionMixin
 
 from .models import (
     BankAccount,
     BankCashDeposit,
+    BankReconciliation,
     ChequeDeposit,
     ChequeIssue,
     FundTransfer,
     FundTransferTemplate,
-    BankReconciliation
 )
-from apps.ledger.serializers import PartyMinSerializer
+
 
 class BankAccountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="__str__")
@@ -214,4 +215,10 @@ class BankReconciliationSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankReconciliation
         exclude = ("company", "transaction_ids")
+        
+class BankReconciliationStatementImportSerializer(serializers.Serializer):
+    bank_account = serializers.IntegerField()
+    transactions = serializers.ListField(child=serializers.DictField())
+    start_date = serializers.DateField(required=False)
+    end_date = serializers.DateField(required=False)
         
