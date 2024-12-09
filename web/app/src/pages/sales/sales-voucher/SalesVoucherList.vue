@@ -2,6 +2,7 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
+      <q-btn color="blue" label="Import" icon-right="upload" @click="openImportModal" class="import-btn" />
       <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales"
         icon-right="add" class="add-btn" />
     </div>
@@ -38,9 +39,9 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
-                      label="Payment Mode" :fetchOnMount="true" />
-                  </div>
+                  <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    label="Payment Mode" :fetchOnMount="true" />
+                </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
@@ -137,6 +138,26 @@
         </td>
       </template>
     </q-table>
+    <q-dialog v-model="showImportModal">
+      <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
+        <q-card-section class="bg-primary flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Import Sales Invoices</span>
+          </div>
+          <q-btn icon="close" class="text-primary bg-slate-200 opacity-95" flat round dense @click="closeImportModal" />
+        </q-card-section>
+
+        <q-card-section class="q-ma-md">
+          <q-card-subtitle class="text-caption">Upload a .xlsx file to import sales invoices</q-card-subtitle>
+          <q-file v-model="fileToImport" accept=".xlsx" label="Select file" color="primary" flat dense
+            :disable="isImporting">
+          </q-file>
+          <div class="text-right q-mt-lg">
+            <q-btn label="Import" color="primary" @click="importInvoices(fileToImport)" :disable="isImporting"></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -216,7 +237,59 @@ export default {
       { name: 'actions', align: 'left', label: 'Actions' },
     ]
 
-    return { ...listData, newColumn, onDownloadXls, checkPermissions }
-  },
+    const isImporting = ref(false)
+    const fileToImport = ref(null)
+    const showImportModal = ref(false)
+    const $q = useQuasar()
+
+
+    function openImportModal() {
+      showImportModal.value = true
+      fileToImport.value = null
+    }
+
+    function closeImportModal() {
+      showImportModal.value = false
+      fileToImport.value = null
+    }
+
+    function importInvoices(file) {
+      isImporting.value = true
+      const formData = new FormData()
+      formData.append('file', file)
+      useApi('v1/sales-voucher/import/', {
+        method: 'POST',
+        body: formData
+      })
+        .then(() => {
+          $q.notify(
+            {
+              color: 'positive',
+              message: 'Invoices import queued successfully!',
+              icon: 'check_circle'
+            }
+          )
+          showImportModal.value = false
+        })
+        .catch(() => {
+          $q.notify(
+            {
+              color: 'negative',
+              message: 'Error importing invoices',
+              icon: 'error'
+            }
+          )
+        }).finally(() => {
+          fileToImport.value = null
+          isImporting.value = false
+        })
+    }
+
+    return {
+      ...listData, newColumn, onDownloadXls, checkPermissions,
+      openImportModal, closeImportModal, importInvoices, showImportModal, isImporting, fileToImport
+    }
+
+  }
 }
 </script>
