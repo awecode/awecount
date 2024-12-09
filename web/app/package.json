@@ -31,6 +31,7 @@
     "unplugin-vue-components": "^0.23.0",
     "vue": "3.4.15",
     "vue-router": "^4.2.5",
+    "xlsx": "^0.18.5",
     "xlsx-js-style": "^1.2.0",
     "yarn": "^1.22.21"
   },

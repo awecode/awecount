@@ -96,7 +96,8 @@
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
               :to="`/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
           </div>
-        </q-td>
+        </q-td>      debugger
+
         <!-- TODO: add modals -->
       </template>
       <template v-slot:body-cell-payment_receipts="props">
@@ -149,11 +150,15 @@
 
         <q-card-section class="q-ma-md">
           <q-card-subtitle class="text-caption">Upload a .xlsx file to import sales invoices</q-card-subtitle>
-          <q-file v-model="fileToImport" accept=".xlsx" label="Select file" color="primary" flat dense
-            :disable="isImporting">
+          <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary"
+            flat dense :disable="isImporting">
           </q-file>
+          <p v-if="importFileParseError" class="text-red-600">
+            {{ importFileParseError }}
+          </p>
           <div class="text-right q-mt-lg">
-            <q-btn label="Import" color="primary" @click="importInvoices(fileToImport)" :disable="isImporting"></q-btn>
+            <q-btn label="Import" color="primary" @click="importInvoices(fileToImport)"
+              :disable="isImporting || !fileToImport || importFileParseError"></q-btn>
           </div>
         </q-card-section>
       </q-card>
@@ -162,6 +167,8 @@
 </template>
 
 <script>
+import * as XLSX from 'xlsx'
+
 export default {
   setup() {
     const metaData = {
@@ -240,7 +247,52 @@ export default {
     const isImporting = ref(false)
     const fileToImport = ref(null)
     const showImportModal = ref(false)
+    const importFileParseError = ref(null)
+    const importFileRequiredColumns = [
+      'Invoice Group ID',
+      'Party',
+      'Customer Name',
+      'Address',
+      'Due Date',
+      'Discount Type',
+      'Discount',
+      'Trade Discount',
+      'Payment Mode',
+      'Remarks',
+      'Is Export',
+      'Sales Agent ID',
+      'Status',
+      'Row Item ID',
+      'Row Quantity',
+      'Row Rate',
+      'Row Unit ID',
+      'Row Discount Type',
+      'Row Discount',
+      'Row Tax Scheme ID',
+      'Row Description',
+    ]
+
     const $q = useQuasar()
+
+    function validateImportFile(event) {
+      const file = event.target.files[0]
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result)
+        const workbook = XLSX.read(data, { type: 'array' })
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        const headers = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0]
+        for (let i = 0; i < importFileRequiredColumns.length; i++) {
+          if (headers[i] !== importFileRequiredColumns[i]) {
+            importFileParseError.value = `Invalid column at index ${i + 1}. found: ${headers[i]}, expected: ${importFileRequiredColumns[i]}`
+            return
+          }
+        }
+        fileToImport.value = file
+      }
+      reader.readAsArrayBuffer(file)
+    }
 
 
     function openImportModal() {
@@ -253,10 +305,13 @@ export default {
       fileToImport.value = null
     }
 
-    function importInvoices(file) {
+    function importInvoices() {
+      if (isImporting.value || !fileToImport.value || importFileParseError.value) {
+        return
+      }
       isImporting.value = true
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', fileToImport.value)
       useApi('v1/sales-voucher/import/', {
         method: 'POST',
         body: formData
@@ -280,14 +335,14 @@ export default {
             }
           )
         }).finally(() => {
-          fileToImport.value = null
           isImporting.value = false
         })
     }
 
     return {
       ...listData, newColumn, onDownloadXls, checkPermissions,
-      openImportModal, closeImportModal, importInvoices, showImportModal, isImporting, fileToImport
+      openImportModal, closeImportModal, importInvoices, showImportModal, isImporting, fileToImport,
+      validateImportFile, importFileParseError
     }
 
   }
