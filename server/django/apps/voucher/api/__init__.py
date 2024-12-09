@@ -356,10 +356,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
     def update_payment_mode(self, request, pk):
         obj = self.get_object()
         payment_mode = request.data.get("payment_mode")
-        if payment_mode and str(payment_mode).isdigit():
-            obj.payment_mode_id = payment_mode
-        else:
-            raise RESTValidationError({"payment_mode": "Invalid payment mode"})
+        if payment_mode is not None:
+            try:
+                PaymentMode.objects.get(id=payment_mode, company=request.company)
+            except PaymentMode.DoesNotExist:
+                raise RESTValidationError({"payment_mode": "Invalid payment mode"})
+        obj.payment_mode_id = payment_mode
         obj.apply_transactions()
         return Response({})
 
