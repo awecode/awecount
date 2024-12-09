@@ -1194,7 +1194,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: '/',
+        path: 'view/',
         name: 'Bank Reconciliation',
         component: () => import('src/pages/bank/reconciliation/IndexPage.vue'),
         meta: {
