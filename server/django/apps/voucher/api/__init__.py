@@ -361,7 +361,12 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 PaymentMode.objects.get(id=payment_mode, company=request.company)
             except PaymentMode.DoesNotExist:
                 raise RESTValidationError({"payment_mode": "Invalid payment mode"})
+
         obj.payment_mode_id = payment_mode
+
+        if payment_mode is None:
+            obj.status = "Issued"
+
         obj.apply_transactions()
         return Response({})
 
