@@ -60,7 +60,7 @@ class FiscalYearSerializer(serializers.ModelSerializer):
         exclude = ()
 
 
-class UserLiteSerializer(BaseSerializer):
+class UserLiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
