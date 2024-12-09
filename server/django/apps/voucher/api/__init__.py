@@ -201,30 +201,31 @@ def import_xls_file(request_obj, file):
     }
     request.data = request_obj["data"]
     wb = openpyxl.load_workbook(file)
-    sheet = wb.active
+    sheet = wb.worksheets[0]
     rows = list(sheet.iter_rows(values_only=True))
+
     required_fields = [
-        "invoice_id",
-        "party",
-        "customer_name",
-        "address",
-        "due_date",
-        "discount_type",
-        "discount",
-        "trade_discount",
-        "payment_mode",
-        "remarks",
-        "is_export",
-        "sales_agent",
-        "status",
-        "row_item_id",
-        "row_quantity",
-        "row_rate",
-        "row_unit_id",
-        "row_discount_type",
-        "row_discount",
-        "row_tax_scheme_id",
-        "row_description",
+        "Invoice Group ID",
+        "Party",
+        "Customer Name",
+        "Address",
+        "Due Date",
+        "Discount Type",
+        "Discount",
+        "Trade Discount",
+        "Payment Mode",
+        "Remarks",
+        "Is Export",
+        "Sales Agent ID",
+        "Status",
+        "Row Item ID",
+        "Row Quantity",
+        "Row Rate",
+        "Row Unit ID",
+        "Row Discount Type",
+        "Row Discount",
+        "Row Tax Scheme ID",
+        "Row Description",
     ]
     headers = rows[0]
     error_message = None
