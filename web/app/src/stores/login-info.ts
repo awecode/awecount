@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 
-export const useLoginStore = defineStore('loginStore', {
+export const useLoginStore = defineStore('login', {
   state: () => ({
     username: null,
     email: null,
@@ -11,8 +11,8 @@ export const useLoginStore = defineStore('loginStore', {
     stockTrialBalanceCollapseId: [],
     userInfo: null,
     dateRange: {
-      start_date : null,
-      end_date: null
+      start_date: null,
+      end_date: null,
     },
     posData: null,
     isFormLoading: false,
@@ -28,7 +28,11 @@ export const useLoginStore = defineStore('loginStore', {
     updateDateRange(start_date, end_date) {
       this.dateRange.start_date = start_date
       this.dateRange.end_date = end_date
-    }
+    },
   },
   persist: true,
 })
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useLoginStore, import.meta.hot))
+}

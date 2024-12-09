@@ -7,8 +7,7 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-const { sentryVitePlugin } = require("@sentry/vite-plugin")
-const UnoCSS = require('unocss/vite').default
+// const { sentryVitePlugin } = require("@sentry/vite-plugin")
 // const { presetAttributify, presetUno } = require('unocss')
 // import presetWind from '@unocss/preset-wind'
 const { presetWind } = require('unocss')
@@ -80,18 +79,18 @@ module.exports = configure(function (ctx) {
       sourcemap: true,
 
       extendViteConf(viteConf) {
-        viteConf.plugins.push(
-          ...UnoCSS({
-            presets: [presetWind()],
-          })
-        )
-        viteConf.plugins.push(
-          sentryVitePlugin({
-            org: 'awecode',
-            project: 'awecount',
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-          }),
-        )
+        // viteConf.plugins.push(
+        //   ...UnoCSS({
+        //     presets: [presetWind()],
+        //   })
+        // )
+        // viteConf.plugins.push(
+        //   sentryVitePlugin({
+        //     org: 'awecode',
+        //     project: 'awecount',
+        //     authToken: process.env.SENTRY_AUTH_TOKEN,
+        //   }),
+        // )
       },
       // viteVuePluginOptions: {},
 
@@ -106,6 +105,20 @@ module.exports = configure(function (ctx) {
         //     include: path.resolve(__dirname, './src/i18n/**'),
         //   },
         // ],
+        [
+          '@sentry/vite-plugin',
+          {
+            org: 'awecode',
+            project: 'awecount',
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+          },
+        ],
+        [
+          'unocss/vite',
+          {
+            presets: [presetWind()],
+          },
+        ],
         [
           'unplugin-auto-import/vite',
           {
