@@ -23,6 +23,7 @@ declare module '@vue/runtime-core' {
     FileUploader: typeof import('./src/components/FileUploader.vue')['default']
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     FormSkeleton: typeof import('./src/components/FormSkeleton.vue')['default']
+    Import: typeof import('./src/components/Import.vue')['default']
     InventoryConversionTable: typeof import('./src/components/inventory-conversion/InventoryConversionTable.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']
@@ -49,5 +50,6 @@ declare module '@vue/runtime-core' {
     ViewerHeader2: typeof import('./src/components/viewer/ViewerHeader2.vue')['default']
     ViewerTable: typeof import('./src/components/viewer/ViewerTable.vue')['default']
     VoucherRow: typeof import('./src/components/VoucherRow.vue')['default']
+    XLSImport: typeof import('./src/components/XLSImport.vue')['default']
   }
 }

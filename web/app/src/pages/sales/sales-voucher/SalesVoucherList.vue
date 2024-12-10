@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
-      <q-btn color="blue" label="Import" icon-right="upload" @click="openImportModal" class="import-btn" />
+      <q-btn color="blue" label="Import" icon-right="upload" @click="showImportModal = true" class="import-btn" />
       <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales"
         icon-right="add" class="add-btn" />
     </div>
@@ -139,39 +139,13 @@
         </td>
       </template>
     </q-table>
-    <q-dialog v-model="showImportModal">
-      <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-        <q-card-section class="bg-primary flex justify-between">
-          <div class="text-h6 text-white">
-            <span>Import Sales Invoices</span>
-          </div>
-          <q-btn icon="close" class="text-primary bg-slate-200 opacity-95" flat round dense @click="closeImportModal" />
-        </q-card-section>
-
-        <q-card-section class="q-ma-md">
-          <p class="text-caption">Upload a .xlsx file to import sales invoices
-            <a href="/files/sales-invoices.xlsx" download="sample-sales-invoices.xlsx" class="text-primary">Download sample
-              file</a>
-          </p>
-          <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary"
-            flat dense :disable="isImporting">
-          </q-file>
-          <p v-if="importFileParseError" class="text-red-600">
-            {{ importFileParseError }}
-          </p>
-          <div class="text-right q-mt-lg">
-            <q-btn label="Import" color="primary" @click="importInvoices(fileToImport)"
-              :disable="isImporting || !fileToImport || importFileParseError"></q-btn>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+    <XLSImport v-model:show-import-modal="showImportModal" :required-columns="importFileRequiredColumns"
+      endpoint="/v1/sales-voucher/import/" title="Import Sales Vouchers"
+      help-text="Upload a .xlsx file to import sales invoices" sample-file-url="/files/sales-invoices.xlsx" />
   </div>
 </template>
 
 <script>
-import * as XLSX from 'xlsx'
-
 export default {
   setup() {
     const metaData = {
@@ -247,10 +221,7 @@ export default {
       { name: 'actions', align: 'left', label: 'Actions' },
     ]
 
-    const isImporting = ref(false)
-    const fileToImport = ref(null)
     const showImportModal = ref(false)
-    const importFileParseError = ref(null)
     const importFileRequiredColumns = [
       'Invoice Group ID',
       'Party',
@@ -275,88 +246,8 @@ export default {
       'Row Description',
     ]
 
-    const $q = useQuasar()
-
-    function validateImportFile(event) {
-      importFileParseError.value = null
-      const file = event.target.files[0]
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result)
-        const workbook = XLSX.read(data, { type: 'array' })
-        const sheetName = workbook.SheetNames[0]
-        const sheet = workbook.Sheets[sheetName]
-        const headers = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0]
-        for (let i = 0; i < importFileRequiredColumns.length; i++) {
-          if (headers[i] !== importFileRequiredColumns[i]) {
-            importFileParseError.value = `Invalid column at index ${i + 1}. found: ${headers[i]}, expected: ${importFileRequiredColumns[i]}`
-            return
-          }
-        }
-        fileToImport.value = file
-      }
-      reader.readAsArrayBuffer(file)
-    }
-
-
-    function openImportModal() {
-      showImportModal.value = true
-      fileToImport.value = null
-    }
-
-    function closeImportModal() {
-      showImportModal.value = false
-      fileToImport.value = null
-    }
-
-    function importInvoices() {
-      if (isImporting.value || !fileToImport.value || importFileParseError.value) {
-        return
-      }
-      isImporting.value = true
-      const formData = new FormData()
-      formData.append('file', fileToImport.value)
-      useApi('v1/sales-voucher/import/', {
-        method: 'POST',
-        body: formData
-      })
-        .then(() => {
-          $q.notify(
-            {
-              color: 'positive',
-              message: 'Invoices import queued successfully!',
-              icon: 'check_circle'
-            }
-          )
-          showImportModal.value = false
-        })
-        .catch((error) => {
-          if (error.data && error.data.error) {
-            $q.notify(
-              {
-                color: 'negative',
-                message: error.data.error,
-                icon: 'error'
-              }
-            )
-          } else {
-            $q.notify(
-              {
-                color: 'negative',
-                message: 'Error importing invoices',
-                icon: 'error'
-              }
-            )
-          }
-        }).finally(() => {
-          isImporting.value = false
-        })
-    }
-
     return {
-      ...listData, newColumn, onDownloadXls, checkPermissions,
-      openImportModal, closeImportModal, importInvoices, showImportModal, isImporting, fileToImport,
-      validateImportFile, importFileParseError
+      ...listData, newColumn, onDownloadXls, checkPermissions, showImportModal, importFileRequiredColumns
     }
 
   }
