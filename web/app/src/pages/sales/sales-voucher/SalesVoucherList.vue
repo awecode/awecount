@@ -96,7 +96,7 @@
               class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px"
               :to="`/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
           </div>
-        </q-td>      debugger
+        </q-td>
 
         <!-- TODO: add modals -->
       </template>
@@ -326,14 +326,24 @@ export default {
           )
           showImportModal.value = false
         })
-        .catch(() => {
-          $q.notify(
-            {
-              color: 'negative',
-              message: 'Error importing invoices',
-              icon: 'error'
-            }
-          )
+        .catch((error) => {
+          if (error.data && error.data.error) {
+            $q.notify(
+              {
+                color: 'negative',
+                message: error.data.error,
+                icon: 'error'
+              }
+            )
+          } else {
+            $q.notify(
+              {
+                color: 'negative',
+                message: 'Error importing invoices',
+                icon: 'error'
+              }
+            )
+          }
         }).finally(() => {
           isImporting.value = false
         })
