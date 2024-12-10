@@ -29,6 +29,14 @@ class BankAccountMinSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
         fields = ("id", "name")
+        
+class BankAccountWithLedgerSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source="__str__")
+
+
+    class Meta:
+        model = BankAccount
+        fields = ("id", "name", "ledger_id")
 
 
 class ChequeDepositCreateSerializer(StatusReversionMixin, serializers.ModelSerializer):

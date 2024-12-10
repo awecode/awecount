@@ -1,4 +1,4 @@
-from itertools import combinations, groupby
+from itertools import combinations
 
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
@@ -25,6 +25,7 @@ from apps.bank.resources import ChequeIssueResource
 from apps.bank.serializers import (
     BankAccountChequeIssueSerializer,
     BankAccountSerializer,
+    BankAccountWithLedgerSerializer,
     BankCashDepositCreateSerializer,
     BankCashDepositListSerializer,
     BankReconciliationSerializer,
@@ -39,7 +40,7 @@ from apps.bank.serializers import (
 )
 from apps.ledger.models import Account, Party
 from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer
-from apps.product.models import Transaction
+from apps.ledger.models.base import Transaction
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -344,63 +345,180 @@ class BankReconciliationViewSet(CRULViewSet):
     serializer_class = BankReconciliationSerializer
     model = BankReconciliation
 
-    def reconcile(self, company, statement_transactions, start_date, end_date):
+    def reconcile(self, company, statement_transactions, start_date, end_date, account_id):
         system_transactions = Transaction.objects.filter(
-            company=company, date__range=[start_date, end_date]
-        ).order_by("date")
-        # order statement transactions by date, date is in YYYY-MM-DD format in string
-        statement_transactions = sorted(
-            statement_transactions, key=lambda x: x["date"].replace("-", "")
-        )
-        # group transactions by date
-        statement_transactions = {
-            date: list(transactions)
-            for date, transactions in groupby(
-                statement_transactions, key=lambda x: x["date"]
-            )
-        }
-        # group system transactions by date
-        system_transactions = {
-            date: list(transactions)
-            for date, transactions in groupby(system_transactions, key=lambda x: x.date)
-        }
+        company=company, journal_entry__date__range=[start_date, end_date], account_id=account_id
+        ).order_by("journal_entry__date").select_related("journal_entry")
+        
+        # get system_transactions sql query
+        print(system_transactions.query)
+        
+        def parse_amount(amount):
+            if amount and isinstance(amount, str):
+                return float(amount.replace(",", ""))
+            return amount or 0
+        
+        # Prase statement transactions dr_amount and cr_amount
+        for statement_transaction in statement_transactions:
+            statement_transaction['dr_amount'] = parse_amount(statement_transaction.get('dr_amount'))
+            statement_transaction['cr_amount'] = parse_amount(statement_transaction.get('cr_amount'))
+            statement_transaction['balance'] = parse_amount(statement_transaction.get('balance'))
+        
+        
+        reconciled_transactions = []
+        unreconciled_statement_transactions = statement_transactions.copy()
+        unreconciled_system_transactions = list(system_transactions)
+        
+
+        # Create a dictionary for quick lookup of system transactions by date
+        system_transactions_by_date = {}
+        for system_transaction in unreconciled_system_transactions:
+            date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
+            if date_str not in system_transactions_by_date:
+                system_transactions_by_date[date_str] = []
+            system_transactions_by_date[date_str].append(system_transaction)
 
         # iterate over statement transactions, if there is a matching system transaction, reconcile, add transaction_id to statement transaction
-        for date, transactions in statement_transactions.items():
-            for statement_transaction in transactions:
-                for system_transaction in system_transactions.get(date, []):
-                    if statement_transaction["amount"] == system_transaction.amount:
-                        statement_transaction["transaction_id"] = system_transaction.id
-                        system_transactions[date].remove(system_transaction)
+        for statement_transaction in statement_transactions:
+            date_str = statement_transaction['date']
+            if date_str in system_transactions_by_date:
+                for system_transaction in system_transactions_by_date[date_str]:
+                    if (
+                        (statement_transaction.get('dr_amount') and 
+                        statement_transaction['dr_amount'] == system_transaction.cr_amount) or
+                        (statement_transaction.get('cr_amount') and 
+                        statement_transaction['cr_amount'] == system_transaction.dr_amount)
+                    ):
+                        statement_transaction['transaction_ids'] = [system_transaction.pk]
+                        reconciled_transactions.append(statement_transaction)
+                        unreconciled_statement_transactions.remove(statement_transaction)
+                        unreconciled_system_transactions.remove(system_transaction)
+                        system_transactions_by_date[date_str].remove(system_transaction)
+                        if not system_transactions_by_date[date_str]:
+                            del system_transactions_by_date[date_str]
                         break
+                    
+        
 
         # in system_transactions that doesnt have transaction_id,
         # Reconcile transactions by sum
-        for date, transactions in system_transactions.items():
-            system_transactions_for_date = system_transactions.get(date, [])
-            for system_transaction in system_transactions_for_date:
-                # Filter out already reconciled transactions
-                unreconciled_transactions = [
-                    t for t in transactions if "transaction_id" not in t
+        for system_transaction in unreconciled_system_transactions:
+            date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
+            if date_str in system_transactions_by_date:
+                # Filter statement transactions by date
+                date_filtered_statement_transactions = [
+                    t for t in unreconciled_statement_transactions if t['date'] == date_str
                 ]
-                for i in range(1, len(unreconciled_transactions) + 1):
-                    for combination in combinations(unreconciled_transactions, i):
-                        statement_transactions_sum = sum(
-                            transaction["amount"] for transaction in combination
-                        )
-                        if statement_transactions_sum == system_transaction.amount:
+                # Try different combination lengths to match system transaction amount
+                for r in range(1, len(date_filtered_statement_transactions) + 1):
+                    for combination in combinations(date_filtered_statement_transactions, r):
+                        # Calculate sum of debits and credits
+                        total_dr = sum(t.get('dr_amount', 0) for t in combination)
+                        total_cr = sum(t.get('cr_amount', 0) for t in combination)
+                        
+                        # Check if combination matches system transaction amount
+                        if (total_dr == (system_transaction.cr_amount or 0) and 
+                            total_cr == (system_transaction.dr_amount or 0)):
+                            
+                            # Mark these transactions as reconciled
                             for statement_transaction in combination:
-                                statement_transaction["transaction_id"] = (
-                                    system_transaction.id
-                                )
+                                statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                reconciled_transactions.append(statement_transaction)
+                                unreconciled_statement_transactions.remove(statement_transaction)
+                            
+                            # Remove the system transaction from unreconciled list
+                            unreconciled_system_transactions.remove(system_transaction)
+                            system_transactions_by_date[date_str].remove(system_transaction)
+                            if not system_transactions_by_date[date_str]:
+                                del system_transactions_by_date[date_str]
                             break
+                        
+        # Reconcile transactions by sum
+        for statement_transaction in unreconciled_statement_transactions:
+            date_str = statement_transaction['date']
+            if date_str in system_transactions_by_date:
+                # Filter system transactions by date
+                date_filtered_system_transactions = [
+                    t for t in unreconciled_system_transactions if t.journal_entry.date.strftime('%Y-%m-%d') == date_str
+                ]
+                # Try different combination lengths to match statement transaction amount
+                for r in range(1, len(date_filtered_system_transactions) + 1):
+                    for combination in combinations(date_filtered_system_transactions, r):
+                        # Calculate sum of debits and credits
+                        total_dr = sum((t.dr_amount or 0) for t in combination)
+                        total_cr = sum((t.cr_amount or 0) for t in combination)
+                        
+                        # Check if combination matches statement transaction amount
+                        if (total_dr == float(statement_transaction.get('cr_amount', 0)) and 
+                            total_cr == float(statement_transaction.get('dr_amount', 0))):
+                            
+                            # Mark these transactions as reconciled
+                            for system_transaction in combination:
+                                if statement_transaction.get('transaction_ids'):
+                                    statement_transaction['transaction_ids'].append(system_transaction.pk)
+                                else:
+                                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                unreconciled_system_transactions.remove(system_transaction)
+                                system_transactions_by_date[date_str].remove(system_transaction)
+                            reconciled_transactions.append(statement_transaction)
+                            
+                            if not system_transactions_by_date[date_str]:
+                                del system_transactions_by_date[date_str]
+                            break
+                        
+        # Combine reconciled and unreconciled transactions into a single list
+        bank_reconciliation_entries = []
+
+        # Add reconciled transactions
+        for statement_transaction in reconciled_transactions:
+            bank_reconciliation_entries.append(BankReconciliation(
+                company=company,
+                statement_date=statement_transaction['date'],
+                dr_amount=statement_transaction.get('dr_amount', None),
+                cr_amount=statement_transaction.get('cr_amount', None),
+                status='Reconciled',
+                transaction_ids=statement_transaction.get('transaction_ids', []),
+                bank_account_id=account_id,
+                description=statement_transaction.get('description', None),
+            ))
+
+        # Add unreconciled transactions
+        for statement_transaction in unreconciled_statement_transactions:
+            bank_reconciliation_entries.append(BankReconciliation(
+                company=company,
+                statement_date=statement_transaction['date'],
+                dr_amount=statement_transaction.get('dr_amount', None),
+                cr_amount=statement_transaction.get('cr_amount', None),
+                status='Unreconciled',
+                bank_account_id=account_id,
+                description=statement_transaction.get('description', None),
+            ))
+
+        # Perform bulk_create once
+        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+                            
+        return {
+            'reconciled_transactions': reconciled_transactions,
+            'unreconciled_statement_transactions': unreconciled_statement_transactions,
+            'unreconciled_system_transactions': [
+            {
+                'id': t.pk,
+                'date': t.journal_entry.date.strftime('%Y-%m-%d'),
+                'dr_amount': t.dr_amount,
+                'cr_amount': t.cr_amount,
+            }
+            for t in unreconciled_system_transactions
+        ],
+        }
+                        
 
     @action(detail=False, url_path="banks")
     def get_banks(self, request):
         banks = BankAccount.objects.filter(company=request.company).only(
-            "id", "short_name", "account_number"
+            "id", "short_name", "account_number", "ledger_id"
         )
-        return Response(BankAccountChequeIssueSerializer(banks, many=True).data)
+        return Response(BankAccountWithLedgerSerializer(banks, many=True).data)
+
 
     @action(detail=False, url_path="import-statement", methods=["POST"])
     def import_statement(self, request):
@@ -408,3 +526,6 @@ class BankReconciliationViewSet(CRULViewSet):
         serializer.is_valid(raise_exception=True)
 
         transactions = serializer.validated_data["transactions"]
+        account_id = serializer.validated_data["bank_account"]
+        response = self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
+        return Response(response)
