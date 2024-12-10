@@ -445,10 +445,10 @@ BANK_RECONCILIATION_STATUS = (
         
 
 class BankReconciliation(models.Model):
-    bank_account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     status = models.CharField(choices=BANK_RECONCILIATION_STATUS, default=BANK_RECONCILIATION_STATUS[0][0], max_length=20)
-    date = models.DateField()
+    statement_date = models.DateField()
     dr_amount = models.FloatField(null=True, blank=True)
     cr_amount = models.FloatField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)

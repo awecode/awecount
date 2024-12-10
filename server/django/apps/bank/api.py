@@ -465,7 +465,7 @@ class BankReconciliationViewSet(CRULViewSet):
                             if not system_transactions_by_date[date_str]:
                                 del system_transactions_by_date[date_str]
                             break
-                        
+        
         # Combine reconciled and unreconciled transactions into a single list
         bank_reconciliation_entries = []
 
@@ -478,7 +478,7 @@ class BankReconciliationViewSet(CRULViewSet):
                 cr_amount=statement_transaction.get('cr_amount', None),
                 status='Reconciled',
                 transaction_ids=statement_transaction.get('transaction_ids', []),
-                bank_account_id=account_id,
+                account_id=account_id,
                 description=statement_transaction.get('description', None),
             ))
 
@@ -490,25 +490,25 @@ class BankReconciliationViewSet(CRULViewSet):
                 dr_amount=statement_transaction.get('dr_amount', None),
                 cr_amount=statement_transaction.get('cr_amount', None),
                 status='Unreconciled',
-                bank_account_id=account_id,
+                account_id=account_id,
                 description=statement_transaction.get('description', None),
             ))
 
         # Perform bulk_create once
-        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
             'unreconciled_statement_transactions': unreconciled_statement_transactions,
             'unreconciled_system_transactions': [
-            {
-                'id': t.pk,
-                'date': t.journal_entry.date.strftime('%Y-%m-%d'),
-                'dr_amount': t.dr_amount,
-                'cr_amount': t.cr_amount,
-            }
-            for t in unreconciled_system_transactions
-        ],
+                {
+                    'id': t.pk,
+                    'date': t.journal_entry.date.strftime('%Y-%m-%d'),
+                    'dr_amount': t.dr_amount,
+                    'cr_amount': t.cr_amount,
+                }
+                for t in unreconciled_system_transactions
+            ],
         }
                         
 
