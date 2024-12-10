@@ -1777,6 +1777,31 @@ class PaymentReceipt(TransactionModel):
         return str(self.date)
 
 
+IMPORT_TYPES = (
+    ("Sales Voucher", "Sales Voucher"),
+    ("Purchase Voucher", "Purchase Voucher"),
+    ("Credit Note", "Credit Note"),
+    ("Debit Note", "Debit Note"),
+    ("Item", "Item"),
+    ("Party", "Party"),
+)
+
+IMPORT_STATUSES = (
+    ("Pending", "Pending"),
+    ("Completed", "Completed"),
+    ("Failed", "Failed"),
+)
+
+
+class Import(models.Model):
+    file = models.CharField(max_length=255)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    type = models.CharField(choices=IMPORT_TYPES, max_length=25)
+    status = models.CharField(choices=IMPORT_STATUSES, max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 auditlog.register(Challan)
 auditlog.register(ChallanRow)
 auditlog.register(SalesVoucher)
