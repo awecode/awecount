@@ -275,6 +275,7 @@ export default {
     const $q = useQuasar()
 
     function validateImportFile(event) {
+      importFileParseError.value = null
       const file = event.target.files[0]
       const reader = new FileReader()
       reader.onload = (e) => {
