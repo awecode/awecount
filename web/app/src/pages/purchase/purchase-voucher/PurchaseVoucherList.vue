@@ -2,6 +2,7 @@
   <div class="q-pa-md">
     <div class="flex gap-4 justify-end">
       <q-btn color="blue" label="Export XLS" icon-right="download" @click="onDownloadXls" class="export-btn" />
+      <q-btn color="blue" label="Import" icon-right="upload" @click="showImportModal = true" class="import-btn" />
       <q-btn v-if="checkPermissions('PurchaseVoucherCreate')" color="green" to="/purchase-voucher/add/"
         label="New Purchase" icon-right="add" class="add-btn" />
     </div>
@@ -38,9 +39,9 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
-                      label="Payment Mode" :fetchOnMount="true" />
-                  </div>
+                  <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    label="Payment Mode" :fetchOnMount="true" />
+                </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate"></q-btn>
                   <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
@@ -100,6 +101,9 @@
         </q-td>
       </template>
     </q-table>
+    <XLSImport v-model:show-import-modal="showImportModal" :required-columns="importRequiredColumns"
+      endpoint="/v1/purchase-vouchers/import/" title="Import Purchase Vouchers"
+      help-text="Upload a .xlsx file to import purchase invoices" sample-file-url="/files/purchase-invoices.xlsx" />
   </div>
 </template>
 
@@ -158,7 +162,34 @@ export default {
       { name: 'actions', label: 'Actions', align: 'left' },
     ]
 
-    return { ...listData, onDownloadXls, newColumn, checkPermissions }
+    const showImportModal = ref(false)
+    const importRequiredColumns = [
+      'Invoice Group ID',
+      'Party',
+      'Bill Number',
+      'Discount Type',
+      'Discount',
+      'Trade Discount',
+      'Date',
+      'Payment Mode',
+      'Due Date',
+      'Remarks',
+      'Is Import',
+      'Status',
+      'Row Item ID',
+      'Row Quantity',
+      'Row Rate',
+      'Row Unit ID',
+      'Row Discount Type',
+      'Row Discount',
+      'Row Tax Scheme ID',
+      'Row Description',
+    ]
+
+    return {
+      ...listData, onDownloadXls, newColumn, checkPermissions,
+      showImportModal, importRequiredColumns
+    }
   },
 }
 </script>
