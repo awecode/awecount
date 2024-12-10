@@ -1,7 +1,3 @@
-import os
-import uuid
-
-from django.conf import settings
 from django.http import HttpResponse
 from django.views.generic.detail import DetailView
 from django_xhtml2pdf.utils import fetch_resources
@@ -13,6 +9,7 @@ from rest_framework.views import APIView
 from xhtml2pdf import pisa
 
 from apps.company.models import Company
+from awecount.libs.helpers import upload_file
 
 from .models import SalesVoucher
 
@@ -44,15 +41,7 @@ class FileUploadView(APIView):
         file_urls = []
 
         for file in uploaded_files:
-            filename = f"{uuid.uuid4()}-{file.name}"
-            if folder:
-                filename = f"{folder}/{filename}"
-                if not os.path.exists(os.path.join(settings.MEDIA_ROOT, folder)):
-                    os.makedirs(os.path.join(settings.MEDIA_ROOT, folder))
-            file_path = os.path.join(settings.MEDIA_ROOT, filename)
-            with open(file_path, "wb+") as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            filename = upload_file(file, folder)
             file_urls.append(filename)
 
         return Response(file_urls)

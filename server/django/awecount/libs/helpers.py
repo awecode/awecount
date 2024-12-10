@@ -1,3 +1,7 @@
+import os
+import uuid
+
+from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.utils.crypto import constant_time_compare
 
@@ -42,3 +46,16 @@ def check_verification_hash(hash_to_check, value):
         return False
 
     return constant_time_compare(signed_number, value)
+
+
+def upload_file(file, folder):
+    filename = f"{uuid.uuid4()}-{file.name}"
+    if folder:
+        filename = f"{folder}/{filename}"
+        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, folder)):
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, folder))
+    file_path = os.path.join(settings.MEDIA_ROOT, filename)
+    with open(file_path, "wb+") as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
+    return filename
