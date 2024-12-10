@@ -167,7 +167,9 @@ from ..serializers import (
 )
 
 
-def send_import_completion_email(request, new_invoices=[], error_message=None):
+def send_sales_voucher_import_completion_email(
+    request, new_invoices=[], error_message=None
+):
     if error_message:
         subject = "Error in Importing Sales Invoices"
         message = f"""
@@ -196,7 +198,38 @@ def send_import_completion_email(request, new_invoices=[], error_message=None):
     email.send()
 
 
-def import_xls_file(request_obj, file):
+def send_purchase_voucher_import_completion_email(
+    request, new_invoices=[], error_message=None
+):
+    if error_message:
+        subject = "Error in Importing Purchase Invoices"
+        message = f"""
+        <p>We encountered an error while importing your purchase invoices:</p>
+        <p><strong>Error:</strong> {error_message}</p>
+        <p>Please review the file you attempted to upload and ensure that it follows the correct format. If the issue persists, feel free to reach out to our support team for assistance.</p>
+        <p>Thank you for your patience.</p>
+        """
+    else:
+        origin = request.META.get("HTTP_ORIGIN") or "https://awecount.com"
+        subject = "Purchase Invoices Imported Successfully"
+        message = f"""
+        <p>Your purchase invoices have been successfully imported.</p>
+        <p><strong>{len(new_invoices)} invoice(s)</strong> have been imported and are now available in your system.</p>
+        <p>You can view and manage these invoices in your <a href="{origin}/purchase-voucher/list/">Purchase Voucher List</a>.</p>
+        <p>Thank you for using our service. If you need any further assistance, don't hesitate to contact us.</p>
+        """
+
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        to=[request.user.email],
+        from_email=settings.DEFAULT_FROM_EMAIL,
+    )
+    email.content_subtype = "html"
+    email.send()
+
+
+def import_sales_vouchers(request_obj, file):
     request = Request()
     request.company_id = request_obj["company_id"]
     request.user = request_obj["user"]
@@ -240,7 +273,7 @@ def import_xls_file(request_obj, file):
             break
 
     if error_message:
-        send_import_completion_email(request, error_message=error_message)
+        send_sales_voucher_import_completion_email(request, error_message=error_message)
         return
 
     data = rows[1:]
@@ -292,12 +325,117 @@ def import_xls_file(request_obj, file):
     except RESTValidationError as e:
         error_message = e.detail
 
-    send_import_completion_email(
+    send_sales_voucher_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message
     )
 
     Import.objects.filter(
         company=request.company, type="Sales Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
+
+
+def import_purchase_vouchers(request_obj, file):
+    request = Request()
+    request.company_id = request_obj["company_id"]
+    request.user = request_obj["user"]
+    request.company = request_obj["company"]
+    request.META = {
+        "HTTP_ORIGIN": request_obj["origin"],
+    }
+    request.data = request_obj["data"]
+    wb = openpyxl.load_workbook(file)
+    sheet = wb.worksheets[0]
+    rows = list(sheet.iter_rows(values_only=True))
+
+    required_fields = [
+        "Invoice Group ID",
+        "Party",
+        "Bill Number",
+        "Discount Type",
+        "Discount",
+        "Trade Discount",
+        "Date",
+        "Payment Mode",
+        "Due Date",
+        "Remarks",
+        "Is Import",
+        "Status",
+        "Row Item ID",
+        "Row Quantity",
+        "Row Rate",
+        "Row Unit ID",
+        "Row Discount Type",
+        "Row Discount",
+        "Row Tax Scheme ID",
+        "Row Description",
+    ]
+    headers = rows[0]
+    error_message = None
+    for i in range(len(required_fields)):
+        if required_fields[i] != headers[i]:
+            error_message = f"Column {i+1} should be {required_fields[i]}"
+            break
+
+    if error_message:
+        send_purchase_voucher_import_completion_email(
+            request, error_message=error_message
+        )
+        return
+
+    data = rows[1:]
+    invoices = {}
+
+    for row in data:
+        invoice_id = row[0]
+        if invoice_id not in invoices:
+            invoices[invoice_id] = {
+                "party": row[1],
+                "voucher_no": row[2],
+                "discount_type": row[3],
+                "discount": row[4] or 0,
+                "trade_discount": row[5],
+                "date": row[6].date() if isinstance(row[6], datetime) else row[6],
+                "payment_mode": row[7],
+                "due_date": row[8].date() if isinstance(row[8], datetime) else row[8],
+                "remarks": row[9],
+                "is_import": row[10],
+                "status": row[11],
+                "rows": [],
+            }
+        invoices[invoice_id]["rows"].append(
+            {
+                "item_id": row[12],
+                "quantity": row[13],
+                "rate": row[14],
+                "unit_id": row[15],
+                "discount_type": row[16],
+                "discount": row[17],
+                "tax_scheme_id": row[18],
+                "description": row[19],
+            }
+        )
+
+    new_invoices = invoices.items()
+
+    try:
+        with transaction.atomic():
+            for invoice_id, invoice_data in new_invoices:
+                serializer = PurchaseVoucherCreateSerializer(
+                    data=invoice_data, context={"request": request}
+                )
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.create(validated_data=serializer.validated_data)
+                invoice_data["id"] = instance.id
+
+    except RESTValidationError as e:
+        error_message = e.detail
+
+    send_purchase_voucher_import_completion_email(
+        request, new_invoices=new_invoices, error_message=error_message
+    )
+
+    Import.objects.filter(
+        company=request.company, type="Purchase Voucher", status="Pending"
     ).update(status="Failed" if error_message else "Completed")
 
 
@@ -645,7 +783,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
 
         async_task(
-            "apps.voucher.api.import_xls_file",
+            "apps.voucher.api.import_sales_vouchers",
             {
                 "company_id": request.company_id,
                 "user": request.user,
@@ -967,6 +1105,41 @@ class PurchaseVoucherViewSet(
             ),
         ]
         return qs_to_xls(params)
+
+    @action(detail=False, url_path="import", methods=["POST"])
+    def import_xls(self, request):
+        xls_file = request.FILES.get("file")
+        if not xls_file:
+            raise RESTValidationError({"file": "File is required."})
+
+        if Import.objects.filter(
+            company=request.company, type="Purchase Voucher", status="Pending"
+        ).exists():
+            raise RESTValidationError({"error": "There is already an import pending."})
+
+        filename = upload_file(xls_file, "imports/purchase_vouchers")
+
+        Import.objects.create(
+            company=request.company,
+            type="Purchase Voucher",
+            status="Pending",
+            file=filename,
+            user=request.user,
+        )
+
+        async_task(
+            "apps.voucher.api.import_purchase_vouchers",
+            {
+                "company_id": request.company_id,
+                "user": request.user,
+                "origin": request.META.get("HTTP_ORIGIN"),
+                "data": request.data,
+                "company": request.company,
+            },
+            xls_file,
+        )
+
+        return Response({})
 
 
 class CreditNoteViewSet(DeleteRows, CRULViewSet, CancelCreditOrDebitNoteMixin):

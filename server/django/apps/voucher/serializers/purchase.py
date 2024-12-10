@@ -209,7 +209,7 @@ class PurchaseVoucherCreateSerializer(
                 raise SuspiciousOperation("Modifying object owned by other company!")
             if row.get("discount_type") == "":
                 row["discount_type"] = None
-            row_serializer = PurchaseVoucherRowSerializer(data=row)
+            row_serializer = PurchaseVoucherRowSerializer(data=row, context=self.context)
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
