@@ -1,5 +1,4 @@
 <script setup>
-console.log('DayBook')
 const route = useRoute()
 const router = useRouter()
 const viewTransactionOnly = ref(false)
