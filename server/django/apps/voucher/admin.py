@@ -8,6 +8,7 @@ from apps.voucher.models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    Import,
     PaymentReceipt,
     PurchaseDiscount,
     PurchaseVoucher,
@@ -94,6 +95,18 @@ class SalesVoucherAdmin(admin.ModelAdmin):
         return qs
 
 
+class ImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "company",
+        "user",
+        "type",
+        "status",
+        "created_at",
+    )
+    search_fields = ("company__name", "user__full_name")
+    list_filter = ("company", "status", "type")
+
+
 class CreditNoteAdmin(admin.ModelAdmin):
     search_fields = (
         "voucher_no",
@@ -115,6 +128,7 @@ admin.site.register(SalesVoucherRow)
 admin.site.register(CreditNote, CreditNoteAdmin)
 admin.site.register(CreditNoteRow)
 admin.site.register(InvoiceDesign)
+admin.site.register(Import, ImportAdmin)
 
 
 class DebitNoteAdmin(admin.ModelAdmin):
