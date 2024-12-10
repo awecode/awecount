@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-load_dotenv(dotenv_path=ROOT_DIR / ".env")
+load_dotenv(dotenv_path=os.path.normpath(os.path.join(ROOT_DIR, ".env")))
 
 
 ######################################################################
@@ -82,10 +82,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "import_export",
     "django_filters",
-    "rest_framework",
-    "django_filters",
     "djoser",
-    "corsheaders",
     "auditlog",
     "mptt",
     "django_q",
@@ -244,11 +241,11 @@ USE_L10N = True
 ######################################################################
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [os.path.normpath(os.path.join(ROOT_DIR, "static"))]
 
-STATIC_ROOT = ROOT_DIR / "static"
+STATIC_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "static"))
 
-MEDIA_ROOT = ROOT_DIR / "media"
+MEDIA_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "media"))
 
 MEDIA_URL = "/media/"
 
