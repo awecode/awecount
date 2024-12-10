@@ -2,7 +2,7 @@
   <q-page class="p-10">
     <div class="flex justify-between">
       <div class="flex gap-5">
-        <n-auto-complete v-model="selectedBankAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
+        <n-auto-complete v-model="selectedBankAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" optionValue="ledger_id" />
         <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
         <div>
           <q-btn icon="mdi-magnify" color="primary" label="Search" />
@@ -19,8 +19,11 @@
         </div>
         <q-form @submit="submitStatement">
 
-          <n-auto-complete v-model="selectedBankAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
-          <q-file bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".csv, .xlsx, .xls" class="q-mb-md" @update:model-value="parseExcelFile">
+          <n-auto-complete v-model="selectedBankAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
+          <!-- date formats -->
+          <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
+          <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".csv, .xlsx, .xls" class="q-mb-md"
+            @update:model-value="parseExcelFile">
             <template v-slot:prepend>
               <q-icon name="cloud_upload" @click.stop.prevent />
             </template>
@@ -131,37 +134,39 @@ const submitStatement = async () => {
   })
 }
 
+const selectedDateFormat = ref()
+
+const dateFormats = [
+  'YYYY MM DD',
+  'DD MM YYYY',
+  'MM DD YYYY',
+  'YY MM DD',
+  'DD MM YY',
+  'MM DD YY',
+]
+
 function parseDate(dateString: string | null): string {
   if (!dateString) {
     throw new Error('Date string is empty')
   }
-  const delimiters = ['/', '-', '.']
-  let parts, day, month, year
+  // if date contains any special characters, replace them with -
+  dateString = dateString.replace(/[^0-9]/g, '-')
 
-  // Detect the delimiter
-  const delimiter = delimiters.find((d) => dateString.includes(d))
-  if (!delimiter) {
-    throw new Error(`Unsupported date format: ${dateString}`)
+  let date = dateString
+  if (selectedDateFormat.value === 'YY MM DD') {
+    const [year, month, day] = dateString.split('-')
+    date = `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
   }
-
-  parts = dateString.split(delimiter).map(Number)
-
-  if (parts.length === 3) {
-    if (parts[0] > 31) {
-      [year, month, day] = parts
-    } else if (parts[2] > 31) {
-      [month, day, year] = parts
-    } else {
-      [day, month, year] = parts
-    }
-
-    if (year < 100) {
-      year += year > 50 ? 1900 : 2000
-    }
-
-    return new Date(year, month - 1, day).toISOString().split('T')[0]
+  if (selectedDateFormat.value === 'DD MM YY') {
+    const [day, month, year] = dateString.split('-')
+    date = `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
   }
-  throw new Error(`Unsupported date format: ${dateString}`)
+  if (selectedDateFormat.value === 'MM DD YY') {
+    const [month, day, year] = dateString.split('-')
+    date = `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+  return new Date(date).toISOString().split('T')[0]
+
 }
 
 
@@ -195,7 +200,6 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
   }
 
   const data: ParsedData[] = []
-  debugger
 
   sheetData.slice(headerRowIndex + 1).forEach(row => {
     const rowData: ParsedData = {}
