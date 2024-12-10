@@ -3,8 +3,9 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.serializers import PartyMinSerializer
-from apps.product.models import Item
+from apps.product.models import Item, Unit
 from apps.product.serializers import ItemPurchaseSerializer
+from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -50,6 +51,36 @@ class PurchaseVoucherRowSerializer(
             raise serializers.ValidationError("Discount can't be negative.")
         return value
 
+    def validate(self, data):
+        company_id = self.context["request"].company_id
+        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
+            if not PurchaseDiscount.objects.filter(
+                company_id=company_id, id=data.get("discount_type")
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exist."]},
+                )
+
+        if not Item.objects.filter(
+            pk=data.get("item_id"), company_id=company_id
+        ).exists():
+            raise ValidationError({"item_id": ["Item not found."]})
+
+        if not TaxScheme.objects.filter(
+            pk=data.get("tax_scheme_id"), company_id=company_id
+        ).exists():
+            raise ValidationError({"tax_scheme_id": ["Tax scheme not found."]})
+
+        if (
+            data.get("unit_id")
+            and not Unit.objects.filter(
+                pk=data.get("unit_id"), company_id=company_id
+            ).exists()
+        ):
+            raise ValidationError({"unit_id": ["Unit not found."]})
+
+        return super().validate(data)
+
     class Meta:
         model = PurchaseVoucherRow
         exclude = ("tax_scheme", "voucher", "unit", "discount_obj")
@@ -90,8 +121,26 @@ class PurchaseVoucherCreateSerializer(
                 {"party": ["Party is required for a credit issue."]},
             )
 
+        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
+            if not PurchaseDiscount.objects.filter(
+                company=company, id=data.get("discount_type")
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exist."]},
+                )
+
         if party and (party.company_id != company.id):
-            raise SuspiciousOperation("Modifying object owned by other company!")
+            raise ValidationError(
+                {"party": ["Party does not belong to the company."]},
+            )
+
+        if (
+            data.get("payment_mode")
+            and data.get("payment_mode").company_id != company.id
+        ):
+            raise ValidationError(
+                {"payment_mode": ["Payment mode does not belong to the company."]},
+            )
 
         request = self.context["request"]
 
