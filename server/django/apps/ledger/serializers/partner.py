@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.ledger.models.base import Account, Party
+from apps.ledger.serializers import PartySerializer
 from apps.voucher.models import SalesVoucherRow
 from apps.voucher.models.journal_vouchers import JournalVoucher, JournalVoucherRow
 from apps.voucher.serializers.partner import PartnerItemSelectSerializer
@@ -149,7 +150,6 @@ class PartnerPartyListSerializer(serializers.ModelSerializer):
         )
 
 
-
 class SalesVoucherRowAccessSerializer(
     PartnerItemSelectSerializer, SalesVoucherRowSerializer
 ):
@@ -162,8 +162,31 @@ class SalesVoucherRowAccessSerializer(
         }
 
 
+class PartnerSalesVoucherCreateSerializer(SalesVoucherCreateSerializer):
+    party_obj = PartySerializer(required=False)
+
+    def validate(self, attrs):
+        if not attrs.get("party") and attrs.get("party_obj"):
+            party_obj = attrs.pop("party_obj")
+            try:
+                party = Party.objects.get(
+                    **party_obj,
+                    company_id=self.context["request"].company_id,
+                )
+            except Party.MultipleObjectsReturned:
+                raise ValidationError("Multiple parties found for the given details.")
+            except Party.DoesNotExist:
+                party = Party.objects.create(
+                    **party_obj,
+                    company_id=self.context["request"].company_id,
+                )
+
+            attrs["party"] = party
+        return super().validate(attrs)
+
+
 class PartnerSalesVoucherAccessSerializer(
-    SalesVoucherCreateSerializer, RoyaltyLedgerInfoSerializer
+    PartnerSalesVoucherCreateSerializer, RoyaltyLedgerInfoSerializer
 ):
     """
     {"mode":"Cash","customer_name":"","status":"Issued","address":"ASD","discount_type":null,"discount":0,"is_export":false,"date":"2019-11-07","due_date":"2019-11-07","rows":[{"quantity":1,"discount":0,"discount_type":null,"trade_discount":false,"item_id":401,"tax_scheme_id":45,"rate":500,"unit_id":25,"description":""}],"trade_discount":true}
