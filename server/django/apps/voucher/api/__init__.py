@@ -104,7 +104,11 @@ from awecount.libs.CustomViewSet import (
     GenericSerializer,
 )
 from awecount.libs.exception import UnprocessableException
-from awecount.libs.helpers import check_verification_hash, get_verification_hash
+from awecount.libs.helpers import (
+    check_verification_hash,
+    get_verification_hash,
+    upload_file,
+)
 from awecount.libs.mixins import (
     CancelCreditOrDebitNoteMixin,
     CancelPurchaseVoucherMixin,
@@ -118,6 +122,7 @@ from ..models import (
     CreditNoteRow,
     DebitNote,
     DebitNoteRow,
+    Import,
     PaymentMode,
     PurchaseDiscount,
     PurchaseOrder,
@@ -290,6 +295,10 @@ def import_xls_file(request_obj, file):
     send_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message
     )
+
+    Import.objects.filter(
+        company=request.company, type="Sales Voucher", status="Pending"
+    ).update(status="Failed" if error_message else "Completed")
 
 
 class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
@@ -619,6 +628,21 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         xls_file = request.FILES.get("file")
         if not xls_file:
             raise RESTValidationError({"file": "File is required."})
+
+        if Import.objects.filter(
+            company=request.company, type="Sales Voucher", status="Pending"
+        ).exists():
+            raise RESTValidationError({"error": "There is already an import pending."})
+
+        filename = upload_file(xls_file, "imports/sales_vouchers")
+
+        Import.objects.create(
+            company=request.company,
+            type="Sales Voucher",
+            status="Pending",
+            file=filename,
+            user=request.user,
+        )
 
         async_task(
             "apps.voucher.api.import_xls_file",
