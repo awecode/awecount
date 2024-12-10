@@ -1,9 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from apps.ledger.models import Account, Category
-
 # from apps.tax.models import TaxScheme
-from apps.users.models import Company
+from apps.company.models import Company
+from apps.ledger.models import Account, Category
 
 
 class Command(BaseCommand):
