@@ -476,7 +476,7 @@ class BankReconciliationViewSet(CRULViewSet):
                 statement_date=statement_transaction['date'],
                 dr_amount=statement_transaction.get('dr_amount', None),
                 cr_amount=statement_transaction.get('cr_amount', None),
-                status='Reconciled',
+                status='Matched',
                 transaction_ids=statement_transaction.get('transaction_ids', []),
                 account_id=account_id,
                 description=statement_transaction.get('description', None),

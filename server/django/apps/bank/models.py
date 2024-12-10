@@ -440,6 +440,7 @@ class BankCashDeposit(TransactionModel):
 
 BANK_RECONCILIATION_STATUS = (
     ("Reconciled", "Reconciled"),
+    ("Matched", "Matched"),
     ("Unreconciled", "Unreconciled"),
 )
         
