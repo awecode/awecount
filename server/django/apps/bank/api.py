@@ -39,8 +39,8 @@ from apps.bank.serializers import (
     FundTransferTemplateSerializer,
 )
 from apps.ledger.models import Account, Party
-from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer
 from apps.ledger.models.base import Transaction
+from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer, TransactionMinSerializer
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -495,7 +495,7 @@ class BankReconciliationViewSet(CRULViewSet):
             ))
 
         # Perform bulk_create once
-        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
@@ -526,6 +526,33 @@ class BankReconciliationViewSet(CRULViewSet):
         serializer.is_valid(raise_exception=True)
 
         transactions = serializer.validated_data["transactions"]
-        account_id = serializer.validated_data["bank_account"]
-        response = self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
-        return Response(response)
+        account_id = serializer.validated_data["account_id"]
+        # TODO: throw in background task
+        self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
+        return Response({})
+    
+    
+    @action(detail=False, url_path="transactions")
+    def transactions(self, request):
+        # get start_date and end_date from request
+        # also get account_id
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        account_id = request.query_params.get('account_id')
+        
+        if not start_date or not end_date or not account_id:
+            raise APIException("start_date, end_date and account_id are required")
+        
+        # get transactions from the database but add date to the transactions
+        transactions = Transaction.objects.filter(
+            company=request.company, journal_entry__date__range=[start_date, end_date], account_id=account_id
+        ).order_by("journal_entry__date").select_related("journal_entry")
+        
+        # fetch bank reconciliation entries
+        bank_statements = BankReconciliation.objects.filter(
+            company=request.company, account_id=account_id, statement_date__range=[start_date, end_date]
+        ).order_by("statement_date")
+        
+        return Response({ 'transactions': TransactionMinSerializer(transactions, many=True).data, 'bank_statements': BankReconciliationSerializer(bank_statements, many=True).data })
+        
+

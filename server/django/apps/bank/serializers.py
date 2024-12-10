@@ -222,10 +222,10 @@ class BankReconciliationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BankReconciliation
-        exclude = ("company", "transaction_ids")
+        exclude = ("company",)
         
 class BankReconciliationStatementImportSerializer(serializers.Serializer):
-    bank_account = serializers.IntegerField()
+    account_id = serializers.IntegerField()
     transactions = serializers.ListField(child=serializers.DictField())
     start_date = serializers.DateField(required=False)
     end_date = serializers.DateField(required=False)
