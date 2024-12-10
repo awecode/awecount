@@ -1,4 +1,5 @@
 import { defineConfig } from '#q-app/wrappers'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { presetWind } from 'unocss'
 
 export default defineConfig((/* ctx */) => {
@@ -37,14 +38,15 @@ export default defineConfig((/* ctx */) => {
             include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
           },
         ],
-        ['unplugin-vue-components/vite', {}],
         [
-          '@sentry/vite-plugin',
-          {
+          'unplugin-vue-components/vite',
+          { dts: './.quasar/components.d.ts' },
+        ],
+        [
+          sentryVitePlugin({
             org: 'awecode',
             project: 'awecount',
-            authToken: import.meta.env.SENTRY_AUTH_TOKEN,
-          },
+          }),
         ],
       ],
     },
