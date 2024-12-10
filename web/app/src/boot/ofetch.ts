@@ -1,8 +1,10 @@
 import { defineBoot } from '#q-app/wrappers'
 import { ofetch } from 'ofetch'
 
+import { api as apiConfig } from 'src/config'
+
 const api = ofetch.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: apiConfig.baseURL,
 })
 
 export default defineBoot(({ app }) => {
