@@ -2,14 +2,14 @@
   <q-page class="p-10">
     <div class="flex justify-between">
       <div class="flex gap-5">
-        <n-auto-complete v-model="selectedBankAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" optionValue="ledger_id" />
+        <n-auto-complete v-model="selectedAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" optionValue="ledger_id" />
         <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
         <div>
-          <q-btn icon="mdi-magnify" color="primary" label="Search" />
+          <q-btn icon="mdi-magnify" color="primary" label="Search" @click="fetchTransactions" :disable="!selectedAccount || !startDate || !endDate ? true : false" />
         </div>
       </div>
       <div>
-        <q-btn icon="mdi-file-upload-outline" :disable="!selectedBankAccount || !startDate || !endDate ? true : false" color="green" label="Upload Statement" @click="statementPrompt = true"></q-btn>
+        <q-btn icon="mdi-file-upload-outline" color="green" label="Upload Statement" @click="statementPrompt = true"></q-btn>
       </div>
     </div>
     <q-dialog no-shake v-model="statementPrompt">
@@ -19,7 +19,7 @@
         </div>
         <q-form @submit="submitStatement">
 
-          <n-auto-complete v-model="selectedBankAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
+          <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
           <!-- date formats -->
           <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
           <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".csv, .xlsx, .xls" class="q-mb-md"
@@ -41,15 +41,14 @@
           </q-file>
 
           <div>
-            <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" id="modal-date-picker" />
+            <DateRangePicker v-model:startDate="statementStartDate" v-model:endDate="statementEndDate" :hide-btns="true" id="modal-date-picker" />
             <div class="text-gray-600 -mt-4 text-xs">
               Please select the date range for the statement you are uploading (optional)
             </div>
           </div>
 
           <div class="text-right !mt-6">
-            <q-btn type="submit" label="Upload" color="green"
-              :disable="!selectedBankAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
+            <q-btn type="submit" label="Upload" color="green" :disable="!statementAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
           </div>
         </q-form>
       </q-card>
@@ -61,11 +60,15 @@
 import * as XLSX from 'xlsx'
 import { Ref } from 'vue'
 
-const selectedBankAccount = ref(null)
+const selectedAccount = ref(null)
+const statementAccount = ref(null)
 const bankAccounts = ref([])
 const startDate = ref()
 const endDate = ref()
-const statementPrompt = ref(true)
+const statementStartDate = ref()
+const statementEndDate = ref()
+
+const statementPrompt = ref(false)
 const statementSheet = ref(null)
 const statementHeaders = ref(new Set())
 
@@ -117,22 +120,35 @@ const removeStatement = () => {
 
 
 const submitStatement = async () => {
-  if (!selectedBankAccount.value || !statementData.value.length) {
+  if (!statementAccount.value || !statementData.value.length) {
     return
   }
 
   useApi('v1/bank-reconciliation/import-statement/', {
     method: 'POST',
     body: {
-      bank_account: selectedBankAccount.value,
+      account_id: statementAccount.value,
       transactions: statementData.value,
-      start_date: startDate.value,
-      end_date: endDate.value,
+      start_date: statementStartDate.value,
+      end_date: statementEndDate.value,
     }
   }).then((response) => {
     console.log(response)
   })
 }
+
+
+const fetchTransactions = async () => {
+  if (!selectedAccount.value || !startDate.value || !endDate.value) {
+    return
+  }
+
+  useApi('v1/bank-reconciliation/transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
+    console.log(response)
+  })
+}
+
+
 
 const selectedDateFormat = ref()
 
