@@ -150,7 +150,7 @@
 
         <q-card-section class="q-ma-md">
           <p class="text-caption">Upload a .xlsx file to import sales invoices
-            <a href="/files/invoices.xlsx" download="sample-sales-invoices.xlsx" class="text-primary">Download sample
+            <a href="/files/sales-invoices.xlsx" download="sample-sales-invoices.xlsx" class="text-primary">Download sample
               file</a>
           </p>
           <q-file @input="validateImportFile" v-model="fileToImport" accept=".xlsx" label="Select file" color="primary"
