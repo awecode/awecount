@@ -461,6 +461,7 @@ class BankReconciliationViewSet(CRULViewSet):
                                 unreconciled_system_transactions.remove(system_transaction)
                                 system_transactions_by_date[date_str].remove(system_transaction)
                             reconciled_transactions.append(statement_transaction)
+                            unreconciled_statement_transactions.remove(statement_transaction)
                             
                             if not system_transactions_by_date[date_str]:
                                 del system_transactions_by_date[date_str]
