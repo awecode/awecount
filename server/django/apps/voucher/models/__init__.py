@@ -6,6 +6,7 @@ from io import BytesIO
 from typing import Union
 
 from auditlog.registry import auditlog
+from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -861,6 +862,49 @@ class RecurringVoucherTemplate(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.next_date = self.get_next_date()
+        super().save(*args, **kwargs)
+
+    def get_next_date(self):
+        if not self.is_active:
+            return None
+
+        if self.end_after and self.no_of_vouchers_created >= self.end_after:
+            self.is_active = False
+            return None
+
+        if self.last_generated:
+            last_date = self.last_generated
+            if self.repeat_interval_time_unit == "Day(s)":
+                next_date = last_date + datetime.timedelta(days=self.repeat_interval)
+            elif self.repeat_interval_time_unit == "Week(s)":
+                next_date = last_date + datetime.timedelta(weeks=self.repeat_interval)
+            elif self.repeat_interval_time_unit == "Month(s)":
+                next_date = last_date + relativedelta(months=self.repeat_interval)
+            elif self.repeat_interval_time_unit == "Year(s)":
+                next_date = last_date + relativedelta(years=self.repeat_interval)
+
+            if self.end_date and next_date > self.end_date:
+                self.is_active = False
+                return None
+        else:
+            next_date = self.start_date
+        return next_date
+
+    # make transaction atomic
+    def generate_voucher(self):
+        if self.type == "Sales Voucher":
+            pass
+        else:
+            pass
+
+        self.no_of_vouchers_created += 1
+        self.last_generated = self.next_date
+        self.next_date = self.get_next_date()
+        self.save()
+
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(
