@@ -831,7 +831,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         )
 
 
-REPEAT_INTERVAL_TIME_UNITS = (
+TIME_UNITS = (
     ("Day(s)", "Day(s)"),
     ("Week(s)", "Week(s)"),
     ("Month(s)", "Month(s)"),
@@ -844,13 +844,25 @@ RECURRING_TEMPLATE_TYPES = (
 )
 
 
+def add_time_to_date(date, amount, time_unit):
+    if time_unit == "Day(s)":
+        new_date = date + datetime.timedelta(days=amount)
+    elif time_unit == "Week(s)":
+        new_date = date + datetime.timedelta(weeks=amount)
+    elif time_unit == "Month(s)":
+        new_date = date + relativedelta(months=amount)
+    elif time_unit == "Year(s)":
+        new_date = date + relativedelta(years=amount)
+    return new_date
+
+
 class RecurringVoucherTemplate(models.Model):
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
     invoice_data = models.JSONField()
     repeat_interval = models.PositiveSmallIntegerField()
-    repeat_interval_time_unit = models.CharField(
-        max_length=10, choices=REPEAT_INTERVAL_TIME_UNITS
-    )
+    repeat_interval_time_unit = models.CharField(max_length=10, choices=TIME_UNITS)
+    due_date_after = models.PositiveSmallIntegerField()
+    due_date_after_time_unit = models.CharField(max_length=10, choices=TIME_UNITS)
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
     end_after = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -877,15 +889,9 @@ class RecurringVoucherTemplate(models.Model):
 
         if self.last_generated:
             last_date = self.last_generated
-            if self.repeat_interval_time_unit == "Day(s)":
-                next_date = last_date + datetime.timedelta(days=self.repeat_interval)
-            elif self.repeat_interval_time_unit == "Week(s)":
-                next_date = last_date + datetime.timedelta(weeks=self.repeat_interval)
-            elif self.repeat_interval_time_unit == "Month(s)":
-                next_date = last_date + relativedelta(months=self.repeat_interval)
-            elif self.repeat_interval_time_unit == "Year(s)":
-                next_date = last_date + relativedelta(years=self.repeat_interval)
-
+            next_date = add_time_to_date(
+                last_date, self.repeat_interval, self.repeat_interval_time_unit
+            )
             if self.end_date and next_date > self.end_date:
                 self.is_active = False
                 return None
