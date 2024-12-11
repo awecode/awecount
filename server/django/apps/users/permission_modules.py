@@ -50,6 +50,7 @@ MODULES = [
     "PurchaseOrderCancel",
     *gdp("InventoryConversionVoucher"),
     *gdp("InventoryAdjustmentVoucher"),
+    *gdp("RecurringVoucherTemplate"),
 
     # Bank
     *gdp("BankAccount"),
