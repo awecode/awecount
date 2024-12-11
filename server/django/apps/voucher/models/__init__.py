@@ -498,7 +498,6 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         related_name="sales_invoices",
         on_delete=models.SET_NULL,
     )
-
     # Model key for module based permission
     key = "Sales"
 
@@ -830,6 +829,38 @@ class SalesVoucher(TransactionModel, InvoiceModel):
             )
         )
 
+
+REPEAT_INTERVAL_TIME_UNITS = (
+    ("Day(s)", "Day(s)"),
+    ("Week(s)", "Week(s)"),
+    ("Month(s)", "Month(s)"),
+    ("Year(s)", "Year(s)"),
+)
+
+RECURRING_TEMPLATE_TYPES = (
+    ("Sales Voucher", "Sales Voucher"),
+    ("Purchase Voucher", "Purchase Voucher"),
+)
+
+
+class RecurringTemplate(models.Model):
+    type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
+    invoice_data = models.JSONField()
+    repeat_interval = models.PositiveSmallIntegerField()
+    repeat_interval_time_unit = models.CharField(
+        max_length=10, choices=REPEAT_INTERVAL_TIME_UNITS
+    )
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    end_after = models.PositiveSmallIntegerField(blank=True, null=True)
+    send_email = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    last_generated = models.DateField(blank=True, null=True)
+    next_date = models.DateField(blank=True, null=True)
+    created_vouchers_count = models.PositiveSmallIntegerField(default=0)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class SalesVoucherRow(TransactionModel, InvoiceRowModel):
     voucher = models.ForeignKey(
