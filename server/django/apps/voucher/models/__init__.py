@@ -843,7 +843,7 @@ RECURRING_TEMPLATE_TYPES = (
 )
 
 
-class RecurringTemplate(models.Model):
+class RecurringVoucherTemplate(models.Model):
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
     invoice_data = models.JSONField()
     repeat_interval = models.PositiveSmallIntegerField()
@@ -857,7 +857,7 @@ class RecurringTemplate(models.Model):
     is_active = models.BooleanField(default=True)
     last_generated = models.DateField(blank=True, null=True)
     next_date = models.DateField(blank=True, null=True)
-    created_vouchers_count = models.PositiveSmallIntegerField(default=0)
+    no_of_vouchers_created = models.PositiveSmallIntegerField(default=0)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
