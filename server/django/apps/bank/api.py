@@ -529,8 +529,8 @@ class BankReconciliationViewSet(CRULViewSet):
         transactions = serializer.validated_data["transactions"]
         account_id = serializer.validated_data["account_id"]
         # TODO: throw in background task
-        self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
-        return Response({})
+        response = self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
+        return Response(response)
     
     
     @action(detail=False, url_path="transactions")
@@ -554,6 +554,6 @@ class BankReconciliationViewSet(CRULViewSet):
             company=request.company, account_id=account_id, statement_date__range=[start_date, end_date]
         ).order_by("statement_date")
         
-        return Response({ 'transactions': TransactionMinSerializer(transactions, many=True).data, 'bank_statements': BankReconciliationSerializer(bank_statements, many=True).data })
+        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': BankReconciliationSerializer(bank_statements, many=True).data })
         
 
