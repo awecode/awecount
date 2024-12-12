@@ -377,95 +377,300 @@ class BankReconciliationViewSet(CRULViewSet):
             if date_str not in system_transactions_by_date:
                 system_transactions_by_date[date_str] = []
             system_transactions_by_date[date_str].append(system_transaction)
+            
+            
+        def reconcile_exact_match_single_transactions(statement_transaction, system_transactions):
+            """
+            Attempts to reconcile a single statement transaction with system transactions.
+
+            Parameters:
+                statement_transaction (dict): The statement transaction to reconcile.
+                system_transactions (list): A list of system transactions to match against.
+
+            Returns:
+                bool: True if the transaction was reconciled, False otherwise.
+            """
+            for system_transaction in system_transactions:
+                if (
+                    (statement_transaction.get('dr_amount') and system_transaction.cr_amount and
+                    abs(statement_transaction['dr_amount'] - system_transaction.cr_amount) < 0.01) or
+                    (statement_transaction.get('cr_amount') and system_transaction.dr_amount and
+                    abs(statement_transaction['cr_amount'] - system_transaction.dr_amount) < 0.01)
+                ):
+                    # Reconcile transactions
+                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                    reconciled_transactions.append(statement_transaction)
+                    unreconciled_statement_transactions.remove(statement_transaction)
+                    unreconciled_system_transactions.remove(system_transaction)
+                    date_str = statement_transaction['date']
+                    if date_str in system_transactions_by_date:
+                        system_transactions_by_date[date_str].remove(system_transaction)
+                        if not system_transactions_by_date[date_str]:
+                            del system_transactions_by_date[date_str]
+                    return True
+            return False
 
         # iterate over statement transactions, if there is a matching system transaction, reconcile, add transaction_id to statement transaction
         for statement_transaction in statement_transactions:
             date_str = statement_transaction['date']
             if date_str in system_transactions_by_date:
-                for system_transaction in system_transactions_by_date[date_str]:
+                if reconcile_exact_match_single_transactions(statement_transaction, system_transactions_by_date[date_str]):
+                    continue
+                
+
+        def reconcile_statement_combinations(system_transaction, statement_transactions):
+            """
+            Attempts to reconcile a single system transaction by finding combinations of statement transactions.
+
+            Parameters:
+                system_transaction (object): The system transaction to reconcile.
+                statement_transactions (list): A list of statement transactions to match against.
+
+            Returns:
+                bool: True if the transaction was reconciled, False otherwise.
+            """
+            for r in range(1, len(statement_transactions) + 1):
+                for combination in combinations(statement_transactions, r):
+                    total_dr = sum(t.get('dr_amount', 0) for t in combination)
+                    total_cr = sum(t.get('cr_amount', 0) for t in combination)
+
                     if (
-                        (statement_transaction.get('dr_amount') and 
-                        statement_transaction['dr_amount'] == system_transaction.cr_amount) or
-                        (statement_transaction.get('cr_amount') and 
-                        statement_transaction['cr_amount'] == system_transaction.dr_amount)
+                        abs(total_dr - (system_transaction.cr_amount or 0)) < 0.01 and
+                        abs(total_cr - (system_transaction.dr_amount or 0)) < 0.01
                     ):
-                        statement_transaction['transaction_ids'] = [system_transaction.pk]
-                        reconciled_transactions.append(statement_transaction)
-                        unreconciled_statement_transactions.remove(statement_transaction)
+                        # Reconcile matched transactions
+                        for statement_transaction in combination:
+                            if statement_transaction.get('transaction_ids'):
+                                statement_transaction['transaction_ids'].append(system_transaction.pk)
+                            else:
+                                statement_transaction['transaction_ids'] = [system_transaction.pk]
+                            reconciled_transactions.append(statement_transaction)
+                            unreconciled_statement_transactions.remove(statement_transaction)
+
                         unreconciled_system_transactions.remove(system_transaction)
-                        system_transactions_by_date[date_str].remove(system_transaction)
-                        if not system_transactions_by_date[date_str]:
-                            del system_transactions_by_date[date_str]
-                        break
-                    
-        
+
+                        date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
+                        if date_str in system_transactions_by_date:
+                            system_transactions_by_date[date_str].remove(system_transaction)
+                            if not system_transactions_by_date[date_str]:
+                                del system_transactions_by_date[date_str]
+
+                        return True
+            return False
 
         # in system_transactions that doesnt have transaction_id,
         # Reconcile transactions by sum
-        for system_transaction in unreconciled_system_transactions:
+        for system_transaction in unreconciled_system_transactions[:]:  # Iterate over a copy to allow safe modification
             date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
             if date_str in system_transactions_by_date:
                 # Filter statement transactions by date
                 date_filtered_statement_transactions = [
                     t for t in unreconciled_statement_transactions if t['date'] == date_str
                 ]
-                # Try different combination lengths to match system transaction amount
-                for r in range(1, len(date_filtered_statement_transactions) + 1):
-                    for combination in combinations(date_filtered_statement_transactions, r):
-                        # Calculate sum of debits and credits
-                        total_dr = sum(t.get('dr_amount', 0) for t in combination)
-                        total_cr = sum(t.get('cr_amount', 0) for t in combination)
-                        
-                        # Check if combination matches system transaction amount
-                        if (total_dr == (system_transaction.cr_amount or 0) and 
-                            total_cr == (system_transaction.dr_amount or 0)):
-                            
-                            # Mark these transactions as reconciled
-                            for statement_transaction in combination:
+
+            if reconcile_statement_combinations(
+                system_transaction,
+                date_filtered_statement_transactions,
+            ):
+                continue
+            
+        def reconcile_system_combinations(statement_transaction, system_transactions):
+            """
+            Attempts to reconcile a single statement transaction by finding combinations of system transactions.
+
+            Parameters:
+                statement_transaction (dict): The statement transaction to reconcile.
+                system_transactions (list): A list of system transactions to match against.
+
+            Returns:
+                bool: True if the transaction was reconciled, False otherwise.
+            """
+            for r in range(1, len(system_transactions) + 1):
+                for combination in combinations(system_transactions, r):
+                    total_dr = sum((t.dr_amount or 0) for t in combination)
+                    total_cr = sum((t.cr_amount or 0) for t in combination)
+
+                    if (
+                        abs(total_dr - statement_transaction.get('cr_amount', 0)) < 0.01 and
+                        abs(total_cr - statement_transaction.get('dr_amount', 0)) < 0.01
+                    ):
+                        # Reconcile matched transactions
+                        for system_transaction in combination:
+                            if statement_transaction.get('transaction_ids'):
+                                statement_transaction['transaction_ids'].append(system_transaction.pk)
+                            else:
                                 statement_transaction['transaction_ids'] = [system_transaction.pk]
-                                reconciled_transactions.append(statement_transaction)
-                                unreconciled_statement_transactions.remove(statement_transaction)
-                            
-                            # Remove the system transaction from unreconciled list
                             unreconciled_system_transactions.remove(system_transaction)
-                            system_transactions_by_date[date_str].remove(system_transaction)
-                            if not system_transactions_by_date[date_str]:
-                                del system_transactions_by_date[date_str]
-                            break
+
+                        reconciled_transactions.append(statement_transaction)
+                        unreconciled_statement_transactions.remove(statement_transaction)
+                        
+                        
+                        return True
+            return False
                         
         # Reconcile transactions by sum
-        for statement_transaction in unreconciled_statement_transactions:
+        for statement_transaction in unreconciled_statement_transactions[:]:
             date_str = statement_transaction['date']
             if date_str in system_transactions_by_date:
                 # Filter system transactions by date
                 date_filtered_system_transactions = [
                     t for t in unreconciled_system_transactions if t.journal_entry.date.strftime('%Y-%m-%d') == date_str
                 ]
-                # Try different combination lengths to match statement transaction amount
+                if reconcile_system_combinations(statement_transaction, date_filtered_system_transactions):
+                    # Clean up empty dates
+                    if not system_transactions_by_date[date_str]:
+                        del system_transactions_by_date[date_str]
+                    continue
+                
+                
+        # def reconcile_system_statement_combinations(statement_transaction, system_transactions):
+
+                        
+                        
+        # loop in unreconciled statement transactions and unreconciled system transactions, find combinations in system transaction of the date where debits - credits that match the statement transaction amount
+        for statement_transaction in unreconciled_statement_transactions[:]:
+            date_str = statement_transaction['date']
+            if date_str in system_transactions_by_date:
+                # Filter system transactions by date
+                date_filtered_system_transactions = [
+                    t for t in unreconciled_system_transactions if t.journal_entry.date.strftime('%Y-%m-%d') == date_str
+                ]
+                
+                # Try different combination lengths to find matching net debit-credit difference
                 for r in range(1, len(date_filtered_system_transactions) + 1):
                     for combination in combinations(date_filtered_system_transactions, r):
-                        # Calculate sum of debits and credits
-                        total_dr = sum((t.dr_amount or 0) for t in combination)
-                        total_cr = sum((t.cr_amount or 0) for t in combination)
+                        # Calculate the net difference: debits - credits
+                        net_difference = sum((t.dr_amount or 0) - (t.cr_amount or 0) for t in combination)
                         
-                        # Check if combination matches statement transaction amount
-                        if (total_dr == float(statement_transaction.get('cr_amount', 0)) and 
-                            total_cr == float(statement_transaction.get('dr_amount', 0))):
-                            
+                        # Check if the net difference matches the statement transaction amount
+                        if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < 0.01:
                             # Mark these transactions as reconciled
                             for system_transaction in combination:
                                 if statement_transaction.get('transaction_ids'):
                                     statement_transaction['transaction_ids'].append(system_transaction.pk)
                                 else:
                                     statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                
+                                # if system_transaction in unreconciled_system_transactions:
                                 unreconciled_system_transactions.remove(system_transaction)
+                                # if system_transaction in system_transactions_by_date[date_str]:
                                 system_transactions_by_date[date_str].remove(system_transaction)
+
+                            # Add to reconciled transactions and remove from the original list
                             reconciled_transactions.append(statement_transaction)
                             unreconciled_statement_transactions.remove(statement_transaction)
-                            
+
+                            # Clean up system transactions by date if empty
                             if not system_transactions_by_date[date_str]:
                                 del system_transactions_by_date[date_str]
-                            break
+
+                            break  # Stop after finding a valid combination
+                    else:
+                        continue  # Only runs if the inner loop is not broken
+                    break  
+                
+        from datetime import datetime, timedelta
+        
+                
+        # Iterate over unreconciled statement transactions to find direct matches
+        for statement_transaction in unreconciled_statement_transactions[:]:
+            statement_date = datetime.strptime(statement_transaction['date'], '%Y-%m-%d').date()
+            date_range_start = statement_date
+            date_range_end = statement_date + timedelta(days=3)
+
+            # Filter system transactions within date range
+            date_filtered_system_transactions = [
+                t for t in unreconciled_system_transactions
+                if date_range_start <= t.journal_entry.date <= date_range_end
+            ]
+            if reconcile_exact_match_single_transactions(statement_transaction, date_filtered_system_transactions):
+                continue
+
+        # Reconcile system transactions by matching sums with statement transactions
+        for system_transaction in unreconciled_system_transactions[:]:
+            system_date = system_transaction.journal_entry.date
+            date_range_start = system_date
+            date_range_end = system_date + timedelta(days=3)
+
+            # Filter statement transactions within date range
+            date_filtered_statement_transactions = [
+                t for t in unreconciled_statement_transactions
+                if date_range_start <= datetime.strptime(t['date'], '%Y-%m-%d').date() <= date_range_end
+            ]
+
+            # Check combinations of statement transactions
+            if reconcile_statement_combinations(
+                system_transaction,
+                date_filtered_statement_transactions,
+            ):
+                continue
+
+        # Final reconciliation by sums with a 3-day range for statement transactions
+        for statement_transaction in unreconciled_statement_transactions[:]:
+            statement_date = datetime.strptime(statement_transaction['date'], '%Y-%m-%d').date()
+            date_range_start = statement_date
+            date_range_end = statement_date + timedelta(days=3)
+
+            # Filter system transactions
+            date_filtered_system_transactions = [
+                t for t in unreconciled_system_transactions
+                if date_range_start <= t.journal_entry.date <= date_range_end
+            ]
+            if reconcile_system_combinations(statement_transaction, date_filtered_system_transactions):
+                continue
+        
+        
+        
+        # now compare the remaining unreconciled statement transactions and unreconciled system transactions, where system_transaction date can be within 3 days of statement_transaction date
+        
+        for statement_transaction in unreconciled_statement_transactions[:]:
+                statement_date = datetime.strptime(statement_transaction['date'], '%Y-%m-%d').date()
+                date_range_start = statement_date
+                date_range_end = statement_date + timedelta(days=3)
+
+                # Filter system transactions within 3 days of the statement transaction date
+                date_filtered_system_transactions = [
+                    t for t in unreconciled_system_transactions
+                    if date_range_start <= t.journal_entry.date <= date_range_end
+                ]
+
+                # Group system transactions by date
+                merged_system_transactions_by_date = {}
+                for system_transaction in date_filtered_system_transactions:
+                    date_str = system_transaction.journal_entry.date.strftime('%Y-%m-%d')
+                    merged_system_transactions_by_date.setdefault(date_str, []).append(system_transaction)
+
+                # Loop over the grouped transactions and try to reconcile
+                for date_str, system_transactions_by_date in list(merged_system_transactions_by_date.items()):
+                    for r in range(1, len(system_transactions_by_date) + 1):
+                        for combination in combinations(system_transactions_by_date, r):
+                            # Calculate the net difference: debits - credits
+                            net_difference = sum((t.dr_amount or 0) - (t.cr_amount or 0) for t in combination)
+
+                            # Check if the net difference matches the statement transaction amount
+                            if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < 0.01:
+                                # Mark these transactions as reconciled
+                                for system_transaction in combination:
+                                    statement_transaction.setdefault('transaction_ids', []).append(system_transaction.pk)
+                                    if system_transaction in unreconciled_system_transactions:
+                                        unreconciled_system_transactions.remove(system_transaction)
+
+                                # Add to reconciled transactions and remove from the original list
+                                reconciled_transactions.append(statement_transaction)
+                                unreconciled_statement_transactions.remove(statement_transaction)
+
+                                # Clean up system transactions by date if empty
+                                merged_system_transactions_by_date[date_str] = [
+                                    t for t in merged_system_transactions_by_date[date_str] if t not in combination
+                                ]
+                                if not merged_system_transactions_by_date[date_str]:
+                                    del merged_system_transactions_by_date[date_str]
+
+                                break  # Stop after finding a valid combination
+                        else:
+                            continue  # Only runs if the inner loop is not broken
+                        break  # Exit the loop if a match is found
         
         # Combine reconciled and unreconciled transactions into a single list
         bank_reconciliation_entries = []
@@ -496,7 +701,7 @@ class BankReconciliationViewSet(CRULViewSet):
             ))
 
         # Perform bulk_create once
-        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
