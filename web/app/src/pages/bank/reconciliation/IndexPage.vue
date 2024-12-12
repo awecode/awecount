@@ -53,6 +53,9 @@
         </q-form>
       </q-card>
     </q-dialog>
+    <!-- Table -->
+    <BankReconciliationTable v-if="systemTransactionData.length && statementTransactionData.length" :systemTransactionData="systemTransactionData"
+      :statementTransactionData="statementTransactionData" />
   </q-page>
 </template>
 
@@ -63,8 +66,8 @@ import { Ref } from 'vue'
 const selectedAccount = ref(null)
 const statementAccount = ref(null)
 const bankAccounts = ref([])
-const startDate = ref()
-const endDate = ref()
+const startDate = ref('2024-11-08')
+const endDate = ref('2024-12-08')
 const statementStartDate = ref()
 const statementEndDate = ref()
 
@@ -75,6 +78,8 @@ const statementHeaders = ref(new Set())
 const statementData: Ref<Record<string, any>[]> = ref([])
 const isStatementProcessing = ref(false)
 const hasError = ref(false)
+const systemTransactionData = ref([])
+const statementTransactionData = ref([])
 
 const endpoint = 'v1/bank-reconciliation/banks/'
 
@@ -144,7 +149,12 @@ const fetchTransactions = async () => {
   }
 
   useApi('v1/bank-reconciliation/transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
-    console.log(response)
+    systemTransactionData.value = response.system_transactions
+    statementTransactionData.value = response.statement_transactions
+  }).catch((error) => {
+    console.log(error)
+    systemTransactionData.value = []
+    statementTransactionData.value = []
   })
 }
 
