@@ -478,6 +478,13 @@ class POSViewSet(
             ["short_name", "account_number", "bank_name"],
         ),
         (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        (
             "tax_schemes",
             TaxScheme.objects.only("name", "short_name", "rate"),
             TaxSchemeMinSerializer,
