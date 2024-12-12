@@ -429,6 +429,20 @@ class TransactionMinSerializer(serializers.ModelSerializer):
     source_id = serializers.ReadOnlyField(source="journal_entry.source.get_source_id")
     dr_amount = RoundedField()
     cr_amount = RoundedField()
+    counterpart_accounts = serializers.SerializerMethodField()
+    
+    def get_counterpart_accounts(self, obj):
+        all_transactions = obj.journal_entry.transactions.all()
+        counterpart_accounts = [
+            {
+                "account_id": t.account_id,
+                "account_name": t.account.name,
+                "dr_amount": t.dr_amount,
+                "cr_amount": t.cr_amount,
+            }
+            for t in all_transactions if t.account_id != obj.account_id
+        ]
+        return counterpart_accounts
 
     def get_source_type(self, obj):
         v_type = obj.journal_entry.content_type.name
@@ -449,6 +463,7 @@ class TransactionMinSerializer(serializers.ModelSerializer):
             "date",
             "source_type",
             "source_id",
+            "counterpart_accounts",
         )
 
 

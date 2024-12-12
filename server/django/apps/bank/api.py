@@ -805,8 +805,13 @@ class BankReconciliationViewSet(CRULViewSet):
         
         # get transactions from the database but add date to the transactions
         transactions = Transaction.objects.filter(
-            company=request.company, journal_entry__date__range=[start_date, end_date], account_id=account_id
-        ).order_by("journal_entry__date").select_related("journal_entry")
+            company=request.company, 
+            journal_entry__date__range=[start_date, end_date],
+            account_id=account_id
+        ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
+            "journal_entry__transactions__account",
+            "journal_entry__source"
+        )
         
         # fetch bank reconciliation entries
         bank_statements = BankReconciliation.objects.filter(
