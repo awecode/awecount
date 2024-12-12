@@ -857,6 +857,7 @@ def add_time_to_date(date, amount, time_unit):
 
 
 class RecurringVoucherTemplate(models.Model):
+    title = models.CharField(max_length=255)
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
     invoice_data = models.JSONField()
     repeat_interval = models.PositiveSmallIntegerField()
