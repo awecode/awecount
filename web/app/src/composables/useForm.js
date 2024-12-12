@@ -3,6 +3,7 @@ import { getCurrentInstance } from 'vue'
 import useApi from './useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
+import { parseErrors } from 'src/utils/helpers'
 
 export default (endpoint, config) => {
   const $q = useQuasar()
@@ -101,21 +102,11 @@ export default (endpoint, config) => {
 
   })
   const getDefaultsFetchUrl = () => {
-    return joinURL(endpoint, 'create-defaults/')
+    return joinURL(endpoint, config.createDefaultsEndpoint ?? 'create-defaults/')
   }
 
   const processErrors = (responseData) => {
-    const dct = Object.fromEntries(
-      Object.entries(responseData).map(([k, v]) => {
-        let val = v
-        if (Array.isArray(val)) {
-          if (typeof val[0] === 'object') {
-          } else val = val.join(' ')
-        }
-        return [k, val]
-      })
-    )
-    errors.value = dct
+    errors.value = parseErrors(responseData)
   }
 
   const removeLastUrlSegment = (url) => {
