@@ -885,7 +885,6 @@ class RecurringVoucherTemplate(models.Model):
             return None
 
         if self.end_after and self.no_of_vouchers_created >= self.end_after:
-            self.is_active = False
             return None
 
         if self.last_generated:
@@ -894,7 +893,6 @@ class RecurringVoucherTemplate(models.Model):
                 last_date, self.repeat_interval, self.repeat_interval_time_unit
             )
             if self.end_date and next_date > self.end_date:
-                self.is_active = False
                 return None
         else:
             next_date = self.start_date
