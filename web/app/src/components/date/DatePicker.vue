@@ -1,6 +1,6 @@
 <template>
   <div>
-    <q-input :model-value="getDateValue" @onClick="this.select()" :error="props.error"
+    <q-input :model-value="getDateValue" @onClick="this.select()" :error="!!props.error"
       :error-message="props.errorMessage" :hint="props.hint" :placeholder="props.placeholder" :disable="props.disable"
       @update:model-value="onDateInput" :label="props.label" type="text" class="full-width" mask="####-##-##"
       debounce="1000">

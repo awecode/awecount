@@ -3,8 +3,7 @@
     <q-select :loading="fetchLoading" :autofocus="focusOnMount" v-model="modalValue" :label="label" use-input
       :options="filteredOptions" option-value="id" option-label="name" map-options emit-value class="q-mr-xs col"
       @update:modelValue="valUpdated" :disable="props.disabled" :error-message="props?.error" :error="!!props?.error"
-      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn"
-      :virtual-scroll-slice-ratio-after="0">
+      clearable clear-icon="close" @virtual-scroll="onScroll" @filter="filterFn" :virtual-scroll-slice-ratio-after="0">
       <template #no-option>
         <div class="py-3 px-4 bg-slate-1">No Results Found</div>
       </template>
@@ -74,24 +73,32 @@ export default {
     },
     focusOnMount: {
       type: Boolean,
-      default: false
+      default: false,
     },
     endpoint: {
       type: [String, null],
-      default: () => null
+      default: () => null,
     },
     staticOption: {
       type: [Object, undefined],
-      required: false
+      required: false,
     },
     emitObj: {
       type: Boolean,
-      default: false
+      default: false,
     },
     fetchOnMount: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    dataTestid: {
+      type: String,
+      required: false,
+    },
+    mapOptions: {
+      type: Boolean,
+      required: false,
+    },
   },
   emits: ['update:modelValue', 'updateObj'],
 
@@ -103,7 +110,7 @@ export default {
     const initalAllOptions = props.options
     if (props.staticOption && props.staticOption.id) {
       initalAllOptions.results = initalAllOptions.results.filter((item) => {
-        return (props.staticOption.id !== item.id)
+        return props.staticOption.id !== item.id
       })
       initalAllOptions.results.unshift(props.staticOption)
     }
@@ -138,7 +145,7 @@ export default {
         if (!newValue) return
         if (props.staticOption && props.staticOption.id) {
           const cleanedOptions = newValue.results.filter((item) => {
-            return (props.staticOption.id !== item.id)
+            return props.staticOption.id !== item.id
           })
           cleanedOptions.unshift(props.staticOption)
           allOptions.value.results = cleanedOptions
@@ -156,7 +163,7 @@ export default {
       (newValue) => {
         if (newValue && newValue.id) {
           const cleanedOptions = allOptions.value.results.filter((item) => {
-            return (newValue.id !== item.id)
+            return newValue.id !== item.id
           })
           cleanedOptions.unshift(newValue)
           allOptions.value.results = cleanedOptions
@@ -185,12 +192,14 @@ export default {
       }
       update(() => {
         const endpoint = props.endpoint + `?search=${val}`
-        useApi(endpoint).then((data) => {
-          filteredOptions.value = data.results
-          filteredOptionsPagination.value = data.pagination
-        }).catch((err) => {
-          console.log(`Error While Fetching ${err}`)
-        })
+        useApi(endpoint)
+          .then((data) => {
+            filteredOptions.value = data.results
+            filteredOptionsPagination.value = data.pagination
+          })
+          .catch((err) => {
+            console.log(`Error While Fetching ${err}`)
+          })
         // const needle = val.toLowerCase()
         // filteredOptions.value = allOptions.value.results.filter(
         //   (v) => v.name.toLowerCase().indexOf(needle) > -1
@@ -215,7 +224,8 @@ export default {
     const fetchOptions = async () => {
       fetchLoading.value = true
       const queryObj = {}
-      if (allOptions.value?.pagination?.page) queryObj.page = allOptions.value.pagination.page + 1
+      if (allOptions.value?.pagination?.page)
+        queryObj.page = allOptions.value.pagination.page + 1
       if (props.fetchOnMount && modalValue.value) queryObj.id = modalValue.value
       const endpoint = withQuery(props.endpoint, queryObj)
       try {
@@ -223,7 +233,7 @@ export default {
         if (data) {
           if (props.staticOption && props.staticOption.id) {
             const filteredOptions = data.results.filter((item) => {
-              return (props.staticOption.id !== item.id)
+              return props.staticOption.id !== item.id
             })
             allOptions.value.results.push(...filteredOptions)
           } else allOptions.value.results.push(...data.results)
@@ -254,22 +264,38 @@ export default {
 
     const onScroll = (scrollData) => {
       if (filteredOptionsPagination.value) {
-        if (scrollData.direction === 'increase' && scrollData.to > filteredOptions.value.length - 2 &&
-          !(filteredOptionsPagination.value.page >= filteredOptionsPagination.value.pages) && !fetchLoading.value) {
+        if (
+          scrollData.direction === 'increase' &&
+          scrollData.to > filteredOptions.value.length - 2 &&
+          !(
+            filteredOptionsPagination.value.page >=
+            filteredOptionsPagination.value.pages
+          ) &&
+          !fetchLoading.value
+        ) {
           fetchLoading.value = true
-          const endpoint = props.endpoint + `?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1}`
-          useApi(endpoint).then((data) => {
-            filteredOptions.value.push(...data.results)
-            filteredOptionsPagination.value = data.pagination
-            fetchLoading.value = false
-          }).catch((err) => {
-            console.log(`Error While Fetching ${err}`)
-            fetchLoading.value = false
-          })
+          const endpoint =
+            props.endpoint +
+            `?search=${serachKeyword.value}&page=${filteredOptionsPagination.value.page + 1
+            }`
+          useApi(endpoint)
+            .then((data) => {
+              filteredOptions.value.push(...data.results)
+              filteredOptionsPagination.value = data.pagination
+              fetchLoading.value = false
+            })
+            .catch((err) => {
+              console.log(`Error While Fetching ${err}`)
+              fetchLoading.value = false
+            })
         }
-      }
-      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 2 &&
-        allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
+      } else if (
+        scrollData.direction === 'increase' &&
+        scrollData.to > allOptions.value.results.length - 2 &&
+        allOptions.value.pagination.page !==
+        allOptions.value.pagination.pages &&
+        !fetchLoading.value
+      ) {
         fetchOptions()
       }
     }
