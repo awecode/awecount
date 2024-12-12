@@ -82,6 +82,7 @@ from apps.voucher.serializers.purchase import (
     PurchaseVoucherRowSerializer,
 )
 from apps.voucher.serializers.sales import (
+    RecurringVoucherTemplateCreateSerializer,
     SendInvoiceInEmailRequestSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
@@ -129,6 +130,7 @@ from ..models import (
     PurchaseOrderRow,
     PurchaseVoucher,
     PurchaseVoucherRow,
+    RecurringVoucherTemplate,
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
@@ -795,6 +797,25 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         )
 
         return Response({})
+
+
+class RecurringVoucherTemplateViewSet(CRULViewSet):
+    queryset = RecurringVoucherTemplate.objects.all()
+    serializer_class = RecurringVoucherTemplateCreateSerializer
+    model = RecurringVoucherTemplate
+
+    filter_backends = [
+        rf_filters.SearchFilter,
+    ]
+
+    search_fields = ["title"]
+
+    def get_queryset(self, company_id=None):
+        qs = super().get_queryset()
+        type = self.request.GET.get("type")
+        if type:
+            qs = qs.filter(type=type)
+        return qs.order_by("-created_at")
 
 
 class POSViewSet(

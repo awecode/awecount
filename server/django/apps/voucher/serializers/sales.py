@@ -13,6 +13,7 @@ from apps.product.serializers import ItemSalesSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
+from apps.voucher.serializers.purchase import PurchaseVoucherCreateSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.exception import UnprocessableException
@@ -20,6 +21,7 @@ from awecount.libs.serializers import StatusReversionMixin
 
 from ..models import (
     PurchaseVoucher,
+    RecurringVoucherTemplate,
     SalesDiscount,
     SalesVoucher,
     SalesVoucherRow,
@@ -245,7 +247,7 @@ class SalesVoucherRowSerializer(
                 raise ValidationError(
                     {"discount_type": ["Discount type does not exists."]},
                 )
-            
+
         if not Item.objects.filter(
             id=attrs.get("item_id"), company_id=request.company_id
         ).exists():
@@ -436,9 +438,9 @@ class SalesVoucherCreateSerializer(
 
     def validate_rows(self, rows):
         for row in rows:
-            row_serializer = SalesVoucherRowSerializer(data=row, context={
-                "request": self.context["request"]
-            })
+            row_serializer = SalesVoucherRowSerializer(
+                data=row, context={"request": self.context["request"]}
+            )
             if not row_serializer.is_valid():
                 raise serializers.ValidationError(row_serializer.errors)
         return rows
@@ -567,6 +569,46 @@ class SalesVoucherCreateSerializer(
             "bank_account",
             "discount_obj",
             "fiscal_year",
+        )
+
+
+class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
+    invoice_data = serializers.JSONField()
+    repeat_interval = serializers.IntegerField()
+
+    def validate_repeat_interval(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Ensure this value is greater than 0.")
+        return value
+
+    def validate(self, data):
+        invoice_data = data.get("invoice_data")
+        type = data.get("type")
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+
+        if end_date and start_date and end_date < start_date:
+            raise ValidationError({"end_date": "End date must be after start date."})
+
+        serializer_class = (
+            SalesVoucherCreateSerializer
+            if type == "Sales Voucher"
+            else PurchaseVoucherCreateSerializer
+        )
+        invoice_serializer = serializer_class(data=invoice_data, context=self.context)
+        if invoice_serializer.is_valid() is False:
+            raise ValidationError({"invoice_data": invoice_serializer.errors})
+        return super().validate(data)
+
+    class Meta:
+        model = RecurringVoucherTemplate
+        exclude = (
+            "company",
+            "last_generated",
+            "next_date",
+            "no_of_vouchers_created",
+            "created_at",
+            "updated_at",
         )
 
 

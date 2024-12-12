@@ -104,6 +104,7 @@ router.register(
 
 # voucher
 router.register("sales-voucher", voucher.SalesVoucherViewSet)
+router.register("recurring-voucher-template", voucher.RecurringVoucherTemplateViewSet)
 router.register("pos", voucher.POSViewSet, basename="pos")
 router.register(
     "sales-discount", voucher.SalesDiscountViewSet, basename="sales-discount"
