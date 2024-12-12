@@ -10,6 +10,7 @@ declare module '@vue/runtime-core' {
     AccountList: typeof import('./src/components/account/AccountList.vue')['default']
     AdjustmentInvoiceTable: typeof import('./src/components/inventory-adjustment/AdjustmentInvoiceTable.vue')['default']
     BalanceSheetTableNode: typeof import('./src/components/report/BalanceSheetTableNode.vue')['default']
+    BankReconciliationTable: typeof import('./src/components/BankReconciliationTable.vue')['default']
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
     ChartsView: typeof import('./src/components/charts/ChartsView.vue')['default']
