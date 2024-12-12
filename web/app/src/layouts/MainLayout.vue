@@ -374,6 +374,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('SalesDiscountView'),
       },
       {
+        title: 'Recurring Templates',
+        icon: 'mdi-repeat',
+        link: '/sales-voucher/recurring-template/list/',
+        hide: !checkPermissions('RecurringVoucherTemplateView'),
+      },
+      {
         title: 'Sales Report',
         icon: 'mdi-format-list-bulleted',
         link: '/sales-row/list/',

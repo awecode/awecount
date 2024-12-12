@@ -38,6 +38,7 @@ declare module '@vue/runtime-core' {
     PlainNode: typeof import('./src/components/report/PlainNode.vue')['default']
     PosInvoiceTable: typeof import('./src/components/pos/PosInvoiceTable.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
+    RecurringVoucherTemplateList: typeof import('./src/components/voucher/RecurringVoucherTemplateList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SalesForm: typeof import('./src/components/voucher/SalesForm.vue')['default']

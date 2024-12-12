@@ -348,6 +348,17 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
+        path: '/sales-voucher/recurring-template/list/',
+        name: 'Recurring Sales Invoice Templates',
+        component: () =>
+          import(
+            'src/pages/sales/sales-voucher/RecurringTemplateList.vue'
+          ),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates'],
+        },
+      },
+      {
         path: 'list/',
         name: 'Sales Invoices',
         component: () =>
