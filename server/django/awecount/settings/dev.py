@@ -12,6 +12,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ALL_ORIGINS = True
+CORS_ORIGIN_WHITELIST = ["http://localhost:9000", "http://localhost:8000"]
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:9000", "http://localhost:8000"]
 

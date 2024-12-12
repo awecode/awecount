@@ -241,7 +241,7 @@ USE_L10N = True
 ######################################################################
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [os.path.normpath(os.path.join(ROOT_DIR, "static"))]
+STATICFILES_DIRS = [os.path.normpath(os.path.join(ROOT_DIR, "staticfiles"))]
 
 STATIC_ROOT = os.path.normpath(os.path.join(ROOT_DIR, "static"))
 
