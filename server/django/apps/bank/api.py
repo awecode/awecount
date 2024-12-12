@@ -404,7 +404,9 @@ class BankReconciliationViewSet(CRULViewSet):
                     unreconciled_system_transactions.remove(system_transaction)
                     date_str = statement_transaction['date']
                     if date_str in system_transactions_by_date:
-                        system_transactions_by_date[date_str].remove(system_transaction)
+                        if system_transaction in system_transactions_by_date[date_str]:
+                            system_transactions_by_date[date_str].remove(system_transaction)
+                        
                         if not system_transactions_by_date[date_str]:
                             del system_transactions_by_date[date_str]
                     return True
@@ -485,6 +487,57 @@ class BankReconciliationViewSet(CRULViewSet):
             Returns:
                 bool: True if the transaction was reconciled, False otherwise.
             """
+            # first group system transactions by its source_id by dr_amount and cr_amount
+            system_transactions_by_source = {}
+            for system_transaction in system_transactions:
+                source_id = system_transaction.journal_entry.source_voucher_id
+                if source_id not in system_transactions_by_source:
+                    system_transactions_by_source[source_id] = []
+                system_transactions_by_source[source_id].append(system_transaction)
+            # if statement_transaction.get('date')  == '2024-11-24':
+            #     import ipdb; ipdb.set_trace()
+                
+            # loop over the grouped system transactions and try to reconcile
+            for source_id, system_transactions in list(system_transactions_by_source.items()):
+                for r in range(1, len(system_transactions) + 1):
+                    for combination in combinations(system_transactions, r):
+                        total_dr = sum((t.dr_amount or 0) for t in combination)
+                        total_cr = sum((t.cr_amount or 0) for t in combination)
+                        # if statement_transaction.get('date')  == '2024-11-24' and source_id == 20251 and len(combination) == 6 and total_dr > 1000:
+                        #     import ipdb; ipdb.set_trace()
+
+                        if (
+                            abs(total_dr - statement_transaction.get('cr_amount', 0)) < 0.01 and
+                            abs(total_cr - statement_transaction.get('dr_amount', 0)) < 0.01
+                        ):
+                            # Reconcile matched transactions
+                            for system_transaction in combination:
+                                if statement_transaction.get('transaction_ids'):
+                                    statement_transaction['transaction_ids'].append(system_transaction.pk)
+                                else:
+                                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                unreconciled_system_transactions.remove(system_transaction)
+                                system_transactions_by_date[system_transaction.journal_entry.date.strftime('%Y-%m-%d')].remove(system_transaction)
+
+                            reconciled_transactions.append(statement_transaction)
+                            unreconciled_statement_transactions.remove(statement_transaction)
+
+                            return True
+                        
+                        elif (abs(total_dr - total_cr - statement_transaction.get('cr_amount', 0)) < 0.01):
+                            # dont remove the cr_amount transaction but remove the dr_amount transactions
+                            for system_transaction in combination:
+                                if statement_transaction.get('transaction_ids'):
+                                    statement_transaction['transaction_ids'].append(system_transaction.pk)
+                                else:
+                                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                unreconciled_system_transactions.remove(system_transaction)
+                                system_transactions_by_date[system_transaction.journal_entry.date.strftime('%Y-%m-%d')].remove(system_transaction)
+                            reconciled_transactions.append(statement_transaction)
+                            unreconciled_statement_transactions.remove(statement_transaction)
+                            return True
+            
+            
             for r in range(1, len(system_transactions) + 1):
                 for combination in combinations(system_transactions, r):
                     total_dr = sum((t.dr_amount or 0) for t in combination)
@@ -501,6 +554,7 @@ class BankReconciliationViewSet(CRULViewSet):
                             else:
                                 statement_transaction['transaction_ids'] = [system_transaction.pk]
                             unreconciled_system_transactions.remove(system_transaction)
+                            system_transactions_by_date[system_transaction.journal_entry.date.strftime('%Y-%m-%d')].remove(system_transaction)
 
                         reconciled_transactions.append(statement_transaction)
                         unreconciled_statement_transactions.remove(statement_transaction)
