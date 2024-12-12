@@ -9,6 +9,12 @@ interface SystemTransactionData {
   cr_amount: string
   source_type: string
   source_id: number
+  counterpart_accounts: {
+    account_id: number
+    account_name: string
+    dr_amount: string
+    cr_amount: string
+  }[]
 }
 
 interface StatementTransactionData {
@@ -156,8 +162,24 @@ const calculateTotal = (transactions: SystemTransactionData[] | StatementTransac
       dr_amount += Number(transaction.dr_amount)
     }
   }
-  return dr_amount - cr_amount
+  return (cr_amount - dr_amount).toFixed(2)
 }
+
+const calculateTotalFromCounterparts = (counterparts: { dr_amount: string, cr_amount: string }[]) => {
+  let cr_amount = 0
+  let dr_amount = 0
+  for (let counterpart of counterparts) {
+    if (counterpart.cr_amount) {
+      cr_amount += Number(counterpart.cr_amount)
+    }
+    if (counterpart.dr_amount) {
+      dr_amount += Number(counterpart.dr_amount)
+    }
+  }
+  return (cr_amount - dr_amount).toFixed(2)
+}
+
+
 
 
 function getVoucherUrl(row: SystemTransactionData) {
@@ -238,6 +260,94 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
   return Array.from(sourceMap.values())
 }
 
+// Selected transactions tracking
+const selectedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
+const selectedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
+
+// Select all toggles
+const allStatementSelected = computed(() =>
+  selectedStatementTransactions.value.length === unmatchedStatementTransactions.value.length
+)
+
+const allSystemSelected = computed(() =>
+  selectedSystemTransactions.value.length === unmatchedSystemTransactions.value.length
+)
+
+// Toggle individual transactions
+const toggleStatementTransaction = (transaction: StatementTransactionData) => {
+  const index = selectedStatementTransactions.value.findIndex(t => t.id === transaction.id)
+  if (index > -1) {
+    selectedStatementTransactions.value.splice(index, 1)
+  } else {
+    selectedStatementTransactions.value.push(transaction)
+  }
+}
+
+const toggleSystemTransaction = (transaction: SystemTransactionData) => {
+  const index = selectedSystemTransactions.value.findIndex(t => t.id === transaction.id)
+  if (index > -1) {
+    selectedSystemTransactions.value.splice(index, 1)
+  } else {
+    selectedSystemTransactions.value.push(transaction)
+  }
+}
+
+// Toggle all transactions
+const toggleAllStatementTransactions = () => {
+  // if (allStatementSelected.value) {
+  //   selectedStatementTransactions.value = []
+  // } else {
+  //   selectedStatementTransactions.value = [...unmatchedStatementTransactions.value]
+  // }
+}
+
+const toggleAllSystemTransactions = () => {
+  // if (allSystemSelected.value) {
+  //   selectedSystemTransactions.value = []
+  // } else {
+  //   selectedSystemTransactions.value = [...unmatchedSystemTransactions.value]
+  // }
+}
+
+// Check if a specific transaction is selected
+const isStatementTransactionSelected = (transaction: StatementTransactionData) =>
+  selectedStatementTransactions.value.some(t => t.id === transaction.id)
+
+const isSystemTransactionSelected = (transaction: SystemTransactionData) =>
+  selectedSystemTransactions.value.some(t => t.id === transaction.id)
+
+
+
+const canReconcile = computed(() => {
+  console.log('canReconcile:', selectedStatementTransactions.value.length > 0 &&
+    selectedSystemTransactions.value.length > 0
+    && (Number(calculateTotal(selectedStatementTransactions.value)) - Number(calculateTotal(selectedSystemTransactions.value)) == 0))
+  return selectedStatementTransactions.value.length > 0 &&
+    selectedSystemTransactions.value.length > 0
+    && (Number(calculateTotal(selectedStatementTransactions.value)) - Number(calculateTotal(selectedSystemTransactions.value)) == 0)
+}
+  // also total amount matches
+)
+
+const unselectAll = () => {
+  selectedStatementTransactions.value = []
+  selectedSystemTransactions.value = []
+}
+
+const reconcile = () => {
+  if (canReconcile.value) {
+    // Implement reconciliation logic
+    // This might involve matching selected transactions,
+    // updating database, etc.
+    console.log('Reconciling:', {
+      statementTransactions: selectedStatementTransactions.value,
+      systemTransactions: selectedSystemTransactions.value
+    })
+
+    // Optionally clear selections after reconciliation
+    unselectAll()
+  }
+}
 
 </script>
 <template>
@@ -245,58 +355,112 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
     <!-- Unmatched section -->
     <div class="grid grid-cols-2 gap-10">
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
-        <div class="grid grid-cols-2 gap-6">
+        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
+          <div class="flex space-x-6">
+            <!-- Statement Transactions Summary -->
+            <div class="space-y-1">
+              <div class="flex items-center">
+                <span class="text-lg font-semibold text-blue-700">Statement Transactions</span>
+                <span class="text-sm text-blue-500 ml-2 bg-blue-100 px-2 rounded-full">
+                  {{ selectedStatementTransactions.length }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-600">
+                Total:
+                <span class="font-medium text-blue-600">
+                  {{ calculateTotal(selectedStatementTransactions) }}
+                </span>
+              </div>
+            </div>
 
+            <!-- System Transactions Summary -->
+            <div class="space-y-1">
+              <div class="flex items-center">
+                <span class="text-lg font-semibold text-green-700">System Transactions</span>
+                <span class="text-sm text-green-500 ml-2 bg-green-100 px-2 rounded-full">
+                  {{ selectedSystemTransactions.length }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-600">
+                Total:
+                <span class="font-medium text-green-600">
+                  {{ calculateTotal(selectedSystemTransactions) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex space-x-3">
+            <button @click="unselectAll" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+              Unselect All
+            </button>
+            {{ canReconcile }}
+            <button @click="reconcile" :disabled="!canReconcile"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              Reconcile
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
           <!-- Unmatched Statement Transactions -->
-          <div class="p-4 bg-white rounded-lg shadow-sm border">
-            <div class="text-lg font-semibold text-blue-600 mb-3">Unmatched Statement Transactions</div>
-            <div v-for="data in unmatchedStatementTransactions" :key="data.id" class="border-b py-2">
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Date:</div>
-                <div class="font-medium">{{ data.statement_date }}</div>
-              </div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Debit Amount:</div>
-                <div class="font-medium text-red-500">{{ data.dr_amount }}</div>
-              </div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Credit Amount:</div>
-                <div class="font-medium text-green-500">{{ data.cr_amount }}</div>
-              </div>
-              <div class="flex justify-between items-center">
-                <div class="text-gray-700">Balance:</div>
-                <div class="font-medium text-purple-600">{{ data.balance }}</div>
+          <div class="bg-white rounded-lg shadow-sm border">
+            <div class="px-4 py-3 border-b bg-blue-50 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-blue-600">
+                Unmatched Statement Transactions
+                <span class="text-sm text-blue-500 ml-2">({{ unmatchedStatementTransactions.length }})</span>
+              </h3>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded" :checked="allStatementSelected" @change="toggleAllStatementTransactions" />
+                <span class="ml-2 text-sm text-gray-600">Select All</span>
+              </label>
+            </div>
+
+            <div class="divide-y max-h-96 overflow-y-auto">
+              <div v-for="data in unmatchedStatementTransactions" :key="data.id" class="px-4 py-3 hover:bg-gray-50 flex items-center space-x-3">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
+                <div class="flex-grow">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">{{ data.statement_date }}</span>
+                    <div>
+                      <span class="text-red-500 mr-2">-{{ data.dr_amount }}</span>
+                      <span class="text-green-500">+{{ data.cr_amount }}</span>
+                    </div>
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">Balance: {{ data.balance }}</div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Unmatched System Transactions -->
-          <div class="p-4 bg-white rounded-lg shadow-sm border">
-            <div class="text-lg font-semibold text-green-600 mb-3">Unmatched System Transactions</div>
-            <div v-for="data in unmatchedSystemTransactions" :key="data.id" class="border-b py-2">
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Id:</div>
-                <div class="font-medium">{{ data.id }}</div>
+          <div class="bg-white rounded-lg shadow-sm border">
+            <div class="px-4 py-3 border-b bg-green-50 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-green-600">
+                Unmatched System Transactions
+                <span class="text-sm text-green-500 ml-2">({{ unmatchedSystemTransactions.length }})</span>
+              </h3>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-green-600 rounded" :checked="allSystemSelected" @change="toggleAllSystemTransactions" />
+                <span class="ml-2 text-sm text-gray-600">Select All</span>
+              </label>
+            </div>
+
+            <div class="divide-y max-h-96 overflow-y-auto">
+              <div v-for="data in unmatchedSystemTransactions" :key="data.id" class="px-4 py-3 hover:bg-gray-50 flex items-center space-x-3">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-green-600 rounded" :checked="isSystemTransactionSelected(data)" @change="toggleSystemTransaction(data)" />
+                <div class="flex-grow">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">{{ data.date }} ({{ data.id }})</span>
+                    <div>
+                      <span class="text-red-500 mr-2">-{{ data.dr_amount }}</span>
+                      <span class="text-green-500">+{{ data.cr_amount }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Date:</div>
-                <div class="font-medium">{{ data.date }}</div>
-              </div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Debit Amount:</div>
-                <div class="font-medium text-red-500">{{ data.dr_amount }}</div>
-              </div>
-              <div class="flex justify-between items-center mb-1">
-                <div class="text-gray-700">Credit Amount:</div>
-                <div class="font-medium text-green-500">{{ data.cr_amount }}</div>
-              </div>
-              <!-- <div class="flex justify-between items-center">
-                <div class="text-gray-700">Balance:</div>
-                <div class="font-medium text-purple-600">{{ data.balance }}</div>
-              </div> -->
             </div>
           </div>
-
         </div>
       </div>
       <div class="container mx-auto p-4">
@@ -319,7 +483,7 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
                     <div class="px-4 py-2 border-b bg-blue-50 text-blue-700 font-semibold">
                       Statement
                     </div>
-                    <div class="divide-y text-sm">
+                    <div class="divide-y text-xs">
                       <div v-for="transaction in data.statementTransactions" :key="transaction.id" class="px-4 py-2.5">
                         <div class="flex justify-between mb-1">
                           <span class="text-gray-500">{{ transaction.statement_date }}</span>
@@ -328,13 +492,13 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
                             <span v-if="transaction.cr_amount" class="text-green-500">-{{ transaction.cr_amount }}</span>
                           </div>
                         </div>
-                        <div class="text-gray-600 text-xs truncate">{{ transaction.description }}</div>
+                        <div class="text-gray-600 truncate">{{ transaction.description }}</div>
                       </div>
                     </div>
 
                   </div>
                   <div class="px-4 py-2 text-right">
-                    <span :class="calculateTotal(data.statementTransactions) < 0 ? 'text-green-500' : 'text-red-500'">{{ calculateTotal(data.statementTransactions) }}</span>
+                    <span :class="Number(calculateTotal(data.statementTransactions)) < 0 ? 'text-green-500' : 'text-red-500'">{{ calculateTotal(data.statementTransactions) }}</span>
                   </div>
                 </div>
 
@@ -353,20 +517,44 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
 
                     </div>
                     <div class="divide-y text-sm">
-                      <div v-for="transaction in data.systemTransactions" :key="transaction.id" class="px-4 py-2.5">
-                        <div class="flex justify-between mb-1">
-                          <span class="text-gray-500">{{ transaction.date }}</span>
-                          <div>
-                            <span v-if="transaction.dr_amount" class="text-green-500 mr-2">+{{ transaction.dr_amount }}</span>
-                            <span v-if="transaction.cr_amount" class="text-red-500">-{{ transaction.cr_amount }}</span>
+                      <div v-for="transaction, index in data.systemTransactions" :key="transaction.id" class="px-4 py-3  border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative group"
+                        :class="{ 'border-b': index !== data.systemTransactions.length - 1 }">
+                        <!-- <div class="flex items-center justify-between">
+                          <span class="text-sm text-gray-600">{{ transaction.date }}</span>
+                          <div class="flex items-center space-x-2">
+                            <span v-if="transaction.dr_amount" class="text-green-600 font-medium text-sm">
+                              +{{ transaction.dr_amount }}
+                            </span>
+                            <span v-if="transaction.cr_amount" class="text-red-600 font-medium text-sm">
+                              -{{ transaction.cr_amount }}
+                            </span>
+                          </div>
+                        </div> -->
+
+                        <div class="text-xs">
+                          <!-- Add date too -->
+                          <div class="text-gray-500">{{ transaction.date }}</div>
+
+                          <div v-for="counterpart in transaction.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between">
+                            <div class="text-gray-700 truncate flex-grow mr-2">
+                              {{ counterpart.account_name }}
+                            </div>
+                            <div class="flex space-x-2">
+                              <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
+                                -{{ counterpart.dr_amount }}
+                              </span>
+                              <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
+                                +{{ counterpart.cr_amount }}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div class="text-gray-600 text-xs">{{ transaction.id }}</div>
                       </div>
                     </div>
                   </div>
                   <div class="px-4 py-2 text-right">
-                    <span :class="calculateTotal(data.systemTransactions) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.systemTransactions) }}</span>
+                    <span :class="Number(calculateTotalFromCounterparts(data.systemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotalFromCounterparts(data.systemTransactions)
+                      }}</span>
                   </div>
                 </div>
               </div>
