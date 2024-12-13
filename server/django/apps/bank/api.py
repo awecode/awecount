@@ -8,6 +8,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from django.conf import settings
+from datetime import datetime, timedelta
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -629,7 +630,6 @@ class BankReconciliationViewSet(CRULViewSet):
                         continue  # Only runs if the inner loop is not broken
                     break  
                 
-        from datetime import datetime, timedelta
         
                 
         # Iterate over unreconciled statement transactions to find direct matches
@@ -760,7 +760,7 @@ class BankReconciliationViewSet(CRULViewSet):
             ))
 
         # Perform bulk_create once
-        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
@@ -792,8 +792,33 @@ class BankReconciliationViewSet(CRULViewSet):
 
         transactions = serializer.validated_data["transactions"]
         account_id = serializer.validated_data["account_id"]
+        
+        start_date = serializer.validated_data.get('start_date')
+        end_date = serializer.validated_data.get('end_date')
+         
+        # Filter transactions if both start_date and end_date are provided
+        if start_date and end_date:
+            transactions = [
+                transaction for transaction in transactions
+                if start_date <= datetime.strptime(transaction['date'], '%Y-%m-%d').date() <= end_date
+            ]
+
+        # If not both start_date and end_date are provided, calculate them from the transaction dates
+        if not start_date or not end_date:
+            dates = [datetime.strptime(transaction['date'], '%Y-%m-%d').date() for transaction in transactions]
+            if not start_date:
+                start_date = min(dates)
+            if not end_date:
+                end_date = max(dates)
+
+        # Ensure all transactions fall within the start_date and end_date range
+        transactions = [
+            transaction for transaction in transactions
+            if start_date <= datetime.strptime(transaction['date'], '%Y-%m-%d').date() <= end_date
+        ]
+        
         # TODO: throw in background task
-        response = self.reconcile(request.company, transactions, serializer.validated_data.get('start_date'), serializer.validated_data.get('end_date'), account_id)
+        response = self.reconcile(request.company, transactions, start_date, end_date, account_id)
         return Response(response)
     
     
