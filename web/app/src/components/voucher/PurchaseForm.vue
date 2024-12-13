@@ -35,7 +35,7 @@
             endpoint="/v1/sales-voucher/create-defaults/parties"
             :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
         </div>
-        <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
+        <q-input v-if="!isTemplate" class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
           :error-message="errors.voucher_no" :error="!!errors.voucher_no">
         </q-input>
         <div class="col-md-6 col-12 row q-col-gutter-md">
@@ -65,7 +65,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-6 col-12">
+        <div class="col-md-6 col-12" v-if="!isTemplate">
           <date-picker v-model="fields.date" label="Date *" :error-message="errors.date"
             :error="!!errors.date"></date-picker>
         </div>
@@ -82,7 +82,7 @@
               <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
                 @click.stop.prevent="fields.payment_mode = null" /></template></n-auto-complete-v2>
         </div>
-        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date" v-model="fields.due_date"
+        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher && !isTemplate" label="Due Date" v-model="fields.due_date"
           class="col-md-6 col-12" :error-message="errors?.due_date" :error="!!errors?.due_date"
           :toLimit="fields.date"></date-picker>
       </div>

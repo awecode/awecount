@@ -617,6 +617,31 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Purchases/Expenses', 'Update'],
         },
       },
+      {
+        path: '/purchase-voucher/recurring-template/list/',
+        name: 'Recurring Purchase Invoice Templates',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates'],
+        },
+      },
+      {
+        path: '/purchase-voucher/recurring-template/add/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Create'],
+        },
+      },
+      {
+        path: '/purchase-voucher/recurring-template/:id/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Update'],
+        },
+      },
     ],
   },
   {

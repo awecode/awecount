@@ -79,6 +79,7 @@ const endpoint = '/v1/recurring-voucher-template/'
 
 const formData = useForm(endpoint, {
   getDefaults: true,
+  queryParams: { type: `${capitalizedType} Voucher` },
   successRoute: `/${props.type}-voucher/recurring-template/list/`,
   createDefaultsEndpoint: `create-defaults/?type=${capitalizedType} Voucher`,
 })
