@@ -8,6 +8,7 @@ from allauth.socialaccount.providers.google.views import (
 )
 
 from apps.authentication.utils.redirection_path import get_redirection_path
+from apps.company.models import CompanyMember
 from apps.users.models import User
 
 
@@ -27,6 +28,14 @@ class AllAuthHeadlessAdapter(DefaultHeadlessAdapter):
         )
 
         ret["redirect"] = get_redirection_path(user)
+
+        company_member = CompanyMember.objects.get(
+            company_id=user.company_id,
+            member_id=user.id,
+        )
+
+        ret["access_level"] = company_member.access_level
+        ret["permissions"] = company_member.permissions_dict
 
         return ret
 
