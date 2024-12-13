@@ -222,7 +222,7 @@ class BankCashDepositCreateSerializer(
 class ReconciliationEntriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReconciliationEntries
-        exclude = ("updated_at", "created_at", )
+        exclude = ("updated_at", )
         
 class ReconciliationStatementImportSerializer(serializers.Serializer):
     account_id = serializers.IntegerField()
