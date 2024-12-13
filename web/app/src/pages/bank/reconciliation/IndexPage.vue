@@ -148,7 +148,7 @@ const fetchTransactions = async () => {
     return
   }
 
-  useApi('v1/bank-reconciliation/transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
+  useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
     systemTransactionData.value = response.system_transactions
     statementTransactionData.value = response.statement_transactions
   }).catch((error) => {
