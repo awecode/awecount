@@ -664,11 +664,16 @@ class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
         if invoice_serializer.is_valid() is False:
             raise ValidationError({"invoice_data": invoice_serializer.errors})
         return super().validate(data)
+    
+    def create(self, validated_data):
+        validated_data["user_id"] = self.context["request"].user.id
+        return super().create(validated_data)
 
     class Meta:
         model = RecurringVoucherTemplate
         exclude = (
             "company",
+            "user",
             "last_generated",
             "next_date",
             "no_of_vouchers_created",
