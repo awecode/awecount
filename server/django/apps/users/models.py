@@ -126,6 +126,10 @@ class User(AbstractBaseUser):
     def company(self):
         return Company.objects.filter(company_members__member=self).first()
 
+    @property
+    def company_id(self):
+        return self.company.id if self.company else None
+
     def save(self, *args, **kwargs):
         self.email = self.email.lower().strip()
 
