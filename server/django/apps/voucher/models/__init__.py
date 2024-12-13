@@ -873,6 +873,7 @@ class RecurringVoucherTemplate(models.Model):
     next_date = models.DateField(blank=True, null=True)
     no_of_vouchers_created = models.PositiveSmallIntegerField(default=0)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
