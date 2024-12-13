@@ -8,7 +8,7 @@ export default defineConfig((/* ctx */) => {
 
     css: ['app.scss'],
 
-    boot: ['ofetch', 'num', 'sentry'],
+    boot: ['ofetch', 'num', 'sentry', 'rbac'],
 
     extras: [
       'mdi-v7',
