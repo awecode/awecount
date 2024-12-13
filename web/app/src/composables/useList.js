@@ -49,6 +49,7 @@ export default (endpoint, predefinedColumns = null) => {
   const unCalculatedrows = ref([])
   // const rows = ref([])
   const columns = ref([])
+  const data = ref(null)
 
   let cleanedFilterValues = Object.fromEntries(
     Object.entries(filterQueryValues).map(([k, v]) => {
@@ -93,6 +94,7 @@ export default (endpoint, predefinedColumns = null) => {
       .then((response) => {
         unCalculatedrows.value = response.results
         initiallyLoaded.value = true
+        data.value = response
         const orderValues = {
           descending: pagination.value.descending || false,
           sortBy: pagination.value.sortBy || '',
@@ -329,6 +331,7 @@ export default (endpoint, predefinedColumns = null) => {
     confirmDeletion,
     initiallyLoaded,
     aggregate,
-    loadData
+    loadData,
+    data,
   }
 }

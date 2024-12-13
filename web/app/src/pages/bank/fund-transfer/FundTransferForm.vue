@@ -18,8 +18,8 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account"
-                endpoint="v1/fund-transfer/create-defaults/from_account" :staticOption="fields.selected_from_account_obj"
-                label="From Account *" :error="errors?.from_account" />
+                endpoint="v1/fund-transfer/create-defaults/from_account"
+                :staticOption="fields.selected_from_account_obj" label="From Account *" :error="errors?.from_account" />
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account"
@@ -105,11 +105,15 @@ export default {
       }
     })
     formData.fields.value.date = formData.fields.value.date || formData.today
-
-    // TODO: Should Test this
     onMounted(() => {
-      if (route.params && route.params.template) {
-        const template = route.params.template
+      if (route.query && route.query.template) {
+        let template
+        try {
+          template = JSON.parse(decodeURIComponent(route.query.template))
+        } catch (e) {
+          console.log('error parsing data')
+        }
+        if (!template) return
         if (template.from_account)
           formData.fields.value.from_account = template.from_account
         if (template.to_account) formData.fields.value.to_account = template.to_account
@@ -117,6 +121,13 @@ export default {
           formData.fields.value.transaction_fee_account = template.transaction_fee_account
         if (template.transaction_fee)
           formData.fields.value.transaction_fee = template.transaction_fee
+        if (template.selected_from_account_obj)
+          formData.fields.value.selected_from_account_obj = template.selected_from_account_obj
+        if (template.selected_to_account_obj)
+          formData.fields.value.selected_to_account_obj = template.selected_to_account_obj
+        if (template.selected_transaction_fee_account_obj)
+          formData.fields.value.selected_transaction_fee_account_obj =
+            template.selected_transaction_fee_account_obj
       }
     })
     return {

@@ -7,7 +7,17 @@
           <span v-else>Update Inventory Adjustment Voucher | {{ fields.status }} | # {{ fields.voucher_no }}</span>
         </div>
       </q-card-section>
-
+      <div class="flex justify-end p-4">
+        <q-btn label="Import From XlS" @click="isAdjustmentImportOpen = true"
+          class="flex justify-end text-green"></q-btn>
+      </div>
+      <q-dialog v-model="isAdjustmentImportOpen">
+        <q-card style="min-width: min(80vw, 900px)">
+          <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round
+            dense icon="close" @click="isAdjustmentImportOpen = false" />
+          <InventoryAdjustmentImport @modalClose="isAdjustmentImportOpen = false" @onImportSuccess=onXlsFileImport />
+        </q-card>
+      </q-dialog>
       <q-card class="q-ma-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
@@ -28,6 +38,14 @@
               :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
+        <div v-if="importErrorData.length">
+          <div class="text-sm text-gray">Following item codes failed to import:</div>
+          <div class="grid grid-cols-12">
+            <div v-for="item in importErrorData" :key="item">
+              <div>{{ item }}</div>
+            </div>
+          </div>
+        </div>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn v-if="checkPermissions('InventoryAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading" @click.prevent="isDeleteOpen = true" color="red" label="Cancel" />
@@ -71,6 +89,8 @@ export default {
       title: 'Inventory Adjustment | Awecount',
     }
     useMeta(metaData)
+    const isAdjustmentImportOpen = ref(false)
+    const importErrorData = []
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
     const deleteMsg = ref(null)
@@ -114,6 +134,13 @@ export default {
       try { await formData.submitForm() } catch (err) {
         formData.fields.value.status = originalStatus
       }
+    }
+    const onXlsFileImport = (items) => {
+      if (!formData.fields.value.rows) {
+        formData.fields.value.rows = []
+      }
+      formData.fields.value.rows.push(...items.items)
+      importErrorData.push(...items.unadjusted_items)
     }
     const onCancelClick = () => {
       const url = `/v1/inventory-adjustment/${formData.fields.value.id}/cancel/`
@@ -173,7 +200,7 @@ export default {
         })
     }
     return {
-      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick
+      ...formData, checkPermissions, purposeChoices, deleteRow, onSubmitClick, isDeleteOpen, deleteMsg, onCancelClick, isAdjustmentImportOpen, onXlsFileImport, importErrorData
     }
   },
 }

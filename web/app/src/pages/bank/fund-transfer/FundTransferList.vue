@@ -4,7 +4,14 @@
       <q-btn v-if="checkPermissions('FundTransferCreate')" color="green" to="/fund-transfer/add/"
         label="New Fund Transfer" class="add-btn" icon-right="add" />
     </div>
-
+    <q-card class="p-4 mt-4" v-if="data?.templates && data.templates.length">
+      <h5 class="q-my-none q-mb-sm text-h6 text-grey-8">Templates:</h5>
+      <div class="flex gap-4">
+        <q-btn v-for="template in data.templates" :key="template.id" class="add-btn" icon-right="add" color="green"
+          :label="template.name"
+          :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }" />
+      </div>
+    </q-card>
     <q-table title="Fund Transfer" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery"
       v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
@@ -54,13 +61,15 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn v-if="checkPermissions('FundTransferModify')" label="Edit" color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" :to="`/fund-transfer/${props.row.id}/`" />
+            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px"
+            :to="`/fund-transfer/${props.row.id}/`" />
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link v-if="checkPermissions('FundTransferModify')" class="text-blue text-weight-medium"
-            style="text-decoration: none" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no }}</router-link>
+            style="text-decoration: none" :to="`/fund-transfer/${props.row.id}/`">{{ props.row.voucher_no
+            }}</router-link>
           <span v-else> {{ props.row.voucher_no }}</span>
         </q-td>
       </template>

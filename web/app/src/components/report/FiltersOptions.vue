@@ -116,6 +116,7 @@ export default {
             { deep: true }
         )
         const onNewSelect = (obj) => {
+            if (!obj) return
             avaliableOptions.value.push(obj)
         }
         return {

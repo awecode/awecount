@@ -24,6 +24,7 @@ declare module '@vue/runtime-core' {
     FiltersOptions: typeof import('./src/components/report/FiltersOptions.vue')['default']
     FormSkeleton: typeof import('./src/components/FormSkeleton.vue')['default']
     Import: typeof import('./src/components/Import.vue')['default']
+    InventoryAdjustmentImport: typeof import('./src/components/InventoryAdjustmentImport.vue')['default']
     InventoryConversionTable: typeof import('./src/components/inventory-conversion/InventoryConversionTable.vue')['default']
     InvoiceRow: typeof import('./src/components/voucher/InvoiceRow.vue')['default']
     InvoiceTable: typeof import('./src/components/voucher/InvoiceTable.vue')['default']

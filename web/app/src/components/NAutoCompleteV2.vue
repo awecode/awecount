@@ -305,13 +305,9 @@ export default {
               fetchLoading.value = false
             })
         }
-      } else if (
-        scrollData.direction === 'increase' &&
-        scrollData.to > allOptions.value.results.length - 2 &&
-        allOptions.value.pagination.page !==
-        allOptions.value.pagination.pages &&
-        !fetchLoading.value
-      ) {
+      }
+      else if (scrollData.direction === 'increase' && scrollData.to > allOptions.value.results.length - 3 &&
+        allOptions.value.pagination.page !== allOptions.value.pagination.pages && !fetchLoading.value) {
         fetchOptions()
       }
     }
