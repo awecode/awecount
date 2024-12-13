@@ -25,7 +25,7 @@ export default antfu({
       'vue/define-emits-declaration': ['error', 'type-literal'],
 
       // enforce line breaks
-      'vue/max-attributes-per-line': ['error', { singleline: 4, multiline: 1 }],
+      'vue/max-attributes-per-line': ['error', { singleline: 10, multiline: 1 }],
       'vue/first-attribute-linebreak': ['error', { singleline: 'beside', multiline: 'below' }],
 
       // misc
