@@ -37,13 +37,15 @@
               <div v-else-if="hasError" class="text-red-600 text-xs">Error parsing the file</div>
               <div v-else-if="toHaveHeaders.find(header => !statementHeaders.has(header))" class="text-red-600 text-xs">Couldn't find header columns: {{
                 toHaveHeaders.filter(header => !statementHeaders.has(header)).join(', ') }}</div>
+              <div v-else-if="statementData.length" class="text-green-600 text-xs">
+                {{ statementData.length }} rows parsed</div>
             </template>
           </q-file>
 
           <div>
             <DateRangePicker v-model:startDate="statementStartDate" v-model:endDate="statementEndDate" :hide-btns="true" id="modal-date-picker" />
             <div class="text-gray-600 -mt-4 text-xs">
-              Please select the date range for the statement you are uploading (optional)
+              Please select the date range for the statement you want to extract <br> <span class=" ">If not selected, the system will use the date range from the statement</span>
             </div>
           </div>
 
@@ -54,8 +56,8 @@
       </q-card>
     </q-dialog>
     <!-- Table -->
-    <BankReconciliationTable v-if="systemTransactionData.length && statementTransactionData.length" :systemTransactionData="systemTransactionData"
-      :statementTransactionData="statementTransactionData" />
+    <BankReconciliationTable v-if="systemTransactionData.length && statementTransactionData.length" :systemTransactionData="systemTransactionData" :statementTransactionData="statementTransactionData"
+      :acceptableDifference="acceptableDifference" />
   </q-page>
 </template>
 
@@ -80,6 +82,7 @@ const isStatementProcessing = ref(false)
 const hasError = ref(false)
 const systemTransactionData = ref([])
 const statementTransactionData = ref([])
+const acceptableDifference = ref(0.01)
 
 const endpoint = 'v1/bank-reconciliation/banks/'
 
@@ -101,6 +104,9 @@ const headerMappings: { [key: string]: string | MappingFunction } = {
   'balance(npr)': 'balance',
   'txn no.': 'txn_no',
   'txn no': 'txn_no',
+  'transaction date': 'date',
+  'withdraw': 'dr_amount',
+  'deposit': 'cr_amount',
 }
 
 function mapHeaders(headers: string[]): string[] {
@@ -151,6 +157,7 @@ const fetchTransactions = async () => {
   useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
     systemTransactionData.value = response.system_transactions
     statementTransactionData.value = response.statement_transactions
+    acceptableDifference.value = response.acceptable_difference
   }).catch((error) => {
     console.log(error)
     systemTransactionData.value = []
@@ -175,6 +182,7 @@ function parseDate(dateString: string | null): string {
   if (!dateString) {
     throw new Error('Date string is empty')
   }
+  console.log(dateString)
   // if date contains any special characters, replace them with -
   dateString = dateString.replace(/[^0-9]/g, '-')
 
@@ -200,8 +208,8 @@ function parseDate(dateString: string | null): string {
 function parseXLSXSheet(sheetData: any[][]): any[] {
   let headerRowIndex = sheetData.findIndex(row =>
     row.some(cell => {
-      const lowerCasedCell = String(cell).toLowerCase()
-      return lowerCasedCell.includes('debit') || lowerCasedCell.includes('credit')
+      const lowerCasedCell = String(cell).toLowerCase().trim()
+      return lowerCasedCell.includes('debit') || lowerCasedCell.includes('credit') || lowerCasedCell.includes('description')
     })
   )
   // If no header row found, throw an error
@@ -215,7 +223,7 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
       .toLowerCase()
       .replace(/[\n\t]/g, ' ')
       .replace(/\d/g, '')
-  ).filter(Boolean)
+  )
 
   headerRow = mapHeaders(headerRow)
 
@@ -226,24 +234,40 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
   }
 
   const data: ParsedData[] = []
-
-  sheetData.slice(headerRowIndex + 1).forEach(row => {
+  for (let rowIndex = headerRowIndex + 1; rowIndex < sheetData.length; rowIndex++) {
+    const row = sheetData[rowIndex]
     const rowData: ParsedData = {}
-    row.forEach((cell, index) => {
-      rowData[headerRow[index]] = cell
 
-      if (headerRow[index] === 'date') {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(cell)) {
-          rowData['date'] = cell
-        } else {
-          rowData['date'] = parseDate(cell)
-        }
+    const hasBalance = row.some((cell, index) =>
+      ['balance'].includes(headerRow[index]) && cell
+    )
+    if (!hasBalance) {
+      continue
+    }
+
+    for (let index = 0; index < row.length; index++) {
+      const cell = row[index]
+      const header = headerRow[index]
+
+      if (!header) {
+        continue
       }
 
-    })
-    data.push(rowData)
-  })
+      rowData[header] = cell
 
+      if (header === 'date') {
+        rowData.date = /^\d{4}-\d{2}-\d{2}$/.test(cell) ? cell : parseDate(cell)
+      }
+
+      if (header === 'description') {
+        console.log(cell)
+        if (cell.trim() === 'Closing Balance') {
+          return data
+        }
+      }
+    }
+    data.push(rowData)
+  }
   return data
 }
 
