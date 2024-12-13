@@ -443,18 +443,29 @@ BANK_RECONCILIATION_STATUS = (
     ("Matched", "Matched"),
     ("Unreconciled", "Unreconciled"),
 )
-        
 
-class BankReconciliation(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+
+class ReconciliationStatement(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="bank_reconciliation_statements")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="bank_reconciliation_statements")
+    file_name = models.CharField(max_length=255)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    
+    def __str__(self):
+        return self.file_name or str(self.start_date)
+
+class ReconciliationEntries(models.Model):
     status = models.CharField(choices=BANK_RECONCILIATION_STATUS, default=BANK_RECONCILIATION_STATUS[0][0], max_length=20)
-    statement_date = models.DateField()
+    date = models.DateField()
     dr_amount = models.FloatField(null=True, blank=True)
     cr_amount = models.FloatField(null=True, blank=True)
+    balance = models.FloatField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     transaction_ids = ArrayField(models.IntegerField(), default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    statement = models.ForeignKey(ReconciliationStatement, on_delete=models.CASCADE, related_name="entries")
 
     def __str__(self):
         return str(self.date)

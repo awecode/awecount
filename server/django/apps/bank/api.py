@@ -19,7 +19,8 @@ from apps.bank.filters import (
 from apps.bank.models import (
     BankAccount,
     BankCashDeposit,
-    BankReconciliation,
+    ReconciliationStatement,
+    ReconciliationEntries,
     ChequeDeposit,
     FundTransferTemplate,
 )
@@ -30,8 +31,9 @@ from apps.bank.serializers import (
     BankAccountWithLedgerSerializer,
     BankCashDepositCreateSerializer,
     BankCashDepositListSerializer,
-    BankReconciliationSerializer,
-    BankReconciliationStatementImportSerializer,
+    ReconciliationEntriesSerializer,
+    ReconciliationStatementSerializer,
+    ReconciliationStatementImportSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
     ChequeIssueFormSerializer,
@@ -346,10 +348,10 @@ class CashDepositViewSet(CRULViewSet):
         return Response({})
 
 
-class BankReconciliationViewSet(CRULViewSet):
-    queryset = BankReconciliation.objects.all()
-    serializer_class = BankReconciliationSerializer
-    model = BankReconciliation
+class ReconciliationViewSet(CRULViewSet):
+    queryset = ReconciliationStatement.objects.all()
+    serializer_class = ReconciliationStatementSerializer
+    model = ReconciliationStatement
 
     def reconcile(self, company, statement_transactions, start_date, end_date, account_id):
         system_transactions = Transaction.objects.filter(
@@ -733,34 +735,42 @@ class BankReconciliationViewSet(CRULViewSet):
         
         # Combine reconciled and unreconciled transactions into a single list
         bank_reconciliation_entries = []
+        
+        # add to bank reconciliation
+        bank_reconciliation_statement = ReconciliationStatement.objects.create(
+            company=company,
+            account_id=account_id,
+            start_date=start_date,
+            end_date=end_date,
+        ) 
 
         # Add reconciled transactions
         for statement_transaction in reconciled_transactions:
-            bank_reconciliation_entries.append(BankReconciliation(
-                company=company,
-                statement_date=statement_transaction['date'],
+            bank_reconciliation_entries.append(ReconciliationEntries(
+                date=statement_transaction['date'],
                 dr_amount=statement_transaction.get('dr_amount', None),
                 cr_amount=statement_transaction.get('cr_amount', None),
                 status='Matched',
+                balance=statement_transaction.get('balance', None),
                 transaction_ids=statement_transaction.get('transaction_ids', []),
-                account_id=account_id,
+                statement_id=bank_reconciliation_statement.pk,
                 description=statement_transaction.get('description', None),
             ))
 
         # Add unreconciled transactions
         for statement_transaction in unreconciled_statement_transactions:
-            bank_reconciliation_entries.append(BankReconciliation(
-                company=company,
-                statement_date=statement_transaction['date'],
+            bank_reconciliation_entries.append(ReconciliationEntries(
+                date=statement_transaction['date'],
                 dr_amount=statement_transaction.get('dr_amount', None),
                 cr_amount=statement_transaction.get('cr_amount', None),
                 status='Unreconciled',
-                account_id=account_id,
+                balance=statement_transaction.get('balance', None),
+                statement_id=bank_reconciliation_statement.pk,
                 description=statement_transaction.get('description', None),
             ))
 
         # Perform bulk_create once
-        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        ReconciliationEntries.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
@@ -787,7 +797,7 @@ class BankReconciliationViewSet(CRULViewSet):
 
     @action(detail=False, url_path="import-statement", methods=["POST"])
     def import_statement(self, request):
-        serializer = BankReconciliationStatementImportSerializer(data=request.data)
+        serializer = ReconciliationStatementImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         transactions = serializer.validated_data["transactions"]
@@ -835,10 +845,10 @@ class BankReconciliationViewSet(CRULViewSet):
         from itertools import chain
 
         # Fetch reconciled transaction IDs for the same company, account, and date
-        reconciled_transaction_ids = BankReconciliation.objects.filter(
-            company=request.company,
-            account_id=account_id,
-            statement_date__range=[start_date, end_date],
+        reconciled_transaction_ids = ReconciliationEntries.objects.filter(
+            statement__company=request.company,
+            statement__account_id=account_id,
+            date__range=[start_date, end_date],
             status='Reconciled'
         ).values_list('transaction_ids', flat=True)
 
@@ -856,12 +866,12 @@ class BankReconciliationViewSet(CRULViewSet):
         )
 
         # fetch bank reconciliation entries
-        bank_statements = BankReconciliation.objects.filter(
-            company=request.company, account_id=account_id, statement_date__range=[start_date, end_date],
+        bank_statements = ReconciliationEntries.objects.filter(
+            statement__company=request.company, statement__account_id=account_id, date__range=[start_date, end_date],
             status__in=['Unreconciled', 'Matched']
-        ).order_by("statement_date")
+        ).order_by("date")
         
-        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': BankReconciliationSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE })
+        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE })
     
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
@@ -869,7 +879,7 @@ class BankReconciliationViewSet(CRULViewSet):
         transaction_ids = request.data.get('transaction_ids')
         if not statement_ids or not transaction_ids:
             raise APIException("statement_ids and transaction_ids are required")
-        statement_objects = BankReconciliation.objects.filter(id__in=statement_ids)
+        statement_objects = ReconciliationEntries.objects.filter(id__in=statement_ids)
         transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
         statement_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in statement_objects])
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
@@ -883,7 +893,7 @@ class BankReconciliationViewSet(CRULViewSet):
         statement_ids = request.data.get('statement_ids')
         if not statement_ids:
             raise APIException("statement_ids are required")
-        statement_objects = BankReconciliation.objects.filter(id__in=statement_ids)
+        statement_objects = ReconciliationEntries.objects.filter(id__in=statement_ids)
         statement_objects.update(status='Unreconciled', transaction_ids=[])
         return Response({})
         
