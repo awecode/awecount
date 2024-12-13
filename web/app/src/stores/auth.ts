@@ -33,6 +33,9 @@ export const URLs = {
   EMAIL: `${BASE_PREFIX}/account/email`,
   CHANGE_PASSWORD: `${BASE_PREFIX}/account/password/change`,
 
+  // Switch company
+  SWITCH_COMPANY: `${BASE_PREFIX}/account/switch`,
+
   // Auth: Social
   PROVIDER_SIGNUP: `${BASE_PREFIX}/auth/provider/signup`,
   PROVIDER_TOKEN: `${BASE_PREFIX}/auth/provider/token`,
@@ -110,6 +113,33 @@ export const useAuthStore = defineStore('auth', () => {
       authenticatedAt.value = Date.now()
 
       if (redirectTo !== false) {
+        if (redirectTo === undefined && data?.user?.redirect) {
+          const redirect = data.user.redirect
+          switch (redirect) {
+            case 'onboarding':
+              if (config.auth.onboarding.enabled) {
+                await router.push(config.auth.onboarding.route)
+              } else {
+                throw new Error('Onboarding is not enabled')
+              }
+              break
+            case 'invitations':
+              await router.push({ name: 'company-invitations', params: { company: '' } })
+              break
+            case 'create-company':
+              await router.push({ name: 'company-create' })
+              break
+            case null:
+            case undefined:
+            case '':
+              break
+            default: // if not any of the above, it's the company slug
+              await router.push({ name: 'company-dashboard', params: { company: redirect } })
+              break
+          }
+        }
+
+        // TODO: Handle next path with redirect path from api
         if (redirectTo === undefined && route.query.next) {
           await router.push(route.query.next.toString())
         }
@@ -117,12 +147,6 @@ export const useAuthStore = defineStore('auth', () => {
         if (redirectTo) {
           await router.push(redirectTo)
         }
-
-        if (!onboarded.value && config.auth.onboarding.enabled) {
-          await router.push(config.auth.onboarding.route)
-        }
-
-        await router.push({ name: 'team-dashboard', params: { team: user.value?.last_active_team?.slug } })
       }
 
       return data
@@ -186,6 +210,26 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = meta?.refresh_token
     authenticatedAt.value = Date.now()
 
+    const redirect = data.user.redirect
+    switch (redirect) {
+      case 'onboarding':
+        if (config.auth.onboarding.enabled) {
+          await router.push(config.auth.onboarding.route)
+        } else {
+          throw new Error('Onboarding is not enabled')
+        }
+        break
+      case 'invitations':
+        await router.push({ name: 'company-invitations', params: { company: '' } })
+        break
+      case 'create-company':
+        await router.push({ name: 'company-create' })
+        break
+      default:
+        await router.push(redirect)
+        break
+    }
+
     return data
   }
 
@@ -211,11 +255,25 @@ export const useAuthStore = defineStore('auth', () => {
       refreshToken.value = meta?.refresh_token
       authenticatedAt.value = Date.now()
 
-      if (!onboarded.value && config.auth.onboarding.enabled) {
-        await router.push(config.auth.onboarding.route)
+      const redirect = data.user.redirect
+      switch (redirect) {
+        case 'onboarding':
+          if (config.auth.onboarding.enabled) {
+            await router.push(config.auth.onboarding.route)
+          } else {
+            throw new Error('Onboarding is not enabled')
+          }
+          break
+        case 'invitations':
+          await router.push({ name: 'company-invitations', params: { company: '' } })
+          break
+        case 'create-company':
+          await router.push({ name: 'company-create' })
+          break
+        default:
+          await router.push(redirect)
+          break
       }
-
-      await router.push({ name: 'team-dashboard', params: { team: user.value?.last_active_team?.slug } })
 
       return data
     } catch (error) {
@@ -261,6 +319,11 @@ export const useAuthStore = defineStore('auth', () => {
     return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
   }
 
+  const switchCompany = async (companyId: string) => {
+    return await _request(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_id: companyId } })
+    // TODO: Handle next path with redirect path from api
+  }
+
   const hasPermission = (permission: string) => {
     if (!_permissions.value?.includes(permission)) return false
     return _permissions.value.includes(permission)
@@ -292,10 +355,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    token: shallowReadonly(accessToken),
-    user: shallowReadonly(user),
+    token: accessToken,
+    refreshToken,
+    user,
     isAuthenticated,
     onboarded,
+    switchCompany,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
