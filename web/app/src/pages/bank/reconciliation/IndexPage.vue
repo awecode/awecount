@@ -22,7 +22,7 @@
           <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
           <!-- date formats -->
           <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
-          <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".csv, .xlsx, .xls" class="q-mb-md"
+          <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".xlsx, .xls" class="q-mb-md"
             @update:model-value="parseExcelFile">
             <template v-slot:prepend>
               <q-icon name="cloud_upload" @click.stop.prevent />
