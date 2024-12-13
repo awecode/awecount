@@ -30,12 +30,12 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;" >
           <router-link v-if="checkPermissions('PartyView')" :to="`/parties/account/${props.row.id}/`"
-            style="font-weight: 500; text-decoration: none" class="text-blue block">
+          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px;" class="text-blue block">
             {{ props.row.name }}
           </router-link>
-          <span v-else>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 16px 8px 8px 16px;">
             {{ props.row.name }}
           </span>
         </q-td>

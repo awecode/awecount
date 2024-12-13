@@ -316,8 +316,12 @@ function onPurchaseRequest(props) {
               </template>
               <template v-slot:body-cell-action="props">
                 <q-td>
-                  <RouterLink v-if="props.row.has_transactions" style="text-decoration: none" class="text-blue-6"
-                    target="_blank" :to="`/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`">
+                  <RouterLink
+                    style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+                    class="text-blue-6"
+                    target="_blank"
+                    :to="`/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
+                  >
                     View Transactions
                   </RouterLink>
                 </q-td>

@@ -53,20 +53,18 @@
         </div>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td style="padding: 0;" :props="props">
           <RouterLink
             v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
-                          props.row.voucher_no
-                        }}
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">
+            {{props.row.voucher_no}}
           </RouterLink>
-          <span v-else> {{ props.row.voucher_no }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"> {{ props.row.voucher_no }}</span>
         </q-td>
       </template>
       <template v-slot:body-cell-account="props">
-        <q-td :props="props">
-          <RouterLink style="text-decoration: none" target="_blank"
+        <q-td :props="props" style="padding: 0;" >
+          <RouterLink style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" target="_blank"
             :to="`/account/?has_balance=true&category=${props.row.category_id}`" class="text-blue-6">{{
               props.row.account_name
             }}
@@ -74,15 +72,13 @@
         </q-td>
       </template>
       <template v-slot:body-cell-type="props">
-        <q-td :props="props">
+        <q-td style="padding: 0;" :props="props">
           <RouterLink
             v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
-                          props.row.source_type
-                        }}
+            style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"  target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">
+            {{ props.row.source_type}}
           </RouterLink>
-          <span v-else> {{ props.row.source_type }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"> {{ props.row.source_type }}</span>
         </q-td>
       </template>
     </q-table>

@@ -3,10 +3,10 @@
     <router-link
       :to="'/account/?has_balance=true&category=' + data.id"
       target="_blank"
-      style="text-decoration: none"
+      style="text-decoration: none; display: flex; align-items: center;" 
       class="text-blue"
     >
-      <strong v-if="root"> {{ data.name }}</strong>
+      <strong v-if="root">{{ data.name }}</strong>
       <span v-else>{{ data.name }}</span>
     </router-link>
 

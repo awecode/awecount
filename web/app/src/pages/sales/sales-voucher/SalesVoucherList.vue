@@ -112,15 +112,17 @@
         </q-td>
       </template>
       <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
             <router-link v-if="checkPermissions('SalesView') && props.row.voucher_no"
-              :to="`/sales-voucher/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none"
+              :to="`/sales-voucher/${props.row.id}/view/`"
+              style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
               class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
           </span>
-          <span v-else data-testid="voucher-no">
+          <span v-else data-testid="voucher-no"
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
             {{ props.row.voucher_no }}
           </span>
         </q-td>

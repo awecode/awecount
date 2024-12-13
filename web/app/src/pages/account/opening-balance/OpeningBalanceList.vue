@@ -21,12 +21,12 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
+        <q-td :props="props" style="padding: 0;">
           <router-link v-if="checkPermissions('AccountOpeningBalanceModify')"
-            style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-opening-balance/${props.row.id}/`">
+          style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;" class="text-blue" :to="`/account-opening-balance/${props.row.id}/`">
             {{ props.row.name }}
           </router-link>
-          <span v-else>{{ props.row.name }}</span>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>

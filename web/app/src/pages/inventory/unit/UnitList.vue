@@ -8,10 +8,15 @@
     <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('UnitModify')" class="text-blue text-weight-medium"
-            style="text-decoration: none" :to="`/units/${props.row.id}/`">{{ props.row.name }}</router-link>
-          <span v-else>{{ props.row.name }}</span>
+        <q-td :props="props" style="padding: 0;">
+          <router-link v-if="checkPermissions('UnitModify')" :to="`/units/${props.row.id}/`"
+            style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px; text-decoration: none;"
+            class="text-blue text-weight-medium">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

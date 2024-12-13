@@ -1,7 +1,8 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end" v-if="checkPermissions('CategoryCreate')">
-      <q-btn color="green" to="/inventory-category/add/" label="New Category" class="q-ml-lg add-btn" icon-right="add" />
+      <q-btn color="green" to="/inventory-category/add/" label="New Category" class="q-ml-lg add-btn"
+        icon-right="add" />
     </div>
     <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
       row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
@@ -12,11 +13,15 @@
         </q-td>
       </template>
       <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('CategoryModify')" class="text-blue" style="text-decoration: none"
-            :to="`/inventory-category/${props.row.id}/`">{{
-              props.row.name }}</router-link>
-          <span v-else>{{ props.row.name }}</span>
+        <q-td :props="props" style="padding: 0;">
+          <router-link v-if="checkPermissions('CategoryModify')" :to="`/inventory-category/${props.row.id}/`"
+            style="text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
+            class="text-blue">
+            {{ props.row.name }}
+          </router-link>
+          <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">
+            {{ props.row.name }}
+          </span>
         </q-td>
       </template>
     </q-table>

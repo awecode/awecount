@@ -12,11 +12,11 @@
               </div>
             </template>
             <template v-slot:body-cell-party="props">
-                <q-td :props="props">
-                    <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none"
+                <q-td :props="props" style="padding: 0;">
+                    <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none; display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;"
                         class="text-blue l-view-btn" :to="`/parties/account/${props.row.party_id}/`">{{ props.row.party_name
                         }}</router-link>
-                    <span v-else>{{ props.row.party_name }}</span>
+                    <span v-else style="display: flex; align-items: center; height: 100%; padding: 8px 8px 8px 16px;">{{ props.row.party_name }}</span>
                 </q-td>
             </template>
         </q-table>
