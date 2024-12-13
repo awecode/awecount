@@ -99,6 +99,22 @@ export default {
       type: Boolean,
       required: false,
     },
+    errorMessage: {
+      type: String,
+      required: false,
+    },
+    optionValue: {
+      type: String,
+      required: false,
+    },
+    emitValue: {
+      type: Boolean,
+      required: false,
+    },
+    optionLabel: {
+      type: String,
+      required: false,
+    },
   },
   emits: ['update:modelValue', 'updateObj'],
 
