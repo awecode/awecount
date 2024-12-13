@@ -8,8 +8,8 @@
             <span v-if="fields.voucher_no">| # {{ fields.voucher_no }}</span></span>
         </div>
       </q-card-section>
-      <SalesForm :formDefaults="formDefaults" v-model:fields="fields" v-model:customerMode="customerMode"
-        v-model:aliases="aliases" :isEdit="isEdit" v-model:errors="errors" />
+      <SalesForm :today="today" :formDefaults="formDefaults" v-model:fields="fields" :isEdit="isEdit"
+        v-model:errors="errors" />
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="!isEdit && checkPermissions('SalesCreate')" :loading="loading"
@@ -61,45 +61,13 @@ useMeta(() => ({
     ' | Awecount',
 }))
 
-const customerMode = ref(false)
 
 const onSubmitClick = async (status) => {
   const originalStatus = fields.value.status
   fields.value.status = status
-  if (!customerMode.value) {
-    if (aliases.value.length === 0) {
-      fields.value.customer_name = null
-    }
-  } else {
-    fields.value.party = null
-  }
   const data = await submitForm()
   if (data && data.hasOwnProperty('error')) {
     fields.value.status = originalStatus
   }
 }
-
-if (!isEdit.value) {
-  fields.value.due_date = today
-  fields.value.date = today
-  fields.value.is_export = false
-}
-
-const aliases = ref([])
-
-watch(
-  () => formDefaults.value,
-  () => {
-    if (formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
-      fields.value.trade_discount = formDefaults.value.fields?.trade_discount
-    }
-    if (isEdit.value) {
-      if (fields.value.customer_name) customerMode.value = true
-    } else {
-      if (formDefaults.value.fields?.payment_mode) {
-        fields.value.payment_mode = formDefaults.value.fields.payment_mode
-      }
-    }
-  }
-)
 </script>

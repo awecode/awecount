@@ -10,9 +10,8 @@
       <q-card-section>
         <div class="text-h6">Sales Voucher Details</div>
       </q-card-section>
-      <SalesForm :is-template="true" :formDefaults="formDefaults" v-model:fields="fields.invoice_data"
-        v-model:customerMode="customerMode" v-model:aliases="aliases" :isEdit="isEdit"
-        v-model:errors="invoiceDataErrors" />
+      <SalesForm :is-template="true" :formDefaults="formDefaults" v-model:fields="fields.invoice_data" :isEdit="isEdit"
+        v-model:errors="invoiceDataErrors" :today="today" />
 
       <q-card-section>
         <div class="text-h6">Recurring Template Details</div>
@@ -94,28 +93,15 @@ useMeta(() => ({
     ' | Awecount',
 }))
 
-const customerMode = ref(false)
-
 const onSubmitClick = async () => {
   fields.value.invoice_data.date = today
   fields.value.invoice_data.due_date = today
-  if (!customerMode.value) {
-    if (aliases.value.length === 0) {
-      fields.value.invoice_data.customer_name = null
-    }
-  } else {
-    fields.value.invoice_data.party = null
-  }
   await submitForm()
 }
 
 if (!isEdit.value) {
   fields.value = {
-    invoice_data: {
-      due_date: today,
-      date: today,
-      is_export: false,
-    },
+    invoice_data: {},
     send_email: false,
     is_active: true,
     repeat_interval: 1,
@@ -127,28 +113,7 @@ if (!isEdit.value) {
   }
 }
 
-const aliases = ref([])
-
 const timeUnits = [
   'Day(s)', 'Week(s)', 'Month(s)', 'Year(s)'
 ]
-
-watch(
-  () => formDefaults.value,
-  () => {
-    if (
-      formDefaults.value.fields?.invoice_data?.hasOwnProperty('trade_discount')
-    ) {
-      fields.value.trade_discount = formDefaults.value.fields?.trade_discount
-    }
-    if (isEdit.value) {
-      if (fields.value.invoice_data.customer_name) customerMode.value = true
-    } else {
-      if (formDefaults.value.fields?.payment_mode) {
-        fields.value.invoice_data.payment_mode =
-          formDefaults.value.fields.invoice_data.payment_mode
-      }
-    }
-  }
-)
 </script>

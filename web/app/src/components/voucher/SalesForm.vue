@@ -172,10 +172,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  errors: {
-    type: Object,
-    required: true,
-  },
   isEdit: {
     type: Boolean,
     required: false,
@@ -183,14 +179,36 @@ const props = defineProps({
   isTemplate: {
     type: Boolean,
     required: false,
+  },
+  today: {
+    type: String,
+    required: true,
   }
 })
 
 const fields = defineModel('fields')
 
-const customerMode = defineModel('customerMode')
+const errors = defineModel('errors')
 
-const aliases = defineModel('aliases')
+if (!props.isEdit) {
+  fields.value.due_date = props.today
+  fields.value.date = props.today
+  fields.value.is_export = false
+}
+
+const customerMode = ref(false)
+
+const aliases = ref([])
+
+watch([customerMode, aliases], () => {
+  if (!customerMode.value) {
+    if (aliases.value.length === 0) {
+      fields.value.invoice_data.customer_name = null
+    }
+  } else {
+    fields.value.invoice_data.party = null
+  }
+})
 
 const referenceFormData = ref({
   invoice_no: null,
@@ -377,13 +395,13 @@ const modeOptionsComputed = computed(() => {
     results: [{ id: null, name: 'Credit' }],
     pagination: {},
   }
-  if (props.formDefaults.value?.collections?.payment_modes?.results) {
+  if (props.formDefaults?.collections?.payment_modes?.results) {
     obj.results = obj.results.concat(
-      props.formDefaults.value.collections.payment_modes.results
+      props.formDefaults.collections.payment_modes.results
     )
     Object.assign(
       obj.pagination,
-      props.formDefaults.value.collections.payment_modes.pagination
+      props.formDefaults.collections.payment_modes.pagination
     )
   }
   return obj
@@ -398,4 +416,20 @@ const onPaymentModeChange = (obj) => {
     fields.value.payment_mode = modeOptionsComputed.value.results[1].id
   }
 }
+
+watch(
+  () => props.formDefaults,
+  () => {
+    if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
+      fields.value.trade_discount = props.formDefaults.fields?.trade_discount
+    }
+    if (props.isEdit) {
+      if (fields.value.customer_name) customerMode.value = true
+    } else {
+      if (props.formDefaults.fields?.payment_mode) {
+        fields.value.payment_mode = props.formDefaults.fields.payment_mode
+      }
+    }
+  }
+)
 </script>
