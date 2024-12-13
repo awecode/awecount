@@ -60,19 +60,21 @@
           </div>
         </div>
 
-        <date-picker v-if="formDefaults.options?.enable_sales_date_edit" label="Invoice Date*" v-model="fields.date"
-          class="col-md-6 col-12" :error="errors?.date ? errors?.date : null"
-          :error-message="errors?.date"></date-picker>
-        <DateInputDisabled v-else :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
+        <template v-if="!isTemplate">
+          <date-picker v-if="formDefaults.options?.enable_sales_date_edit" label="Invoice Date*" v-model="fields.date"
+            class="col-md-6 col-12" :error="errors?.date ? errors?.date : null"
+            :error-message="errors?.date"></date-picker>
+          <DateInputDisabled v-else :date="fields.date" class="col-md-6 col-12" label="Invoice Date*" />
+        </template>
         <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors?.address"
           :error="!!errors?.address" data-testid="address-input"></q-input>
-        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" label="Due Date" v-model="fields.due_date"
-          class="col-md-6 col-12" :error="errors?.due_date ? errors.due_date : null" :error-message="errors?.due_date"
-          :toLimit="fields.date" data-testid="due-date"></date-picker>
+        <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher && !isTemplate" label="Due Date"
+          v-model="fields.due_date" class="col-md-6 col-12" :error="errors?.due_date ? errors.due_date : null"
+          :error-message="errors?.due_date" :toLimit="fields.date" data-testid="due-date"></date-picker>
         <div class="col-md-6 col-12 row q-col-gutter-md">
           <div :class="['Percent', 'Amount'].includes(fields.discount_type)
-              ? 'col-6'
-              : 'col-12'
+            ? 'col-6'
+            : 'col-12'
             " data-testid="overall-discount-type-div">
             <n-auto-complete v-model="fields.discount_type" label="Discount"
               :error="errors?.discount_type ? errors?.discount_type : null" :options="staticOptions.discount_types.concat(
@@ -81,13 +83,13 @@
                 " :modal-component="checkPermissions('SalesDiscountCreate')
                   ? SalesDiscountForm
                   : null
-                ">
+                  ">
             </n-auto-complete>
           </div>
           <div class="col-6 row">
             <div :class="formDefaults.options?.show_trade_discount_in_voucher
-                ? 'col-6'
-                : 'col-12'
+              ? 'col-6'
+              : 'col-12'
               " v-if="
                 fields.discount_type === 'Amount' ||
                 fields.discount_type === 'Percent'
@@ -104,14 +106,12 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="row q-col-gutter-md">
         <div class="col-12 col-md-6">
           <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *"
             endpoint="/v1/sales-voucher/create-defaults/payment_modes"
             :error="errors?.payment_mode ? errors?.payment_mode : null" :options="modeOptionsComputed" :staticOption="isEdit
-                ? fields.selected_payment_mode_obj
-                : formDefaults.options?.default_payment_mode_obj
+              ? fields.selected_payment_mode_obj
+              : formDefaults.options?.default_payment_mode_obj
               " @updateObj="onPaymentModeChange" data-testid="payment-mode-select" :emitObj="true" :mapOptions="true">
             <template v-slot:append>
               <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
@@ -124,10 +124,10 @@
   <invoice-table v-if="formDefaults.collections" :itemOptions="formDefaults.collections ? formDefaults.collections.items : null
     " :unitOptions="formDefaults.collections ? formDefaults.collections.units : null
       " :discountOptions="staticOptions.discount_types.concat(formDefaults.collections?.discounts)
-      " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
-      discount_type: fields.discount_type,
-      discount: fields.discount,
-    }" :errors="errors?.rows ? errors.rows : null" @deleteRowErr="deleteRowErr"
+        " :taxOptions="formDefaults.collections?.tax_schemes" v-model="fields.rows" :mainDiscount="{
+          discount_type: fields.discount_type,
+          discount: fields.discount,
+        }" :errors="errors?.rows ? errors.rows : null" @deleteRowErr="deleteRowErr"
     :enableRowDescription="formDefaults.options?.enable_row_description"
     :showRowTradeDiscount="formDefaults.options?.show_trade_discount_in_row"
     :inputAmount="formDefaults.options?.enable_amount_entry"
@@ -180,6 +180,10 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
+  isTemplate: {
+    type: Boolean,
+    required: false,
+  }
 })
 
 const fields = defineModel('fields')

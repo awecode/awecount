@@ -351,11 +351,25 @@ const routes: RouteRecordRaw[] = [
         path: '/sales-voucher/recurring-template/list/',
         name: 'Recurring Sales Invoice Templates',
         component: () =>
-          import(
-            'src/pages/sales/sales-voucher/RecurringTemplateList.vue'
-          ),
+          import('src/pages/sales/sales-voucher/RecurringTemplateList.vue'),
         meta: {
           breadcrumb: ['Home', 'Recurring Sales Invoice Templates'],
+        },
+      },
+      {
+        path: '/sales-voucher/recurring-template/add/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Create'],
+        },
+      },
+      {
+        path: '/sales-voucher/recurring-template/:id/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Update'],
         },
       },
       {

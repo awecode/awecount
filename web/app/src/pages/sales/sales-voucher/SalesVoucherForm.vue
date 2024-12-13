@@ -17,26 +17,26 @@
           type="submit" data-testid="issue-btn" />
         <q-btn v-if="
           isEdit &&
-            fields.status === 'Draft' &&
-            checkPermissions('SalesModify')
-          " @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8"
+          fields.status === 'Draft' &&
+          checkPermissions('SalesModify')
+        " @click.prevent="() => onSubmitClick('Draft', fields, submitForm)" :loading="loading" color="orange-8"
           :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" data-testid="draft-btn" />
         <q-btn v-if="checkPermissions('SalesCreate')" :loading="loading" @click.prevent="() =>
-              onSubmitClick(
-                isEdit
-                  ? fields.status === 'Draft'
-                    ? 'Issued'
-                    : fields.status
-                  : 'Issued'
-              )
+          onSubmitClick(
+            isEdit
+              ? fields.status === 'Draft'
+                ? 'Issued'
+                : fields.status
+              : 'Issued'
+          )
           " color="green" :label="isEdit
-              ? fields?.status === 'Issued'
-                ? 'Update'
-                : fields?.status === 'Draft'
+            ? fields?.status === 'Issued'
+              ? 'Update'
+              : fields?.status === 'Draft'
                 ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft`
                 : 'update'
-              : `Issue # ${formDefaults.options?.voucher_no || 1}`
-          " data-testid="create/update-btn" />
+            : `Issue # ${formDefaults.options?.voucher_no || 1}`
+            " data-testid="create/update-btn" />
       </div>
     </q-card>
   </q-form>
@@ -79,9 +79,11 @@ const onSubmitClick = async (status) => {
   }
 }
 
-fields.value.due_date = today
-fields.value.date = today
-fields.value.is_export = false
+if (!isEdit.value) {
+  fields.value.due_date = today
+  fields.value.date = today
+  fields.value.is_export = false
+}
 
 const aliases = ref([])
 
