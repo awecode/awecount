@@ -5,7 +5,7 @@
         <n-auto-complete v-model="selectedAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" optionValue="ledger_id" />
         <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
         <div>
-          <q-btn icon="mdi-magnify" color="primary" label="Search" @click="fetchTransactions" :disable="!selectedAccount || !startDate || !endDate ? true : false" />
+          <q-btn :loading="isLoading" icon="mdi-magnify" color="primary" label="Search" @click="fetchTransactions" :disable="!selectedAccount || !startDate || !endDate ? true : false" />
         </div>
       </div>
       <div>
@@ -50,7 +50,8 @@
           </div>
 
           <div class="text-right !mt-6">
-            <q-btn type="submit" label="Upload" color="green" :disable="!statementAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
+            <q-btn type="submit" :loading="isLoading" label="Upload" color="green"
+              :disable="!statementAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
           </div>
         </q-form>
       </q-card>
@@ -64,6 +65,7 @@
 <script setup lang="ts">
 import * as XLSX from 'xlsx'
 import { Ref } from 'vue'
+const $q = useQuasar()
 
 const selectedAccount = ref(null)
 const statementAccount = ref(null)
@@ -85,6 +87,7 @@ const statementTransactionData = ref([])
 const acceptableDifference = ref(0.01)
 
 const endpoint = 'v1/bank-reconciliation/banks/'
+const isLoading = ref(false)
 
 useApi(endpoint).then((response) => {
   bankAccounts.value = response
@@ -134,6 +137,7 @@ const submitStatement = async () => {
   if (!statementAccount.value || !statementData.value.length) {
     return
   }
+  isLoading.value = true
 
   useApi('v1/bank-reconciliation/import-statement/', {
     method: 'POST',
@@ -145,6 +149,15 @@ const submitStatement = async () => {
     }
   }).then((response) => {
     console.log(response)
+  }).catch((error) => {
+    $q.notify({
+      color: 'red-6',
+      message: error.data?.detail || 'Something went wrong',
+      icon: 'report_problem',
+      position: 'top-right',
+    })
+  }).finally(() => {
+    isLoading.value = false
   })
 }
 
@@ -153,6 +166,7 @@ const fetchTransactions = async () => {
   if (!selectedAccount.value || !startDate.value || !endDate.value) {
     return
   }
+  isLoading.value = true
 
   useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
     systemTransactionData.value = response.system_transactions
@@ -162,6 +176,8 @@ const fetchTransactions = async () => {
     console.log(error)
     systemTransactionData.value = []
     statementTransactionData.value = []
+  }).finally(() => {
+    isLoading.value = false
   })
 }
 
