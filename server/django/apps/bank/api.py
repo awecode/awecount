@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
 from itertools import combinations
 
+from django.conf import settings
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
@@ -7,8 +9,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from django.conf import settings
-from datetime import datetime, timedelta
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -19,10 +19,10 @@ from apps.bank.filters import (
 from apps.bank.models import (
     BankAccount,
     BankCashDeposit,
-    ReconciliationStatement,
-    ReconciliationEntries,
     ChequeDeposit,
     FundTransferTemplate,
+    ReconciliationEntries,
+    ReconciliationStatement,
 )
 from apps.bank.resources import ChequeIssueResource
 from apps.bank.serializers import (
@@ -31,9 +31,6 @@ from apps.bank.serializers import (
     BankAccountWithLedgerSerializer,
     BankCashDepositCreateSerializer,
     BankCashDepositListSerializer,
-    ReconciliationEntriesSerializer,
-    ReconciliationStatementSerializer,
-    ReconciliationStatementImportSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
     ChequeIssueFormSerializer,
@@ -41,6 +38,9 @@ from apps.bank.serializers import (
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
+    ReconciliationEntriesSerializer,
+    ReconciliationStatementImportSerializer,
+    ReconciliationStatementSerializer,
 )
 from apps.ledger.models import Account, Party
 from apps.ledger.models.base import Transaction
@@ -737,12 +737,12 @@ class ReconciliationViewSet(CRULViewSet):
         bank_reconciliation_entries = []
         
         # add to bank reconciliation
-        bank_reconciliation_statement = ReconciliationStatement.objects.create(
-            company=company,
-            account_id=account_id,
-            start_date=start_date,
-            end_date=end_date,
-        ) 
+        # bank_reconciliation_statement = ReconciliationStatement.objects.create(
+        #     company=company,
+        #     account_id=account_id,
+        #     start_date=start_date,
+        #     end_date=end_date,
+        # ) 
 
         # Add reconciled transactions
         for statement_transaction in reconciled_transactions:
@@ -753,7 +753,7 @@ class ReconciliationViewSet(CRULViewSet):
                 status='Matched',
                 balance=statement_transaction.get('balance', None),
                 transaction_ids=statement_transaction.get('transaction_ids', []),
-                statement_id=bank_reconciliation_statement.pk,
+                # statement_id=bank_reconciliation_statement.pk,
                 description=statement_transaction.get('description', None),
             ))
 
@@ -765,12 +765,12 @@ class ReconciliationViewSet(CRULViewSet):
                 cr_amount=statement_transaction.get('cr_amount', None),
                 status='Unreconciled',
                 balance=statement_transaction.get('balance', None),
-                statement_id=bank_reconciliation_statement.pk,
+                # statement_id=bank_reconciliation_statement.pk,
                 description=statement_transaction.get('description', None),
             ))
 
         # Perform bulk_create once
-        ReconciliationEntries.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        # ReconciliationEntries.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
@@ -820,6 +820,18 @@ class ReconciliationViewSet(CRULViewSet):
                 start_date = min(dates)
             if not end_date:
                 end_date = max(dates)
+                
+        # see if there is already a statement for the same account, which may conflict with the new statement
+        existing_statement = ReconciliationStatement.objects.filter(
+            company=request.company,
+            account_id=account_id,
+        ).filter(
+          Q(start_date__lte=end_date, end_date__gte=start_date) 
+        ).first()
+        
+        if existing_statement:
+            raise APIException("Duplicate statement found for the same account and date range")
+                
 
         # Ensure all transactions fall within the start_date and end_date range
         transactions = [
