@@ -40,7 +40,11 @@ from apps.bank.serializers import (
 )
 from apps.ledger.models import Account, Party
 from apps.ledger.models.base import Transaction
-from apps.ledger.serializers import JournalEntriesSerializer, PartyMinSerializer, TransactionMinSerializer
+from apps.ledger.serializers import (
+    JournalEntriesSerializer,
+    PartyMinSerializer,
+    TransactionMinSerializer,
+)
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -792,8 +796,8 @@ class BankReconciliationViewSet(CRULViewSet):
         return Response(response)
     
     
-    @action(detail=False, url_path="transactions")
-    def transactions(self, request):
+    @action(detail=False, url_path="unreconciled-transactions")
+    def unreconciled_transactions(self, request):
         # get start_date and end_date from request
         # also get account_id
         start_date = request.query_params.get('start_date')
@@ -802,22 +806,59 @@ class BankReconciliationViewSet(CRULViewSet):
         
         if not start_date or not end_date or not account_id:
             raise APIException("start_date, end_date and account_id are required")
-        
-        # get transactions from the database but add date to the transactions
+        from itertools import chain
+
+        # Fetch reconciled transaction IDs for the same company, account, and date
+        reconciled_transaction_ids = BankReconciliation.objects.filter(
+            company=request.company,
+            account_id=account_id,
+            statement_date__range=[start_date, end_date],
+            status='Reconciled'
+        ).values_list('transaction_ids', flat=True)
+
+        reconciled_transaction_ids_set = set(chain.from_iterable(reconciled_transaction_ids))
+
         transactions = Transaction.objects.filter(
-            company=request.company, 
+            company=request.company,
             journal_entry__date__range=[start_date, end_date],
             account_id=account_id
+        ).exclude(
+            id__in=reconciled_transaction_ids_set
         ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
             "journal_entry__transactions__account",
             "journal_entry__source"
         )
-        
+
         # fetch bank reconciliation entries
         bank_statements = BankReconciliation.objects.filter(
-            company=request.company, account_id=account_id, statement_date__range=[start_date, end_date]
+            company=request.company, account_id=account_id, statement_date__range=[start_date, end_date],
+            status__in=['Unreconciled', 'Matched']
         ).order_by("statement_date")
         
         return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': BankReconciliationSerializer(bank_statements, many=True).data })
+    
+    @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
+    def reconcile_transactions(self, request):
+        statement_ids = request.data.get('statement_ids')
+        transaction_ids = request.data.get('transaction_ids')
+        if not statement_ids or not transaction_ids:
+            raise APIException("statement_ids and transaction_ids are required")
+        statement_objects = BankReconciliation.objects.filter(id__in=statement_ids)
+        transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
+        statement_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in statement_objects])
+        transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
+        if abs(statement_sum - transaction_sum) > 0.01:
+            raise APIException("The sum of the statement transactions and system transactions do not match")
+        statement_objects.update(status='Reconciled', transaction_ids=transaction_ids)
+        return Response({})
+
+    @action(detail=False, methods=["POST"], url_path="unmatch-transactions")
+    def unmatch_transactions(self, request):
+        statement_ids = request.data.get('statement_ids')
+        if not statement_ids:
+            raise APIException("statement_ids are required")
+        statement_objects = BankReconciliation.objects.filter(id__in=statement_ids)
+        statement_objects.update(status='Unreconciled', transaction_ids=[])
+        return Response({})
         
 
