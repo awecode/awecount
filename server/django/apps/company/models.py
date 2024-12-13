@@ -291,11 +291,20 @@ class FiscalYear(CompanyBaseModel):
 
 
 class Permission(BaseModel):
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        primary_key=True,
+    )
+
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
         related_name="company_permissions",
     )
+
     name = models.CharField(max_length=80, verbose_name="Permission Name")
     permissions = models.JSONField(default=get_default_permissions)
     is_active = models.BooleanField(default=True)
@@ -316,6 +325,13 @@ class CompanyMember(BaseModel):
         ADMIN = "admin", "Admin"  # admin can do anything except deleting the company
         MEMBER = "member", "Member"
 
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        primary_key=True,
+    )
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
