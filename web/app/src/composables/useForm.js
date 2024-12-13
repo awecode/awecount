@@ -3,6 +3,7 @@ import { getCurrentInstance } from 'vue'
 import useApi from './useApi'
 import { useLoginStore } from 'src/stores/login-info'
 import { useModalFormLoading } from 'src/stores/ModalFormLoading'
+import { parseErrors } from 'src/utils/helpers'
 
 export default (endpoint, config) => {
   const $q = useQuasar()
@@ -46,7 +47,12 @@ export default (endpoint, config) => {
     id.value = route.params.id
     if (isEdit.value) {
       isGetEditLoading.value = true
-      useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
+      let fetchUrl = withTrailingSlash(joinURL(endpoint, route.params.id))
+      if (config.queryParams) {
+        const queryParams = new URLSearchParams(config.queryParams).toString()
+        fetchUrl += `?${queryParams}`
+      }
+      useApi(fetchUrl).then(
         (data) => {
           fields.value = data
           isGetEditLoading.value = false
@@ -101,21 +107,11 @@ export default (endpoint, config) => {
 
   })
   const getDefaultsFetchUrl = () => {
-    return joinURL(endpoint, 'create-defaults/')
+    return joinURL(endpoint, config.createDefaultsEndpoint ?? 'create-defaults/')
   }
 
   const processErrors = (responseData) => {
-    const dct = Object.fromEntries(
-      Object.entries(responseData).map(([k, v]) => {
-        let val = v
-        if (Array.isArray(val)) {
-          if (typeof val[0] === 'object') {
-          } else val = val.join(' ')
-        }
-        return [k, val]
-      })
-    )
-    errors.value = dct
+    errors.value = parseErrors(responseData)
   }
 
   const removeLastUrlSegment = (url) => {

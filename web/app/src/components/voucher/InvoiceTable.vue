@@ -17,18 +17,33 @@
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="row">
-          <InvoiceRow v-if="modalValue[index]" :usedIn="props.usedIn" v-model="modalValue[index]"
-            :itemOptions="itemOptions" :unitOptions="unitOptions" :taxOptions="taxOptions"
-            :discountOptions="discountOptions" :index="index" :rowEmpty="(rowEmpty && index === 0) || false"
-            @deleteRow="(index) => removeRow(index)" :errors="!rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
-              " :enableRowDescription="props.enableRowDescription" :showRowTradeDiscount="props.showRowTradeDiscount"
-            :inputAmount="props.inputAmount" :showRateQuantity="props.showRateQuantity" :isFifo="isFifo"
-            @onItemIdUpdate="onItemIdUpdate" :COGSData="COGSData" :hasChallan="hasChallan" />
+          <InvoiceRow
+            v-if="modalValue[index]"
+            :usedIn="props.usedIn"
+            v-model="modalValue[index]"
+            :itemOptions="itemOptions"
+            :unitOptions="unitOptions"
+            :taxOptions="taxOptions"
+            :discountOptions="discountOptions"
+            :index="index"
+            :rowEmpty="(rowEmpty && index === 0) || false"
+            @deleteRow="(index) => removeRow(index)"
+            :errors="
+              !rowEmpty ? (Array.isArray(errors) ? errors[index] : null) : null
+            "
+            :enableRowDescription="props.enableRowDescription"
+            :showRowTradeDiscount="props.showRowTradeDiscount"
+            :inputAmount="props.inputAmount"
+            :showRateQuantity="props.showRateQuantity"
+            :isFifo="isFifo"
+            @onItemIdUpdate="onItemIdUpdate"
+            :COGSData="COGSData"
+            :hasChallan="hasChallan"
+          />
         </div>
         <div class="row q-py-sm">
-          <div class="col-7 text-center text-left pt-2">
-          </div>
-          <div class="text-weight-bold text-grey-8 col-4 text-center">
+          <div class="col-7 text-center text-left pt-2"></div>
+          <div class="text-weight-bolwd text-grey-8 col-4 text-center">
             <div class="row q-pb-md">
               <div class="col-6 text-right">Sub Total</div>
               <div class="col-6 q-pl-md" data-testid="computed-subtotal">
@@ -59,8 +74,15 @@
           <div class="col-1 text-center"></div>
         </div>
         <div>
-          <q-btn @click="addRow" color="green" outline class="q-px-lg q-py-ms" :disabled="hasChallan"
-            data-testid="add-row-btn">Add Row</q-btn>
+          <q-btn
+            @click="addRow"
+            color="green"
+            outline
+            class="q-px-lg q-py-ms"
+            :disabled="hasChallan"
+            data-testid="add-row-btn"
+            >Add Row</q-btn
+          >
         </div>
       </div>
     </q-card>
@@ -78,14 +100,17 @@ export default {
       default: () => {
         return {
           results: [],
-          pagination: {}
+          pagination: {},
         }
       },
     },
     unitOptions: {
-      type: Array,
+      type: Object,
       default: () => {
-        return []
+        return {
+          results: [],
+          pagination: {},
+        }
       },
     },
     discountOptions: {
@@ -318,38 +343,60 @@ export default {
         try {
           const data = await useApi(`/v1/items/${itemId}/available-stock/`)
           itemPurchaseData.value[itemId] = data
-        } catch (err) { console.log(err) }
+        } catch (err) {
+          console.log(err)
+        }
       }
-      const localPurchaseData = JSON.parse(JSON.stringify(itemPurchaseData.value))
+      const localPurchaseData = JSON.parse(
+        JSON.stringify(itemPurchaseData.value)
+      )
       const COGSRows = {}
       modalValue.value.forEach((row, index) => {
         const currentItemId = row.item_id
         // this calculates the total available stock for the selected item According to fifo
-        const availableStock = (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) ?
-          localPurchaseData[currentItemId].reduce((accumulator, obj) => (accumulator + obj.remaining_quantity), 0) : 0
+        const availableStock =
+          localPurchaseData[currentItemId] &&
+          localPurchaseData[currentItemId].length > 0
+            ? localPurchaseData[currentItemId].reduce(
+                (accumulator, obj) => accumulator + obj.remaining_quantity,
+                0
+              )
+            : 0
         let currentCOGS = 0
         let quantity = row.quantity
-        if (localPurchaseData[currentItemId] && localPurchaseData[currentItemId].length > 0) {
+        if (
+          localPurchaseData[currentItemId] &&
+          localPurchaseData[currentItemId].length > 0
+        ) {
           for (let i = 0; quantity >= 0; i++) {
             const currentRow = localPurchaseData[currentItemId][i]
             if (currentRow.remaining_quantity > quantity) {
-              currentRow.remaining_quantity = currentRow.remaining_quantity - quantity
-              currentCOGS = currentCOGS + (quantity * currentRow.rate)
+              currentRow.remaining_quantity =
+                currentRow.remaining_quantity - quantity
+              currentCOGS = currentCOGS + quantity * currentRow.rate
               break
             } else if (currentRow.remaining_quantity <= quantity) {
               quantity = quantity - currentRow.remaining_quantity
-              currentCOGS = currentCOGS + (currentRow.remaining_quantity * currentRow.rate)
+              currentCOGS =
+                currentCOGS + currentRow.remaining_quantity * currentRow.rate
               localPurchaseData[currentItemId][i].remaining_quantity = 0
-              if (((i + 1) === localPurchaseData[currentItemId].length)) {
+              if (i + 1 === localPurchaseData[currentItemId].length) {
                 if (quantity > 0) {
-                  currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+                  currentCOGS = {
+                    status: 'error',
+                    message:
+                      'The provided quantity exceeded the avaliable quantity',
+                  }
                   break
                 } else break
               }
             }
           }
         } else {
-          currentCOGS = { status: 'error', message: 'The provided quantity exceeded the avaliable quantity' }
+          currentCOGS = {
+            status: 'error',
+            message: 'The provided quantity exceeded the avaliable quantity',
+          }
         }
         COGSRows[index] = { totalCost: currentCOGS, availableStock }
       })
@@ -377,7 +424,7 @@ export default {
       rowEmpty,
       itemPurchaseData,
       onItemIdUpdate,
-      COGSData
+      COGSData,
     }
   },
 }

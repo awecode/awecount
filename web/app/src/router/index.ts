@@ -35,6 +35,13 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
   // Token validation
+
+  const hashPathRegexes = ['^/sales-voucher/\\d+/view/?$']
+
+  function isHashPath(path: string) {
+    return hashPathRegexes.some((regex) => new RegExp(regex).test(path))
+  }
+
   Router.beforeEach((to, from, next) => {
     const store = useLoginStore()
     if (to.path === '/') {
@@ -42,7 +49,9 @@ export default route(function (/* { store, ssrContext } */) {
         next('/dashboard')
       } else next()
     } else if (to.path !== '/login' && store.token === null) {
-      next('/login')
+      if (to.query.hash && isHashPath(to.path)) {
+        next()
+      } else next('/login')
     } else {
       // Should check if back btn is pressed from Nopermission page
       // TODO: Not handled when jumping from one no permission page to another

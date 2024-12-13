@@ -348,6 +348,31 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
+        path: '/sales-voucher/recurring-template/list/',
+        name: 'Recurring Sales Invoice Templates',
+        component: () =>
+          import('src/pages/sales/sales-voucher/RecurringTemplateList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates'],
+        },
+      },
+      {
+        path: '/sales-voucher/recurring-template/add/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Create'],
+        },
+      },
+      {
+        path: '/sales-voucher/recurring-template/:id/',
+        component: () =>
+          import('src/pages/sales/sales-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Sales Invoice Templates', 'Update'],
+        },
+      },
+      {
         path: 'list/',
         name: 'Sales Invoices',
         component: () =>
@@ -590,6 +615,31 @@ const routes: RouteRecordRaw[] = [
           import('src/pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
         meta: {
           breadcrumb: ['Home', 'Purchases/Expenses', 'Update'],
+        },
+      },
+      {
+        path: '/purchase-voucher/recurring-template/list/',
+        name: 'Recurring Purchase Invoice Templates',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateList.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates'],
+        },
+      },
+      {
+        path: '/purchase-voucher/recurring-template/add/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Create'],
+        },
+      },
+      {
+        path: '/purchase-voucher/recurring-template/:id/',
+        component: () =>
+          import('src/pages/purchase/purchase-voucher/RecurringTemplateForm.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Recurring Purchase Invoice Templates', 'Update'],
         },
       },
     ],
@@ -1378,6 +1428,13 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'invoice/',
+        component: () => import('src/pages/settings/InvoiceSettings.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Invoice Settings'],
+        },
+      },
+      {
         path: 'account-closing/',
         component: () => import('src/pages/settings/AccountsClosing.vue'),
         meta: {
@@ -1418,7 +1475,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Home', 'Payment Mode', 'Update'],
         },
-      }
+      },
     ],
   },
   {

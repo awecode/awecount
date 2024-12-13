@@ -2,6 +2,7 @@
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
+      <q-btn color="blue" label="Import" icon-right="upload" @click="showImportModal = true" class="import-btn" />
       <q-btn v-if="checkPermissions('SalesCreate')" color="green" to="/sales-voucher/add/" label="New Sales"
         icon-right="add" class="add-btn" />
     </div>
@@ -96,6 +97,7 @@
               :to="`/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
           </div>
         </q-td>
+
         <!-- TODO: add modals -->
       </template>
       <template v-slot:body-cell-payment_receipts="props">
@@ -139,6 +141,9 @@
         </td>
       </template>
     </q-table>
+    <XLSImport v-model:show-import-modal="showImportModal" :required-columns="importFileRequiredColumns"
+      endpoint="/v1/sales-voucher/import/" title="Import Sales Vouchers"
+      help-text="Upload a .xlsx file to import sales invoices" sample-file-url="/files/sales-invoices.xlsx" />
   </div>
 </template>
 
@@ -218,7 +223,35 @@ export default {
       { name: 'actions', align: 'left', label: 'Actions' },
     ]
 
-    return { ...listData, newColumn, onDownloadXls, checkPermissions }
-  },
+    const showImportModal = ref(false)
+    const importFileRequiredColumns = [
+      'Invoice Group ID',
+      'Party',
+      'Customer Name',
+      'Address',
+      'Due Date',
+      'Discount Type',
+      'Discount',
+      'Trade Discount',
+      'Payment Mode',
+      'Remarks',
+      'Is Export',
+      'Sales Agent ID',
+      'Status',
+      'Row Item ID',
+      'Row Quantity',
+      'Row Rate',
+      'Row Unit ID',
+      'Row Discount Type',
+      'Row Discount',
+      'Row Tax Scheme ID',
+      'Row Description',
+    ]
+
+    return {
+      ...listData, newColumn, onDownloadXls, checkPermissions, showImportModal, importFileRequiredColumns
+    }
+
+  }
 }
 </script>

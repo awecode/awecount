@@ -1,38 +1,17 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="container-padding-left">
+  <q-layout view="lHh Lpr lFf" :class="{ 'container-padding-left': store.isLoggedIn }">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header
-      elevated
-      class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md"
-    >
+    <q-header v-if="store.isLoggedIn" elevated class="bg-white text-grey-8 q-pa-sm d-print-none print-hide q-pl-md">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title class="flex items-center" style="gap: 16px">
-          <RouterLink
-            v-if="store.companyInfo?.logo_url"
-            to="/"
-            style="max-width: 60px; max-height: 40px"
-          >
-            <img
-              style="max-width: 60px; max-height: 40px; object-fit: contain"
-              :src="store.companyInfo.logo_url"
-              alt="Company Logo"
-            />
+          <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px">
+            <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url"
+              alt="Company Logo" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el
-              v-for="breadCrum in breadCrums"
-              :key="breadCrum"
-              :label="breadCrum"
-              :to="{ name: breadCrum }"
-            />
+            <q-breadcrumbs-el v-for="breadCrum in breadCrums" :key="breadCrum" :label="breadCrum"
+              :to="{ name: breadCrum }" />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
@@ -40,40 +19,18 @@
           <!-- <q-btn @click="confirmSignOut" square color="red" icon="power_settings_new" />
              -->
           <div class="row btns-Con">
-            <q-btn class="gt-sm"
-              >{{ store.companyInfo?.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]"
-                >Fiscal Yaar</q-tooltip
-              ></q-btn
-            >
-            <q-btn
-              v-if="store.companyInfo?.config_template === 'np'"
-              class="dateSwitcher bg-grey-7 text-grey-2"
-              @click="store.isCalendarInAD = !store.isCalendarInAD"
-              >{{ activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]"
-                >Change Date Format</q-tooltip
-              >
+            <q-btn class="gt-sm">{{ store.companyInfo?.current_fiscal_year }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Yaar</q-tooltip></q-btn>
+            <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2"
+              @click="store.isCalendarInAD = !store.isCalendarInAD">{{ activeDateFormat }}
+              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
-            <a
-              target="_blank"
-              href="https://docs.awecount.com/"
-              style="color: inherit"
-            >
-              <q-btn class="gt-sm"
-                ><q-icon name="mdi-help-circle-outline"></q-icon
-                ><q-tooltip :delay="1000" :offset="[0, 10]"
-                  >Help</q-tooltip
-                ></q-btn
-              >
+            <a target="_blank" href="https://docs.awecount.com/" style="color: inherit">
+              <q-btn class="gt-sm"><q-icon name="mdi-help-circle-outline"></q-icon><q-tooltip :delay="1000"
+                  :offset="[0, 10]">Help</q-tooltip></q-btn>
             </a>
-            <q-btn @click="logoutDiologueOpen = true"
-              ><q-icon name="mdi-logout" /><q-tooltip
-                :delay="1000"
-                :offset="[0, 10]"
-                >Logout</q-tooltip
-              ></q-btn
-            >
+            <q-btn @click="logoutDiologueOpen = true"><q-icon name="mdi-logout" /><q-tooltip :delay="1000"
+                :offset="[0, 10]">Logout</q-tooltip></q-btn>
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
@@ -81,21 +38,9 @@
                     <span>Are you sure you want to logout?</span>
                   </div>
                   <div class="q-mb-md" style="margin-top: 40px">
-                    <div
-                      class="text-right text-blue-6 row justify-end q-gutter-x-lg"
-                    >
-                      <q-btn
-                        flat
-                        label="Cancel"
-                        class="text-grey-8"
-                        @click="logoutDiologueOpen = false"
-                      ></q-btn>
-                      <q-btn
-                        flat
-                        label="Yes"
-                        class="text-red"
-                        @click="onLogoutClick()"
-                      ></q-btn>
+                    <div class="text-right text-blue-6 row justify-end q-gutter-x-lg">
+                      <q-btn flat label="Cancel" class="text-grey-8" @click="logoutDiologueOpen = false"></q-btn>
+                      <q-btn flat label="Yes" class="text-red" @click="onLogoutClick()"></q-btn>
                     </div>
                   </div>
                 </div>
@@ -106,17 +51,8 @@
         <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer
-      drawer
-      persistent
-      overlay
-      show-if-above
-      :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      v-model="leftDrawerOpen"
-      class="shadow-6"
-    >
+    <q-drawer v-if="store.isLoggedIn" drawer persistent overlay show-if-above :mini="miniState"
+      @mouseover="miniState = false" @mouseout="miniState = true" v-model="leftDrawerOpen" class="shadow-6">
       <q-list class="icon-grey d-print-none print-hide">
         <!-- <q-item-label header> Menu </q-item-label> -->
         <!-- <q-img src="../assets/background-image.png" style="height: 90px">
@@ -139,15 +75,11 @@
       </template>
       <RouterView /> -->
       <div v-if="store.isLoading" class="relative">
-        <div
-          class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full"
-        >
+        <div class="bg-white q-pa-lg -mt-2 transition-all absolute top-0 left-0 w-full h-full">
           <q-card class="mt-2">
             <q-skeleton height="64px" square class="bg-green" />
             <q-card class="q-mx-lg q-pt-md pb-8 px-3">
-              <div
-                class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6"
-              >
+              <div class="grid lg:grid-cols-2 grid-cols-1 gap-y-12 gap-x-6 py-6">
                 <div class="flex gap-4">
                   <div class="flex grow gap-1">
                     <q-skeleton height="45px" type="rect" class="grow">
@@ -181,12 +113,7 @@
                       <div class="flex grow gap-1 col-span-5">
                         <q-skeleton height="45px" type="rect" class="grow">
                         </q-skeleton>
-                        <q-skeleton
-                          height="45px"
-                          width="45px"
-                          type="QBtn"
-                          square
-                        >
+                        <q-skeleton height="45px" width="45px" type="QBtn" square>
                         </q-skeleton>
                       </div>
                       <div class="col-span-2">
@@ -224,20 +151,13 @@
                 </q-card>
               </div>
               <div class="flex justify-right">
-                <q-skeleton
-                  type="QBtn"
-                  class="bg-green"
-                  height="36px"
-                ></q-skeleton>
+                <q-skeleton type="QBtn" class="bg-green" height="36px"></q-skeleton>
               </div>
             </q-card>
           </q-card>
         </div>
       </div>
-      <RouterView
-        :class="store.isLoading ? 'opacity-0' : ''"
-        class="transition-all"
-      />
+      <RouterView :class="store.isLoading ? 'opacity-0' : ''" class="transition-all" />
     </q-page-container>
   </q-layout>
 </template>
@@ -369,6 +289,12 @@ const essentialLinks: EssentialLinkProps[] = [
         hide: !checkPermissions('SalesDiscountView'),
       },
       {
+        title: 'Recurring Templates',
+        icon: 'mdi-repeat',
+        link: '/sales-voucher/recurring-template/list/',
+        hide: !checkPermissions('RecurringVoucherTemplateView'),
+      },
+      {
         title: 'Sales Report',
         icon: 'mdi-format-list-bulleted',
         link: '/sales-row/list/',
@@ -409,6 +335,12 @@ const essentialLinks: EssentialLinkProps[] = [
         icon: 'mdi-sale',
         link: '/purchase-discount/list/',
         hide: !checkPermissions('PurchaseDiscountView'),
+      },
+      {
+        title: 'Recurring Templates',
+        icon: 'mdi-repeat',
+        link: '/purchase-voucher/recurring-template/list/',
+        hide: !checkPermissions('RecurringVoucherTemplateView'),
       },
       {
         title: 'Purchase Report',
@@ -652,6 +584,12 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
         link: '/settings/sales/',
+        hide: !checkPermissions('SalesSettingView'),
+      },
+      {
+        title: 'Invoice Settings',
+        icon: 'mdi-point-of-sale',
+        link: '/settings/invoice/',
         hide: !checkPermissions('SalesSettingView'),
       },
       {

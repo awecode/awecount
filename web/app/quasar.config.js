@@ -71,6 +71,7 @@ module.exports = configure(function (ctx) {
       // env: require('dotenv').config().parsed,
       env: {
         BASE_URL: process.env.BASE_URL || 'http://localhost:8000',
+        MEDIA_BASE_URL: process.env.MEDIA_BASE_URL || 'http://localhost:8000/media',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

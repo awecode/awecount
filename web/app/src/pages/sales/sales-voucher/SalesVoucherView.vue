@@ -9,8 +9,8 @@
             </span>
           </div>
         </q-card-section>
-        <ViewerHeader2 :fields="fields" :changeModes="true" @updateMode="(newValue) => updatePaymentMode(newValue)"
-          :paymentModeOptions="paymentModeOptions" />
+        <ViewerHeader2 :fields="fields" :changeModes="isLoggedIn"
+          @updateMode="(newValue) => updatePaymentMode(newValue)" :paymentModeOptions="paymentModeOptions" />
       </q-card>
       <q-card class="q-mx-lg" id="to_print">
         <q-card-section>
@@ -54,18 +54,21 @@
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft')" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(false, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
             ? ''
             : `# ${(fields?.print_count || 0)}`
             }` : ''}`
             " icon="print" />
-          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft')" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
+          <q-btn @click="() => onPrintclick(true, fields?.status === 'Draft' || !isLoggedIn)" :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) || !isLoggedIn
             ? ''
             : `# ${(fields?.print_count || 0) + 1}`
             }`
             " icon="print" />
-          <q-btn color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
-          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
+          <q-btn v-if="isLoggedIn && !['Draft', 'Cancelled'].includes(fields?.status)"
+            @click="isSendInvoiceModalOpen = true" label="Send email" data-testid="send-email" />
+          <q-btn v-if="isLoggedIn" color="blue-7" label="Materialized View" icon="mdi-table"
+            :to="`/sales-voucher/${fields?.id}/mv`" />
+          <q-btn v-if="isLoggedIn && fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7"
             label="Journal Entries" icon="books" :to="`/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" @before-hide="errors = {}" class="overflow-visible">
@@ -88,11 +91,36 @@
         </q-dialog>
       </div>
     </div>
+
+    <q-dialog v-model="isSendInvoiceModalOpen" @hide="resetSendInvoicePayload">
+      <q-card style="min-width: min(40vw, 500px)">
+        <q-card-section class="bg-primary text-white">
+          <div class="text-h6 flex justify-between">
+            <span class="q-mx-md">Send invoice in email</span>
+            <q-btn icon="close" class="text-white bg-red-500" flat round dense v-close-popup />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mx-md flex flex-col gap-4">
+          <q-select label="To" filled v-model="sendInvoicePayload.to" use-input use-chips multiple hide-dropdown-icon
+            input-debounce="0" new-value-mode="add-unique" :error="!!sendInvoiceInEmailErrors?.errors?.to"
+            :error-message="typeof sendInvoiceInEmailErrors?.errors?.to === 'string' ? sendInvoiceInEmailErrors?.errors?.to : 'Enter valid email address'" />
+          <q-input v-model="sendInvoicePayload.subject" label="Subject" outlined
+            :error-message="sendInvoiceInEmailErrors?.errors?.subject"
+            :error="!!sendInvoiceInEmailErrors?.errors?.subject" />
+          <q-editor v-model="sendInvoicePayload.message" />
+          <q-checkbox v-model="sendInvoicePayload.attach_pdf" label="Attach PDF"></q-checkbox>
+          <file-uploader v-model="sendInvoicePayload.attachments" label="Attachments" multiple />
+          <div class="row justify-end">
+            <q-btn label="Send" color="orange-5" class="q-mt-md" @click="sendInvoiceInEmail"></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import ViewerHeader2 from 'src/components/viewer/ViewerHeader2.vue'
+import { useLoginStore } from 'src/stores/login-info.js'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 import { modes } from 'src/helpers/constants/invoice'
 import { Ref } from 'vue'
@@ -118,6 +146,8 @@ export default {
     const isDeleteOpen: Ref<boolean> = ref(false)
     const deleteMsg: Ref<string> = ref('')
     const errors = ref({})
+    const sendInvoiceInEmailErrors = ref({})
+    const isLoggedIn = useLoginStore().isLoggedIn
     const submitChangeStatus = (id: number, status: string) => {
       loading.value = true
       let endpoint = ''
@@ -194,8 +224,82 @@ export default {
     }
 
     const print = (bodyOnly: boolean) => {
-      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher)
+      const printData = useGeneratePdf('salesVoucher', bodyOnly, fields.value, !fields.value.options.show_rate_quantity_in_voucher,
+        isLoggedIn ? null : fields.value.company
+      )
       usePrintPdfWindow(printData)
+    }
+
+    const isSendInvoiceModalOpen: Ref<boolean> = ref(false)
+
+
+    const sendInvoicePayload = ref({
+      attach_pdf: true,
+      attachments: [],
+      to: '',
+      subject: '',
+      message: ''
+    })
+
+    const loginStore = useLoginStore()
+
+    function resetSendInvoicePayload() {
+      sendInvoiceInEmailErrors.value = {}
+      sendInvoicePayload.value = {
+        attach_pdf: true,
+        attachments: fields.value?.options?.default_email_attachments || [],
+        to: [fields.value.email, fields.value.party_email].filter(Boolean),
+        subject: `Sales Invoice #${fields.value.voucher_no}`,
+        message: `
+          <p>Hello <b>${fields.value.customer_name || fields.value.party_name}</b>,</p>
+
+          <p>I hope this message finds you well.</p>
+
+          <p>Please find attached the invoice <b>#${fields.value?.voucher_no}</b></p>
+
+          <p>You can view and download the invoice using the following link: <a href="${window.location.protocol + '//' + window.location.host + window.location.pathname}?hash=${fields.value?.hash}">View Invoice</a>.</p>
+
+          <p>If you have any questions or require further assistance, feel free to contact us at <b>${loginStore.companyInfo?.contact_no || '[]'}</b>.</p>
+
+          <p>Best Regards,<br>
+          <b>${loginStore.companyInfo?.name || '[]'}</b></p>
+        `
+      }
+    }
+
+    function sendInvoiceInEmail() {
+      const endpoint = `v1/sales-voucher/${fields.value?.id}/send-invoice-in-email/`
+      const formData = new FormData()
+      formData.append('attach_pdf', sendInvoicePayload.value.attach_pdf ? 'true' : 'false')
+      sendInvoicePayload.value.attachments.forEach((file: File) => {
+        formData.append('attachments', file)
+      })
+      sendInvoicePayload.value.to.forEach((email: string) => {
+        formData.append('to', email)
+      })
+      formData.append('subject', sendInvoicePayload.value.subject)
+      formData.append('message', sendInvoicePayload.value.message)
+      useApi(endpoint, {
+        body: formData,
+        method: 'POST',
+      })
+        .then(() => {
+          isSendInvoiceModalOpen.value = false
+          if (isLoggedIn)
+            resetSendInvoicePayload()
+          $q.notify({
+            color: 'positive',
+            message: 'Invoice Sent!',
+            icon: 'check_circle',
+          })
+        })
+        .catch((err) => {
+          if (err.response.status === 400) {
+            const parsedError = useHandleFormError(err)
+            console.log(parsedError)
+            sendInvoiceInEmailErrors.value = parsedError
+          }
+        })
     }
 
     return {
@@ -215,15 +319,25 @@ export default {
       checkPermissions,
       useGeneratePdf,
       loading,
-      errors
+      errors,
+      isLoggedIn,
+      isSendInvoiceModalOpen,
+      sendInvoicePayload,
+      sendInvoiceInEmail,
+      resetSendInvoicePayload,
+      sendInvoiceInEmailErrors,
     }
   },
   created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    let endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    if (!this.isLoggedIn && this.$route.query.hash) {
+      endpoint = `/v1/sales-voucher/${this.$route.params.id}/details-by-hash/?hash=${this.$route.query.hash}`
+    }
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data
         this.paymentModeOptions = data.available_payment_modes
+        this.resetSendInvoicePayload()
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
@@ -244,7 +358,5 @@ export default {
     visibility: hidden;
     width: none;
   }
-
-
 }
 </style>

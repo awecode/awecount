@@ -30,5 +30,10 @@ export const useLoginStore = defineStore('loginStore', {
       this.dateRange.end_date = end_date
     }
   },
+  getters: {
+    isLoggedIn() {
+      return !!this.token
+    }
+  },
   persist: true,
 })
