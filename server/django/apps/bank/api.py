@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from django.conf import settings
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -397,9 +398,9 @@ class BankReconciliationViewSet(CRULViewSet):
             for system_transaction in system_transactions:
                 if (
                     (statement_transaction.get('dr_amount') and system_transaction.cr_amount and
-                    abs(statement_transaction['dr_amount'] - system_transaction.cr_amount) < 0.01) or
+                    abs(statement_transaction['dr_amount'] - system_transaction.cr_amount) < settings.BANK_RECONCILIATION_TOLERANCE) or
                     (statement_transaction.get('cr_amount') and system_transaction.dr_amount and
-                    abs(statement_transaction['cr_amount'] - system_transaction.dr_amount) < 0.01)
+                    abs(statement_transaction['cr_amount'] - system_transaction.dr_amount) < settings.BANK_RECONCILIATION_TOLERANCE)
                 ):
                     # Reconcile transactions
                     statement_transaction['transaction_ids'] = [system_transaction.pk]
@@ -441,8 +442,8 @@ class BankReconciliationViewSet(CRULViewSet):
                     total_cr = sum(t.get('cr_amount', 0) for t in combination)
 
                     if (
-                        abs(total_dr - (system_transaction.cr_amount or 0)) < 0.01 and
-                        abs(total_cr - (system_transaction.dr_amount or 0)) < 0.01
+                        abs(total_dr - (system_transaction.cr_amount or 0)) < settings.BANK_RECONCILIATION_TOLERANCE and
+                        abs(total_cr - (system_transaction.dr_amount or 0)) < settings.BANK_RECONCILIATION_TOLERANCE
                     ):
                         # Reconcile matched transactions
                         for statement_transaction in combination:
@@ -511,8 +512,8 @@ class BankReconciliationViewSet(CRULViewSet):
                         #     import ipdb; ipdb.set_trace()
 
                         if (
-                            abs(total_dr - statement_transaction.get('cr_amount', 0)) < 0.01 and
-                            abs(total_cr - statement_transaction.get('dr_amount', 0)) < 0.01
+                            abs(total_dr - statement_transaction.get('cr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE and
+                            abs(total_cr - statement_transaction.get('dr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE
                         ):
                             # Reconcile matched transactions
                             for system_transaction in combination:
@@ -528,7 +529,7 @@ class BankReconciliationViewSet(CRULViewSet):
 
                             return True
                         
-                        elif (abs(total_dr - total_cr - statement_transaction.get('cr_amount', 0)) < 0.01):
+                        elif (abs(total_dr - total_cr - statement_transaction.get('cr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE):
                             # dont remove the cr_amount transaction but remove the dr_amount transactions
                             for system_transaction in combination:
                                 if statement_transaction.get('transaction_ids'):
@@ -548,8 +549,8 @@ class BankReconciliationViewSet(CRULViewSet):
                     total_cr = sum((t.cr_amount or 0) for t in combination)
 
                     if (
-                        abs(total_dr - statement_transaction.get('cr_amount', 0)) < 0.01 and
-                        abs(total_cr - statement_transaction.get('dr_amount', 0)) < 0.01
+                        abs(total_dr - statement_transaction.get('cr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE and
+                        abs(total_cr - statement_transaction.get('dr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE
                     ):
                         # Reconcile matched transactions
                         for system_transaction in combination:
@@ -602,7 +603,7 @@ class BankReconciliationViewSet(CRULViewSet):
                         net_difference = sum((t.dr_amount or 0) - (t.cr_amount or 0) for t in combination)
                         
                         # Check if the net difference matches the statement transaction amount
-                        if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < 0.01:
+                        if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < settings.BANK_RECONCILIATION_TOLERANCE:
                             # Mark these transactions as reconciled
                             for system_transaction in combination:
                                 if statement_transaction.get('transaction_ids'):
@@ -707,7 +708,7 @@ class BankReconciliationViewSet(CRULViewSet):
                             net_difference = sum((t.dr_amount or 0) - (t.cr_amount or 0) for t in combination)
 
                             # Check if the net difference matches the statement transaction amount
-                            if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < 0.01:
+                            if abs(round(net_difference, 2) - round(float(statement_transaction.get('cr_amount', 0)), 2)) < settings.BANK_RECONCILIATION_TOLERANCE:
                                 # Mark these transactions as reconciled
                                 for system_transaction in combination:
                                     statement_transaction.setdefault('transaction_ids', []).append(system_transaction.pk)
@@ -759,7 +760,7 @@ class BankReconciliationViewSet(CRULViewSet):
             ))
 
         # Perform bulk_create once
-        # BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+        BankReconciliation.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
                             
         return {
             'reconciled_transactions': reconciled_transactions,
@@ -835,7 +836,7 @@ class BankReconciliationViewSet(CRULViewSet):
             status__in=['Unreconciled', 'Matched']
         ).order_by("statement_date")
         
-        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': BankReconciliationSerializer(bank_statements, many=True).data })
+        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': BankReconciliationSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE })
     
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
@@ -847,7 +848,7 @@ class BankReconciliationViewSet(CRULViewSet):
         transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
         statement_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in statement_objects])
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
-        if abs(statement_sum - transaction_sum) > 0.01:
+        if abs(statement_sum - transaction_sum) > settings.BANK_RECONCILIATION_TOLERANCE:
             raise APIException("The sum of the statement transactions and system transactions do not match")
         statement_objects.update(status='Reconciled', transaction_ids=transaction_ids)
         return Response({})

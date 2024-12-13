@@ -80,4 +80,5 @@ BASE_URL = "http://localhost:8080/"
 #     },
 # }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+BANK_RECONCILIATION_TOLERANCE = 0.01
