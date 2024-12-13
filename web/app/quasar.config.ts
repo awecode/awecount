@@ -17,6 +17,13 @@ export default defineConfig((/* ctx */) => {
       'material-icons',
     ],
 
+    framework: {
+      config: {
+        notify: { position: 'top-right', progress: true },
+      },
+      plugins: ['Notify', 'Dialog', 'Meta'],
+    },
+
     build: {
       target: {
         browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
