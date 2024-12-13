@@ -252,6 +252,15 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
       if (!header) {
         continue
       }
+      if (header === 'description') {
+        console.log(cell)
+        if (cell.trim() === 'Opening Balance') {
+          continue
+        }
+        if (cell.trim() === 'Closing Balance') {
+          return data
+        }
+      }
 
       rowData[header] = cell
 
@@ -259,12 +268,6 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
         rowData.date = /^\d{4}-\d{2}-\d{2}$/.test(cell) ? cell : parseDate(cell)
       }
 
-      if (header === 'description') {
-        console.log(cell)
-        if (cell.trim() === 'Closing Balance') {
-          return data
-        }
-      }
     }
     data.push(rowData)
   }
