@@ -36,6 +36,10 @@ const props = defineProps({
     type: Array<StatementTransactionData>,
     required: true,
   },
+  acceptableDifference: {
+    type: Number,
+    default: 0.01,
+  },
 })
 
 interface GroupedTransaction {
@@ -323,8 +327,8 @@ const isSystemTransactionSelected = (transaction: SystemTransactionData) =>
 
 const canReconcile = computed(() => {
   return selectedStatementTransactions.value.length > 0 &&
-    selectedSystemTransactions.value.length > 0
-    && (Number(calculateTotal(selectedStatementTransactions.value, true)) - Number(calculateTotal(selectedSystemTransactions.value)) == 0)
+    selectedSystemTransactions.value.length > 0 &&
+    Math.abs(Number(calculateTotal(selectedStatementTransactions.value, true)) - Number(calculateTotal(selectedSystemTransactions.value))) < props.acceptableDifference
 }
   // also total amount matches
 )
@@ -334,17 +338,7 @@ const unselectAll = () => {
   selectedSystemTransactions.value = []
 }
 
-const reconcile = () => {
-  if (canReconcile.value) {
-    console.log('Reconciling:', {
-      statementTransactions: selectedStatementTransactions.value,
-      systemTransactions: selectedSystemTransactions.value
-    })
 
-    // Optionally clear selections after reconciliation
-    unselectAll()
-  }
-}
 
 const reconcileMatchedTransactions = (matchedTransaction: {
   statementTransactions: StatementTransactionData[]
@@ -363,6 +357,41 @@ const reconcileMatchedTransactions = (matchedTransaction: {
       groupedTransactions.value.splice(index, 1)
     }
   })
+}
+
+const reconcile = () => {
+  if (canReconcile.value) {
+    console.log('Reconciling:', {
+      statementTransactions: selectedStatementTransactions.value,
+      systemTransactions: selectedSystemTransactions.value
+    })
+    useApi('v1/bank-reconciliation/reconcile-transactions/', {
+      method: 'POST',
+      body: {
+        statement_ids: selectedStatementTransactions.value.map(t => t.id),
+        transaction_ids: selectedSystemTransactions.value.map(t => t.id),
+      }
+    }).then(() => {
+      // remove from both unmatched lists
+      selectedStatementTransactions.value.forEach(t => {
+        const index = unmatchedStatementTransactions.value.findIndex(ut => ut === t)
+        if (index > -1) {
+          unmatchedStatementTransactions.value.splice(index, 1)
+        }
+      })
+      selectedSystemTransactions.value.forEach(t => {
+        const index = unmatchedSystemTransactions.value.findIndex(ut => ut === t)
+        if (index > -1) {
+          unmatchedSystemTransactions.value.splice(index, 1)
+        }
+      })
+      // remove from selected
+      unselectAll()
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
+
 }
 
 const unmatchMatchedTransactions = (matchedTransaction: {
@@ -460,7 +489,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                 <div>
                   <span class="font-medium" :class="Number(calculateTotal(unmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                     calculateTotal(unmatchedStatementTransactions, true)
-                  }}</span>
+                    }}</span>
                 </div>
               </div>
             </div>
