@@ -135,10 +135,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  errors: {
-    type: Object,
-    required: true,
-  },
   isEdit: {
     type: Boolean,
     required: false,
@@ -146,9 +142,21 @@ const props = defineProps({
   isTemplate: {
     type: Boolean,
     required: false,
+  },
+  today: {
+    type: String,
+    required: true,
   }
 })
 const fields = defineModel('fields')
+
+const errors = defineModel('errors')
+
+if (!props.isEdit) {
+  fields.value.date = props.today
+  fields.value.due_date = props.today
+  fields.value.is_import = false
+}
 
 const importPurchaseOrder = ref(false)
 
@@ -263,9 +271,9 @@ const fetchInvoice = async (data) => {
 }
 
 const discountOptionsComputed = computed(() => {
-  if (props.formDefaults.value?.collections?.discounts) {
+  if (props.formDefaults?.collections?.discounts) {
     return staticOptions.discount_types.concat(
-      formDefaults.value.collections.discounts
+      props.formDefaults.collections.discounts
     )
   } else return staticOptions.discount_types
 })
@@ -275,9 +283,9 @@ const modeOptionsComputed = computed(() => {
     results: [{ id: null, name: 'Credit' }],
     pagination: {},
   }
-  if (props.formDefaults.value?.collections?.payment_modes?.results) {
-    obj.results = obj.results.concat(props.formDefaults.value.collections.payment_modes.results)
-    Object.assign(obj.pagination, props.formDefaults.value.collections.payment_modes.pagination)
+  if (props.formDefaults?.collections?.payment_modes?.results) {
+    obj.results = obj.results.concat(props.formDefaults.collections.payment_modes.results)
+    Object.assign(obj.pagination, props.formDefaults.collections.payment_modes.pagination)
   }
   return obj
 })
@@ -292,19 +300,19 @@ const deleteRowErr = (index, errors, deleteObj) => {
   if (!!errors.rows) errors.rows.splice(index, 1)
 }
 
-watch(() => props.formDefaults.value, () => {
-  if (!props.isEdit.value) {
-    if (props.formDefaults.value.fields?.mode) {
-      if (isNaN(props.formDefaults.value.fields?.mode)) {
-        fields.value.mode = props.formDefaults.value.fields.mode
+watch(() => props.formDefaults, () => {
+  if (!props.isEdit) {
+    if (props.formDefaults.fields?.mode) {
+      if (isNaN(props.formDefaults.fields?.mode)) {
+        fields.value.mode = props.formDefaults.fields.mode
       } else {
-        fields.value.mode = Number(props.formDefaults.value.fields.mode)
+        fields.value.mode = Number(props.formDefaults.fields.mode)
       }
     } else fields.value.mode = 'Credit'
   }
 
-  if (props.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
-    fields.value.trade_discount = props.formDefaults.value.fields?.trade_discount
+  if (props.formDefaults.fields?.hasOwnProperty('trade_discount')) {
+    fields.value.trade_discount = props.formDefaults.fields?.trade_discount
   }
 })
 

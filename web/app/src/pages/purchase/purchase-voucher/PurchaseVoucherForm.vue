@@ -8,7 +8,7 @@
         </div>
       </q-card-section>
 
-      <PurchaseForm v-model:fields="fields" :errors="errors" :isEdit="isEdit" :formDefaults="formDefaults" />
+      <PurchaseForm :today="today" v-model:fields="fields" v-model:errors="errors" :isEdit="isEdit" :formDefaults="formDefaults" />
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"
@@ -55,11 +55,4 @@ const onSubmitClick = async (status) => {
     fields.value.status = originalStatus
   }
 }
-
-if (!isEdit.value) {
-  fields.value.date = today
-  fields.value.due_date = today
-  fields.value.is_import = false
-}
-
 </script>
