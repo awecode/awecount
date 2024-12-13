@@ -22,18 +22,15 @@
             :error-message="errors.title" />
         </div>
         <div class="row q-col-gutter-md">
-          <q-input class="col-12 col-md-6" v-model.number="fields.repeat_interval" label="Repeat Interval"
+          <q-input class="col-6 col-md-3" v-model.number="fields.repeat_interval" label="Repeat Interval"
             :error="!!errors.repeat_interval" :error-message="errors.repeat_interval" type="number" />
-          <q-select class="col-12 col-md-6" v-model="fields.repeat_interval_time_unit" label="Repeat Interval Time Unit"
-            :options="timeUnits" :error="!!errors.repeat_interval_time_unit"
-            :error-message="errors.repeat_interval_time_unit" />
-        </div>
-        <div class="row q-col-gutter-md">
-          <q-input class="col-12 col-md-6" v-model.number="fields.due_date_after" label="Due Date After"
+          <q-select class="col-6 col-md-3" v-model="fields.repeat_interval_time_unit" label="" :options="timeUnits"
+            :error="!!errors.repeat_interval_time_unit" :error-message="errors.repeat_interval_time_unit" />
+          <q-input class="col-4 col-md-2" v-model.number="fields.due_date_after" label="Due Date"
             :error="!!errors.due_date_after" :error-message="errors.due_date_after" type="number" />
-          <q-select class="col-12 col-md-6" v-model="fields.due_date_after_time_unit" label="Due Date After Time Unit"
-            :options="timeUnits" :error="!!errors.due_date_after_time_unit"
-            :error-message="errors.due_date_after_time_unit" />
+          <q-select class="col-4 col-md-2" v-model="fields.due_date_after_time_unit" label="" :options="timeUnits"
+            :error="!!errors.due_date_after_time_unit" :error-message="errors.due_date_after_time_unit" />
+          <div class="col-4 col-md-2 q-mt-md flex items-center">after invoice date</div>
         </div>
         <div class="row q-col-gutter-md">
           <q-input class="col-12 col-md-4" v-model="fields.start_date" label="Start Date" :error="!!errors.start_date"
@@ -41,7 +38,8 @@
           <q-input class="col-12 col-md-4" v-model="fields.end_date" label="End Date" :error="!!errors.end_date"
             :error-message="errors.end_date" type="date" />
           <q-input class="col-12 col-md-4" v-model.number="fields.end_after" label="End After"
-            :error="!!errors.end_after" :error-message="errors.end_after" type="number" />
+            :error="!!errors.end_after" :error-message="errors.end_after" type="number"
+            hint="Invoice creation will stop after creating this number of invoices" />
         </div>
         <div class="row q-col-gutter-md">
           <q-checkbox class="col-12 col-md-6" v-model="fields.is_active" label="Is Active" />

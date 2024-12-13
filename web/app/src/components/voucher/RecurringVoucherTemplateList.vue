@@ -154,13 +154,13 @@ const newColumn = [
   },
   {
     name: 'due_date_after',
-    label: 'Due Date After',
+    label: 'Due Date',
     align: 'left',
     field: 'due_date_after',
   },
   {
     name: 'is_active',
-    label: 'Active',
+    label: 'Is Active?',
     align: 'center',
     field: 'is_active',
   },
