@@ -39,6 +39,7 @@ declare module '@vue/runtime-core' {
     PosInvoiceTable: typeof import('./src/components/pos/PosInvoiceTable.vue')['default']
     PrintHeader: typeof import('./src/components/print/PrintHeader.vue')['default']
     PurchaseForm: typeof import('./src/components/voucher/PurchaseForm.vue')['default']
+    RecurringVoucherTemplateForm: typeof import('./src/components/voucher/RecurringVoucherTemplateForm.vue')['default']
     RecurringVoucherTemplateList: typeof import('./src/components/voucher/RecurringVoucherTemplateList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
