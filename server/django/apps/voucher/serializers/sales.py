@@ -13,6 +13,7 @@ from apps.product.serializers import ItemSalesSerializer
 from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
+from apps.voucher.models.discounts import PurchaseDiscount
 from apps.voucher.serializers.purchase import PurchaseVoucherCreateSerializer
 from awecount.libs import get_next_voucher_no
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -572,8 +573,72 @@ class SalesVoucherCreateSerializer(
         )
 
 
+class RecurringVoucherTemplateSalesInvoiceDataSerializer(SalesVoucherCreateSerializer):
+    class Meta:
+        model = SalesVoucher
+        exclude = (
+            "company",
+            "user",
+            "bank_account",
+            "discount_obj",
+            "fiscal_year",
+            "date",
+            "due_date",
+        )
+
+
+class RecurringVoucherTemplatePurchaseInvoiceDataSerializer(
+    PurchaseVoucherCreateSerializer
+):
+    def validate(self, data):
+        company = self.context["request"].company
+
+        party = data.get("party")
+        if not party and not data.get("payment_mode") and data.get("status") != "Draft":
+            raise ValidationError(
+                {"party": ["Party is required for a credit issue."]},
+            )
+
+        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
+            if not PurchaseDiscount.objects.filter(
+                company=company, id=data.get("discount_type")
+            ).exists():
+                raise ValidationError(
+                    {"discount_type": ["Discount type does not exist."]},
+                )
+
+        if party and (party.company_id != company.id):
+            raise ValidationError(
+                {"party": ["Party does not belong to the company."]},
+            )
+
+        if (
+            data.get("payment_mode")
+            and data.get("payment_mode").company_id != company.id
+        ):
+            raise ValidationError(
+                {"payment_mode": ["Payment mode does not belong to the company."]},
+            )
+
+        if data.get("discount") and data.get("discount") < 0:
+            raise ValidationError({"discount": ["Discount cannot be negative."]})
+
+        return data
+
+    class Meta:
+        model = PurchaseVoucher
+        exclude = (
+            "company",
+            "user",
+            "bank_account",
+            "fiscal_year",
+            "date",
+            "due_date",
+            "voucher_no",
+        )
+
+
 class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
-    invoice_data = serializers.JSONField()
     repeat_interval = serializers.IntegerField()
 
     def validate_repeat_interval(self, value):
@@ -591,9 +656,9 @@ class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
             raise ValidationError({"end_date": "End date must be after start date."})
 
         serializer_class = (
-            SalesVoucherCreateSerializer
+            RecurringVoucherTemplateSalesInvoiceDataSerializer
             if type == "Sales Voucher"
-            else PurchaseVoucherCreateSerializer
+            else RecurringVoucherTemplatePurchaseInvoiceDataSerializer
         )
         invoice_serializer = serializer_class(data=invoice_data, context=self.context)
         if invoice_serializer.is_valid() is False:

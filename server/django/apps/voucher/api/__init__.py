@@ -810,6 +810,97 @@ class RecurringVoucherTemplateViewSet(CRULViewSet):
 
     search_fields = ["title"]
 
+    collections = [
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("units", Unit, GenericSerializer, True, ["name"]),
+        (
+            "bank_accounts",
+            BankAccount,
+            GenericSerializer,
+            True,
+            ["bank_name", "short_name", "account_number"],
+        ),
+        (
+            "payment_modes",
+            PaymentMode.objects.filter(enabled_for_sales=True),
+            GenericSerializer,
+            True,
+            ["name"],
+        ),
+        ("tax_schemes", TaxScheme, TaxSchemeMinSerializer, False),
+        (
+            "items",
+            Item.objects.filter(
+                Q(can_be_sold=True) | Q(direct_expense=True)
+            ).select_related("unit"),
+            ItemSalesSerializer,
+            True,
+            ["name"],
+        ),
+    ]
+
+    def get_collections(self, request):
+        type = request.GET.get("type")
+        if type:
+            if type == "Sales Voucher":
+                self.collections.append(
+                    ("discounts", SalesDiscount, SalesDiscountMinSerializer, False)
+                )
+            elif type == "Purchase Voucher":
+                self.collections.append(
+                    ("discounts", PurchaseDiscount, PurchaseDiscountSerializer, False)
+                )
+        return super().get_collections(request)
+
+    def retrieve(self, request, *args, **kwargs):
+        res = self.get_serializer(self.get_object()).data
+
+        invoice_data = res.get("invoice_data")
+
+        if invoice_data.get("party"):
+            invoice_data["selected_party_obj"] = PartyMinSerializer(
+                Party.objects.get(id=invoice_data.get("party"))
+            ).data
+        if invoice_data.get("sales_agent"):
+            invoice_data["sales_agent"] = SalesAgentSerializer(
+                SalesAgent.objects.get(id=invoice_data.get("sales_agent"))
+            ).data
+
+        rows = invoice_data.get("rows")
+
+        if rows:
+            item_ids = [row.get("item_id") for row in rows]
+            unit_ids = [row.get("unit_id") for row in rows]
+
+            items = {
+                str(item.id): item for item in Item.objects.filter(id__in=item_ids)
+            }
+            units = {
+                str(unit.id): unit for unit in Unit.objects.filter(id__in=unit_ids)
+            }
+
+            for row in rows:
+                row["selected_item_obj"] = ItemSalesSerializer(
+                    items[str(row.get("item_id"))]
+                ).data
+                row["selected_unit_obj"] = GenericSerializer(
+                    units[str(row.get("unit_id"))]
+                ).data
+
+        return Response(res)
+
+    def get_defaults(self, request=None):
+        type = self.request.GET.get("type")
+        if type == "Sales Voucher":
+            data = SalesCreateSettingSerializer(request.company.sales_setting).data
+        elif type == "Purchase Voucher":
+            data = PurchaseCreateSettingSerializer(
+                request.company.purchase_setting
+            ).data
+        else:
+            data = {}
+        return data
+
     def get_queryset(self, company_id=None):
         qs = super().get_queryset()
         type = self.request.GET.get("type")
