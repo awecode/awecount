@@ -648,8 +648,8 @@ class BankReconciliationViewSet(CRULViewSet):
         # Reconcile system transactions by matching sums with statement transactions
         for system_transaction in unreconciled_system_transactions[:]:
             system_date = system_transaction.journal_entry.date
-            date_range_start = system_date
-            date_range_end = system_date + timedelta(days=3)
+            date_range_start = system_date - timedelta(days=3)
+            date_range_end = system_date
 
             # Filter statement transactions within date range
             date_filtered_statement_transactions = [
