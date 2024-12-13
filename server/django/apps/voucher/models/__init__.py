@@ -1,5 +1,6 @@
 import datetime
 import os
+import random
 from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
@@ -11,10 +12,11 @@ from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
+from requests import Request
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -899,12 +901,73 @@ class RecurringVoucherTemplate(models.Model):
             next_date = self.start_date
         return next_date
 
-    # make transaction atomic
+    @transaction.atomic
     def generate_voucher(self):
+        invoice_data = deepcopy(self.invoice_data)
+        request = Request()
+        request.user = self.user
+        request.company = self.company
+        request.company_id = self.company.id
+        request.user_id = self.user.id
+        request.data = invoice_data
         if self.type == "Sales Voucher":
-            pass
+            from apps.voucher.serializers.sales import SalesVoucherCreateSerializer
+
+            invoice_data["date"] = self.next_date
+            invoice_data["due_date"] = add_time_to_date(
+                self.next_date, self.due_date_after, self.due_date_after_time_unit
+            )
+            invoice_data["status"] = "Issued"
+            serializer = SalesVoucherCreateSerializer(
+                data=invoice_data,
+                context={
+                    "request": request,
+                },
+            )
+            serializer.is_valid(raise_exception=True)
+            voucher = serializer.save()
         else:
-            pass
+            from apps.voucher.serializers.purchase import (
+                PurchaseVoucherCreateSerializer,
+            )
+
+            invoice_data["date"] = self.next_date
+            invoice_data["due_date"] = add_time_to_date(
+                self.next_date, self.due_date_after, self.due_date_after_time_unit
+            )
+            invoice_data["status"] = "Issued"
+            invoice_data["voucher_no"] = "auto-{}-{}-{}".format(
+                self.id, self.no_of_vouchers_created + 1, random.randint(1000, 9999)
+            )
+            voucher = PurchaseVoucherCreateSerializer(
+                data=invoice_data,
+                context={
+                    "request": request,
+                },
+            )
+            voucher.is_valid(raise_exception=True)
+            voucher = voucher.save()
+
+        if self.send_email:
+            success_message = f"""
+            <html>
+                <body>
+                    <h1>Recurring {self.type} Generated Successfully</h1>
+                    <p>Dear {self.user.full_name},</p>
+                    <p>We are pleased to inform you that the recurring {self.type.lower()} titled <strong>{self.title}</strong> has been successfully generated.</p>
+                <p>You can view the generated voucher in the dashboard. If you encounter any issues, please contact us.</p>
+                </body>
+            </html>
+            """
+
+            email = EmailMessage(
+                subject="Recurring Voucher Generated Successfully",
+                body=success_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[self.user.email],
+            )
+            email.content_subtype = "html"
+            email.send()
 
         self.no_of_vouchers_created += 1
         self.last_generated = self.next_date
