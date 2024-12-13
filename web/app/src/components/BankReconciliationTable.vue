@@ -427,13 +427,23 @@ const unmatchMatchedTransactions = (matchedTransaction: {
     <!-- Unmatched section -->
     <div class="grid grid-cols-2 gap-10">
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
-        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-          <div class="flex space-x-6">
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <div class="flex space-x-3 w-fit ml-auto">
+            <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+              Unselect All
+            </button>
+            <button @click="reconcile" :disabled="!canReconcile"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              Reconcile
+            </button>
+          </div>
+
+          <div class="flex justify-between mt-4 space-x-6">
             <!-- Statement Transactions Summary -->
             <div class="space-y-1">
               <div class="flex items-center">
                 <span class="text-lg font-semibold text-blue-700">Statement Transactions</span>
-                <span class="text-sm text-blue-500 ml-2 bg-blue-100 px-2 rounded-full">
+                <span class="text-xs text-blue-500 ml-2 bg-blue-100 px-2 py-1 rounded-full">
                   {{ selectedStatementTransactions.length }}
                 </span>
               </div>
@@ -445,11 +455,21 @@ const unmatchMatchedTransactions = (matchedTransaction: {
               </div>
             </div>
 
+            <!-- Show difference -->
+            <div class="text-sm text-center flex flex-col justify-center space-y-1">
+              <span class="font-semibold">Difference:</span>
+              <div
+                :class="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) > props.acceptableDifference ? 'text-red-600' : 'text-green-600'"
+                class="font-medium">
+                {{ Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) }}
+              </div>
+            </div>
+
             <!-- System Transactions Summary -->
             <div class="space-y-1">
               <div class="flex items-center">
                 <span class="text-lg font-semibold text-green-700">System Transactions</span>
-                <span class="text-sm text-green-500 ml-2 bg-green-100 px-2 rounded-full">
+                <span class="text-xs text-green-500 ml-2 bg-green-100 px-2 py-1 rounded-full">
                   {{ selectedSystemTransactions.length }}
                 </span>
               </div>
@@ -462,15 +482,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
             </div>
           </div>
 
-          <div class="flex space-x-3">
-            <button @click="unselectAll" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
-              Unselect All
-            </button>
-            <button @click="reconcile" :disabled="!canReconcile"
-              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-              Reconcile
-            </button>
-          </div>
+
+
         </div>
 
         <div class="grid grid-cols-2 gap-6">
@@ -489,12 +502,12 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                 <div>
                   <span class="font-medium" :class="Number(calculateTotal(unmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                     calculateTotal(unmatchedStatementTransactions, true)
-                    }}</span>
+                  }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="divide-y  overflow-y-auto text-xs">
+            <div class="divide-y max-h-[600px] overflow-y-auto text-xs">
               <div v-for="data in unmatchedStatementTransactions" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
                 <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
                 <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
@@ -529,7 +542,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
               </div>
             </div>
 
-            <div class="divide-y overflow-y-auto">
+            <div class="divide-y max-h-[600px] overflow-y-auto">
               <div v-for="data in unmatchedSystemTransactions" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
                 <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
                   @change="toggleSystemTransaction(data)" />
@@ -578,9 +591,9 @@ const unmatchMatchedTransactions = (matchedTransaction: {
           </div>
         </div>
       </div>
-      <div class="container mx-auto p-4">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-          <div class="p-4 bg-gray-50">
+      <div class="container mx-auto">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
+          <div class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto">
             <div v-for="(data, index) in groupedTransactions" :key="index" class="space-y-4 border-b mb-5">
               <div class="flex justify-end space-x-3 mb-2">
                 <button @click="
@@ -615,7 +628,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
 
                   </div>
                   <div class="px-4 py-2 text-right">
-                    <span :class="Number(calculateTotal(data.statementTransactions, false)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statementTransactions, false) }}</span>
+                    <span :class="Number(calculateTotal(data.statementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statementTransactions, true) }}</span>
                   </div>
                 </div>
 
