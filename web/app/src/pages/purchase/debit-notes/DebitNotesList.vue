@@ -90,7 +90,8 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/debit-note/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/debit-note/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Debit Notes | Awecount',

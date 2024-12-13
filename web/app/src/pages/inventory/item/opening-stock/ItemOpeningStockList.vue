@@ -37,7 +37,8 @@ import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
-    const endpoint = '/v1/item-opening-balance/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/item-opening-balance/`
     const metaData = {
       title: 'Stock Opening | Awecount',
     }

@@ -42,7 +42,7 @@
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
               <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed"
-                endpoint="v1/sales-settings/create-defaults/payment_modes" :staticOption="fields.selected_mode_obj"
+                :endpoint="`v1/${route.params.company}/sales-settings/create-defaults/payment_modes`" :staticOption="fields.selected_mode_obj"
                 option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
                 :error-message="modeErrors">
                 <template v-slot:append>
@@ -97,7 +97,8 @@ import { modes } from 'src/helpers/constants/invoice'
 export default {
   setup() {
     const $q = useQuasar()
-    const endpoint = 'v1/sales-settings/'
+    const route= useRoute()
+    const endpoint = `v1/${route.params.company}/sales-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '#',

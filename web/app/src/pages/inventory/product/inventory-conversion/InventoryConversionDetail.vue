@@ -168,12 +168,14 @@
 
 <script lang="ts">
 import { Ref } from 'vue'
+const route = useRoute()
 export default {
   setup() {
     const metaData = {
       title: 'Inventory Conversion | Awecount',
     }
     useMeta(metaData)
+    const route = useRoute()
     const $q = useQuasar()
     const fields: Ref<Record<string, any>> = ref(null)
     const isDeleteOpen: Ref<boolean> = ref(false)
@@ -182,7 +184,7 @@ export default {
     const loading = ref(false)
 
     const onCancelClick = () => {
-      const url = `/v1/inventory-conversion/${fields.value.id}/cancel/`
+      const url = `/v1/${route.params.company}/inventory-conversion/${fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
@@ -264,7 +266,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/inventory-conversion/${this.$route.params.id}/`
+    const endpoint = `/v1/${route.params.company}/inventory-conversion/${this.$route.params.id}/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         data.drRows = []

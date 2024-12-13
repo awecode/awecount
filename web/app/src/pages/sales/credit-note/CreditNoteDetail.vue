@@ -77,6 +77,7 @@ export default {
       title: 'Credit Note | Awecount',
     }
     useMeta(metaData)
+    const route = useRoute()
     const $q = useQuasar()
     const fields = ref(null)
     const isDeleteOpen = ref(false)
@@ -84,10 +85,10 @@ export default {
       let endpoint = ''
       let body = null
       if (status === 'Paid') {
-        endpoint = `/v1/credit-note/${id}/mark_as_paid/`
+        endpoint = `/v1/${route.params.company}/credit-note/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/credit-note/${id}/cancel/`
+        endpoint = `/v1/${route.params.company}/credit-note/${id}/cancel/`
         body = { method: 'POST' }
       }
       useApi(endpoint, body)
@@ -130,7 +131,7 @@ export default {
     }
     const onPrintclick = (noApiCall = false) => {
       if (!noApiCall) {
-        const endpoint = `/v1/credit-note/${fields.value.id}/log-print/`
+        const endpoint = `/v1/${route.params.company}/credit-note/${fields.value.id}/log-print/`
         useApi(endpoint, { method: 'POST' })
           .then(() => {
             if (fields.value) {
@@ -158,7 +159,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/credit-note/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${route.params.company}/credit-note/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

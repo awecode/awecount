@@ -144,7 +144,7 @@ export default {
       end_date: null
     })
     const endpoint = ref(
-      withQuery(`/v1/parties/${route.params.id}/transactions/`, route.query)
+      withQuery(`/v1/${route.params.company}/parties/${route.params.id}/transactions/`, route.query)
     )
     function fetchData() {
       if (fields?.value?.transactions.results) fields.value.transactions.results = null
@@ -167,7 +167,7 @@ export default {
       () => route.query,
       (newQuery, oldQuery) => {
         if (route.params.id && route.path.includes('/parties/account/')) {
-          const url = `/v1/parties/${route.params.id}/transactions/?`
+          const url = `/v1/${route.params.company}/parties/${route.params.id}/transactions/?`
           if (oldQuery.page !== newQuery.page) {
             const updatedEndpoint = withQuery(url, newQuery)
             endpoint.value = updatedEndpoint
@@ -192,7 +192,7 @@ export default {
       () => route.params.id,
       (newid) => {
         if (newid && route.path.includes('/parties/account/')) {
-          const url = `/v1/parties/${newid}/transactions/?`
+          const url = `/v1/${route.params.company}/parties/${newid}/transactions/?`
           const updatedEndpoint = withQuery(url, {})
           endpoint.value = updatedEndpoint
         }

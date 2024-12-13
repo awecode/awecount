@@ -47,7 +47,8 @@ import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
-    const endpoint = 'v1/widgets/'
+    const route = useRoute() 
+    const endpoint = `v1/${route.params.company}/widgets/`
     const $q = useQuasar()
     const router = useRouter()
     const formData = useForm(endpoint, {
@@ -74,7 +75,7 @@ export default {
         html: true,
       }).onOk(() => {
         // submitWithStatus('Cancelled')
-        useApi(`/v1/widgets/${formData.fields.value.id}/delete/`, { method: 'DELETE' }).then(() => {
+        useApi(`/v1/${route.params.company}/widgets/${formData.fields.value.id}/delete/`, { method: 'DELETE' }).then(() => {
           $q.notify({
               color: 'green-6',
               message: 'The widget has been deleted.',

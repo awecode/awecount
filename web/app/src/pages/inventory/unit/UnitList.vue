@@ -21,13 +21,15 @@
 <script>
 import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   setup() {
+    const route = useRoute()
     const metaData = {
       title: 'Units | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/units/'
+    const endpoint = `/v1/${route.params.company}/units/`
     return { ...useList(endpoint), checkPermissions }
   },
 }

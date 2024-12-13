@@ -80,7 +80,8 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/fund-transfer/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/fund-transfer/`
     const metaData = {
       title: 'Fund Transfers | Awecount',
     }

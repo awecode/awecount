@@ -50,7 +50,7 @@
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-const endpoint = '/v1/bill-of-material/'
+const endpoint = `/v1/${route.params.company}/bill-of-material/`
 const metaData = {
   title: 'Inventory Adjustments | Awecount',
 }

@@ -104,7 +104,7 @@ export default {
       { name: 'status', label: 'Status', align: 'left', field: 'status', sortable: true },
       { name: 'actions' }
     ]
-    const endpoint = '/v1/credit-note/'
+    const endpoint = `/v1/${route.params.company}/credit-note/`
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))

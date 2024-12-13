@@ -40,14 +40,14 @@
                   </div>
                   <div class="q-mx-sm">
                     <NAutoCompleteV2 v-model="filters.party"
-                      endpoint="v1/parties/choices"
+                      :endpoint="`v1/${route.params.company}/parties/choices`"
                       label="Party" fetchOnMount
                     />
                   </div>
                   <div class="q-mx-sm">
                     <NAutoCompleteV2
                       v-model="filters.tax_scheme"
-                      endpoint="v1/tax_scheme/choices"
+                      :endpoint="`v1/${route.params.company}/tax_scheme/choices`"
                       label="Tax Scheme"
                       fetchOnMount
                     />
@@ -55,7 +55,7 @@
                   <div class="q-mx-sm">
                     <NAutoCompleteV2
                       v-model="filters.item_category"
-                      endpoint="v1/inventory-categories/choices"
+                      :endpoint="`v1/${route.params.company}/inventory-categories/choices`"
                       label="Item Category"
                       fetchOnMount
                     />
@@ -63,7 +63,7 @@
                   <div class="q-mx-sm">
                     <SelectWithFetch
                       v-model="filters.item"
-                      endpoint="v1/items/purchase-choices/"
+                      :endpoint="`v1/${route.params.company}/items/purchase-choices/`"
                       label="Items"
                     />
                   </div>
@@ -181,10 +181,12 @@ import checkPermissions from 'src/composables/checkPermissions'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 import { Ref } from 'vue'
+
 export default {
   setup() {
     const store = useLoginStore()
-    const endpoint = '/v1/purchase-voucher-row/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/purchase-voucher-row/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'PurchaseVoucher Rows | Awecount',

@@ -57,6 +57,7 @@ import PartyAlias from '/src/pages/party/PartyAlias.vue'
 import PartyRepresentative from '/src/pages/party/PartyRepresentative.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useRouter } from 'vue-router'
+const route = useRoute()
 export default {
   components: {
     PartyRepresentative,
@@ -65,7 +66,7 @@ export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const $q = useQuasar()
-    const endpoint = '/v1/parties/'
+    const endpoint = `/v1/${route.params.company}/parties/`
     const router = useRouter()
     const formData = useForm(endpoint, {
       getDefaults: false,
@@ -96,7 +97,7 @@ export default {
         html: true,
       }).onOk(() => {
         // submitWithStatus('Cancelled')
-        useApi(`/v1/parties/${formData.fields.value.id}/`, { method: 'DELETE' })
+        useApi(`/v1/${route.params.company}/parties/${formData.fields.value.id}/`, { method: 'DELETE' })
           .then(() => {
             router.push('/party/list/')
           })

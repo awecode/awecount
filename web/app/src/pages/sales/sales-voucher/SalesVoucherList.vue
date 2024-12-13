@@ -38,7 +38,7 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    <n-auto-complete-v2 v-model="filters.payment_mode" :endpoint="`v1/${route.params.company}/payment-modes/choices/`"
                       label="Payment Mode" :fetchOnMount="true" />
                   </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
@@ -147,7 +147,7 @@ export default {
       title: 'Sales Invoices | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/sales-voucher/'
+    const endpoint = `/v1/${route.params.company}/sales-voucher/`
     const listData = useList(endpoint)
     const route = useRoute()
     const onDownloadXls = () => {

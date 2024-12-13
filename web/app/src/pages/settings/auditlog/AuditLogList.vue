@@ -45,7 +45,8 @@ export default {
       title: 'Audit Logs | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/log-entries/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/log-entries/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/log-entries/export')

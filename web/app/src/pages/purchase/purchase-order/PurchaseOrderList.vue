@@ -85,10 +85,12 @@
 </template>
 
 <script>
+
 export default {
   setup() {
-    const endpoint = '/v1/purchase-order/'
+    const endpoint = `/v1/${route.params.company}/purchase-order/`
     const listData = useList(endpoint)
+    const route = useRoute()
     const metaData = {
       title: 'Purchase Orders | Awecount',
     }

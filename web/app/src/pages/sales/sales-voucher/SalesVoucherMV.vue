@@ -48,7 +48,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${this.route.params.company}/sales-voucher/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         const removeArr: Array<string> = [

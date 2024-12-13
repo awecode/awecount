@@ -294,8 +294,10 @@ interface Fields {
   amount: number
   date: Date
 }
+
 export default {
   setup() {
+    const route = useRoute()
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
@@ -311,10 +313,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Cleared') {
-        endpoint = `/v1/payment-receipt/${id}/mark_as_cleared/`
+        endpoint = `/v/${route.params.company}/payment-receipt/${id}/mark_as_cleared/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/payment-receipt/${id}/cancel/`
+        endpoint = `/v1/${route.params.company}/payment-receipt/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)
@@ -356,7 +358,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/payment-receipt/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${this.route.params.company}/payment-receipt/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

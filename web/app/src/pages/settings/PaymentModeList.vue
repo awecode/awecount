@@ -26,7 +26,8 @@ export default {
       title: 'Payment Modes | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/payment-modes/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/payment-modes/`
     const listData = useList(endpoint)
     const newColumn = [
       {

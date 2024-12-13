@@ -52,7 +52,7 @@ export default {
                 .catch((err) => console.log('Error Due To', err))
         }
         const fetchData = () => {
-            const endpoint = `/v1/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
+            const endpoint = `/v1/${route.params.company}/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
             loading.value = true
             useApi(endpoint)
                 .then((data) => {

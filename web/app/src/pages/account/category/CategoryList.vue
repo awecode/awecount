@@ -53,8 +53,9 @@ import checkPermissions from 'src/composables/checkPermissions'
 const metaData = {
   title: 'Account Categories | Awecount',
 }
+const route = useRoute()
 useMeta(metaData)
-const endpoint = '/v1/categories/'
+const endpoint = `/v1/${route.params.company}/categories/`
 const newColumns = [
   {
     name: 'code',

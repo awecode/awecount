@@ -70,7 +70,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `v1/log-entries/${this.$route.params.id}/`
+    const endpoint = `v1/${this.route.params.company}/log-entries/${this.$route.params.id}/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data

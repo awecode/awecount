@@ -81,8 +81,9 @@ export default {
     const metaData = {
       title: 'Journal Vouchers | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/journal-voucher/'
+    const endpoint = `/v1/${route.params.company}/journal-voucher/`
     const newColumns = [
       {
         name: 'voucher_no',

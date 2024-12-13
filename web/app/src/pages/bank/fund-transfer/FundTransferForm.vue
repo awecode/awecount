@@ -18,12 +18,12 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account"
-                endpoint="v1/fund-transfer/create-defaults/from_account"
+                :endpoint="`v1/${route.params.company}/fund-transfer/create-defaults/from_account`"
                 :staticOption="fields.selected_from_account_obj" label="From Account *" :error="errors?.from_account" />
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account"
-                endpoint="v1/fund-transfer/create-defaults/to_account" :staticOption="fields.selected_to_account_obj"
+                :endpoint="`v1/${route.params.company}/fund-transfer/create-defaults/to_account`" :staticOption="fields.selected_to_account_obj"
                 label="To Account *" :error="errors?.to_account" />
             </div>
           </div>
@@ -89,7 +89,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/fund-transfer/'
+    const endpoint = `/v1/${route.params.company}/fund-transfer/`
     const isDeleteOpen = ref(false)
     const formData = useForm(endpoint, {
       getDefaults: true,

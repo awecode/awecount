@@ -44,7 +44,8 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/sales-discount/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/sales-discount/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/sales-discount/list/',

@@ -94,10 +94,11 @@
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/payment-receipt/'
+    const endpoint = `/v1/${route.params.company}/payment-receipt/`
     const $q = useQuasar()
     const store = useLoginStore()
     const addInoviceModal = ref(false)
@@ -131,7 +132,7 @@ export default {
         invoiceFormData.value.invoice_no &&
         invoiceFormData.value.fiscal_year
       ) {
-        const url = `/v1/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
+        const url = `/v1/${route.params.company}/payment-receipt/fetch-invoice/?fiscal_year=${invoiceFormData.value.fiscal_year}&invoice_no=${invoiceFormData.value.invoice_no}`
         useApi(url)
           .then((data) => {
             if (!fields.party_id) {

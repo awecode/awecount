@@ -81,10 +81,11 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/inventory-adjustment/'
+    const endpoint = `/v1/${route.params.company}/inventory-adjustment/`
     const metaData = {
       title: 'Inventory Adjustment | Awecount',
     }
@@ -143,7 +144,7 @@ export default {
       importErrorData.push(...items.unadjusted_items)
     }
     const onCancelClick = () => {
-      const url = `/v1/inventory-adjustment/${formData.fields.value.id}/cancel/`
+      const url = `/v1/${route.params.company}/inventory-adjustment/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }

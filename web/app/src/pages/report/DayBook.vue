@@ -9,7 +9,7 @@ const date = ref(
 const data = ref(null)
 
 async function fetchData() {
-  const res = await useApi('/v1/transaction/day-book?date=' + date.value)
+  const res = await useApi(`/v1/${route.params.company}/transaction/day-book?date=` + date.value)
   data.value = res
 }
 

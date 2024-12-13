@@ -16,7 +16,7 @@
                         <div class="q-my-md row">
                           <div class="col-12 col-sm-6">
                             <n-auto-complete-v2 v-model="fields.fiscal_year" label="Financial Year"
-                                endpoint="/v1/account-closing/create-defaults/fiscal_years" :staticOption="formDefaults?.fields?.current_fiscal_year"
+                                :endpoint="`/v1/${route.params.company}/account-closing/create-defaults/fiscal_years`" :staticOption="formDefaults?.fields?.current_fiscal_year"
                                 :options="formDefaults.collections?.fiscal_years" option-value="id" option-label="name"
                                 map-options emit-value></n-auto-complete-v2>
                           </div>
@@ -34,7 +34,8 @@
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
 // const fiscal_year = ref(null)
-const endpoint = '/v1/account-closing/'
+const route = useRoute()
+const endpoint = `/v1/${route.params.company}/account-closing/`
 const metaData = {
       title: 'Account Closing | Awecount',
     }

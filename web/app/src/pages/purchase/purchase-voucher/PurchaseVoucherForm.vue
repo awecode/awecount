@@ -40,7 +40,7 @@
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.party" :options="formDefaults.collections?.parties" label="Party"
                 :error="errors?.party ? errors?.party : ''" :staticOption="fields.selected_party_obj"
-                endpoint="/v1/sales-voucher/create-defaults/parties"
+                :endpoint="`/v1/${route.params.company}/sales-voucher/create-defaults/parties`"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
             </div>
             <q-input class="col-md-6 col-12" label="Bill No.*" v-model="fields.voucher_no"
@@ -84,7 +84,7 @@
               <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode"
                 :error-message="errors.payment_mode" :error="!!errors.payment_mode"
                 :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
-                :options="modeOptionsComputed" endpoint="v1/purchase-vouchers/create-defaults/payment_modes"
+                :options="modeOptionsComputed" :endpoint="`v1/${route.params.company}/purchase-vouchers/create-defaults/payment_modes`"
                 option-value="id" option-label="name" map-options emit-value>
                 <template v-slot:append>
                   <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
@@ -146,11 +146,12 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const store = useLoginStore()
-    const endpoint = '/v1/purchase-vouchers/'
+    const endpoint = `/v1/${route.params.company}/purchase-vouchers/`
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const staticOptions = {

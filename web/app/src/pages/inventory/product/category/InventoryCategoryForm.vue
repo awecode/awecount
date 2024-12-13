@@ -18,7 +18,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 label="Unit" v-model="fields.default_unit_id" :options="formDefaults.collections?.units"
-                endpoint="v1/inventory-categories/create-defaults/units" :staticOption="fields.selected_unit_obj"
+                :endpoint="`v1/${route.params.company}/inventory-categories/create-defaults/units`" :staticOption="fields.selected_unit_obj"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null" :error="errors.default_unit_id" />
             </div>
             <div class="col-12 col-md-6">
@@ -149,6 +149,7 @@ import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits([])
+const route = useRoute()
 const extraFieldTypes = [
   { value: 'Text', label: 'Text' },
   { value: 'Number', label: 'Number' },
@@ -159,7 +160,7 @@ const extraFieldTypes = [
 const toggleExpenses = (type) => {
   fields.value[type] = false
 }
-const endpoint = '/v1/inventory-categories/'
+const endpoint = `/v1/${route.params.company}/inventory-categories/`
 const { fields, errors, isEdit, formDefaults, submitForm, loading } = useForm(endpoint, {
   getDefaults: true,
   successRoute: '/inventory-category/list/',

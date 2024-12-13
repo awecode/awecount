@@ -91,7 +91,7 @@
 <script>
 export default {
   setup() {
-    const endpoint = '/v1/accounts/'
+    const endpoint = `/v1/${route.params.company}/accounts/`
     const metaData = {
       title: 'Accounts | Awecount',
     }

@@ -138,11 +138,13 @@ interface Fields {
   discount_type: null | 'Amount' | 'Percent'
   address: string
 }
+
 export default {
   setup() {
     const metaData = {
       title: 'Debit Note | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
@@ -155,10 +157,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Resolved') {
-        endpoint = `/v1/debit-note/${id}/mark_as_resolved/`
+        endpoint = `/v1/${route.params.company}/debit-note/${id}/mark_as_resolved/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/debit-note/${id}/cancel/`
+        endpoint = `/v1/${route.params.company}/debit-note/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       isLoading.value = true
@@ -210,7 +212,7 @@ export default {
     }
     const onPrintclick = (noApiCall) => {
       if (!noApiCall) {
-        const endpoint = `/v1/debit-note/${fields.value?.id}/log-print/`
+        const endpoint = `/v1/${route.params.company}/debit-note/${fields.value?.id}/log-print/`
         useApi(endpoint, { method: 'POST' })
           .then(() => {
             if (fields.value) {
@@ -271,7 +273,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/debit-note/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${route.params.company}/debit-note/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

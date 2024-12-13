@@ -110,6 +110,7 @@ export default {
     const metaData = {
       title: 'Sales Invoices | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const $q = useQuasar()
     const fields: Ref<Fields | null> = ref(null)
@@ -123,10 +124,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
-        endpoint = `/v1/sales-voucher/${id}/mark_as_paid/`
+        endpoint = `/v1/${route.params.company}/sales-voucher/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/sales-voucher/${id}/cancel/`
+        endpoint = `/v1/${route.params.company}/sales-voucher/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)
@@ -181,7 +182,7 @@ export default {
 
     const onPrintclick = (bodyOnly: boolean, noApiCall = false) => {
       if (!noApiCall) {
-        const endpoint = `/v1/sales-voucher/${fields.value.id}/log-print/`
+        const endpoint = `/v1/${route.params.company}/sales-voucher/${fields.value.id}/log-print/`
         useApi(endpoint, { method: 'POST' })
           .then(() => {
             if (fields.value) {
@@ -219,7 +220,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/sales-voucher/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${this.route.params.company}/sales-voucher/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

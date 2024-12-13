@@ -13,7 +13,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.party" :options="formDefaults.collections?.parties" label="Party *"
-                endpoint="/v1/purchase-order/create-defaults/parties" :staticOption="fields.selected_party_obj"
+                :endpoint="`/v1/${route.params.company}/purchase-order/create-defaults/parties`" :staticOption="fields.selected_party_obj"
                 :error="errors?.party ? errors?.party : null"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null" />
               <div></div>
@@ -71,10 +71,11 @@ import PartyForm from 'src/pages/party/PartyForm.vue'
 import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 import ChallanTable from 'src/components/challan/ChallanTable.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/purchase-order/'
+    const endpoint = `/v1/${route.params.company}/purchase-order/`
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
@@ -113,7 +114,7 @@ export default {
     formData.fields.value.party = ''
     const onCancelClick = () => {
       formData.loading.value = true
-      useApi(`/v1/purchase-order/${formData.fields.value.id}/cancel/`, {
+      useApi(`/v1/${route.params.company}/purchase-order/${formData.fields.value.id}/cancel/`, {
         method: 'POST',
         body: {
           message: deleteMsg.value

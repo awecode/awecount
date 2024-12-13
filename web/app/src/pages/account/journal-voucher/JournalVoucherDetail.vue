@@ -225,6 +225,7 @@ const store = useLoginStore()
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
+const route = useRoute()
 const metaData = {
   title: 'Journal Voucher | Awecount',
 }
@@ -234,14 +235,14 @@ const loading = ref(false)
 const errors = ref(null)
 useMeta(metaData)
 const getData = () =>
-  useApi(`/v1/journal-voucher/${props.id}/`).then((data) => {
+  useApi(`/v1/${route.params.company}/journal-voucher/${props.id}/`).then((data) => {
     fields.value = data
   })
 getData()
 
 const onCancelClick = () => {
   loading.value = true
-  useApi(`/v1/journal-voucher/${props.id}/cancel/`, {
+  useApi(`/v1/${route.params.company}/journal-voucher/${props.id}/cancel/`, {
     method: 'POST',
     body: { message: deleteMsg.value },
   })

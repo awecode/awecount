@@ -58,13 +58,15 @@
 </template>
 
 <script>
+
 export default {
   setup() {
     const metaData = {
       title: 'Purchase Discounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/purchase-discount/'
+    const endpoint = `/v1/${route.params.company}/purchase-discount/`
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi('v1/sales-voucher/export')

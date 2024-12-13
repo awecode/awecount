@@ -132,6 +132,7 @@ export default {
     const metaData = {
       title: 'Inventory Adjustment | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const $q = useQuasar()
     const fields: Ref<Record<string, any>> = ref(null)
@@ -141,7 +142,7 @@ export default {
     const loading = ref(false)
 
     const onCancelClick = () => {
-      const url = `/v1/inventory-adjustment/${fields.value.id}/cancel/`
+      const url = `/v1/${route.params.company}/inventory-adjustment/${fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }
@@ -223,7 +224,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/inventory-adjustment/${this.$route.params.id}/`
+    const endpoint = `/v1/${this.route.params.company}inventory-adjustment/${this.$route.params.id}/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

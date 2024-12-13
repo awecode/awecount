@@ -25,7 +25,7 @@
               label="Account"
               :options="formDefaults?.collections?.accounts"
               :staticOption="isEdit ? fields.selected_account_obj : null"
-              endpoint="v1/payment-modes/create-defaults/accounts"
+              :endpoint="`v1/${route.params.company}/payment-modes/create-defaults/accounts`"
               option-value="id"
               option-label="name"
               :rules="[v => !!v || 'Account is required']"
@@ -84,7 +84,7 @@
                         label="Transaction Fee Account"
                         :options="formDefaults?.collections?.accounts"
                         :staticOption="isEdit ? fields.selected_transaction_fee_account_obj : null"
-                        endpoint="v1/payment-modes/create-defaults/accounts"
+                        :endpoint="`v1/${route.params.company}/payment-modes/create-defaults/accounts`"
                         option-value="id"
                         option-label="name"
                         :rules="[v => !fields.transaction_fee_config || !!v || 'Fee account is required when fee is enabled']"
@@ -347,6 +347,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+const route = useRoute()
 const useTransactionFeeValidation = () => {
   const validationErrors = ref({})
 

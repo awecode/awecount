@@ -41,10 +41,11 @@
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/purchase-discount/'
+    const endpoint = `/v1/${route.params.company}/purchase-discount/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/purchase-discount/list/',

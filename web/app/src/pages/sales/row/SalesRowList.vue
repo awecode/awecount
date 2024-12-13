@@ -21,22 +21,22 @@
                   </div>
                   <div class="q-mx-sm">
                     <n-auto-complete-v2 v-model="filters.category" label="Sales Agent"
-                      :endpoint="`v1/sales-agent/choices`" fetchOnMount />
+                      :endpoint="`v1/${route.params.company}/sales-agent/choices`" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.party" endpoint="v1/parties/choices" label="Party"
+                    <n-auto-complete-v2 v-model="filters.party" :endpoint="`v1/${route.params.company}/parties/choices`" label="Party"
                       fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.tax_scheme" endpoint="v1/tax_scheme/choices/"
+                    <n-auto-complete-v2 v-model="filters.tax_scheme" :endpoint="`v1/${route.params.company}/tax_scheme/choices/`"
                       label="Tax Scheme" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.item_category" endpoint="v1/inventory-categories/choices/"
+                    <n-auto-complete-v2 v-model="filters.item_category" :endpoint="`v1/${route.params.company}/inventory-categories/choices/`"
                       label="Item Category" fetchOnMount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch v-model="filters.item" endpoint="v1/items/sales-choices/" label="Items" />
+                    <SelectWithFetch v-model="filters.item" :endpoint="`v1/${route.params.company}/items/sales-choices/`" label="Items" />
                   </div>
                   <div class="q-ma-sm">
                     <MultiSelectChip :options="[
@@ -125,8 +125,9 @@ import { useLoginStore } from 'src/stores/login-info'
 import { Ref } from 'vue'
 export default {
   setup() {
+    const route = useRoute()
     const store = useLoginStore()
-    const endpoint = '/v1/sales-row/'
+    const endpoint = `/v1/${route.params.company}/sales-row/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Sales Rows | Awecount',

@@ -45,13 +45,15 @@
 </template>
 
 <script>
+const route = useRoute()
 export default {
   setup() {
     const metaData = {
       title: 'Customers | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = 'v1/parties/customers/'
+    const endpoint = `v1/${route.params.company}/parties/customers/`
     const listData = useList(endpoint)
     const newColumn = [
       {

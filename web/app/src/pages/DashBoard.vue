@@ -77,13 +77,14 @@ export default {
       titleTemplate: (title) => `${title} | Awecount`,
     }
     useMeta(metaData)
+    const route = useRoute()
     const fields = ref(null)
     return {
       fields,
     }
   },
   created() {
-    const endpoint = '/v1/widgets/data/'
+    const endpoint = `/v1/${route.params.company}/widgets/data/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.fields = data

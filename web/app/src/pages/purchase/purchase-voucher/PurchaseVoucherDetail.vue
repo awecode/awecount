@@ -121,6 +121,7 @@ export default {
     const metaData = {
       title: 'Purchase/Expenses | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const store = useLoginStore()
     const $q = useQuasar()
@@ -135,10 +136,10 @@ export default {
       let endpoint = ''
       let body: null | object = null
       if (status === 'Paid') {
-        endpoint = `/v1/purchase-vouchers/${id}/mark_as_paid/`
+        endpoint = `/v1/${route.params.company}/purchase-vouchers/${id}/mark_as_paid/`
         body = { method: 'POST' }
       } else if (status === 'Cancelled') {
-        endpoint = `/v1/purchase-vouchers/${id}/cancel/`
+        endpoint = `/v1/${route.params.company}/purchase-vouchers/${id}/cancel/`
         body = { method: 'POST', body: { message: deleteMsg.value } }
       }
       useApi(endpoint, body)
@@ -234,7 +235,7 @@ export default {
     }
   },
   created() {
-    const endpoint = `/v1/purchase-vouchers/${this.$route.params.id}/details/`
+    const endpoint = `/v1/${this.route.params.company}/purchase-vouchers/${this.$route.params.id}/details/`
     useApi(endpoint, { method: 'GET' }, false, true)
       .then((data) => {
         this.fields = data

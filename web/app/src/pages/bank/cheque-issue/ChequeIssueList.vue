@@ -83,8 +83,8 @@ export default {
       title: 'Cheque Issues | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/cheque-issue/'
     const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/cheque-issue/`
     const newColumn = [
       {
         name: 'issued_to',
@@ -129,7 +129,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/cheque-issue/export' + query)
+      useApi(`v1/${route.params.company}/cheque-issue/export` + query)
         //   // TODO: url not found
         .then((data) =>
           usedownloadFile(

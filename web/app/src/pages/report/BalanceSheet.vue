@@ -125,8 +125,10 @@
 // import { utils, writeFile } from 'xlsx'
 import DateConverter from '/src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
+
 export default {
     setup() {
+        const route = useRoute()
         const store = useLoginStore()
         const categoryTree = ref(null)
         const category_accounts = ref([])
@@ -173,7 +175,7 @@ export default {
         const fetchData = async (start_date, end_date, index) => {
             showData.value = false
             // const endpoint = `/v1/test/data/`
-            const endpoint = `/v1/trial-balance/?start_date=${start_date}&end_date=${end_date}`
+            const endpoint = `/v1/${route.params.company}/trial-balance/?start_date=${start_date}&end_date=${end_date}`
             let data = null
             try {
                 data = await useApi(endpoint)
@@ -292,7 +294,7 @@ export default {
         }
     },
     created() {
-        const endpoint = '/v1/category-tree/'
+        const endpoint = `/v1/${route.params.company}/category-tree/`
         useApi(endpoint, { method: 'GET' })
             .then((data) => {
                 this.categoryTree = data

@@ -326,7 +326,7 @@ export default {
                 'opening_cr',
                 'closing_dr',
                 'closing_cr']
-            const endpoint = `/v1/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+            const endpoint = `/v1/${route.params.company}/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
             useApi(endpoint)
                 .then((data) => {
                     unCatogarizedData.value = []
@@ -464,7 +464,7 @@ export default {
         }
     },
     created() {
-        const endpoint = '/v1/inventory-categories/trial-balance/'
+        const endpoint = `/v1/${route.params.company}/inventory-categories/trial-balance/`
         useApi(endpoint, { method: 'GET' })
             .then((data) => {
                 this.categoryTree = data

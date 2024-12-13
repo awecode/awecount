@@ -104,8 +104,9 @@ export default {
       title: 'Collection Report | Awecount',
     }
     useMeta(metaData)
+    const route = useRoute()
     const fetchData = () => {
-      const endpoint = `/v1/payment-receipt/collection-report/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      const endpoint = `/v1/${route.params.company}/payment-receipt/collection-report/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => (reportData.value = data))
         .catch((err) => console.log(err))

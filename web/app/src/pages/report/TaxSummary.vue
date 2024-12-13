@@ -125,6 +125,7 @@ export default {
     const metaData = {
       title: 'Periodic Tax Summary | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
     const reportData: Ref<Record<string, string | object> | null> = ref(null)
     const fields: Ref<Record<string, Date | null>> = ref({
@@ -132,7 +133,7 @@ export default {
       end_date: null,
     })
     const fetchData = () => {
-      const endpoint = `/v1/tax-summary/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
+      const endpoint = `/v1/${route.params.company}/tax-summary/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => (reportData.value = data))
         .catch((err) => console.log(err))

@@ -65,10 +65,11 @@ import CreateAccount from '../account/AccountForm.vue'
 import useForm from '/src/composables/useForm'
 import BenefactorForm from 'src/pages/account/ledger/LedgerForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/cheque-deposits/'
+    const endpoint = `/v1/${route.params.company}/cheque-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/cheque-deposit/list/',

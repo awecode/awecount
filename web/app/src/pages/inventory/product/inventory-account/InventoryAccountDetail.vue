@@ -80,11 +80,11 @@ const route = useRoute()
 const startDate = ref(null)
 const endDate = ref(null)
 const filter = () => {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
+  endpoint.value = `/v1/${route.params.company}/inventory-account/${route.params.id}/transactions/?start_date=${startDate.value}&end_date=${endDate.value}`
   getData()
 }
 
-const endpoint = ref(`/v1/inventory-account/${route.params.id}/transactions/`)
+const endpoint = ref(`/v1/${route.params.company}/inventory-account/${route.params.id}/transactions/`)
 
 const getData = () =>
   useApi(endpoint.value).then((data) => {
@@ -165,7 +165,7 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/v1/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value
+  endpoint.value = `/v1/${route.params.company}/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value
     ? 'start_date=' + startDate.value + '&end_date=' + endDate.value
     : ''
     }${startDate.value && endDate.value

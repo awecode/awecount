@@ -38,10 +38,11 @@
 import useForm from '/src/composables/useForm'
 import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/accounts/'
+    const endpoint = `/v1/${route.params.company}/accounts/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account/',
@@ -65,14 +66,14 @@ export default {
     }
   },
   created() {
-    useApi('/v1/accounts/choices/')
+    useApi(`/v1/${route.params.company}/accounts/choices/`)
       .then((res) => {
         this.accountChoices = res
       })
       .catch((err) => {
         console.log('error fetching choices due to', err)
       })
-    useApi('/v1/categories/choices/')
+    useApi(`/v1/${route.params.company}/categories/choices/`)
       .then((res) => {
         this.categoryChoices = res
       })

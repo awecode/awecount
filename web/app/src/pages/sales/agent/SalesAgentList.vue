@@ -26,7 +26,8 @@ export default {
       title: 'Sales Agents | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/sales-agent/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/sales-agent/`
     const listData = useList(endpoint)
     const newColumn = [
       {

@@ -27,8 +27,9 @@ export default {
     const metaData = {
       title: 'Brands | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/brands/'
+    const endpoint = `/v1/${route.params.company}/brands/`
     return { ...useList(endpoint), checkPermissions }
   },
 }

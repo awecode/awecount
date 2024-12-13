@@ -149,7 +149,7 @@ useMeta(() => {
   }
 })
 const route = useRoute()
-useGetDataAuth(`/v1/items/${route.params.id}/details/`, {
+useGetDataAuth(`/v1/${route.params.company}/items/${route.params.id}/details/`, {
   method: 'GET',
 }).then((res) => (data.value = res))
 </script>

@@ -32,7 +32,8 @@
   export default {
     setup() {
       const $q = useQuasar()
-      const endpoint = 'v1/inventory-settings/'
+      const route = useRoute()
+      const endpoint = `v1/${route.params.company}/inventory-settings/`
       const formData = useForm(endpoint, {
         getDefaults: true,
         successRoute: '#',

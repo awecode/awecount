@@ -75,7 +75,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/inventory-conversion/'
+    const endpoint = `/v1/${route.params.company}/inventory-conversion/`
     const metaData = {
       title: 'Inventory Conversion | Awecount',
     }
@@ -108,7 +108,7 @@ export default {
       }
     }
     const onCancelClick = () => {
-      const url = `/v1/inventory-conversion/${formData.fields.value.id}/cancel/`
+      const url = `/v1/${route.params.company}/inventory-conversion/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }

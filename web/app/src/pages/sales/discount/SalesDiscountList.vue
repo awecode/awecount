@@ -70,8 +70,9 @@ export default {
     const metaData = {
       title: 'Sales Discounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/sales-discount/'
+    const endpoint = `/v1/${route.params.company}/sales-discount/`
     const listData = useList(endpoint)
     const newColumn = [
       {

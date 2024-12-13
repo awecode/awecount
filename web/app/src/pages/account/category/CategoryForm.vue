@@ -37,10 +37,11 @@
 <script>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/categories/'
+    const endpoint = `/v1/${route.params.company}/categories/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/account-category/list/',

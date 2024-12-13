@@ -31,7 +31,8 @@ import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
-    const endpoint = '/v1/inventory-account/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/inventory-account/`
     const columnList = [
       {
         name: 'name',

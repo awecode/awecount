@@ -29,7 +29,7 @@
             <div class="row q-col-gutter-md">
               <div class="col-8">
                 <n-auto-complete-v2 v-if="!showDrAccount" v-model="fields.party" :options="formDefaults.collections?.parties"
-                  :staticOption="fields.selected_party_obj" endpoint="v1/cheque-issue/create-defaults/parties" label="Party *" :error="errors?.party" />
+                  :staticOption="fields.selected_party_obj" endpoint="`v1/${route.params.company}cheque-issue/create-defaults/parties`" label="Party *" :error="errors?.party" />
                 <div class="row" v-else>
                   <q-input v-model="fields.issued_to" label="Issued To" class="col-12" :error-message="errors.issued_to"
                     :error="!!errors.issued_to" />
@@ -120,7 +120,7 @@ import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/cheque-issue/'
+    const endpoint =  `/v1/${route.params.company}cheque-issue/`
     const showDrAccount = ref(false)
     const formData = useForm(endpoint, {
       getDefaults: true,

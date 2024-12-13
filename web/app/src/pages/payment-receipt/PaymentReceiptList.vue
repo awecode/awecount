@@ -20,10 +20,10 @@
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <n-auto-complete-v2 v-model="filters.party" :fetchOnMount="true" endpoint="v1/parties/choices/" label="Party" />
+                    <n-auto-complete-v2 v-model="filters.party" :fetchOnMount="true" :endpoint="`v1/${route.params.company}/parties/choices/`" label="Party" />
                   </div>
                   <div class="q-mx-md">
-                    <n-auto-complete-v2 v-model="filters.sales_agent" :fetchOnMount="true" endpoint="v1/sales-agent/choices/"
+                    <n-auto-complete-v2 v-model="filters.sales_agent" :fetchOnMount="true" :endpoint="`v1/${route.params.company}/sales-agent/choices/`"
                       label="Sales Agent" />
                   </div>
                   <div class="q-ma-sm">
@@ -118,16 +118,18 @@
 import useList from '/src/composables/useList'
 import usedownloadFile from 'src/composables/usedownloadFile'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 export default {
   setup() {
-    const endpoint = '/v1/payment-receipt/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/payment-receipt/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Payment Receipts | Awecount',
     }
     useMeta(metaData)
     const onDownloadXls = () => {
-      useApi('v1/sales-voucher/export')
+      useApi(`v1/${route.params.company}/sales-voucher/export`)
         .then((data) =>
           usedownloadFile(
             data,

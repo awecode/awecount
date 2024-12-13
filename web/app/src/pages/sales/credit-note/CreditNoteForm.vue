@@ -65,7 +65,7 @@
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *" :error-message="errors?.payment_mode"
-                endpoint="/v1/credit-note/create-defaults/payment_modes"
+                :endpoint="`/v1/${route.params.company}/credit-note/create-defaults/payment_modes`"
                 :error="!!errors?.payment_mode" :options="modeOptionsComputed" :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj" data-testid="mode-input">
                 <template v-slot:append>
                   <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear"
@@ -130,8 +130,9 @@ import { useLoginStore } from 'src/stores/login-info'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
+    const route = useRoute()
     const store = useLoginStore()
-    const endpoint = '/v1/credit-note/'
+    const endpoint = `/v1/${route.params.company}/credit-note/`
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)

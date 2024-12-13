@@ -85,7 +85,8 @@
 import useList from '/src/composables/useList'
 import { useMeta } from 'quasar'
 import checkPermissions from 'src/composables/checkPermissions'
-const endpoint = '/v1/inventory-conversion/'
+const route = useRoute()
+const endpoint = `/v1/${route.params.company}/inventory-conversion/`
 const metaData = {
   title: 'Inventory Conversion | Awecount',
 }

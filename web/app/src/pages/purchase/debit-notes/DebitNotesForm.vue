@@ -27,7 +27,7 @@
                   <q-card-section class="q-mx-lg">
                     <q-input class="mb-4" v-model="referenceFormData.invoice_no" label="Invoice No.*" autofocus type="text" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no"></q-input>
                     <n-auto-complete-v2 v-model="referenceFormData.party" label="Party*" :options="partyChoices" :error="errors?.party"
-                    :endpoint="`/v1/parties/choices/`">
+                    :endpoint="`/v1/${route.params.company}/parties/choices/`">
                     </n-auto-complete-v2>
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->
@@ -64,7 +64,7 @@
             </div>
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *" :error-message="errors?.payment_mode"
-                :error="!!errors?.payment_mode" :options="modeOptionsComputed" :endpoint="`v1/debit-note/create-defaults/payment_modes`"
+                :error="!!errors?.payment_mode" :options="modeOptionsComputed" :endpoint="`v1/${route.params.company}/debit-note/create-defaults/payment_modes`"
                 :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
                 option-value="id" option-label="name" map-options emit-value>
                 <template v-slot:append>
@@ -108,11 +108,12 @@ import InvoiceTable from 'src/components/voucher/InvoiceTable.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
+const route = useRoute()
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
     const store = useLoginStore()
-    const endpoint = '/v1/debit-note/'
+    const endpoint = `/v1/${route.params.company}/debit-note/`
     const openDatePicker = ref(false)
     const addRefrence = ref(false)
     const discountField = ref(null)
@@ -305,7 +306,7 @@ export default {
     }
   },
   created() {
-    useApi('/v1/parties/choices/')
+    useApi(`/v1/${route.params.company}/parties/choices/`)
       .then((res) => {
         this.partyChoices = res
       })

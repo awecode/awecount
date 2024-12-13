@@ -97,7 +97,7 @@
                   <div class="flex-grow min-w-[225px]">
                     <n-auto-complete-v2 v-model="fields.mode" label="Mode" class="col-12 col-md-6"
                       :error-message="errors?.mode ? errors.mode[0] : null" :error="!!errors?.mode" :options="modeOptionsComputed"
-                      endpoint="v1/pos/create-defaults/bank_accounts" option-value="id" option-label="name" map-options emit-value>
+                      :endpoint="`v1/${route.params.company}/pos/create-defaults/bank_accounts`" option-value="id" option-label="name" map-options emit-value>
                       <template v-slot:append>
                         <q-icon v-if="fields.mode !== null" class="cursor-pointer" name="clear"
                           @click.stop.prevent="fields.mode = null" /></template></n-auto-complete-v2>
@@ -116,7 +116,7 @@
                                     " :error="!!errors?.customer_name" v-if="partyMode && fields.mode !== 'Credit'">
                                   </q-input>
                                   <n-auto-complete-v2 v-else v-model="fields.party" :options="partyChoices" label="Party"
-                                    endpoint="v1/parties/choices/"
+                                    :endpoint="`v1/${route.params.company}/parties/choices/`"
                                     :error="errors?.party ? errors?.party[0] : null" :modal-component="checkPermissions('PartyCreate')
                                       ? PartyForm
                                       : null
@@ -199,7 +199,8 @@ const totalTableData = ref({
 })
 useMeta(metaData)
 const store = useLoginStore()
-const endpoint = 'v1/pos/'
+const route = useRoute()
+const endpoint = `v1/${route.params.company}/pos/`
 const $q = useQuasar()
 const searchTerm = ref(null)
 const searchResults = ref(null)

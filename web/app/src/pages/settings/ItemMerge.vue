@@ -45,7 +45,8 @@ const modalValueArray = ref([{
 const loading = ref(false)
 const $q = useQuasar()
 const itemOptions = ref([])
-useApi('v1/items/list/').then((data) => {
+const route = useRoute()
+useApi(`v1/${route.params.company}/items/list/`).then((data) => {
   itemOptions.value = data
 })
 const removeGroup = (index: number) => {
@@ -83,7 +84,7 @@ const onSubmit = () => {
     })
     return
   }
-  useApi('v1/items/merge/', {
+  useApi(`v1/${route.params.company}/items/merge/`, {
     method: 'POST',
     body: filteredArray
   }).then((data) => {
@@ -126,7 +127,7 @@ const selectedItems = computed(() => {
 })
 const onSimilarFetch = () => {
   loading.value = true
-  useApi('v1/items/similar-items/').then((data) => {
+  useApi(`v1/${route.params.company}/items/similar-items/`).then((data) => {
     if (data.length < 1) {
       $q.notify({
         color: 'red-6',

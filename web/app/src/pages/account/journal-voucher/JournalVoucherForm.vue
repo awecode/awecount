@@ -87,8 +87,8 @@ const add = (a, b) => {
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/journal-voucher/'
     const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/journal-voucher/`
     const updateVoucher = (e, i) => {
       formData.fields.value.rows[i] = e
     }

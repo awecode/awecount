@@ -38,7 +38,7 @@
                   <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                    <n-auto-complete-v2 v-model="filters.payment_mode" endpoint="v1/payment-modes/choices/"
+                    <n-auto-complete-v2 v-model="filters.payment_mode" :endpoint="`v1/${route.params.company}/payment-modes/choices/`"
                       label="Payment Mode" :fetchOnMount="true" />
                   </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
@@ -104,18 +104,19 @@
 </template>
 
 <script>
+
 export default {
   setup() {
     const metaData = {
       title: 'Purchases/Expenses | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/purchase-vouchers/'
+    const endpoint = `/v1/${route.params.company}/purchase-vouchers/`
     const listData = useList(endpoint)
     const route = useRoute()
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/purchase-vouchers/export' + query)
+      useApi(`v1/${route.params.company}/purchase-vouchers/export` + query)
         .then((data) =>
           usedownloadFile(
             data,

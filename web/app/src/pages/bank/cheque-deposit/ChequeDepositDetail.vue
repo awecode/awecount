@@ -145,19 +145,20 @@ const getDate = computed(() => {
   }
   return dates
 })
+const route = useRoute()
 const props = defineProps(['id'])
 const fields = ref(null)
 const $q = useQuasar()
 const isDeleteOpen = ref(false)
 const getData = async() =>
-  await useApi(`/v1/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
+  await useApi(`/v1/${route.params.company}/cheque-deposits/${props.id}/details/`, { method: 'GET' }, false, true).then((data) => {
     fields.value = data
   })
 getData()
 
 const onClearedClick = () => {
   loading.value = true
-  useApi(`/v1/cheque-deposits/${props.id}/mark_as_cleared/`, {
+  useApi(`/v1/${route.params.company}/cheque-deposits/${props.id}/mark_as_cleared/`, {
     method: 'POST',
     body: {},
   })
@@ -182,7 +183,7 @@ const onClearedClick = () => {
 
 const onCancelClick = () => {
   loading.value = true
-  useApi(`/v1/cheque-deposits/${props.id}/cancel/`, {
+  useApi(`/v1/${route.params.company}/cheque-deposits/${props.id}/cancel/`, {
     method: 'POST',
     body: {},
   })

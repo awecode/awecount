@@ -76,7 +76,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
     const route = useRoute()
-    const endpoint = '/v1/sales-book/'
+    const endpoint = `/v1/${route.params.company}/sales-book/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Sales Book | Awecount',
@@ -151,7 +151,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/sales-book/export' + downloadEndpoint)
+      useApi(`v1/${route.params.company}/sales-book/export` + downloadEndpoint)
         .then((data) =>
           usedownloadFile(
             data,

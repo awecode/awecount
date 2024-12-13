@@ -85,7 +85,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/bank-cash-deposits/'
+    const endpoint = `/v1/${route.params.company}/bank-cash-deposits/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '/cash-deposit/list/',

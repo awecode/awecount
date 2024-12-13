@@ -128,7 +128,7 @@ export default {
     }
     useMeta(metaData)
     const route = useRoute()
-    const endpoint = '/v1/purchase-book/'
+    const endpoint = `/v1/${route.params.company}/purchase-book/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -199,7 +199,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/purchase-book/export' + downloadEndpoint)
+      useApi(`v1/${route.params.company}/purchase-book/export` + downloadEndpoint)
         .then((data) =>
           usedownloadFile(
             data,

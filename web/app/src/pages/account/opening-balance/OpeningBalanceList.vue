@@ -40,7 +40,7 @@ export default {
       title: 'Account Opening Balances | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/account-opening-balance/'
+    const endpoint = `/v1/${route.params.company}/account-opening-balance/`
     const newColumn = [
       {
         name: 'name',

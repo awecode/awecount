@@ -19,13 +19,13 @@
                   <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-md">
-                  <FiltersOptions v-model="filters.account" label="Account" endpoint="v1/accounts/choices"
+                  <FiltersOptions v-model="filters.account" label="Account" :endpoint="`v1/${route.params.company}/accounts/choices`"
                     :fetchOnMount="true" :options="filterOptions.collections?.accounts" />
                   <FiltersOptions v-model="filters.source" label="Transaction Type"
                     :options="filterOptions.collections?.transaction_types"
-                    endpoint="v1/transaction/create-defaults/transaction_types" />
+                    :endpoint="`v1/${route.params.company}/transaction/create-defaults/transaction_types`" />
                   <FiltersOptions v-model="filters.category" label="Category" :fetchOnMount="true"
-                    endpoint="v1/categories/choices" :options="filterOptions.collections?.categories" />
+                    :endpoint="`v1/${route.params.company}/categories/choices`" :options="filterOptions.collections?.categories" />
 
                   <div>
                     <h5 class="text-subtitle2 text-grey-8">Group By:</h5>
@@ -113,7 +113,7 @@ export default {
     ]
     const filterOptions = ref({})
     useMeta(metaData)
-    const endpoint = '/v1/transaction/'
+    const endpoint = `/v1/${route.params.company}/transaction/`
     const listData = useList(endpoint)
     const route = useRoute()
     const onDownloadXls = () => {
@@ -241,7 +241,7 @@ export default {
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
   },
   created() {
-    const endpoint = '/v1/transaction/create-defaults/'
+    const endpoint = `/v1/${route.params.company}/transaction/create-defaults/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.filterOptions = data

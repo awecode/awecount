@@ -24,8 +24,9 @@ export default {
     const metaData = {
       title: 'Bank Accounts | Awecount',
     }
+    const route = useRoute()
     useMeta(metaData)
-    const endpoint = '/v1/bank-account/'
+    const endpoint = `/v1/${route.params.company}/bank-account/`
     const listData = useList(endpoint)
     const newColumn = [
       {

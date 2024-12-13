@@ -37,7 +37,7 @@
             <div class="row q-col-gutter-md" v-if="isEdit ? fields.hasOwnProperty('selected_inventory_category_obj') : true">
               <div class="col-12 col-md-6">
                 <n-auto-complete-v2 label="Category" v-model="fields.category"
-                  endpoint="v1/items/create-defaults/inventory_categories"
+                  :endpoint="`v1/${route.params.company}/items/create-defaults/inventory_categories`"
                   :staticOption="fields.selected_inventory_category_obj"
                   :options="formDefaults.collections?.inventory_categories"
                   :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
@@ -181,6 +181,7 @@ import InventoryCategoryForm from 'src/pages/inventory/product/category/Inventor
 import TaxForm from 'src/pages/tax/scheme/TaxForm.vue'
 import UnitForm from 'src/pages/inventory/unit/UnitForm.vue'
 import checkPermissions from 'src/composables/checkPermissions'
+const route = useRoute()
 const $q = useQuasar()
 const toggleExpenses = (type) => {
   fields.value[type] = false
@@ -191,7 +192,7 @@ const images = ref({
   front_image: null,
   back_image: null,
 })
-const endpoint = '/v1/items/'
+const endpoint = `/v1/${route.params.company}/items/`
 const injectUnitObj = ref(null)
 const staticOptions = ref({
   sales: null,

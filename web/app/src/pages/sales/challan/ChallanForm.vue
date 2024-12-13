@@ -19,7 +19,7 @@
                     :error="!!errors.customer_name" v-if="!partyMode || !!fields.customer_name">
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
-                    endpoint="/v1/challan/create-defaults/parties" :staticOption="fields.selected_party_obj" label="Party"
+                    :endpoint="`/v1/${route.params.company}/challan/create-defaults/parties`" :staticOption="fields.selected_party_obj" label="Party"
                     :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
                       " />
                 </div>
@@ -91,7 +91,7 @@ import SalesDiscountForm from 'src/pages/sales/discount/SalesDiscountForm.vue'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/challan/'
+    const endpoint = `/v1/${route.params.company}/challan/`
     const openDatePicker = ref(false)
     const $q = useQuasar()
     const isDeleteOpen = ref(false)
@@ -148,7 +148,7 @@ export default {
     formData.fields.value.customer_name = null
     const onResolvedClick = () => {
       formData.loading.value = true
-      useApi(`/v1/challan/${formData.fields.value.id}/resolve/`, {
+      useApi(`/v1/${route.params.company}/challan/${formData.fields.value.id}/resolve/`, {
         method: 'POST',
         body: {},
       })
@@ -171,7 +171,7 @@ export default {
         })
     }
     const onCancelClick = () => {
-      const url = `/v1/challan/${formData.fields.value.id}/cancel/`
+      const url = `/v1/${route.params.company}/challan/${formData.fields.value.id}/cancel/`
       const body = {
         message: deleteMsg.value,
       }

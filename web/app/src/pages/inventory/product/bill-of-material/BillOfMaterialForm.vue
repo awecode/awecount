@@ -54,7 +54,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, context) {
-    const endpoint = '/v1/bill-of-material/'
+    const endpoint = `/v1/${route.params.company}/bill-of-material/`
     const metaData = {
       title: 'Bill of Material | Awecount',
     }

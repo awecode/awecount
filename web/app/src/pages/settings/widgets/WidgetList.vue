@@ -28,7 +28,8 @@ export default {
       title: 'Dashboard Widgets | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/widgets/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/widgets/`
     const listData = useList(endpoint)
     const newColumn = [
       {

@@ -95,7 +95,8 @@ import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
 export default {
   setup() {
-    const endpoint = '/v1/challan/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/challan/`
     const listData = useList(endpoint)
     const metaData = {
       title: 'Challans | Awecount',

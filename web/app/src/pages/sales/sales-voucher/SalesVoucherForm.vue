@@ -50,7 +50,7 @@
                   </q-input>
                   <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties"
                     label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
-                      " :staticOption="fields.selected_party_obj" endpoint="/v1/sales-voucher/create-defaults/parties"
+                      " :staticOption="fields.selected_party_obj" :endpoint="`/v1/${route.params.company}/sales-voucher/create-defaults/parties`"
                     :emitObj="true" @updateObj="onPartyChange" />
                 </div>
 
@@ -112,7 +112,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode *"
-                endpoint="/v1/sales-voucher/create-defaults/payment_modes" :error="!!errors?.payment_mode"
+                :endpoint="`/v1/${route.params.company}/sales-voucher/create-defaults/payment_modes`" :error="!!errors?.payment_mode"
                 :options="modeOptionsComputed"
                 :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
                 @updateObj="onPaymentModeChange" data-testid="payment-mode-select" :emitObj="true" :mapOptions="true">
@@ -155,7 +155,7 @@
             <n-auto-complete-v2 v-if="loginStore.companyInfo.enable_sales_agents" v-model="fields.sales_agent"
               label="Sales Agent" class="col-8" :error="!!errors?.sales_agent"
               :options="formDefaults.collections?.sales_agents"
-              :endpoint="`v1/sales-voucher/create-defaults/sales_agents`"
+              :endpoint="`v1/${route.params.company}/sales-voucher/create-defaults/sales_agents`"
               :staticOption="fields.selected_sales_agent_obj" data-testid="sales-agent-select"></n-auto-complete-v2>
           </div>
           <!-- TODO: add sales agent form -->
@@ -189,7 +189,8 @@ import { useLoginStore } from '/src/stores/login-info.js'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setup(props, { emit }) {
-    const endpoint = '/v1/sales-voucher/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/sales-voucher/`
     const loginStore = useLoginStore()
     const show_row_column_in_voucher_row = true
     // TODO: temp

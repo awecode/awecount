@@ -63,7 +63,8 @@ export default {
       title: 'Cash Deposits | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/bank-cash-deposits/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/bank-cash-deposits/`
     const newColumn = [
       {
         name: 'voucher_no',

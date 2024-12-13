@@ -330,7 +330,7 @@ export default {
   created() {
     const $q = useQuasar()
     const route = useRoute()
-    useApi(`/v1/${route.params.slug}/${route.params.id}/journal-entries/`)
+    useApi(`/v1/${route.params.company}/${route.params.slug}/${route.params.id}/journal-entries/`)
       .then((data) => {
         this.fields = data
       })

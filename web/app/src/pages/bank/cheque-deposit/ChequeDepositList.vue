@@ -73,7 +73,8 @@ export default {
       title: 'Cheque Deposits | Awecount',
     }
     useMeta(metaData)
-    const endpoint = '/v1/cheque-deposits/'
+    const route = useRoute()
+    const endpoint = `/v1/${route.params.company}/cheque-deposits/`
     const newColumn = [
       {
         name: 'bank_account_name',
