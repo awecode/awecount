@@ -1,5 +1,5 @@
 <template>
-  <q-form class="q-pa-lg" autofocus>
+  <q-form class="q-pa-lg" autofocus v-if="fields">
     <q-card>
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
@@ -82,7 +82,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
               <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode"
-                :error-message="errors.payment_mode" :error="!!errors.payment_mode"
+                :error-message="errors.payment_mode" :error="errors.payment_mode"
                 :staticOption="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
                 :options="modeOptionsComputed" endpoint="v1/purchase-vouchers/create-defaults/payment_modes"
                 option-value="id" option-label="name" map-options emit-value>
@@ -140,223 +140,201 @@
   </q-form>
 </template>
 
-<script>
-import CategoryForm from '/src/pages/account/category/CategoryForm.vue'
+<script setup>
 import PartyForm from 'src/pages/party/PartyForm.vue'
 import PurchaseDiscountForm from 'src/pages/purchase/discounts/PurchaseDiscountForm.vue'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
 import { useLoginStore } from 'src/stores/login-info'
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, { emit }) {
-    const store = useLoginStore()
-    const endpoint = '/v1/purchase-vouchers/'
-    const openDatePicker = ref(false)
-    const $q = useQuasar()
-    const staticOptions = {
-      discount_types: discount_types,
-      modes: modes,
+import checkPermissions from 'src/composables/checkPermissions'
+const store = useLoginStore()
+const endpoint = '/v1/purchase-vouchers/'
+const $q = useQuasar()
+const staticOptions = {
+  discount_types: discount_types,
+  modes: modes,
+}
+const {
+  fields, errors, formDefaults, loading, isEdit, today, submitForm,
+} = useForm(endpoint, {
+  getDefaults: true,
+  successRoute: '/purchase-voucher/list/',
+})
+const importPurchaseOrder = ref(false)
+const referenceFormData = ref({
+  invoice_no: null,
+  fiscal_year: store.companyInfo.current_fiscal_year_id || null,
+})
+useMeta(() => {
+  return {
+    title:
+      (isEdit?.value
+        ? 'Update Purchases/Expenses'
+        : 'Add Purchases/Expenses') + ' | Awecount',
+  }
+})
+const deleteRowErr = (index, errors, deleteObj) => {
+  if (deleteObj) {
+    if (!fields.value.deleted_rows) {
+      fields.value.deleted_rows = []
     }
-    const formData = useForm(endpoint, {
-      getDefaults: true,
-      successRoute: '/purchase-voucher/list/',
-    })
-    const importPurchaseOrder = ref(false)
-    const referenceFormData = ref({
-      invoice_no: null,
-      fiscal_year: store.companyInfo.current_fiscal_year_id || null,
-    })
-    useMeta(() => {
-      return {
-        title:
-          (formData.isEdit?.value
-            ? 'Update Purchases/Expenses'
-            : 'Add Purchases/Expenses') + ' | Awecount',
+    fields.value.deleted_rows.push(deleteObj)
+  }
+  if (!!errors.rows) errors.rows.splice(index, 1)
+}
+const onSubmitClick = async (status) => {
+  const originalStatus = fields.value.status
+  fields.value.status = status
+  const data = await submitForm()
+  if (data && data.hasOwnProperty('error')) {
+    fields.value.status = originalStatus
+  }
+}
+fields.value.date = today
+fields.value.due_date = today
+fields.value.is_import = false
+watch(() => formDefaults.value, () => {
+  if (!isEdit.value) {
+    if (formDefaults.value.fields?.mode) {
+      if (isNaN(formDefaults.value.fields?.mode)) {
+        fields.value.mode = formDefaults.value.fields.mode
+      } else {
+        fields.value.mode = Number(formDefaults.value.fields.mode)
       }
-    })
-    const deleteRowErr = (index, errors, deleteObj) => {
-      if (deleteObj) {
-        if (!formData.fields.value.deleted_rows) {
-          formData.fields.value.deleted_rows = []
-        }
-        formData.fields.value.deleted_rows.push(deleteObj)
-      }
-      if (!!errors.rows) errors.rows.splice(index, 1)
-    }
-    const onSubmitClick = async (status) => {
-      const originalStatus = formData.fields.value.status
-      formData.fields.value.status = status
-      const data = await formData.submitForm()
-      if (data && data.hasOwnProperty('error')) {
-        formData.fields.value.status = originalStatus
-      }
-    }
-    formData.fields.value.date = formData.today
-    formData.fields.value.due_date = formData.today
-    formData.fields.value.is_import = false
-    watch(() => formData.formDefaults.value, () => {
-      if (!formData.isEdit.value) {
-        if (formData.formDefaults.value.fields?.mode) {
-          if (isNaN(formData.formDefaults.value.fields?.mode)) {
-            formData.fields.value.mode = formData.formDefaults.value.fields.mode
-          } else {
-            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
-          }
-        } else formData.fields.value.mode = 'Credit'
-      }
-    })
-    const fetchInvoice = async (data) => {
-      if (!formData?.errors?.value) formData.errors.value = {}
-      delete formData.errors.value.fiscal_year
-      delete formData.errors.value.invoice_no
-      const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
-      if (
-        fetchData.invoice_no &&
-        fetchData.fiscal_year
-      ) {
-        if (
-          formData.fields.value.purchase_orders &&
-          formData.fields.value.purchase_orders.includes(fetchData.invoice_no)
-        ) {
-          $q.notify({
-            color: 'red-6',
-            message: 'Invoice Already Exists!',
-            icon: 'report_problem',
-            position: 'top-right',
-          })
-          formData.errors.value.invoice_no = 'The invoice has already been added!'
-        } else {
-          const url = 'v1/purchase-order/by-voucher-no/'
-          useApi(
-            url +
-            `?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`
-          )
-            .then((data) => {
-              const response = { ...data }
-              if (formData.fields.value.purchase_orders) {
-                if (formData.fields.value.party && formData.fields.value.party !== response.party) {
-                  $q.notify({
-                    color: 'red-6',
-                    message: 'A single purchase order can be issued to a single party only',
-                    icon: 'report_problem',
-                    position: 'top-right',
-                  })
-                  return
-                }
-                formData.fields.value.purchase_orders.push(data.id)
-              } else formData.fields.value.purchase_orders = [data.id]
-              if (formData.fields.value.purchase_order_numbers) {
-                formData.fields.value.purchase_order_numbers.push(response.voucher_no)
-              } else formData.fields.value.purchase_order_numbers = [response.voucher_no]
-              const removeArr = [
-                'id',
-                'date',
-                'voucher_meta',
-                'print_count',
-                'issue_datetime',
-                'is_export',
-                'status',
-                'due_date',
-                'rows',
-                'date',
-                'remarks',
-                'voucher_no'
-              ]
-              removeArr.forEach((item) => {
-                delete data[item]
-              })
-              for (const key in data) {
-                formData.fields.value[key] = data[key]
-                // if (key === )
-              }
-              if (response.rows && response.rows.length > 0) {
-                if (!formData.fields.value.rows) formData.fields.value.rows = []
-                response.rows.forEach((row) => {
-                  delete row.id
-                  formData.fields.value.rows.push(row)
-                })
-              }
-              // if (data.discount_obj && data.discount_obj.id) {
-              //   fields.discount_type = data.discount_obj.id
-              // }
-              importPurchaseOrder.value = false
-            })
-            .catch((err) => {
-              let message
-              if (err.status === 404) message = 'Invoice Not Found!'
-              else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
+    } else fields.value.mode = 'Credit'
+  }
+})
+const fetchInvoice = async (data) => {
+  if (!errors?.value) errors.value = {}
+  delete errors.value.fiscal_year
+  delete errors.value.invoice_no
+  const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
+  if (
+    fetchData.invoice_no &&
+    fetchData.fiscal_year
+  ) {
+    if (
+      fields.value.purchase_orders &&
+      fields.value.purchase_orders.includes(fetchData.invoice_no)
+    ) {
+      $q.notify({
+        color: 'red-6',
+        message: 'Invoice Already Exists!',
+        icon: 'report_problem',
+        position: 'top-right',
+      })
+      errors.value.invoice_no = 'The invoice has already been added!'
+    } else {
+      const url = 'v1/purchase-order/by-voucher-no/'
+      useApi(
+        url +
+        `?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`
+      )
+        .then((data) => {
+          const response = { ...data }
+          if (fields.value.purchase_orders) {
+            if (fields.value.party && fields.value.party !== response.party) {
               $q.notify({
                 color: 'red-6',
-                message: message,
+                message: 'A single purchase order can be issued to a single party only',
                 icon: 'report_problem',
                 position: 'top-right',
               })
+              return
+            }
+            fields.value.purchase_orders.push(data.id)
+          } else fields.value.purchase_orders = [data.id]
+          if (fields.value.purchase_order_numbers) {
+            fields.value.purchase_order_numbers.push(response.voucher_no)
+          } else fields.value.purchase_order_numbers = [response.voucher_no]
+          const removeArr = [
+            'id',
+            'date',
+            'voucher_meta',
+            'print_count',
+            'issue_datetime',
+            'is_export',
+            'status',
+            'due_date',
+            'rows',
+            'date',
+            'remarks',
+            'voucher_no'
+          ]
+          removeArr.forEach((item) => {
+            delete data[item]
+          })
+          for (const key in data) {
+            fields.value[key] = data[key]
+            // if (key === )
+          }
+          if (response.rows && response.rows.length > 0) {
+            if (!fields.value.rows) fields.value.rows = []
+            response.rows.forEach((row) => {
+              delete row.id
+              fields.value.rows.push(row)
             })
-        }
-      } else {
-        $q.notify({
-          color: 'red-6',
-          message: 'Please fill in the form completely!',
-          icon: 'report_problem',
-          position: 'top-right',
+          }
+          // if (data.discount_obj && data.discount_obj.id) {
+          //   fields.discount_type = data.discount_obj.id
+          // }
+          importPurchaseOrder.value = false
         })
-        if (!formData?.errors?.value) formData.errors.value = {}
-        if (!referenceFormData.value.invoice_no) {
-          formData.errors.value.invoice_no = 'Invoice Number is required!'
-        }
-        if (!referenceFormData.value.fiscal_year) {
-          formData.errors.value.fiscal_year = 'Fiscal Year is required!'
-        }
-      }
+        .catch((err) => {
+          let message
+          if (err.status === 404) message = 'Invoice Not Found!'
+          else message = err.data?.detail || 'Server Error! Please contact us with the problem.'
+          $q.notify({
+            color: 'red-6',
+            message: message,
+            icon: 'report_problem',
+            position: 'top-right',
+          })
+        })
     }
-    onMounted(() => {
-      const route = useRoute()
-      if (route.query.purchase_order && route.query.fiscal_year) {
-        const data = { invoice_no: route.query.purchase_order, fiscal_year: route.query.fiscal_year }
-        fetchInvoice(data)
-      }
+  } else {
+    $q.notify({
+      color: 'red-6',
+      message: 'Please fill in the form completely!',
+      icon: 'report_problem',
+      position: 'top-right',
     })
-    watch(() => formData.formDefaults.value, () => {
-      if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
-        formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
-      }
-
-
-    })
-    const discountOptionsComputed = computed(() => {
-      if (formData?.formDefaults.value?.collections?.discounts) {
-        return staticOptions.discount_types.concat(
-          formData.formDefaults.value.collections.discounts
-        )
-      } else return staticOptions.discount_types
-    })
-    const modeOptionsComputed = computed(() => {
-      const obj = {
-        results: [{ id: null, name: 'Credit' }],
-        pagination: {},
-      }
-      if (formData?.formDefaults.value?.collections?.payment_modes?.results) {
-        obj.results = obj.results.concat(formData.formDefaults.value.collections.payment_modes.results)
-        Object.assign(obj.pagination, formData.formDefaults.value.collections.payment_modes.pagination)
-      }
-      return obj
-    })
-    return {
-      ...formData,
-      CategoryForm,
-      PartyForm,
-      PurchaseDiscountForm,
-      openDatePicker,
-      staticOptions,
-      deleteRowErr,
-      onSubmitClick,
-      checkPermissions,
-      importPurchaseOrder,
-      referenceFormData,
-      fetchInvoice,
-      discountOptionsComputed,
-      modeOptionsComputed
+    if (!errors?.value) errors.value = {}
+    if (!referenceFormData.value.invoice_no) {
+      errors.value.invoice_no = 'Invoice Number is required!'
     }
-  },
+    if (!referenceFormData.value.fiscal_year) {
+      errors.value.fiscal_year = 'Fiscal Year is required!'
+    }
+  }
 }
+onMounted(() => {
+  const route = useRoute()
+  if (route.query.purchase_order && route.query.fiscal_year) {
+    const data = { invoice_no: route.query.purchase_order, fiscal_year: route.query.fiscal_year }
+    fetchInvoice(data)
+  }
+})
+watch(() => formDefaults.value, () => {
+  if (formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
+    fields.value.trade_discount = formDefaults.value.fields?.trade_discount
+  }
+})
+const discountOptionsComputed = computed(() => {
+  if (formDefaults.value?.collections?.discounts) {
+    return staticOptions.discount_types.concat(
+      formDefaults.value.collections.discounts
+    )
+  } else return staticOptions.discount_types
+})
+const modeOptionsComputed = computed(() => {
+  const obj = {
+    results: [{ id: null, name: 'Credit' }],
+    pagination: {},
+  }
+  if (formDefaults.value?.collections?.payment_modes?.results) {
+    obj.results = obj.results.concat(formDefaults.value.collections.payment_modes.results)
+    Object.assign(obj.pagination, formDefaults.value.collections.payment_modes.pagination)
+  }
+  return obj
+})
 </script>
