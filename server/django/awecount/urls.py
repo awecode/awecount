@@ -210,6 +210,7 @@ urlpatterns = [
         "v1/export/auditlog/", aggregator_views.export_auditlog, name="export_auditlog"
     ),
     path("v1/import/", aggregator_views.import_data, name="import_data"),
+    path("", include("apps.authentication.urls")),
     #   path('test/', TestView.as_view())
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
