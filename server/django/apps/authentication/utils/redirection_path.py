@@ -15,20 +15,20 @@ def get_redirection_path(user):
         profile.last_company_id
         and Company.objects.filter(
             pk=profile.last_company_id,
-            company_member__member_id=user.id,
-            company_member__is_active=True,
+            company_members__member_id=user.id,
+            company_members__is_active=True,
         ).exists()
     ):
         company = Company.objects.filter(
             pk=profile.last_company_id,
-            company_member__member_id=user.id,
-            company_member__is_active=True,
+            company_members__member_id=user.id,
+            company_members__is_active=True,
         ).first()
         return f"{company.slug}"
 
     fallback_company = (
         Company.objects.filter(
-            company_member__member_id=user.id, company_member__is_active=True
+            company_members__member_id=user.id, company_members__is_active=True
         )
         .order_by("created_at")
         .first()
