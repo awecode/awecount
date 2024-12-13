@@ -47,7 +47,12 @@ export default (endpoint, config) => {
     id.value = route.params.id
     if (isEdit.value) {
       isGetEditLoading.value = true
-      useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
+      let fetchUrl = withTrailingSlash(joinURL(endpoint, route.params.id))
+      if (config.queryParams) {
+        const queryParams = new URLSearchParams(config.queryParams).toString()
+        fetchUrl += `?${queryParams}`
+      }
+      useApi(fetchUrl).then(
         (data) => {
           fields.value = data
           isGetEditLoading.value = false
