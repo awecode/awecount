@@ -178,31 +178,3 @@ class Profile(TimeAuditModel):
         verbose_name = "Profile"
         verbose_name_plural = "Profiles"
         ordering = ("-created_at",)
-
-
-class Account(TimeAuditModel):
-    PROVIDER_CHOICES = (("google", "Google"),)
-
-    id = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        editable=False,
-        db_index=True,
-        primary_key=True,
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="accounts")
-    provider_account_id = models.CharField(max_length=255)
-    provider = models.CharField(choices=PROVIDER_CHOICES)
-    access_token = models.TextField()
-    access_token_expired_at = models.DateTimeField(null=True)
-    refresh_token = models.TextField(null=True, blank=True)
-    refresh_token_expired_at = models.DateTimeField(null=True)
-    last_connected_at = models.DateTimeField(default=timezone.now)
-    id_token = models.TextField(blank=True)
-    metadata = models.JSONField(default=dict)
-
-    class Meta:
-        unique_together = ["provider", "provider_account_id"]
-        verbose_name = "Account"
-        verbose_name_plural = "Accounts"
-        ordering = ("-created_at",)
