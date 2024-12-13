@@ -37,30 +37,6 @@
         </div>
       </template>
 
-      <template v-slot:body-cell-title="props">
-        <q-td :props="props">
-          <span
-            v-if="checkPermissions('RecurringVoucherTemplateView')"
-            data-testid="voucher-no"
-          >
-            <router-link
-              v-if="
-                checkPermissions('RecurringVoucherTemplateView') &&
-                props.row.title
-              "
-              :to="`/${type}-voucher/recurring-template/${props.row.id}/view/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-            >
-              {{ props.row.title }}
-            </router-link>
-          </span>
-          <span v-else data-testid="voucher-no">
-            {{ props.row.title }}
-          </span>
-        </q-td>
-      </template>
-
       <template v-slot:body-cell-repeat_interval="props">
         <q-td :props="props">
           <span
