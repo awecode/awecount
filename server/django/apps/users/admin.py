@@ -7,7 +7,6 @@ from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 
-from apps.api.models import AccessKey
 from apps.company.models import Company, FiscalYear
 from apps.ledger.models import handle_company_creation
 from apps.product.models import Brand, Item, Unit
@@ -290,13 +289,3 @@ class FiscalYearAdmin(admin.ModelAdmin):
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
-
-
-class AccessKeyAdmin(admin.ModelAdmin):
-    list_display = ("user", "key", "enabled")
-    list_filter = ("user", "company", "enabled")
-    readonly_fields = ("created_at",)
-    search_fields = ("user__full_name", "company__name", "key")
-
-
-admin.site.register(AccessKey, AccessKeyAdmin)
