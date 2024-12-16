@@ -3,8 +3,8 @@ import type { RouteLocationRaw } from 'vue-router'
 
 import { ofetch } from 'ofetch'
 import * as config from 'src/config'
-
-import { useAuthStore } from 'stores/auth'
+import { useAuthStore } from 'src/stores/auth'
+import { useRouter } from 'vue-router'
 
 type UseAPIOptions<R extends ResponseType = ResponseType, T = any> = FetchOptions<R, T> & {
   protected?: boolean
@@ -52,10 +52,6 @@ export const useAPI = <
   const { token } = useAuthStore()
 
   let controller: AbortController | null = null
-
-  onBeforeUnmount(() => {
-    controller?.abort()
-  })
 
   return ofetch<T, R>(request, {
     onRequest: async (ctx) => {
@@ -116,3 +112,5 @@ export const useAPI = <
     ...options,
   })
 }
+
+export const $api = useAPI
