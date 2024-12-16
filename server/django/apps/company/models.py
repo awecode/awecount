@@ -462,3 +462,12 @@ class CompanyMemberInvite(BaseModel):
 
     def __str__(self):
         return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
+
+    def clean(self):
+        if self.access_level == CompanyMember.AccessLevel.OWNER:
+            raise ValidationError("Cannot create an owner invite")
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
