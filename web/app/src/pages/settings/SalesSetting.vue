@@ -27,24 +27,12 @@
               </q-checkbox>
             </div>
           </div>
-          <!-- <div class="row q-ml-sm">
-            <div class="col-12 col-sm-6">
-              <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
-                endpoint="v1/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj"
-                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-                :error-message="modeErrors">
-                <template v-slot:append>
-                  <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
-                </template>
-              </n-auto-complete-v2>
-            </div>
-          </div> -->
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
               <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed"
                 endpoint="v1/sales-settings/create-defaults/payment_modes" :staticOption="fields.selected_mode_obj"
-                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-                :error-message="modeErrors">
+                option-value="id" option-label="name" map-options emit-value :error="!!errors.mode"
+                :error-message="errors.mode">
                 <template v-slot:append>
                   <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null"
                     class="cursor-pointer" />
@@ -81,7 +69,8 @@
               <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?">
               </q-checkbox>
             </div>
-            <file-uploader multiple v-model="fields.default_email_attachments" label="Default Email Attachments" />
+            <file-uploader multiple v-model="fields.default_email_attachments" label="Default Email Attachments"
+              :error="errors.default_email_attachments" />
           </div>
         </div>
         <!-- {{ formDefaults.collections }} -->
@@ -98,6 +87,7 @@
 import { uploadFiles } from 'src/utils/file-upload';
 import useForm from '/src/composables/useForm'
 import { modes } from 'src/helpers/constants/invoice'
+import { parseErrors } from 'src/utils/helpers';
 export default {
   setup() {
     const $q = useQuasar()
@@ -111,7 +101,7 @@ export default {
     }
     useMeta(metaData)
     const fields = ref(null)
-    const modeErrors = ref(null)
+    const errors = ref({})
     const formLoading = ref(false)
     const onUpdateClick = async (fields) => {
       formLoading.value = true
@@ -121,7 +111,7 @@ export default {
         body: fields,
       })
         .then((data) => {
-          modeErrors.value = null
+          errors.value = {}
           formLoading.value = false
           $q.notify({
             color: 'green',
@@ -132,17 +122,15 @@ export default {
         })
         .catch((err) => {
           if (err.status === 400) {
-            if (err.data.mode) {
-              modeErrors.value = err.data.mode[0]
-              $q.notify({
-                color: 'red-6',
-                message: 'Please Fill the form!',
-                icon: 'report_problem',
-                position: 'top-right',
-              })
-            }
+            errors.value = parseErrors(err.data)
+            $q.notify({
+              color: 'red-6',
+              message: 'Please fill out the form correctly.',
+              icon: 'report_problem',
+              position: 'top-right',
+            })
           } else {
-            modeErrors.value = null
+            errors.value = {}
             $q.notify({
               color: 'red-6',
               message: 'Server Error Please Contact!',
@@ -170,7 +158,7 @@ export default {
       fields,
       modes,
       onUpdateClick,
-      modeErrors,
+      errors,
       formLoading,
       modeOptionsComputed
     }
