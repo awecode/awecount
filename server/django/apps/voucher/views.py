@@ -46,7 +46,7 @@ class FileUploadView(APIView):
             max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
             if file.size > max_file_upload_size:
                 max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
-                return ValidationError(
+                raise ValidationError(
                     f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
                 )
 
