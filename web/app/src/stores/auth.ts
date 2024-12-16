@@ -1,14 +1,13 @@
-import type { RouteLocationRaw } from 'vue-router'
-import { acceptHMRUpdate, defineStore } from 'pinia'
-
+import { acceptHMRUpdate, defineStore, Pinia } from 'pinia'
 import * as config from 'src/config'
+import { useRoute } from 'vue-router'
 
 interface User {
   access_level: 'owner' | 'admin' | 'member'
   email: string
   display_name: string
   roles: string[]
-  permissions: string[]
+  permissions: Record<string, Record<string, boolean>>
   [key: string]: any
 }
 
@@ -46,7 +45,6 @@ export const URLs = {
 export const useAuthStore = defineStore('auth', () => {
   const url = new URL(window.location.href)
   const route = useRoute()
-  const router = useRouter()
 
   const $api = useAPI
 
@@ -60,12 +58,8 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!accessToken.value && !!sessionToken.value)
   const onboarded = computed(() => user.value?.teams?.length > 0 && user.value?.last_active_team)
 
-  const _roles = computed(() => [
-    ...(user.value?.roles || []),
-    ...(user.value?.access_level ? [user.value.access_level] : []),
-  ])
-
-  const _permissions = computed(() => user.value?.permissions || [])
+  const _roles = ref<string[]>([])
+  const _permissions = ref<Record<string, Record<string, boolean>>>({})
 
   const _request = async <T = Record<string, any>>(url: string, options: Record<string, any>) => {
     options.headers = options.headers || {}
@@ -102,66 +96,85 @@ export const useAuthStore = defineStore('auth', () => {
     f.submit()
   }
 
-  const login = async (credentials: { email: string, password: string }, { redirectTo }: { redirectTo?: RouteLocationRaw | false } = {}) => {
-    try {
-      const { data, meta } = await _request<any>(URLs.LOGIN, { method: 'POST', body: credentials })
+  const _handleAuthSuccess = (data: any, meta: any) => {
+    user.value = data?.user
+    sessionToken.value = meta?.session_token
+    accessToken.value = meta?.access_token
+    refreshToken.value = meta?.refresh_token
+    authenticatedAt.value = Date.now()
+  }
 
-      user.value = data?.user
-      sessionToken.value = meta?.session_token
-      accessToken.value = meta?.access_token
-      refreshToken.value = meta?.refresh_token
-      authenticatedAt.value = Date.now()
+  const _resetAuthState = () => {
+    user.value = null
+    accessToken.value = null
+    refreshToken.value = null
+    sessionToken.value = null
+    authenticatedAt.value = null
+  }
 
-      if (redirectTo !== false) {
-        if (redirectTo === undefined && data?.user?.redirect) {
-          const redirect = data.user.redirect
-          switch (redirect) {
-            case 'onboarding':
-              if (config.auth.onboarding.enabled) {
-                await router.push(config.auth.onboarding.route)
-              } else {
-                throw new Error('Onboarding is not enabled')
-              }
-              break
-            case 'invitations':
-              await router.push({ name: 'company-invitations', params: { company: '' } })
-              break
-            case 'create-company':
-              await router.push({ name: 'company-create' })
-              break
-            case null:
-            case undefined:
-            case '':
-              break
-            default: // if not any of the above, it's the company slug
-              await router.push({ name: 'company-dashboard', params: { company: redirect } })
-              break
+  const _fetchPermissions = async (companySlug: string) => {
+    const res = await $api(`/api/company/${companySlug}/permissions/`, {
+      method: 'GET',
+      protected: true,
+    })
+
+    _roles.value = [
+      ...(res?.roles || []),
+      ...(res?.access_level ? [res.access_level] : []),
+    ]
+    _permissions.value = res?.permissions || {}
+
+    return res
+  }
+
+  const _handleRedirect = async (redirectData: any, explicitRedirectTo?: string | false) => {
+    if (explicitRedirectTo === false) {
+      return
+    }
+    if (explicitRedirectTo === undefined && redirectData?.redirect) {
+      const redirect = redirectData.redirect
+      switch (redirect) {
+        case 'onboarding':
+          if (config.auth.onboarding.enabled) {
+            window.location.href = `${url.origin}${config.auth.onboarding.route}`
+          } else {
+            throw new Error('Onboarding is not enabled')
           }
-        }
-
-        // TODO: Handle next path with redirect path from api
-        if (redirectTo === undefined && route.query.next) {
-          await router.push(route.query.next.toString())
-        }
-
-        if (redirectTo) {
-          await router.push(redirectTo)
-        }
+          break
+        case 'invitations':
+          window.location.href = `${url.origin}/invitations`
+          break
+        case 'create-company':
+          window.location.href = `${url.origin}/company/create`
+          break
+        case null:
+        case undefined:
+        case '':
+          break
+        default:
+          await _fetchPermissions(redirect)
+          window.location.href = `${url.origin}/${redirect}/dashboard`
+          break
       }
+    }
 
-      return data
-    } catch (error) {
-      user.value = null
-      accessToken.value = null
-      refreshToken.value = null
-      sessionToken.value = null
-      authenticatedAt.value = null
+    if (explicitRedirectTo === undefined && route.query.next) {
+      window.location.href = `${url.origin}${route.query.next}`
+    }
 
-      throw error
+    if (explicitRedirectTo) {
+      window.location.href = `${url.origin}${explicitRedirectTo}`
     }
   }
 
-  const logout = async ({ redirectTo }: { redirectTo?: RouteLocationRaw } = {}) => {
+  const login = async (credentials: { email: string, password: string }, { redirectTo }: { redirectTo?: string | false } = {}) => {
+    const { data, meta } = await _request<any>(URLs.LOGIN, { method: 'POST', body: credentials })
+    _handleAuthSuccess(data, meta)
+    await _handleRedirect(data?.user, redirectTo)
+    return data
+  }
+
+  const logout = async ({ redirectTo }: { redirectTo?: string } = {}) => {
     try {
       await _request(URLs.SESSION, { method: 'DELETE' })
     } catch (error: any) {
@@ -172,7 +185,7 @@ export const useAuthStore = defineStore('auth', () => {
         sessionToken.value = null
         authenticatedAt.value = null
         if (redirectTo) {
-          await router.push(redirectTo)
+          window.location.href = `${url.origin}${redirectTo}`
         }
       } else {
         throw error
@@ -203,33 +216,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const verifyEmail = async (key: string) => {
     const { data, meta } = await _request<any>(URLs.VERIFY_EMAIL, { method: 'POST', body: { key } })
-
-    user.value = data?.user
-    sessionToken.value = meta?.session_token
-    accessToken.value = meta?.access_token
-    refreshToken.value = meta?.refresh_token
-    authenticatedAt.value = Date.now()
-
-    const redirect = data.user.redirect
-    switch (redirect) {
-      case 'onboarding':
-        if (config.auth.onboarding.enabled) {
-          await router.push(config.auth.onboarding.route)
-        } else {
-          throw new Error('Onboarding is not enabled')
-        }
-        break
-      case 'invitations':
-        await router.push({ name: 'company-invitations', params: { company: '' } })
-        break
-      case 'create-company':
-        await router.push({ name: 'company-create' })
-        break
-      default:
-        await router.push(redirect)
-        break
-    }
-
+    _handleAuthSuccess(data, meta)
+    await _handleRedirect(data?.user)
     return data
   }
 
@@ -248,41 +236,11 @@ export const useAuthStore = defineStore('auth', () => {
   const providerCallback = async (provider: string, payload: Record<string, any>) => {
     try {
       const { data, meta } = await _request<any>(`${URLs.PROVIDER_CALLBACK}/${provider}`, { method: 'POST', body: payload })
-
-      user.value = data?.user
-      sessionToken.value = meta?.session_token
-      accessToken.value = meta?.access_token
-      refreshToken.value = meta?.refresh_token
-      authenticatedAt.value = Date.now()
-
-      const redirect = data.user.redirect
-      switch (redirect) {
-        case 'onboarding':
-          if (config.auth.onboarding.enabled) {
-            await router.push(config.auth.onboarding.route)
-          } else {
-            throw new Error('Onboarding is not enabled')
-          }
-          break
-        case 'invitations':
-          await router.push({ name: 'company-invitations', params: { company: '' } })
-          break
-        case 'create-company':
-          await router.push({ name: 'company-create' })
-          break
-        default:
-          await router.push(redirect)
-          break
-      }
-
+      _handleAuthSuccess(data, meta)
+      await _handleRedirect(data?.user)
       return data
     } catch (error) {
-      user.value = null
-      accessToken.value = null
-      refreshToken.value = null
-      sessionToken.value = null
-      authenticatedAt.value = null
-
+      _resetAuthState()
       throw error
     }
   }
@@ -320,23 +278,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const switchCompany = async (companyId: string) => {
-    return await _request(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_id: companyId } })
-    // TODO: Handle next path with redirect path from api
-  }
-
-  const hasPermission = (permission: string) => {
-    if (!_permissions.value?.includes(permission)) return false
-    return _permissions.value.includes(permission)
-  }
-
-  const hasAnyPermission = (permissions: string[]) => {
-    if (!_permissions.value?.length) return false
-    return permissions.some(permission => _permissions.value!.includes(permission))
-  }
-
-  const hasAllPermissions = (permissions: string[]) => {
-    if (!_permissions.value?.length) return false
-    return permissions.every(permission => _permissions.value!.includes(permission))
+    const { data, meta } = await _request(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_id: companyId } })
+    _handleAuthSuccess(data, meta)
+    await _handleRedirect(data?.user)
+    return data
   }
 
   const hasRole = (role: string) => {
@@ -354,12 +299,53 @@ export const useAuthStore = defineStore('auth', () => {
     return roles.every(role => _roles.value.includes(role))
   }
 
+  const _hasFullAccess = () => {
+    return hasAnyRole(config.auth.fullAccessRoles)
+  }
+
+  type Permission = `${string}.${string}` | string
+
+  const hasPermission = (permission: Permission) => {
+    // Check for full access roles first
+    if (_hasFullAccess()) return true
+
+    if (Object.keys(_permissions.value || {}).length === 0) return false
+
+    if (permission.includes('.')) {
+      const [resource, action] = permission.split('.')
+      return _permissions.value?.[resource]?.[action] ?? false
+    }
+
+    // Resource-only check - return true if any action is allowed for this resource
+    return Object.keys(_permissions.value?.[permission] || {}).some(
+      action => _permissions.value?.[permission]?.[action] === true,
+    )
+  }
+
+  const hasAnyPermission = (permissions: Permission[]) => {
+    // Check for full access roles first
+    if (_hasFullAccess()) return true
+
+    if (!_permissions.value) return false
+    return permissions.some(permission => hasPermission(permission))
+  }
+
+  const hasAllPermissions = (permissions: Permission[]) => {
+    // Check for full access roles first
+    if (_hasFullAccess()) return true
+
+    if (!_permissions.value) return false
+    return permissions.every(permission => hasPermission(permission))
+  }
+
   return {
     token: accessToken,
     refreshToken,
     user,
     isAuthenticated,
     onboarded,
+    roles: _roles, // FIXME: Save this without exposing
+    permissions: _permissions, // FIXME: Save this without exposing
     switchCompany,
     hasPermission,
     hasAnyPermission,
@@ -386,6 +372,8 @@ export const useAuthStore = defineStore('auth', () => {
     markEmailAsPrimary,
     providerCallback,
   }
+}, {
+  persist: true,
 })
 
 if (import.meta.hot) {
