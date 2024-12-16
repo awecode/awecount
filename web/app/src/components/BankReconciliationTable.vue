@@ -155,6 +155,117 @@ const findMatchingTransactions = () => {
 // Generate grouped transactions
 groupedTransactions.value = findMatchingTransactions()
 
+const statementSearchBy = ref('Any')
+const systemSearchBy = ref('Any')
+const searchByOptionsForStatament = ['Any', 'Date', 'Amount', 'Description']
+const searchByOptionsForSystem = ['Any', 'Date', 'Amount', 'Account']
+
+
+const filteredUnmatchedSystemTransactions = ref(unmatchedSystemTransactions.value)
+const filteredUnmatchedStatementTransactions = ref(unmatchedStatementTransactions.value)
+const searchStatement = ref('')
+const searchSystem = ref('')
+
+const searchInUnmatchedSystemTransactions = (search: string | null) => {
+  if (!search) {
+    filteredUnmatchedSystemTransactions.value = unmatchedSystemTransactions.value
+    return
+  }
+  search = search.toLowerCase()
+
+  if (systemSearchBy.value === 'Any') {
+    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
+      systemTransaction =>
+        String(systemTransaction.dr_amount).toLowerCase().includes(search) ||
+        String(systemTransaction.cr_amount).toLowerCase().includes(search) ||
+        String(systemTransaction.date).toLowerCase().includes(search) ||
+        systemTransaction.counterpart_accounts.some(
+          counterpart =>
+            counterpart.account_name.toLowerCase().includes(search) ||
+            String(counterpart.dr_amount).toLowerCase().includes(search) ||
+            String(counterpart.cr_amount).toLowerCase().includes(search)
+        )
+    )
+    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
+    return
+  }
+  else if (systemSearchBy.value === 'Date') {
+    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
+      systemTransaction =>
+        String(systemTransaction.date).toLowerCase().includes(search)
+    )
+    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
+    return
+  }
+  else if (systemSearchBy.value === 'Amount') {
+    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
+      systemTransaction =>
+        String(systemTransaction.dr_amount).toLowerCase().includes(search) ||
+        String(systemTransaction.cr_amount).toLowerCase().includes(search)
+    )
+    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
+    return
+  }
+  else if (systemSearchBy.value === 'Account') {
+    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
+      systemTransaction =>
+        systemTransaction.counterpart_accounts.some(
+          counterpart =>
+            counterpart.account_name.toLowerCase().includes(search)
+        )
+    )
+    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
+    return
+  }
+
+
+}
+
+const searchInUnmatchedStatementTransactions = (search: string | null) => {
+  if (!search) {
+    filteredUnmatchedStatementTransactions.value = unmatchedStatementTransactions.value
+    return
+  }
+  search = search.toLowerCase()
+  if (statementSearchBy.value === 'Any') {
+    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
+      statementTransaction =>
+        String(statementTransaction.dr_amount).toLowerCase().includes(search) ||
+        String(statementTransaction.cr_amount).toLowerCase().includes(search) ||
+        String(statementTransaction.date).toLowerCase().includes(search) ||
+        String(statementTransaction.description).toLowerCase().includes(search)
+    )
+    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
+    return
+  }
+  else if (statementSearchBy.value === 'Date') {
+    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
+      statementTransaction =>
+        String(statementTransaction.date).toLowerCase().includes(search)
+    )
+    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
+    return
+  }
+  else if (statementSearchBy.value === 'Amount') {
+    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
+      statementTransaction =>
+        String(statementTransaction.dr_amount).toLowerCase().includes(search) ||
+        String(statementTransaction.cr_amount).toLowerCase().includes(search)
+    )
+    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
+    return
+  }
+  else if (statementSearchBy.value === 'Description') {
+    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
+      statementTransaction =>
+        String(statementTransaction.description).toLowerCase().includes(search)
+    )
+    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
+    return
+  }
+}
+
+
 const calculateTotal = (transactions: SystemTransactionData[] | StatementTransactionData[], forStatement = false) => {
   let cr_amount = 0
   let dr_amount = 0
@@ -427,7 +538,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
     <!-- Unmatched section -->
     <div class="grid grid-cols-2 gap-10">
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
-        <div class="bg-gray-100 p-4 rounded-lg">
+        <div class="bg-gray-100 p-4 pt-0 rounded-lg">
           <div class="flex space-x-3 w-fit ml-auto">
             <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
               Unselect All
@@ -481,109 +592,125 @@ const unmatchMatchedTransactions = (matchedTransaction: {
               </div>
             </div>
           </div>
-
-
-
         </div>
 
         <div class="grid grid-cols-2 gap-6">
           <!-- Unmatched Statement Transactions -->
-          <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div class="px-4 py-3 border-b bg-blue-50 ">
-              <h3 class="text-lg my-0 font-semibold text-blue-600">
-                Unmatched Statement Transactions
-                <span class="text-sm text-blue-500 ml-2">({{ unmatchedStatementTransactions.length }})</span>
-              </h3>
-              <div class="flex items-center justify-between mt-2">
-                <div>
-                  <input type="checkbox" class="px-4 h-4 w-4 text-blue-600 rounded" :checked="allStatementSelected" @change="toggleAllStatementTransactions" />
-                  <span class="ml-2 text-sm text-gray-600">Select All</span>
-                </div>
-                <div>
-                  <span class="font-medium" :class="Number(calculateTotal(unmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
-                    calculateTotal(unmatchedStatementTransactions, true)
-                  }}</span>
+          <!-- add search input field -->
+          <div>
+            <div class="flex gap-4">
+              <!-- q-select -->
+              <q-select v-model="statementSearchBy" :options="searchByOptionsForStatament" outlined dense label="Search By" class="w-28" />
+              <q-input v-model="searchStatement" :debounce="500" @update:model-value="(value) => searchInUnmatchedStatementTransactions(value as string)" outlined dense placeholder="Search..."
+                class="grow mb-2" />
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+              <div class="px-4 py-3 border-b bg-blue-50 ">
+                <h3 class="text-lg my-0 font-semibold text-blue-600">
+                  Unmatched Statement Transactions
+                  <span class="text-sm text-blue-500 ml-2">({{ filteredUnmatchedStatementTransactions.length }})</span>
+                </h3>
+                <div class="flex items-center justify-between mt-2">
+                  <div>
+                    <input type="checkbox" class="px-4 h-4 w-4 text-blue-600 rounded" :checked="allStatementSelected" @change="toggleAllStatementTransactions" />
+                    <span class="ml-2 text-sm text-gray-600">Select All</span>
+                  </div>
+                  <div>
+                    <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                      calculateTotal(filteredUnmatchedStatementTransactions, true)
+                      }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="divide-y max-h-[600px] overflow-y-auto text-xs">
-              <div v-for="data in unmatchedStatementTransactions" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
-                <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
-                <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
-                  <div class="flex justify-between mb-1">
-                    <span class="text-gray-500">{{ data.date }}</span>
-                    <div class="font-medium">
-                      <span v-if="data.dr_amount" class="text-red-500 ">-{{ data.dr_amount }}</span>
-                      <span v-if="data.cr_amount" class="text-green-500">+{{ data.cr_amount }}</span>
+              <div class="divide-y max-h-[600px] overflow-y-auto text-xs">
+                <div v-for="data in filteredUnmatchedStatementTransactions" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
+                  <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
+                  <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
+                    <div class="flex justify-between mb-1">
+                      <span class="text-gray-500">{{ data.date }}</span>
+                      <div class="font-medium">
+                        <span v-if="data.dr_amount" class="text-red-500 ">-{{ data.dr_amount }}</span>
+                        <span v-if="data.cr_amount" class="text-green-500">+{{ data.cr_amount }}</span>
+                      </div>
                     </div>
+                    <div class="text-gray-600">{{ data.description }}</div>
                   </div>
-                  <div class="text-gray-600">{{ data.description }}</div>
                 </div>
               </div>
             </div>
           </div>
           <!-- --------------------------------------------------------------                  Unmatched System Transactions                      -------------------------------------------------------------------------------- -->
-          <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div class="px-4 py-3 border-b bg-green-50">
-              <h3 class="text-lg my-0 font-semibold text-green-600">
-                Unmatched System Transactions
-                <span class="text-sm text-green-500 ml-2">({{ unmatchedSystemTransactions.length }})</span>
-              </h3>
-              <div class="flex items-center justify-between mt-2">
-                <div class="flex items-centers">
-                  <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="allSystemSelected" @change="toggleAllSystemTransactions" />
-                  <span class="ml-2 text-sm text-gray-600">Select All</span>
-                </div>
-                <div>
-                  <span class="font-medium" :class="Number(calculateTotal(unmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(unmatchedSystemTransactions)
-                    }}</span>
+
+          <div>
+            <div class="flex gap-4">
+              <!-- q-select -->
+              <q-select v-model="systemSearchBy" :options="searchByOptionsForSystem" outlined dense label="Search By" class="w-28" />
+              <q-input v-model="searchSystem" :debounce="500" @update:model-value="(value) => searchInUnmatchedSystemTransactions(value as string)" outlined dense placeholder="Search..."
+                class="grow mb-2" />
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+              <div class="px-4 py-3 border-b bg-green-50">
+                <h3 class="text-lg my-0 font-semibold text-green-600">
+                  Unmatched System Transactions
+                  <span class="text-sm text-green-500 ml-2">({{ filteredUnmatchedSystemTransactions.length }})</span>
+                </h3>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-centers">
+                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="allSystemSelected" @change="toggleAllSystemTransactions" />
+                    <span class="ml-2 text-sm text-gray-600">Select All</span>
+                  </div>
+                  <div>
+                    <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                      calculateTotal(filteredUnmatchedSystemTransactions)
+                      }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="divide-y max-h-[600px] overflow-y-auto">
-              <div v-for="data in unmatchedSystemTransactions" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
-                <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
-                  @change="toggleSystemTransaction(data)" />
+              <div class="divide-y max-h-[600px] overflow-y-auto">
+                <div v-for="data in filteredUnmatchedSystemTransactions" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
+                  <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
+                    @change="toggleSystemTransaction(data)" />
 
-                <div class="flex-grow min-w-0">
-                  <!-- Transaction Header -->
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-500">{{ data.date }}</span>
+                  <div class="flex-grow min-w-0">
+                    <!-- Transaction Header -->
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-xs text-gray-500">{{ data.date }}</span>
 
-                    <router-link v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
-                      :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
-                      {{ data.source_type }}
-                    </router-link>
-                  </div>
+                      <router-link v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
+                        :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
+                        {{ data.source_type }}
+                      </router-link>
+                    </div>
 
-                  <!-- Counterpart Accounts -->
-                  <div class="space-y-1">
-                    <div v-for="counterpart in data.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
-                      <div class="text-gray-700 truncate pr-2">
-                        {{ counterpart.account_name }}
-                      </div>
+                    <!-- Counterpart Accounts -->
+                    <div class="space-y-1">
+                      <div v-for="counterpart in data.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
+                        <div class="text-gray-700 truncate pr-2">
+                          {{ counterpart.account_name }}
+                        </div>
 
-                      <div class="flex space-x-2">
-                        <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
-                          -{{ counterpart.dr_amount }}
-                        </span>
-                        <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
-                          +{{ counterpart.cr_amount }}
-                        </span>
+                        <div class="flex space-x-2">
+                          <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
+                            -{{ counterpart.dr_amount }}
+                          </span>
+                          <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
+                            +{{ counterpart.cr_amount }}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Total for Multiple Counterparts -->
-                  <div v-if="data.counterpart_accounts.length > 1" class="border-t text-right text-xs w-fit ml-auto">
-                    <span v-if="data.dr_amount" class="text-green-500 font-semibold">
-                      +{{ data.dr_amount }}
-                    </span>
-                    <span v-if="data.cr_amount" class="text-red-500 font-semibold ml-2">
-                      -{{ data.cr_amount }}
-                    </span>
+                    <!-- Total for Multiple Counterparts -->
+                    <div v-if="data.counterpart_accounts.length > 1" class="border-t text-right text-xs w-fit ml-auto">
+                      <span v-if="data.dr_amount" class="text-green-500 font-semibold">
+                        +{{ data.dr_amount }}
+                      </span>
+                      <span v-if="data.cr_amount" class="text-red-500 font-semibold ml-2">
+                        -{{ data.cr_amount }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
