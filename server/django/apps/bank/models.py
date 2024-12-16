@@ -13,6 +13,7 @@ from apps.ledger.models import (
     TransactionModel,
     set_ledger_transactions,
 )
+from apps.ledger.models.base import Transaction
 from awecount.libs import wGenerator
 
 
@@ -465,6 +466,37 @@ class ReconciliationEntries(models.Model):
     transaction_ids = ArrayField(models.IntegerField(), default=list, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     statement = models.ForeignKey(ReconciliationStatement, on_delete=models.CASCADE, related_name="entries")
+    adjustment_amount = models.FloatField(null=True, blank=True)
+    adjustment_type = models.CharField(max_length=10, default="Dr")
 
     def __str__(self):
         return str(self.date)
+    
+    @property
+    def voucher_no(self):
+        return self.id
+    
+    def apply_transactions(self, date):
+        if not self.adjustment_amount:
+            return
+        entries = []
+
+        statement_account = self.statement.account
+
+        adjustment_account = Account.objects.get(name="Bank Reconciliation Adjustment", company=self.statement.company)
+        if self.adjustment_type == "Dr":
+            entries.append(("cr", statement_account, self.adjustment_amount))
+            entries.append(("dr", adjustment_account, self.adjustment_amount))
+        elif self.adjustment_type == "Cr":
+            entries.append(("dr", statement_account, self.adjustment_amount))
+            entries.append(("cr", adjustment_account, self.adjustment_amount))
+        set_ledger_transactions(self, date, *entries, clear=True)
+        # get new transaction ids from journal entries
+        self.transaction_ids.extend(
+            Transaction.objects.filter(
+                journal_entry__content_type__model="reconciliationentries",
+                journal_entry__object_id=self.id,
+                account_id=statement_account.id,
+            ).values_list("id", flat=True)
+        )
+        self.save()

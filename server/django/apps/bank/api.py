@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
-from itertools import combinations
-
+from datetime import date, datetime, timedelta
+from itertools import chain, combinations
+from django.db import transaction
 from django.conf import settings
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
@@ -961,7 +961,6 @@ class ReconciliationViewSet(CRULViewSet):
         
         if not start_date or not end_date or not account_id:
             raise APIException("start_date, end_date and account_id are required")
-        from itertools import chain
 
         # Fetch reconciled transaction IDs for the same company, account, and date
         reconciled_transaction_ids = ReconciliationEntries.objects.filter(
@@ -1014,6 +1013,37 @@ class ReconciliationViewSet(CRULViewSet):
             raise APIException("statement_ids are required")
         statement_objects = ReconciliationEntries.objects.filter(id__in=statement_ids)
         statement_objects.update(status='Unreconciled', transaction_ids=[])
+        return Response({})
+    
+    @action(detail=False, methods=["POST"], url_path="reconcile-with-adjustment")
+    def reconcile_with_adjustment(self, request):
+        statement_ids = request.data.get('statement_ids')
+        transaction_ids = request.data.get('transaction_ids')
+        narration = request.data.get('narration')
+        # TODO: max number of statement_ids
+        if not statement_ids or not transaction_ids or not narration or len(statement_ids) > 10:
+            raise APIException("statement_ids, transaction_ids and narration are required")
+        statement_objects = ReconciliationEntries.objects.filter(id__in=statement_ids)
+        transaction_objects = Transaction.objects.filter(id__in=transaction_ids).select_related("journal_entry")
+        statement_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in statement_objects])
+        transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
+        # find the difference
+        difference = abs(statement_sum - transaction_sum)
+        # Divide the difference by the number of statement transactions and put the difference in the adjustment field
+        # date = get latest date of the system from transaction_objects
+        latest_date = max(
+            (obj.journal_entry.date for obj in transaction_objects if obj.journal_entry and obj.journal_entry.date),
+            default=date.min 
+        )
+        adjustment = difference / len(statement_objects)
+        with transaction.atomic():
+            for obj in statement_objects:
+                obj.transaction_ids = transaction_ids
+                obj.adjustment_amount = adjustment
+                obj.adjustment_type = 'Dr' if adjustment > 0 else 'Cr'
+                obj.save()
+                obj.status = 'Matched'
+                obj.apply_transactions(latest_date)
         return Response({})
         
 
