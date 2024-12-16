@@ -664,7 +664,7 @@ class RecurringVoucherTemplateCreateSerializer(serializers.ModelSerializer):
         if invoice_serializer.is_valid() is False:
             raise ValidationError({"invoice_data": invoice_serializer.errors})
         return super().validate(data)
-    
+
     def create(self, validated_data):
         validated_data["user_id"] = self.context["request"].user.id
         return super().create(validated_data)
@@ -698,7 +698,7 @@ class FileOrStringField(serializers.Field):
         return value
 
 
-class SendInvoiceInEmailRequestSerializer(serializers.Serializer):
+class EmailInvoiceRequestSerializer(serializers.Serializer):
     attachments = serializers.ListField(child=FileOrStringField(), default=list)
     attach_pdf = serializers.BooleanField()
     to = serializers.ListField(child=serializers.EmailField())

@@ -723,7 +723,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
         merged_data = dict(merge_dicts(merged_data, conf["sales_invoice_data"]))
         return merged_data, conf["sales_invoice_endpoint"]
 
-    def send_invoice_in_email(self, to, subject, message, attachments, attach_pdf):
+    def email_invoice(self, to, subject, message, attachments, attach_pdf):
         if self.status in ["Draft", "Cancelled"]:
             raise Exception("Draft or Cancelled invoices cannot be sent!")
         pdf_stream = None

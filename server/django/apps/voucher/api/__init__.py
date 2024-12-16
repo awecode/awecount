@@ -82,8 +82,8 @@ from apps.voucher.serializers.purchase import (
     PurchaseVoucherRowSerializer,
 )
 from apps.voucher.serializers.sales import (
+    EmailInvoiceRequestSerializer,
     RecurringVoucherTemplateCreateSerializer,
-    SendInvoiceInEmailRequestSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
     PurchaseCreateSettingSerializer,
@@ -597,13 +597,13 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         details = self.get_voucher_details(pk)
         return Response({**details, "company": CompanySerializer(obj.company).data})
 
-    @action(detail=True, url_path="send-invoice-in-email", methods=["POST"])
-    def send_invoice_in_email(self, request, pk):
-        serializer = SendInvoiceInEmailRequestSerializer(data=request.data)
+    @action(detail=True, url_path="email-invoice", methods=["POST"])
+    def email_invoice(self, request, pk):
+        serializer = EmailInvoiceRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = self.get_object()
         async_task(
-            "apps.voucher.models.SalesVoucher.send_invoice_in_email",
+            "apps.voucher.models.SalesVoucher.email_invoice",
             obj,
             **serializer.validated_data,
         )
