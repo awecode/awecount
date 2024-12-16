@@ -568,7 +568,7 @@ const essentialLinks: EssentialLinkProps[] = [
         title: 'Bank Reconciliation',
         icon: 'mdi-text-box-check',
         link: '/bank-reconciliation/view',
-        hide: !checkPermissions('BankReconciliationView'),
+        hide: !checkPermissions('ReconciliationStatementView'),
       },
     ],
   },
