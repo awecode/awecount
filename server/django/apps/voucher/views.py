@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.forms import ValidationError
 from django.http import HttpResponse
 from django.views.generic.detail import DetailView
 from django_xhtml2pdf.utils import fetch_resources
@@ -39,6 +41,14 @@ class FileUploadView(APIView):
         uploaded_files = request.FILES.getlist("files")
         folder = request.data.get("folder", "")
         file_urls = []
+
+        for file in uploaded_files:
+            max_file_upload_size = settings.MAX_FILE_UPLOAD_SIZE
+            if file.size > max_file_upload_size:
+                max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
+                return ValidationError(
+                    f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
+                )
 
         for file in uploaded_files:
             filename = upload_file(file, folder)

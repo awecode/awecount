@@ -80,5 +80,6 @@ BASE_URL = "http://localhost:8080/"
 #     },
 # }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 URL = "http://localhost:9000"
+MAX_FILE_UPLOAD_SIZE = 1024 * 1024
