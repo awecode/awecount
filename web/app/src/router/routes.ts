@@ -842,6 +842,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:company',
     name: 'company',
+    component: () => import('layouts/MainLayout.vue'),
     children: companyRoutes,
   },
 ]
