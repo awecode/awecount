@@ -1,47 +1,127 @@
+import typing
 import uuid
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
-from apps.users.models import User
+from apps.company.models import get_default_permissions
+from lib.models.mixins import TimeAuditModel
+
+from .crypto import KeyGenerator
 
 
-class AccessKey(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class APIKeyManager(models.Manager):
+    key_generator = KeyGenerator()
+
+    def assign_key(self, obj: "APIKey") -> str:
+        key, prefix, hashed_key = self.key_generator.generate()
+
+        obj.id = uuid.uuid4()
+        obj.prefix = prefix
+        obj.hashed_key = hashed_key
+
+        return key
+
+    def create_key(self, **kwargs: typing.Any) -> typing.Tuple["APIKey", str]:
+        # Prevent from manually setting the primary key.
+        kwargs.pop("id", None)
+        obj = self.model(**kwargs)
+        key = self.assign_key(obj)
+        obj.save()
+        return obj, key
+
+    def get_usable_keys(self) -> models.QuerySet:
+        return self.filter(revoked=False)
+
+    def get_from_key(self, key: str) -> "APIKey":
+        prefix, _, _ = key.partition(".")
+        queryset = self.get_usable_keys()
+
+        try:
+            api_key = queryset.get(prefix=prefix)
+        except self.model.DoesNotExist:
+            raise  # For the sake of being explicit.
+
+        if not api_key.is_valid(key):
+            raise self.model.DoesNotExist("Key is not valid.")
+        else:
+            return api_key
+
+    def validate_key(self, key: str) -> tuple["APIKey", bool]:
+        try:
+            api_key = self.get_from_key(key)
+        except self.model.DoesNotExist:
+            return None, False
+
+        if api_key.has_expired:
+            return api_key, False
+
+        return api_key, True
+
+
+class APIKey(TimeAuditModel):
+    objects = APIKeyManager()
+
     company = models.ForeignKey(
         "company.Company",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
-    key = models.UUIDField(default=uuid.uuid4)
-    enabled = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=timezone.now)
 
-    @classmethod
-    def get_user(cls, key):
-        try:
-            return (
-                cls.objects.filter(enabled=True)
-                .select_related("company")
-                .get(key=key)
-                .user
-            )
-        except (cls.DoesNotExist, ValidationError):
-            return
+    id = models.UUIDField(primary_key=True, editable=False)
+    prefix = models.CharField(max_length=8, unique=True, editable=False)
+    hashed_key = models.CharField(max_length=150, editable=False)
 
-    @classmethod
-    def get_company(cls, key):
-        try:
-            return (
-                cls.objects.filter(enabled=True)
-                .select_related("company")
-                .get(key=key)
-                .user.company
+    permissions = models.JSONField(
+        default=get_default_permissions,
+        blank=True,
+        null=True,
+        help_text=_("A JSON object that defines the permissions for this API key."),
+    )
+
+    name = models.CharField(
+        max_length=50,
+        blank=False,
+        default="",
+        help_text=(
+            _(
+                "A free-form name for the API key. "
+                "Need not be unique. "
+                "50 characters max."
             )
-        except (cls.DoesNotExist, ValidationError):
-            return
+        ),
+    )
+    revoked = models.BooleanField(
+        blank=True,
+        default=False,
+        help_text=(
+            _(
+                "If the API key is revoked, clients cannot use it anymore. "
+                "(This cannot be undone.)"
+            )
+        ),
+    )
+    expiry_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Expires"),
+        help_text=_("Once API key expires, clients cannot use it anymore."),
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("API Key")
+        verbose_name_plural = _("API Keys")
+
+    @property
+    def has_expired(self):
+        return self.expiry_date and self.expiry_date < timezone.now().date()
 
     def __str__(self):
-        return str(self.user)
+        return str(self.name)
+
+    def is_valid(self, key: str) -> bool:
+        key_generator = self.objects.key_generator
+        return key_generator.verify(key, self.hashed_key)
