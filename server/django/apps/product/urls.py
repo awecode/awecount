@@ -39,17 +39,32 @@ router.register(
 )
 
 urlpatterns = [
-    path("v1/", include(router.urls)),
-    path("v1/category-tree/", ledger.CategoryTreeView.as_view(), name="category-tree"),
     path(
-        "v1/full-category-tree/",
+        "api/company/<slug:company_slug>/",
+        include(router.urls),
+    ),
+    path(
+        "api/company/<slug:company_slug>/category-tree/",
+        ledger.CategoryTreeView.as_view(),
+        name="category-tree",
+    ),
+    path(
+        "api/company/<slug:company_slug>/full-category-tree/",
         ledger.FullCategoryTreeView.as_view(),
         name="full-category-tree",
     ),
-    path("v1/trial-balance/", ledger.TrialBalanceView.as_view(), name="trial-balance"),
-    path("v1/tax-summary/", ledger.TaxSummaryView.as_view(), name="tax-summary"),
     path(
-        "v1/customer-closing-summary/",
+        "api/company/<slug:company_slug>/trial-balance/",
+        ledger.TrialBalanceView.as_view(),
+        name="trial-balance",
+    ),
+    path(
+        "api/company/<slug:company_slug>/tax-summary/",
+        ledger.TaxSummaryView.as_view(),
+        name="tax-summary",
+    ),
+    path(
+        "api/company/<slug:company_slug>/customer-closing-summary/",
         ledger.CustomerClosingView.as_view(),
         name="customer-closing-summary",
     ),

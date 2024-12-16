@@ -12,5 +12,5 @@ router.register("cheque-issue", bank.ChequeIssueViewSet, basename="cheque-issue"
 router.register("fund-transfer", bank.FundTransferViewSet, basename="fund-transfer")
 
 urlpatterns = [
-    path("v1/", include(router.urls)),
+    path("api/company/<slug:company_slug>/", include(router.urls)),
 ]

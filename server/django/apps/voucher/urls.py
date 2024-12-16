@@ -80,6 +80,9 @@ router.register(
 
 
 urlpatterns = [
-    path("pdf/sale-voucher/<int:pk>", views.SalesVoucherPdfView.as_view()),
-    path("v1/", include(router.urls)),
+    path(
+        "api/company/<slug:company_slug>/pdf/sale-voucher/<int:pk>",
+        views.SalesVoucherPdfView.as_view(),
+    ),
+    path("api/company/<slug:company_slug>/", include(router.urls)),
 ]

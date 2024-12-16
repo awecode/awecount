@@ -1,13 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.tax import api as tax
+from apps.report import api as report_api
 
 router = DefaultRouter()
 
-
-router.register("tax_scheme", tax.TaxSchemeViewSet, basename="tax")
-router.register("tax-payments", tax.TaxPaymentViewSet, basename="tax-payment")
+# Report
+router.register("report", report_api.ReportViewSet, basename="report")
 
 
 urlpatterns = [

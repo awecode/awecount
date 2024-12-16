@@ -55,5 +55,5 @@ router.register(
 
 
 urlpatterns = [
-    path("v1/", include(router.urls)),
+    path("api/company/<slug:company_slug>/", include(router.urls)),
 ]

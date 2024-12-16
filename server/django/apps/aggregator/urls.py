@@ -10,10 +10,23 @@ router.register("log-entries", aggregator.LogEntryViewSet, basename="log-entry")
 router.register("widgets", aggregator.WidgetViewSet, basename="widget")
 
 urlpatterns = [
-    path("v1/", include(router.urls)),
-    path("v1/export/", aggregator_views.export_data, name="export_data"),
     path(
-        "v1/export/auditlog/", aggregator_views.export_auditlog, name="export_auditlog"
+        "api/company/<slug:company_slug>/",
+        include(router.urls),
     ),
-    path("v1/import/", aggregator_views.import_data, name="import_data"),
+    path(
+        "api/company/<slug:company_slug>/export/",
+        aggregator_views.export_data,
+        name="export_data",
+    ),
+    path(
+        "api/company/<slug:company_slug>/export/auditlog/",
+        aggregator_views.export_auditlog,
+        name="export_auditlog",
+    ),
+    path(
+        "api/company/<slug:company_slug>/import/",
+        aggregator_views.import_data,
+        name="import_data",
+    ),
 ]
