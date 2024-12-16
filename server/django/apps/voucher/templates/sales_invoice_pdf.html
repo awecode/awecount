@@ -251,7 +251,9 @@
                     <td>
                         <strong>INV No.:</strong> {{ invoice.fiscal_year }}-<strong>{{ invoice.voucher_no }}</strong><br>
                         <strong>Date:</strong> {{ invoice.date }}<br>
-                        <strong>Miti:</strong> {{ invoice.miti }}<br>
+                         {% if invoice.miti %}
+                            <strong>Miti:</strong> {{ invoice.miti }}<br>
+                        {% endif %}
                         <strong>Mode:</strong> {{ invoice.payment_mode }}
                     </td>
                 </tr>

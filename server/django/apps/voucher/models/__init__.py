@@ -42,7 +42,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import deserialize_request, merge_dicts
+from awecount.libs.helpers import deserialize_request, merge_dicts, use_miti
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -743,9 +743,9 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                         "address": self.address,
                         "fiscal_year": self.fiscal_year.name,
                         "date": self.date,
-                        "miti": nepdate.string_from_tuple(
-                            nepdate.ad2bs(str(self.date))
-                        ),
+                        "miti": nepdate.string_from_tuple(nepdate.ad2bs(str(self.date)))
+                        if use_miti(self.company)
+                        else "",
                         "payment_mode": self.payment_mode.name
                         if self.payment_mode
                         else "Credit",

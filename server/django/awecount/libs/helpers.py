@@ -82,3 +82,7 @@ def deserialize_request(request_obj):
     for key, value in request_obj.items():
         setattr(request, key, value)
     return request
+
+
+def use_miti(company):
+    return company.config_template == "np"
