@@ -268,7 +268,7 @@ export default {
     }
 
     function sendInvoiceInEmail() {
-      const endpoint = `v1/sales-voucher/${fields.value?.id}/send-invoice-in-email/`
+      const endpoint = `v1/sales-voucher/${fields.value?.id}/email-invoice/`
       const formData = new FormData()
       formData.append('attach_pdf', sendInvoicePayload.value.attach_pdf ? 'true' : 'false')
       sendInvoicePayload.value.attachments.forEach((file: File) => {
