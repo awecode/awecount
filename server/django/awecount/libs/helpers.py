@@ -5,6 +5,8 @@ from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.utils.crypto import constant_time_compare
 from requests import Request
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 def merge_dicts(dict1, dict2):
@@ -53,13 +55,8 @@ def upload_file(file, folder):
     filename = f"{uuid.uuid4()}-{file.name}"
     if folder:
         filename = f"{folder}/{filename}"
-        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, folder)):
-            os.makedirs(os.path.join(settings.MEDIA_ROOT, folder))
-    file_path = os.path.join(settings.MEDIA_ROOT, filename)
-    with open(file_path, "wb+") as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
-    return filename
+    file_path = default_storage.save(filename, ContentFile(file.read()))
+    return file_path
 
 
 def get_origin():
