@@ -471,16 +471,14 @@ const reconcileMatchedTransactions = (matchedTransaction: {
 }
 
 const reconcile = () => {
-  if (canReconcile.value) {
-    console.log('Reconciling:', {
-      statementTransactions: selectedStatementTransactions.value,
-      systemTransactions: selectedSystemTransactions.value
-    })
-    useApi('v1/bank-reconciliation/reconcile-transactions/', {
+  if (selectedStatementTransactions.value.length > 0 || selectedSystemTransactions.value.length > 0) {
+    const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-with-adjustment/' : 'v1/bank-reconciliation/reconcile-transactions/'
+    useApi(endpoint, {
       method: 'POST',
       body: {
         statement_ids: selectedStatementTransactions.value.map(t => t.id),
         transaction_ids: selectedSystemTransactions.value.map(t => t.id),
+        narration: 'Test Narration',
       }
     }).then(() => {
       // remove from both unmatched lists
@@ -543,9 +541,9 @@ const unmatchMatchedTransactions = (matchedTransaction: {
             <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
               Unselect All
             </button>
-            <button @click="reconcile" :disabled="!canReconcile"
+            <button @click="reconcile" :disabled="!selectedStatementTransactions.length && !selectedSystemTransactions.length"
               class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-              Reconcile
+              {{ canReconcile ? 'Reconcile' : 'Reconcile with Adjustments' }}
             </button>
           </div>
 
@@ -618,7 +616,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedStatementTransactions, true)
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -663,7 +661,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedSystemTransactions)
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
