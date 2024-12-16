@@ -7,7 +7,7 @@ export default <APIConfig>{
   unauthorized: {
     statusCodes: [401],
     strategy: 'redirect',
-    redirect: { name: 'login' },
+    redirect: '/login',
   },
   authorizationHeader: 'Authorization',
   authorizationTokenPrefix: 'Token',

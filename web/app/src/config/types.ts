@@ -1,11 +1,9 @@
-import type { RouteLocationRaw } from 'vue-router'
-
 export interface APIConfig {
   baseURL: string
   trailingSlash: boolean
   protected: boolean
   unauthorized?: {
-    redirect: RouteLocationRaw
+    redirect: string
     statusCodes: number[]
     strategy: 'redirect'
   } | {
@@ -20,5 +18,5 @@ export interface AuthConfig {
   loginRoute?: string
   fullAccessRoles?: string[]
   redirectIfNotAllowed?: string | false
-  onboarding?: { enabled?: false } | { enabled: true, route: RouteLocationRaw }
+  onboarding?: { enabled?: false } | { enabled: true, route: string }
 }
