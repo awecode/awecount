@@ -1,3 +1,20 @@
+<script setup lang="ts">
+import { useMeta } from 'quasar'
+import { $api } from 'src/composables/api'
+
+useMeta({
+  title: 'Dashboard',
+  titleTemplate: (title: string) => `${title} | Awecount`,
+})
+
+const route = useRoute()
+const fields = ref(null)
+
+const endpoint = `/v1/${route.params.company}/widgets/data/`
+const res = await $api(endpoint, { method: 'GET', protected: true })
+fields.value = res
+</script>
+
 <template>
   <div class="q-ma-md">
     <div>
@@ -6,7 +23,7 @@
         label="Add widget"
         to="/dashboard-widgets/add"
         style="font-size: 0.75rem"
-      ></q-btn>
+      />
     </div>
     <div class="q-mt-md grid-con">
       <div v-for="widget in fields" :key="widget.id">
@@ -23,7 +40,7 @@
                   :to="`/dashboard-widgets/${widget.id}`"
                   size="sm"
                   class="text-grey-8"
-                ></q-btn>
+                />
               </span>
             </div>
             <div>
@@ -57,7 +74,7 @@
                 </q-markup-table>
               </div>
               <div v-else>
-                <ChartsView :data="widget.data"></ChartsView>
+                <ChartsView :data="widget.data" />
               </div>
             </div>
           </div>
@@ -66,33 +83,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import useApi from 'src/composables/useApi'
-import { useMeta } from 'quasar'
-export default {
-  setup() {
-    const metaData = {
-      title: 'Dashboard',
-      titleTemplate: (title) => `${title} | Awecount`,
-    }
-    useMeta(metaData)
-    const route = useRoute()
-    const fields = ref(null)
-    return {
-      fields,
-    }
-  },
-  created() {
-    const endpoint = `/v1/${route.params.company}/widgets/data/`
-    useApi(endpoint, { method: 'GET' })
-      .then((data) => {
-        this.fields = data
-      })
-      .catch((error) => console.log(error))
-  },
-}
-</script>
 
 <style lang="scss" scoped>
 .grid-con {
