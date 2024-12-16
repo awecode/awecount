@@ -1,5 +1,5 @@
 import { api } from 'boot/ofetch'
-import { useLoginStore } from 'src/stores/login-info'
+import { useAuthStore } from 'src/stores/auth'
 import { useRouter } from 'vue-router'
 
 const useApi = async (
@@ -8,7 +8,7 @@ const useApi = async (
   omitToken,
   permissionRedirect = false
 ) => {
-  const loginStore = useLoginStore()
+  const loginStore = useAuthStore()
   const router = useRouter()
   const options = {}
   if (omitToken !== true) {
