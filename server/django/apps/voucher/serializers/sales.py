@@ -706,7 +706,11 @@ class FileOrStringField(serializers.Field):
 
 
 class EmailInvoiceRequestSerializer(serializers.Serializer):
-    attachments = serializers.ListField(child=FileOrStringField(), default=list)
+    attachments = serializers.ListField(
+        child=FileOrStringField(),
+        default=list,
+        max_length=settings.MAX_EMAIL_ATTACHMENTS,
+    )
     attach_pdf = serializers.BooleanField()
     to = serializers.ListField(child=serializers.EmailField())
     subject = serializers.CharField()

@@ -131,3 +131,5 @@ DBBACKUP_FILENAME_TEMPLATE = "{databasename}-{servername}-{datetime}.{extension}
 DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 URL = "https://awecount.com"
 MAX_FILE_UPLOAD_SIZE = 1024 * 1024
+MAX_DEFAULT_EMAIL_ATTACHMENTS = 5
+MAX_EMAIL_ATTACHMENTS = 8
