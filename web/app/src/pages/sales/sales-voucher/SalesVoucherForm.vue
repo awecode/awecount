@@ -8,7 +8,7 @@
             <span v-if="fields.voucher_no">| # {{ fields.voucher_no }}</span></span>
         </div>
       </q-card-section>
-      <SalesForm :today="today" :formDefaults="formDefaults" v-model:fields="fields" :isEdit="isEdit"
+      <SalesVoucherFormFields :today="today" :formDefaults="formDefaults" v-model:fields="fields" :isEdit="isEdit"
         v-model:errors="errors" />
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">

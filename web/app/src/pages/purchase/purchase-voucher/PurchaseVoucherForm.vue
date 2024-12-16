@@ -8,7 +8,8 @@
         </div>
       </q-card-section>
 
-      <PurchaseForm :today="today" v-model:fields="fields" v-model:errors="errors" :isEdit="isEdit" :formDefaults="formDefaults" />
+      <PurchaseVoucherFormFields :today="today" v-model:fields="fields" v-model:errors="errors" :isEdit="isEdit"
+        :formDefaults="formDefaults" />
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit" :loading="loading"

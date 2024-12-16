@@ -10,8 +10,9 @@
       <q-card-section>
         <div class="text-h6">{{ capitalizedType }} Voucher Details</div>
       </q-card-section>
-      <component :is="type === 'sales' ? SalesForm : PurchaseForm" :is-template="true" :formDefaults="formDefaults"
-        v-model:fields="fields.invoice_data" :isEdit="isEdit" v-model:errors="invoiceDataErrors" :today="today" />
+      <component :is="type === 'sales' ? SalesVoucherFormFields : PurchaseVoucherFormFields" :is-template="true"
+        :formDefaults="formDefaults" v-model:fields="fields.invoice_data" :isEdit="isEdit"
+        v-model:errors="invoiceDataErrors" :today="today" />
 
       <q-card-section>
         <div class="text-h6">Recurring Template Details</div>
@@ -59,8 +60,8 @@
 
 <script setup>
 import checkPermissions from 'src/composables/checkPermissions'
-import SalesForm from './SalesForm.vue';
-import PurchaseForm from './PurchaseForm.vue';
+import SalesVoucherFormFields from './SalesVoucherFormFields.vue';
+import PurchaseVoucherFormFields from './PurchaseVoucherFormFields.vue';
 import { parseErrors } from 'src/utils/helpers';
 import { capitalize } from 'vue';
 
