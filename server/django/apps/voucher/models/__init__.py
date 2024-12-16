@@ -16,6 +16,8 @@ from django.db import models, transaction
 from django.db.models import Prefetch, Q
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django_q.models import Schedule
+from django_q.tasks import schedule
 from requests import Request
 from weasyprint import HTML
 
@@ -881,6 +883,16 @@ class RecurringVoucherTemplate(models.Model):
 
     def save(self, *args, **kwargs):
         self.next_date = self.get_next_date()
+        if self.pk:
+            Schedule.objects.filter(name=f"recurring_voucher_{self.pk}").delete()
+        if self.is_active and self.next_date:
+            schedule(
+                "apps.voucher.models.RecurringVoucherTemplate.generate_voucher",
+                self,
+                name=f"recurring_voucher_{self.pk}",
+                next_run=self.next_date,
+                schedule_type="O",
+            )
         super().save(*args, **kwargs)
 
     def get_next_date(self):
@@ -971,7 +983,6 @@ class RecurringVoucherTemplate(models.Model):
 
         self.no_of_vouchers_created += 1
         self.last_generated = self.next_date
-        self.next_date = self.get_next_date()
         self.save()
 
 
