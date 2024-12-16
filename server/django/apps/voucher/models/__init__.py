@@ -42,7 +42,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import merge_dicts
+from awecount.libs.helpers import deserialize_request, merge_dicts
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -916,12 +916,16 @@ class RecurringVoucherTemplate(models.Model):
     @transaction.atomic
     def generate_voucher(self):
         invoice_data = deepcopy(self.invoice_data)
-        request = Request()
-        request.user = self.user
-        request.company = self.company
-        request.company_id = self.company.id
-        request.user_id = self.user.id
-        request.data = invoice_data
+
+        request = deserialize_request(
+            {
+                "user": self.user,
+                "company": self.company,
+                "company_id": self.company.id,
+                "user_id": self.user.id,
+                "data": invoice_data,
+            }
+        )
         if self.type == "Sales Voucher":
             from apps.voucher.serializers.sales import SalesVoucherCreateSerializer
 

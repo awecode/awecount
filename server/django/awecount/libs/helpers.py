@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from django.core.signing import BadSignature, Signer
 from django.utils.crypto import constant_time_compare
+from requests import Request
 
 
 def merge_dicts(dict1, dict2):
@@ -63,3 +64,21 @@ def upload_file(file, folder):
 
 def get_origin():
     return settings.URL
+
+
+def serialize_request(request):
+    """Convert a Request object into a dictionary."""
+    return {
+        "company_id": request.company_id,
+        "user": request.user,
+        "data": request.data,
+        "company": request.company,
+    }
+
+
+def deserialize_request(request_obj):
+    """Convert a dictionary into a Request object."""
+    request = Request()
+    for key, value in request_obj.items():
+        setattr(request, key, value)
+    return request

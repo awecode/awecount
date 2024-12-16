@@ -107,8 +107,10 @@ from awecount.libs.CustomViewSet import (
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.helpers import (
     check_verification_hash,
+    deserialize_request,
     get_origin,
     get_verification_hash,
+    serialize_request,
     upload_file,
 )
 from awecount.libs.mixins import (
@@ -233,11 +235,7 @@ def send_purchase_voucher_import_completion_email(
 
 
 def import_sales_vouchers(request_obj, file):
-    request = Request()
-    request.company_id = request_obj["company_id"]
-    request.user = request_obj["user"]
-    request.company = request_obj["company"]
-    request.data = request_obj["data"]
+    request = deserialize_request(request_obj)
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
     rows = list(sheet.iter_rows(values_only=True))
@@ -335,11 +333,7 @@ def import_sales_vouchers(request_obj, file):
 
 
 def import_purchase_vouchers(request_obj, file):
-    request = Request()
-    request.company_id = request_obj["company_id"]
-    request.user = request_obj["user"]
-    request.company = request_obj["company"]
-    request.data = request_obj["data"]
+    request = deserialize_request(request_obj)
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
     rows = list(sheet.iter_rows(values_only=True))
@@ -788,12 +782,7 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
         async_task(
             "apps.voucher.api.import_sales_vouchers",
-            {
-                "company_id": request.company_id,
-                "user": request.user,
-                "data": request.data,
-                "company": request.company,
-            },
+            serialize_request(request),
             xls_file,
         )
 
@@ -1249,12 +1238,7 @@ class PurchaseVoucherViewSet(
 
         async_task(
             "apps.voucher.api.import_purchase_vouchers",
-            {
-                "company_id": request.company_id,
-                "user": request.user,
-                "data": request.data,
-                "company": request.company,
-            },
+            serialize_request(request),
             xls_file,
         )
 
