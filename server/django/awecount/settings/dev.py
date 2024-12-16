@@ -81,3 +81,4 @@ BASE_URL = "http://localhost:8080/"
 # }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+URL = "http://localhost:9000"

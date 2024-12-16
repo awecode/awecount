@@ -107,6 +107,7 @@ from awecount.libs.CustomViewSet import (
 from awecount.libs.exception import UnprocessableException
 from awecount.libs.helpers import (
     check_verification_hash,
+    get_origin,
     get_verification_hash,
     upload_file,
 )
@@ -181,7 +182,7 @@ def send_sales_voucher_import_completion_email(
         <p>Thank you for your patience.</p>
         """
     else:
-        origin = request.META.get("HTTP_ORIGIN") or "https://awecount.com"
+        origin = get_origin()
         subject = "Sales Invoices Imported Successfully"
         message = f"""
         <p>Your sales invoices have been successfully imported.</p>
@@ -212,7 +213,7 @@ def send_purchase_voucher_import_completion_email(
         <p>Thank you for your patience.</p>
         """
     else:
-        origin = request.META.get("HTTP_ORIGIN") or "https://awecount.com"
+        origin = get_origin()
         subject = "Purchase Invoices Imported Successfully"
         message = f"""
         <p>Your purchase invoices have been successfully imported.</p>
@@ -236,9 +237,6 @@ def import_sales_vouchers(request_obj, file):
     request.company_id = request_obj["company_id"]
     request.user = request_obj["user"]
     request.company = request_obj["company"]
-    request.META = {
-        "HTTP_ORIGIN": request_obj["origin"],
-    }
     request.data = request_obj["data"]
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
@@ -341,9 +339,6 @@ def import_purchase_vouchers(request_obj, file):
     request.company_id = request_obj["company_id"]
     request.user = request_obj["user"]
     request.company = request_obj["company"]
-    request.META = {
-        "HTTP_ORIGIN": request_obj["origin"],
-    }
     request.data = request_obj["data"]
     wb = openpyxl.load_workbook(file)
     sheet = wb.worksheets[0]
@@ -796,7 +791,6 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
             {
                 "company_id": request.company_id,
                 "user": request.user,
-                "origin": request.META.get("HTTP_ORIGIN"),
                 "data": request.data,
                 "company": request.company,
             },
@@ -1258,7 +1252,6 @@ class PurchaseVoucherViewSet(
             {
                 "company_id": request.company_id,
                 "user": request.user,
-                "origin": request.META.get("HTTP_ORIGIN"),
                 "data": request.data,
                 "company": request.company,
             },

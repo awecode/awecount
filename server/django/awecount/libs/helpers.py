@@ -59,3 +59,7 @@ def upload_file(file, folder):
         for chunk in file.chunks():
             destination.write(chunk)
     return filename
+
+
+def get_origin():
+    return settings.URL
