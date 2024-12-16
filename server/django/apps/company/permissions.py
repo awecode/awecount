@@ -11,17 +11,11 @@ class CompanyBasePermission(BasePermission):
     Don't use this permission class directly. Use the following permission classes instead:
     - `CompanyOwnerPermission`
     - `CompanyAdminPermission`
-    - `CompanyEntityPermission` (for member level permissions)
-    - `CompanyGuestPermission`
+    - `CompanyMemberPermission` (for member level permissions)
     """
 
     def has_permission(self, request, view):
         if request.user.is_anonymous:
-            return False
-
-        company_slug = view.kwargs.get("company_slug", None)
-
-        if not company_slug:
             return False
 
         # allow anyone registered user to create a company
@@ -31,7 +25,7 @@ class CompanyBasePermission(BasePermission):
         if request.method == "GET":
             return CompanyMember.objects.filter(
                 member=request.user,
-                company__slug=company_slug,
+                company=request.company,
                 is_active=True,
             ).exists()
 
@@ -43,7 +37,7 @@ class CompanyBasePermission(BasePermission):
         if request.method in ["PUT", "PATCH"]:
             return CompanyMember.objects.filter(
                 member=request.user,
-                company__slug=company_slug,
+                company=request.company,
                 is_active=True,
                 access_level__in=[
                     CompanyMember.AccessLevel.OWNER,
@@ -55,7 +49,7 @@ class CompanyBasePermission(BasePermission):
         if request.method == "DELETE":
             return CompanyMember.objects.filter(
                 member=request.user,
-                company__slug=company_slug,
+                company=request.company,
                 is_active=True,
                 access_level=CompanyMember.AccessLevel.OWNER,
             ).exists()
@@ -66,13 +60,8 @@ class CompanyOwnerPermission(BasePermission):
         if request.user.is_anonymous:
             return False
 
-        company_slug = view.kwargs.get("company_slug", None)
-
-        if not company_slug:
-            return False
-
         return CompanyMember.objects.filter(
-            company__slug=company_slug,
+            company=request.company,
             member=request.user,
             access_level=CompanyMember.AccessLevel.OWNER,
             is_active=True,
@@ -84,14 +73,9 @@ class CompanyAdminPermission(BasePermission):
         if request.user.is_anonymous:
             return False
 
-        company_slug = view.kwargs.get("company_slug", None)
-
-        if not company_slug:
-            return False
-
         return CompanyMember.objects.filter(
             member=request.user,
-            company__slug=company_slug,
+            company=request.company,
             access_level__in=[
                 CompanyMember.AccessLevel.OWNER,
                 CompanyMember.AccessLevel.ADMIN,
@@ -105,14 +89,9 @@ class CompanyMemberPermission(BasePermission):
         if request.user.is_anonymous:
             return False
 
-        company_slug = view.kwargs.get("company_slug", None)
-
-        if not company_slug:
-            return False
-
         company_member = CompanyMember.objects.filter(
             member=request.user,
-            company__slug=company_slug,
+            company=request.company,
             is_active=True,
         ).first()
 
