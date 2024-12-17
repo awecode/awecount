@@ -235,7 +235,7 @@ class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
             .annotate(total_members=Count("company__company_member"))
         )
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         invitations = request.data.get("invitations", [])
         company_invitations = CompanyMemberInvite.objects.filter(
             pk__in=invitations,

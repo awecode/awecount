@@ -80,7 +80,7 @@ class SalesVoucherAdmin(admin.ModelAdmin):
         "user",
     ]
 
-    def get_queryset(self, request):
+    def get_queryset(self, request, *args, **kwargs):
         qs = super(SalesVoucherAdmin, self).get_queryset(request)
         changelist_path = reverse(
             "admin:%s_%s_changelist"

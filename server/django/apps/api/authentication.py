@@ -39,7 +39,7 @@ class APIKeyAuthentication(authentication.BaseAuthentication):
     keyword = "Api-Key"
     model = APIKey
 
-    def authenticate(self, request):
+    def authenticate(self, request, *args, **kwargs):
         authorization = get_authorization_header(request)
 
         if not authorization:
@@ -69,7 +69,7 @@ class APIKeyAuthentication(authentication.BaseAuthentication):
 
         return APIUser(api_key), None
 
-    def authenticate_header(self, request):
+    def authenticate_header(self, request, *args, **kwargs):
         return self.keyword
 
     def get_model(self):

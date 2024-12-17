@@ -64,7 +64,7 @@ class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
     queryset = PurchaseDiscount.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
-    def all(self, request):
+    def all(self, request, *args, **kwargs):
         parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
         return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)
 

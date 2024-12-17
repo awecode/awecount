@@ -25,7 +25,7 @@ class PartnerJournalVoucherViewSet(viewsets.GenericViewSet, mixins.CreateModelMi
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="change-status")
-    def change_status(self, request):
+    def change_status(self, request, *args, **kwargs):
         serializer = PartnerJournalVoucherStatusChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -49,7 +49,7 @@ class PartnerPartyViewSet(viewsets.GenericViewSet):
     queryset = Party.objects.all()
 
     @action(detail=False, methods=["get"], url_path="all")
-    def all(self, request):
+    def all(self, request, *args, **kwargs):
         parties = (
             self.queryset.filter(company_id=request.company_id)
             .order_by("-pk")

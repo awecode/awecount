@@ -13,7 +13,7 @@ from awecount.libs.serializers import ShortNameChoiceSerializer
 
 class InputChoiceMixin(object):
     @action(detail=False)
-    def choices(self, request):
+    def choices(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         search_keyword = request.query_params.get("search")
         append_result_id = request.query_params.get("id")
@@ -307,7 +307,7 @@ class TransactionsViewMixin(object):
 
 class CancelPurchaseVoucherMixin:
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         purchase_voucher = self.get_object()
         message = request.data.get("message")
         if not message:
@@ -350,7 +350,7 @@ class CancelPurchaseVoucherMixin:
 
 class CancelCreditOrDebitNoteMixin:
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         if (
             request.company.inventory_setting.enable_fifo
             and not request.query_params.get("fifo_inconsistency")

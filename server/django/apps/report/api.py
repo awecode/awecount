@@ -184,7 +184,7 @@ class ReportViewSet(GenericViewSet):
         return ret_dicts
 
     @action(detail=False, methods=["GET"], url_path="ageing-report")
-    def ageing_report(self, request):
+    def ageing_report(self, request, *args, **kwargs):
         ret_dicts = self.ageing_report_data(request)
         page = self.paginate_queryset(ret_dicts)
         if page is not None:
@@ -192,7 +192,7 @@ class ReportViewSet(GenericViewSet):
         return Response(ret_dicts)
 
     @action(detail=False, methods=["GET"], url_path="export-ageing-report")
-    def export_ageing_report(self, request):
+    def export_ageing_report(self, request, *args, **kwargs):
         ret_dicts = self.ageing_report_data(request)
         for dct in ret_dicts:
             dct.pop("party_id")

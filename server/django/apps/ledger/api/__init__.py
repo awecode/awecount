@@ -112,11 +112,11 @@ class PartyViewSet(
         return Response(data)
 
     @action(detail=False)
-    def customers(self, request):
+    def customers(self, request, *args, **kwargs):
         return super().list(request)
 
     @action(detail=False)
-    def suppliers(self, request):
+    def suppliers(self, request, *args, **kwargs):
         return super().list(request)
 
 
@@ -549,7 +549,7 @@ class TransactionViewSet(
         return qs
 
     @action(detail=False)
-    def export(self, request):
+    def export(self, request, *args, **kwargs):
         queryset = self.get_queryset().order_by("-journal_entry__date")
         if not request.GET.get("group"):
             params = [("Transactions", queryset, TransactionResource)]
@@ -559,7 +559,7 @@ class TransactionViewSet(
             return qs_to_xls(params)
 
     @action(detail=False, url_path="day-book")
-    def day_book(self, request):
+    def day_book(self, request, *args, **kwargs):
         date_str = self.request.GET.get("date") or datetime.now().date().isoformat()
         try:
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -661,7 +661,7 @@ class AccountClosingViewSet(
 
     collections = [("fiscal_years", FiscalYear, GenericSerializer, True, ["name"])]
 
-    def get_defaults(self, request=None):
+    def get_defaults(self, request=None, *args, **kwargs):
         company = request.company
         current_fiscal_year = GenericSerializer(company.current_fiscal_year).data
         return {"fields": {"current_fiscal_year": current_fiscal_year}}

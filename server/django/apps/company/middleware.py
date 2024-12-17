@@ -41,7 +41,7 @@ class CompanyMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-    def __call__(self, request):
+    def __call__(self, request, *args, **kwargs):
         request.company = SimpleLazyObject(lambda: get_company(request))
         response = self.get_response(request)
         return response

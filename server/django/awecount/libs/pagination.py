@@ -9,7 +9,7 @@ class PageNumberPagination(BasePageNumberPagination):
     def get_paginated_response(self, data):
         return Response(self.get_response_data(data))
 
-    def get_page_size(self, request):
+    def get_page_size(self, request, *args, **kwargs):
         requested_page_size = request.GET.get("page_size")
         if requested_page_size and requested_page_size.isdigit():
             page_size = int(requested_page_size)

@@ -26,8 +26,8 @@ from apps.bank.serializers import (
     BankCashDepositListSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
-    ChequeIssueSerializer,
     ChequeIssueFormSerializer,
+    ChequeIssueSerializer,
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
@@ -56,7 +56,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "bank_accounts",
@@ -97,7 +97,7 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
         return ChequeDepositCreateSerializer
 
     @action(detail=True, methods=["POST"])
-    def mark_as_cleared(self, request, pk):
+    def mark_as_cleared(self, request, pk, *args, **kwargs):
         cheque_deposit = self.get_object()
         if cheque_deposit.status == "Issued":
             cheque_deposit.clear()
@@ -106,19 +106,19 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
             raise APIException("This voucher cannot be mark as cleared!")
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         cheque_deposit = self.get_object()
         cheque_deposit.cancel()
         return Response({})
 
     @action(detail=True)
-    def details(self, request, pk):
+    def details(self, request, pk, *args, **kwargs):
         qs = self.get_queryset().select_related("benefactor", "bank_account")
         data = ChequeDepositCreateSerializer(get_object_or_404(pk=pk, queryset=qs)).data
         return Response(data)
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
@@ -132,10 +132,10 @@ class ChequeIssueViewSet(CRULViewSet):
             BankAccount.objects.filter(is_wallet=False),
             BankAccountChequeIssueSerializer,
             True,
-            ['short_name', 'account_number', 'bank_name'],
+            ["short_name", "account_number", "bank_name"],
         ),
-        ("parties", Party, PartyMinSerializer, True, ['name']),
-        ("accounts", Account, GenericSerializer, True, ['name']),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("accounts", Account, GenericSerializer, True, ["name"]),
     )
     filterset_class = ChequeIssueFilterSet
     filter_backends = [
@@ -154,7 +154,7 @@ class ChequeIssueViewSet(CRULViewSet):
     ]
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
@@ -171,7 +171,7 @@ class ChequeIssueViewSet(CRULViewSet):
         return super().get_serializer_class()
 
     @action(detail=False)
-    def export(self, request):
+    def export(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).annotate(
             issued=Case(
                 When(issued_to__isnull=True, then="party__name"), default="issued_to"
@@ -196,7 +196,7 @@ class FundTransferViewSet(CRULViewSet):
             ).order_by("category__name"),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "to_account",
@@ -206,7 +206,7 @@ class FundTransferViewSet(CRULViewSet):
             ).order_by("category__name"),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "transaction_fee_account",
@@ -215,7 +215,7 @@ class FundTransferViewSet(CRULViewSet):
             ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
     )
 
@@ -235,7 +235,7 @@ class FundTransferViewSet(CRULViewSet):
     ]
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
@@ -247,7 +247,7 @@ class FundTransferViewSet(CRULViewSet):
         return qs.order_by("-pk")
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
@@ -258,7 +258,9 @@ class FundTransferViewSet(CRULViewSet):
         serializer = self.get_serializer(page, many=True)
         paginated_response = self.get_paginated_response(serializer.data)
         data = paginated_response.data
-        templates = FundTransferTemplate.objects.filter(company=request.company).select_related("from_account", "to_account", "transaction_fee_account")
+        templates = FundTransferTemplate.objects.filter(
+            company=request.company
+        ).select_related("from_account", "to_account", "transaction_fee_account")
         data["templates"] = FundTransferTemplateSerializer(templates, many=True).data
         return Response(data)
 
@@ -277,7 +279,7 @@ class CashDepositViewSet(CRULViewSet):
             ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "bank_accounts",
@@ -286,7 +288,7 @@ class CashDepositViewSet(CRULViewSet):
             ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
     ]
 
@@ -315,19 +317,19 @@ class CashDepositViewSet(CRULViewSet):
         return BankCashDepositCreateSerializer
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})
 
     @action(detail=True, url_path="journal-entries")
-    def journal_entries(self, request, pk):
+    def journal_entries(self, request, pk, *args, **kwargs):
         obj = get_object_or_404(self.get_queryset(), pk=pk)
         journals = obj.journal_entries()
         return Response(JournalEntriesSerializer(journals, many=True).data)
 
     @action(detail=True, methods=["POST"])
-    def cancel(self, request, pk):
+    def cancel(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.cancel()
         return Response({})

@@ -27,7 +27,7 @@ class LogEntryViewSet(ReadOnlyModelViewSet):
         ).select_related("content_type", "actor")
 
     @action(detail=False)
-    def export(self, request):
+    def export(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         params = [
             ("Audit Logs", queryset, LogEntryResource),
@@ -45,7 +45,7 @@ class WidgetViewSet(CRULViewSet):
             return WidgetUpdateSerializer
 
     @action(detail=False)
-    def data(self, request):
+    def data(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(is_active=True).order_by("-id")
         return Response(WidgetSerializer(qs, many=True).data)
 
@@ -54,13 +54,13 @@ class WidgetViewSet(CRULViewSet):
         return Widget.objects.filter(user=self.request.user).order_by("-pk")
 
     @action(detail=True, methods=["POST"])
-    def delete(self, request, pk):
+    def delete(self, request, pk, *args, **kwargs):
         obj = self.get_object()
         obj.is_active = False
         obj.save()
         return Response({})
 
-    def get_defaults(self, request=None):
+    def get_defaults(self, request=None, *args, **kwargs):
         data = {
             "options": {
                 "widgets": choice_parser(WIDGET_CHOICES),
