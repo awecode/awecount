@@ -83,7 +83,7 @@ export default {
           icon-right="add"
           color="green"
           :label="template.name"
-          :to="{ path: '/fund-transfer/create/', query: { template: encodeURIComponent(JSON.stringify(template)) } }"
+          :to="{ path: `/${$route.params.company}/fund-transfer/create/`, query: { template: encodeURIComponent(JSON.stringify(template)) } }"
         />
       </div>
     </q-card>

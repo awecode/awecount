@@ -149,7 +149,7 @@ export default {
     }
     function updateData() {
       const query = { ...fields.value }
-      router.push({ path: '/report/trial-balance/', query })
+      router.push({ path: `/${route.params.company}/reports/trial-balance/`, query })
       fetchData()
     }
     if (route.query.start_date && route.query.end_date) {
