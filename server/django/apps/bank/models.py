@@ -466,8 +466,8 @@ class ReconciliationEntries(models.Model):
     transaction_ids = ArrayField(models.IntegerField(), default=list, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     statement = models.ForeignKey(ReconciliationStatement, on_delete=models.CASCADE, related_name="entries")
+    # - if the amount is positive, it means the bank statement has more money than the ledger
     adjustment_amount = models.FloatField(null=True, blank=True)
-    adjustment_type = models.CharField(max_length=10, default="Dr")
 
     def __str__(self):
         return str(self.date)
@@ -484,12 +484,13 @@ class ReconciliationEntries(models.Model):
         bank_account = self.statement.account
 
         adjustment_account = Account.objects.get(name="Bank Reconciliation Adjustment", company=self.statement.company)
-        if self.adjustment_type == "Dr":
-            entries.append(("cr", bank_account, self.adjustment_amount))
-            entries.append(("dr", adjustment_account, self.adjustment_amount))
-        elif self.adjustment_type == "Cr":
-            entries.append(("dr", bank_account, self.adjustment_amount))
-            entries.append(("cr", adjustment_account, self.adjustment_amount))
+        adjustment_amount_absolute = abs(self.adjustment_amount)
+        if self.adjustment_amount < 0:
+            entries.append(("cr", bank_account, adjustment_amount_absolute))
+            entries.append(("dr", adjustment_account, adjustment_amount_absolute))
+        elif self.adjustment_amount > 0:
+            entries.append(("dr", bank_account, adjustment_amount_absolute))
+            entries.append(("cr", adjustment_account, adjustment_amount_absolute))
         set_ledger_transactions(self, date, *entries, clear=True)
         # get new transaction ids from journal entries
         self.transaction_ids.extend(

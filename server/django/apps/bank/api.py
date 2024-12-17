@@ -1046,18 +1046,20 @@ class ReconciliationViewSet(CRULViewSet):
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
         # find the difference
         difference = statement_sum - transaction_sum
+        # validate the difference
+        if abs(difference) > settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD:
+            raise APIException("Difference between statement transactions and system transactions is too large for adjustment")
         # Divide the difference by the number of statement transactions and put the difference in the adjustment field
         # date = get latest date of the system from transaction_objects
         latest_date = max(
             (obj.journal_entry.date for obj in transaction_objects if obj.journal_entry and obj.journal_entry.date),
             default=date.min 
         )
-        adjustment = abs(difference) / len(statement_objects)
+        adjustment = difference / len(statement_objects)
         with transaction.atomic():
             for obj in statement_objects:
                 obj.transaction_ids = transaction_ids
                 obj.adjustment_amount = adjustment
-                obj.adjustment_type = 'Cr' if difference > 0 else 'Dr'
                 obj.save()
                 obj.status = 'Reconciled'
                 obj.apply_transactions(latest_date)
