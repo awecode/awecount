@@ -447,7 +447,7 @@ watch(route, () => {
         <q-btn flat dense round icon="mdi-menu" aria-label="Menu" @click="miniState = !miniState" />
 
         <q-toolbar-title class="flex items-center" style="gap: 16px">
-          <RouterLink v-if="store.companyInfo?.logo_url" :to="`/${$route.params.company}/dashboard" style="max-width: 60px; max-height: 40px`">
+          <RouterLink v-if="store.companyInfo?.logo_url" :to="`/${$route.params.company}/dashboard`" style="max-width: 60px; max-height: 40px">
             <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">

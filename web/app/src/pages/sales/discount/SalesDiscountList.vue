@@ -50,7 +50,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('SalesDiscountDelete')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" :to="`/${$route.params.company}/sales-discount/add/" label="New sales discount" icon-right="add" class="add-btn`" />
+      <q-btn color="green" :to="`/${$route.params.company}/sales-discount/add/`" label="New sales discount" icon-right="add" class="add-btn" />
     </div>
     <q-table
       v-model:pagination="pagination"

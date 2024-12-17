@@ -32,7 +32,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('CategoryCreate')" class="row justify-end">
-      <q-btn color="green" :to="`/${$route.params.company}/inventory-category/add/" label="New Category" class="q-ml-lg add-btn" icon-right="add`" />
+      <q-btn color="green" :to="`/${$route.params.company}/inventory-category/add/`" label="New Category" class="q-ml-lg add-btn" icon-right="add" />
     </div>
     <q-table
       v-model:pagination="pagination"
