@@ -17,7 +17,7 @@ export default antfu({
   vue: {
     overrides: {
       // enforce <script setup lang="ts">
-      'vue/block-lang': ['error', { script: { lang: 'ts' } }],
+      // 'vue/block-lang': ['error', { script: { lang: 'ts' } }],
       'vue/component-api-style': ['error', ['script-setup', 'composition']],
 
       // enforce ts for props and emits
