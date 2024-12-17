@@ -422,6 +422,8 @@ def import_purchase_vouchers(request_obj, file):
 
     except RESTValidationError as e:
         error_message = e.detail
+    except SuspiciousOperation as e:
+        error_message = str(e)
 
     send_purchase_voucher_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message
