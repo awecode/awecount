@@ -5,8 +5,8 @@ import checkPermissions from 'src/composables/checkPermissions'
 interface SystemTransactionData {
   id: number
   date: string
-  dr_amount: string
-  cr_amount: string
+  dr_amount: string | null
+  cr_amount: string | null
   source_type: string
   source_id: number
   counterpart_accounts: {
@@ -20,8 +20,8 @@ interface SystemTransactionData {
 interface StatementTransactionData {
   id: number
   date: string
-  dr_amount: string
-  cr_amount: string
+  dr_amount: string | null
+  cr_amount: string | null
   balance: string
   description: string
   transaction_ids: number[]
@@ -287,7 +287,7 @@ const calculateTotal = (transactions: SystemTransactionData[] | StatementTransac
   return (dr_amount - cr_amount).toFixed(2)
 }
 
-const calculateTotalFromCounterparts = (counterparts: { dr_amount: string, cr_amount: string }[]) => {
+const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null, cr_amount: string | null }[]) => {
   let cr_amount = 0
   let dr_amount = 0
   for (let counterpart of counterparts) {
