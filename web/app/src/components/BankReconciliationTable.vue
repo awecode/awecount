@@ -40,6 +40,10 @@ const props = defineProps({
     type: Number,
     default: 0.01,
   },
+  adjustmentThreshold: {
+    type: Number,
+    default: 1,
+  },
 })
 
 interface GroupedTransaction {
@@ -462,7 +466,7 @@ const reconcileMatchedTransactions = (matchedTransaction: {
       statement_ids: matchedTransaction.statementTransactions.map(t => t.id),
       transaction_ids: matchedTransaction.systemTransactions.map(t => t.id),
     }
-  }).then((response) => {
+  }).then(() => {
     const index = groupedTransactions.value.findIndex(group => group === matchedTransaction)
     if (index > -1) {
       groupedTransactions.value.splice(index, 1)
@@ -541,9 +545,16 @@ const unmatchMatchedTransactions = (matchedTransaction: {
             <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
               Unselect All
             </button>
-            <button @click="reconcile" :disabled="!selectedStatementTransactions.length && !selectedSystemTransactions.length"
-              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-              {{ canReconcile ? 'Reconcile' : 'Reconcile with Adjustments' }}
+            <button v-if="canReconcile" @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+              Reconcile
+            </button>
+            <button
+              v-else-if="selectedStatementTransactions.length && selectedSystemTransactions.length && Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) <= props.adjustmentThreshold"
+              @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+              Reconcile with Adjustment
+            </button>
+            <button disabled v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              Reconcile
             </button>
           </div>
 
@@ -719,9 +730,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       <div class="container mx-auto">
         <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
           <div class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto">
-            <div v-for="(data, index) in groupedTransactions" :key="index" class="border-b-2 mb-5 pb-5">
-
-
+            <div v-for="data in groupedTransactions" :key="data.statementTransactions[0].id" class="border-b-2 mb-5 pb-5">
               <div class="grid grid-cols-2 gap-4">
                 <!-- Statement Transactions -->
                 <div class="flex flex-col">
