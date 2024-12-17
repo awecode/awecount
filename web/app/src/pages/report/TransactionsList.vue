@@ -1,97 +1,7 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn color="blue" label="Export" icon-right="download" @click="onDownloadXls" class="export-btn" />
-    </div>
-    <q-table :rows="rows" :columns="rows[0]?.label ? newColumnTwo : newColumn" :loading="loading" :filter="searchQuery"
-      v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn class="f-open-btn" icon="mdi-filter-variant">
-            <q-menu>
-              <div class="menu-wrapper" style="width: min(550px, 90vw); height: min(700px, 60vh)">
-                <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">Filters</h6>
-                </div>
-                <div class="q-ma-md">
-                  <FiltersOptions v-model="filters.account" label="Account" :endpoint="`v1/${route.params.company}/accounts/choices`"
-                    :fetchOnMount="true" :options="filterOptions.collections?.accounts" />
-                  <FiltersOptions v-model="filters.source" label="Transaction Type"
-                    :options="filterOptions.collections?.transaction_types"
-                    :endpoint="`v1/${route.params.company}/transaction/create-defaults/transaction_types`" />
-                  <FiltersOptions v-model="filters.category" label="Category" :fetchOnMount="true"
-                    :endpoint="`v1/${route.params.company}/categories/choices`" :options="filterOptions.collections?.categories" />
-
-                  <div>
-                    <h5 class="text-subtitle2 text-grey-8">Group By:</h5>
-                    <div>
-                      <q-select v-model="filters.group" :label="`Group By`" option-value="id" option-label="name"
-                        :options="groupByOption" map-options emit-value>
-                        <template v-slot:append>
-                          <q-icon v-if="filters.group !== null" class="cursor-pointer" name="clear"
-                            @click.stop.prevent="filters.group = null" /></template>
-                      </q-select>
-                    </div>
-                  </div>
-                  <!-- {{ filterOptions.collections.accounts }} -->
-                </div>
-                <div class="q-mx-md">
-                  <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" />
-                </div>
-                <div class="q-mx-md row q-pb-md q-mt-lg">
-                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate"></q-btn>
-                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
-                </div>
-              </div>
-            </q-menu>
-          </q-btn>
-        </div>
-      </template>
-      <template v-slot:body-cell-voucher_no="props">
-        <q-td :props="props">
-          <RouterLink
-            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
-                          props.row.voucher_no
-                        }}
-          </RouterLink>
-          <span v-else> {{ props.row.voucher_no }}</span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-account="props">
-        <q-td :props="props">
-          <RouterLink style="text-decoration: none" target="_blank"
-            :to="`/account/?has_balance=true&category=${props.row.category_id}`" class="text-blue-6">{{
-              props.row.account_name
-            }}
-          </RouterLink>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-type="props">
-        <q-td :props="props">
-          <RouterLink
-            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">{{
-                          props.row.source_type
-                        }}
-          </RouterLink>
-          <span v-else> {{ props.row.source_type }}</span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
-import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
+import useList from 'src/composables/useList'
+
 export default {
   setup() {
     const metaData = {
@@ -100,33 +10,33 @@ export default {
     const groupByOption = [
       {
         id: 'acc',
-        name: 'Account'
+        name: 'Account',
       },
       {
         id: 'cat',
-        name: 'Category'
+        name: 'Category',
       },
       {
         id: 'type',
-        name: 'Transaction Type'
-      }
+        name: 'Transaction Type',
+      },
     ]
     const filterOptions = ref({})
     useMeta(metaData)
-    const endpoint = `/v1/${route.params.company}/transaction/`
-    const listData = useList(endpoint)
     const route = useRoute()
+    const endpoint = `/api/company/${route.params.company}/transaction/`
+    const listData = useList(endpoint)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi('v1/transaction/export' + query)
-        .then((data) =>
+      useApi(`v1/transaction/export${query}`)
+        .then(data =>
           usedownloadFile(
             data,
             'application/vnd.ms-excel',
-            'Sales_voucher'
-          )
+            'Sales_voucher',
+          ),
         )
-        .catch((err) => console.log('Error Due To', err))
+        .catch(err => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -194,32 +104,42 @@ export default {
     ]
     function getVoucherUrl(row) {
       const source_type = row.source_type
-      if (source_type === 'Sales Voucher')
+      if (source_type === 'Sales Voucher') {
         return `/sales-voucher/${row.source_id}/view/`
-      if (source_type === 'Purchase Voucher')
+      }
+      if (source_type === 'Purchase Voucher') {
         return `/purchase-voucher/${row.source_id}/view`
-      if (source_type === 'Journal Voucher')
+      }
+      if (source_type === 'Journal Voucher') {
         return `/journal-voucher/${row.source_id}/view`
-      if (source_type === 'Credit Note')
+      }
+      if (source_type === 'Credit Note') {
         return `/credit-note/${row.source_id}/view`
-      if (source_type === 'Debit Note')
+      }
+      if (source_type === 'Debit Note') {
         return `/debit-note/${row.source_id}/view`
+      }
       // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
       // TODO: add missing links
-      if (source_type === 'Cheque Deposit')
+      if (source_type === 'Cheque Deposit') {
         return `/cheque-deposit/${row.source_id}/view/`
-      if (source_type === 'Payment Receipt')
+      }
+      if (source_type === 'Payment Receipt') {
         return `/payment-receipt/${row.source_id}/view/`
-      if (source_type === 'Cheque Issue')
+      }
+      if (source_type === 'Cheque Issue') {
         return `/cheque-issue/${row.source_id}/`
+      }
       if (source_type === 'Account Opening Balance') return
-      if (source_type === 'Fund Transfer')
+      if (source_type === 'Fund Transfer') {
         return `/fund-transfer/${row.source_id}`
+      }
       if (source_type === 'Bank Cash Deposit') return `/cash-deposit/${row.source_id}`
       if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
-      if (source_type === 'Inventory Adjustment Voucher')
+      if (source_type === 'Inventory Adjustment Voucher') {
         return `/items/inventory-adjustment/${row.source_id}/view`
-      console.error(source_type + ' not handled!')
+      }
+      console.error(`${source_type} not handled!`)
     }
     const getPermissionsWithSourceType = {
       'Sales Voucher': 'SalesView',
@@ -241,7 +161,7 @@ export default {
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
   },
   created() {
-    const endpoint = `/v1/${route.params.company}/transaction/create-defaults/`
+    const endpoint = `/api/company/${route.params.company}/transaction/create-defaults/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.filterOptions = data
@@ -254,3 +174,147 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row q-gutter-x-md justify-end">
+      <q-btn color="blue" label="Export" icon-right="download" class="export-btn" @click="onDownloadXls" />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      :rows="rows"
+      :columns="rows[0]?.label ? newColumnTwo : newColumn"
+      :loading="loading"
+      :filter="searchQuery"
+      row-key="id"
+      class="q-mt-md"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <div class="search-bar">
+          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
+            <template #append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(550px, 90vw); height: min(700px, 60vh)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">
+                    Filters
+                  </h6>
+                </div>
+                <div class="q-ma-md">
+                  <FiltersOptions
+                    v-model="filters.account"
+                    label="Account"
+                    :endpoint="`v1/${route.params.company}/accounts/choices`"
+                    :fetch-on-mount="true"
+                    :options="filterOptions.collections?.accounts"
+                  />
+                  <FiltersOptions
+                    v-model="filters.source"
+                    label="Transaction Type"
+                    :options="filterOptions.collections?.transaction_types"
+                    :endpoint="`v1/${route.params.company}/transaction/create-defaults/transaction_types`"
+                  />
+                  <FiltersOptions
+                    v-model="filters.category"
+                    label="Category"
+                    :fetch-on-mount="true"
+                    :endpoint="`v1/${route.params.company}/categories/choices`"
+                    :options="filterOptions.collections?.categories"
+                  />
+
+                  <div>
+                    <h5 class="text-subtitle2 text-grey-8">
+                      Group By:
+                    </h5>
+                    <div>
+                      <q-select
+                        v-model="filters.group"
+                        label="Group By"
+                        option-value="id"
+                        option-label="name"
+                        :options="groupByOption"
+                        map-options
+                        emit-value
+                      >
+                        <template #append>
+                          <q-icon
+                            v-if="filters.group !== null"
+                            class="cursor-pointer"
+                            name="clear"
+                            @click.stop.prevent="filters.group = null"
+                          />
+                        </template>
+                      </q-select>
+                    </div>
+                  </div>
+                  <!-- {{ filterOptions.collections.accounts }} -->
+                </div>
+                <div class="q-mx-md">
+                  <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
+                </div>
+                <div class="q-mx-md row q-pb-md q-mt-lg">
+                  <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate" />
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template #body-cell-voucher_no="props">
+        <q-td :props="props">
+          <RouterLink
+            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
+            style="
+                        text-decoration: none"
+            target="_blank"
+            :to="getVoucherUrl(props.row)"
+            class="text-blue-6"
+          >
+            {{
+              props.row.voucher_no
+            }}
+          </RouterLink>
+          <span v-else> {{ props.row.voucher_no }}</span>
+        </q-td>
+      </template>
+      <template #body-cell-account="props">
+        <q-td :props="props">
+          <RouterLink
+            style="text-decoration: none"
+            target="_blank"
+            :to="`/account/?has_balance=true&category=${props.row.category_id}`"
+            class="text-blue-6"
+          >
+            {{
+              props.row.account_name
+            }}
+          </RouterLink>
+        </q-td>
+      </template>
+      <template #body-cell-type="props">
+        <q-td :props="props">
+          <RouterLink
+            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
+            style="
+                        text-decoration: none"
+            target="_blank"
+            :to="getVoucherUrl(props.row)"
+            class="text-blue-6"
+          >
+            {{
+              props.row.source_type
+            }}
+          </RouterLink>
+          <span v-else> {{ props.row.source_type }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

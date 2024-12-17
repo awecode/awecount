@@ -1,44 +1,11 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row" v-if="checkPermissions('AccountOpeningBalanceCreate')">
-      <q-btn color="green" to="/items/opening/add" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
-    </div>
-    <q-table :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:top>
-        <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width">
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
-          <q-btn v-if="checkPermissions('AccountOpeningBalanceModify')" color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="EDIT"
-            :to="`/items/opening/${props.row.id}/`" />
-        </q-td>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('ItemModify')" style="font-weight: 500; text-decoration: none"
-            class="text-blue" :to="`/items/${props.row.item_id}/`">{{
-              props.row.name
-            }}</router-link>
-          <span v-else>{{ props.row.name }}</span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
-import useList from '/src/composables/useList'
 import checkPermissions from 'src/composables/checkPermissions'
+import useList from 'src/composables/useList'
+
 export default {
   setup() {
     const route = useRoute()
-    const endpoint = `/v1/${route.params.company}/item-opening-balance/`
+    const endpoint = `/api/company/${route.params.company}/item-opening-balance/`
     const metaData = {
       title: 'Stock Opening | Awecount',
     }
@@ -66,3 +33,57 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div v-if="checkPermissions('AccountOpeningBalanceCreate')" class="row">
+      <q-btn color="green" to="/items/opening/add" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      :rows="rows"
+      :columns="newColumns"
+      :loading="loading"
+      :filter="searchQuery"
+      row-key="id"
+      class="q-mt-md"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #top>
+        <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width">
+          <template #append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+      <template #body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn
+            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            color="orange-6"
+            class="q-py-none q-px-md font-size-sm l-edit-btn"
+            style="font-size: 12px"
+            label="EDIT"
+            :to="`/items/opening/${props.row.id}/`"
+          />
+        </q-td>
+      </template>
+      <template #body-cell-name="props">
+        <q-td :props="props">
+          <router-link
+            v-if="checkPermissions('ItemModify')"
+            style="font-weight: 500; text-decoration: none"
+            class="text-blue"
+            :to="`/items/${props.row.item_id}/`"
+          >
+            {{
+              props.row.name
+            }}
+          </router-link>
+          <span v-else>{{ props.row.name }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

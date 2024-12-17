@@ -3,13 +3,13 @@ const route = useRoute()
 const router = useRouter()
 
 const date = ref(
-  route.query.date ? route.query.date : new Date().toISOString().slice(0, 10)
+  route.query.date ? route.query.date : new Date().toISOString().slice(0, 10),
 )
 
 const data = ref(null)
 
 async function fetchData() {
-  const res = await useApi(`/v1/${route.params.company}/transaction/day-book?date=` + date.value)
+  const res = await useApi(`/api/company/${route.params.company}/transaction/day-book?date=${date.value}`)
   data.value = res
 }
 
@@ -79,10 +79,10 @@ function filterData() {
       return (
         item.account.code
           .toLowerCase()
-          .includes(searchQuery.value.toLowerCase()) ||
-        item.account.name
-          .toLowerCase()
           .includes(searchQuery.value.toLowerCase())
+          || item.account.name
+            .toLowerCase()
+            .includes(searchQuery.value.toLowerCase())
       )
     })
   }
@@ -94,7 +94,9 @@ function filterData() {
   <div>
     <div class="q-pa-md">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-semibold">Day Book</h1>
+        <h1 class="text-2xl font-semibold">
+          Day Book
+        </h1>
       </div>
       <div>
         <DatePicker v-model="date" class="col-6" label="Date" />
@@ -111,44 +113,44 @@ function filterData() {
               :filter="searchQuery"
               :filter-method="filterData"
             >
-              <template v-slot:top>
+              <template #top>
                 <div class="search-bar">
                   <q-input
+                    v-model="searchQuery"
                     dense
                     debounce="500"
-                    v-model="searchQuery"
                     placeholder="Search"
                     class="full-width search-input"
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <q-icon name="search" />
                     </template>
                   </q-input>
                 </div>
               </template>
-              <template v-slot:body-cell-code="props">
+              <template #body-cell-code="props">
                 <q-td>
                   {{ props.row.account.code }}
                 </q-td>
               </template>
-              <template v-slot:body-cell-name="props">
+              <template #body-cell-name="props">
                 <q-td>
                   {{ props.row.account.name }}
                 </q-td>
               </template>
-              <template v-slot:body-cell-opening_balance="props">
+              <template #body-cell-opening_balance="props">
                 <q-td>
                   {{ props.row.opening_balance >= 0 ? 'Dr' : 'Cr' }}
                   {{ Math.abs(props.row.opening_balance).toFixed(2) }}
                 </q-td>
               </template>
-              <template v-slot:body-cell-closing_balance="props">
+              <template #body-cell-closing_balance="props">
                 <q-td>
                   {{ props.row.closing_balance >= 0 ? 'Dr' : 'Cr' }}
                   {{ Math.abs(props.row.closing_balance).toFixed(2) }}
                 </q-td>
               </template>
-              <template v-slot:body-cell-transaction="props">
+              <template #body-cell-transaction="props">
                 <q-td>
                   {{
                     (
@@ -157,7 +159,7 @@ function filterData() {
                   }}
                 </q-td>
               </template>
-              <template v-slot:body-cell-action="props">
+              <template #body-cell-action="props">
                 <q-td>
                   <RouterLink
                     style="text-decoration: none"

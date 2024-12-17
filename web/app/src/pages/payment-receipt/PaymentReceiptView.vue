@@ -1,24 +1,125 @@
+<script lang="ts">
+import type { Ref } from 'vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
+import checkPermissions from 'src/composables/checkPermissions'
+import numberToText from 'src/composables/numToText'
+import useApi from 'src/composables/useApi'
+import { modes } from 'src/helpers/constants/invoice'
+import { useLoginStore } from 'src/stores/login-info'
+
+interface Fields {
+  status: string
+  voucher_no: string
+  remarks: string
+  print_count: number
+  id: number
+  mode: string
+  amount: number
+  date: Date
+}
+
+export default {
+  setup() {
+    const route = useRoute()
+    const metaData = {
+      title: 'Payment Receipts | Awecount',
+    }
+    useMeta(metaData)
+    const loginStore = useLoginStore()
+    const fields: Ref<Fields | null> = ref(null)
+    const modeOptions: Ref<Array<object> | null> = ref(null)
+    const isDeleteOpen: Ref<boolean> = ref(false)
+    const deleteMsg: Ref<string> = ref('')
+    const isLoading = ref(false)
+    const submitChangeStatus = (id: number, status: string) => {
+      isLoading.value = true
+      let endpoint = ''
+      let body: null | object = null
+      if (status === 'Cleared') {
+        endpoint = `/api/company/${route.params.company}/payment-receipt/${id}/mark_as_cleared/`
+        body = { method: 'POST' }
+      } else if (status === 'Cancelled') {
+        endpoint = `/api/company/${route.params.company}/payment-receipt/${id}/cancel/`
+        body = { method: 'POST', body: { message: deleteMsg.value } }
+      }
+      useApi(endpoint, body)
+        .then(() => {
+          // if (fields.value)
+          if (fields.value) {
+            fields.value.status = status
+          }
+          if (status === 'Cancelled') {
+            isDeleteOpen.value = false
+          }
+          isLoading.value = false
+        })
+        .catch((err) => {
+          console.log('err from the api', err)
+          isLoading.value = false
+        })
+    }
+    const getDate = computed(() => {
+      return DateConverter.getRepresentation(fields.value?.date, 'bs')
+    })
+    return {
+      allowPrint: false,
+      bodyOnly: false,
+      options: {},
+      fields,
+      dialog: false,
+      partyObj: null,
+      modes,
+      submitChangeStatus,
+      isDeleteOpen,
+      deleteMsg,
+      modeOptions,
+      numberToText,
+      getDate,
+      loginStore,
+      checkPermissions,
+      isLoading,
+    }
+  },
+  created() {
+    const endpoint = `/api/company/${this.$route.params.company}/payment-receipt/${this.$route.params.id}/details/`
+    useApi(endpoint, { method: 'GET' }, false, true)
+      .then((data) => {
+        this.fields = data
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          this.$router.replace({ path: '/ErrorNotFound' })
+        }
+      })
+  },
+}
+</script>
+
 <template>
   <div>
     <div class="print-only">
-      <div style="
+      <div
+        style="
           display: flex;
           justify-content: space-between;
           font-family: Arial, Helvetica, sans-serif;
-        ">
+        "
+      >
         <div>
-          <h1 style="
+          <h1
+            style="
               margin: 5px 0;
               font-size: 2rem;
               font-weight: 600;
               line-height: 2rem;
               margin-bottom: 1rem;
-            ">
+            "
+          >
             {{ loginStore.companyInfo.name }}
             {{
               loginStore.companyInfo.organization_type === 'private_limited'
-              ? ' Pvt. Ltd.'
-              : 'Ltd.'
+                ? ' Pvt. Ltd.'
+                : 'Ltd.'
             }}
           </h1>
           <div>{{ loginStore.companyInfo.address }}</div>
@@ -30,15 +131,21 @@
           </div>
         </div>
 
-        <div style="
+        <div
+          style="
             display: flex;
             flex-direction: column;
             gap: 5px;
             align-items: flex-end;
-          ">
+          "
+        >
           <div style="margin-bottom: 5px">
-            <img :src="loginStore.companyInfo.logo_url" alt="Compony Logo" style="height: 70px"
-              :class="loginStore.companyInfo.logo_url ? '' : 'hidden'" />
+            <img
+              :src="loginStore.companyInfo.logo_url"
+              alt="Compony Logo"
+              style="height: 70px"
+              :class="loginStore.companyInfo.logo_url ? '' : 'hidden'"
+            />
           </div>
           <div style="display: flex; align-items: center">
             <img src="/icons/telephone-fill.svg" alt="Email" style="margin-right: 10px; width: 14px" />
@@ -47,15 +154,16 @@
             }}</span>
           </div>
           <div style="display: flex; align-items: center">
-            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" /><span
-              style="color: skyblue">{{
-                loginStore.companyInfo.email
-              }}</span>
+            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" /><span style="color: skyblue">{{
+              loginStore.companyInfo.email
+            }}</span>
           </div>
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div style="text-align: center">Payment Receipt | {{ fields?.status }}</div>
+      <div style="text-align: center">
+        Payment Receipt | {{ fields?.status }}
+      </div>
     </div>
     <div v-if="fields" class="sales-invoice">
       <q-card class="q-ma-lg q-mb-sm">
@@ -77,7 +185,7 @@
           </div>
           <div class="row column q-mt-md q-gutter-y-sm">
             <span><span class="text-weight-medium text-grey-8">Received from:
-              </span>
+                  </span>
               {{ fields.party_name }}, {{ fields.party_address }}</span>
             <span><span class="text-weight-medium text-grey-8">Amount: </span> NRS
               {{ $nf(fields.amount) }}</span>
@@ -191,10 +299,14 @@
               <div class="col-12 col-md-6 row">
                 <span class="text-weight-medium col-6">Invoice #</span>
                 <span>
-                  <span class="col-6" v-for="invoice in fields.invoices" :key="invoice.id">
-                    <router-link v-if="checkPermissions('SalesView')" class="text-blue q-mr-sm"
-                      style="text-decoration: none" :to="`/sales-voucher/${invoice.id}/view`">#{{ invoice.id
-                      }}</router-link>
+                  <span v-for="invoice in fields.invoices" :key="invoice.id" class="col-6">
+                    <router-link
+                      v-if="checkPermissions('SalesView')"
+                      class="text-blue q-mr-sm"
+                      style="text-decoration: none"
+                      :to="`/sales-voucher/${invoice.id}/view`"
+                    >#{{ invoice.id
+                    }}</router-link>
                     <span v-else>#{{ invoice.id }}</span>
                   </span>
                 </span>
@@ -218,29 +330,55 @@
           </div>
         </q-card-section>
       </q-card>
-      <q-card class="q-mx-lg q-my-md" v-if="fields?.remarks">
+      <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
         <q-card-section>
           <span class="text-subtitle2 text-grey-9"> Remarks: </span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>
-      <div class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md" v-if="fields">
+      <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md">
         <div class="row q-gutter-x-sm q-mb-md print-hide">
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
-            <q-btn v-if="checkPermissions('PaymentReceiptModify')" color="orange-7" label="Edit" icon="edit"
-              :to="`/payment-receipt/${fields.id}/`" />
-            <q-btn v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
-              @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')" color="green" label="mark as cleared"
-              icon="mdi-check-all" :loading="isLoading" />
-            <q-btn v-if="checkPermissions('PaymentReceiptCancel')" @click.prevent="() => (isDeleteOpen = true)"
-              color="red" label="cancel" icon="cancel" :loading="isLoading" />
+            <q-btn
+              v-if="checkPermissions('PaymentReceiptModify')"
+              color="orange-7"
+              label="Edit"
+              icon="edit"
+              :to="`/payment-receipt/${fields.id}/`"
+            />
+            <q-btn
+              v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
+              color="green"
+              label="mark as cleared"
+              icon="mdi-check-all"
+              :loading="isLoading"
+              @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
+            />
+            <q-btn
+              v-if="checkPermissions('PaymentReceiptCancel')"
+              color="red"
+              label="cancel"
+              icon="cancel"
+              :loading="isLoading"
+              @click.prevent="() => (isDeleteOpen = true)"
+            />
           </span>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end print-hide">
-          <q-btn v-if="fields.mode === 'Cheque'" color="blue-7" label="View Cheque deposit" icon="mdi-checkbook"
-            :to="`/cheque-deposit/${fields?.id}/view/`" />
-          <q-btn v-if="fields.status === 'Cleared'" color="blue-7" label="Journal Entries" icon="books"
-            :to="`/journal-entries/payment-receipt/${fields?.id}/`" />
+          <q-btn
+            v-if="fields.mode === 'Cheque'"
+            color="blue-7"
+            label="View Cheque deposit"
+            icon="mdi-checkbook"
+            :to="`/cheque-deposit/${fields?.id}/view/`"
+          />
+          <q-btn
+            v-if="fields.status === 'Cleared'"
+            color="blue-7"
+            label="Journal Entries"
+            icon="books"
+            :to="`/journal-entries/payment-receipt/${fields?.id}/`"
+          />
         </div>
         <q-dialog v-model="isDeleteOpen">
           <q-card style="min-width: min(40vw, 400px)">
@@ -248,7 +386,7 @@
               <div class="text-h6 text-white">
                 <span>Confirm Cancellation?</span>
               </div>
-              <q-btn icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense v-close-popup />
+              <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
             </q-card-section>
             <q-separator inset />
             <q-card-section>
@@ -257,9 +395,13 @@
               </div>
               <div class=" text-blue">
                 <div class="row justify-end">
-                  <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)"></q-btn>
-                  <q-btn flat class="text-red" label="Yes"
-                    @click="() => submitChangeStatus(fields?.id, 'Cancelled')"></q-btn>
+                  <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
+                  <q-btn
+                    flat
+                    class="text-red"
+                    label="Yes"
+                    @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
+                  />
                 </div>
               </div>
             </q-card-section>
@@ -268,106 +410,14 @@
       </div>
     </div>
     <div class="print-only text-right text-grey-9 text-caption">
-      <div>Generated by {{ loginStore.username }} for {{ `${loginStore.companyInfo?.name}` +
-        (loginStore.companyInfo.organization_type === 'private_limited' ? ' Pvt Ltd' : '') }}.</div>
-      <div class="text-italic">This is a computer generated receipt, produced using awecount.com - IRD Approval No.
-        7600405</div>
+      <div>
+        Generated by {{ loginStore.username }} for {{ `${loginStore.companyInfo?.name}${
+          loginStore.companyInfo.organization_type === 'private_limited' ? ' Pvt Ltd' : ''}` }}.
+      </div>
+      <div class="text-italic">
+        This is a computer generated receipt, produced using awecount.com - IRD Approval No.
+        7600405
+      </div>
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import useApi from 'src/composables/useApi'
-import { useLoginStore } from 'src/stores/login-info'
-import { modes } from 'src/helpers/constants/invoice'
-import { Ref } from 'vue'
-import numberToText from 'src/composables/numToText'
-import DateConverter from 'src/components/date/VikramSamvat.js'
-import checkPermissions from 'src/composables/checkPermissions'
-interface Fields {
-  status: string
-  voucher_no: string
-  remarks: string
-  print_count: number
-  id: number
-  mode: string
-  amount: number
-  date: Date
-}
-
-export default {
-  setup() {
-    const route = useRoute()
-    const metaData = {
-      title: 'Payment Receipts | Awecount',
-    }
-    useMeta(metaData)
-    const loginStore = useLoginStore()
-    const fields: Ref<Fields | null> = ref(null)
-    const modeOptions: Ref<Array<object> | null> = ref(null)
-    const isDeleteOpen: Ref<boolean> = ref(false)
-    const deleteMsg: Ref<string> = ref('')
-    const isLoading = ref(false)
-    const submitChangeStatus = (id: number, status: string) => {
-      isLoading.value = true
-      let endpoint = ''
-      let body: null | object = null
-      if (status === 'Cleared') {
-        endpoint = `/v/${route.params.company}/payment-receipt/${id}/mark_as_cleared/`
-        body = { method: 'POST' }
-      } else if (status === 'Cancelled') {
-        endpoint = `/v1/${route.params.company}/payment-receipt/${id}/cancel/`
-        body = { method: 'POST', body: { message: deleteMsg.value } }
-      }
-      useApi(endpoint, body)
-        .then(() => {
-          // if (fields.value)
-          if (fields.value) {
-            fields.value.status = status
-          }
-          if (status === 'Cancelled') {
-            isDeleteOpen.value = false
-          }
-          isLoading.value = false
-        })
-        .catch((err) => {
-          console.log('err from the api', err)
-          isLoading.value = false
-        })
-    }
-    const getDate = computed(() => {
-      return DateConverter.getRepresentation(fields.value?.date, 'bs')
-    })
-    return {
-      allowPrint: false,
-      bodyOnly: false,
-      options: {},
-      fields,
-      dialog: false,
-      partyObj: null,
-      modes: modes,
-      submitChangeStatus,
-      isDeleteOpen,
-      deleteMsg,
-      modeOptions,
-      numberToText,
-      getDate,
-      loginStore,
-      checkPermissions,
-      isLoading
-    }
-  },
-  created() {
-    const endpoint = `/v1/${this.route.params.company}/payment-receipt/${this.$route.params.id}/details/`
-    useApi(endpoint, { method: 'GET' }, false, true)
-      .then((data) => {
-        this.fields = data
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          this.$router.replace({ path: '/ErrorNotFound' })
-        }
-      })
-  },
-}
-</script>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useMeta } from 'quasar'
 import { $api } from 'src/composables/api'
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 useMeta({
   title: 'Dashboard',
@@ -21,7 +23,7 @@ fields.value = res
       <q-btn
         icon="add"
         label="Add widget"
-        to="/dashboard-widgets/add"
+        :to="`/${route.params.company}/settings/dashboard-widgets/add`"
         style="font-size: 0.75rem"
       />
     </div>
@@ -30,14 +32,14 @@ fields.value = res
         <q-card class="q-py-sm q-px-md" style="height: 100%">
           <div>
             <div class="row no-wrap justify-between q-my-sm">
-              <h5 class="q-my-none text-h6 text-grey-8" styl e="flex-grow: 1">
+              <h5 class="q-my-none text-h6 text-grey-8">
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
                 <q-btn
                   flat
                   icon="edit"
-                  :to="`/dashboard-widgets/${widget.id}`"
+                  :to="`/${route.params.company}/settings/dashboard-widgets/${widget.id}/edit`"
                   size="sm"
                   class="text-grey-8"
                 />

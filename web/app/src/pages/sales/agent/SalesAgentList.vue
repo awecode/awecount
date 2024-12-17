@@ -1,24 +1,3 @@
-<template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-x-md justify-end">
-      <q-btn v-if="checkPermissions('SalesAgentCreate')" color="green" to="/sales-agent/add/" label="Sales Agent"
-        icon-right="add" class="add-btn" />
-    </div>
-    <q-table :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" v-model:pagination="pagination"
-      row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <router-link v-if="checkPermissions('SalesAgentModify')" class="text-blue l-edit-btn whitespace-normal" style="text-decoration: none"
-            :to="`/sales-agent/${props.row.id}/`">
-            {{ props.row.name }}
-          </router-link>
-          <span class="whitespace-normal" v-else>{{ props.row.name }}</span>
-        </q-td>
-      </template>
-    </q-table>
-  </div>
-</template>
-
 <script>
 export default {
   setup() {
@@ -27,7 +6,7 @@ export default {
     }
     useMeta(metaData)
     const route = useRoute()
-    const endpoint = `/v1/${route.params.company}/sales-agent/`
+    const endpoint = `/api/company/${route.params.company}/sales-agent/`
     const listData = useList(endpoint)
     const newColumn = [
       {
@@ -48,3 +27,43 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="q-pa-md">
+    <div class="row q-gutter-x-md justify-end">
+      <q-btn
+        v-if="checkPermissions('SalesAgentCreate')"
+        color="green"
+        to="/sales-agent/add/"
+        label="Sales Agent"
+        icon-right="add"
+        class="add-btn"
+      />
+    </div>
+    <q-table
+      v-model:pagination="pagination"
+      :rows="rows"
+      :columns="newColumn"
+      :loading="loading"
+      :filter="searchQuery"
+      row-key="id"
+      class="q-mt-md"
+      :rows-per-page-options="[20]"
+      @request="onRequest"
+    >
+      <template #body-cell-name="props">
+        <q-td :props="props">
+          <router-link
+            v-if="checkPermissions('SalesAgentModify')"
+            class="text-blue l-edit-btn whitespace-normal"
+            style="text-decoration: none"
+            :to="`/sales-agent/${props.row.id}/`"
+          >
+            {{ props.row.name }}
+          </router-link>
+          <span v-else class="whitespace-normal">{{ props.row.name }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
+</template>

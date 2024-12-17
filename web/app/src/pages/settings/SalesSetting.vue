@@ -1,103 +1,11 @@
-<template>
-  <q-form class="q-pa-lg" v-if="fields" autofocus>
-    <q-card>
-      <q-card-section class="bg-green text-white">
-        <div class="text-h6">
-          <span>Sales Settings</span>
-        </div>
-      </q-card-section>
-
-      <q-card-section>
-        <div>
-          <div class="column q-gutter-y-sm q-mb-sm">
-            <div>
-              <q-checkbox v-model="fields.show_party_by_default" label="Show party by default?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.show_trade_discount_in_voucher" label="Show trade discount in voucher?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.is_trade_discount_in_voucher" label="Is trade discount in voucher?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.show_trade_discount_in_row" label="Show trade discount in row?">
-              </q-checkbox>
-            </div>
-          </div>
-          <!-- <div class="row q-ml-sm">
-            <div class="col-12 col-sm-6">
-              <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
-                endpoint="v1/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj"
-                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-                :error-message="modeErrors">
-                <template v-slot:append>
-                  <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
-                </template>
-              </n-auto-complete-v2>
-            </div>
-          </div> -->
-          <div class="row q-ml-sm">
-            <div class="col-12 col-sm-6">
-              <n-auto-complete-v2 label="Mode" v-model.number="fields.payment_mode" :options="modeOptionsComputed"
-                :endpoint="`v1/${route.params.company}/sales-settings/create-defaults/payment_modes`" :staticOption="fields.selected_mode_obj"
-                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
-                :error-message="modeErrors">
-                <template v-slot:append>
-                  <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null"
-                    class="cursor-pointer" />
-                </template>
-              </n-auto-complete-v2>
-            </div>
-          </div>
-          <div class="column q-gutter-y-sm q-mb-sm">
-            <div>
-              <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.enable_amount_entry" label="Enable Amount Entry in voucher row?">
-              </q-checkbox>
-            </div>
-            <div>
-              <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?">
-              </q-checkbox>
-            </div>
-            <div class="row q-pl-sm">
-              <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow label="Invoice footer text" />
-            </div>
-            <div>
-              <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?">
-              </q-checkbox>
-            </div>
-          </div>
-        </div>
-        <!-- {{ formDefaults.collections }} -->
-      </q-card-section>
-      <div class="q-ma-md row q-pb-lg">
-        <q-btn @click.prevent="() => onUpdateClick(fields)" color="green" label="Update" type="submit" :loading="formLoading" />
-      </div>
-    </q-card>
-  </q-form>
-</template>
-
 <script>
-import useForm from '/src/composables/useForm'
+import useForm from 'src/composables/useForm'
 import { modes } from 'src/helpers/constants/invoice'
+
 export default {
   setup() {
     const $q = useQuasar()
-    const route= useRoute()
+    const route = useRoute()
     const endpoint = `v1/${route.params.company}/sales-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
@@ -149,7 +57,7 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
     const modeOptionsComputed = computed(() => {
       const obj = {
         results: [{ id: null, name: 'Credit' }],
@@ -168,8 +76,104 @@ export default {
       onUpdateClick,
       modeErrors,
       formLoading,
-      modeOptionsComputed
+      modeOptionsComputed,
     }
   },
 }
 </script>
+
+<template>
+  <q-form v-if="fields" class="q-pa-lg" autofocus>
+    <q-card>
+      <q-card-section class="bg-green text-white">
+        <div class="text-h6">
+          <span>Sales Settings</span>
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <div>
+          <div class="column q-gutter-y-sm q-mb-sm">
+            <div>
+              <q-checkbox v-model="fields.show_party_by_default" label="Show party by default?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.show_trade_discount_in_voucher" label="Show trade discount in voucher?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.is_trade_discount_in_voucher" label="Is trade discount in voucher?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.show_trade_discount_in_row" label="Show trade discount in row?" />
+            </div>
+          </div>
+          <!-- <div class="row q-ml-sm">
+            <div class="col-12 col-sm-6">
+              <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
+                endpoint="v1/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj"
+                option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
+                :error-message="modeErrors">
+                <template v-slot:append>
+                  <q-icon v-if="fields.mode" name="close" @click.stop.prevent="fields.mode = null" class="cursor-pointer" />
+                </template>
+              </n-auto-complete-v2>
+            </div>
+          </div> -->
+          <div class="row q-ml-sm">
+            <div class="col-12 col-sm-6">
+              <n-auto-complete-v2
+                v-model.number="fields.payment_mode"
+                label="Mode"
+                :options="modeOptionsComputed"
+                :endpoint="`v1/${route.params.company}/sales-settings/create-defaults/payment_modes`"
+                :static-option="fields.selected_mode_obj"
+                option-value="id"
+                option-label="name"
+                map-options
+                emit-value
+                :error="!!modeErrors"
+                :error-message="modeErrors"
+              >
+                <template #append>
+                  <q-icon
+                    v-if="fields.mode"
+                    name="close"
+                    class="cursor-pointer"
+                    @click.stop.prevent="fields.mode = null"
+                  />
+                </template>
+              </n-auto-complete-v2>
+            </div>
+          </div>
+          <div class="column q-gutter-y-sm q-mb-sm">
+            <div>
+              <q-checkbox v-model="fields.enable_row_description" label="Enable Item Description in row?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_due_date_in_voucher" label="Enable Due date in voucher?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_import_challan" label="Enable Challans Import?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.enable_amount_entry" label="Enable Amount Entry in voucher row?" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.show_rate_quantity_in_voucher" label="Show Rate and Quantity in voucher row?" />
+            </div>
+            <div class="row q-pl-sm">
+              <q-input v-model="fields.invoice_footer_text" class="col-12 col-sm-6" type="textarea" autogrow label="Invoice footer text" />
+            </div>
+            <div>
+              <q-checkbox v-model="fields.persist_pos_items" label="Enable Persist items in POS page?" />
+            </div>
+          </div>
+        </div>
+        <!-- {{ formDefaults.collections }} -->
+      </q-card-section>
+      <div class="q-ma-md row q-pb-lg">
+        <q-btn color="green" label="Update" type="submit" :loading="formLoading" @click.prevent="() => onUpdateClick(fields)" />
+      </div>
+    </q-card>
+  </q-form>
+</template>
