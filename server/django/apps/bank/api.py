@@ -423,14 +423,7 @@ class ReconciliationViewSet(CRULViewSet):
         page = self.paginate_queryset(entries)
         serializer = ReconciliationEntriesSerializer(page, many=True)
         paginated_response = self.get_paginated_response(serializer.data)
-        data = paginated_response.data
-        # add account details
-        data['account'] = AccountMinSerializer(instance.account).data
-        data['date'] = {
-            'start_date': instance.start_date,
-            'end_date': instance.end_date
-        }
-        return Response(data)
+        return Response(paginated_response.data)
     
     @action(detail=True, url_path="account-and-dates-info")
     def get_account_and_dates_info(self, request, pk):
