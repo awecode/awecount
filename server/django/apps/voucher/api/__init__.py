@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import openpyxl
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import EmailMessage
 from django.db import transaction
 from django.db.models import Avg, Case, Count, F, Prefetch, Q, Sum, When
@@ -322,6 +322,8 @@ def import_sales_vouchers(request_obj, file):
                 invoice_data["id"] = instance.id
     except RESTValidationError as e:
         error_message = e.detail
+    except SuspiciousOperation as e:
+        error_message = str(e)
 
     send_sales_voucher_import_completion_email(
         request, new_invoices=new_invoices, error_message=error_message

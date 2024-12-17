@@ -1,6 +1,7 @@
 import datetime
 
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import F
 from django.utils import timezone
@@ -244,32 +245,38 @@ class SalesVoucherRowSerializer(
     def validate(self, attrs):
         request = self.context["request"]
         if attrs.get("discount_type") and str(attrs.get("discount_type")).isdigit():
-            if not SalesDiscount.objects.filter(
-                id=attrs.get("discount_type"), company_id=request.company_id
-            ).exists():
+            discount = SalesDiscount.objects.filter(
+                id=attrs.get("discount_type")
+            ).first()
+            if not discount:
                 raise ValidationError(
-                    {"discount_type": ["Discount type does not exists."]},
+                    {"discount_type": ["Discount type does not exist."]},
+                )
+            if discount.company_id != request.company_id:
+                raise SuspiciousOperation(
+                    "Discount type does not belong to the company."
                 )
 
-        if not Item.objects.filter(
-            id=attrs.get("item_id"), company_id=request.company_id
-        ).exists():
+        item = Item.objects.filter(id=attrs.get("item_id")).first()
+        if not item:
             raise serializers.ValidationError({"item_id": ["Item does not exist."]})
+        if item.company_id != request.company_id:
+            raise SuspiciousOperation("Item does not belong to the company.")
 
-        if not TaxScheme.objects.filter(
-            id=attrs.get("tax_scheme_id"), company_id=request.company_id
-        ).exists():
+        tax_scheme = TaxScheme.objects.filter(id=attrs.get("tax_scheme_id")).first()
+        if not tax_scheme:
             raise serializers.ValidationError(
                 {"tax_scheme_id": ["Tax Scheme does not exist."]}
             )
+        if tax_scheme.company_id != request.company_id:
+            raise SuspiciousOperation("Tax Scheme does not belong to the company.")
 
-        if (
-            attrs.get("unit_id")
-            and not Unit.objects.filter(
-                id=attrs.get("unit_id"), company_id=request.company_id
-            ).exists()
-        ):
-            raise serializers.ValidationError({"unit_id": ["Unit does not exist."]})
+        if attrs.get("unit_id"):
+            unit = Unit.objects.filter(id=attrs.get("unit_id")).first()
+            if not unit:
+                raise serializers.ValidationError({"unit_id": ["Unit does not exist."]})
+            if unit.company_id != request.company_id:
+                raise SuspiciousOperation("Unit does not belong to the company.")
 
         return super().validate(attrs)
 
@@ -343,33 +350,32 @@ class SalesVoucherCreateSerializer(
             )
 
         if data.get("discount_type") and str(data.get("discount_type")).isdigit():
-            if not SalesDiscount.objects.filter(
-                id=data.get("discount_type"), company_id=request.company_id
-            ).exists():
+            discount = SalesDiscount.objects.filter(
+                id=data.get("discount_type")
+            ).first()
+            if not discount:
                 raise ValidationError(
-                    {"discount_type": ["Discount type does not exists."]},
+                    {"discount_type": "Discount type does not exist."}
+                )
+            if discount.company_id != request.company_id:
+                raise SuspiciousOperation(
+                    "Discount type does not belong to the company."
                 )
 
         if data.get("party") and data.get("party").company_id != request.company_id:
-            raise ValidationError(
-                {"party": ["Party does not belong to the company."]},
-            )
+            raise SuspiciousOperation("Party does not belong to the company.")
 
         if (
             data.get("payment_mode")
             and data.get("payment_mode").company_id != request.company_id
         ):
-            raise ValidationError(
-                {"payment_mode": ["Payment mode does not belong to the company."]},
-            )
+            raise SuspiciousOperation("Payment mode does not belong to the company.")
 
         if (
             data.get("sales_agent")
             and data.get("sales_agent").company_id != request.company_id
         ):
-            raise ValidationError(
-                {"sales_agent": ["Sales agent does not belong to the company."]},
-            )
+            raise SuspiciousOperation("Sales agent does not belong to the company.")
 
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
