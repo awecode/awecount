@@ -21,7 +21,7 @@
 const route = useRoute()
 const router = useRouter()
 
-const selectedAccount = ref(route.query.account_id || null)
+const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
 const bankAccounts = ref([])
 const startDate = ref(route.query.start_date as string || '2024-11-08')
 const endDate = ref(route.query.end_date as string || '2024-12-08')
