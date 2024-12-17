@@ -743,6 +743,7 @@ class SalesVoucher(TransactionModel, InvoiceModel):
                             "contact": self.company.contact_no,
                             "email": ", ".join(self.company.emails),
                             "tax_registration_number": self.company.tax_registration_number,
+                            "currency_code": self.company.currency_code,
                         },
                         "billed_to": self.party_name(),
                         "address": self.address,
