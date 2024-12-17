@@ -742,7 +742,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                       <div v-for="transaction in data.statementTransactions" :key="transaction.id" class="px-4 py-2.5">
                         <div class="flex justify-between mb-1">
                           <span class="text-gray-500">{{ transaction.date }}</span>
-                          <div>
+                          <div class="font-medium">
                             <span v-if="transaction.dr_amount" class="text-red-500">-{{ transaction.dr_amount }}</span>
                             <span v-if="transaction.cr_amount" class="text-green-500">+{{ transaction.cr_amount }}</span>
                           </div>
