@@ -5,480 +5,701 @@ const companyRoutes: RouteRecordRaw[] = [
     path: 'dashboard',
     name: 'company-dashboard',
     component: () => import('pages/Dashboard.vue'),
+    meta: {
+      breadcrumbs: ['Dashboard'],
+    },
   },
   {
     path: 'account',
     name: 'company-account',
+    meta: {
+      breadcrumbs: ['Account'],
+    },
     children: [
       {
         path: 'categories',
         name: 'company-account-categories',
         component: () => import('pages/account/category/CategoryList.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Categories'],
+        },
       },
       {
         path: 'categories/create',
         name: 'company-account-categories-create',
         component: () => import('pages/account/category/CategoryForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Categories', 'Create'],
+        },
       },
       {
         path: 'categories/:id/edit',
         name: 'company-account-categories-id',
         component: () => import('pages/account/category/CategoryForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Categories', 'Edit'],
+        },
       },
       {
         path: 'journal-vouchers',
         name: 'company-account-journal-vouchers',
         component: () => import('pages/account/journal-voucher/JournalVoucherList.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Journal Vouchers'],
+        },
       },
       {
         path: 'journal-vouchers/create',
         name: 'company-account-journal-vouchers-create',
         component: () => import('pages/account/journal-voucher/JournalVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Journal Vouchers', 'Create'],
+        },
       },
       {
         path: 'journal-vouchers/:id',
         name: 'company-account-journal-vouchers-id',
         component: () => import('pages/account/journal-voucher/JournalVoucherDetail.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Journal Vouchers', 'Detail'],
+        },
       },
       {
         path: 'journal-vouchers/:id/edit',
         name: 'company-account-journal-vouchers-id-edit',
         component: () => import('pages/account/journal-voucher/JournalVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Journal Vouchers', 'Edit'],
+        },
       },
       {
         path: 'ledgers',
         name: 'company-account-ledgers',
         component: () => import('pages/account/ledger/LedgerList.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Ledgers'],
+        },
       },
       {
         path: 'ledgers/create',
         name: 'company-account-ledgers-create',
         component: () => import('pages/account/ledger/LedgerForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Ledgers', 'Create'],
+        },
       },
       {
         path: 'ledgers/:id',
         name: 'company-account-ledgers-id',
         component: () => import('pages/account/ledger/LedgerDetail.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Ledgers', 'Detail'],
+        },
       },
       {
         path: 'ledgers/:id/edit',
         name: 'company-account-ledgers-id-edit',
         component: () => import('pages/account/ledger/LedgerForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Ledgers', 'Edit'],
+        },
       },
       {
         path: 'opening-balances',
         name: 'company-account-opening-balances',
         component: () => import('pages/account/opening-balance/OpeningBalanceList.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Opening Balances'],
+        },
       },
       {
         path: 'opening-balances/create',
         name: 'company-account-opening-balances-create',
         component: () => import('pages/account/opening-balance/OpeningBalanceForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Opening Balances', 'Create'],
+        },
       },
       {
         path: 'opening-balances/:id/edit',
         name: 'company-account-opening-balances-id-edit',
         component: () => import('pages/account/opening-balance/OpeningBalanceForm.vue'),
+        meta: {
+          breadcrumbs: ['Account', 'Opening Balances', 'Edit'],
+        },
       },
     ],
   },
   {
     path: 'banking',
     name: 'company-banking',
+    meta: {
+      breadcrumbs: ['Banking'],
+    },
     children: [
       {
         path: 'bank-accounts',
         name: 'company-banking-bank-accounts',
         component: () => import('pages/bank/account/AccountList.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Bank Accounts'],
+        },
       },
       {
         path: 'bank-accounts/create',
         name: 'company-banking-bank-accounts-create',
         component: () => import('pages/bank/account/AccountForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Bank Accounts', 'Create'],
+        },
       },
       {
         path: 'bank-accounts/:id/edit',
         name: 'company-banking-bank-accounts-id-edit',
         component: () => import('pages/bank/account/AccountForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Bank Accounts', 'Edit'],
+        },
       },
       {
         path: 'cash-deposits',
         name: 'company-banking-cash-deposits',
         component: () => import('pages/bank/cash-deposit/CashDepositList.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cash Deposits'],
+        },
       },
       {
         path: 'cash-deposits/create',
         name: 'company-banking-cash-deposits-create',
         component: () => import('pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cash Deposits', 'Create'],
+        },
       },
       {
         path: 'cash-deposits/:id/edit',
         name: 'company-banking-cash-deposits-id-edit',
         component: () => import('pages/bank/cash-deposit/CashDepositForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cash Deposits', 'Edit'],
+        },
       },
-      // {
-      //   path: 'cash-withdrawals',
-      //   name: 'company-banking-cash-withdrawals',
-      //   component: () => import('pages/bank/cash-withdrawal/CashWithdrawalList.vue'),
-      // },
-      // {
-      //   path: 'cash-withdrawals/create',
-      //   name: 'company-banking-cash-withdrawals-create',
-      //   component: () => import('pages/bank/cash-withdrawal/CashWithdrawalForm.vue'),
-      // },
-      // {
-      //   path: 'cash-withdrawals/:id',
-      //   name: 'company-banking-cash-withdrawals-id',
-      //   component: () => import('pages/bank/cash-withdrawal/CashWithdrawalDetail.vue'),
-      // },
-      // {
-      //   path: 'cash-withdrawals/:id/edit',
-      //   name: 'company-banking-cash-withdrawals-id-edit',
-      //   component: () => import('pages/bank/cash-withdrawal/CashWithdrawalForm.vue'),
-      // },
       {
         path: 'cheque-deposits',
         name: 'company-banking-cheque-deposits',
         component: () => import('pages/bank/cheque-deposit/ChequeDepositList.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Deposits'],
+        },
       },
       {
         path: 'cheque-deposits/create',
         name: 'company-banking-cheque-deposits-create',
         component: () => import('pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Deposits', 'Create'],
+        },
       },
       {
         path: 'cheque-deposits/:id/edit',
         name: 'company-banking-cheque-deposits-id-edit',
         component: () => import('pages/bank/cheque-deposit/ChequeDepositForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Deposits', 'Edit'],
+        },
       },
       {
         path: 'cheque-issues',
         name: 'company-banking-cheque-issues',
         component: () => import('pages/bank/cheque-issue/ChequeIssueList.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Issues'],
+        },
       },
       {
         path: 'cheque-issues/create',
         name: 'company-banking-cheque-issues-create',
         component: () => import('pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Issues', 'Create'],
+        },
       },
       {
         path: 'cheque-issues/:id/edit',
         name: 'company-banking-cheque-issues-id-edit',
         component: () => import('pages/bank/cheque-issue/ChequeIssueForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Cheque Issues', 'Edit'],
+        },
       },
-      // {
-      //   path: 'cheque-withdrawals',
-      //   name: 'company-banking-cheque-withdrawals',
-      //   component: () => import('pages/bank/cheque-withdrawal/ChequeWithdrawalList.vue'),
-      // },
-      // {
-      //   path: 'cheque-withdrawals/create',
-      //   name: 'company-banking-cheque-withdrawals-create',
-      //   component: () => import('pages/bank/cheque-withdrawal/ChequeWithdrawalForm.vue'),
-      // },
-      // {
-      //   path: 'cheque-withdrawals/:id',
-      //   name: 'company-banking-cheque-withdrawals-id',
-      //   component: () => import('pages/bank/cheque-withdrawal/ChequeWithdrawalDetail.vue'),
-      // },
-      // {
-      //   path: 'cheque-withdrawals/:id/edit',
-      //   name: 'company-banking-cheque-withdrawals-id-edit',
-      //   component: () => import('pages/bank/cheque-withdrawal/ChequeWithdrawalForm.vue'),
-      // },
       {
         path: 'fund-transfers',
         name: 'company-banking-fund-transfers',
         component: () => import('pages/bank/fund-transfer/FundTransferList.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Fund Transfers'],
+        },
       },
       {
         path: 'fund-transfers/create',
         name: 'company-banking-fund-transfers-create',
         component: () => import('pages/bank/fund-transfer/FundTransferForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Fund Transfers', 'Create'],
+        },
       },
       {
         path: 'fund-transfers/:id/edit',
         name: 'company-banking-fund-transfers-id-edit',
         component: () => import('pages/bank/fund-transfer/FundTransferForm.vue'),
+        meta: {
+          breadcrumbs: ['Banking', 'Fund Transfers', 'Edit'],
+        },
       },
     ],
   },
   {
     path: 'purchase',
     name: 'company-purchase',
+    meta: {
+      breadcrumbs: ['Purchase'],
+    },
     children: [
       {
         path: 'debit-notes',
         name: 'company-purchase-debit-notes',
         component: () => import('pages/purchase/debit-notes/DebitNotesList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Debit Notes'],
+        },
       },
       {
         path: 'debit-notes/create',
         name: 'company-purchase-debit-notes-create',
         component: () => import('pages/purchase/debit-notes/DebitNotesForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Debit Notes', 'Create'],
+        },
       },
       {
         path: 'debit-notes/:id/edit',
         name: 'company-purchase-debit-notes-id-edit',
         component: () => import('pages/purchase/debit-notes/DebitNotesForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Debit Notes', 'Edit'],
+        },
       },
       {
         path: 'discounts',
         name: 'company-purchase-discounts',
         component: () => import('pages/purchase/discounts/PurchaseDiscountList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Discounts'],
+        },
       },
       {
         path: 'discounts/create',
         name: 'company-purchase-discounts-create',
         component: () => import('pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Discounts', 'Create'],
+        },
       },
       {
         path: 'discounts/:id/edit',
         name: 'company-purchase-discounts-id-edit',
         component: () => import('pages/purchase/discounts/PurchaseDiscountForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Discounts', 'Edit'],
+        },
       },
       {
         path: 'purchase-book',
         name: 'company-purchase-book',
         component: () => import('pages/purchase/purchase-book/PurchaseBookList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Book'],
+        },
       },
       {
         path: 'purchase-orders',
         name: 'company-purchase-orders',
         component: () => import('pages/purchase/purchase-order/PurchaseOrderList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Orders'],
+        },
       },
       {
         path: 'purchase-orders/create',
         name: 'company-purchase-orders-create',
         component: () => import('pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Orders', 'Create'],
+        },
       },
       {
         path: 'purchase-orders/:id/edit',
         name: 'company-purchase-orders-id-edit',
         component: () => import('pages/purchase/purchase-order/PurchaseOrderForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Orders', 'Edit'],
+        },
       },
       {
         path: 'purchase-vouchers',
         name: 'company-purchase-vouchers',
         component: () => import('pages/purchase/purchase-voucher/PurchaseVoucherList.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers'],
+        },
       },
       {
         path: 'purchase-vouchers/create',
         name: 'company-purchase-vouchers-create',
         component: () => import('pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Create'],
+        },
       },
       {
         path: 'purchase-vouchers/:id',
         name: 'company-purchase-vouchers-id',
         component: () => import('pages/purchase/purchase-voucher/PurchaseVoucherDetail.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Detail'],
+        },
       },
       {
         path: 'purchase-vouchers/:id/edit',
         name: 'company-purchase-vouchers-id-edit',
         component: () => import('pages/purchase/purchase-voucher/PurchaseVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Purchase', 'Purchase Vouchers', 'Edit'],
+        },
       },
     ],
   },
   {
     path: 'sales',
     name: 'company-sales',
+    meta: {
+      breadcrumbs: ['Sales'],
+    },
     children: [
       {
         path: 'agents',
         name: 'company-sales-agents',
         component: () => import('pages/sales/agent/SalesAgentList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Agents'],
+        },
       },
       {
         path: 'agents/create',
         name: 'company-sales-agents-create',
         component: () => import('pages/sales/agent/SalesAgentForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Agents', 'Create'],
+        },
       },
       {
         path: 'agents/:id/edit',
         name: 'company-sales-agents-id-edit',
         component: () => import('pages/sales/agent/SalesAgentForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Agents', 'Edit'],
+        },
       },
       {
         path: 'sales-book',
         name: 'company-sales-book',
         component: () => import('pages/sales/book/SalesBookList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Book'],
+        },
       },
       {
         path: 'challans',
         name: 'company-sales-challans',
         component: () => import('pages/sales/challan/ChallanList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Challans'],
+        },
       },
       {
         path: 'challans/create',
         name: 'company-sales-challans-create',
         component: () => import('pages/sales/challan/ChallanForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Challans', 'Create'],
+        },
       },
       {
         path: 'challans/:id/edit',
         name: 'company-sales-challans-id-edit',
         component: () => import('pages/sales/challan/ChallanForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Challans', 'Edit'],
+        },
       },
       {
         path: 'credit-notes',
         name: 'company-sales-credit-notes',
         component: () => import('pages/sales/credit-note/CreditNoteList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Credit Notes'],
+        },
       },
       {
         path: 'credit-notes/create',
         name: 'company-sales-credit-notes-create',
         component: () => import('pages/sales/credit-note/CreditNoteForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Credit Notes', 'Create'],
+        },
       },
       {
         path: 'credit-notes/:id',
         name: 'company-sales-credit-notes-id',
         component: () => import('pages/sales/credit-note/CreditNoteDetail.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Credit Notes', 'Detail'],
+        },
       },
       {
         path: 'credit-notes/:id/edit',
         name: 'company-sales-credit-notes-id-edit',
         component: () => import('pages/sales/credit-note/CreditNoteForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Credit Notes', 'Edit'],
+        },
       },
       {
         path: 'discounts',
         name: 'company-sales-discounts',
         component: () => import('pages/sales/discount/SalesDiscountList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Discounts'],
+        },
       },
       {
         path: 'discounts/create',
         name: 'company-sales-discounts-create',
         component: () => import('pages/sales/discount/SalesDiscountForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Discounts', 'Create'],
+        },
       },
       {
         path: 'discounts/:id/edit',
         name: 'company-sales-discounts-id-edit',
         component: () => import('pages/sales/discount/SalesDiscountForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Discounts', 'Edit'],
+        },
       },
       {
         path: 'pos',
         name: 'company-sales-pos',
         component: () => import('pages/sales/pos/PosForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'POS'],
+        },
       },
       {
         path: 'sales-vouchers',
         name: 'company-sales-vouchers',
         component: () => import('pages/sales/sales-voucher/SalesVoucherList.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers'],
+        },
       },
       {
         path: 'sales-vouchers/create',
         name: 'company-sales-vouchers-create',
         component: () => import('pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Create'],
+        },
       },
       {
         path: 'sales-vouchers/:id',
         name: 'company-sales-vouchers-id',
         component: () => import('pages/sales/sales-voucher/SalesVoucherDetail.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Detail'],
+        },
       },
       {
         path: 'sales-vouchers/:id/edit',
         name: 'company-sales-vouchers-id-edit',
         component: () => import('pages/sales/sales-voucher/SalesVoucherForm.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Edit'],
+        },
       },
       {
         path: 'sales-vouchers/:id/material',
         name: 'company-sales-vouchers-id-edit',
         component: () => import('pages/sales/sales-voucher/SalesVoucherMV.vue'),
+        meta: {
+          breadcrumbs: ['Sales', 'Sales Vouchers', 'Material'],
+        },
       },
     ],
   },
   {
     path: 'settings',
     name: 'company-settings',
+    meta: {
+      breadcrumbs: ['Settings'],
+    },
     children: [
       {
-        path: 'accounts-closing',
-        name: 'company-settings-accounts-closing',
+        path: 'company-settings',
+        name: 'company-settings-company',
         component: () => import('pages/settings/AccountsClosing.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Company Settings'],
+        },
       },
       {
         path: 'import-export',
         name: 'company-settings-import-export',
         component: () => import('pages/settings/ImportExport.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Import/Export'],
+        },
       },
       {
         path: 'inventory-settings',
         name: 'company-settings-inventory',
         component: () => import('pages/settings/InventorySettings.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Inventory Settings'],
+        },
       },
       {
         path: 'item-merge',
         name: 'company-settings-item-merge',
         component: () => import('pages/settings/ItemMerge.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Item Merge'],
+        },
       },
       {
         path: 'payment-modes',
         name: 'company-settings-payment-modes',
         component: () => import('pages/settings/PaymentModeList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes'],
+        },
       },
       {
         path: 'payment-modes/create',
         name: 'company-settings-payment-modes-create',
         component: () => import('pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes', 'Create'],
+        },
       },
       {
         path: 'payment-modes/:id/edit',
         name: 'company-settings-payment-modes-id-edit',
         component: () => import('pages/settings/PaymentModeForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Payment Modes', 'Edit'],
+        },
       },
       {
         path: 'purchase-settings',
         name: 'company-settings-purchase',
         component: () => import('pages/settings/PurchaseSetting.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Purchase Settings'],
+        },
       },
       {
         path: 'sales-settings',
         name: 'company-settings-sales',
         component: () => import('pages/settings/SalesSetting.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Sales Settings'],
+        },
       },
       {
         path: 'audit-logs',
         name: 'company-settings-audit-logs',
         component: () => import('pages/settings/auditlog/AuditLogList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Audit Logs'],
+        },
       },
       {
         path: 'audit-logs/:id',
         name: 'company-settings-audit-logs-id',
         component: () => import('pages/settings/auditlog/AuditLogDetail.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Audit Logs', 'Detail'],
+        },
       },
       {
         path: 'dashboard-widgets',
         name: 'company-settings-dashboard-widgets',
         component: () => import('pages/settings/widgets/WidgetList.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets'],
+        },
       },
       {
         path: 'dashboard-widgets/create/',
         name: 'company-settings-dashboard-widgets-create',
         component: () => import('pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Create'],
+        },
       },
       {
         path: 'dashboard-widgets/:id/edit',
         name: 'company-settings-dashboard-widgets-id-edit',
         component: () => import('pages/settings/widgets/WidgetForm.vue'),
+        meta: {
+          breadcrumbs: ['Settings', 'Dashboard Widgets', 'Edit'],
+        },
       },
     ],
   },
   {
     path: 'tax',
     name: 'company-tax',
+    meta: {
+      breadcrumbs: ['Tax'],
+    },
     children: [
       {
         path: 'payments',
         name: 'company-tax-payments',
         component: () => import('pages/tax/payments/TaxPaymentList.vue'),
+        meta: {
+          breadcrumbs: ['Tax', 'Payments'],
+        },
       },
       {
         path: 'payments/create',
         name: 'company-tax-payments-create',
         component: () => import('pages/tax/payments/TaxPaymentForm.vue'),
+        meta: {
+          breadcrumbs: ['Tax', 'Payments', 'Create'],
+        },
       },
       {
         path: 'payments/:id/edit',
         name: 'company-tax-payments-id-edit',
         component: () => import('pages/tax/payments/TaxPaymentForm.vue'),
+        meta: {
+          breadcrumbs: ['Tax', 'Payments', 'Edit'],
+        },
       },
       // {
       //   path: 'schemes',
@@ -510,161 +731,217 @@ const companyRoutes: RouteRecordRaw[] = [
   {
     path: 'inventory',
     name: 'company-inventory',
+    meta: {
+      breadcrumbs: ['Inventory'],
+    },
     children: [
       {
         path: 'items',
         name: 'company-inventory-items',
         component: () => import('pages/inventory/item/ItemList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Items'],
+        },
       },
       {
         path: 'items/create',
         name: 'company-inventory-items-create',
         component: () => import('pages/inventory/item/ItemForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Items', 'Create'],
+        },
       },
       {
         path: 'items/:id',
         name: 'company-inventory-items-id',
         component: () => import('pages/inventory/item/ItemDetail.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Items', 'Detail'],
+        },
       },
       {
         path: 'items/:id/edit',
         name: 'company-inventory-items-id-edit',
         component: () => import('pages/inventory/item/ItemForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Items', 'Edit'],
+        },
       },
-      // {
-      //   path: 'products',
-      //   name: 'company-inventory-products',
-      //   component: () => import('pages/inventory/product/ProductList.vue'),
-      // },
-      // {
-      //   path: 'products/create',
-      //   name: 'company-inventory-products-create',
-      //   component: () => import('pages/inventory/product/ProductForm.vue'),
-      // },
-      // {
-      //   path: 'products/:id',
-      //   name: 'company-inventory-products-id',
-      //   component: () => import('pages/inventory/product/ProductDetail.vue'),
-      // },
-      // {
-      //   path: 'products/:id/edit',
-      //   name: 'company-inventory-products-id-edit',
-      //   component: () => import('pages/inventory/product/ProductForm.vue'),
-      // },
       {
         path: 'units',
         name: 'company-inventory-units',
         component: () => import('pages/inventory/unit/UnitList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Units'],
+        },
       },
       {
         path: 'units/create',
         name: 'company-inventory-units-create',
         component: () => import('pages/inventory/unit/UnitForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Units', 'Create'],
+        },
       },
       {
         path: 'units/:id/edit',
         name: 'company-inventory-units-id-edit',
         component: () => import('pages/inventory/unit/UnitForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Units', 'Edit'],
+        },
       },
       {
         path: 'categories',
         name: 'company-inventory-categories',
         component: () => import('pages/inventory/product/category/InventoryCategoryList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Categories'],
+        },
       },
       {
         path: 'categories/create',
         name: 'company-inventory-categories-create',
         component: () => import('pages/inventory/product/category/InventoryCategoryForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Categories', 'Create'],
+        },
       },
       {
         path: 'categories/:id/edit',
         name: 'company-inventory-categories-id-edit',
         component: () => import('pages/inventory/product/category/InventoryCategoryForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Categories', 'Edit'],
+        },
       },
       {
         path: 'brands',
         name: 'company-inventory-brands',
         component: () => import('pages/inventory/product/brand/BrandList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Brands'],
+        },
       },
       {
         path: 'brands/create',
         name: 'company-inventory-brands-create',
         component: () => import('pages/inventory/product/brand/BrandForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Brands', 'Create'],
+        },
       },
       {
         path: 'brands/:id/edit',
         name: 'company-inventory-brands-id-edit',
         component: () => import('pages/inventory/product/brand/BrandForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Brands', 'Edit'],
+        },
       },
       {
         path: 'opening-stock',
         name: 'company-inventory-opening-stock',
         component: () => import('pages/inventory/item/opening-stock/ItemOpeningStockList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Opening Stock'],
+        },
       },
       {
         path: 'opening-stock/create',
         name: 'company-inventory-opening-stock-create',
         component: () => import('pages/inventory/item/opening-stock/ItemOpeningStockForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Opening Stock', 'Create'],
+        },
       },
-      // {
-      //   path: 'stock-ledger',
-      //   name: 'company-inventory-stock-ledger',
-      //   component: () => import('pages/inventory/stock-ledger/StockLedger.vue'),
-      // },
       {
         path: 'adjustments',
         name: 'company-inventory-adjustments',
         component: () => import('pages/inventory/product/inventory-adjustment/InventoryAdjustmentList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Adjustments'],
+        },
       },
       {
         path: 'adjustments/create',
         name: 'company-inventory-adjustments-create',
         component: () => import('pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Adjustments', 'Create'],
+        },
       },
       {
         path: 'adjustments/:id',
         name: 'company-inventory-adjustments-id',
         component: () => import('pages/inventory/product/inventory-adjustment/InventoryAdjustmentDetail.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Adjustments', 'Detail'],
+        },
       },
       {
         path: 'adjustments/:id/edit',
         name: 'company-inventory-adjustments-id-edit',
         component: () => import('pages/inventory/product/inventory-adjustment/InventoryAdjustmentForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Adjustments', 'Edit'],
+        },
       },
       {
         path: 'bill-of-materials',
         name: 'company-inventory-bill-of-materials',
         component: () => import('pages/inventory/product/bill-of-material/BillOfMaterialList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Bill of Materials'],
+        },
       },
       {
         path: 'bill-of-materials/create',
         name: 'company-inventory-bill-of-materials-create',
         component: () => import('pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Bill of Materials', 'Create'],
+        },
       },
       {
         path: 'bill-of-materials/:id/edit',
         name: 'company-inventory-bill-of-materials-id-edit',
         component: () => import('pages/inventory/product/bill-of-material/BillOfMaterialForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Bill of Materials', 'Edit'],
+        },
       },
       {
         path: 'conversions',
         name: 'company-inventory-conversions',
         component: () => import('pages/inventory/product/inventory-conversion/InventoryConversionList.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Conversions'],
+        },
       },
       {
         path: 'conversions/create',
         name: 'company-inventory-conversions-create',
         component: () => import('pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Conversions', 'Create'],
+        },
       },
       {
         path: 'conversions/:id',
         name: 'company-inventory-conversions-id',
         component: () => import('pages/inventory/product/inventory-conversion/InventoryConversionDetail.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Conversions', 'Detail'],
+        },
       },
       {
         path: 'conversions/:id/edit',
         name: 'company-inventory-conversions-id-edit',
         component: () => import('pages/inventory/product/inventory-conversion/InventoryConversionForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Conversions', 'Edit'],
+        },
       },
     ],
   },
@@ -676,144 +953,221 @@ const companyRoutes: RouteRecordRaw[] = [
   {
     path: 'party',
     name: 'company-party',
+    meta: {
+      breadcrumbs: ['Party'],
+    },
     children: [
       {
         path: 'parties',
         name: 'company-party-list',
         component: () => import('pages/party/PartyList.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'All Parties'],
+        },
       },
       {
         path: 'parties/create',
         name: 'company-party-create',
         component: () => import('pages/party/PartyForm.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Create'],
+        },
       },
       {
         path: 'parties/:id/edit',
         name: 'company-party-edit',
         component: () => import('pages/party/PartyForm.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Edit'],
+        },
       },
       {
         path: 'parties/:id/account',
         name: 'company-party-account',
         component: () => import('pages/party/PartyAccount.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Account'],
+        },
       },
       {
         path: 'parties/:id/alias',
         name: 'company-party-alias',
         component: () => import('pages/party/PartyAlias.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Alias'],
+        },
       },
       {
         path: 'parties/:id/representative',
         name: 'company-party-representative',
         component: () => import('pages/party/PartyRepresentative.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Representative'],
+        },
       },
       {
         path: 'customers',
         name: 'company-customer-list',
         component: () => import('pages/party/CustomerList.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Customers'],
+        },
       },
       {
         path: 'suppliers',
         name: 'company-supplier-list',
         component: () => import('pages/party/SupplierList.vue'),
+        meta: {
+          breadcrumbs: ['Party', 'Suppliers'],
+        },
       },
     ],
   },
   {
     path: 'payment-receipts',
     name: 'company-payment-receipts',
+    meta: {
+      breadcrumbs: ['Payment Receipts'],
+    },
     children: [
       {
         path: '',
         name: 'company-payment-receipts-list',
         component: () => import('pages/payment-receipt/PaymentReceiptList.vue'),
+        meta: {
+          breadcrumbs: ['Payment Receipts', 'List'],
+        },
       },
       {
         path: 'create',
         name: 'company-payment-receipts-create',
         component: () => import('pages/payment-receipt/PaymentReceiptForm.vue'),
+        meta: {
+          breadcrumbs: ['Payment Receipts', 'Create'],
+        },
       },
       {
         path: ':id',
         name: 'company-payment-receipts-id',
         component: () => import('pages/payment-receipt/PaymentReceiptView.vue'),
+        meta: {
+          breadcrumbs: ['Payment Receipts', 'Detail'],
+        },
       },
       {
         path: ':id/edit',
         name: 'company-payment-receipts-id-edit',
         component: () => import('pages/payment-receipt/PaymentReceiptForm.vue'),
+        meta: {
+          breadcrumbs: ['Payment Receipts', 'Edit'],
+        },
       },
     ],
   },
   {
     path: 'reports',
     name: 'company-reports',
+    meta: {
+      breadcrumbs: ['Reports'],
+    },
     children: [
       {
-        path: 'ageing',
-        name: 'company-reports-ageing',
+        path: 'account-ledger',
+        name: 'company-reports-account-ledger',
         component: () => import('pages/report/AgeingReport.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Account Ledger'],
+        },
       },
       {
         path: 'balance-sheet',
         name: 'company-reports-balance-sheet',
         component: () => import('pages/report/BalanceSheet.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Balance Sheet'],
+        },
       },
       {
         path: 'category-tree',
         name: 'company-reports-category-tree',
         component: () => import('pages/report/CategoryTree.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Category Tree'],
+        },
       },
       {
-        path: 'collection',
-        name: 'company-reports-collection',
+        path: 'cash-flow',
+        name: 'company-reports-cash-flow',
         component: () => import('pages/report/CollectionReport.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Cash Flow'],
+        },
       },
       {
         path: 'day-book',
         name: 'company-reports-day-book',
         component: () => import('pages/report/DayBook.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Day Book'],
+        },
       },
       {
         path: 'income-statement',
         name: 'company-reports-income-statement',
         component: () => import('pages/report/IncomeStatement.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Income Statement'],
+        },
       },
+
       {
         path: 'ratio-analysis',
         name: 'company-reports-ratio-analysis',
         component: () => import('pages/report/RatioAnalysis.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Ratio Analysis'],
+        },
       },
       {
         path: 'sales-by-category',
         name: 'company-reports-sales-by-category',
         component: () => import('pages/report/SalesByCategory.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Sales By Category'],
+        },
       },
       {
         path: 'stock-trial-balance',
         name: 'company-reports-stock-trial-balance',
         component: () => import('pages/report/StockTrialBalance.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Stock Trial Balance'],
+        },
       },
       {
         path: 'tax-summary',
         name: 'company-reports-tax-summary',
         component: () => import('pages/report/TaxSummary.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Tax Summary'],
+        },
       },
       {
         path: 'transactions',
         name: 'company-reports-transactions',
         component: () => import('pages/report/TransactionsList.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Transactions'],
+        },
       },
       {
         path: 'trial-balance',
         name: 'company-reports-trial-balance',
         component: () => import('pages/report/TrialBalance.vue'),
+        meta: {
+          breadcrumbs: ['Reports', 'Trial Balance'],
+        },
       },
-      // {
-      //   path: 'stock-movement',
-      //   name: 'company-reports-stock-movement',
-      //   component: () => import('pages/report/StockMovement.vue'),
-      // },
     ],
   },
 ]

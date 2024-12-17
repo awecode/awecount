@@ -12,7 +12,7 @@ const route = useRoute()
 const router = useRouter()
 
 const miniState = ref(false)
-const breadCrumbs: Ref<Array<string | null>> = ref([])
+const breadcrumbs = ref<string[]>([])
 
 const store = useLoginStore()
 
@@ -432,10 +432,11 @@ function toggleLeftDrawer() {
 
 onMounted(() => {
   fetchCompanies()
-  breadCrumbs.value = route.meta.breadcrumb
+  breadcrumbs.value = route.meta.breadcrumbs || []
 })
+
 watch(route, () => {
-  breadCrumbs.value = route.meta.breadcrumb
+  breadcrumbs.value = route.meta.breadcrumbs || []
 })
 </script>
 
@@ -451,7 +452,7 @@ watch(route, () => {
             <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el v-for="breadCrum in breadCrumbs" :key="breadCrum" :label="breadCrum" :to="{ name: breadCrum }" />
+            <q-breadcrumbs-el v-for="breadCrum in breadcrumbs" :key="breadCrum" :label="breadCrum" :to="{ name: breadCrum }" />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
