@@ -8,13 +8,18 @@ import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useLoginStore } from '../stores/login-info.js'
 
-const miniState = ref(false)
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
+
+const miniState = ref(false)
 const breadCrumbs: Ref<Array<string | null>> = ref([])
+
 const store = useLoginStore()
+
 const companies = ref([])
 const activeCompany = computed(() => route.params.company as string)
+
+const { hasPermission, logout, hasAnyRole, switchCompany } = useAuthStore()
 
 const fetchCompanies = async () => {
   try {
@@ -23,16 +28,6 @@ const fetchCompanies = async () => {
     console.error('Error fetching companies:', error)
   }
 }
-
-const switchCompany = (slug: string) => {
-  if (slug !== activeCompany.value) {
-    const currentPath = route.path
-    const newPath = currentPath.replace(activeCompany.value, slug)
-    router.push(newPath)
-  }
-}
-
-const { hasPermission, logout, hasAnyRole } = useAuthStore()
 
 const essentialLinks: EssentialLinkProps[] = [
   {
@@ -445,7 +440,7 @@ watch(route, () => {
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf" class="container-padding-left">
+  <q-layout view="lHh Lpr lFf">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
     <q-header bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
       <q-toolbar>
@@ -537,7 +532,7 @@ watch(route, () => {
                 v-close-popup
                 clickable
                 :active="company.slug === activeCompany"
-                @click="switchCompany(company.slug)"
+                @click="switchCompany(company.id)"
               >
                 <q-item-section avatar>
                   <q-avatar size="28px">
