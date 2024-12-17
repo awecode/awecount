@@ -2160,7 +2160,10 @@ class SalesSettingsViewSet(CRULViewSet):
         data = {
             "fields": SalesSettingsSerializer(
                 s_setting, context={"request": request}
-            ).data
+            ).data,
+            "file_upload_paths": {
+                "default_email_attachments": "default_email_attachments",
+            },
         }
         return data
 
