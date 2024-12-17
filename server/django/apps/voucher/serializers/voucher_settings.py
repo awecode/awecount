@@ -86,12 +86,9 @@ class SalesSettingsSerializer(serializers.ModelSerializer):
 
     def get_default_email_attachments(self, obj):
         request = self.context.get("request")
-        if request and obj.default_email_attachments:
-            return [
-                get_full_file_url(request, file)
-                for file in obj.default_email_attachments
-            ]
-        return []
+        return [
+            get_full_file_url(request, file) for file in obj.default_email_attachments
+        ]
 
     def get_mode(self, obj):
         if obj.mode not in ["Cash", "Credit"]:

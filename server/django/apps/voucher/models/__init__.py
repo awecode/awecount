@@ -6,11 +6,13 @@ from decimal import Decimal
 from io import BytesIO
 from typing import Union
 
+import requests
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.db.models import Prefetch, Q
@@ -42,7 +44,12 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.helpers import deserialize_request, merge_dicts, use_miti
+from awecount.libs.helpers import (
+    deserialize_request,
+    get_relative_file_path,
+    merge_dicts,
+    use_miti,
+)
 
 from .agent import SalesAgent
 from .discounts import DISCOUNT_TYPES, PurchaseDiscount, SalesDiscount
@@ -791,11 +798,14 @@ class SalesVoucher(TransactionModel, InvoiceModel):
 
         for attachment in attachments:
             if isinstance(attachment, str):
-                attachment_fileurl = os.path.join(settings.MEDIA_ROOT, attachment)
-                with open(attachment_fileurl, "rb") as file:
-                    email.attach(
-                        attachment.split("/")[-1], file.read(), "application/pdf"
-                    )
+                file_path = get_relative_file_path(attachment)
+                if default_storage.exists(file_path):
+                    with default_storage.open(file_path, "rb") as file:
+                        email.attach(
+                            file_path.split("/")[-1], file.read(), "application/pdf"
+                        )
+                else:
+                    raise ValueError(f"Failed to fetch attachment from {file_path}")
             else:
                 email.attach(
                     attachment.name, attachment.file.read(), attachment.content_type
