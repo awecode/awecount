@@ -318,7 +318,7 @@ class TaxSummaryView(APIView):
             .distinct()
         )
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
 
