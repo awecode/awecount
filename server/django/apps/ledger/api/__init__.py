@@ -292,7 +292,7 @@ class TaxSummaryView(APIView):
 
     def get_sales_queryset(self, **kwargs):
         return SalesVoucher.objects.filter(
-            company_id=self.request.company_id,
+            company_id=self.request.company.id,
             status__in=["Issued", "Paid", "Partially Paid"],
         )
 
@@ -301,7 +301,7 @@ class TaxSummaryView(APIView):
             PurchaseVoucher.objects.filter(is_import=False)
             .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
             .filter(
-                company_id=self.request.company_id,
+                company_id=self.request.company.id,
                 status__in=["Issued", "Paid", "Partially Paid"],
             )
             .distinct()
@@ -312,7 +312,7 @@ class TaxSummaryView(APIView):
             PurchaseVoucher.objects.filter(is_import=True)
             .filter(Q(rows__item__can_be_sold=True) | Q(meta_tax__gt=0))
             .filter(
-                company_id=self.request.company_id,
+                company_id=self.request.company.id,
                 status__in=["Issued", "Paid", "Partially Paid"],
             )
             .distinct()
@@ -480,7 +480,7 @@ class TransactionViewSet(
 
     def get_queryset(self):
         qs = (
-            Transaction.objects.filter(company_id=self.request.company_id)
+            Transaction.objects.filter(company_id=self.request.company.id)
             .prefetch_related("account", "journal_entry__content_type")
             .order_by("-journal_entry__date")
         )

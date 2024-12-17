@@ -37,9 +37,9 @@ class CompanyViewSetMixin(object):
         else:
             qs = self.serializer_class.Meta.model.objects.all()
         if not company_id:
-            if not hasattr(self.request, "company_id"):
+            if not hasattr(self.request, "company"):
                 raise APIException({"detail": "User is not assigned to any company."})
-            company_id = self.request.company_id
+            company_id = self.request.company.id
         return qs.filter(company_id=company_id)
 
     def perform_create(self, serializer):
@@ -48,7 +48,7 @@ class CompanyViewSetMixin(object):
         else:
             model = serializer.Meta.model
         if hasattr(model, "company_id"):
-            serializer.validated_data["company_id"] = self.request.company_id
+            serializer.validated_data["company_id"] = self.request.company.id
         try:
             serializer.save()
         except ValidationError as e:
@@ -56,7 +56,7 @@ class CompanyViewSetMixin(object):
 
     def perform_update(self, serializer):
         if hasattr(serializer.instance.__class__, "company_id"):
-            if serializer.instance.company_id != self.request.company_id:
+            if serializer.instance.company_id != self.request.company.id:
                 raise SuspiciousOperation("Modifying object owned by other company!")
         try:
             serializer.save()
@@ -99,7 +99,7 @@ class CollectionViewSet(object):
             qs = arg_2
             model = qs.model
         if hasattr(model, "company_id"):
-            qs = qs.filter(company_id=request.company_id)
+            qs = qs.filter(company_id=request.company.id)
 
         paginate = True
         if len(collection) > 3:

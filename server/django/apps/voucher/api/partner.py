@@ -57,7 +57,7 @@ class PartnerPurchaseVoucherViewSet(
                 | Q(rows__item__name__icontains=search_params)
             )
 
-        return qs.filter(company_id=self.request.company_id).order_by("-date", "-pk")
+        return qs.filter(company_id=self.request.company.id).order_by("-date", "-pk")
 
 
 class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
@@ -65,7 +65,7 @@ class PartnerPurchaseDiscountViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="all")
     def all(self, request, *args, **kwargs):
-        parties = self.queryset.filter(company_id=request.company_id).order_by("-pk")
+        parties = self.queryset.filter(company_id=request.company.id).order_by("-pk")
         return Response(PartnerPurchaseDiscountSerializer(parties, many=True).data)
 
 

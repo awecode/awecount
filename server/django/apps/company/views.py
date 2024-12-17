@@ -272,11 +272,9 @@ class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
 
 class UserCompaniesEndpoint(views.APIView):
     def get(self, request):
-        user_companies = (
-            CompanyMember.objects.filter(member=request.user, is_active=True)
-            .select_related("company")
-            .only("company")
-            .order_by("-created_at")
+        user_companies = Company.objects.filter(
+            company_members__member=request.user,
+            company_members__is_active=True,
         )
 
         return Response(

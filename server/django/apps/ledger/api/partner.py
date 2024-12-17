@@ -51,7 +51,7 @@ class PartnerPartyViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["get"], url_path="all")
     def all(self, request, *args, **kwargs):
         parties = (
-            self.queryset.filter(company_id=request.company_id)
+            self.queryset.filter(company_id=request.company.id)
             .order_by("-pk")
             .only("id", "name")
         )
