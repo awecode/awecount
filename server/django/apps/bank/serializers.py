@@ -8,12 +8,12 @@ from awecount.libs.serializers import StatusReversionMixin
 from .models import (
     BankAccount,
     BankCashDeposit,
-    ReconciliationEntries,
-    ReconciliationStatement,
     ChequeDeposit,
     ChequeIssue,
     FundTransfer,
     FundTransferTemplate,
+    ReconciliationEntries,
+    ReconciliationStatement,
 )
 
 
@@ -222,7 +222,7 @@ class BankCashDepositCreateSerializer(
 class ReconciliationEntriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReconciliationEntries
-        exclude = ("updated_at", )
+        exclude = ("updated_at", "statement" )
         
 class ReconciliationStatementImportSerializer(serializers.Serializer):
     account_id = serializers.IntegerField()
@@ -233,7 +233,7 @@ class ReconciliationStatementImportSerializer(serializers.Serializer):
     class Meta:
         fields = ('account_id', 'transactions', 'start_date', 'end_date')
         
-class ReconciliationStatementSerializer(serializers.ModelSerializer):
+class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     account = AccountMinSerializer()
     total_entries = serializers.SerializerMethodField()
     reconciled_entries = serializers.SerializerMethodField()
@@ -247,3 +247,12 @@ class ReconciliationStatementSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReconciliationStatement
         fields = ('id', 'account', 'start_date', 'end_date', 'total_entries', 'reconciled_entries',)
+        
+
+class ReconciliationStatementSerializer(serializers.ModelSerializer):
+    account = AccountMinSerializer()
+    entries = ReconciliationEntriesSerializer(many=True)
+
+    class Meta:
+        model = ReconciliationStatement
+        fields = ('id', 'account', 'start_date', 'end_date', 'entries')

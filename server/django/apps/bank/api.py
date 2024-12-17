@@ -4,6 +4,7 @@ from itertools import chain, combinations
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Case, Q, When
+from django.forms import ValidationError
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
@@ -41,6 +42,7 @@ from apps.bank.serializers import (
     FundTransferTemplateSerializer,
     ReconciliationEntriesSerializer,
     ReconciliationStatementImportSerializer,
+    ReconciliationStatementListSerializer,
     ReconciliationStatementSerializer,
 )
 from apps.ledger.models import Account, Party
@@ -49,6 +51,7 @@ from apps.ledger.serializers import (
     JournalEntriesSerializer,
     PartyMinSerializer,
     TransactionMinSerializer,
+    AccountMinSerializer
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
@@ -354,6 +357,16 @@ class ReconciliationViewSet(CRULViewSet):
     serializer_class = ReconciliationStatementSerializer
     model = ReconciliationStatement
     
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ReconciliationStatementListSerializer
+        return self.serializer_class
+    
+    def filter_queryset(self, queryset):
+        if self.action == 'retrieve':
+            return queryset
+        return super().filter_queryset(queryset)
+
     filter_backends = [
         filters.DjangoFilterBackend,
         rf_filters.OrderingFilter,
@@ -363,12 +376,74 @@ class ReconciliationViewSet(CRULViewSet):
     filterset_fields = [
         'account_id',
     ]
-    
+
     search_fields = [
         'account__name',
         'start_date',
         'end_date',
     ]
+    
+    def filter_entries(self, entries, params):
+        """
+        Apply filtering logic to the entries queryset based on request parameters.
+        """
+        start_date = params.get('start_date')
+        end_date = params.get('end_date')
+        status = params.get('status')
+        search = params.get('search')
+        
+        filters = Q()
+
+        # Filter by status
+        if status:
+                filters &= Q(status=status)
+
+        # Search by description, amount, or date
+        if search:
+            filters &= (
+                Q(description__icontains=search) |
+                Q(dr_amount__icontains=search) |
+                Q(cr_amount__icontains=search) |
+                Q(date__icontains=search)
+            )
+
+        # Filter by date range
+        if start_date or end_date:
+            if not (start_date and end_date):
+                raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
+            filters &= Q(date__range=[start_date, end_date])
+            
+        entries = entries.filter(filters)
+        return entries
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        entries = self.filter_entries(instance.entries.all(), request.query_params)
+        # allow search from description or 
+        page = self.paginate_queryset(entries)
+        serializer = ReconciliationEntriesSerializer(page, many=True)
+        paginated_response = self.get_paginated_response(serializer.data)
+        data = paginated_response.data
+        # add account details
+        data['account'] = AccountMinSerializer(instance.account).data
+        data['date'] = {
+            'start_date': instance.start_date,
+            'end_date': instance.end_date
+        }
+        return Response(data)
+    
+    @action(detail=True, url_path="account-and-dates-info")
+    def get_account_and_dates_info(self, request, pk):
+        instance = self.get_object()
+        data = {
+            'account': AccountMinSerializer(instance.account).data,
+            'date': {
+                'start_date': instance.start_date,
+                'end_date': instance.end_date
+            }
+        }
+        return Response(data)
+    
 
     def reconcile(self, company, statement_transactions, start_date, end_date, account_id):
         system_transactions = Transaction.objects.filter(
@@ -872,8 +947,8 @@ class ReconciliationViewSet(CRULViewSet):
         for statement_transaction in reconciled_transactions:
             bank_reconciliation_entries.append(ReconciliationEntries(
                 date=statement_transaction['date'],
-                dr_amount=statement_transaction.get('dr_amount', None),
-                cr_amount=statement_transaction.get('cr_amount', None),
+                dr_amount=statement_transaction.get('dr_amount') or None,
+                cr_amount=statement_transaction.get('cr_amount') or None,
                 status=statement_transaction.get('status', 'Matched'),
                 balance=statement_transaction.get('balance', None),
                 transaction_ids=statement_transaction.get('transaction_ids', []),
@@ -885,8 +960,8 @@ class ReconciliationViewSet(CRULViewSet):
         for statement_transaction in unreconciled_statement_transactions:
             bank_reconciliation_entries.append(ReconciliationEntries(
                 date=statement_transaction['date'],
-                dr_amount=statement_transaction.get('dr_amount', None),
-                cr_amount=statement_transaction.get('cr_amount', None),
+                dr_amount=statement_transaction.get('dr_amount') or None,
+                cr_amount=statement_transaction.get('cr_amount') or None,
                 status='Unreconciled',
                 balance=statement_transaction.get('balance', None),
                 statement_id=bank_reconciliation_statement.pk,
@@ -1006,7 +1081,7 @@ class ReconciliationViewSet(CRULViewSet):
             status__in=['Unreconciled', 'Matched']
         ).order_by("date")
         
-        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE })
+        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE, 'adjustment_threshold': settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD })
     
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
