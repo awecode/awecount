@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { EssentialLinkProps } from 'components/EssentialLink.vue'
 import type { Ref } from 'vue'
+
+import { $api } from 'src/composables/api'
 import { useAuthStore } from 'src/stores/auth'
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useLoginStore } from '../stores/login-info.js'
 
 const miniState = ref(false)
@@ -11,83 +13,93 @@ const router = useRouter()
 const route = useRoute()
 const breadCrumbs: Ref<Array<string | null>> = ref([])
 const store = useLoginStore()
-// const router = useRouter()
-const activeDateFormat = computed(() => (store.isCalendarInAD ? 'AD' : 'BS'))
-const logoutDiologueOpen = ref(false)
+const companies = ref([])
+const activeCompany = computed(() => route.params.company as string)
 
-const { hasPermission, logout } = useAuthStore()
+const fetchCompanies = async () => {
+  try {
+    companies.value = await $api('/api/me/companies/', { method: 'GET' })
+  } catch (error) {
+    console.error('Error fetching companies:', error)
+  }
+}
+
+const switchCompany = (slug: string) => {
+  if (slug !== activeCompany.value) {
+    const currentPath = route.path
+    const newPath = currentPath.replace(activeCompany.value, slug)
+    router.push(newPath)
+  }
+}
+
+const { hasPermission, logout, hasAnyRole } = useAuthStore()
 
 const essentialLinks: EssentialLinkProps[] = [
   {
     title: 'Dashboard',
     icon: 'mdi-view-dashboard',
-    link: '/dashboard/',
+    link: `/${activeCompany.value}/dashboard`,
   },
   {
-    title: 'Items',
+    title: 'Inventory',
     icon: 'mdi-clipboard-outline',
     children: [
       {
-        title: 'All Items',
+        title: 'Items',
         icon: 'mdi-view-headline',
-        link: '/items/list/',
+        link: `/${activeCompany.value}/inventory/items`,
         hide: !hasPermission('item'),
       },
       {
         title: 'Units',
         icon: 'mdi-scale-balance',
-        link: '/units/list/',
+        link: `/${activeCompany.value}/inventory/units`,
         hide: !hasPermission('unit'),
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
-        link: '/inventory-category/list/',
+        link: `/${activeCompany.value}/inventory/categories`,
         hide: !hasPermission('category'),
       },
       {
         title: 'Brands',
         icon: 'mdi-domain',
-        link: '/brand/list/',
+        link: `/${activeCompany.value}/inventory/brands`,
         hide: !hasPermission('brand'),
       },
       {
         title: 'Inventory Ledger',
         icon: 'inventory',
-        link: '/inventory-account/list/',
+        link: `/${activeCompany.value}/inventory/ledger`,
         hide: !hasPermission('inventoryaccount'),
       },
       {
         title: 'Opening Stock',
         icon: 'edit_note',
-        link: '/items/opening/',
+        link: `/${activeCompany.value}/inventory/opening-stock`,
         hide: !hasPermission('accountopeningbalance'),
       },
       {
         title: 'Inventory Adjustment',
         icon: 'mdi-swap-horizontal',
-        link: '/items/inventory-adjustment/list',
+        link: `/${activeCompany.value}/inventory/adjustments`,
         hide: !hasPermission('inventoryadjustmentvoucher'),
       },
-      // {
-      //   title: 'Bill of Material',
-      //   icon: 'mdi-receipt',
-      //   link: '/items/bill-of-material/list',
-      //   hide: !hasPermission('BillOfMaterialView')
-      // },
-      // {
-      //   title: 'Inventory Conversion',
-      //   icon: 'mdi-shuffle-variant',
-      //   link: '/items/inventory-conversion/list',
-      //   hide: !hasPermission('InventoryConversionVoucherView')
-      // },
+      {
+        title: 'Bill of Material',
+        icon: 'mdi-receipt',
+        link: `/${activeCompany.value}/inventory/bill-of-materials`,
+        hide: !hasPermission('BillOfMaterialView'),
+      },
+      {
+        title: 'Inventory Conversion',
+        icon: 'mdi-shuffle-variant',
+        link: `/${activeCompany.value}/inventory/conversions`,
+        hide: !hasPermission('InventoryConversionVoucherView'),
+      },
     ],
   },
-  // {
-  //   title: 'Books',
-  //   icon: 'mdi-library',
-  //   link: '/book/list/',
-  // },
   {
     title: 'Sales',
     icon: 'mdi-point-of-sale',
@@ -95,43 +107,37 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Sales Invoices',
         icon: 'mdi-point-of-sale',
-        link: '/sales-voucher/list/',
+        link: `/${activeCompany.value}/sales/sales-vouchers`,
         hide: !hasPermission('sales'),
       },
       {
         title: 'Credit Notes',
         icon: 'mdi-clipboard-arrow-down',
-        link: '/credit-note/list/',
+        link: `/${activeCompany.value}/sales/credit-notes`,
         hide: !hasPermission('creditnote'),
       },
       {
         title: 'Challans',
         icon: 'mdi-clipboard-arrow-right',
-        link: '/challan/list/',
+        link: `/${activeCompany.value}/sales/challans`,
         hide: !hasPermission('challan'),
       },
       {
         title: 'Payment Receipts',
         icon: 'mdi-receipt',
-        link: '/payment-receipt/list/',
+        link: `/${activeCompany.value}/payment-receipts`,
         hide: !hasPermission('paymentreceipt'),
       },
       {
         title: 'Sales Discounts',
         icon: 'mdi-sale',
-        link: '/sales-discount/list/',
+        link: `/${activeCompany.value}/sales/discounts`,
         hide: !hasPermission('salesdiscount'),
       },
       {
-        title: 'Sales Report',
-        icon: 'mdi-format-list-bulleted',
-        link: '/sales-row/list/',
-        hide: !hasPermission('sales'),
-      },
-      {
         title: 'Sales Book',
-        icon: 'mdi-book',
-        link: '/sales-book/list/',
+        icon: 'mdi-book-open-page-variant',
+        link: `/${activeCompany.value}/sales/sales-book`,
         hide: !hasPermission('sales'),
       },
     ],
@@ -143,37 +149,31 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Purchases/Expenses',
         icon: 'shopping_cart',
-        link: '/purchase-voucher/list/',
+        link: `/${activeCompany.value}/purchase/purchase-vouchers`,
         hide: !hasPermission('purchasevoucher'),
       },
       {
         title: 'Debit Notes',
         icon: 'mdi-clipboard-arrow-up',
-        link: '/debit-note/list/',
+        link: `/${activeCompany.value}/purchase/debit-notes`,
         hide: !hasPermission('debitnote'),
       },
       {
         title: 'Purchase Order',
         icon: 'mdi-clipboard-arrow-left',
-        link: '/purchase-order/list/',
+        link: `/${activeCompany.value}/purchase/purchase-orders`,
         hide: !hasPermission('debitnote'),
       },
       {
         title: 'Purchase Discounts',
         icon: 'mdi-sale',
-        link: '/purchase-discount/list/',
+        link: `/${activeCompany.value}/purchase/discounts`,
         hide: !hasPermission('purchasediscount'),
-      },
-      {
-        title: 'Purchase Report',
-        icon: 'mdi-format-list-bulleted',
-        link: '/purchase-voucher-row/list/',
-        hide: !hasPermission('purchasevoucher'),
       },
       {
         title: 'Purchase Book',
         icon: 'book',
-        link: '/purchase-book/list/',
+        link: `/${activeCompany.value}/purchase/purchase-book`,
         hide: !hasPermission('purchasevoucher'),
       },
     ],
@@ -183,33 +183,27 @@ const essentialLinks: EssentialLinkProps[] = [
     icon: 'mdi-notebook-multiple',
     children: [
       {
-        title: 'Ledger',
-        icon: 'mdi-notebook-multiple',
-        link: '/account/?has_balance=true',
-        hide: !hasPermission('account'),
+        title: 'Ledgers',
+        icon: 'mdi-book-open',
+        link: `/${activeCompany.value}/account/ledgers`,
+        hide: !hasPermission('accountledger'),
       },
       {
         title: 'Categories',
         icon: 'mdi-format-list-bulleted',
-        link: '/account-category/list',
+        link: `/${activeCompany.value}/account/categories`,
         hide: !hasPermission('category'),
       },
       {
         title: 'Journal Vouchers',
-        icon: 'mdi-shuffle',
-        link: '/journal-voucher/',
+        icon: 'mdi-book-plus',
+        link: `/${activeCompany.value}/account/journal-vouchers`,
         hide: !hasPermission('journalvoucher'),
-      },
-      {
-        title: 'All Accounts',
-        icon: 'mdi-notebook-multiple',
-        link: '/account/',
-        hide: !hasPermission('account'),
       },
       {
         title: 'Opening Balances',
         icon: 'mdi-cash',
-        link: '/account-opening-balance/',
+        link: `/${activeCompany.value}/account/opening-balances`,
         hide: !hasPermission('accountopeningbalance'),
       },
     ],
@@ -221,66 +215,61 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Categories Tree',
         icon: 'mdi-file-tree',
-        link: '/report/category-tree/',
+        link: `/${activeCompany.value}/reports/category-tree`,
         hide: !hasPermission('category'),
-      },
-      {
-        title: 'Sales By Category',
-        icon: 'mdi-shape',
-        link: '/report/sales-by-category/',
       },
       {
         title: 'Periodic Tax Summary',
         icon: 'mdi-currency-usd-off',
-        link: '/report/tax-summary/',
+        link: `/${activeCompany.value}/reports/tax-summary`,
         hide: !hasPermission('taxpayment'),
       },
       {
         title: 'Collection Report',
         icon: 'mdi-receipt',
-        link: '/report/collection-report/',
+        link: `/${activeCompany.value}/reports/collection`,
       },
       {
         title: 'Trial Balance',
         icon: 'mdi-shuffle',
-        link: '/report/trial-balance/',
+        link: `/${activeCompany.value}/reports/trial-balance`,
       },
       {
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
-        link: '/report/stock-trial-balance/',
+        link: `/${activeCompany.value}/reports/stock-trial-balance`,
       },
-      // {
-      //   title: 'Income Statement',
-      //   icon: 'mdi-chart-gantt',
-      //   link: '/report/income-statement/',
-      // },
-      // {
-      //   title: 'Balance Sheet',
-      //   icon: 'mdi-clipboard-text',
-      //   link: '/report/balance-sheet/',
-      // },
-      // {
-      //   title: 'Ratio Analysis',
-      //   icon: 'mdi-chart-arc',
-      //   link: '/report/ratio-analysis/',
-      // },
+      {
+        title: 'Income Statement',
+        icon: 'mdi-chart-gantt',
+        link: `/${activeCompany.value}/reports/income-statement`,
+      },
+      {
+        title: 'Balance Sheet',
+        icon: 'mdi-clipboard-text',
+        link: `/${activeCompany.value}/reports/balance-sheet`,
+      },
+      {
+        title: 'Ratio Analysis',
+        icon: 'mdi-chart-arc',
+        link: `/${activeCompany.value}/reports/ratio-analysis`,
+      },
       {
         title: 'Transactions',
         icon: 'mdi-reorder-horizontal',
-        link: '/report/transactions/',
+        link: `/${activeCompany.value}/reports/transactions`,
         hide: !hasPermission('transaction'),
       },
       {
         title: 'Day Book',
         icon: 'mdi-reorder-vertical',
-        link: '/report/day-book/',
+        link: `/${activeCompany.value}/reports/day-book`,
         hide: !hasPermission('transaction'),
       },
       {
         title: 'Customer Ageing Report',
         icon: 'mdi-chart-gantt',
-        link: '/report/ageing-report/',
+        link: `/${activeCompany.value}/reports/ageing-report`,
       },
     ],
   },
@@ -291,56 +280,55 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Bank Accounts',
         icon: 'mdi-bank',
-        link: '/bank-accounts/list/',
+        link: `/${activeCompany.value}/banking/bank-accounts`,
         hide: !hasPermission('bankaccount'),
       },
       {
         title: 'Cheque Issues',
         icon: 'mdi-checkbook',
-        link: '/cheque-issue/list/',
+        link: `/${activeCompany.value}/banking/cheque-issues`,
         hide: !hasPermission('chequeissue'),
       },
       {
         title: 'Cheque Deposits',
         icon: 'mdi-ballot',
-        link: '/cheque-deposit/list/',
+        link: `/${activeCompany.value}/banking/cheque-deposits`,
         hide: !hasPermission('chequedeposit'),
       },
       {
         title: 'Cash Deposits',
         icon: 'mdi-cash',
-        link: '/cash-deposit/list/',
+        link: `/${activeCompany.value}/banking/cash-deposits`,
         hide: !hasPermission('bankcashdeposit'),
       },
       {
         title: 'Funds Transfers',
         icon: 'mdi-bank-transfer',
-        link: '/fund-transfer/list/',
+        link: `/${activeCompany.value}/banking/fund-transfers`,
         hide: !hasPermission('fundtransfer'),
       },
     ],
   },
   {
     title: 'Taxes',
-    caption: 'Bank',
     icon: 'mdi-currency-usd-off',
     children: [
       {
         title: 'Tax Schemes',
         icon: 'mdi-file-percent',
-        link: '/taxes/list/',
+        link: `/${activeCompany.value}/tax/schemes`,
         hide: !hasPermission('taxscheme'),
       },
       {
         title: 'Tax Payments',
         icon: 'mdi-cash-marker',
-        link: '/tax-payment/list/',
+        link: `/${activeCompany.value}/tax/payments`,
         hide: !hasPermission('taxpayment'),
       },
       {
         title: 'Periodic Summary',
         icon: 'mdi-file-chart',
-        link: '/report/tax-summary/',
+        link: `/${activeCompany.value}/reports/tax-summary`,
         hide: !hasPermission('taxpayment'),
       },
     ],
@@ -352,25 +340,25 @@ const essentialLinks: EssentialLinkProps[] = [
       {
         title: 'Parties',
         icon: 'mdi-account-group',
-        link: '/party/list/',
+        link: `/${activeCompany.value}/party/list`,
         hide: !hasPermission('party'),
       },
       {
         title: 'Customers',
         icon: 'mdi-domain',
-        link: '/parties/customers/',
+        link: `/${activeCompany.value}/party/customers`,
         hide: !hasPermission('party'),
       },
       {
         title: 'Suppliers',
         icon: 'mdi-account',
-        link: '/parties/suppliers/',
+        link: `/${activeCompany.value}/party/suppliers`,
         hide: !hasPermission('party'),
       },
       {
         title: 'Sales Agent',
         icon: 'mdi-face-agent',
-        link: '/sales-agent/list/',
+        link: `/${activeCompany.value}/sales/agents`,
         hide: !hasPermission('salesagent'),
       },
     ],
@@ -380,76 +368,65 @@ const essentialLinks: EssentialLinkProps[] = [
     icon: 'settings',
     children: [
       {
+        title: 'Company Settings',
+        icon: 'mdi-office-building-cog',
+        link: `/${activeCompany.value}/settings/company`,
+        hide: !hasAnyRole(['superuser', 'admin']),
+      },
+      {
         title: 'Audit Logs',
         icon: 'mdi-view-list',
-        link: '/audit-log/list/',
+        link: `/${activeCompany.value}/settings/audit-logs`,
         hide: !hasPermission('logentry'),
       },
       {
-        title: 'Import/Exports',
+        title: 'Import/Export',
         icon: 'mdi-database-import',
-        link: '/settings/import-export/',
+        link: `/${activeCompany.value}/settings/import-export`,
+        hide: !hasAnyRole(['superuser', 'admin']),
       },
       {
         title: 'Dashboard Widgets',
         icon: 'mdi-widgets',
-        link: '/dashboard-widgets/list/',
+        link: `/${activeCompany.value}/settings/dashboard-widgets`,
         hide: !hasPermission('widget'),
       },
       {
         title: 'Payment Modes',
         icon: 'mdi-cash',
-        link: '/settings/payment-mode/list/',
+        link: `/${activeCompany.value}/settings/payment-modes`,
         hide: !hasPermission('paymentmode'),
       },
       {
         title: 'Sales Settings',
         icon: 'mdi-point-of-sale',
-        link: '/settings/sales/',
+        link: `/${activeCompany.value}/settings/sales`,
         hide: !hasPermission('salessetting'),
       },
       {
         title: 'Purchase Settings',
         icon: 'mdi-shopping',
-        link: '/settings/purchase/',
+        link: `/${activeCompany.value}/settings/purchase`,
         hide: !hasPermission('purchasesetting'),
       },
       {
         title: 'Inventory Settings',
         icon: 'mdi-calendar-multiple-check',
-        link: '/settings/inventory-settings/',
-      },
-      {
-        title: 'Account Closing',
-        icon: 'mdi-calendar-multiple-check',
-        link: '/settings/account-closing/',
-        hide: !hasPermission('AccountClosingCreate'),
+        link: `/${activeCompany.value}/settings/inventory`,
       },
       {
         title: 'Item Merge',
         icon: 'mdi-call-merge',
-        link: '/settings/item-merge/',
-        // hide: !hasPermission('AccountClosingCreate')
+        link: `/${activeCompany.value}/settings/item-merge`,
       },
     ],
   },
   {
-    title: 'POS ',
+    title: 'POS',
     icon: 'mdi-cart-arrow-right',
-    link: '/pos',
+    link: `/${activeCompany.value}/sales/pos`,
     hide: !hasPermission('SalesCreate') && !hasPermission('sales'),
   },
-
-  // {
-  //   title: 'Reset Password',
-  //   icon: 'key',
-  //   link: '/reset-password/',
-  // },
-  // {
-  //   title: 'Sign Out',
-  //   icon: 'power_settings_new',
-  //   link: '/login/',
-  // },
 ]
 
 const leftDrawerOpen = ref(false)
@@ -459,6 +436,7 @@ function toggleLeftDrawer() {
 }
 
 onMounted(() => {
+  fetchCompanies()
   breadCrumbs.value = route.meta.breadcrumb
 })
 watch(route, () => {
@@ -469,9 +447,10 @@ watch(route, () => {
 <template>
   <q-layout view="lHh Lpr lFf" class="container-padding-left">
     <!-- <q-header elevated class="bg-grey-1 text-grey-9"> -->
-    <q-header bordered class="bg-white text-grey-8 d-print-none print-hide">
+    <q-header bordered class="bg-white text-grey-8 d-print-none print-hide q-py-xs">
       <q-toolbar>
         <q-btn flat dense round icon="mdi-menu" aria-label="Menu" @click="miniState = !miniState" />
+
         <q-toolbar-title class="flex items-center" style="gap: 16px">
           <RouterLink v-if="store.companyInfo?.logo_url" to="/" style="max-width: 60px; max-height: 40px">
             <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
@@ -488,7 +467,7 @@ watch(route, () => {
             <q-btn class="gt-sm">
               {{ store.companyInfo?.current_fiscal_year }}
               <q-tooltip :delay="1000" :offset="[0, 10]">
-                Fiscal Yaar
+                Fiscal Year
               </q-tooltip>
             </q-btn>
             <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
@@ -497,18 +476,33 @@ watch(route, () => {
                 Change Date Format
               </q-tooltip>
             </q-btn>
-            <a target="_blank" href="https://docs.awecount.com/" style="color: inherit">
-              <q-btn class="gt-sm">
-                <q-icon name="mdi-help-circle-outline" />
-                <q-tooltip :delay="1000" :offset="[0, 10]">Help</q-tooltip>
-              </q-btn>
-            </a>
-            <q-btn @click="logoutDiologueOpen = true">
-              <q-icon name="mdi-logout" />
-              <q-tooltip :delay="1000" :offset="[0, 10]">
-                Logout
-              </q-tooltip>
-            </q-btn>
+
+            <q-btn-dropdown flat>
+              <template #label>
+                <q-avatar size="32px">
+                  <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+                </q-avatar>
+              </template>
+
+              <q-list>
+                <q-item v-close-popup clickable @click="router.push('/settings/profile')">
+                  <q-item-section avatar>
+                    <q-icon name="manage_accounts" />
+                  </q-item-section>
+                  <q-item-section>Manage Account</q-item-section>
+                </q-item>
+
+                <q-separator />
+
+                <q-item v-close-popup clickable @click="logoutDiologueOpen = true">
+                  <q-item-section avatar>
+                    <q-icon name="logout" />
+                  </q-item-section>
+                  <q-item-section>Logout</q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
+
             <q-dialog v-model="logoutDiologueOpen">
               <q-card style="min-width: min(40vw, 450px)">
                 <div style="margin: 20px 30px 10px">
@@ -526,17 +520,70 @@ watch(route, () => {
             </q-dialog>
           </div>
         </div>
-        <!-- <div>ERP v{{ $q.version }}</div> -->
       </q-toolbar>
     </q-header>
-    <q-drawer v-model="leftDrawerOpen" drawer persistent bordered="" show-if-above :mini="miniState">
+    <q-drawer v-model="leftDrawerOpen" drawer persistent bordered show-if-above :mini="miniState">
       <q-list class="icon-grey d-print-none print-hide">
-        <!-- <q-item-label header> Menu </q-item-label> -->
-        <!-- <q-img src="../assets/background-image.png" style="height: 90px">
-            <div class="absolute-bottom bg-transparent text-black">
-              <div class="text-weight-bold text-h6 text-grey-10">{{ store.username }}</div>
-            </div>
-          </q-img> -->
+        <q-btn-dropdown
+          flat
+          :label="companies.find(c => c.slug === activeCompany)?.name || 'Select Company'"
+          class="full-width q-pa-md"
+          style="margin-top: 2px;"
+          :disable="miniState"
+        >
+          <q-list>
+            <template v-for="company in companies" :key="company.slug">
+              <q-item
+                v-close-popup
+                clickable
+                :active="company.slug === activeCompany"
+                @click="switchCompany(company.slug)"
+              >
+                <q-item-section avatar>
+                  <q-avatar size="28px">
+                    <img v-if="company.logo" :src="company.logo" />
+                    <!-- <div v-else class="text-h6 text-white bg-primary flex items-center justify-center" style="width: 28px; height: 28px">
+                      {{ company.name.split(' ').map((w) => w.charAt(0)).slice(0, 2).join('') }}
+                    </div> -->
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ company.name }}</q-item-label>
+                </q-item-section>
+                <q-item-section v-if="company.slug === activeCompany" side>
+                  <q-icon name="check" color="primary" />
+                </q-item-section>
+              </q-item>
+            </template>
+
+            <template v-if="hasAnyRole(['superuser', 'admin'])">
+              <q-separator />
+
+              <q-item v-close-popup clickable @click="router.push('/settings/company')">
+                <q-item-section avatar>
+                  <q-icon name="settings" />
+                </q-item-section>
+                <q-item-section>Company settings</q-item-section>
+              </q-item>
+
+              <q-item v-close-popup clickable @click="router.push('/settings/invite')">
+                <q-item-section avatar>
+                  <q-icon name="person_add" />
+                </q-item-section>
+                <q-item-section>Invite colleague or accountant</q-item-section>
+              </q-item>
+
+              <q-item v-close-popup clickable @click="router.push('/company/add')">
+                <q-item-section avatar>
+                  <q-icon name="add" />
+                </q-item-section>
+                <q-item-section>Add company</q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-btn-dropdown>
+
+        <q-separator />
 
         <div class="q-mb-md"></div>
         <template v-for="link in essentialLinks" :key="link.title">
