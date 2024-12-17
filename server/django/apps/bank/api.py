@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
 from itertools import chain, combinations
-from django.db import transaction
+
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
@@ -349,9 +350,25 @@ class CashDepositViewSet(CRULViewSet):
 
 
 class ReconciliationViewSet(CRULViewSet):
-    queryset = ReconciliationStatement.objects.all()
+    queryset = ReconciliationStatement.objects.all().prefetch_related("entries").order_by("-end_date")
     serializer_class = ReconciliationStatementSerializer
     model = ReconciliationStatement
+    
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+
+    filterset_fields = [
+        'account_id',
+    ]
+    
+    search_fields = [
+        'account__name',
+        'start_date',
+        'end_date',
+    ]
 
     def reconcile(self, company, statement_transactions, start_date, end_date, account_id):
         system_transactions = Transaction.objects.filter(
@@ -1042,7 +1059,7 @@ class ReconciliationViewSet(CRULViewSet):
                 obj.adjustment_amount = adjustment
                 obj.adjustment_type = 'Cr' if difference > 0 else 'Dr'
                 obj.save()
-                obj.status = 'Matched'
+                obj.status = 'Reconciled'
                 obj.apply_transactions(latest_date)
         return Response({})
         

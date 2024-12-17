@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.ledger.serializers import PartyMinSerializer
+from apps.ledger.serializers import AccountMinSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.serializers import StatusReversionMixin
 
@@ -234,7 +234,16 @@ class ReconciliationStatementImportSerializer(serializers.Serializer):
         fields = ('account_id', 'transactions', 'start_date', 'end_date')
         
 class ReconciliationStatementSerializer(serializers.ModelSerializer):
+    account = AccountMinSerializer()
+    total_entries = serializers.SerializerMethodField()
+    reconciled_entries = serializers.SerializerMethodField()
+    
+    def get_total_entries(self, obj):
+        return obj.entries.count()
+    
+    def get_reconciled_entries(self, obj):
+        return obj.entries.filter(status='Reconciled').count()
 
     class Meta:
         model = ReconciliationStatement
-        fields = ('id', 'account', 'account_name', 'date', 'description', 'debit', 'credit', 'balance', 'status')
+        fields = ('id', 'account', 'start_date', 'end_date', 'total_entries', 'reconciled_entries',)
