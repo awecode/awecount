@@ -5,6 +5,7 @@ from apps.company.views import (
     CompanyInvitationsViewset,
     CompanyJoinEndpoint,
     CompanyPermissionEndpoint,
+    UserCompaniesEndpoint,
     UserCompanyInvitationsViewSet,
 )
 
@@ -36,7 +37,7 @@ urlpatterns = [
         name="company-join",
     ),
     path(
-        "api/invitations/",
+        "api/me/invitations/",
         UserCompanyInvitationsViewSet.as_view(
             {
                 "get": "list",
@@ -44,6 +45,11 @@ urlpatterns = [
             }
         ),
         name="user-company-invitations",
+    ),
+    path(
+        "api/me/companies/",
+        UserCompaniesEndpoint.as_view(),
+        name="company-info",
     ),
     path(
         "api/company/<slug:company_slug>/permissions/",
