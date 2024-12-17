@@ -192,14 +192,14 @@ class Company(BaseModel):
 
     @property
     def current_fiscal_year(self):
-        return self.company_fiscalyears.filter(is_current=True).first()
+        return self.company_fiscalyear.filter(is_current=True).first()
 
     @property
     def current_fiscal_year_id(self):
         return self.current_fiscal_year.id
 
     def get_fiscal_years(self):
-        return self.company_fiscalyears.all()
+        return self.company_fiscalyear.all()
 
 
 class CompanyBaseModel(BaseModel):
