@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const route = useRoute()
+const accountDateInfo = ref(null)
+
+useApi(`v1/bank-reconciliation/${route.params.id}/account-and-dates-info`).then((response) => {
+  accountDateInfo.value = response
+})
 
 const endpoint = `v1/bank-reconciliation/${route.params.id}/`
 const {
@@ -11,7 +16,6 @@ const {
   onFilterUpdate,
   resetFilters,
   onRequest,
-  data
 } = useList(endpoint)
 
 type align = 'left' | 'center' | 'right'
@@ -64,7 +68,7 @@ const columns = [
       <div class="flex items-center">
         <h2 class="text-lg font-bold text-blue-800">
           <span>
-            {{ data?.account?.name }} </span> 
+            {{ accountDateInfo?.account?.name }} </span>
         </h2>
       </div>
     </div>
