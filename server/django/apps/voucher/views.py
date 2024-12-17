@@ -1,33 +1,12 @@
 from django.conf import settings
 from django.forms import ValidationError
-from django.http import HttpResponse
-from django.views.generic.detail import DetailView
-from django_xhtml2pdf.utils import fetch_resources
-from django_xhtml2pdf.views import PdfMixin
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from xhtml2pdf import pisa
 
 from apps.company.models import Company
 from awecount.libs.helpers import get_full_file_url, upload_file
-
-from .models import SalesVoucher
-
-
-class SalesVoucherPdfView(PdfMixin, DetailView):
-    model = SalesVoucher
-    template_name = "sale_voucher_pdf.html"
-
-    def render(self):
-        # retval = super(PdfResponse, self).render()
-        response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="report.pdf"'
-        pisa.CreatePDF(
-            self.rendered_content, dest=response, link_callback=fetch_resources
-        )
-        return response
 
 
 class FileUploadView(APIView):
