@@ -1028,19 +1028,19 @@ class ReconciliationViewSet(CRULViewSet):
         statement_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in statement_objects])
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
         # find the difference
-        difference = abs(statement_sum - transaction_sum)
+        difference = statement_sum - transaction_sum
         # Divide the difference by the number of statement transactions and put the difference in the adjustment field
         # date = get latest date of the system from transaction_objects
         latest_date = max(
             (obj.journal_entry.date for obj in transaction_objects if obj.journal_entry and obj.journal_entry.date),
             default=date.min 
         )
-        adjustment = difference / len(statement_objects)
+        adjustment = abs(difference) / len(statement_objects)
         with transaction.atomic():
             for obj in statement_objects:
                 obj.transaction_ids = transaction_ids
                 obj.adjustment_amount = adjustment
-                obj.adjustment_type = 'Dr' if adjustment > 0 else 'Cr'
+                obj.adjustment_type = 'Cr' if difference > 0 else 'Dr'
                 obj.save()
                 obj.status = 'Matched'
                 obj.apply_transactions(latest_date)

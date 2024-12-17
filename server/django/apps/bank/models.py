@@ -481,14 +481,14 @@ class ReconciliationEntries(models.Model):
             return
         entries = []
 
-        statement_account = self.statement.account
+        bank_account = self.statement.account
 
         adjustment_account = Account.objects.get(name="Bank Reconciliation Adjustment", company=self.statement.company)
         if self.adjustment_type == "Dr":
-            entries.append(("cr", statement_account, self.adjustment_amount))
+            entries.append(("cr", bank_account, self.adjustment_amount))
             entries.append(("dr", adjustment_account, self.adjustment_amount))
         elif self.adjustment_type == "Cr":
-            entries.append(("dr", statement_account, self.adjustment_amount))
+            entries.append(("dr", bank_account, self.adjustment_amount))
             entries.append(("cr", adjustment_account, self.adjustment_amount))
         set_ledger_transactions(self, date, *entries, clear=True)
         # get new transaction ids from journal entries
@@ -496,7 +496,7 @@ class ReconciliationEntries(models.Model):
             Transaction.objects.filter(
                 journal_entry__content_type__model="reconciliationentries",
                 journal_entry__object_id=self.id,
-                account_id=statement_account.id,
+                account_id=bank_account.id,
             ).values_list("id", flat=True)
         )
         self.save()
