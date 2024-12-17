@@ -218,7 +218,7 @@ class CategoryTreeView(APIView):
             Q(accounts__isnull=True) & Q(children__isnull=True)
         )
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         queryset = self.get_queryset().filter(company=request.company)
         category_tree = get_cached_trees(queryset)
         serializer = CategoryTreeSerializer(category_tree, many=True)
@@ -231,7 +231,7 @@ class FullCategoryTreeView(APIView):
     def get_queryset(self):
         return Category.objects.all()
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         queryset = self.get_queryset().filter(company=request.company)
         category_tree = get_cached_trees(queryset)
         serializer = CategoryTreeSerializer(category_tree, many=True)
@@ -244,7 +244,7 @@ class TrialBalanceView(APIView):
     def get_queryset(self):
         return Account.objects.none()
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
         if start_date and end_date:
@@ -405,7 +405,7 @@ class CustomerClosingView(APIView):
     def get_queryset(self):
         return Account.objects.filter(customer_detail__isnull=False)
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         customers = (
             self.get_queryset()
             .filter(company_id=self.request.user.company_id)

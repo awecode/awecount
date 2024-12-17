@@ -1028,7 +1028,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return Response(data)
 
     @action(detail=False, url_path="trial-balance")
-    def trial_balance(self, request, format=None):
+    def trial_balance(self, request, format=None, *args, **kwargs):
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
         if start_date and end_date:
