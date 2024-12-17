@@ -345,7 +345,7 @@
 <script lang="ts">
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 export default {
   props: {

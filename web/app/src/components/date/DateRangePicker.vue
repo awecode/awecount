@@ -82,8 +82,8 @@
 </template>
 
 <script setup>
-import BsDatePicker from '/src/components/date/BsDatePicker.vue'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import BsDatePicker from 'src/components/date/BsDatePicker.vue'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 

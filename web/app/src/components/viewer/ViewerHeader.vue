@@ -93,7 +93,7 @@
 <script lang="ts">
 import { Ref } from 'vue'
 import { modes } from 'src/helpers/constants/invoice'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 export default {
   props: {

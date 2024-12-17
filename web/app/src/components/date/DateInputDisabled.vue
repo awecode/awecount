@@ -2,8 +2,8 @@
     <q-input type="text" v-model="dateComputed" disable :label="props.label"    />
 </template>
 <script setup>
-import { useLoginStore } from '/src/stores/login-info.js'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import { useLoginStore } from 'src/stores/login-info.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 const store = useLoginStore()
 const props = defineProps({
     date: {
