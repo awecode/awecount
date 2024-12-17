@@ -627,7 +627,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedStatementTransactions, true)
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -672,7 +672,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedSystemTransactions)
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
