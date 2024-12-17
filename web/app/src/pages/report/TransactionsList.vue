@@ -105,39 +105,39 @@ export default {
     function getVoucherUrl(row) {
       const source_type = row.source_type
       if (source_type === 'Sales Voucher') {
-        return `/sales-voucher/${row.source_id}/view/`
+        return `/${route.params.company}/sales-voucher/${row.source_id}/view/`
       }
       if (source_type === 'Purchase Voucher') {
-        return `/purchase-voucher/${row.source_id}/view`
+        return `/${route.params.company}/purchase-voucher/${row.source_id}/view`
       }
       if (source_type === 'Journal Voucher') {
-        return `/journal-voucher/${row.source_id}/view`
+        return `/${route.params.company}/journal-voucher/${row.source_id}/view`
       }
       if (source_type === 'Credit Note') {
-        return `/credit-note/${row.source_id}/view`
+        return `/${route.params.company}/credit-note/${row.source_id}/view`
       }
       if (source_type === 'Debit Note') {
-        return `/debit-note/${row.source_id}/view`
+        return `/${route.params.company}/debit-note/${row.source_id}/view`
       }
       // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
       // TODO: add missing links
       if (source_type === 'Cheque Deposit') {
-        return `/cheque-deposit/${row.source_id}/view/`
+        return `/${route.params.company}/cheque-deposit/${row.source_id}/view/`
       }
       if (source_type === 'Payment Receipt') {
-        return `/payment-receipt/${row.source_id}/view/`
+        return `/${route.params.company}/payment-receipt/${row.source_id}/view/`
       }
       if (source_type === 'Cheque Issue') {
-        return `/cheque-issue/${row.source_id}/`
+        return `/${route.params.company}/cheque-issue/${row.source_id}/`
       }
       if (source_type === 'Account Opening Balance') return
       if (source_type === 'Fund Transfer') {
-        return `/fund-transfer/${row.source_id}`
+        return `/${route.params.company}/fund-transfer/${row.source_id}`
       }
-      if (source_type === 'Bank Cash Deposit') return `/cash-deposit/${row.source_id}`
-      if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+      if (source_type === 'Bank Cash Deposit') return `/${route.params.company}/cash-deposit/${row.source_id}`
+      if (source_type === 'Tax Payment') return `/${route.params.company}/tax-payment/${row.source_id}/`
       if (source_type === 'Inventory Adjustment Voucher') {
-        return `/items/inventory-adjustment/${row.source_id}/view`
+        return `/${route.params.company}/items/inventory-adjustment/${row.source_id}/view`
       }
       console.error(`${source_type} not handled!`)
     }
