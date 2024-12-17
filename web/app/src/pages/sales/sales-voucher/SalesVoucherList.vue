@@ -86,7 +86,7 @@ export default {
       <q-btn
         v-if="checkPermissions('SalesCreate')"
         color="green"
-        to="/sales-voucher/add/"
+        :to="`/${$route.params.company}/sales-voucher/add/`"
         label="New Sales"
         icon-right="add"
         class="add-btn"
@@ -206,7 +206,7 @@ export default {
               label="View"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               style="font-size: 12px"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
               data-testid="view-btn"
             />
           </div>
@@ -218,7 +218,7 @@ export default {
           <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
             <router-link
               v-if="checkPermissions('PaymentReceiptView')"
-              :to="`/payment-receipt/${id}/view/`"
+              :to="`/${$route.params.company}/payment-receipt/${id}/view/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
             >
@@ -233,7 +233,7 @@ export default {
           <span v-if="checkPermissions('SalesView')" data-testid="voucher-no">
             <router-link
               v-if="checkPermissions('SalesView') && props.row.voucher_no"
-              :to="`/sales-voucher/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
             >

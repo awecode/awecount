@@ -154,7 +154,7 @@ export default {
             <router-link
               style="font-weight: 500; text-decoration: none"
               class="text-blue l-view-btn"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
             >
               {{ props.row.voucher_no }}
             </router-link>

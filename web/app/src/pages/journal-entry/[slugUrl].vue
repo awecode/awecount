@@ -201,7 +201,7 @@ export default {
               || $route.params.slug === 'sales-voucher'
             "
             style="text-decoration: none"
-            :to="`/${$route.params.slug === 'purchase-vouchers'
+            :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers'
               ? 'purchase-voucher'
               : $route.params.slug
             }/${fields[0]?.source_id}/view`"
@@ -234,7 +234,7 @@ export default {
                   <router-link
                     style="text-decoration: none"
                     class="text-blue"
-                    :to="`/account/${row.account.id}/view`"
+                    :to="`/${$route.params.company}/account/${row.account.id}/view`"
                   >
                     {{
                       row.account.name }}
@@ -295,7 +295,7 @@ export default {
               || $route.params.slug === 'sales-voucher'
             "
             style="text-decoration: none"
-            :to="`/${$route.params.slug === 'purchase-vouchers'
+            :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers'
               ? 'purchase-voucher'
               : $route.params.slug
             }/${voucher?.source_id}/view`"
@@ -323,7 +323,7 @@ export default {
             <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
             <div class="row q-col-gutter-md">
               <div class="col-grow">
-                <router-link style="text-decoration: none" class="text-blue" :to="`/account/${row.account.id}/view`">
+                <router-link style="text-decoration: none" class="text-blue" :to="`/${$route.params.company}/account/${row.account.id}/view`">
                   {{
                     row.account.name }}
                 </router-link>
@@ -366,7 +366,7 @@ export default {
       <!-- <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
       <div>
         <q-btn
-          :to="`/journal-voucher/${fields?.id}/edit/`"
+          :to="`/${$route.params.company}/journal-voucher/${fields?.id}/edit/`"
           color="orange"
           icon="edit"
           label="Edit"

@@ -51,7 +51,7 @@ export default {
       <q-btn
         v-if="checkPermissions('ChequeDepositCreate')"
         color="green"
-        to="/cheque-deposit/add/"
+        :to="`/${$route.params.company}/cheque-deposit/add/`"
         label="New Cheque Deposit"
         class="add-btn"
         icon-right="add"
@@ -136,7 +136,7 @@ export default {
             color="blue"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
-            :to="`/cheque-deposit/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/cheque-deposit/${props.row.id}/view/`"
           />
         </q-td>
       </template>

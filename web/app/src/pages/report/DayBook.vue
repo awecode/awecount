@@ -165,7 +165,7 @@ function filterData() {
                     style="text-decoration: none"
                     class="text-blue-6"
                     target="_blank"
-                    :to="`/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
+                    :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
                   >
                     View Transactions
                   </RouterLink>

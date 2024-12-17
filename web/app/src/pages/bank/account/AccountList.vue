@@ -47,7 +47,7 @@ export default {
       <q-btn
         v-if="checkPermissions('BankAccountCreate')"
         color="green"
-        to="/bank-accounts/add/"
+        :to="`/${$route.params.company}/bank-accounts/add/`"
         label="New Account"
         class="q-ml-lg add-btn"
         icon-right="add"
@@ -71,7 +71,7 @@ export default {
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px"
             label="Account"
-            :to="`/account/${props.row.ledger}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.ledger}/view/`"
           />
           <q-btn
             v-if="checkPermissions('BankAccountModify')"
@@ -79,7 +79,7 @@ export default {
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
-            :to="`/bank-accounts/${props.row.id}/`"
+            :to="`/${$route.params.company}/bank-accounts/${props.row.id}/`"
           />
         </q-td>
       </template>

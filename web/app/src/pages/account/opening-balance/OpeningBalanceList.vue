@@ -47,7 +47,7 @@ export default {
       <q-btn
         v-if="checkPermissions('AccountOpeningBalanceCreate')"
         color="green"
-        to="/account-opening-balance/add/"
+        :to="`/${$route.params.company}/account-opening-balance/add/`"
         label="New Opening Balance"
         class="add-btn"
         icon-right="add"
@@ -80,7 +80,7 @@ export default {
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
-            :to="`/account-opening-balance/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-opening-balance/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -90,7 +90,7 @@ export default {
             v-if="checkPermissions('AccountOpeningBalanceModify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
-            :to="`/account-opening-balance/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-opening-balance/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>

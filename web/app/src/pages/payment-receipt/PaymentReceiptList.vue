@@ -71,7 +71,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('PaymentReceiptCreate')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" to="/payment-receipt/add/" label="New Receipt" icon-right="add" class="add-btn" />
+      <q-btn color="green" :to="`/${$route.params.company}/payment-receipt/add/`" label="New Receipt" icon-right="add" class="add-btn" />
     </div>
     <q-table
       v-model:pagination="pagination"
@@ -178,7 +178,7 @@ export default {
                 v-if="checkPermissions('SalesView')"
                 class="text-blue"
                 style="text-decoration: none"
-                :to="`/sales-voucher/${invoice.id}/view`"
+                :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
               >
                 #{{ invoice.voucher_no }}
               </router-link>
@@ -207,7 +207,7 @@ export default {
               label="View"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               style="font-size: 12px"
-              :to="`/payment-receipt/${props.row.id}/view`"
+              :to="`/${$route.params.company}/payment-receipt/${props.row.id}/view`"
             />
           </div>
         </q-td>

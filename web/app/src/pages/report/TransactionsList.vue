@@ -289,7 +289,7 @@ export default {
           <RouterLink
             style="text-decoration: none"
             target="_blank"
-            :to="`/account/?has_balance=true&category=${props.row.category_id}`"
+            :to="`/${$route.params.company}/account/?has_balance=true&category=${props.row.category_id}`"
             class="text-blue-6"
           >
             {{

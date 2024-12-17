@@ -65,7 +65,7 @@ export default {
       <q-btn
         v-if="checkPermissions('FundTransferCreate')"
         color="green"
-        to="/fund-transfer/add/"
+        :to="`/${$route.params.company}/fund-transfer/add/`"
         label="New Fund Transfer"
         class="add-btn"
         icon-right="add"
@@ -157,7 +157,7 @@ export default {
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
-            :to="`/fund-transfer/${props.row.id}/`"
+            :to="`/${$route.params.company}/fund-transfer/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -167,7 +167,7 @@ export default {
             v-if="checkPermissions('FundTransferModify')"
             class="text-blue text-weight-medium"
             style="text-decoration: none"
-            :to="`/fund-transfer/${props.row.id}/`"
+            :to="`/${$route.params.company}/fund-transfer/${props.row.id}/`"
           >
             {{ props.row.voucher_no }}
           </router-link>

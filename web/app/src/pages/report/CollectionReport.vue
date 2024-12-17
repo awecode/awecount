@@ -72,7 +72,7 @@ export default {
             >
               <div class="col-6 text-grey-8">
                 <router-link
-                  :to="`/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
+                  :to="`/${$route.params.company}/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
                   target="_blank"
                   style="text-decoration: none"
                   class="text-blue"
@@ -82,7 +82,7 @@ export default {
               </div>
               <div class="col-6 text-grey-8">
                 <router-link
-                  :to="`/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
+                  :to="`/${$route.params.company}/payment-receipt/list?start_date=${fields.start_date}&end_date=${fields.end_date}&sales_agent=${row.invoices__sales_agent_id}`"
                   target="_blank"
                   style="text-decoration: none"
                   class="text-blue"

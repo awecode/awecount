@@ -34,7 +34,7 @@ const {
       <q-btn
         color="green"
         class="add-btn"
-        to="/items/bill-of-material/add"
+        :to="`/${$route.params.company}/items/bill-of-material/add`"
         label="Add Bill of Material"
         icon-right="add"
       />
@@ -69,7 +69,7 @@ const {
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="edit"
-            :to="`/items/bill-of-material/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/bill-of-material/${props.row.id}/`"
           />
         </q-td>
       </template>

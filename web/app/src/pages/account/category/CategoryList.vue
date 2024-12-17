@@ -43,7 +43,7 @@ const {
       <q-btn
         v-if="checkPermissions('CategoryCreate')"
         color="green"
-        to="/account-category/add/"
+        :to="`/${$route.params.company}/account-category/add/`"
         label="New Category"
         class="add-btn"
         icon-right="add"
@@ -96,7 +96,7 @@ const {
             v-if="checkPermissions('CategoryModify')"
             color="orange-7"
             label="Edit"
-            :to="`/account-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/account-category/${props.row.id}/`"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
           />

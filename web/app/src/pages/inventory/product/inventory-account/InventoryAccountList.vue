@@ -74,15 +74,18 @@ export default {
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
             label="view"
-            :to="`/inventory-account/detail/${props.row.id}`"
+            :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
           />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link v-if="checkPermissions('InventoryAccountView')" :to="`/inventory-account/detail/${props.row.id}`" class="no-underline font-medium text-blue">
-            {{ props.row.name
-            }}
+          <router-link
+            v-if="checkPermissions('InventoryAccountView')"
+            :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
+            class="no-underline font-medium text-blue"
+          >
+            {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>
         </q-td>

@@ -50,7 +50,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('SalesDiscountDelete')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" to="/sales-discount/add/" label="New sales discount" icon-right="add" class="add-btn" />
+      <q-btn color="green" :to="`/${$route.params.company}/sales-discount/add/" label="New sales discount" icon-right="add" class="add-btn`" />
     </div>
     <q-table
       v-model:pagination="pagination"
@@ -114,7 +114,7 @@ export default {
             label="Edit"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
-            :to="`/sales-discount/${props.row.id}/`"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -122,7 +122,7 @@ export default {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('SalesDiscountModify')"
-            :to="`/sales-discount/${props.row.id}/`"
+            :to="`/${$route.params.company}/sales-discount/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >

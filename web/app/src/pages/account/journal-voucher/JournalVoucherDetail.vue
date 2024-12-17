@@ -167,7 +167,7 @@ const today = DateConverter.getRepresentation(
                 <router-link
                   class="text-blue text-weight-medium"
                   style="text-decoration: none"
-                  :to="`/account/${row.account_id}/view/`"
+                  :to="`/${$route.params.company}/account/${row.account_id}/view/`"
                 >
                   {{ row.account_name }}
                 </router-link>
@@ -220,7 +220,7 @@ const today = DateConverter.getRepresentation(
         <div>
           <q-btn
             v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'"
-            :to="`/journal-voucher/${props.id}/edit/`"
+            :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`"
             color="orange"
             icon="edit"
             label="Edit"
@@ -310,7 +310,7 @@ const today = DateConverter.getRepresentation(
             <td>{{ `${row.type} ` }}</td>
             <td>{{ row?.account_code }}</td>
             <td>
-              <router-link :to="`/account/${row.account_id}/view/`">
+              <router-link :to="`/${$route.params.company}/account/${row.account_id}/view/`">
                 {{ row.account_name }}
               </router-link>
             </td>

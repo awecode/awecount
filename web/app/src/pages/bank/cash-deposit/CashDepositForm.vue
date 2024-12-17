@@ -141,7 +141,7 @@ export default {
           />
           <q-btn
             v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
-            :to="`/journal-entries/bank-cash-deposits/${id}/`"
+            :to="`/${$route.params.company}/journal-entries/bank-cash-deposits/${id}/`"
             color="blue"
             icon="library_books"
             label="Journal Entries"

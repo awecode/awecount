@@ -142,10 +142,9 @@ export default {
             v-if="checkPermissions('CategoryModify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue l-view-btn"
-            :to="`/parties/account/${props.row.party_id}/`"
+            :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`"
           >
-            {{ props.row.party_name
-            }}
+            {{ props.row.party_name }}
           </router-link>
           <span v-else>{{ props.row.party_name }}</span>
         </q-td>

@@ -70,7 +70,7 @@ export default {
       <q-btn
         v-if="checkPermissions('TaxPaymentCreate')"
         color="green"
-        to="/tax-payment/add/"
+        :to="`/${$route.params.company}/tax-payment/add/`"
         label="New Tax Payment"
         class="add-btn"
         icon-right="add"
@@ -148,7 +148,7 @@ export default {
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="edit"
-            :to="`/tax-payment/${props.row.id}/`"
+            :to="`/${$route.params.company}/tax-payment/${props.row.id}/`"
           />
           <q-btn
             :disable="props.row.status === 'Cancelled'"
@@ -156,7 +156,7 @@ export default {
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
             label="Journal entries"
-            :to="`/journal-entries/tax-payments/${props.row.id}/`"
+            :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}/`"
           />
         </q-td>
       </template>

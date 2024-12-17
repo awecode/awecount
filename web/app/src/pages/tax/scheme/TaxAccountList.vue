@@ -61,7 +61,7 @@ export default {
       <q-btn
         v-if="checkPermissions('TaxSchemeCreate')"
         color="green"
-        to="/taxes/add/"
+        :to="`/${$route.params.company}/taxes/add/`"
         label="New Tax Scheme"
         class="add-btn"
         icon-right="add"
@@ -83,7 +83,7 @@ export default {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('TaxSchemeModify')"
-            :to="`/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
             style="text-decoration: none"
             class="text-blue"
           >
@@ -109,7 +109,7 @@ export default {
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
             label="Edit"
-            :to="`/taxes/${props.row.id}/`"
+            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
           />
         </q-td>
       </template>

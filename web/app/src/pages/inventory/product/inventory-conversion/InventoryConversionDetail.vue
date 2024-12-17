@@ -286,7 +286,7 @@ export default {
               color="orange-5"
               label="Edit"
               icon="edit"
-              :to="`/items/inventory-conversion/${fields?.id}/`"
+              :to="`/${$route.params.company}/items/inventory-conversion/${fields?.id}/`"
             />
             <q-btn
               v-if="checkPermissions('InventoryConversionVoucherModify') && fields?.status !== 'Cancelled'"
@@ -313,7 +313,7 @@ export default {
             color="blue-7"
             label="Journal Entries"
             icon="books"
-            :to="`/journal-entries/inventory-conversion/${fields.id}/`"
+            :to="`/${$route.params.company}/journal-entries/inventory-conversion/${fields.id}/`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">

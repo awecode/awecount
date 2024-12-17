@@ -22,7 +22,7 @@ export default {
       <q-btn
         v-if="checkPermissions('BrandCreate')"
         color="green"
-        to="/brand/add/"
+        :to="`/${$route.params.company}/brand/add/`"
         label="New brand"
         class="q-ml-lg add-btn"
         icon-right="add"
@@ -45,7 +45,7 @@ export default {
             v-if="checkPermissions('BrandModify')"
             class="text-blue"
             style="text-decoration: none"
-            :to="`/brand/${props.row.id}/`"
+            :to="`/${$route.params.company}/brand/${props.row.id}/`"
           >
             {{ props.row.name
             }}

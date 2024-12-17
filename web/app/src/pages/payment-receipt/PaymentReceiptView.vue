@@ -304,7 +304,7 @@ export default {
                       v-if="checkPermissions('SalesView')"
                       class="text-blue q-mr-sm"
                       style="text-decoration: none"
-                      :to="`/sales-voucher/${invoice.id}/view`"
+                      :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
                     >#{{ invoice.id
                     }}</router-link>
                     <span v-else>#{{ invoice.id }}</span>
@@ -344,7 +344,7 @@ export default {
               color="orange-7"
               label="Edit"
               icon="edit"
-              :to="`/payment-receipt/${fields.id}/`"
+              :to="`/${$route.params.company}/payment-receipt/${fields.id}/`"
             />
             <q-btn
               v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
@@ -370,14 +370,14 @@ export default {
             color="blue-7"
             label="View Cheque deposit"
             icon="mdi-checkbook"
-            :to="`/cheque-deposit/${fields?.id}/view/`"
+            :to="`/${$route.params.company}/cheque-deposit/${fields?.id}/view/`"
           />
           <q-btn
             v-if="fields.status === 'Cleared'"
             color="blue-7"
             label="Journal Entries"
             icon="books"
-            :to="`/journal-entries/payment-receipt/${fields?.id}/`"
+            :to="`/${$route.params.company}/journal-entries/payment-receipt/${fields?.id}/`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen">

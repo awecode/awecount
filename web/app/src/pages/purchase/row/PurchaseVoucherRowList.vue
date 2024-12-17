@@ -227,7 +227,7 @@ export default {
               v-if="checkPermissions('PurchaseVoucherView')"
               style="font-weight: 500; text-decoration: none"
               class="text-blue l-view-btn"
-              :to="`/purchase-voucher/${props.row.voucher_id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.voucher_id}/view`"
             >
               {{ props.row.voucher_id }}
               {{ props.row.voucher__voucher_no }}

@@ -84,7 +84,7 @@ export default {
               style="font-size: 12px"
               color="blue l-view-btn"
               label="Detail"
-              :to="`/audit-log/${props.row.id}/`"
+              :to="`/${$route.params.company}/audit-log/${props.row.id}/`"
             />
           </div>
         </q-td>

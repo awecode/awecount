@@ -351,7 +351,7 @@ export default {
                     <RouterLink
                       style="text-decoration: none"
                       target="_blank"
-                      :to="`/account/?has_balance=true&category=${parent.id}`"
+                      :to="`/${$route.params.company}/account/?has_balance=true&category=${parent.id}`"
                       class="text-blue-6"
                     >
                       {{
@@ -408,7 +408,7 @@ export default {
                       <RouterLink
                         style="text-decoration: none"
                         target="_blank"
-                        :to="`/account/?has_balance=true&category=${child.account_id}`"
+                        :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
                         class="text-blue-6"
                       >
                         {{ child.name }}
@@ -459,7 +459,7 @@ export default {
                   <RouterLink
                     style="text-decoration: none"
                     target="_blank"
-                    :to="`/account/?has_balance=true&category=${child.account_id}`"
+                    :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
                     class="text-blue-6"
                   >
                     {{ child.name }}

@@ -308,7 +308,7 @@ const modeOptionsComputed = computed(() => {
               class="text-blue"
               target="_blank"
               :title="item.code"
-              :to="`/items/${item.id}/`"
+              :to="`/${$route.params.company}/items/${item.id}/`"
             >
               {{ item.name }}
             </router-link>

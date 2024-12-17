@@ -92,7 +92,7 @@ export default {
       <q-btn
         v-if="checkPermissions('AccountCreate')"
         color="green"
-        to="/account/add/"
+        :to="`/${$route.params.company}/account/add/`"
         label="New Account"
         class="add-btn"
         icon-right="add"
@@ -159,7 +159,7 @@ export default {
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
           />
           <q-btn
             v-if="checkPermissions('AccountModify')"
@@ -167,7 +167,7 @@ export default {
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
-            :to="`/account/${props.row.id}/edit/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/edit/`"
           />
         </q-td>
       </template>
@@ -177,7 +177,7 @@ export default {
             v-if="checkPermissions('CategoryModify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
-            :to="`/account-category/${props.row.category.id}/`"
+            :to="`/${$route.params.company}/account-category/${props.row.category.id}/`"
           >
             {{ props.row.category.name
             }}
@@ -204,7 +204,7 @@ export default {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('AccountView')"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >

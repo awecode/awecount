@@ -51,7 +51,7 @@ const newColumn = [
       <q-btn
         color="green"
         class="add-btn"
-        to="/items/inventory-conversion/add"
+        :to="`/${$route.params.company}/items/inventory-conversion/add`"
         label="Add Inventory Conversion Voucher"
         icon-right="add"
       />
@@ -109,7 +109,7 @@ const newColumn = [
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/items/inventory-conversion/${props.row.id}/view`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/view`"
           />
           <q-btn
             v-if="checkPermissions('InventoryConversionVoucherModify')"
@@ -117,7 +117,7 @@ const newColumn = [
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="edit"
-            :to="`/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -126,7 +126,7 @@ const newColumn = [
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('InventoryConversionVoucherModify')"
-            :to="`/items/inventory-conversion/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/inventory-conversion/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >

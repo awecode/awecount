@@ -65,7 +65,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PurchaseVoucherCreate')"
         color="green"
-        to="/purchase-voucher/add/"
+        :to="`/${$route.params.company}/purchase-voucher/add/`"
         label="New Purchase"
         icon-right="add"
         class="add-btn"
@@ -174,7 +174,7 @@ export default {
             <q-btn
               color="blue"
               label="View"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               style="font-size: 12px"
               data-testid="view-btn"
@@ -188,7 +188,7 @@ export default {
           <span v-if="props.row.voucher_no">
             <router-link
               v-if="checkPermissions('PurchaseVoucherView')"
-              :to="`/purchase-voucher/${props.row.id}/view`"
+              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
               data-testid="voucher-no"

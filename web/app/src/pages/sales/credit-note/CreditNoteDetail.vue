@@ -138,7 +138,7 @@ export default {
           color="orange-5"
           label="Edit"
           icon="edit"
-          :to="`/credit-note/${fields.id}/`"
+          :to="`/${$route.params.company}/credit-note/${fields.id}/`"
         />
         <q-btn
           v-if="fields?.status === 'Issued'"
@@ -167,7 +167,7 @@ export default {
           color="blue-7"
           label="Journal Entries"
           icon="books"
-          :to="`/journal-entries/credit-note/${$route.params.id}/`"
+          :to="`/${$route.params.company}/journal-entries/credit-note/${$route.params.id}/`"
         />
       </div>
       <div v-else class="row q-gutter-x-md q-mb-md">

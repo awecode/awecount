@@ -247,7 +247,7 @@ export default {
             color="orange-5"
             label="Edit"
             icon="edit"
-            :to="`/purchase-voucher/${fields?.id}/`"
+            :to="`/${$route.params.company}/purchase-voucher/${fields?.id}/`"
           />
           <q-btn
             v-if="fields?.status === 'Issued' && checkPermissions('PurchaseVoucherModify')"
@@ -272,7 +272,7 @@ export default {
             color="blue-7"
             label="Journal Entries"
             icon="books"
-            :to="`/journal-entries/purchase-vouchers/${fields?.id}/`"
+            :to="`/${$route.params.company}/journal-entries/purchase-vouchers/${fields?.id}/`"
           />
         </div>
       </div>

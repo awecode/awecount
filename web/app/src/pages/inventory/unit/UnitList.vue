@@ -19,7 +19,7 @@ export default {
   <div class="q-pa-md">
     <div v-if="checkPermissions('UnitCreate')" class="row justify-between">
       <div></div>
-      <q-btn color="green" to="/units/add/" label="New Unit" class="q-ml-lg add-btn" icon-right="add" />
+      <q-btn color="green" :to="`/${$route.params.company}/units/add/" label="New Unit" class="q-ml-lg add-btn" icon-right="add`" />
     </div>
 
     <q-table
@@ -39,7 +39,7 @@ export default {
             v-if="checkPermissions('UnitModify')"
             class="text-blue text-weight-medium"
             style="text-decoration: none"
-            :to="`/units/${props.row.id}/`"
+            :to="`/${$route.params.company}/units/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>

@@ -77,7 +77,7 @@ export default {
       <q-btn
         v-if="checkPermissions('ChequeIssueCreate')"
         color="green"
-        to="/cheque-issue/add/"
+        :to="`/${$route.params.company}/cheque-issue/add/`"
         label="New Cheque Issue"
         class="add-btn"
         icon-right="add"
@@ -141,7 +141,7 @@ export default {
             v-if="checkPermissions('ChequeIssueModify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
-            :to="`/cheque-issue/${props.row.id}/`"
+            :to="`/${$route.params.company}/cheque-issue/${props.row.id}/`"
           >
             {{ props.row.issued_to || props.row.party_name
             }}
@@ -175,7 +175,7 @@ export default {
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
-            :to="`/cheque-issue/${props.row.id}/`"
+            :to="`/${$route.params.company}/cheque-issue/${props.row.id}/`"
           />
         </q-td>
       </template>

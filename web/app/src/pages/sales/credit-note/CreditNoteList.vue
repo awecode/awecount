@@ -44,7 +44,7 @@ export default {
       <q-btn
         v-if="checkPermissions('CreditNoteCreate')"
         color="green"
-        to="/credit-note/add/"
+        :to="`/${$route.params.company}/credit-note/add/`"
         label="New Credit Note"
         class="q-ml-lg add-btn"
         icon-right="add"
@@ -101,7 +101,7 @@ export default {
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/credit-note/${props.row.id}/view`"
+            :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
           />
         </q-td>
       </template>
@@ -138,7 +138,7 @@ export default {
           <span v-if="props.row.voucher_no">
             <router-link
               v-if="checkPermissions('CreditNoteView')"
-              :to="`/credit-note/${props.row.id}/view`"
+              :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
             >

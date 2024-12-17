@@ -43,7 +43,7 @@ const {
     </q-dialog>
     <div v-if="checkPermissions('ItemCreate')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
-      <q-btn color="green" class="add-btn" to="/items/add/" label="Add Item" icon-right="add" />
+      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/add/`" label="Add Item" icon-right="add" />
     </div>
     <q-table
       v-model:pagination="pagination"
@@ -109,7 +109,7 @@ const {
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/items/details/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/details/${props.row.id}/`"
           />
           <q-btn
             v-if="checkPermissions('ItemModify')"
@@ -117,7 +117,7 @@ const {
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="edit"
-            :to="`/items/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/${props.row.id}/`"
           />
         </q-td>
       </template>
@@ -125,7 +125,7 @@ const {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('ItemView')"
-            :to="`/items/details/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/details/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >
@@ -138,7 +138,7 @@ const {
         <q-td :props="props">
           <router-link
             v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
-            :to="`/inventory-category/${props.row.category.id}/`"
+            :to="`/${$route.params.company}/inventory-category/${props.row.category.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >

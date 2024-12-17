@@ -46,7 +46,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
           </div>
           <div v-if="data.brand?.id" class="q-mb-xs">
             <span class="h6 text-weight-bold q-mr-sm">Brand:</span>
-            <router-link :to="`/brand/${data.brand?.id}`">
+            <router-link :to="`/${$route.params.company}/brand/${data.brand?.id}`">
               <span class="link">
                 {{ data.brand?.name }}
               </span>
@@ -116,7 +116,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
       <template #body="props">
         <q-tr v-if="data.account" :props="props">
           <q-td>
-            <router-link :to="`/inventory-account/detail/${data.account?.id}/`">
+            <router-link :to="`/${$route.params.company}/inventory-account/detail/${data.account?.id}/`">
               Stock
             </router-link>
           </q-td>
@@ -130,7 +130,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr :props="props">
           <q-td>
-            <router-link :to="`/account/${data.sales_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/${data.sales_account?.id}/view/`">
               Sales
             </router-link>
           </q-td>
@@ -145,7 +145,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.purchase_account" :props="props">
           <q-td>
-            <router-link :to="`/account/${data.purchase_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/${data.purchase_account?.id}/view/`">
               Purchase
             </router-link>
           </q-td>
@@ -160,7 +160,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.expense_account" :props="props">
           <q-td>
-            <router-link :to="`/account/${data.expense_account?.id}/view/`">
+            <router-link :to="`/${$route.params.company}/account/${data.expense_account?.id}/view/`">
               Expenses
             </router-link>
           </q-td>
@@ -175,7 +175,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.fixed_asset_account" :props="props">
           <q-td>
-            <router-link :to="`/account/${data.fixed_asset_account?.id}/view`">
+            <router-link :to="`/${$route.params.company}/account/${data.fixed_asset_account?.id}/view`">
               Fixed Assets
             </router-link>
           </q-td>
@@ -190,7 +190,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
         <q-tr v-if="data.discount_received_account" :props="props">
           <q-td>
-            <router-link :to="`/account/${data.discount_received_account?.id}/view`">
+            <router-link :to="`/${$route.params.company}/account/${data.discount_received_account?.id}/view`">
               Discount
               Received
             </router-link>
@@ -206,7 +206,7 @@ data.value = await $api(`/api/company/${route.params.company}/items/${route.para
         </q-tr>
       </template>
     </q-table>
-    <router-link :to="`/items/${data.id}/`" class="no-underline">
+    <router-link :to="`/${$route.params.company}/items/${data.id}/`" class="no-underline">
       <q-btn color="orange-7" class="q-mt-md q-px-lg no-underline">
         Edit
       </q-btn>

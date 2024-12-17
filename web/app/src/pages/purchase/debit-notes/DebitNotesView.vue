@@ -259,7 +259,7 @@ export default {
             v-if="checkPermissions('DebitNoteModify')
               && (fields.can_update_issued || fields.status === 'Draft')
             "
-            :to="`/debit-note/${fields.id}`"
+            :to="`/${$route.params.company}/debit-note/${fields.id}`"
             color="orange-6"
             label="Edit"
             icon="edit"
@@ -297,7 +297,7 @@ export default {
           color="blue-7"
           label="Journal Entries"
           icon="books"
-          :to="`/journal-entries/debit-note/${fields?.id}/`"
+          :to="`/${$route.params.company}/journal-entries/debit-note/${fields?.id}/`"
         />
       </div>
     </div>

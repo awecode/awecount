@@ -166,7 +166,7 @@ export default {
           />
           <q-btn
             v-if="fields?.status == 'Issued'"
-            :to="`/journal-entries/fund-transfer/${id}/`"
+            :to="`/${$route.params.company}/journal-entries/fund-transfer/${id}/`"
             color="blue"
             :loading="loading"
             icon="library_books"

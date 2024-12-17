@@ -50,7 +50,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PurchaseDiscountCreate')"
         color="green"
-        to="/purchase-discount/add/"
+        :to="`/${$route.params.company}/purchase-discount/add/`"
         label="New Purchase Discount"
         icon-right="add"
         class="add-btn"
@@ -111,7 +111,7 @@ export default {
               v-if="checkPermissions('PurchaseDiscountModify')"
               color="orange-7"
               label="Edit"
-              :to="`/purchase-discount/${props.row.id}/`"
+              :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
               style="font-size: 12px"
             />

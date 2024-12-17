@@ -177,7 +177,7 @@ export default {
                   v-if="checkPermissions('PaymentReceiptView')"
                   style="font-weight: 500; text-decoration: none"
                   class="text-blue"
-                  :to="`//payment-receipt/${receipt.id}/view`"
+                  :to="`/${$route.params.company}/payment-receipt/${receipt.id}/view`"
                 >
                   {{ receipt.id }}
                 </router-link>
@@ -209,7 +209,7 @@ export default {
               color="orange-5"
               label="Edit"
               icon="edit"
-              :to="`/sales-voucher/${fields?.id}/`"
+              :to="`/${$route.params.company}/sales-voucher/${fields?.id}/`"
             />
             <q-btn
               v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
@@ -248,13 +248,13 @@ export default {
             icon="print"
             @click="() => onPrintclick(true, fields?.status === 'Draft')"
           />
-          <q-btn color="blue-7" label="Materialized View" icon="mdi-table" :to="`/sales-voucher/${fields?.id}/mv`" />
+          <q-btn color="blue-7" label="Materialized View" icon="mdi-table" :to="`/${$route.params.company}/sales-voucher/${fields?.id}/mv`" />
           <q-btn
             v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
             color="blue-7"
             label="Journal Entries"
             icon="books"
-            :to="`/journal-entries/sales-voucher/${fields.id}/`"
+            :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}/`"
           />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">

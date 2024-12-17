@@ -51,7 +51,7 @@ export default {
       <q-btn
         v-if="checkPermissions('DebitNoteCreate')"
         color="green"
-        to="/debit-note/add/"
+        :to="`/${$route.params.company}/debit-note/add/`"
         label="New Debit Note"
         icon-right="add"
         class="add-btn"
@@ -138,7 +138,7 @@ export default {
             <q-btn
               color="blue"
               label="View"
-              :to="`/debit-note/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
               class="q-py-none q-px-md font-size-sm l-view-btn"
               style="font-size: 12px"
             />
@@ -150,7 +150,7 @@ export default {
           <span v-if="props.row.voucher_no">
             <router-link
               v-if="checkPermissions('DebitNoteView')"
-              :to="`/debit-note/${props.row.id}/view/`"
+              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"
             >

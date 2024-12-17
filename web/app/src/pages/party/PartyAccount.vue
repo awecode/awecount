@@ -166,7 +166,7 @@ export default {
           >
             <td class="text-left">
               <router-link
-                :to="`/account/${fields.supplier_account?.id}/view/`"
+                :to="`/${$route.params.company}/account/${fields.supplier_account?.id}/view/`"
                 class="text-blue"
                 style="text-decoration: none"
               >
@@ -197,7 +197,7 @@ export default {
           >
             <td class="text-left">
               <router-link
-                :to="`/account/${fields.customer_account?.id}/view/`"
+                :to="`/${$route.params.company}/account/${fields.customer_account?.id}/view/`"
                 class="text-blue"
                 style="text-decoration: none"
               >

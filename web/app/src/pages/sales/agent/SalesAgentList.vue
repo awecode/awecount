@@ -34,7 +34,7 @@ export default {
       <q-btn
         v-if="checkPermissions('SalesAgentCreate')"
         color="green"
-        to="/sales-agent/add/"
+        :to="`/${$route.params.company}/sales-agent/add/`"
         label="Sales Agent"
         icon-right="add"
         class="add-btn"
@@ -57,7 +57,7 @@ export default {
             v-if="checkPermissions('SalesAgentModify')"
             class="text-blue l-edit-btn whitespace-normal"
             style="text-decoration: none"
-            :to="`/sales-agent/${props.row.id}/`"
+            :to="`/${$route.params.company}/sales-agent/${props.row.id}/`"
           >
             {{ props.row.name }}
           </router-link>

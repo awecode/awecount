@@ -32,7 +32,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('CategoryCreate')" class="row justify-end">
-      <q-btn color="green" to="/inventory-category/add/" label="New Category" class="q-ml-lg add-btn" icon-right="add" />
+      <q-btn color="green" :to="`/${$route.params.company}/inventory-category/add/" label="New Category" class="q-ml-lg add-btn" icon-right="add`" />
     </div>
     <q-table
       v-model:pagination="pagination"
@@ -52,7 +52,7 @@ export default {
             class="q-py-none q-px-md font-size-sm"
             style="font-size: 12px"
             label="view"
-            :to="`/account/${props.row.id}/view/`"
+            :to="`/${$route.params.company}/account/${props.row.id}/view/`"
           />
         </q-td>
       </template>
@@ -62,7 +62,7 @@ export default {
             v-if="checkPermissions('CategoryModify')"
             class="text-blue"
             style="text-decoration: none"
-            :to="`/inventory-category/${props.row.id}/`"
+            :to="`/${$route.params.company}/inventory-category/${props.row.id}/`"
           >
             {{
               props.row.name }}

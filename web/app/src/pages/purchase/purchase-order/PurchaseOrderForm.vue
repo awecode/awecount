@@ -180,7 +180,7 @@ export default {
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
           v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
-          :to="`/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
+          :to="`/${$route.params.company}/purchase-voucher/add/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
           color="blue"
           label="Issue Purchase Voucher"
           :loading="loading"

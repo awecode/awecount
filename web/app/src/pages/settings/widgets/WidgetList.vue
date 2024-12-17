@@ -38,7 +38,7 @@ export default {
         color="green"
         label="New Dashboard widget"
         icon-right="add"
-        to="/dashboard-widgets/add/"
+        :to="`/${$route.params.company}/dashboard-widgets/add/`"
         class="add-btn"
       />
     </div>
@@ -57,7 +57,7 @@ export default {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('WidgetModify')"
-            :to="`/dashboard-widgets/${props.row.id}/`"
+            :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`"
             class="text-blue l-edit-btn"
             style="text-decoration: none"
           >

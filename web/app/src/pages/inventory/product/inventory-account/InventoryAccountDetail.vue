@@ -176,7 +176,7 @@ const getPermissionsWithSourceType = {
       <div class="text-h5">
         <router-link
           v-if="checkPermissions('InventoryAccountView')"
-          :to="`/items/details/${fields?.item}/`"
+          :to="`/${$route.params.company}/items/details/${fields?.item}/`"
           style="font-weight: 500; text-decoration: none"
           class="text-blue"
         >
