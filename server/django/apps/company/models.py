@@ -61,6 +61,7 @@ class Company(models.Model):
     )
     config_template = models.CharField(max_length=255, default="np")
     invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
+    currency_code = models.CharField(max_length=10, default="NPR")
 
     def __str__(self):
         return self.name
