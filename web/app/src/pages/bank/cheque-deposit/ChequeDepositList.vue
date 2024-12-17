@@ -90,7 +90,7 @@ export default {
                     <n-auto-complete-v2
                       v-model="filters.bank_account"
                       :fetch-on-mount="true"
-                      endpoint="v1/bank-account/choices/"
+                      :endpoint="`/api/company/${$route.params.company}/bank-account/choices/`"
                       label="Bank Account"
                     />
                   </div>

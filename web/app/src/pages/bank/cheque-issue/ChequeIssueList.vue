@@ -54,7 +54,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/${route.params.company}/cheque-issue/export${query}`)
+      useApi(`/api/company/${route.params.company}/cheque-issue/export${query}`)
         //   // TODO: url not found
         .then(data =>
           usedownloadFile(
@@ -115,7 +115,7 @@ export default {
                     <n-auto-complete-v2
                       v-model="filters.bank_account"
                       :fetch-on-mount="true"
-                      endpoint="v1/bank-account/choices/"
+                      :endpoint="`/api/company/${$route.params.company}/bank-account/choices/`"
                       label="Bank Account"
                     />
                   </div>

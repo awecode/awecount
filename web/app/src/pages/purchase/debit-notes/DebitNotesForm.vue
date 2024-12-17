@@ -254,7 +254,7 @@ export default {
                       label="Party*"
                       :options="partyChoices"
                       :error="errors?.party"
-                      :endpoint="`/api/company/${route.params.company}/parties/choices/`"
+                      :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                     />
                     <!-- <q-select class="q-mt-md" label="Party*" v-model="referenceFormData.party" :options="partyChoices"
                       option-value="id" option-label="name" map-options emit-value></q-select> -->

@@ -80,7 +80,7 @@ export default {
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/${route.params.company}/sales-book/export${downloadEndpoint}`)
+      useApi(`/api/company/${route.params.company}/sales-book/export${downloadEndpoint}`)
         .then(data =>
           usedownloadFile(
             data,

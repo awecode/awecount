@@ -136,7 +136,7 @@ export default {
                     <n-auto-complete-v2
                       v-model="filters.category"
                       :fetch-on-mount="true"
-                      endpoint="v1/categories/choices/"
+                      :endpoint="`/api/company/${$route.params.company}/categories/choices/`"
                       label="Category"
                     />
                   </div>

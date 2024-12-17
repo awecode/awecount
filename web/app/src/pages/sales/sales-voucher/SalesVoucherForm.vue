@@ -360,7 +360,7 @@ export default {
                     :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
                     "
                     :static-option="fields.selected_party_obj"
-                    :endpoint="`/api/company/${route.params.company}/sales-voucher/create-defaults/parties`"
+                    :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
                     :emit-obj="true"
                     @update-obj="onPartyChange"
                   />
@@ -469,7 +469,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.payment_mode"
                 label="Payment Mode *"
-                :endpoint="`/api/company/${route.params.company}/sales-voucher/create-defaults/payment_modes`"
+                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/payment_modes`"
                 :error="!!errors?.payment_mode"
                 :options="modeOptionsComputed"
                 :static-option="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"

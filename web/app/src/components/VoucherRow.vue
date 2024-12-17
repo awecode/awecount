@@ -1,3 +1,42 @@
+<script setup>
+import checkPermissions from 'src/composables/checkPermissions'
+import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
+
+const props = defineProps(['voucher', 'index', 'options', 'errors'])
+const emit = defineEmits(['deleteVoucher', 'checkAddVoucher'])
+const voucher = ref(props.voucher)
+const openDescription = ref(false)
+watch(
+  () => props.voucher,
+  newValue => (voucher.value = newValue),
+)
+// watch(voucher.value, (a) => {
+//   a.type == 'Dr' ? (a.cr_amount = null) : (a.dr_amount = null)
+//   emit('updateVoucher', a, props.index)
+// })
+
+// const errors = ref(props?.errors)
+// watch(() => props.errors, (a) => {
+//   console.log(props.errors[0])
+//   errors.value = props.errors
+//   console.log(errors.value)
+// })
+
+const deleteVoucher = () => {
+  emit('deleteVoucher', props.index)
+}
+const focusOut = () => {
+  emit('checkAddVoucher', props.index)
+}
+const onSwitchDrCr = (mode) => {
+  if (mode === 'Cr') {
+    voucher.value.dr_amount = null
+  } else if (mode === 'Dr') {
+    voucher.value.cr_amount = null
+  }
+}
+</script>
+
 <template>
   <div>
     <hr />
@@ -12,7 +51,7 @@
             v-model="voucher.type"
             :options="['Dr', 'Cr']"
             label="Type"
-            :error-message="''"
+            error-message=""
             :error="false"
             @update:model-value="onSwitchDrCr"
           />
@@ -23,9 +62,9 @@
             v-model="voucher.account_id"
             label="Account"
             :options="props.options"
-            :focusOnMount="true"
+            :focus-on-mount="true"
             :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
-            endpoint="v1/journal-voucher/create-defaults/accounts/"
+            :endpoint="`/api/company/${$route.params.company}/journal-voucher/create-defaults/accounts/`"
             :error="
               props.errors
                 ? props.errors[props.index]?.account_id
@@ -78,21 +117,21 @@
               color="green"
               class="cursor-pointer"
             >
-            <q-tooltip>Expand</q-tooltip>
-          </q-icon>
+              <q-tooltip>Expand</q-tooltip>
+            </q-icon>
           </q-btn>
           <q-btn
             flat
-            @click="deleteVoucher"
             class="q-pa-sm focus-highLight"
             color="transparent"
+            @click="deleteVoucher"
           >
             <q-icon
               name="delete"
               size="20px"
               color="negative"
               class="cursor-pointer"
-            ></q-icon>
+            />
           </q-btn>
         </div>
       </div>
@@ -109,42 +148,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import LedgerForm from 'src/pages/account/ledger/LedgerForm.vue'
-import checkPermissions from 'src/composables/checkPermissions'
-const props = defineProps(['voucher', 'index', 'options', 'errors'])
-const emit = defineEmits(['deleteVoucher', 'checkAddVoucher'])
-const voucher = ref(props.voucher)
-const openDescription = ref(false)
-watch(
-  () => props.voucher,
-  (newValue) => (voucher.value = newValue)
-)
-// watch(voucher.value, (a) => {
-//   a.type == 'Dr' ? (a.cr_amount = null) : (a.dr_amount = null)
-//   emit('updateVoucher', a, props.index)
-// })
-
-// const errors = ref(props?.errors)
-// watch(() => props.errors, (a) => {
-//   console.log(props.errors[0])
-//   errors.value = props.errors
-//   console.log(errors.value)
-// })
-
-const deleteVoucher = () => {
-  emit('deleteVoucher', props.index)
-}
-const focusOut = () => {
-  emit('checkAddVoucher', props.index)
-}
-const onSwitchDrCr = (mode) => {
-  if (mode === 'Cr') {
-    voucher.value.dr_amount = null
-  }
-  else if (mode === 'Dr') {
-    voucher.value.cr_amount = null
-  }
-}
-</script>

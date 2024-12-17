@@ -73,7 +73,7 @@ export default {
             <n-auto-complete-v2
               v-if="accountChoices"
               v-model="fields.parent"
-              endpoint="v1/accounts/choices"
+              :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
               :options="accountChoices"
               label="Parent"
               :error="errors?.parent"
@@ -82,7 +82,7 @@ export default {
             <n-auto-complete-v2
               v-if="categoryChoices"
               v-model="fields.category"
-              endpoint="v1/categories/choices"
+              :endpoint="`/api/company/${$route.params.company}/categories/choices`"
               :options="categoryChoices"
               label="Category *"
               :static-option="fields.selected_category_obj"
@@ -92,7 +92,7 @@ export default {
             <n-auto-complete-v2
               v-if="accountChoices"
               v-model="fields.source"
-              endpoint="v1/accounts/choices"
+              :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
               :options="accountChoices"
               label="Source"
               :error="errors?.source"

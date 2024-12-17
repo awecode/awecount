@@ -411,7 +411,7 @@ const modeOptionsComputed = computed(() => {
                       :error-message="errors?.mode ? errors.mode[0] : null"
                       :error="!!errors?.mode"
                       :options="modeOptionsComputed"
-                      :endpoint="`v1/${route.params.company}/pos/create-defaults/bank_accounts`"
+                      :endpoint="`/api/company/${$route.params.company}/pos/create-defaults/bank_accounts`"
                       option-value="id"
                       option-label="name"
                       map-options
@@ -450,7 +450,7 @@ const modeOptionsComputed = computed(() => {
                                     v-model="fields.party"
                                     :options="partyChoices"
                                     label="Party"
-                                    :endpoint="`v1/${route.params.company}/parties/choices/`"
+                                    :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                                     :error="errors?.party ? errors?.party[0] : null"
                                     :modal-component="checkPermissions('PartyCreate')
                                       ? PartyForm

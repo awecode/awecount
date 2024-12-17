@@ -89,7 +89,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.from_account"
                 :options="formDefaults.collections?.from_account"
-                :endpoint="`v1/${route.params.company}/fund-transfer/create-defaults/from_account`"
+                :endpoint="`/api/company/${$route.params.company}/fund-transfer/create-defaults/from_account`"
                 :static-option="fields.selected_from_account_obj"
                 label="From Account *"
                 :error="errors?.from_account"
@@ -99,7 +99,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.to_account"
                 :options="formDefaults.collections?.to_account"
-                :endpoint="`v1/${route.params.company}/fund-transfer/create-defaults/to_account`"
+                :endpoint="`/api/company/${$route.params.company}/fund-transfer/create-defaults/to_account`"
                 :static-option="fields.selected_to_account_obj"
                 label="To Account *"
                 :error="errors?.to_account"
@@ -122,7 +122,7 @@ export default {
             <div class="col-12 col-md-6">
               <n-auto-complete-v2
                 v-model="fields.transaction_fee_account"
-                endpoint="v1/fund-transfer/create-defaults/transaction_fee_account"
+                :endpoint="`/api/company/${$route.params.company}/fund-transfer/create-defaults/transaction_fee_account`"
                 :static-option="fields.selected_transaction_fee_account_obj"
                 :options="formDefaults.collections?.transaction_fee_account"
                 label="Fees Account"

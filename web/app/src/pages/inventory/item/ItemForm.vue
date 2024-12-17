@@ -300,7 +300,7 @@ watch(() => fields.value, (newValue) => {
                 label="Brand"
                 :options="formDefaults.collections?.brands"
                 :static-option="fields.selected_brand_obj"
-                endpoint="v1/items/create-defaults/brands"
+                :endpoint="`/api/company/${$route.params.company}/items/create-defaults/brands`"
                 :modal-component="checkPermissions('BrandCreate') ? BrandForm : null"
                 :error="errors.brand"
               />
@@ -322,7 +322,7 @@ watch(() => fields.value, (newValue) => {
                 <n-auto-complete-v2
                   v-model="fields.category"
                   label="Category"
-                  :endpoint="`v1/${route.params.company}/items/create-defaults/inventory_categories`"
+                  :endpoint="`/api/company/${$route.params.company}/items/create-defaults/inventory_categories`"
                   :static-option="fields.selected_inventory_category_obj"
                   :options="formDefaults.collections?.inventory_categories"
                   :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
@@ -347,7 +347,7 @@ watch(() => fields.value, (newValue) => {
                   v-model="fields.unit_id"
                   label="Unit"
                   :options="formDefaults.collections?.units"
-                  endpoint="v1/items/create-defaults/units"
+                  :endpoint="`/api/company/${$route.params.company}/items/create-defaults/units`"
                   :static-option="injectUnitObj"
                   :modal-component="checkPermissions('UnitCreate') ? UnitForm : null"
                   :error="errors.unit_id"

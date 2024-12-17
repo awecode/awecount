@@ -137,7 +137,7 @@ export default {
                 v-model="fields.party"
                 :options="formDefaults.collections?.parties"
                 label="Party *"
-                :endpoint="`/api/company/${route.params.company}/purchase-order/create-defaults/parties`"
+                :endpoint="`/api/company/${$route.params.company}/purchase-order/create-defaults/parties`"
                 :static-option="fields.selected_party_obj"
                 :error="errors?.party ? errors?.party : null"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"

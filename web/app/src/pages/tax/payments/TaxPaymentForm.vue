@@ -90,7 +90,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.cr_account"
                 label="Paid From/By *"
-                endpoint="v1/tax-payments/create-defaults/cr_accounts"
+                :endpoint="`/api/company/${$route.params.company}/tax-payments/create-defaults/cr_accounts`"
                 :static-option="fields.selected_cr_account_obj"
                 :options="formDefaults.collections?.cr_accounts"
                 option-value="id"

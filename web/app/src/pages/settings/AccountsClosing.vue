@@ -39,7 +39,7 @@ watch(() => formDefaults.value, (newVal) => {
                 <n-auto-complete-v2
                   v-model="fields.fiscal_year"
                   label="Financial Year"
-                  :endpoint="`/api/company/${route.params.company}/account-closing/create-defaults/fiscal_years`"
+                  :endpoint="`/api/company/${$route.params.company}/account-closing/create-defaults/fiscal_years`"
                   :static-option="formDefaults?.fields?.current_fiscal_year"
                   :options="formDefaults.collections?.fiscal_years"
                   option-value="id"

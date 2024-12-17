@@ -86,7 +86,7 @@ const {
                   <div class="q-mx-sm">
                     <n-auto-complete-v2
                       v-model="filters.category"
-                      endpoint="v1/inventory-categories/choices/"
+                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices/`"
                       label="Category"
                       :fetch-on-mount="true"
                     />

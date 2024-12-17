@@ -5,7 +5,7 @@ import useForm from 'src/composables/useForm'
 export default {
   setup() {
     const route = useRoute()
-    const endpoint = `v1/${route.params.company}/widgets/`
+    const endpoint = `/api/company/${route.params.company}/widgets/`
     const $q = useQuasar()
     const router = useRouter()
     const formData = useForm(endpoint, {

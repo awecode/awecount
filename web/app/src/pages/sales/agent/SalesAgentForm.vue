@@ -5,7 +5,7 @@ import useForm from 'src/composables/useForm'
 export default {
   setup() {
     const route = useRoute()
-    const endpoint = `v1/${route.params.company}/sales-agent/`
+    const endpoint = `/api/company/${route.params.company}/sales-agent/`
     const formData = useForm(endpoint, {
       getDefaults: false,
       successRoute: '/sales-agent/list/',

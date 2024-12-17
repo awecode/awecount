@@ -141,7 +141,7 @@ export default {
               <div class="col-md-6 col-12">
                 <n-auto-complete-v2
                   v-model="fields.bank_account"
-                  endpoint="v1/cheque-issue/create-defaults/bank_accounts"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/bank_accounts`"
                   :options="formDefaults.collections?.bank_accounts"
                   label="Bank Account *"
                   :disabled="isEdit"
@@ -184,7 +184,7 @@ export default {
                   v-model="fields.party"
                   :options="formDefaults.collections?.parties"
                   :static-option="fields.selected_party_obj"
-                  endpoint="`v1/${route.params.company}cheque-issue/create-defaults/parties`"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/parties`"
                   label="Party *"
                   :error="errors?.party"
                 />
@@ -208,7 +208,7 @@ export default {
                   v-model="fields.dr_account"
                   :options="formDefaults.collections?.accounts"
                   :static-option="fields.selected_dr_account_obj"
-                  endpoint="v1/cheque-issue/create-defaults/accounts"
+                  :endpoint="`/api/company/${$route.params.company}/cheque-issue/create-defaults/accounts`"
                   label="Dr Account"
                   :modal-component="BenefactorForm"
                   :error="errors?.dr_account"

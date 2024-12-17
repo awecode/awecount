@@ -45,7 +45,7 @@ export default {
               <n-auto-complete-v2
                 v-if="!isEdit"
                 v-model="fields.account"
-                endpoint="v1/account-opening-balance/create-defaults/accounts"
+                :endpoint="`/api/company/${$route.params.company}/account-opening-balance/create-defaults/accounts`"
                 :static-option="fields.selected_account_obj"
                 :options="formDefaults.collections?.accounts"
                 label="Account *"

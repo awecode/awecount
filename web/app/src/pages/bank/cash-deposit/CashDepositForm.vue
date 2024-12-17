@@ -49,7 +49,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.bank_account"
                 :options="formDefaults.collections?.bank_accounts"
-                endpoint="v1/bank-cash-deposits/create-defaults/bank_accounts"
+                :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/bank_accounts`"
                 :static-option="fields.selected_bank_account_obj"
                 label="Bank Account *"
                 :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null"
@@ -60,7 +60,7 @@ export default {
               <n-auto-complete-v2
                 v-model="fields.benefactor"
                 :options="formDefaults.collections?.benefactors"
-                endpoint="v1/bank-cash-deposits/create-defaults/benefactors"
+                :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/benefactors`"
                 :static-option="fields.selected_benefactor_obj"
                 label="Benefactor *"
                 :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null"

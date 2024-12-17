@@ -49,7 +49,7 @@ useMeta(() => ({
                 label="Parent *"
                 :error="errors?.parent"
                 :static-option="fields.selected_parent_obj"
-                endpoint="v1/categories/create-defaults/categories"
+                :endpoint="`/api/company/${$route.params.company}/categories/create-defaults/categories`"
               />
             </div>
           </div>

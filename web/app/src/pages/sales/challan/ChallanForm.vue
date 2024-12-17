@@ -204,7 +204,7 @@ export default {
                     v-else
                     v-model="fields.party"
                     :options="formDefaults.collections?.parties"
-                    :endpoint="`/api/company/${route.params.company}/challan/create-defaults/parties`"
+                    :endpoint="`/api/company/${$route.params.company}/challan/create-defaults/parties`"
                     :static-option="fields.selected_party_obj"
                     label="Party"
                     :error="errors?.party ? errors?.party : null"

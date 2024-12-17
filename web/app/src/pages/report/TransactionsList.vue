@@ -28,7 +28,7 @@ export default {
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
-      useApi(`v1/transaction/export${query}`)
+      useApi(`/api/company/${route.params.company}/transaction/export${query}`)
         .then(data =>
           usedownloadFile(
             data,
@@ -210,7 +210,7 @@ export default {
                   <FiltersOptions
                     v-model="filters.account"
                     label="Account"
-                    :endpoint="`v1/${route.params.company}/accounts/choices`"
+                    :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
                     :fetch-on-mount="true"
                     :options="filterOptions.collections?.accounts"
                   />
@@ -218,13 +218,13 @@ export default {
                     v-model="filters.source"
                     label="Transaction Type"
                     :options="filterOptions.collections?.transaction_types"
-                    :endpoint="`v1/${route.params.company}/transaction/create-defaults/transaction_types`"
+                    :endpoint="`/api/company/${$route.params.company}/transaction/create-defaults/transaction_types`"
                   />
                   <FiltersOptions
                     v-model="filters.category"
                     label="Category"
                     :fetch-on-mount="true"
-                    :endpoint="`v1/${route.params.company}/categories/choices`"
+                    :endpoint="`/api/company/${$route.params.company}/categories/choices`"
                     :options="filterOptions.collections?.categories"
                   />
 

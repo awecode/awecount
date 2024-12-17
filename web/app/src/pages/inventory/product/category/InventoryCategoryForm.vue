@@ -126,7 +126,7 @@ const onSubmitClick = () => {
                 v-model="fields.default_unit_id"
                 label="Unit"
                 :options="formDefaults.collections?.units"
-                :endpoint="`v1/${route.params.company}/inventory-categories/create-defaults/units`"
+                :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`"
                 :static-option="fields.selected_unit_obj"
                 :modal-component="checkPermissions('UnitCreate') ? UnitForm : null"
                 :error="errors.default_unit_id"

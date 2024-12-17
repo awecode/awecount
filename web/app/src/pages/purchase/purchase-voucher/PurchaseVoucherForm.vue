@@ -287,7 +287,7 @@ export default {
                 label="Party"
                 :error="errors?.party ? errors?.party : ''"
                 :static-option="fields.selected_party_obj"
-                :endpoint="`/api/company/${route.params.company}/sales-voucher/create-defaults/parties`"
+                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
                 :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
               />
             </div>

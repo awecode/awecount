@@ -322,7 +322,7 @@ export default {
                 v-model="fields.payment_mode"
                 label="Payment Mode *"
                 :error-message="errors?.payment_mode"
-                :endpoint="`/api/company/${route.params.company}/credit-note/create-defaults/payment_modes`"
+                :endpoint="`/api/company/${$route.params.company}/credit-note/create-defaults/payment_modes`"
                 :error="!!errors?.payment_mode"
                 :options="modeOptionsComputed"
                 :static-option="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"

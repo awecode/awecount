@@ -6,7 +6,7 @@ export default {
   setup() {
     const $q = useQuasar()
     const route = useRoute()
-    const endpoint = `v1/${route.params.company}/sales-settings/`
+    const endpoint = `/api/company/${route.params.company}/sales-settings/`
     const formData = useForm(endpoint, {
       getDefaults: true,
       successRoute: '#',
@@ -20,7 +20,7 @@ export default {
     const formLoading = ref(false)
     const onUpdateClick = (fields) => {
       formLoading.value = true
-      useApi(`v1/sales-settings/${fields.id}/`, {
+      useApi(`/api/company/${route.params.company}/sales-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
       })
@@ -110,7 +110,7 @@ export default {
           <!-- <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
               <n-auto-complete-v2 label="Mode" v-model.number="fields.mode" :options="modeOptionsComputed"
-                endpoint="v1/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj"
+                :endpoint="`/api/company/${$route.params.company}/sales-settings/create-defaults/bank_accounts" :staticOption="fields.selected_mode_obj`"
                 option-value="id" option-label="name" map-options emit-value :error="!!modeErrors"
                 :error-message="modeErrors">
                 <template v-slot:append>
@@ -125,7 +125,7 @@ export default {
                 v-model.number="fields.payment_mode"
                 label="Mode"
                 :options="modeOptionsComputed"
-                :endpoint="`v1/${route.params.company}/sales-settings/create-defaults/payment_modes`"
+                :endpoint="`/api/company/${$route.params.company}/sales-settings/create-defaults/payment_modes`"
                 :static-option="fields.selected_mode_obj"
                 option-value="id"
                 option-label="name"
