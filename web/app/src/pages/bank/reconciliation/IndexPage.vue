@@ -7,7 +7,7 @@
     <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
       <template v-slot:top>
         <div class="search-bar">
-          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
+          <q-input dense debounce="500" v-model="searchQuery as string" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
               <q-icon name="search" />
             </template>
@@ -118,10 +118,6 @@ import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 
 const $q = useQuasar()
-const route = useRoute()
-const router = useRouter()
-
-const selectedAccount = ref(route.query.account_id || null)
 
 const statementAccount = ref(null)
 const bankAccounts = ref([])
@@ -155,31 +151,6 @@ const {
   onRequest,
   onFilterUpdate,
 } = useList(listEndpoint)
-
-
-watch(() => route.query, () => {
-  if (route.path === '/account/') {
-    const queryParams = { ...route.query }
-    if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
-      searchQuery.value = queryParams.search
-    } else searchQuery.value = null
-    delete queryParams.search
-    let cleanedFilterValues = Object.fromEntries(
-      Object.entries(queryParams).map(([k, v]) => {
-        if (v === 'true') {
-          return [k, true]
-        } else if (v === 'false') {
-          return [k, false]
-        }
-        return [k, isNaN(v) ? v : parseFloat(v)]
-      })
-    )
-    filters.value = cleanedFilterValues
-  }
-}, {
-  deep: true
-})
-
 
 type MappingFunction = (header: string) => string
 
