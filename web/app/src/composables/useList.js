@@ -1,7 +1,7 @@
 import useApi from './useApi'
 import { withQuery } from 'ufo'
 import { withTrailingSlash, joinURL } from 'ufo'
-import DateConverter from '/src/components/date/VikramSamvat.js'
+import DateConverter from 'src/components/date/VikramSamvat.js'
 import { useLoginStore } from 'src/stores/login-info'
 const store = useLoginStore()
 
