@@ -30,7 +30,7 @@ def get_company(request):
         elif getattr(request.user, "is_api", False):
             company = request.user.company
 
-    except Company.ObjectDoesNotExist:
+    except Company.DoesNotExist:
         return None
 
     request._cached_company = company
