@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from xhtml2pdf import pisa
 
 from apps.company.models import Company
-from awecount.libs.helpers import upload_file
+from awecount.libs.helpers import get_full_file_url, upload_file
 
 from .models import SalesVoucher
 
@@ -51,8 +51,9 @@ class FileUploadView(APIView):
                 )
 
         for file in uploaded_files:
-            filename = upload_file(file, folder)
-            file_urls.append(filename)
+            file_path = upload_file(file, folder)
+            full_url = get_full_file_url(request, file_path)
+            file_urls.append(full_url)
 
         return Response(file_urls)
 

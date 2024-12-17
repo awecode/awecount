@@ -82,3 +82,14 @@ def deserialize_request(request_obj):
 
 def use_miti(company):
     return company.config_template == "np"
+
+
+def get_full_file_url(request, relative_path):
+    return request.build_absolute_uri(default_storage.url(relative_path))
+
+
+def get_relative_file_path(file_url):
+    parts = file_url.split(settings.MEDIA_URL)
+    if len(parts) > 1:
+        return parts[1]
+    return file_url
