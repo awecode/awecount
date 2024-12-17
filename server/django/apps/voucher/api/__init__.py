@@ -13,7 +13,6 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from django_q.tasks import async_task
 from openpyxl.writer.excel import save_virtual_workbook
-from requests import Request
 from rest_framework import filters as rf_filters
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -770,13 +769,11 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
         ).exists():
             raise RESTValidationError({"error": "There is already an import pending."})
 
-        filename = upload_file(xls_file, "imports/sales_vouchers")
-
         Import.objects.create(
             company=request.company,
             type="Sales Voucher",
             status="Pending",
-            file=filename,
+            file=xls_file,
             user=request.user,
         )
 
@@ -1226,13 +1223,11 @@ class PurchaseVoucherViewSet(
         ).exists():
             raise RESTValidationError({"error": "There is already an import pending."})
 
-        filename = upload_file(xls_file, "imports/purchase_vouchers")
-
         Import.objects.create(
             company=request.company,
             type="Purchase Voucher",
             status="Pending",
-            file=filename,
+            file=xls_file,
             user=request.user,
         )
 

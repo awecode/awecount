@@ -1,12 +1,11 @@
 import datetime
-import os
 import random
+import uuid
 from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
 from typing import Union
 
-import requests
 from auditlog.registry import auditlog
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
@@ -20,7 +19,6 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
 from django_q.tasks import schedule
-from requests import Request
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
@@ -1963,7 +1961,10 @@ IMPORT_STATUSES = (
 
 
 class Import(models.Model):
-    file = models.CharField(max_length=255)
+    def get_path(self, filename):
+        return "imports/{}.{}".format(uuid.uuid4(), filename.split(".")[-1])
+
+    file = models.FileField(upload_to=get_path)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     type = models.CharField(choices=IMPORT_TYPES, max_length=25)
