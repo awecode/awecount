@@ -100,8 +100,8 @@ function processFiles(value) {
       }
     }
     return {
-      name: `${process.env.MEDIA_BASE_URL}/${file}`,
-      preview: `${process.env.MEDIA_BASE_URL}/${file}`,
+      name: file,
+      preview: file,
       isImage: allowedImageExtensions.some((ext) => file.endsWith(ext)),
     }
   })

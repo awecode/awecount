@@ -71,7 +71,6 @@ module.exports = configure(function (ctx) {
       // env: require('dotenv').config().parsed,
       env: {
         BASE_URL: process.env.BASE_URL || 'http://localhost:8000',
-        MEDIA_BASE_URL: process.env.MEDIA_BASE_URL || 'http://localhost:8000/media',
         MAX_FILE_UPLOAD_SIZE: process.env.MAX_FILE_UPLOAD_SIZE || 1024 * 1024,
       },
       // rawDefine: {}
