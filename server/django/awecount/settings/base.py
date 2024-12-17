@@ -172,22 +172,13 @@ CACHES = {
 ######################################################################
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
-            "access_key": os.environ.get("AWS_S3_ACCESS_KEY_ID"),
-            "secret_key": os.environ.get("AWS_S3_SECRET_ACCESS_KEY"),
-            "bucket_name": os.environ.get("AWS_S3_BUCKET_NAME", "uploads"),
-            "default_acl": "private",
-            "querystring_auth": True,
-            "region_name": os.environ.get("AWS_S3_REGION_NAME"),
-            "endpoint_url": os.environ.get("AWS_S3_ENDPOINT_URL"),
-            "object_parameters": {
-                "CacheControl": "max-age=86400",
-            },
+            "location": os.path.normpath(os.path.join(ROOT_DIR, "media")),
         },
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
