@@ -1,12 +1,11 @@
-import os
 import uuid
 
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.signing import BadSignature, Signer
 from django.utils.crypto import constant_time_compare
 from requests import Request
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 
 def merge_dicts(dict1, dict2):
@@ -52,7 +51,7 @@ def check_verification_hash(hash_to_check, value):
 
 
 def upload_file(file, folder):
-    filename = f"{uuid.uuid4()}-{file.name}"
+    filename = f"{uuid.uuid4()}{file.name[file.name.rfind('.'):]}"
     if folder:
         filename = f"{folder}/{filename}"
     file_path = default_storage.save(filename, ContentFile(file.read()))
