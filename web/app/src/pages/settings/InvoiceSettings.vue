@@ -57,7 +57,7 @@ const fields = ref({
 const formLoading = ref(false)
 
 const data = {
-  'party_name': 'Rinky Jha',
+  'party_name': 'Random Party Name',
   'party_contact_no': 'jkjrkgjjr84787847',
   'voucher_meta': {
     'sub_total': 500.0,
@@ -119,12 +119,6 @@ const data = {
   'payment_receipts': [],
   'options': {
     'show_rate_quantity_in_voucher': true,
-    'default_email_attachments': [
-      'c75d73bf-a412-4e4c-9eb6-8fbe9f3ea9be-Sales Invoice 131 (17).pdf',
-      'f8dc97a1-1c0f-40bf-96a9-c2d0a81c74a7-Sales Invoice 131 (8).pdf',
-      '799bfbab-54db-457b-a7b3-498267e25790-Screenshot from 2024-09-26 10-35-46.png',
-      'default_email_attachments/9de53f83-3c93-453c-8540-439219b35233-Screenshot from 2024-11-22 15-34-11.png'
-    ]
   },
   'fiscal_year': 'FY 81-82',
   'invoice_footer_text': 'test',
@@ -170,7 +164,6 @@ const data = {
       'id': 17
     }
   ],
-  'hash': 'sales-invoice-3239:Ke7RYUDlz9feCEsK-B4xL_ybDDBDloGJYXumj-b64W0'
 }
 
 const generateHtml = async (template) => {
