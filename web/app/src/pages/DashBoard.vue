@@ -10,7 +10,7 @@ useMeta({
 const route = useRoute()
 const fields = ref(null)
 
-const endpoint = `/v1/${route.params.company}/widgets/data/`
+const endpoint = `/api/company/${route.params.company}/widgets/data/`
 const res = await $api(endpoint, { method: 'GET', protected: true })
 fields.value = res
 </script>
