@@ -616,7 +616,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedStatementTransactions, true)
-                    }}</span>
+                      }}</span>
                   </div>
                 </div>
               </div>
@@ -661,7 +661,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedSystemTransactions)
-                    }}</span>
+                      }}</span>
                   </div>
                 </div>
               </div>
@@ -719,17 +719,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       <div class="container mx-auto">
         <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
           <div class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto">
-            <div v-for="(data, index) in groupedTransactions" :key="index" class="space-y-4 border-b mb-5">
-              <div class="flex justify-end space-x-3 mb-2">
-                <button @click="
-                  reconcileMatchedTransactions(data)
-                  " class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
-                  Reconcile
-                </button>
-                <button @click="unmatchMatchedTransactions(data)" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
-                  Unmatch
-                </button>
-              </div>
+            <div v-for="(data, index) in groupedTransactions" :key="index" class="border-b-2 mb-5 pb-5">
+
 
               <div class="grid grid-cols-2 gap-4">
                 <!-- Statement Transactions -->
@@ -774,20 +765,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                     <div class="divide-y text-sm">
                       <div v-for="transaction, index in data.systemTransactions" :key="transaction.id" class="px-4 py-3  border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative group"
                         :class="{ 'border-b': index !== data.systemTransactions.length - 1 }">
-                        <!-- <div class="flex items-center justify-between">
-                          <span class="text-sm text-gray-600">{{ transaction.date }}</span>
-                          <div class="flex items-center space-x-2">
-                            <span v-if="transaction.dr_amount" class="text-green-600 font-medium text-sm">
-                              +{{ transaction.dr_amount }}
-                            </span>
-                            <span v-if="transaction.cr_amount" class="text-red-600 font-medium text-sm">
-                              -{{ transaction.cr_amount }}
-                            </span>
-                          </div>
-                        </div> -->
 
                         <div class="text-xs">
-                          <!-- Add date too -->
                           <div class="text-gray-500">{{ transaction.date }}</div>
 
                           <div v-for="counterpart in transaction.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between">
@@ -813,6 +792,16 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                   </div>
                 </div>
               </div>
+              <div class="flex justify-end space-x-3">
+                <button @click="
+                  reconcileMatchedTransactions(data)
+                  " class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
+                  Reconcile
+                </button>
+                <button @click="unmatchMatchedTransactions(data)" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+                  Unmatch
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -829,6 +818,10 @@ const unmatchMatchedTransactions = (matchedTransaction: {
 
 .border-b {
   border-bottom: 1px solid black !important;
+}
+
+.border-b-2 {
+  border-bottom: 2px solid black !important;
 }
 
 .border-t {
