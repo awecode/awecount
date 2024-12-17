@@ -66,12 +66,14 @@
 import * as XLSX from 'xlsx'
 import { Ref } from 'vue'
 const $q = useQuasar()
+const route = useRoute()
+const router = useRouter()
 
-const selectedAccount = ref(null)
+const selectedAccount = ref(route.query.account_id || null)
 const statementAccount = ref(null)
 const bankAccounts = ref([])
-const startDate = ref('2024-11-08')
-const endDate = ref('2024-12-08')
+const startDate = ref(route.query.start_date as string || '2024-11-08')
+const endDate = ref(route.query.end_date as string || '2024-12-08')
 const statementStartDate = ref()
 const statementEndDate = ref()
 
@@ -167,6 +169,13 @@ const fetchTransactions = async () => {
     return
   }
   isLoading.value = true
+  router.push({
+    query: {
+      account_id: selectedAccount.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+    }
+  })
 
   useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
     systemTransactionData.value = response.system_transactions
@@ -179,6 +188,10 @@ const fetchTransactions = async () => {
   }).finally(() => {
     isLoading.value = false
   })
+}
+
+if (selectedAccount.value && startDate.value && endDate.value) {
+  fetchTransactions()
 }
 
 
