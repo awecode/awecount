@@ -1,79 +1,130 @@
 <template>
-  <q-page class="p-10">
-    <div class="flex justify-between">
-      <div class="flex gap-5">
-        <n-auto-complete v-model="selectedAccount" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" optionValue="ledger_id" />
-        <DateRangePicker v-model:startDate="startDate" v-model:endDate="endDate" :hide-btns="true" />
-        <div>
-          <q-btn :loading="isLoading" icon="mdi-magnify" color="primary" label="Search" @click="fetchTransactions" :disable="!selectedAccount || !startDate || !endDate ? true : false" />
-        </div>
-      </div>
-      <div>
-        <q-btn icon="mdi-file-upload-outline" color="green" label="Upload Statement" @click="statementPrompt = true"></q-btn>
-      </div>
+  <div class="q-pa-md">
+    <div class="row justify-end">
+      <q-btn v-if="checkPermissions('ReconciliationStatementCreate')" icon="mdi-file-upload-outline" color="green" label="Upload Statement" @click="statementPrompt = true"></q-btn>
     </div>
-    <q-dialog no-shake v-model="statementPrompt">
-      <q-card style="min-width: 350px" class="p-5 space-y-3">
-        <div class="text-xl text-gray-700 font-bold">
-          Statement Upload
-        </div>
-        <q-form @submit="submitStatement">
 
-          <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
-          <!-- date formats -->
-          <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
-          <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".xlsx, .xls" class="q-mb-md"
-            @update:model-value="parseExcelFile">
-            <template v-slot:prepend>
-              <q-icon name="cloud_upload" @click.stop.prevent />
-            </template>
+    <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
+      <template v-slot:top>
+        <div class="search-bar">
+          <q-input dense debounce="500" v-model="searchQuery" placeholder="Search" class="full-width search-input">
             <template v-slot:append>
-              <q-icon v-if="statementSheet" name="close" @click.stop.prevent="removeStatement" class="cursor-pointer" />
+              <q-icon name="search" />
             </template>
+          </q-input>
+          <q-btn class="f-open-btn" icon="mdi-filter-variant">
+            <q-menu>
+              <div class="menu-wrapper" style="width: min(500px, 90vw)">
+                <div style="border-bottom: 1px solid lightgrey">
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
+                </div>
+                <div class="q-ma-sm">
+                  <!-- <div class="q-ma-sm">
+                    <MultiSelectChip :options="['Reconciled', 'Unreconciled']" v-model="filters.status" />
+                  </div> -->
+                  <div class="q-mx-md">
+                    <!-- <DateRangePicker v-model:startDate="filters.start_date" v-model:endDate="filters.end_date" /> -->
+                    <n-auto-complete v-model="filters.account_id" :options="bankAccounts" label="Bank Accounts" optionValue="ledger_id" />
 
-            <template v-slot:hint>
-              <div v-if="!statementSheet" class="text-gray-600">Upload your statement document here</div>
-              <div v-else-if="isStatementProcessing" class="text-gray-600">Processing...</div>
-              <div v-else-if="hasError" class="text-red-600 text-xs">Error parsing the file</div>
-              <div v-else-if="toHaveHeaders.find(header => !statementHeaders.has(header))" class="text-red-600 text-xs">Couldn't find header columns: {{
-                toHaveHeaders.filter(header => !statementHeaders.has(header)).join(', ') }}</div>
-              <div v-else-if="statementData.length" class="text-green-600 text-xs">
-                {{ statementData.length }} rows parsed</div>
-            </template>
-          </q-file>
+                  </div>
+                </div>
+                <div class="q-mx-md flex gap-4 q-mb-md">
+                  <q-btn color="green" label="Filter" @click="onFilterUpdate" class="f-submit-btn"></q-btn>
+                  <q-btn color="red" icon="close" @click="resetFilters" class="f-reset-btn"></q-btn>
+                </div>
+              </div>
+            </q-menu>
+          </q-btn>
+        </div>
+      </template>
+      <template v-slot:body-cell-actions="props">
+        <q-td :props="props">
+          <q-btn v-if="checkPermissions('ReconciliationStatementView') && props.row.reconciled_entries < props.row.total_entries" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+            style="font-size: 12px" label="Reconcile" :to="`/bank-reconciliation/reconcile/?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`" />
+          <q-btn v-else-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Reconciled"
+            disable />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-category="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{
+            props.row.category.name
+            }}</router-link>
+          <span v-else>{{ props.row.category.name }}</span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-account="props">
+        <q-td :props="props">
+          <router-link v-if="checkPermissions('AccountView')" :to="`/account/${props.row.account.id}/view/?start_date=${props.row.start_date}&end_date=${props.row.end_date}`"
+            style="font-weight: 500; text-decoration: none" class="text-blue">
+            {{ props.row.account.name }}
+          </router-link>
+          <span v-else>{{ props.row.account.name }}</span>
+        </q-td>
+      </template>
+    </q-table>
+  </div>
 
-          <div>
-            <DateRangePicker v-model:startDate="statementStartDate" v-model:endDate="statementEndDate" :hide-btns="true" id="modal-date-picker" />
-            <div class="text-gray-600 -mt-4 text-xs">
-              Please select the date range for the statement you want to extract <br> <span class=" ">If not selected, the system will use the date range from the statement</span>
-            </div>
+
+  <q-dialog no-shake v-model="statementPrompt">
+    <q-card style="min-width: 350px" class="p-5 space-y-3">
+      <div class="text-xl text-gray-700 font-bold">
+        Statement Upload
+      </div>
+      <q-form @submit="submitStatement">
+
+        <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
+        <!-- date formats -->
+        <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
+        <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".xlsx, .xls" class="q-mb-md"
+          @update:model-value="parseExcelFile">
+          <template v-slot:prepend>
+            <q-icon name="cloud_upload" @click.stop.prevent />
+          </template>
+          <template v-slot:append>
+            <q-icon v-if="statementSheet" name="close" @click.stop.prevent="removeStatement" class="cursor-pointer" />
+          </template>
+
+          <template v-slot:hint>
+            <div v-if="!statementSheet" class="text-gray-600">Upload your statement document here</div>
+            <div v-else-if="isStatementProcessing" class="text-gray-600">Processing...</div>
+            <div v-else-if="hasError" class="text-red-600 text-xs">Error parsing the file</div>
+            <div v-else-if="toHaveHeaders.find(header => !statementHeaders.has(header))" class="text-red-600 text-xs">Couldn't find header columns: {{
+              toHaveHeaders.filter(header => !statementHeaders.has(header)).join(', ') }}</div>
+            <div v-else-if="statementData.length" class="text-green-600 text-xs">
+              {{ statementData.length }} rows parsed</div>
+          </template>
+        </q-file>
+
+        <div>
+          <DateRangePicker v-model:startDate="statementStartDate" v-model:endDate="statementEndDate" :hide-btns="true" id="modal-date-picker" />
+          <div class="text-gray-600 -mt-4 text-xs">
+            Please select the date range for the statement you want to extract <br> <span class=" ">If not selected, the system will use the date range from the statement</span>
           </div>
+        </div>
 
-          <div class="text-right !mt-6">
-            <q-btn type="submit" :loading="isLoading" label="Upload" color="green"
-              :disable="!statementAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
-          </div>
-        </q-form>
-      </q-card>
-    </q-dialog>
-    <!-- Table -->
-    <BankReconciliationTable v-if="systemTransactionData.length && statementTransactionData.length" :systemTransactionData="systemTransactionData" :statementTransactionData="statementTransactionData"
-      :acceptableDifference="acceptableDifference" />
-  </q-page>
+        <div class="text-right !mt-6">
+          <q-btn type="submit" :loading="isLoading" label="Upload" color="green"
+            :disable="!statementAccount || !statementSheet || isStatementProcessing || toHaveHeaders.find(header => !statementHeaders.has(header))" />
+        </div>
+      </q-form>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
 import * as XLSX from 'xlsx'
 import { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
+
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 
 const selectedAccount = ref(route.query.account_id || null)
+
 const statementAccount = ref(null)
 const bankAccounts = ref([])
-const startDate = ref(route.query.start_date as string || '2024-11-08')
-const endDate = ref(route.query.end_date as string || '2024-12-08')
 const statementStartDate = ref()
 const statementEndDate = ref()
 
@@ -84,9 +135,6 @@ const statementHeaders = ref(new Set())
 const statementData: Ref<Record<string, any>[]> = ref([])
 const isStatementProcessing = ref(false)
 const hasError = ref(false)
-const systemTransactionData = ref([])
-const statementTransactionData = ref([])
-const acceptableDifference = ref(0.01)
 
 const endpoint = 'v1/bank-reconciliation/banks/'
 const isLoading = ref(false)
@@ -94,6 +142,44 @@ const isLoading = ref(false)
 useApi(endpoint).then((response) => {
   bankAccounts.value = response
 })
+
+const listEndpoint = '/v1/bank-reconciliation/'
+const {
+  rows,
+  columns,
+  resetFilters,
+  filters,
+  loading,
+  searchQuery,
+  pagination,
+  onRequest,
+  onFilterUpdate,
+} = useList(listEndpoint)
+
+
+watch(() => route.query, () => {
+  if (route.path === '/account/') {
+    const queryParams = { ...route.query }
+    if (queryParams.hasOwnProperty('search') && typeof queryParams.search === 'string') {
+      searchQuery.value = queryParams.search
+    } else searchQuery.value = null
+    delete queryParams.search
+    let cleanedFilterValues = Object.fromEntries(
+      Object.entries(queryParams).map(([k, v]) => {
+        if (v === 'true') {
+          return [k, true]
+        } else if (v === 'false') {
+          return [k, false]
+        }
+        return [k, isNaN(v) ? v : parseFloat(v)]
+      })
+    )
+    filters.value = cleanedFilterValues
+  }
+}, {
+  deep: true
+})
+
 
 type MappingFunction = (header: string) => string
 
@@ -162,39 +248,6 @@ const submitStatement = async () => {
     isLoading.value = false
   })
 }
-
-
-const fetchTransactions = async () => {
-  if (!selectedAccount.value || !startDate.value || !endDate.value) {
-    return
-  }
-  isLoading.value = true
-  router.push({
-    query: {
-      account_id: selectedAccount.value,
-      start_date: startDate.value,
-      end_date: endDate.value,
-    }
-  })
-
-  useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
-    systemTransactionData.value = response.system_transactions
-    statementTransactionData.value = response.statement_transactions
-    acceptableDifference.value = response.acceptable_difference
-  }).catch((error) => {
-    console.log(error)
-    systemTransactionData.value = []
-    statementTransactionData.value = []
-  }).finally(() => {
-    isLoading.value = false
-  })
-}
-
-if (selectedAccount.value && startDate.value && endDate.value) {
-  fetchTransactions()
-}
-
-
 
 const selectedDateFormat = ref()
 

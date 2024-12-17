@@ -1201,6 +1201,14 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['Home', 'Bank Reconciliation'],
         },
       },
+      {
+        path: 'reconcile/',
+        name: 'Reconcile Transactions',
+        component: () => import('src/pages/bank/reconciliation/ReconcileTransactions.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Bank Reconciliation', 'Reconcile Transactions'],
+        },
+      },
     ],
   },
   {
