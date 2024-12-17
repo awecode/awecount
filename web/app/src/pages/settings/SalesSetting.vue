@@ -105,7 +105,7 @@ export default {
     const formLoading = ref(false)
     const onUpdateClick = async (fields) => {
       formLoading.value = true
-      fields.default_email_attachments = await uploadFiles(fields.default_email_attachments, 'default_email_attachments')
+      fields.default_email_attachments = await uploadFiles(fields.default_email_attachments, formData.formDefaults.value?.file_upload_paths?.default_email_attachments)
       useApi(`v1/sales-settings/${fields.id}/`, {
         method: 'PUT',
         body: fields,
