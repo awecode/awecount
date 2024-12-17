@@ -5,14 +5,11 @@ import uuid
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
-from django.utils.functional import cached_property
 from rest_framework.exceptions import APIException
 
 from apps.company.models import Company
 from awecount.libs.fields import ChoiceArrayField
 from lib.models.mixins import TimeAuditModel
-
-from .permission_modules import module_pairs
 
 
 def get_default_onboarding():
@@ -46,7 +43,7 @@ class UserManager(BaseUserManager):
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
     modules = ChoiceArrayField(
-        models.CharField(max_length=32, blank=True, choices=module_pairs),
+        models.CharField(max_length=32, blank=True),
         default=list,
         blank=True,
     )
@@ -101,8 +98,6 @@ class User(AbstractBaseUser):
     last_login_medium = models.CharField(max_length=20, default="email")
     last_login_uagent = models.TextField(blank=True)
 
-    permissions = models.ManyToManyField(Role, blank=True, related_name="users")
-
     USERNAME_FIELD = "email"
 
     objects = UserManager()
@@ -114,13 +109,6 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return f"{self.full_name} <{self.email}>"
-
-    @cached_property
-    def role_modules(self):
-        modules = []
-        for role in self.permissions.all():
-            modules.extend(role.modules)
-        return modules
 
     @property
     def company(self):
