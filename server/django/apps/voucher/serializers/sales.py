@@ -723,6 +723,21 @@ class EmailInvoiceRequestSerializer(serializers.Serializer):
         return value
 
 
+class ImportRequestSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, value):
+        if not value.name.endswith(".xlsx"):
+            raise serializers.ValidationError("File must be an Excel file.")
+        max_file_upload_size = settings.MAX_IMPORT_FILE_SIZE
+        if value.size > max_file_upload_size:
+            max_file_upload_size_mb = max_file_upload_size / (1024 * 1024)
+            raise ValidationError(
+                f"File size exceeds the maximum limit of {max_file_upload_size_mb:.2f} MB"
+            )
+        return value
+
+
 class SalesAgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesAgent

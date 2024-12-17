@@ -82,6 +82,7 @@ from apps.voucher.serializers.purchase import (
 )
 from apps.voucher.serializers.sales import (
     EmailInvoiceRequestSerializer,
+    ImportRequestSerializer,
     RecurringVoucherTemplateCreateSerializer,
 )
 from apps.voucher.serializers.voucher_settings import (
@@ -760,9 +761,9 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
 
     @action(detail=False, url_path="import", methods=["POST"])
     def import_xls(self, request):
-        xls_file = request.FILES.get("file")
-        if not xls_file:
-            raise RESTValidationError({"file": "File is required."})
+        serializer = ImportRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        xls_file = serializer.validated_data.get("file")
 
         if Import.objects.filter(
             company=request.company, type="Sales Voucher", status="Pending"
@@ -1214,9 +1215,9 @@ class PurchaseVoucherViewSet(
 
     @action(detail=False, url_path="import", methods=["POST"])
     def import_xls(self, request):
-        xls_file = request.FILES.get("file")
-        if not xls_file:
-            raise RESTValidationError({"file": "File is required."})
+        serializer = ImportRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        xls_file = serializer.validated_data.get("file")
 
         if Import.objects.filter(
             company=request.company, type="Purchase Voucher", status="Pending"
