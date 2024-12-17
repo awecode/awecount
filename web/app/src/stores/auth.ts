@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore, Pinia } from 'pinia'
 import * as config from 'src/config'
-import { useRoute } from 'vue-router'
 
 interface User {
   access_level: 'owner' | 'admin' | 'member'
@@ -44,7 +43,6 @@ export const URLs = {
 
 export const useAuthStore = defineStore('auth', () => {
   const url = new URL(window.location.href)
-  const route = useRoute()
 
   const $api = useAPI
 
@@ -158,9 +156,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
 
-    if (explicitRedirectTo === undefined && route.query.next) {
-      window.location.href = `${url.origin}${route.query.next}`
-    }
+    // if (explicitRedirectTo === undefined && route.query.next) {
+    //   window.location.href = `${url.origin}${route.query.next}`
+    // }
 
     if (explicitRedirectTo) {
       window.location.href = `${url.origin}${explicitRedirectTo}`
