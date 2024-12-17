@@ -8,7 +8,7 @@ from apps.users.serializers import UserLiteSerializer
 class CompanyLiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ["name", "slug", "id"]
+        fields = ["name", "slug", "logo", "id"]
         read_only_fields = fields
 
 

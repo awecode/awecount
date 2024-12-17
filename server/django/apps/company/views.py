@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from apps.company.models import Company, CompanyMember, CompanyMemberInvite
 from apps.company.permissions import CompanyAdminPermission, CompanyMemberPermission
 from apps.company.serializers import (
+    CompanyLiteSerializer,
     CompanyMemberInviteSerializer,
     CompanyMemberSerializer,
 )
@@ -266,6 +267,42 @@ class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
         # Delete joined company invites
         company_invitations.delete()
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserCompaniesEndpoint(views.APIView):
+    def get(self, request):
+        user_companies = (
+            CompanyMember.objects.filter(member=request.user, is_active=True)
+            .select_related("company")
+            .only("company")
+            .order_by("-created_at")
+        )
+
+        return Response(
+            CompanyLiteSerializer(user_companies, many=True).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class CompanyMemberViewSet(viewsets.ModelViewSet):
+    model = CompanyMember
+    serializer_class = CompanyMemberSerializer
+
+    permission_classes = [CompanyAdminPermission]
+
+    def get_queryset(self):
+        return self.filter_queryset(
+            super()
+            .get_queryset()
+            .filter(company__slug=self.kwargs.get("company_slug"))
+            .select_related("company", "member", "company__owner")
+        )
+
+    def destroy(self, request, company_slug, pk):
+        company_member = CompanyMember.objects.get(pk=pk, company__slug=company_slug)
+        company_member.is_active = False
+        company_member.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
