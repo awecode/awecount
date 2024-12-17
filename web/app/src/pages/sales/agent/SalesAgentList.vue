@@ -34,7 +34,7 @@ export default {
       <q-btn
         v-if="checkPermissions('SalesAgentCreate')"
         color="green"
-        :to="`/${$route.params.company}/sales-agent/add/`"
+        :to="`/${$route.params.company}/sales-agent/create/`"
         label="Sales Agent"
         icon-right="add"
         class="add-btn"

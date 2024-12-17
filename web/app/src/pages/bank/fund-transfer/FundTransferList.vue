@@ -65,7 +65,7 @@ export default {
       <q-btn
         v-if="checkPermissions('FundTransferCreate')"
         color="green"
-        :to="`/${$route.params.company}/fund-transfer/add/`"
+        :to="`/${$route.params.company}/fund-transfer/create/`"
         label="New Fund Transfer"
         class="add-btn"
         icon-right="add"
@@ -83,7 +83,7 @@ export default {
           icon-right="add"
           color="green"
           :label="template.name"
-          :to="{ path: '/fund-transfer/add/', query: { template: encodeURIComponent(JSON.stringify(template)) } }"
+          :to="{ path: '/fund-transfer/create/', query: { template: encodeURIComponent(JSON.stringify(template)) } }"
         />
       </div>
     </q-card>

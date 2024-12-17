@@ -86,7 +86,7 @@ export default {
       <q-btn
         v-if="checkPermissions('SalesCreate')"
         color="green"
-        :to="`/${$route.params.company}/sales-voucher/add/`"
+        :to="`/${$route.params.company}/sales-voucher/create/`"
         label="New Sales"
         icon-right="add"
         class="add-btn"

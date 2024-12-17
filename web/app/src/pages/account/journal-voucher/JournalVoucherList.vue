@@ -42,7 +42,7 @@ export default {
       <q-btn
         v-if="checkPermissions('JournalVoucherCreate')"
         color="green"
-        :to="`/${$route.params.company}/journal-voucher/add/`"
+        :to="`/${$route.params.company}/journal-voucher/create/`"
         label="New Journal Voucher"
         class="add-btn"
         icon-right="add"

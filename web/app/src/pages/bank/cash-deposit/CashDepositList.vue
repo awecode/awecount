@@ -66,7 +66,7 @@ export default {
       <q-btn
         v-if="checkPermissions('BankCashDepositCreate')"
         color="green"
-        :to="`/${$route.params.company}/cash-deposit/add/`"
+        :to="`/${$route.params.company}/cash-deposit/create/`"
         label="New Cash Deposit"
         class="add-btn"
         icon-right="add"

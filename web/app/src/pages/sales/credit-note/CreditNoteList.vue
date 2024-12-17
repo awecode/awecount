@@ -44,7 +44,7 @@ export default {
       <q-btn
         v-if="checkPermissions('CreditNoteCreate')"
         color="green"
-        :to="`/${$route.params.company}/credit-note/add/`"
+        :to="`/${$route.params.company}/credit-note/create/`"
         label="New Credit Note"
         class="q-ml-lg add-btn"
         icon-right="add"

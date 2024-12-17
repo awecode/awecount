@@ -1,5 +1,4 @@
 <script>
-const route = useRoute()
 export default {
   setup() {
     const metaData = {
@@ -80,7 +79,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PartyCreate')"
         color="green"
-        :to="`/${$route.params.company}/party/add/`"
+        :to="`/${$route.params.company}/party/create/`"
         label="New party"
         class="add-btn"
         icon-right="add"

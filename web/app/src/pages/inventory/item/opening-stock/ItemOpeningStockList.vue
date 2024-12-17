@@ -37,7 +37,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('AccountOpeningBalanceCreate')" class="row">
-      <q-btn color="green" :to="`/${$route.params.company}/items/opening/add`" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
+      <q-btn color="green" :to="`/${$route.params.company}/items/opening/create/`" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
     </div>
     <q-table
       v-model:pagination="pagination"

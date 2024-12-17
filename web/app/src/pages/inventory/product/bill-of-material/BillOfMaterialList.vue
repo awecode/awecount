@@ -34,7 +34,7 @@ const {
       <q-btn
         color="green"
         class="add-btn"
-        :to="`/${$route.params.company}/items/bill-of-material/add`"
+        :to="`/${$route.params.company}/items/bill-of-material/create/`"
         label="Add Bill of Material"
         icon-right="add"
       />

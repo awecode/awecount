@@ -47,7 +47,7 @@ export default {
       <q-btn
         v-if="checkPermissions('AccountOpeningBalanceCreate')"
         color="green"
-        :to="`/${$route.params.company}/account-opening-balance/add/`"
+        :to="`/${$route.params.company}/account-opening-balance/create/`"
         label="New Opening Balance"
         class="add-btn"
         icon-right="add"

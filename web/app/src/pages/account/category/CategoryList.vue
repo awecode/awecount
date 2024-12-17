@@ -43,7 +43,7 @@ const {
       <q-btn
         v-if="checkPermissions('CategoryCreate')"
         color="green"
-        :to="`/${$route.params.company}/account-category/add/`"
+        :to="`/${$route.params.company}/account-category/create/`"
         label="New Category"
         class="add-btn"
         icon-right="add"

@@ -3,7 +3,7 @@ import checkPermissions from 'src/composables/checkPermissions'
 import useGeneratePosPdf from 'src/composables/pdf/useGeneratePosPdf'
 import useForm from 'src/composables/useForm'
 import { discount_types, modes } from 'src/helpers/constants/invoice'
-import { useLoginStore } from 'src/stores/login-info.js'
+import { useLoginStore } from 'src/stores/login-info'
 
 const metaData = {
   title: 'POS | Awecount',

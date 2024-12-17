@@ -71,7 +71,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('PaymentReceiptCreate')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" :to="`/${$route.params.company}/payment-receipt/add/`" label="New Receipt" icon-right="add" class="add-btn" />
+      <q-btn color="green" :to="`/${$route.params.company}/payment-receipt/create/`" label="New Receipt" icon-right="add" class="add-btn" />
     </div>
     <q-table
       v-model:pagination="pagination"

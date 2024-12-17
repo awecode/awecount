@@ -38,7 +38,7 @@ export default {
         color="green"
         label="New Dashboard widget"
         icon-right="add"
-        :to="`/${$route.params.company}/dashboard-widgets/add/`"
+        :to="`/${$route.params.company}/dashboard-widgets/create/`"
         class="add-btn"
       />
     </div>

@@ -77,7 +77,7 @@ export default {
       <q-btn
         v-if="checkPermissions('ChequeIssueCreate')"
         color="green"
-        :to="`/${$route.params.company}/cheque-issue/add/`"
+        :to="`/${$route.params.company}/cheque-issue/create/`"
         label="New Cheque Issue"
         class="add-btn"
         icon-right="add"

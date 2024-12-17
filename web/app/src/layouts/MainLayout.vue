@@ -568,7 +568,7 @@ watch(route, () => {
                 <q-item-section>Invite colleague or accountant</q-item-section>
               </q-item>
 
-              <q-item v-close-popup clickable @click="router.push('/company/add')">
+              <q-item v-close-popup clickable @click="router.push('/company/create/')">
                 <q-item-section avatar>
                   <q-icon name="add" />
                 </q-item-section>

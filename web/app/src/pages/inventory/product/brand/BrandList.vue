@@ -22,7 +22,7 @@ export default {
       <q-btn
         v-if="checkPermissions('BrandCreate')"
         color="green"
-        :to="`/${$route.params.company}/brand/add/`"
+        :to="`/${$route.params.company}/brand/create/`"
         label="New brand"
         class="q-ml-lg add-btn"
         icon-right="add"

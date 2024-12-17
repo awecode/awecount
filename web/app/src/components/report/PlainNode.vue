@@ -1,7 +1,29 @@
+<script lang="ts">
+export default {
+  props: {
+    data: {
+      type: Object,
+      default: () => {
+        return {}
+      },
+    },
+    root: {
+      type: Boolean,
+      default: () => {
+        return false
+      },
+    },
+  },
+  setup() {
+    return {}
+  },
+}
+</script>
+
 <template>
   <div style="line-height: 0.5rem">
     <router-link
-      :to="'/account/?has_balance=true&category=' + data.id"
+      :to="`/${$route.params.company}/account/?has_balance=true&category=${data.id}`"
       target="_blank"
       style="text-decoration: none"
       class="text-blue"
@@ -22,26 +44,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts">
-export default {
-  props: {
-    data: {
-      type: Object,
-      default: () => {
-        return {}
-      },
-    },
-    root: {
-      type: Boolean,
-      default: () => {
-        return false
-      },
-    },
-  },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props) {
-    return
-  },
-}
-</script>

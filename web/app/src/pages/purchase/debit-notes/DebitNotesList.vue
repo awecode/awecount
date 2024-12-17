@@ -51,7 +51,7 @@ export default {
       <q-btn
         v-if="checkPermissions('DebitNoteCreate')"
         color="green"
-        :to="`/${$route.params.company}/debit-note/add/`"
+        :to="`/${$route.params.company}/debit-note/create/`"
         label="New Debit Note"
         icon-right="add"
         class="add-btn"

@@ -29,7 +29,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PaymentModeCreate')"
         color="green"
-        :to="`/${$route.params.company}/settings/payment-mode/add/`"
+        :to="`/${$route.params.company}/settings/payment-mode/create/`"
         label="New Payment Mode"
         icon-right="add"
         class="add-btn"

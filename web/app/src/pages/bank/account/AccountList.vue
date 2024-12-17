@@ -47,7 +47,7 @@ export default {
       <q-btn
         v-if="checkPermissions('BankAccountCreate')"
         color="green"
-        :to="`/${$route.params.company}/bank-accounts/add/`"
+        :to="`/${$route.params.company}/bank-accounts/create/`"
         label="New Account"
         class="q-ml-lg add-btn"
         icon-right="add"

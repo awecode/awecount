@@ -38,7 +38,7 @@ export default {
 <template>
   <div class="q-pa-md">
     <div v-if="checkPermissions('ChallanCreate')" class="row q-gutter-x-md justify-end">
-      <q-btn color="green" :to="`/${$route.params.company}/challan/add/`" label="New Challan" icon-right="add" class="add-btn" />
+      <q-btn color="green" :to="`/${$route.params.company}/challan/create/`" label="New Challan" icon-right="add" class="add-btn" />
     </div>
     <q-table
       v-model:pagination="pagination"

@@ -61,7 +61,7 @@ export default {
       <q-btn
         v-if="checkPermissions('TaxSchemeCreate')"
         color="green"
-        :to="`/${$route.params.company}/taxes/add/`"
+        :to="`/${$route.params.company}/taxes/create/`"
         label="New Tax Scheme"
         class="add-btn"
         icon-right="add"

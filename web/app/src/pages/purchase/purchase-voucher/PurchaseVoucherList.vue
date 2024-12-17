@@ -65,7 +65,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PurchaseVoucherCreate')"
         color="green"
-        :to="`/${$route.params.company}/purchase-voucher/add/`"
+        :to="`/${$route.params.company}/purchase-voucher/create/`"
         label="New Purchase"
         icon-right="add"
         class="add-btn"

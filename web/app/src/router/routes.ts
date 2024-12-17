@@ -450,8 +450,8 @@ const companyRoutes: RouteRecordRaw[] = [
         component: () => import('pages/settings/widgets/WidgetList.vue'),
       },
       {
-        path: 'dashboard-widgets/add',
-        name: 'company-settings-dashboard-widgets-add',
+        path: 'dashboard-widgets/create/',
+        name: 'company-settings-dashboard-widgets-create',
         component: () => import('pages/settings/widgets/WidgetForm.vue'),
       },
       {

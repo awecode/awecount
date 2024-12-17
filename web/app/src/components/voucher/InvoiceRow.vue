@@ -1,6 +1,6 @@
 <script>
 import checkPermissions from 'src/composables/checkPermissions'
-import ItemAdd from 'src/pages/inventory/item/ItemAdd.vue'
+import ItemForm from 'src/pages/inventory/item/ItemForm.vue'
 
 export default {
   props: {
@@ -207,7 +207,7 @@ export default {
       // if (props.usedIn === 'journal') return 'journal-entries'
     })
     return {
-      ItemAdd,
+      ItemForm,
       expandedState,
       modalValue,
       amountComputed,
@@ -238,7 +238,7 @@ export default {
             :modal-component="usedInPos || hasChallan
               ? false
               : checkPermissions('InventoryAccountCreate')
-                ? ItemAdd
+                ? ItemForm
                 : null
             "
             :disabled="usedInPos || hasChallan"

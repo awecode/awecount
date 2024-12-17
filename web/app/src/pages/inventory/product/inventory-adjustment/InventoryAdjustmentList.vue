@@ -67,7 +67,7 @@ const newColumn = [
       <q-btn
         color="green"
         class="add-btn"
-        :to="`/${$route.params.company}/items/inventory-adjustment/add`"
+        :to="`/${$route.params.company}/items/inventory-adjustment/create/`"
         label="Add Inventory Adjustment Voucher"
         icon-right="add"
       />

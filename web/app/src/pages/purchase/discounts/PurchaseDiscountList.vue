@@ -50,7 +50,7 @@ export default {
       <q-btn
         v-if="checkPermissions('PurchaseDiscountCreate')"
         color="green"
-        :to="`/${$route.params.company}/purchase-discount/add/`"
+        :to="`/${$route.params.company}/purchase-discount/create/`"
         label="New Purchase Discount"
         icon-right="add"
         class="add-btn"

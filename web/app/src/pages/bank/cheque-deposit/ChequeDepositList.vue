@@ -51,7 +51,7 @@ export default {
       <q-btn
         v-if="checkPermissions('ChequeDepositCreate')"
         color="green"
-        :to="`/${$route.params.company}/cheque-deposit/add/`"
+        :to="`/${$route.params.company}/cheque-deposit/create/`"
         label="New Cheque Deposit"
         class="add-btn"
         icon-right="add"

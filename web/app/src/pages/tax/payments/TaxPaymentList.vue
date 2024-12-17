@@ -70,7 +70,7 @@ export default {
       <q-btn
         v-if="checkPermissions('TaxPaymentCreate')"
         color="green"
-        :to="`/${$route.params.company}/tax-payment/add/`"
+        :to="`/${$route.params.company}/tax-payment/create/`"
         label="New Tax Payment"
         class="add-btn"
         icon-right="add"

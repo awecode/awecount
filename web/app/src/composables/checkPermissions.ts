@@ -1,9 +1,8 @@
-import { useLoginStore } from '/src/stores/login-info.js'
-const loginStore = useLoginStore()
+import { useAuthStore } from 'src/stores/auth'
 
 const checkPermissions = (permissions: string) => {
-  const permissionsArray = loginStore.userInfo?.roles
-  return permissionsArray?.some((item: string) => item === permissions)
+  const { hasPermission } = useAuthStore()
+  return hasPermission(permissions)
 }
 
 export default checkPermissions

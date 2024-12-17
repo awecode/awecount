@@ -43,7 +43,7 @@ const {
     </q-dialog>
     <div v-if="checkPermissions('ItemCreate')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
-      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/add/`" label="Add Item" icon-right="add" />
+      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/create/`" label="Add Item" icon-right="add" />
     </div>
     <q-table
       v-model:pagination="pagination"

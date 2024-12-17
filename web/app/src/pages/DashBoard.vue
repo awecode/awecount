@@ -23,7 +23,7 @@ fields.value = res
       <q-btn
         icon="add"
         label="Add widget"
-        :to="`/${$route.params.company}/settings/dashboard-widgets/add`"
+        :to="`/${$route.params.company}/settings/dashboard-widgets/create/`"
         style="font-size: 0.75rem"
       />
     </div>
