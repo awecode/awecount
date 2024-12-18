@@ -1105,15 +1105,17 @@ class ReconciliationViewSet(CRULViewSet):
         paginated_response = self.get_paginated_response(serializer.data)
         return Response(paginated_response.data)
     
-    @action(detail=True, url_path="account-and-dates-info")
-    def get_account_and_dates_info(self, request, pk):
+    @action(detail=True, url_path="statement-info")
+    def get_statement_info(self, request, pk):
         instance = self.get_object()
         data = {
             'account': AccountMinSerializer(instance.account).data,
             'date': {
-                'start_date': instance.start_date,
-                'end_date': instance.end_date
-            }
+                'start': instance.start_date,
+                'end': instance.end_date
+            },
+            'total_reconciled': instance.entries.filter(status='Reconciled').count(),
+            'total_unreconciled': instance.entries.filter(status='Unreconciled').count(),
         }
         return Response(data)
     
