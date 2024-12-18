@@ -2,7 +2,7 @@
 const route = useRoute()
 const accountDateInfo = ref(null)
 
-useApi(`v1/bank-reconciliation/${route.params.id}/account-and-dates-info`).then((response) => {
+useApi(`v1/bank-reconciliation/${route.params.id}/account-and-dates-info/`).then((response) => {
   accountDateInfo.value = response
 })
 

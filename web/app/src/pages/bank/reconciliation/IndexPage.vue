@@ -39,7 +39,8 @@
       </template>
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn v-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View" :to="`/bank-reconciliation/${props.row.id}/`" />
+          <q-btn v-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
+            :to="`/bank-reconciliation/${props.row.id}/`" />
           <q-btn v-if="checkPermissions('ReconciliationStatementView') && props.row.reconciled_entries < props.row.total_entries" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px" label="Reconcile" :to="`/bank-reconciliation/reconcile/?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`" />
           <q-btn v-else-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Reconciled"
@@ -50,7 +51,7 @@
         <q-td :props="props">
           <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{
             props.row.category.name
-            }}</router-link>
+          }}</router-link>
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
       </template>
@@ -63,6 +64,10 @@
           <span v-else>{{ props.row.account.name }}</span>
         </q-td>
       </template>
+      <!-- no-data -->
+      <template v-slot:no-data>
+        <div class="text-h7 text-center">No data available</div>
+      </template>
     </q-table>
   </div>
 
@@ -74,7 +79,7 @@
       </div>
       <q-form @submit="submitStatement">
 
-        <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" endpoint="v1/bank-reconciliation/create-defaults" label="Bank Accounts" />
+        <n-auto-complete v-model="statementAccount" optionValue="ledger_id" :options="bankAccounts" label="Bank Accounts" />
         <!-- date formats -->
         <q-select v-model="selectedDateFormat" :options="dateFormats" label="Date Format as in the statement" :error="false" />
         <q-file v-if="selectedDateFormat" bottom-slots v-model="statementSheet" label="Statement Document" counter max-files="1" accept=".xlsx, .xls" class="q-mb-md"
@@ -207,8 +212,14 @@ const submitStatement = async () => {
       start_date: statementStartDate.value,
       end_date: statementEndDate.value,
     }
-  }).then((response) => {
-    console.log(response)
+  }).then(() => {
+    $q.notify({
+      color: 'green-6',
+      message: 'Statement uploaded, please wait while we process the data',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+    statementPrompt.value = false
   }).catch((error) => {
     $q.notify({
       color: 'red-6',
