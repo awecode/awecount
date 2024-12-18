@@ -27,6 +27,12 @@ interface StatementTransactionData {
   transaction_ids: number[]
 }
 
+interface GroupedTransaction {
+  statementTransactions: StatementTransactionData[]
+  systemTransactions: SystemTransactionData[]
+}
+
+
 const props = defineProps({
   systemTransactionData: {
     type: Array<SystemTransactionData>,
@@ -44,13 +50,17 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
+  startDate: {
+    type: String,
+    required: true,
+  },
+  endDate: {
+    type: String,
+    required: true,
+  },
 })
 
-interface GroupedTransaction {
-  statementTransactions: StatementTransactionData[]
-  systemTransactions: SystemTransactionData[]
-}
-
+const openSalesInvoiceModal = ref(false)
 const groupedTransactions: Ref<GroupedTransaction[]> = ref([])
 const unmatchedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
 const unmatchedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
@@ -542,6 +552,10 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
         <div class="bg-gray-100 p-4 pt-0 rounded-lg">
           <div class="flex space-x-3 w-fit ml-auto">
+            <button @click="openSalesInvoiceModal = true" v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length"
+              class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+              Find Sales Invoices
+            </button>
             <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
               Unselect All
             </button>
@@ -817,6 +831,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       </div>
     </div>
   </div>
+  <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
+    :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" />
 </template>
 
 
