@@ -1051,7 +1051,6 @@ class ReconciliationViewSet(CRULViewSet):
         reconciled_transaction_ids = ReconciliationEntries.objects.filter(
             statement__company=request.company,
             statement__account_id=account_id,
-            date__range=[start_date, end_date],
             status='Reconciled'
         ).values_list('transaction_ids', flat=True)
 
