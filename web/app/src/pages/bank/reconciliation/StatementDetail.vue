@@ -1,9 +1,24 @@
 <script setup lang="ts">
+import { Ref } from 'vue'
 const route = useRoute()
-const accountDateInfo = ref(null)
 
-useApi(`v1/bank-reconciliation/${route.params.id}/account-and-dates-info/`).then((response) => {
-  accountDateInfo.value = response
+interface StatementInfo {
+  account: {
+    name: string
+  },
+  date: {
+    start: string,
+    end: string
+  },
+  total_reconciled: number,
+  total_unreconciled: number
+}
+
+
+const statementInfo: Ref<StatementInfo | null> = ref(null)
+
+useApi(`v1/bank-reconciliation/${route.params.id}/statement-info/`).then((response) => {
+  statementInfo.value = response
 })
 
 const endpoint = `v1/bank-reconciliation/${route.params.id}/`
@@ -64,14 +79,45 @@ const columns = [
 <template>
   <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
     <!-- Account Header -->
-    <div class="bg-blue-50 px-6 py-2 border-b border-blue-100">
-      <div class="flex items-center">
-        <h2 class="text-lg font-bold text-blue-800">
-          <span>
-            {{ accountDateInfo?.account?.name }} </span>
-        </h2>
+    <div class="bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg border border-blue-200 rounded-lg">
+      <div class="mx-auto px-6 py-5">
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-5 md:space-y-0">
+          <!-- Account Name Section -->
+          <div class="text-center md:text-left">
+            <h2 class="text-2xl font-bold text-blue-800 tracking-tight mt-0 mb-2">
+              {{ statementInfo?.account?.name || 'Account Statement' }}
+            </h2>
+            <!-- Date Range -->
+            <div class="flex items-center justify-center md:justify-start text-gray-500 mt-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm">{{ statementInfo?.date.start }} - {{ statementInfo?.date.end }}</span>
+            </div>
+          </div>
+
+          <!-- Summary Info -->
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+            <!-- Reconciled -->
+            <div class="flex flex-col items-center text-center md:items-start md:text-left">
+              <span class="text-sm font-medium text-gray-600">Reconciled</span>
+              <span class="text-lg font-semibold text-blue-700">
+                {{ statementInfo?.total_reconciled }}
+              </span>
+            </div>
+            <!-- Unreconciled -->
+            <div class="flex flex-col items-center text-center md:items-start md:text-left">
+              <span class="text-sm font-medium text-gray-600">Unreconciled</span>
+              <span class="text-lg font-semibold text-red-600">
+                {{ statementInfo?.total_unreconciled }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+
     <div class="q-pa-md">
       <q-table :rows="rows" :columns="columns" :loading="loading" :filter="searchQuery" v-model:pagination="pagination" row-key="id" @request="onRequest" class="q-mt-md" :rows-per-page-options="[20]">
         <template v-slot:top>
