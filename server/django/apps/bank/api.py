@@ -2,10 +2,12 @@ from datetime import date, datetime, timedelta
 from itertools import chain, combinations
 
 from django.conf import settings
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Case, Q, When
 from django.forms import ValidationError
 from django_filters import rest_framework as filters
+from django_q.tasks import async_task
 from rest_framework import filters as rf_filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -48,10 +50,10 @@ from apps.bank.serializers import (
 from apps.ledger.models import Account, Party
 from apps.ledger.models.base import Transaction
 from apps.ledger.serializers import (
+    AccountMinSerializer,
     JournalEntriesSerializer,
     PartyMinSerializer,
     TransactionMinSerializer,
-    AccountMinSerializer
 )
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
@@ -352,95 +354,12 @@ class CashDepositViewSet(CRULViewSet):
         return Response({})
 
 
-class ReconciliationViewSet(CRULViewSet):
-    queryset = ReconciliationStatement.objects.all().prefetch_related("entries").order_by("-end_date")
-    serializer_class = ReconciliationStatementSerializer
-    model = ReconciliationStatement
-    
-    def get_serializer_class(self):
-        if self.action == "list":
-            return ReconciliationStatementListSerializer
-        return self.serializer_class
-    
-    def filter_queryset(self, queryset):
-        if self.action == 'retrieve':
-            return queryset
-        return super().filter_queryset(queryset)
-
-    filter_backends = [
-        filters.DjangoFilterBackend,
-        rf_filters.OrderingFilter,
-        rf_filters.SearchFilter,
-    ]
-
-    filterset_fields = [
-        'account_id',
-    ]
-
-    search_fields = [
-        'account__name',
-        'start_date',
-        'end_date',
-    ]
-    
-    def filter_entries(self, entries, params):
-        """
-        Apply filtering logic to the entries queryset based on request parameters.
-        """
-        start_date = params.get('start_date')
-        end_date = params.get('end_date')
-        status = params.get('status')
-        search = params.get('search')
-        
-        filters = Q()
-
-        # Filter by status
-        if status:
-                filters &= Q(status=status)
-
-        # Search by description, amount, or date
-        if search:
-            filters &= (
-                Q(description__icontains=search) |
-                Q(dr_amount__icontains=search) |
-                Q(cr_amount__icontains=search) |
-                Q(date__icontains=search)
-            )
-
-        # Filter by date range
-        if start_date or end_date:
-            if not (start_date and end_date):
-                raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
-            filters &= Q(date__range=[start_date, end_date])
-            
-        entries = entries.filter(filters)
-        return entries
-    
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        entries = self.filter_entries(instance.entries.all(), request.query_params)
-        # allow search from description or 
-        page = self.paginate_queryset(entries)
-        serializer = ReconciliationEntriesSerializer(page, many=True)
-        paginated_response = self.get_paginated_response(serializer.data)
-        return Response(paginated_response.data)
-    
-    @action(detail=True, url_path="account-and-dates-info")
-    def get_account_and_dates_info(self, request, pk):
-        instance = self.get_object()
-        data = {
-            'account': AccountMinSerializer(instance.account).data,
-            'date': {
-                'start_date': instance.start_date,
-                'end_date': instance.end_date
-            }
-        }
-        return Response(data)
-    
-
-    def reconcile(self, company, statement_transactions, start_date, end_date, account_id):
+def reconcile(company_id, statement_transactions, start_date, end_date, account_id, email):
+    try:
+        start_date = start_date - timedelta(days=settings.BANK_RECONCILIATION_STATEMENT_LOOKBACK_DAYS)
+        end_date = end_date + timedelta(days=settings.BANK_RECONCILIATION_STATEMENT_LOOKAHEAD_DAYS)
         system_transactions = Transaction.objects.filter(
-        company=company, journal_entry__date__range=[start_date, end_date], account_id=account_id
+        company_id=company_id, journal_entry__date__range=[start_date, end_date], account_id=account_id
         ).order_by("journal_entry__date").select_related("journal_entry")
         
         # get system_transactions sql query
@@ -930,7 +849,7 @@ class ReconciliationViewSet(CRULViewSet):
         
         # add to bank reconciliation
         bank_reconciliation_statement = ReconciliationStatement.objects.create(
-            company=company,
+            company_id=company_id,
             account_id=account_id,
             start_date=start_date,
             end_date=end_date,
@@ -963,20 +882,103 @@ class ReconciliationViewSet(CRULViewSet):
 
         # Perform bulk_create once
         ReconciliationEntries.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
-                            
-        return {
-            'reconciled_transactions': reconciled_transactions,
-            'unreconciled_statement_transactions': unreconciled_statement_transactions,
-            'unreconciled_system_transactions': [
-                {
-                    'id': t.pk,
-                    'date': t.journal_entry.date.strftime('%Y-%m-%d'),
-                    'dr_amount': t.dr_amount,
-                    'cr_amount': t.cr_amount,
-                }
-                for t in unreconciled_system_transactions
-            ],
+        
+        # email the user
+        header = "Bank Reconciliation Statement Import Completed"
+        message = "Bank Reconciliation Statement Import Completed, with" + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
+        send_mail(header, message, settings.DEFAULT_FROM_EMAIL, [email])
+        return
+    except Exception as e:
+        header = "Bank Reconciliation Statement Import Failed"
+        message = "Something went wrong, please contact support"
+        send_mail(header, message, settings.DEFAULT_FROM_EMAIL, [email])
+        return e
+
+class ReconciliationViewSet(CRULViewSet):
+    queryset = ReconciliationStatement.objects.all().prefetch_related("entries").order_by("-end_date")
+    serializer_class = ReconciliationStatementSerializer
+    model = ReconciliationStatement
+    
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ReconciliationStatementListSerializer
+        return self.serializer_class
+    
+    def filter_queryset(self, queryset):
+        if self.action == 'retrieve':
+            return queryset
+        return super().filter_queryset(queryset)
+
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        rf_filters.OrderingFilter,
+        rf_filters.SearchFilter,
+    ]
+
+    filterset_fields = [
+        'account_id',
+    ]
+
+    search_fields = [
+        'account__name',
+        'start_date',
+        'end_date',
+    ]
+    
+    def filter_entries(self, entries, params):
+        """
+        Apply filtering logic to the entries queryset based on request parameters.
+        """
+        start_date = params.get('start_date')
+        end_date = params.get('end_date')
+        status = params.get('status')
+        search = params.get('search')
+        
+        filters = Q()
+
+        # Filter by status
+        if status:
+                filters &= Q(status=status)
+
+        # Search by description, amount, or date
+        if search:
+            filters &= (
+                Q(description__icontains=search) |
+                Q(dr_amount__icontains=search) |
+                Q(cr_amount__icontains=search) |
+                Q(date__icontains=search)
+            )
+
+        # Filter by date range
+        if start_date or end_date:
+            if not (start_date and end_date):
+                raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
+            filters &= Q(date__range=[start_date, end_date])
+            
+        entries = entries.filter(filters)
+        return entries
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        entries = self.filter_entries(instance.entries.all(), request.query_params)
+        # allow search from description or 
+        page = self.paginate_queryset(entries)
+        serializer = ReconciliationEntriesSerializer(page, many=True)
+        paginated_response = self.get_paginated_response(serializer.data)
+        return Response(paginated_response.data)
+    
+    @action(detail=True, url_path="account-and-dates-info")
+    def get_account_and_dates_info(self, request, pk):
+        instance = self.get_object()
+        data = {
+            'account': AccountMinSerializer(instance.account).data,
+            'date': {
+                'start_date': instance.start_date,
+                'end_date': instance.end_date
+            }
         }
+        return Response(data)
+    
                         
 
     @action(detail=False, url_path="banks")
@@ -1030,10 +1032,17 @@ class ReconciliationViewSet(CRULViewSet):
             transaction for transaction in transactions
             if start_date <= datetime.strptime(transaction['date'], '%Y-%m-%d').date() <= end_date
         ]
+        async_task(
+            reconcile,
+            request.company_id,
+            transactions,
+            start_date,
+            end_date,
+            account_id,
+            request.user.email,
+        )
         
-        # TODO: throw in background task
-        response = self.reconcile(request.company, transactions, start_date, end_date, account_id)
-        return Response(response)
+        return Response({})
     
     
     @action(detail=False, url_path="unreconciled-transactions")
