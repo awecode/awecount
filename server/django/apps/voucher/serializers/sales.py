@@ -585,6 +585,22 @@ class SalesVoucherChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesVoucher
         fields = ("id", "voucher_no", "date", "status", "customer_name", "total_amount")
+        
+        
+class SalesVoucherMinListSerializer(serializers.ModelSerializer):
+    party_name = serializers.ReadOnlyField(source="party.name")
+    
+    class Meta:
+        model = SalesVoucher
+        fields = (
+            "id",
+            "voucher_no",
+            "party_name",
+            "date",
+            "customer_name",
+            "total_amount",
+            "remarks",
+        )
 
 
 class SalesVoucherListSerializer(serializers.ModelSerializer):

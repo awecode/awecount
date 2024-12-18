@@ -55,6 +55,8 @@ from apps.ledger.serializers import (
     PartyMinSerializer,
     TransactionMinSerializer,
 )
+from apps.voucher.models import SalesVoucher
+from apps.voucher.serializers.sales import SalesVoucherMinListSerializer
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -1280,5 +1282,30 @@ class ReconciliationViewSet(CRULViewSet):
                 obj.status = 'Reconciled'
                 obj.apply_transactions(latest_date)
         return Response({})
+    
+    @action(detail=False, url_path="sales-vouchers")
+    def find_sales_vouchers(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if not start_date or not end_date:
+            raise APIException("start_date and end_date are required")
+        search = request.query_params.get('search')
+        filters = Q(date__range=[start_date, end_date]) | Q(due_date__range=[start_date, end_date])
+        if search:
+            filters &= (
+                Q(total_amount__icontains=search) |
+                Q(customer_name__icontains=search) |
+                Q(party__name__icontains=search) |
+                Q(party__tax_registration_number__icontains=search) |
+                Q(voucher_no__icontains=search) |
+                Q(remarks__icontains=search) 
+            )
+        
+        sales_vouchers = SalesVoucher.objects.filter(
+            company=request.company,
+            mode='Credit',
+            status='Issued'
+        ).filter(filters).order_by("date")
+        return Response(SalesVoucherMinListSerializer(sales_vouchers, many=True).data)
         
 
