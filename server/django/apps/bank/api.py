@@ -885,7 +885,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
         
         # email the user
         header = "Bank Reconciliation Statement Import Completed"
-        message = "Bank Reconciliation Statement Import Completed, with" + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
+        message = "Bank Reconciliation Statement Import Completed, with " + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
         send_mail(header, message, settings.DEFAULT_FROM_EMAIL, [email])
         return
     except Exception as e:
