@@ -275,6 +275,7 @@ export const useAuthStore = defineStore('auth', () => {
     return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
   }
 
+  // TODO: move this to a separate store/composable
   const switchCompany = async (companySlug: string) => {
     const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
     await _fetchPermissions(companySlug)
