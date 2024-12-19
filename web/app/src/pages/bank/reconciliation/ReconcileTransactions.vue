@@ -12,12 +12,13 @@
         <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
       </div>
     </div>
-    <BankReconciliationTable v-if="systemTransactionData.length || statementTransactionData.length" :systemTransactionData="systemTransactionData" :statementTransactionData="statementTransactionData"
-      :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountId="selectedAccount" />
+    <BankReconciliationTable v-if="fetchedAccountId" :acceptableDifference="acceptableDifference"
+      :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountId="fetchedAccountId" />
   </q-page>
 </template>
 
 <script setup lang="ts">
+import { Ref } from 'vue'
 const route = useRoute()
 const router = useRouter()
 
@@ -29,7 +30,7 @@ const systemTransactionData = ref([])
 const statementTransactionData = ref([])
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
-
+const fetchedAccountId: Ref<number | null> = ref(null)
 const endpoint = 'v1/bank-reconciliation/banks/'
 const isLoading = ref(false)
 
@@ -42,7 +43,7 @@ const fetchTransactions = async () => {
   if (!selectedAccount.value || !startDate.value || !endDate.value) {
     return
   }
-  isLoading.value = true
+  // isLoading.value = true
   router.push({
     query: {
       account_id: selectedAccount.value,
@@ -52,19 +53,7 @@ const fetchTransactions = async () => {
   })
   systemTransactionData.value = []
   statementTransactionData.value = []
-
-  useApi('v1/bank-reconciliation/unreconciled-transactions/?start_date=' + startDate.value + '&end_date=' + endDate.value + '&account_id=' + selectedAccount.value).then((response) => {
-    systemTransactionData.value = response.system_transactions
-    statementTransactionData.value = response.statement_transactions
-    acceptableDifference.value = response.acceptable_difference
-    adjustmentThreshold.value = response.adjustment_threshold
-  }).catch((error) => {
-    console.log(error)
-    systemTransactionData.value = []
-    statementTransactionData.value = []
-  }).finally(() => {
-    isLoading.value = false
-  })
+  fetchedAccountId.value = selectedAccount.value
 }
 
 if (selectedAccount.value && startDate.value && endDate.value) {

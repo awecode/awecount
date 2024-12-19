@@ -29,6 +29,18 @@ const props = defineProps({
   accountId: {
     type: Number,
     required: true
+  },
+  filterSources: {
+    type: Function,
+    required: true
+  },
+  calculateTotal: {
+    type: Function,
+    required: true
+  },
+  calculateTotalFromCounterparts: {
+    type: Function,
+    required: true
   }
 })
 
@@ -193,12 +205,12 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                 <div class="px-4 py-2 border-b bg-green-50 text-green-700 font-semibold">
                   System
                   <!-- Add links -->
-                  <!-- <span v-for="source, index in filterSources(data.system_transactions)" :key="source.source_id">
+                  <span v-for="source, index in filterSources(data.system_transactions)" :key="source.source_id">
                     <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
                       {{ source.source_type }}
                     </router-link>
                     <span v-if="index < filterSources(data.system_transactions).length - 1">, </span>
-                  </span> -->
+                  </span>
 
                 </div>
                 <div class="divide-y text-sm">
@@ -226,8 +238,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
                 </div>
               </div>
               <div class="px-4 py-2 text-right">
-                <!-- <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotalFromCounterparts(data.system_transactions) -->
-                <!-- }}</span> -->
+                <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotalFromCounterparts(data.system_transactions)
+                  }}</span>
               </div>
             </div>
           </div>

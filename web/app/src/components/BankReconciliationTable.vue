@@ -2,6 +2,29 @@
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 
+const props = defineProps({
+  acceptableDifference: {
+    type: Number,
+    default: 0.01,
+  },
+  adjustmentThreshold: {
+    type: Number,
+    default: 1,
+  },
+  startDate: {
+    type: String,
+    required: true,
+  },
+  endDate: {
+    type: String,
+    required: true,
+  },
+  accountId: {
+    type: Number,
+    required: true,
+  }
+})
+
 interface SystemTransactionData {
   id: number
   date: string
@@ -33,255 +56,117 @@ interface GroupedTransaction {
 }
 
 
-const props = defineProps({
-  systemTransactionData: {
-    type: Array<SystemTransactionData>,
-    required: true,
-  },
-  statementTransactionData: {
-    type: Array<StatementTransactionData>,
-    required: true,
-  },
-  acceptableDifference: {
-    type: Number,
-    default: 0.01,
-  },
-  adjustmentThreshold: {
-    type: Number,
-    default: 1,
-  },
-  startDate: {
-    type: String,
-    required: true,
-  },
-  endDate: {
-    type: String,
-    required: true,
-  },
-  accountId: {
-    type: Number,
-    required: true,
+// const unmatchedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
+// const unmatchedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
+
+type StatementResponse = {
+  results: StatementTransactionData[]
+  pagination: {
+    page: number
+    pages: number
+    count: number
+  }
+}
+
+type SystemResponse = {
+  results: SystemTransactionData[]
+  pagination: {
+    page: number
+    pages: number
+    count: number
+  }
+}
+
+const statementResponse: Ref<StatementResponse> = ref({
+  results: [],
+  pagination: {
+    page: 1,
+    pages: 1,
+    count: 0,
+  }
+
+
+})
+const systemResponse: Ref<SystemResponse> = ref({
+  results: [],
+  pagination: {
+    page: 1,
+    pages: 1,
+    count: 0,
   }
 })
 
-const openSalesInvoiceModal = ref(false)
-const groupedTransactions: Ref<GroupedTransaction[]> = ref([])
-const unmatchedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
-const unmatchedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
+const statementSearchBy = ref('')
+const systemSearchBy = ref('')
+const statementOrderBy = ref('date')
+const systemOrderBy = ref('date')
+const statementSortDirection = ref('asc')
+const systemSortDirection = ref('asc')
+const statementPage = ref(1)
+const systemPage = ref(1)
 
-// Create comprehensive maps to track matches
-const systemToStatementsMap = new Map()
-const statementToSystemsMap = new Map()
-
-// Comprehensive matching function
-const findMatchingTransactions = () => {
-  // Reset maps
-  systemToStatementsMap.clear()
-  statementToSystemsMap.clear()
-
-  // First pass: Find all possible matches
-  props.statementTransactionData.forEach(statementTransaction => {
-    const matchedSystemTransactions = props.systemTransactionData.filter(
-      systemTransaction =>
-        statementTransaction.transaction_ids.includes(systemTransaction.id)
-    )
-
-    if (matchedSystemTransactions.length > 0) {
-      // Map statementTransaction to matched systemTransactions
-      statementToSystemsMap.set(statementTransaction, matchedSystemTransactions)
-
-      // Map each systemTransaction to the current statementTransaction
-      matchedSystemTransactions.forEach(systemTransaction => {
-        if (!systemToStatementsMap.has(systemTransaction)) {
-          systemToStatementsMap.set(systemTransaction, [])
-        }
-        systemToStatementsMap.get(systemTransaction).push(statementTransaction)
-      })
-    }
-  })
-
-  // Merge algorithm
-  const mergedGroups: GroupedTransaction[] = []
-  const processedStatements = new Set()
-  const processedSystems = new Set()
-
-  // Helper function to merge or create a new group
-  const mergeOrCreateGroup = (statementTransactions: StatementTransactionData[], systemTransactions: SystemTransactionData[]) => {
-    // Check if there's an existing group with any of these transactions
-    for (let group of mergedGroups) {
-      const hasCommonStatement = statementTransactions.some(st =>
-        group.statementTransactions.some(gst => gst.id === st.id)
-      )
-      const hasCommonSystem = systemTransactions.some(sys =>
-        group.systemTransactions.some(gsys => gsys.id === sys.id)
-      )
-
-      if (hasCommonStatement || hasCommonSystem) {
-        // Merge transactions
-        statementTransactions.forEach(st => {
-          if (!group.statementTransactions.some(gst => gst.id === st.id)) {
-            group.statementTransactions.push(st)
-          }
-        })
-        systemTransactions.forEach(sys => {
-          if (!group.systemTransactions.some(gsys => gsys.id === sys.id)) {
-            group.systemTransactions.push(sys)
-          }
-        })
-        return true
-      }
-    }
-
-    // If no existing group, create a new one
-    mergedGroups.push({
-      statementTransactions,
-      systemTransactions
-    })
-    return false
+const fetchUnmatchedBankTransactions = async () => {
+  console.log('Start_date:', props.startDate)
+  console.log('End_date:', props.endDate)
+  console.log('Account_id:', props.accountId)
+  if (!props.startDate || !props.endDate || !props.accountId) {
+    return
   }
+  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + statementSearchBy.value + '&order_by=' + statementOrderBy.value + '&sort_direction=' + statementSortDirection.value + '&page=' + statementPage.value).then((response) => {
 
-  // Process system to statement mappings
-  systemToStatementsMap.forEach((statementTransactions, systemTransaction) => {
-    if (!processedSystems.has(systemTransaction)) {
-      mergeOrCreateGroup(statementTransactions, [systemTransaction])
-      processedSystems.add(systemTransaction)
-      statementTransactions.forEach((st: Record<string, string>) => processedStatements.add(st))
+    if (response.pagination.page === 1) {
+      statementResponse.value = response
     }
-  })
-
-  // Process statement to system mappings
-  statementToSystemsMap.forEach((systemTransactions, statementTransaction) => {
-    if (!processedStatements.has(statementTransaction)) {
-      mergeOrCreateGroup([statementTransaction], systemTransactions)
-      processedStatements.add(statementTransaction)
-      systemTransactions.forEach((st: SystemTransactionData) => processedSystems.add(st))
+    else if (response.pagination.page === statementPage.value) {
+      statementResponse.value.results.push(...response.results)
     }
+    else {
+      statementResponse.value.results = [...statementResponse.value.results, ...response.results]
+    }
+  }).catch((error) => {
+    console.log(error)
+    statementResponse.value.results = []
+  }).catch((error) => {
+    console.log(error)
+    statementResponse.value.results = []
   })
-
-  // Collect unmatched transactions
-  unmatchedSystemTransactions.value = props.systemTransactionData.filter(
-    systemTransaction => !processedSystems.has(systemTransaction)
-  )
-
-  unmatchedStatementTransactions.value = props.statementTransactionData.filter(
-    statementTransaction => !processedStatements.has(statementTransaction)
-  )
-
-  return mergedGroups
 }
 
-// Generate grouped transactions
-groupedTransactions.value = findMatchingTransactions()
+fetchUnmatchedBankTransactions()
 
-const statementSearchBy = ref('Any')
-const systemSearchBy = ref('Any')
+const fetchUnmatchedSystemTransactions = async () => {
+  if (!props.startDate || !props.endDate || !props.accountId) {
+    return
+  }
+  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + systemSearchBy.value + '&order_by=' + systemOrderBy.value + '&sort_direction=' + systemSortDirection.value + '&page=' + systemPage.value).then((response) => {
+    // systemResponse.value.results = []
+    if (response.pagination.page === 1) {
+      systemResponse.value = response
+    }
+    else if (response.pagination.page === systemPage.value) {
+      systemResponse.value.results.push(...response.results)
+    }
+    else {
+      systemResponse.value.results = [...systemResponse.value.results, ...response.results]
+    }
+  }).catch((error) => {
+    console.log(error)
+    systemResponse.value.results = []
+  }).catch((error) => {
+    console.log(error)
+    systemResponse.value.results = []
+  })
+}
+
+fetchUnmatchedSystemTransactions()
+
+
+const openSalesInvoiceModal = ref(false)
+
+
 const searchByOptionsForStatament = ['Any', 'Date', 'Amount', 'Description']
 const searchByOptionsForSystem = ['Any', 'Date', 'Amount', 'Account']
 
-
-const filteredUnmatchedSystemTransactions = ref(unmatchedSystemTransactions.value)
-const filteredUnmatchedStatementTransactions = ref(unmatchedStatementTransactions.value)
-const searchStatement = ref('')
-const searchSystem = ref('')
-
-const searchInUnmatchedSystemTransactions = (search: string | null) => {
-  if (!search) {
-    filteredUnmatchedSystemTransactions.value = unmatchedSystemTransactions.value
-    return
-  }
-  search = search.toLowerCase()
-
-  if (systemSearchBy.value === 'Any') {
-    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
-      systemTransaction =>
-        String(systemTransaction.dr_amount).toLowerCase().includes(search) ||
-        String(systemTransaction.cr_amount).toLowerCase().includes(search) ||
-        String(systemTransaction.date).toLowerCase().includes(search) ||
-        systemTransaction.counterpart_accounts.some(
-          counterpart =>
-            counterpart.account_name.toLowerCase().includes(search) ||
-            String(counterpart.dr_amount).toLowerCase().includes(search) ||
-            String(counterpart.cr_amount).toLowerCase().includes(search)
-        )
-    )
-    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
-    return
-  }
-  else if (systemSearchBy.value === 'Date') {
-    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
-      systemTransaction =>
-        String(systemTransaction.date).toLowerCase().includes(search)
-    )
-    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
-    return
-  }
-  else if (systemSearchBy.value === 'Amount') {
-    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
-      systemTransaction =>
-        String(systemTransaction.dr_amount).toLowerCase().includes(search) ||
-        String(systemTransaction.cr_amount).toLowerCase().includes(search)
-    )
-    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
-    return
-  }
-  else if (systemSearchBy.value === 'Account') {
-    const matchedSystemTransactions = unmatchedSystemTransactions.value.filter(
-      systemTransaction =>
-        systemTransaction.counterpart_accounts.some(
-          counterpart =>
-            counterpart.account_name.toLowerCase().includes(search)
-        )
-    )
-    filteredUnmatchedSystemTransactions.value = matchedSystemTransactions
-    return
-  }
-
-
-}
-
-const searchInUnmatchedStatementTransactions = (search: string | null) => {
-  if (!search) {
-    filteredUnmatchedStatementTransactions.value = unmatchedStatementTransactions.value
-    return
-  }
-  search = search.toLowerCase()
-  if (statementSearchBy.value === 'Any') {
-    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
-      statementTransaction =>
-        String(statementTransaction.dr_amount).toLowerCase().includes(search) ||
-        String(statementTransaction.cr_amount).toLowerCase().includes(search) ||
-        String(statementTransaction.date).toLowerCase().includes(search) ||
-        String(statementTransaction.description).toLowerCase().includes(search)
-    )
-    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
-    return
-  }
-  else if (statementSearchBy.value === 'Date') {
-    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
-      statementTransaction =>
-        String(statementTransaction.date).toLowerCase().includes(search)
-    )
-    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
-    return
-  }
-  else if (statementSearchBy.value === 'Amount') {
-    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
-      statementTransaction =>
-        String(statementTransaction.dr_amount).toLowerCase().includes(search) ||
-        String(statementTransaction.cr_amount).toLowerCase().includes(search)
-    )
-    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
-    return
-  }
-  else if (statementSearchBy.value === 'Description') {
-    const matchedStatementTransactions = unmatchedStatementTransactions.value.filter(
-      statementTransaction =>
-        String(statementTransaction.description).toLowerCase().includes(search)
-    )
-    filteredUnmatchedStatementTransactions.value = matchedStatementTransactions
-    return
-  }
-}
 
 
 const calculateTotal = (transactions: SystemTransactionData[] | StatementTransactionData[], forStatement = false) => {
@@ -314,8 +199,6 @@ const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null
   }
   return (dr_amount - cr_amount).toFixed(2)
 }
-
-
 
 
 function getVoucherUrl(row: SystemTransactionData) {
@@ -402,11 +285,11 @@ const selectedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
 
 // Select all toggles
 const allStatementSelected = computed(() =>
-  selectedStatementTransactions.value.length === unmatchedStatementTransactions.value.length
+  selectedStatementTransactions.value.length === statementResponse.value.results.length
 )
 
 const allSystemSelected = computed(() =>
-  selectedSystemTransactions.value.length === unmatchedSystemTransactions.value.length
+  selectedSystemTransactions.value.length === systemResponse.value.results.length
 )
 
 // Toggle individual transactions
@@ -433,7 +316,7 @@ const toggleAllStatementTransactions = () => {
   if (allStatementSelected.value) {
     selectedStatementTransactions.value = []
   } else {
-    selectedStatementTransactions.value = [...unmatchedStatementTransactions.value]
+    selectedStatementTransactions.value = [...statementResponse.value.results]
   }
 }
 
@@ -441,7 +324,7 @@ const toggleAllSystemTransactions = () => {
   if (allSystemSelected.value) {
     selectedSystemTransactions.value = []
   } else {
-    selectedSystemTransactions.value = [...unmatchedSystemTransactions.value]
+    selectedSystemTransactions.value = [...systemResponse.value.results]
   }
 }
 
@@ -481,24 +364,35 @@ const reconcile = () => {
     }).then(() => {
       // remove from both unmatched lists
       selectedStatementTransactions.value.forEach(t => {
-        const index = unmatchedStatementTransactions.value.findIndex(ut => ut === t)
+        const index = statementResponse.value.results.findIndex(ut => ut === t)
         if (index > -1) {
-          unmatchedStatementTransactions.value.splice(index, 1)
+          statementResponse.value.results.splice(index, 1)
         }
       })
       selectedSystemTransactions.value.forEach(t => {
-        const index = unmatchedSystemTransactions.value.findIndex(ut => ut === t)
+        const index = systemResponse.value.results.findIndex(ut => ut === t)
         if (index > -1) {
-          unmatchedSystemTransactions.value.splice(index, 1)
+          systemResponse.value.results.splice(index, 1)
         }
       })
-      // remove from selected
       unselectAll()
     }).catch((error) => {
       console.log(error)
     })
   }
 
+}
+
+const loadMoreSystemTransactions = async (index: number, done: any) => {
+  systemPage.value++
+  await fetchUnmatchedSystemTransactions()
+  done()
+}
+
+const loadMoreStatementTransactions = async (index: number, done: any) => {
+  statementPage.value++
+  await fetchUnmatchedBankTransactions()
+  done()
 }
 
 
@@ -584,42 +478,43 @@ const reconcile = () => {
             <div class="flex gap-4">
               <!-- q-select -->
               <q-select v-model="statementSearchBy" :options="searchByOptionsForStatament" outlined dense label="Search By" class="w-28" />
-              <q-input v-model="searchStatement" :debounce="500" @update:model-value="(value) => searchInUnmatchedStatementTransactions(value as string)" outlined dense placeholder="Search..."
-                class="grow mb-2" />
+              <q-input v-model="statementSearchBy" :debounce="500" @update:model-value="fetchUnmatchedBankTransactions" outlined dense placeholder="Search..." class="grow mb-2" />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-blue-50 ">
                 <h3 class="text-lg my-0 font-semibold text-blue-600">
                   Unmatched Statement Transactions
-                  <span class="text-sm text-blue-500 ml-2">({{ filteredUnmatchedStatementTransactions.length }})</span>
+                  <span class="text-sm text-blue-500 ml-2">({{ statementResponse.results.length }})</span>
                 </h3>
                 <div class="flex items-center justify-between mt-2">
                   <div>
                     <input type="checkbox" class="px-4 h-4 w-4 text-blue-600 rounded" :checked="allStatementSelected" @change="toggleAllStatementTransactions" />
                     <span class="ml-2 text-sm text-gray-600">Select All</span>
                   </div>
-                  <div>
+                  <!-- <div>
                     <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedStatementTransactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotal(filteredUnmatchedStatementTransactions, true)
-                    }}</span>
-                  </div>
+                      }}</span>
+                  </div> -->
                 </div>
               </div>
 
-              <div class="divide-y max-h-[600px] overflow-y-auto text-xs">
-                <div v-for="data in filteredUnmatchedStatementTransactions" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
-                  <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
-                  <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
-                    <div class="flex justify-between mb-1">
-                      <span class="text-gray-500">{{ data.date }}</span>
-                      <div class="font-medium">
-                        <span v-if="data.dr_amount" class="text-red-500 ">-{{ data.dr_amount }}</span>
-                        <span v-if="data.cr_amount" class="text-green-500">+{{ data.cr_amount }}</span>
+              <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[600px]">
+                <q-infinite-scroll @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
+                  <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
+                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
+                    <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
+                      <div class="flex justify-between mb-1">
+                        <span class="text-gray-500">{{ data.date }}</span>
+                        <div class="font-medium">
+                          <span v-if="data.dr_amount" class="text-red-500 ">-{{ data.dr_amount }}</span>
+                          <span v-if="data.cr_amount" class="text-green-500">+{{ data.cr_amount }}</span>
+                        </div>
                       </div>
+                      <div class="text-gray-600">{{ data.description }}</div>
                     </div>
-                    <div class="text-gray-600">{{ data.description }}</div>
                   </div>
-                </div>
+                </q-infinite-scroll>
               </div>
             </div>
           </div>
@@ -629,80 +524,87 @@ const reconcile = () => {
             <div class="flex gap-4">
               <!-- q-select -->
               <q-select v-model="systemSearchBy" :options="searchByOptionsForSystem" outlined dense label="Search By" class="w-28" />
-              <q-input v-model="searchSystem" :debounce="500" @update:model-value="(value) => searchInUnmatchedSystemTransactions(value as string)" outlined dense placeholder="Search..."
-                class="grow mb-2" />
+              <q-input v-model="systemSearchBy" :debounce="500" @update:model-value="fetchUnmatchedSystemTransactions" outlined dense placeholder="Search..." class="grow mb-2" />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-green-50">
                 <h3 class="text-lg my-0 font-semibold text-green-600">
                   Unmatched System Transactions
-                  <span class="text-sm text-green-500 ml-2">({{ filteredUnmatchedSystemTransactions.length }})</span>
+                  <span class="text-sm text-green-500 ml-2">({{ systemResponse.results.length }})</span>
                 </h3>
                 <div class="flex items-center justify-between mt-2">
                   <div class="flex items-centers">
                     <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="allSystemSelected" @change="toggleAllSystemTransactions" />
                     <span class="ml-2 text-sm text-gray-600">Select All</span>
                   </div>
-                  <div>
-                    <span class="font-medium" :class="Number(calculateTotal(filteredUnmatchedSystemTransactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
-                      calculateTotal(filteredUnmatchedSystemTransactions)
+                  <!-- <div>
+                    <span class="font-medium" :class="Number(calculateTotal(systemResponse.results)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                      calculateTotal(systemResponse.results)
                     }}</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
 
-              <div class="divide-y max-h-[600px] overflow-y-auto">
-                <div v-for="data in filteredUnmatchedSystemTransactions" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
-                  <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
-                    @change="toggleSystemTransaction(data)" />
+              <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[600px]">
+                <q-infinite-scroll @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
+                  <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
+                    <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
+                      @change="toggleSystemTransaction(data)" />
 
-                  <div class="flex-grow min-w-0">
-                    <!-- Transaction Header -->
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-xs text-gray-500">{{ data.date }}</span>
+                    <div class="flex-grow min-w-0">
+                      <!-- Transaction Header -->
+                      <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-gray-500">{{ data.date }}</span>
 
-                      <router-link v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
-                        :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
-                        {{ data.source_type }}
-                      </router-link>
-                    </div>
+                        <router-link v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
+                          :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
+                          {{ data.source_type }}
+                        </router-link>
+                      </div>
 
-                    <!-- Counterpart Accounts -->
-                    <div class="space-y-1">
-                      <div v-for="counterpart in data.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
-                        <div class="text-gray-700 truncate pr-2">
-                          {{ counterpart.account_name }}
-                        </div>
+                      <!-- Counterpart Accounts -->
+                      <div class="space-y-1">
+                        <div v-for="counterpart in data.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
+                          <div class="text-gray-700 truncate pr-2">
+                            {{ counterpart.account_name }}
+                          </div>
 
-                        <div class="flex space-x-2">
-                          <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
-                            -{{ counterpart.dr_amount }}
-                          </span>
-                          <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
-                            +{{ counterpart.cr_amount }}
-                          </span>
+                          <div class="flex space-x-2">
+                            <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
+                              -{{ counterpart.dr_amount }}
+                            </span>
+                            <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
+                              +{{ counterpart.cr_amount }}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <!-- Total for Multiple Counterparts -->
-                    <div v-if="data.counterpart_accounts.length > 1" class="border-t text-right text-xs w-fit ml-auto">
-                      <span v-if="data.dr_amount" class="text-green-500 font-semibold">
-                        +{{ data.dr_amount }}
-                      </span>
-                      <span v-if="data.cr_amount" class="text-red-500 font-semibold ml-2">
-                        -{{ data.cr_amount }}
-                      </span>
+                      <!-- Total for Multiple Counterparts -->
+                      <div v-if="data.counterpart_accounts.length > 1" class="border-t text-right text-xs w-fit ml-auto">
+                        <span v-if="data.dr_amount" class="text-green-500 font-semibold">
+                          +{{ data.dr_amount }}
+                        </span>
+                        <span v-if="data.cr_amount" class="text-red-500 font-semibold ml-2">
+                          -{{ data.cr_amount }}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <template v-slot:loading>
+                    <div class="row justify-center q-my-md">
+                      <q-spinner-dots color="primary" size="40px" />
+                    </div>
+                  </template>
+                </q-infinite-scroll>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountId" />
+      <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountId" :filterSources="filterSources" :calculateTotal="calculateTotal"
+        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" />
 
     </div>
   </div>
