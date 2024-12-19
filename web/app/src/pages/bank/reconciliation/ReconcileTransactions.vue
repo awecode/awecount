@@ -13,7 +13,7 @@
       </div>
     </div>
     <BankReconciliationTable v-if="systemTransactionData.length || statementTransactionData.length" :systemTransactionData="systemTransactionData" :statementTransactionData="statementTransactionData"
-      :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" />
+      :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountId="selectedAccount" />
   </q-page>
 </template>
 

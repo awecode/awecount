@@ -31,6 +31,7 @@ declare module '@vue/runtime-core' {
     ItemImport: typeof import('./src/components/ItemImport.vue')['default']
     ItemMergeGroup: typeof import('./src/components/settings/ItemMergeGroup.vue')['default']
     LoginCard: typeof import('./src/components/LoginCard.vue')['default']
+    MatchedTransactions: typeof import('./src/components/bank-reconciliation/MatchedTransactions.vue')['default']
     MultiSelectChip: typeof import('./src/components/filter/MultiSelectChip.vue')['default']
     NAutoComplete: typeof import('./src/components/NAutoComplete.vue')['default']
     NAutoCompleteV2: typeof import('./src/components/NAutoCompleteV2.vue')['default']

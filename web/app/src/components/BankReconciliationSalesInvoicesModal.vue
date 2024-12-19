@@ -160,28 +160,29 @@ const updatePrompt = (value: boolean) => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedInvoiceTransactions.value.length > 0) {
-    const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-with-adjustment/' : 'v1/bank-reconciliation/reconcile-transactions/'
+    // const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions/'
+    const endpoint = 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/'
     useApi(endpoint, {
       method: 'POST',
       body: {
         statement_ids: selectedStatementTransactions.value.map(t => t.id),
         invoice_ids: selectedInvoiceTransactions.value.map(t => t.id),
-        narration: 'Test Narration',
+        remarks: 'Test Narration',
       }
     }).then(() => {
       // remove from both unmatched lists
-      selectedStatementTransactions.value.forEach(t => {
-        const index = allStatementTransactions.value.findIndex(ut => ut === t)
-        if (index > -1) {
-          allStatementTransactions.value.splice(index, 1)
-        }
-      })
-      selectedInvoiceTransactions.value.forEach(t => {
-        const index = salesInvoices.value.findIndex(ut => ut === t)
-        if (index > -1) {
-          salesInvoices.value.splice(index, 1)
-        }
-      })
+      // selectedStatementTransactions.value.forEach(t => {
+      //   const index = allStatementTransactions.value.findIndex(ut => ut === t)
+      //   if (index > -1) {
+      //     allStatementTransactions.value.splice(index, 1)
+      //   }
+      // })
+      // selectedInvoiceTransactions.value.forEach(t => {
+      //   const index = salesInvoices.value.findIndex(ut => ut === t)
+      //   if (index > -1) {
+      //     salesInvoices.value.splice(index, 1)
+      //   }
+      // })
       // remove from selected
       unselectAll()
     }).catch((error) => {
