@@ -533,7 +533,7 @@ watch(route, () => {
                 v-close-popup
                 clickable
                 :active="company.slug === activeCompany"
-                @click="switchCompany(company.id)"
+                @click="switchCompany(company.slug)"
               >
                 <q-item-section avatar>
                   <q-avatar size="28px">
