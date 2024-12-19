@@ -1186,6 +1186,94 @@ class ReconciliationViewSet(CRULViewSet):
         )
         
         return Response({})
+    @action(detail=False, url_path="matched-transactions")
+    def matched_transactions(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        account_id = request.query_params.get('account_id')
+        
+        if not start_date or not end_date or not account_id:
+            raise APIException("start_date, end_date and account_id are required")
+
+        statements_queryset = ReconciliationEntries.objects.filter(
+            statement__company=request.company,
+            statement__account_id=account_id,
+            date__range=[start_date, end_date],
+            status='Matched'
+        ).select_related("statement")
+        
+        page = self.paginate_queryset(statements_queryset)
+
+        # 2. Get All Transaction IDs in One Go
+        all_transaction_ids = set()
+        for statement in page:
+            all_transaction_ids.update(statement.transaction_ids)
+
+        # 3. Fetch Transactions Efficiently
+        transactions_queryset = Transaction.objects.filter(
+            company=request.company,
+            journal_entry__date__range=[start_date, end_date],
+            account_id=account_id,
+            id__in=all_transaction_ids
+        ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
+            "journal_entry__transactions__account",
+            "journal_entry__source"
+        )
+
+        # Convert querysets to lists to avoid repeated database queries
+        statements = list(statements_queryset)
+        transactions = list(transactions_queryset)
+
+        # 4. Create Mappings Using Dictionaries
+        statement_to_systems_map = defaultdict(list)
+        system_to_statements_map = defaultdict(list)
+
+        transaction_dict = {t.id: t for t in transactions}
+
+        for statement in statements:
+             for transaction_id in statement.transaction_ids:
+                    system_transaction = transaction_dict.get(transaction_id)
+                    if system_transaction:
+                        statement_to_systems_map[statement].append(system_transaction)
+                        system_to_statements_map[system_transaction].append(statement)
+
+        # 5. Group Transactions Efficiently
+        merged_groups = []
+        processed_statements = set()
+        processed_systems = set()
+
+        for statement, system_transactions in statement_to_systems_map.items():
+            if statement in processed_statements:
+                continue
+            
+            group = {
+                'statement_transactions': [],
+                'system_transactions': []
+            }
+
+            # Add current statement and its systems
+            group['statement_transactions'].append(statement)
+            processed_statements.add(statement)
+            
+            
+            for system_transaction in system_transactions:
+                if system_transaction not in processed_systems:
+                    group['system_transactions'].append(system_transaction)
+                    processed_systems.add(system_transaction)
+
+                    # Add other statements related to this system
+                    for other_statement in system_to_statements_map[system_transaction]:
+                        if other_statement not in processed_statements:
+                             group['statement_transactions'].append(other_statement)
+                             processed_statements.add(other_statement)
+
+
+            merged_groups.append({
+                'statement_transactions': ReconciliationEntriesSerializer(group['statement_transactions'], many=True).data,
+                'system_transactions': TransactionMinSerializer(group['system_transactions'], many=True).data
+            })
+
+        return self.get_paginated_response(merged_groups)
     
     
     @action(detail=False, url_path="unreconciled-transactions")
