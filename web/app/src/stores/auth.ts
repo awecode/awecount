@@ -32,7 +32,7 @@ export const URLs = {
   CHANGE_PASSWORD: `${BASE_PREFIX}/account/password/change`,
 
   // Switch company
-  SWITCH_COMPANY: `${BASE_PREFIX}/account/switch`,
+  SWITCH_COMPANY: `/api/me/switch-company/`,
 
   // Auth: Social
   PROVIDER_SIGNUP: `${BASE_PREFIX}/auth/provider/signup`,
@@ -275,11 +275,11 @@ export const useAuthStore = defineStore('auth', () => {
     return await _request(URLs.CHANGE_PASSWORD, { method: 'POST', body: data })
   }
 
-  const switchCompany = async (companyId: string) => {
-    const { data, meta } = await _request(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_id: companyId } })
-    _handleAuthSuccess(data, meta)
-    await _handleRedirect(data?.user)
-    return data
+  const switchCompany = async (companySlug: string) => {
+    const res = await $api(URLs.SWITCH_COMPANY, { method: 'PATCH', body: { company_slug: companySlug } })
+    await _fetchPermissions(companySlug)
+    window.location.href = `${url.origin}/${companySlug}/dashboard` // TODO: Use router and preserve path
+    return res
   }
 
   const hasRole = (role: string) => {
