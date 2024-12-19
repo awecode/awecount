@@ -56,8 +56,11 @@ from apps.ledger.serializers import (
     PartyMinSerializer,
     TransactionMinSerializer,
 )
-from apps.voucher.models import SalesVoucher
-from apps.voucher.serializers.sales import SalesVoucherMinListSerializer
+from apps.voucher.models import PaymentReceipt, SalesVoucher
+from apps.voucher.serializers.sales import (
+    PaymentReceiptFormSerializer,
+    SalesVoucherMinListSerializer,
+)
 from awecount.libs.CustomViewSet import CRULViewSet, GenericSerializer
 from awecount.libs.mixins import InputChoiceMixin
 
@@ -1274,12 +1277,109 @@ class ReconciliationViewSet(CRULViewSet):
             })
 
         return self.get_paginated_response(merged_groups)
-    
-    
+
+    @action(detail=False, url_path="unreconciled-entries")
+    def unreconciled_entries(self, request):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        account_id = request.query_params.get("account_id")
+
+        if not start_date or not end_date or not account_id:
+            raise APIException("start_date, end_date and account_id are required")
+
+        search = request.query_params.get("search")
+        sort_by = request.query_params.get("sort_by")
+        sort_dir = request.query_params.get("sort_dir")
+
+        if sort_by not in ["date", "dr_amount", "cr_amount"]:
+            sort_by = "date"
+
+        if sort_dir == "desc":
+            sort_by = "-" + sort_by
+
+        filters = Q(
+            statement__company=request.company,
+            statement__account_id=account_id,
+            date__range=[start_date, end_date],
+            status="Unreconciled",
+        )
+        if search:
+            filters &= (
+                Q(description__icontains=search)
+                | Q(dr_amount__icontains=search)
+                | Q(cr_amount__icontains=search)
+            )
+
+        entries = ReconciliationEntries.objects.filter(filters).order_by(sort_by)
+        # send paginated response
+        page = self.paginate_queryset(entries)
+        serializer = ReconciliationEntriesSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
+    @action(detail=False, url_path="unreconciled-system-transactions")
+    def unreconciled_system_transactions(self, request):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        account_id = request.query_params.get("account_id")
+
+        if not start_date or not end_date or not account_id:
+            raise APIException("start_date, end_date and account_id are required")
+
+        search = request.query_params.get("search")
+        sort_by = request.query_params.get("sort_by")
+        sort_dir = request.query_params.get("sort_dir")
+
+        if sort_by not in ["date", "dr_amount", "cr_amount"]:
+            sort_by = "date"
+        elif sort_by == "date":
+            sort_by = "journal_entry__date"
+
+        if sort_dir == "desc":
+            sort_by = "-" + sort_by
+
+        reconciled_transaction_ids = ReconciliationEntries.objects.filter(
+            statement__company=request.company,
+            statement__account_id=account_id,
+            date__range=[start_date, end_date],
+            status="Reconciled",
+        ).values_list("transaction_ids", flat=True)
+
+        reconciled_transaction_ids_set = set(
+            chain.from_iterable(reconciled_transaction_ids)
+        )
+
+        filters = Q(
+            company=request.company,
+            journal_entry__date__range=[start_date, end_date],
+            account_id=account_id,
+        )
+        if search:
+            filters &= (
+                Q(dr_amount__icontains=search)
+                | Q(cr_amount__icontains=search)
+                | Q(journal_entry__transactions__account__name__icontains=search)
+                | Q(journal_entry__transactions__dr_amount__icontains=search)
+                | Q(journal_entry__transactions__cr_amount__icontains=search)
+            )
+
+        unreconciled_system_transactions = (
+            Transaction.objects.filter(filters)
+            .exclude(id__in=reconciled_transaction_ids_set)
+            .order_by(sort_by)
+            .select_related("journal_entry__content_type")
+            .prefetch_related(
+                "journal_entry__transactions__account", "journal_entry__source"
+            )
+            .distinct()
+        )
+
+        # return paginated response
+        page = self.paginate_queryset(unreconciled_system_transactions)
+        serializer = TransactionMinSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
     @action(detail=False, url_path="unreconciled-transactions")
     def unreconciled_transactions(self, request):
-        # get start_date and end_date from request
-        # also get account_id
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         account_id = request.query_params.get('account_id')
