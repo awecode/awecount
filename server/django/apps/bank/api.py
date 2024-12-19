@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from collections import defaultdict
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -1278,8 +1279,8 @@ class ReconciliationViewSet(CRULViewSet):
 
         return self.get_paginated_response(merged_groups)
 
-    @action(detail=False, url_path="unreconciled-entries")
-    def unreconciled_entries(self, request):
+    @action(detail=False, url_path="unreconciled-bank-transactions")
+    def unreconciled_bank_transactions(self, request):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
         account_id = request.query_params.get("account_id")
@@ -1329,9 +1330,7 @@ class ReconciliationViewSet(CRULViewSet):
         sort_by = request.query_params.get("sort_by")
         sort_dir = request.query_params.get("sort_dir")
 
-        if sort_by not in ["date", "dr_amount", "cr_amount"]:
-            sort_by = "date"
-        elif sort_by == "date":
+        if sort_by not in ["dr_amount", "cr_amount"]:
             sort_by = "journal_entry__date"
 
         if sort_dir == "desc":
@@ -1378,42 +1377,42 @@ class ReconciliationViewSet(CRULViewSet):
         serializer = TransactionMinSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=False, url_path="unreconciled-transactions")
-    def unreconciled_transactions(self, request):
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        account_id = request.query_params.get('account_id')
+    # @action(detail=False, url_path="unreconciled-bank-transactions")
+    # def unreconciled_bank_transactions(self, request):
+    #     start_date = request.query_params.get('start_date')
+    #     end_date = request.query_params.get('end_date')
+    #     account_id = request.query_params.get('account_id')
         
-        if not start_date or not end_date or not account_id:
-            raise APIException("start_date, end_date and account_id are required")
+    #     if not start_date or not end_date or not account_id:
+    #         raise APIException("start_date, end_date and account_id are required")
 
-        # Fetch reconciled transaction IDs for the same company, account, and date
-        reconciled_transaction_ids = ReconciliationEntries.objects.filter(
-            statement__company=request.company,
-            statement__account_id=account_id,
-            status='Reconciled'
-        ).values_list('transaction_ids', flat=True)
+    #     # Fetch reconciled transaction IDs for the same company, account, and date
+    #     reconciled_transaction_ids = ReconciliationEntries.objects.filter(
+    #         statement__company=request.company,
+    #         statement__account_id=account_id,
+    #         status='Reconciled'
+    #     ).values_list('transaction_ids', flat=True)
 
-        reconciled_transaction_ids_set = set(chain.from_iterable(reconciled_transaction_ids))
+    #     reconciled_transaction_ids_set = set(chain.from_iterable(reconciled_transaction_ids))
 
-        transactions = Transaction.objects.filter(
-            company=request.company,
-            journal_entry__date__range=[start_date, end_date],
-            account_id=account_id
-        ).exclude(
-            id__in=reconciled_transaction_ids_set
-        ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
-            "journal_entry__transactions__account",
-            "journal_entry__source"
-        )
+    #     transactions = Transaction.objects.filter(
+    #         company=request.company,
+    #         journal_entry__date__range=[start_date, end_date],
+    #         account_id=account_id
+    #     ).exclude(
+    #         id__in=reconciled_transaction_ids_set
+    #     ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
+    #         "journal_entry__transactions__account",
+    #         "journal_entry__source"
+    #     )
 
-        # fetch bank reconciliation entries
-        bank_statements = ReconciliationEntries.objects.filter(
-            statement__company=request.company, statement__account_id=account_id, date__range=[start_date, end_date],
-            status__in=['Unreconciled', 'Matched']
-        ).order_by("date")
+    #     # fetch bank reconciliation entries
+    #     bank_statements = ReconciliationEntries.objects.filter(
+    #         statement__company=request.company, statement__account_id=account_id, date__range=[start_date, end_date],
+    #         status__in=['Unreconciled', 'Matched']
+    #     ).order_by("date")
         
-        return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE, 'adjustment_threshold': settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD })
+    #     return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE, 'adjustment_threshold': settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD })
     
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
