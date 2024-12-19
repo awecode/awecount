@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Ref } from 'vue'
+const $q = useQuasar()
+
 interface SystemTransactionData {
   id: number
   date: string
@@ -94,6 +96,20 @@ const reconcileMatchedTransactions = (matchedTransaction: {
     if (index > -1) {
       data.value?.results.splice(index, 1)
     }
+    $q.notify({
+      color: 'green-6',
+      message: 'Transactions reconciled successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+  }).catch((error) => {
+    console.log(error)
+    $q.notify({
+      color: 'red-6',
+      message: 'Failed to reconcile transactions',
+      icon: 'error',
+      position: 'top-right',
+    })
   })
 }
 
@@ -120,6 +136,20 @@ const unmatchMatchedTransactions = (matchedTransaction: {
     if (index > -1) {
       data.value?.results.splice(index, 1)
     }
+    $q.notify({
+      color: 'green-6',
+      message: 'Transactions unmatched successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+  }).catch((error) => {
+    console.log(error)
+    $q.notify({
+      color: 'red-6',
+      message: 'Failed to unmatch transactions',
+      icon: 'error',
+      position: 'top-right',
+    })
   })
 }
 
