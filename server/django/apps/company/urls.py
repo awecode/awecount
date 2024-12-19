@@ -7,6 +7,7 @@ from apps.company.views import (
     CompanyPermissionEndpoint,
     UserCompaniesEndpoint,
     UserCompanyInvitationsViewSet,
+    UserCompanySwitchEndpoint,
 )
 
 router = DefaultRouter()
@@ -50,6 +51,11 @@ urlpatterns = [
         "api/me/companies/",
         UserCompaniesEndpoint.as_view(),
         name="company-info",
+    ),
+    path(
+        "api/me/switch-company/",
+        UserCompanySwitchEndpoint.as_view(),
+        name="switch-company",
     ),
     path(
         "api/company/<slug:company_slug>/permissions/",

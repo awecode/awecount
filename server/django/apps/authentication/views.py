@@ -5,7 +5,6 @@ from allauth.headless.base.response import (
     AuthenticationResponse,
     ForbiddenResponse,
 )
-from allauth.headless.base.views import AuthenticatedAPIView
 from allauth.headless.internal.decorators import app_view
 from allauth.headless.internal.restkit.response import ErrorResponse
 from allauth.socialaccount.internal import flows
@@ -21,20 +20,6 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from requests import RequestException
 
 from .adapters import GoogleOAuth2Adapter
-
-
-class SwitchCompanyView(AuthenticatedAPIView):
-    def patch(self, request, *args, **kwargs):
-        company_id = request.data.get("company_id")
-        if not company_id:
-            return ErrorResponse(
-                request,
-                exception=ValidationError("company_id is required"),
-            )
-        request.user.profile.last_company_id = company_id
-        request.user.profile.save()
-
-        return AuthenticationResponse(request)
 
 
 class OAuth2CallbackView(AllauthOAuth2CallbackView):

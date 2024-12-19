@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, views, viewsets
 from rest_framework.permissions import AllowAny
@@ -281,6 +282,25 @@ class UserCompaniesEndpoint(views.APIView):
             CompanyLiteSerializer(user_companies, many=True).data,
             status=status.HTTP_200_OK,
         )
+
+
+class UserCompanySwitchEndpoint(views.APIView):
+    def patch(self, request):
+        if not request.data.get("company_slug"):
+            return Response(
+                {"error": "Company slug is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        company = get_object_or_404(
+            Company,
+            slug=request.data.get("company_slug"),
+            company_members__member=request.user,
+        )
+
+        request.user.last_company_id = company.id
+        request.user.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class CompanyMemberViewSet(viewsets.ModelViewSet):
