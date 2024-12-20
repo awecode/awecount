@@ -1162,7 +1162,7 @@ class ReconciliationViewSet(CRULViewSet):
         # Add unprocessed statements (no matching system transactions)
         for statement in statements:
             if statement not in processed_statements:
-                merged_groups.append(
+                merged_groups.insert(0,
                     {
                         "statement_transactions": ReconciliationEntriesSerializer(
                             [statement], many=True
@@ -1174,7 +1174,7 @@ class ReconciliationViewSet(CRULViewSet):
         # Add unprocessed system transactions (no matching statements)
         for system_transaction in transactions:
             if system_transaction not in processed_systems:
-                merged_groups.append(
+                merged_groups.insert(0,
                     {
                         "statement_transactions": [],
                         "system_transactions": TransactionMinSerializer(
@@ -1185,13 +1185,15 @@ class ReconciliationViewSet(CRULViewSet):
 
         return merged_groups
 
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        entries = self.filter_entries(instance.entries.all(), request.query_params)
 
-        bank_statements = entries.values("transaction_ids", "id").annotate(
+        bank_statements = instance.entries.all().values("transaction_ids", "id").annotate(
             grouped_statements=ArrayAgg("pk"),
         )
+        # TODO: check the logic, if group is divided
+        bank_statements = self.filter_entries(bank_statements, request.query_params)
 
         # Get paginated response directly on the bank_statements
         page = self.paginate_queryset(bank_statements)
@@ -1335,7 +1337,6 @@ class ReconciliationViewSet(CRULViewSet):
 
         transactions_queryset = Transaction.objects.filter(
             company=request.company,
-            journal_entry__date__range=[start_date, end_date],
             account_id=account_id,
             id__in=all_transaction_ids
         ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
@@ -1493,7 +1494,7 @@ class ReconciliationViewSet(CRULViewSet):
         transaction_ids = request.data.get('transaction_ids')
         if not statement_ids or not transaction_ids:
             raise APIException("statement_ids and transaction_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
+        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
         transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
         entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
@@ -1520,8 +1521,8 @@ class ReconciliationViewSet(CRULViewSet):
         # TODO: max number of statement_ids
         if not statement_ids or not transaction_ids or not narration or len(statement_ids) > 10:
             raise APIException("statement_ids, transaction_ids and narration are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
-        account_ids = set([obj.account_id for obj in entries])
+        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
             raise APIException("All the statement entries should have the same account_id")
         
@@ -1553,6 +1554,15 @@ class ReconciliationViewSet(CRULViewSet):
         if not start_date or not end_date:
             raise APIException("start_date and end_date are required")
         search = request.query_params.get('search')
+        sort_by = request.query_params.get("sort_by")
+        sort_dir = request.query_params.get("sort_dir")
+
+        if sort_by not in ["total_amount"]:
+            sort_by = "date"
+
+        if sort_dir == "desc":
+            sort_by = "-" + sort_by
+            
         filters = Q(date__range=[start_date, end_date]) | Q(due_date__range=[start_date, end_date])
         if search:
             filters &= (
@@ -1569,8 +1579,10 @@ class ReconciliationViewSet(CRULViewSet):
             mode='Credit',
             status='Issued',
             party__isnull=False
-        ).filter(filters).order_by("date")
-        return Response(SalesVoucherMinListSerializer(sales_vouchers, many=True).data)
+        ).filter(filters).order_by(sort_by)
+        page = self.paginate_queryset(sales_vouchers)
+        serializer = SalesVoucherMinListSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
     
     
     def create_payment_receipt(self, latest_entry_date, account_ids, entries, vouchers, remarks):
@@ -1647,7 +1659,7 @@ class ReconciliationViewSet(CRULViewSet):
         
         latest_entry_date = max(obj.date for obj in entries)
         entries, transactions_ids = self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
-        adjustment = difference / len(entries_sum)
+        adjustment = difference / len(entries)
         entries.update(status='Reconciled', transaction_ids=transactions_ids, adjustment_amount=adjustment)
         # Move to background task?
         for obj in entries:
