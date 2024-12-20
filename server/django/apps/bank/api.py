@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import chain, combinations
 
@@ -14,7 +15,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from collections import defaultdict
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -1128,12 +1128,12 @@ class ReconciliationViewSet(CRULViewSet):
     
                         
 
-    @action(detail=False, url_path="banks")
-    def get_banks(self, request):
+    @action(detail=False, url_path="defaults")
+    def get_defaults(self, request):
         banks = BankAccount.objects.filter(company=request.company).only(
             "id", "short_name", "account_number", "ledger_id"
         )
-        return Response(BankAccountWithLedgerSerializer(banks, many=True).data)
+        return Response({ 'banks':BankAccountWithLedgerSerializer(banks, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE, 'adjustment_threshold': settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD })
 
 
     @action(detail=False, url_path="import-statement", methods=["POST"])
