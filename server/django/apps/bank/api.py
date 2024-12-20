@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import chain, combinations
+from django.contrib.postgres.aggregates import ArrayAgg
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -1199,21 +1200,23 @@ class ReconciliationViewSet(CRULViewSet):
         if not start_date or not end_date or not account_id:
             raise APIException("start_date, end_date and account_id are required")
 
-        statements_queryset = ReconciliationEntries.objects.filter(
+        
+        bank_statements = ReconciliationEntries.objects.filter(
             statement__company=request.company,
             statement__account_id=account_id,
             date__range=[start_date, end_date],
-            status='Matched'
-        ).select_related("statement")
-        
-        page = self.paginate_queryset(statements_queryset)
+            status__in=['Matched']
+        ).values('transaction_ids', 'id').annotate(
+            grouped_statements=ArrayAgg('pk'),
+        )
+
+        # Get paginated response directly on the bank_statements
+        page = self.paginate_queryset(bank_statements)
 
         # 2. Get All Transaction IDs in One Go
-        all_transaction_ids = set()
-        for statement in page:
-            all_transaction_ids.update(statement.transaction_ids)
+        all_transaction_ids = set({data for entry in page for data in entry['transaction_ids']})
+        all_statement_ids = set({data for entry in page for data in entry['grouped_statements']})
 
-        # 3. Fetch Transactions Efficiently
         transactions_queryset = Transaction.objects.filter(
             company=request.company,
             journal_entry__date__range=[start_date, end_date],
@@ -1223,7 +1226,13 @@ class ReconciliationViewSet(CRULViewSet):
             "journal_entry__transactions__account",
             "journal_entry__source"
         )
-
+        
+        statements_queryset = ReconciliationEntries.objects.filter(
+            statement__company=request.company,
+            statement__account_id=account_id,
+            id__in=all_statement_ids
+        ).select_related('statement')
+        
         # Convert querysets to lists to avoid repeated database queries
         statements = list(statements_queryset)
         transactions = list(transactions_queryset)
