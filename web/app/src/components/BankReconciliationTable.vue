@@ -89,10 +89,10 @@ const systemResponse: Ref<SystemResponse> = ref({
 
 const statementSearchBy = ref('')
 const systemSearchBy = ref('')
-const statementOrderBy = ref('date')
-const systemOrderBy = ref('date')
-const statementSortDirection = ref('asc')
-const systemSortDirection = ref('asc')
+const statementSortBy = ref('date')
+const systemSortBy = ref('date')
+const statementSortDir = ref('asc')
+const systemSortDir = ref('asc')
 const statementPage = ref(1)
 const systemPage = ref(1)
 
@@ -103,7 +103,7 @@ const fetchUnmatchedBankTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountId) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + statementSearchBy.value + '&order_by=' + statementOrderBy.value + '&sort_direction=' + statementSortDirection.value + '&page=' + statementPage.value).then((response) => {
+  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + statementSearchBy.value + '&sort_by=' + statementSortBy.value + '&sort_dir=' + statementSortDir.value + '&page=' + statementPage.value).then((response) => {
 
     if (response.pagination.page === 1) {
       statementResponse.value = response
@@ -128,7 +128,7 @@ const fetchUnmatchedSystemTransactions = async () => {
   if (!props.startDate || !props.endDate || !props.accountId) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + systemSearchBy.value + '&order_by=' + systemOrderBy.value + '&sort_direction=' + systemSortDirection.value + '&page=' + systemPage.value).then((response) => {
+  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + systemSearchBy.value + '&sort_by=' + systemSortBy.value + '&sort_dir=' + systemSortDir.value + '&page=' + systemPage.value).then((response) => {
     // systemResponse.value.results = []
     if (response.pagination.page === 1) {
       systemResponse.value = response
@@ -149,13 +149,18 @@ const fetchUnmatchedSystemTransactions = async () => {
 
 fetchUnmatchedSystemTransactions()
 
-
 const openSalesInvoiceModal = ref(false)
 
-
-const searchByOptionsForStatament = ['Any', 'Date', 'Amount', 'Description']
-const searchByOptionsForSystem = ['Any', 'Date', 'Amount', 'Account']
-
+const sortBy = [{
+  label: 'Date',
+  value: 'date'
+}, {
+  label: 'Dr Amount',
+  value: 'dr_amount'
+}, {
+  label: 'Cr Amount',
+  value: 'cr_amount'
+}]
 
 
 const calculateTotal = (transactions: SystemTransactionData[] | StatementTransactionData[], forStatement = false) => {
@@ -484,7 +489,25 @@ const unmatchTransactions = (transaction: {
           <div>
             <div class="flex gap-4">
               <!-- q-select -->
-              <q-select v-model="statementSearchBy" :options="searchByOptionsForStatament" outlined dense label="Search By" class="w-28" />
+              <div class="flex space-x-2">
+                <q-select v-model="statementSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" option-value="value" option-label="label" emit-value
+                  @update:model-value="statementPage = 1, fetchUnmatchedBankTransactions()" />
+                <div class="flex items-center pb-2 cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="statementSortDir === 'asc' ? 'transform rotate-180' : ''"
+                    @click="statementSortDir = statementSortDir === 'asc' ? 'desc' : 'asc', statementPage = 1, fetchUnmatchedBankTransactions()">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                      <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
+                        <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                      </path>
+                      <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
+                        <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                      </path>
+                    </g>
+                  </svg>
+
+                </div>
+              </div>
+              <!-- Arrow icon to show asc and desc -->
               <q-input v-model="statementSearchBy" :debounce="500" @update:model-value=" statementPage = 1, fetchUnmatchedBankTransactions()" outlined dense placeholder="Search..."
                 class="grow mb-2" />
             </div>
@@ -535,8 +558,25 @@ const unmatchTransactions = (transaction: {
 
           <div>
             <div class="flex gap-4">
-              <!-- q-select -->
-              <q-select v-model="systemSearchBy" :options="searchByOptionsForSystem" outlined dense label="Search By" class="w-28" />
+              <div class="flex space-x-2">
+                <q-select v-model="systemSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" @update:model-value="systemPage = 1, fetchUnmatchedSystemTransactions()"
+                  option-value="value" option-label="label" emit-value />
+                <div class="flex items-center pb-2 cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="systemSortDir === 'asc' ? 'transform rotate-180' : ''"
+                    @click="systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc', systemPage = 1, fetchUnmatchedSystemTransactions()">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                      <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
+                        <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                      </path>
+                      <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
+                        <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                      </path>
+                    </g>
+                  </svg>
+
+                </div>
+              </div>
+
               <q-input v-model="systemSearchBy" :debounce="500" @update:model-value="systemPage = 1, fetchUnmatchedSystemTransactions()" outlined dense placeholder="Search..." class="grow mb-2" />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
