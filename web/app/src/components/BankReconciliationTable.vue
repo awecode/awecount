@@ -489,7 +489,7 @@ const unmatchTransactions = (transaction: {
           <div>
             <div class="flex gap-4">
               <!-- q-select -->
-              <div class="flex space-x-2">
+              <div class="flex space-x-2  text-gray-700">
                 <q-select v-model="statementSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" option-value="value" option-label="label" emit-value
                   @update:model-value="statementPage = 1, fetchUnmatchedBankTransactions()" />
                 <div class="flex items-center pb-2 cursor-pointer">
@@ -561,7 +561,7 @@ const unmatchTransactions = (transaction: {
               <div class="flex space-x-2">
                 <q-select v-model="systemSortBy" :options="sortBy" outlined dense label="Sort by" class="w-32" @update:model-value="systemPage = 1, fetchUnmatchedSystemTransactions()"
                   option-value="value" option-label="label" emit-value />
-                <div class="flex items-center pb-2 cursor-pointer">
+                <div class="flex items-center pb-2 cursor-pointer text-gray-700">
                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="systemSortDir === 'asc' ? 'transform rotate-180' : ''"
                     @click="systemSortDir = systemSortDir === 'asc' ? 'desc' : 'asc', systemPage = 1, fetchUnmatchedSystemTransactions()">
                     <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
