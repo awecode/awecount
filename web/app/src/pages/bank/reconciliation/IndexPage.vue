@@ -51,7 +51,7 @@
         <q-td :props="props">
           <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{
             props.row.category.name
-          }}</router-link>
+            }}</router-link>
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
       </template>
@@ -138,11 +138,11 @@ const statementData: Ref<Record<string, any>[]> = ref([])
 const isStatementProcessing = ref(false)
 const hasError = ref(false)
 
-const endpoint = 'v1/bank-reconciliation/banks/'
+const endpoint = 'v1/bank-reconciliation/defaults/'
 const isLoading = ref(false)
 
 useApi(endpoint).then((response) => {
-  bankAccounts.value = response
+  bankAccounts.value = response.banks
 })
 
 const listEndpoint = '/v1/bank-reconciliation/'

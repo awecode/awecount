@@ -50,15 +50,6 @@ interface StatementTransactionData {
   transaction_ids: number[]
 }
 
-interface GroupedTransaction {
-  statementTransactions: StatementTransactionData[]
-  systemTransactions: SystemTransactionData[]
-}
-
-
-// const unmatchedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
-// const unmatchedSystemTransactions: Ref<SystemTransactionData[]> = ref([])
-
 type StatementResponse = {
   results: StatementTransactionData[]
   pagination: {

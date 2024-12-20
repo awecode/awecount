@@ -12,8 +12,8 @@
         <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
       </div>
     </div>
-    <BankReconciliationTable v-if="fetchedAccountId" :acceptableDifference="acceptableDifference"
-      :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate" :accountId="fetchedAccountId" />
+    <BankReconciliationTable v-if="fetchedAccountId" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
+      :accountId="fetchedAccountId" />
   </q-page>
 </template>
 
@@ -26,16 +26,16 @@ const selectedAccount = ref(route.query.account_id ? Number(route.query.account_
 const bankAccounts = ref([])
 const startDate = ref(route.query.start_date as string || '2024-11-08')
 const endDate = ref(route.query.end_date as string || '2024-12-08')
-const systemTransactionData = ref([])
-const statementTransactionData = ref([])
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
 const fetchedAccountId: Ref<number | null> = ref(null)
-const endpoint = 'v1/bank-reconciliation/banks/'
+const endpoint = 'v1/bank-reconciliation/defaults/'
 const isLoading = ref(false)
 
 useApi(endpoint).then((response) => {
-  bankAccounts.value = response
+  bankAccounts.value = response.banks
+  acceptableDifference.value = response.acceptable_difference
+  adjustmentThreshold.value = response.adjustment_threshold
 })
 
 
@@ -43,7 +43,8 @@ const fetchTransactions = async () => {
   if (!selectedAccount.value || !startDate.value || !endDate.value) {
     return
   }
-  // isLoading.value = true
+  fetchedAccountId.value = null
+  await nextTick()
   router.push({
     query: {
       account_id: selectedAccount.value,
@@ -51,8 +52,6 @@ const fetchTransactions = async () => {
       end_date: endDate.value,
     }
   })
-  systemTransactionData.value = []
-  statementTransactionData.value = []
   fetchedAccountId.value = selectedAccount.value
 }
 
