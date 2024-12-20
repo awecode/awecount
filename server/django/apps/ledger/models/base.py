@@ -17,10 +17,11 @@ from rest_framework.exceptions import ValidationError as RestValidationError
 from apps.company.models import Company, FiscalYear
 from apps.users.signals import company_creation
 from awecount.libs import decimalize, none_for_zero, zero_for_none
+from awecount.libs.db import CompanyBaseModel
 from awecount.libs.exception import BadOperation
 
 
-class Category(MPTTModel):
+class Category(MPTTModel, CompanyBaseModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey(
@@ -89,7 +90,7 @@ class Category(MPTTModel):
         unique_together = [["code", "company"]]
 
 
-class Account(models.Model):
+class Account(CompanyBaseModel):
     code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255)
     # current_dr and current_cr may not always be exact
@@ -247,7 +248,7 @@ class Account(models.Model):
         ordering = ["name"]
 
 
-class Party(models.Model):
+class Party(CompanyBaseModel):
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
     logo = models.ImageField(blank=True, null=True)
@@ -427,7 +428,7 @@ class JournalEntry(models.Model):
         verbose_name_plural = "Journal Entries"
 
 
-class Transaction(models.Model):
+class Transaction(CompanyBaseModel):
     account = models.ForeignKey(
         Account, on_delete=models.PROTECT, related_name="transactions"
     )
@@ -1256,7 +1257,7 @@ class TransactionModel(models.Model):
 set_ledger_transactions = set_transactions
 
 
-class TransactionCharge(models.Model):
+class TransactionCharge(CompanyBaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     account = models.ForeignKey(
@@ -1280,7 +1281,7 @@ class TransactionCharge(models.Model):
         super().save(*args, **kwargs)
 
 
-class AccountOpeningBalance(models.Model):
+class AccountOpeningBalance(CompanyBaseModel):
     account = models.ForeignKey(
         Account, related_name="account_opening_balances", on_delete=models.CASCADE
     )
@@ -1345,7 +1346,7 @@ CLOSING_STATUSES = (
 )
 
 
-class AccountClosing(models.Model):
+class AccountClosing(CompanyBaseModel):
     company = models.ForeignKey(
         Company, on_delete=models.PROTECT, related_name="account_closings"
     )

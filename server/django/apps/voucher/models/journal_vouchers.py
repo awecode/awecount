@@ -5,6 +5,7 @@ from apps.company.models import Company
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.models import set_transactions as set_ledger_transactions
 from awecount.libs import get_next_voucher_no
+from awecount.libs.db import CompanyBaseModel
 
 
 class JournalVoucher(models.Model):
@@ -86,7 +87,7 @@ class JournalVoucher(models.Model):
         super().save(*args, **kwargs)
 
 
-class JournalVoucherRow(models.Model):
+class JournalVoucherRow(CompanyBaseModel):
     TYPES = [("Dr", "Dr"), ("Cr", "Cr")]
     type = models.CharField(choices=TYPES, default="Dr", max_length=2)
     account = models.ForeignKey(

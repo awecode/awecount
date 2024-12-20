@@ -42,6 +42,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
+from awecount.libs.db import CompanyBaseModel
 from awecount.libs.helpers import (
     deserialize_request,
     get_relative_file_path,
@@ -316,7 +317,7 @@ class TransactionFeeConfig:
         return fee
 
 
-class PaymentMode(models.Model):
+class PaymentMode(CompanyBaseModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     enabled_for_sales = models.BooleanField(default=True)
@@ -370,7 +371,7 @@ class PaymentMode(models.Model):
         return TransactionFeeConfig(self.transaction_fee_config).calculate_fee(amount)
 
 
-class Challan(TransactionModel, InvoiceModel):
+class Challan(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
@@ -424,7 +425,7 @@ class Challan(TransactionModel, InvoiceModel):
         unique_together = ("company", "voucher_no", "fiscal_year")
 
 
-class ChallanRow(TransactionModel, InvoiceRowModel):
+class ChallanRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(Challan, on_delete=models.CASCADE, related_name="rows")
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="challan_rows"
@@ -437,7 +438,7 @@ class ChallanRow(TransactionModel, InvoiceRowModel):
     key = "Challan"
 
 
-class SalesVoucher(TransactionModel, InvoiceModel):
+class SalesVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(
         Party,
@@ -869,7 +870,7 @@ def add_time_to_date(date, amount, time_unit):
     return new_date
 
 
-class RecurringVoucherTemplate(models.Model):
+class RecurringVoucherTemplate(CompanyBaseModel):
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=25, choices=RECURRING_TEMPLATE_TYPES)
     invoice_data = models.JSONField()
@@ -999,7 +1000,7 @@ class RecurringVoucherTemplate(models.Model):
         self.save()
 
 
-class SalesVoucherRow(TransactionModel, InvoiceRowModel):
+class SalesVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         SalesVoucher, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1047,7 +1048,7 @@ class SalesVoucherRow(TransactionModel, InvoiceRowModel):
         return self.net_amount - self.tax_amount + self.discount_amount
 
 
-class PurchaseOrder(TransactionModel, InvoiceModel):
+class PurchaseOrder(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveSmallIntegerField(blank=True, null=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -1090,7 +1091,7 @@ class PurchaseOrderRow(TransactionModel, InvoiceRowModel):
     key = "Purchase Order"
 
 
-class PurchaseVoucher(TransactionModel, InvoiceModel):
+class PurchaseVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.CharField(max_length=25, null=True, blank=True)
     party = models.ForeignKey(Party, on_delete=models.PROTECT)
     date = models.DateField(default=timezone.now)
@@ -1291,7 +1292,7 @@ class PurchaseVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transaction()
 
 
-class PurchaseVoucherRow(TransactionModel, InvoiceRowModel):
+class PurchaseVoucherRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         PurchaseVoucher, related_name="rows", on_delete=models.CASCADE
     )
@@ -1370,7 +1371,7 @@ CREDIT_NOTE_STATUSES = (
 )
 
 
-class CreditNote(TransactionModel, InvoiceModel):
+class CreditNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -1563,7 +1564,7 @@ class CreditNote(TransactionModel, InvoiceModel):
             return merged_data, conf["credit_note_endpoint"]
 
 
-class CreditNoteRow(TransactionModel, InvoiceRowModel):
+class CreditNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         CreditNote, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1593,7 +1594,7 @@ class CreditNoteRow(TransactionModel, InvoiceRowModel):
     sales_row_data = models.JSONField(blank=True, null=True)
 
 
-class DebitNote(TransactionModel, InvoiceModel):
+class DebitNote(TransactionModel, InvoiceModel, CompanyBaseModel):
     party = models.ForeignKey(Party, on_delete=models.PROTECT, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
 
@@ -1750,7 +1751,7 @@ class DebitNote(TransactionModel, InvoiceModel):
         self.apply_inventory_transaction()
 
 
-class DebitNoteRow(TransactionModel, InvoiceRowModel):
+class DebitNoteRow(TransactionModel, InvoiceRowModel, CompanyBaseModel):
     voucher = models.ForeignKey(
         DebitNote, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1793,7 +1794,7 @@ PAYMENT_STATUSES = (
 )
 
 
-class PaymentReceipt(TransactionModel):
+class PaymentReceipt(TransactionModel, CompanyBaseModel):
     invoices = models.ManyToManyField(SalesVoucher, related_name="payment_receipts")
     party = models.ForeignKey(
         Party, on_delete=models.PROTECT, related_name="payment_receipts"

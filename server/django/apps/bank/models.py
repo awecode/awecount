@@ -13,9 +13,10 @@ from apps.ledger.models import (
     set_ledger_transactions,
 )
 from awecount.libs import wGenerator
+from awecount.libs.db import CompanyBaseModel
 
 
-class BankAccount(models.Model):
+class BankAccount(CompanyBaseModel):
     is_wallet = models.BooleanField(default=False)
     account_name = models.CharField(max_length=150, blank=True, null=True)
     account_number = models.CharField(max_length=150, blank=True, null=True)
@@ -103,7 +104,7 @@ class BankAccount(models.Model):
         ordering = ["-id"]
 
 
-class ChequeDeposit(TransactionModel):
+class ChequeDeposit(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Draft", "Draft"),
         ("Issued", "Issued"),
@@ -185,7 +186,7 @@ class ChequeDeposit(TransactionModel):
 #         return self.cheque_deposit_id
 
 
-class ChequeIssue(models.Model):
+class ChequeIssue(CompanyBaseModel):
     STATUSES = (
         ("Issued", "Issued"),
         ("Cancelled", "Cancelled"),
@@ -217,7 +218,7 @@ class ChequeIssue(models.Model):
             if not self.dr_account:
                 raise ValidationError("Dr Account is required.")
 
-        super(ChequeIssue, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self.apply_transactions()
 
     def get_voucher_no(self):
@@ -274,7 +275,7 @@ class ChequeIssue(models.Model):
         #     date = models.DateField()
 
 
-class FundTransfer(TransactionModel):
+class FundTransfer(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Issued", "Issued"),
         ("Cancelled", "Cancelled"),
@@ -354,7 +355,7 @@ class FundTransfer(TransactionModel):
         self.cancel_transactions()
 
 
-class FundTransferTemplate(models.Model):
+class FundTransferTemplate(CompanyBaseModel):
     name = models.CharField(max_length=255)
     from_account = models.ForeignKey(
         Account,
@@ -385,7 +386,7 @@ class FundTransferTemplate(models.Model):
         # return '{} -> {}'.format(str(self.from_account), str(self.to_account))
 
 
-class BankCashDeposit(TransactionModel):
+class BankCashDeposit(TransactionModel, CompanyBaseModel):
     STATUSES = (
         ("Cleared", "Cleared"),
         ("Cancelled", "Cancelled"),

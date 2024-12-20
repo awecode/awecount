@@ -24,6 +24,7 @@ from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.tax.models import TaxScheme
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import none_for_zero, zero_for_none
+from awecount.libs.db import CompanyBaseModel
 
 
 class Unit(models.Model):
@@ -81,7 +82,7 @@ class Brand(models.Model):
         ordering = ["-id"]
 
 
-class Category(models.Model):
+class Category(CompanyBaseModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -1420,7 +1421,7 @@ def _transaction_delete(sender, instance, **kwargs):
     )
 
 
-class Item(models.Model):
+class Item(CompanyBaseModel):
     ACCOUNT_TYPE_CHOICES = [
         ("global", "Global"),
         ("dedicated", "Dedicated"),
@@ -1879,7 +1880,7 @@ class InventorySetting(models.Model):
         return "Inventory Setting - {}".format(self.company.name)
 
 
-class BillOfMaterial(models.Model):
+class BillOfMaterial(CompanyBaseModel):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="bill_of_material"
     )
@@ -1896,7 +1897,7 @@ class BillOfMaterial(models.Model):
         return self.finished_product.name
 
 
-class BillOfMaterialRow(models.Model):
+class BillOfMaterialRow(CompanyBaseModel):
     bill_of_material = models.ForeignKey(
         BillOfMaterial, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1975,7 +1976,9 @@ class InventoryAdjustmentVoucher(TransactionModel, InvoiceModel):
         self.apply_inventory_transactions()
 
 
-class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
+class InventoryAdjustmentVoucherRow(
+    TransactionModel, InvoiceRowModel, CompanyBaseModel
+):
     voucher = models.ForeignKey(
         InventoryAdjustmentVoucher, on_delete=models.CASCADE, related_name="rows"
     )
@@ -1989,7 +1992,7 @@ class InventoryAdjustmentVoucherRow(TransactionModel, InvoiceRowModel):
     description = models.TextField(blank=True, null=True)
 
 
-class InventoryConversionVoucher(TransactionModel, InvoiceModel):
+class InventoryConversionVoucher(TransactionModel, InvoiceModel, CompanyBaseModel):
     voucher_no = models.PositiveIntegerField(blank=True, null=True)
     date = models.DateField()
     finished_product = models.ForeignKey(
@@ -2016,7 +2019,9 @@ class InventoryConversionVoucher(TransactionModel, InvoiceModel):
             )
 
 
-class InventoryConversionVoucherRow(TransactionModel, InvoiceRowModel):
+class InventoryConversionVoucherRow(
+    TransactionModel, InvoiceRowModel, CompanyBaseModel
+):
     voucher = models.ForeignKey(
         InventoryConversionVoucher, on_delete=models.CASCADE, related_name="rows"
     )

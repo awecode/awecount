@@ -2,9 +2,10 @@ from django.db import models
 
 from apps.company.models import Company
 from apps.ledger.models import Account, JournalEntry, set_ledger_transactions
+from awecount.libs.db import CompanyBaseModel
 
 
-class TaxScheme(models.Model):
+class TaxScheme(CompanyBaseModel):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=10, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -121,7 +122,7 @@ STATUSES = (
 )
 
 
-class TaxPayment(models.Model):
+class TaxPayment(CompanyBaseModel):
     voucher_no = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField()
     tax_scheme = models.ForeignKey(
