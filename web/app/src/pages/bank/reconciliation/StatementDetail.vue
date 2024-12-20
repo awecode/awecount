@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Ref } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
 const route = useRoute()
 
 interface StatementInfo {
@@ -38,7 +39,7 @@ const columns = [
   {
     name: 'date',
     align: 'center' as align,
-    label: 'Date',
+    label: 'Dates',
     field: 'date',
     sortable: true
   },
@@ -64,6 +65,13 @@ const columns = [
     sortable: true
   },
   {
+    name: 'SystemTransactions',
+    align: 'left' as align,
+    label: 'System Transactions',
+    field: 'system_transactions',
+    sortable: true
+  },
+  {
     name: 'status',
     align: 'center' as align,
     label: 'Status',
@@ -72,6 +80,121 @@ const columns = [
   },
 ]
 
+type SystemTransactionData = {
+  id: number,
+  source_id: number | null,
+  source_type: string,
+  description: string,
+  dr_amount: string | null,
+  cr_amount: string | null,
+  status: string,
+  counterpart_accounts: { dr_amount: string | null, cr_amount: string | null }[]
+}
+
+const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) => {
+  let cr_amount = 0
+  let dr_amount = 0
+  // for (let counterpart of counterparts) {
+  //   if (counterpart.cr_amount) {
+  //     cr_amount += Number(counterpart.cr_amount)
+  //   }
+  //   if (counterpart.dr_amount) {
+  //     dr_amount += Number(counterpart.dr_amount)
+  //   }
+  // }
+  // return (dr_amount - cr_amount).toFixed(2)
+  for (let transaction of transactions) {
+    for (let counterpart of transaction.counterpart_accounts) {
+      if (counterpart.cr_amount) {
+        cr_amount += Number(counterpart.cr_amount)
+      }
+      if (counterpart.dr_amount) {
+        dr_amount += Number(counterpart.dr_amount)
+      }
+    }
+  }
+  return (dr_amount - cr_amount).toFixed(2)
+}
+
+
+
+function getVoucherUrl(row: SystemTransactionData) {
+  if (!row.source_id) return ''
+  const source_type = row.source_type
+  if (source_type === 'Sales Voucher')
+    return `/sales-voucher/${row.source_id}/view/`
+  if (source_type === 'Purchase Voucher')
+    return `/purchase-voucher/${row.source_id}/view`
+  if (source_type === 'Journal Voucher')
+    return `/journal-voucher/${row.source_id}/view`
+  if (source_type === 'Credit Note')
+    return `/credit-note/${row.source_id}/view`
+  if (source_type === 'Debit Note')
+    return `/debit-note/${row.source_id}/view`
+  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
+  // TODO: add missing links
+  if (source_type === 'Cheque Deposit')
+    return `/cheque-deposit/${row.source_id}/view/`
+  if (source_type === 'Payment Receipt')
+    return `/payment-receipt/${row.source_id}/view/`
+  if (source_type === 'Cheque Issue')
+    return `/cheque-issue/${row.source_id}/`
+  if (source_type === 'Challan') return `/challan/${row.source_id}/`
+  if (source_type === 'Account Opening Balance')
+    return `/account-opening-balance/${row.source_id}/`
+  if (source_type === 'Item') return `/items/details/${row.source_id}/`
+  // added
+  if (source_type === 'Fund Transfer')
+    return `/fund-transfer/${row.source_id}/`
+  if (source_type === 'Bank Cash Deposit')
+    return `/bank/cash/cash-deposit/${row.source_id}/edit/`
+  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+  if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
+  console.error(source_type + ' not handled!')
+}
+const getPermissionsWithSourceType = {
+  'Sales Voucher': 'SalesView',
+  'Purchase Voucher': 'PurchaseVoucherView',
+  'Journal Voucher': 'JournalVoucherView',
+  'Credit Note': 'CreditNoteView',
+  'Debit Note': 'DebitNoteView',
+  'Cheque Deposit': 'ChequeDepositView',
+  'Payment Receipt': 'PaymentReceiptView',
+  'Cheque Issue': 'ChequeIssueModify',
+  'Challan': 'ChallanModify',
+  'Account Opening Balance': 'AccountOpeningBalanceModify',
+  'Fund Transfer': 'FundTransferModify',
+  'Bank Cash Deposit': 'BankCashDepositModify',
+  'Tax Payment': 'TaxPaymentModify',
+  'Item': 'ItemView',
+  'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView'
+} as const
+
+const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
+  const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
+
+  systemTransactions.forEach((transaction: SystemTransactionData) => {
+    if (transaction.source_id) {
+      // check permission
+      const permission = getPermissionsWithSourceType[transaction.source_type as keyof typeof getPermissionsWithSourceType]
+      if (checkPermissions(permission)) {
+        const url = getVoucherUrl(transaction)
+        if (url) {
+          // Use source_id as the unique key
+          if (!sourceMap.has(transaction.source_id)) {
+            sourceMap.set(transaction.source_id, {
+              source_id: transaction.source_id,
+              source_type: transaction.source_type,
+              url,
+            })
+          }
+        }
+      }
+    }
+  })
+
+  return Array.from(sourceMap.values())
+}
 
 
 </script>
@@ -151,9 +274,63 @@ const columns = [
           </div>
         </template>
         <!--  -->
+        <template v-slot:body-cell-date="props">
+          <td class="text-center">
+            <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
+              <div class="text-gray-800">{{ transaction.date }}</div>
+            </div>
+          </td>
+        </template>
+        <template v-slot:body-cell-description="props">
+          <td>
+            <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
+              <div class="text-gray-800">{{ transaction.description }}</div>
+            </div>
+          </td>
+        </template>
+        <template v-slot:body-cell-Debit="props">
+          <td>
+            <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
+              <div class="text-green-500 font-medium">{{ transaction.dr_amount || '-' }}</div>
+            </div>
+          </td>
+        </template>
+        <template v-slot:body-cell-Credit="props">
+          <td>
+            <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
+              <div class="text-red-500 font-medium">- {{ transaction.cr_amount }}</div>
+            </div>
+          </td>
+        </template>
+        <template v-slot:body-cell-SystemTransactions="props">
+          <td>
+            <div>
+              <div v-if="props.row.system_transactions.length" class="flex justify-between">
+                <div>
+                  <span v-for="source, index in filterSources(props.row.system_transactions)" :key="source.source_id">
+                    <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
+                      {{ source.source_type }}
+                    </router-link>
+                    <span v-if="index < filterSources(props.row.system_transactions).length - 1">, </span>
+                  </span>
+                </div>
+                <div class="px-4 py-2  font-medium">
+
+                  <span v-if="props.row.system_transactions.length" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                    calculateTotalFromCounterparts(props.row.system_transactions)
+                  }}</span>
+                </div>
+              </div>
+              <div v-else class="px-4 py-2  font-medium">
+                -
+              </div>
+            </div>
+          </td>
+        </template>
+
         <template v-slot:body-cell-status="props">
           <td class="text-center">
-            <q-chip :color="props.row.status === 'Reconciled' ? 'green' : props.row.status === 'Matched' ? 'orange' : 'red'" class="text-white" :label="props.row.status" />
+            <q-chip :color="props.row.statement_transactions[0].status === 'Reconciled' ? 'green' : props.row.statement_transactions[0].status === 'Matched' ? 'orange' : 'red'" class="text-white" :label="props.row.statement_transactions[0].status" />
           </td>
         </template>
       </q-table>
