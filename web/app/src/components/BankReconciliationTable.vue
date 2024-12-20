@@ -384,12 +384,20 @@ const reconcile = () => {
 }
 
 const loadMoreSystemTransactions = async (index: number, done: any) => {
+  if (systemPage.value >= systemResponse.value.pagination.pages) {
+    done()
+    return
+  }
   systemPage.value++
   await fetchUnmatchedSystemTransactions()
   done()
 }
 
 const loadMoreStatementTransactions = async (index: number, done: any) => {
+  if (statementPage.value >= statementResponse.value.pagination.pages) {
+    done()
+    return
+  }
   statementPage.value++
   await fetchUnmatchedBankTransactions()
   done()
@@ -478,7 +486,8 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
             <div class="flex gap-4">
               <!-- q-select -->
               <q-select v-model="statementSearchBy" :options="searchByOptionsForStatament" outlined dense label="Search By" class="w-28" />
-              <q-input v-model="statementSearchBy" :debounce="500" @update:model-value="fetchUnmatchedBankTransactions" outlined dense placeholder="Search..." class="grow mb-2" />
+              <q-input v-model="statementSearchBy" :debounce="500" @update:model-value=" statementPage = 1, fetchUnmatchedBankTransactions()" outlined dense placeholder="Search..."
+                class="grow mb-2" />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-blue-50 ">
@@ -514,6 +523,11 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
                       <div class="text-gray-600">{{ data.description }}</div>
                     </div>
                   </div>
+                  <template v-slot:loading>
+                    <div class="row justify-center q-my-md">
+                      <q-spinner-dots color="primary" size="40px" />
+                    </div>
+                  </template>
                 </q-infinite-scroll>
               </div>
             </div>
@@ -524,7 +538,7 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
             <div class="flex gap-4">
               <!-- q-select -->
               <q-select v-model="systemSearchBy" :options="searchByOptionsForSystem" outlined dense label="Search By" class="w-28" />
-              <q-input v-model="systemSearchBy" :debounce="500" @update:model-value="fetchUnmatchedSystemTransactions" outlined dense placeholder="Search..." class="grow mb-2" />
+              <q-input v-model="systemSearchBy" :debounce="500" @update:model-value="systemPage = 1, fetchUnmatchedSystemTransactions()" outlined dense placeholder="Search..." class="grow mb-2" />
             </div>
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div class="px-4 py-3 border-b bg-green-50">
