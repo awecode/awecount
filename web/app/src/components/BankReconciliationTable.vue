@@ -422,6 +422,19 @@ const unmatchTransactions = (transaction: {
   systemResponse.value.results.unshift(...transaction.system_transactions)
 }
 
+const removeBankTransactions = (transaction: StatementTransactionData[]) => {
+  transaction.forEach(t => {
+    const index = statementResponse.value.results.findIndex(ut => ut.id === t.id)
+    if (index > -1) {
+      statementResponse.value.results.splice(index, 1)
+    }
+    const selectedTransactionIndex = selectedStatementTransactions.value.findIndex(ut => ut.id === t.id)
+    if (selectedTransactionIndex > -1) {
+      selectedStatementTransactions.value.splice(selectedTransactionIndex, 1)
+    }
+  })
+}
+
 </script>
 <template>
   <div>
@@ -674,7 +687,7 @@ const unmatchTransactions = (transaction: {
     </div>
   </div>
   <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
-    :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @unmatchTransactions="unmatchTransactions" />
+    :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @removeBankTransactions="removeBankTransactions" />
 </template>
 
 

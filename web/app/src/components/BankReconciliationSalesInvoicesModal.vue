@@ -48,7 +48,7 @@ const props = defineProps({
     default: 1
   }
 })
-const emit = defineEmits(['update:modelValue', 'unmatchTransactions'])
+const emit = defineEmits(['update:modelValue', 'removeBankTransactions'])
 const prompt = ref(props.modelValue)
 
 const sortOptions = ref([
@@ -208,7 +208,7 @@ const updatePrompt = (value: boolean) => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedInvoiceTransactions.value.length > 0) {
-    const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers-and-adjustment/'
+    const endpoint = canReconcile.value ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers-and-adjustment/'
     useApi(endpoint, {
       method: 'POST',
       body: {
@@ -220,13 +220,10 @@ const reconcile = () => {
       allStatementTransactions.value = allStatementTransactions.value.filter((transaction) => {
         return !selectedStatementTransactions.value.some((selectedTransaction) => selectedTransaction.id === transaction.id)
       })
-      emit('unmatchTransactions', {
-        statement_transactions: selectedStatementTransactions.value,
-      })
-      // remove selected invoice transactions
       response.value.results = response.value.results.filter((invoice) => {
         return !selectedInvoiceTransactions.value.some((selectedTransaction) => selectedTransaction.id === invoice.id)
       })
+      emit('removeBankTransactions', selectedStatementTransactions.value,)
       unselectAll()
     }).catch((error) => {
       console.log(error)
@@ -455,13 +452,13 @@ const loadSalesInvoice = async (index: number, done: any) => {
                           Sales Invoice
                         </router-link>
                       </div>
-                      <div class="flex justify-between items-center">
-                        <p class="text-sm text-gray-700 break pr-2">
+                      <div class="flex justify-between items-center flex-nowrap">
+                        <div class="text-sm text-gray-700 break pr-2">
                           {{ data.party_name || data.customer_name }}
-                        </p>
-                        <span class="text-green-500 font-semibold">
+                        </div>
+                        <div class="text-green-500 font-semibold">
                           +{{ data.total_amount }}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </div>
