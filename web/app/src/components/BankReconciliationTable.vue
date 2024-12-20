@@ -95,6 +95,8 @@ const statementSortDir = ref('asc')
 const systemSortDir = ref('asc')
 const statementPage = ref(1)
 const systemPage = ref(1)
+const bankScrollSection = ref()
+const systemScrollSection = ref()
 
 const fetchUnmatchedBankTransactions = async () => {
   console.log('Start_date:', props.startDate)
@@ -106,12 +108,16 @@ const fetchUnmatchedBankTransactions = async () => {
   await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + statementSearchBy.value + '&sort_by=' + statementSortBy.value + '&sort_dir=' + statementSortDir.value + '&page=' + statementPage.value).then((response) => {
 
     if (response.pagination.page === 1) {
-      statementResponse.value = response
+      statementResponse.value.results = response.results
     }
     else {
       statementResponse.value.results = [...statementResponse.value.results, ...response.results.filter((result: StatementTransactionData) => {
         return !statementResponse.value.results.some((r) => r.id === result.id)
       })]
+    }
+    statementResponse.value.pagination = response.pagination
+    if (statementResponse.value.pagination.page < statementResponse.value.pagination.pages) {
+      bankScrollSection.value?.resume()
     }
   }).catch((error) => {
     console.log(error)
@@ -131,12 +137,16 @@ const fetchUnmatchedSystemTransactions = async () => {
   await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + systemSearchBy.value + '&sort_by=' + systemSortBy.value + '&sort_dir=' + systemSortDir.value + '&page=' + systemPage.value).then((response) => {
     // systemResponse.value.results = []
     if (response.pagination.page === 1) {
-      systemResponse.value = response
+      systemResponse.value.results = response.results
     }
     else {
       systemResponse.value.results = [...systemResponse.value.results, ...response.results.filter((result: SystemTransactionData) => {
         return !systemResponse.value.results.some((r) => r.id === result.id)
       })]
+    }
+    systemResponse.value.pagination = response.pagination
+    if (systemResponse.value.pagination.page < systemResponse.value.pagination.pages) {
+      systemScrollSection.value?.resume()
     }
   }).catch((error) => {
     console.log(error)
@@ -378,22 +388,24 @@ const reconcile = () => {
 }
 
 const loadMoreSystemTransactions = async (index: number, done: any) => {
-  if (systemPage.value >= systemResponse.value.pagination.pages) {
-    done()
-    return
+  if (systemPage.value < systemResponse.value.pagination.pages) {
+    systemPage.value++
+    await fetchUnmatchedSystemTransactions()
   }
-  systemPage.value++
-  await fetchUnmatchedSystemTransactions()
+  else {
+    systemScrollSection.value?.stop()
+  }
   done()
 }
 
 const loadMoreStatementTransactions = async (index: number, done: any) => {
-  if (statementPage.value >= statementResponse.value.pagination.pages) {
-    done()
-    return
+  if (statementPage.value < statementResponse.value.pagination.pages) {
+    statementPage.value++
+    await fetchUnmatchedBankTransactions()
   }
-  statementPage.value++
-  await fetchUnmatchedBankTransactions()
+  else {
+    bankScrollSection.value?.stop()
+  }
   done()
 }
 
@@ -531,7 +543,7 @@ const unmatchTransactions = (transaction: {
               </div>
 
               <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[600px]">
-                <q-infinite-scroll @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
+                <q-infinite-scroll ref="bankScrollSection" @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
                   <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
                     <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
                     <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
@@ -599,7 +611,7 @@ const unmatchTransactions = (transaction: {
               </div>
 
               <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[600px]">
-                <q-infinite-scroll @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
+                <q-infinite-scroll ref="systemScrollSection" @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
                   <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
                     <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
                       @change="toggleSystemTransaction(data)" />
@@ -657,12 +669,12 @@ const unmatchTransactions = (transaction: {
       </div>
 
       <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountId" :filterSources="filterSources" :calculateTotal="calculateTotal"
-        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatch-transactions="unmatchTransactions" />
+        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatchTransactions="unmatchTransactions" />
 
     </div>
   </div>
   <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
-    :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" />
+    :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @unmatchTransactions="unmatchTransactions" />
 </template>
 
 

@@ -44,7 +44,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['unmatch-transactions'])
+const emit = defineEmits(['unmatchTransactions'])
 
 
 interface StatementTransactionData {
@@ -78,6 +78,7 @@ const data: Ref<Response> = ref({
   }
 })
 const page = ref(1)
+const infiniteScroll = ref<any>(null)
 
 const fetchData = async () => {
   const endpoint = `/v1/bank-reconciliation/matched-transactions/?start_date=${props.startDate}&end_date=${props.endDate}&account_id=${props.accountId}&page=${page.value}`
@@ -98,6 +99,8 @@ const loadMore = async (index: number, done: any) => {
   if (page.value < data.value.pagination.pages) {
     page.value += 1
     await fetchData()
+  } else {
+    infiniteScroll.value.stop()
   }
   done()
 }
@@ -149,7 +152,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
     }
   }).then(() => {
-    emit('unmatch-transactions', matchedTransaction)
+    emit('unmatchTransactions', matchedTransaction)
     const index = data.value?.results.findIndex(group => group === matchedTransaction)
     if (index > -1) {
       data.value?.results.splice(index, 1)
@@ -178,7 +181,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
   <div class="container mx-auto">
     <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
       <div v-if="data?.results.length" class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto matched-transactions">
-        <q-infinite-scroll @load="loadMore" :offset="250" scroll-target=".matched-transactions">
+        <q-infinite-scroll ref="infiniteScroll" @load="loadMore" :offset="250" scroll-target=".matched-transactions">
           <div v-for="data in data?.results" :key="data.statement_transactions[0].id" class="border-b-2 mb-5 pb-5">
             <div class="grid grid-cols-2 gap-4">
               <!-- Statement Transactions -->
