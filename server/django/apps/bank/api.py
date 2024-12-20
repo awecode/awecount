@@ -1158,6 +1158,31 @@ class ReconciliationViewSet(CRULViewSet):
                     ).data,
                 }
             )
+
+        # Add unprocessed statements (no matching system transactions)
+        for statement in statements:
+            if statement not in processed_statements:
+                merged_groups.append(
+                    {
+                        "statement_transactions": ReconciliationEntriesSerializer(
+                            [statement], many=True
+                        ).data,
+                        "system_transactions": [],
+                    }
+                )
+
+        # Add unprocessed system transactions (no matching statements)
+        for system_transaction in transactions:
+            if system_transaction not in processed_systems:
+                merged_groups.append(
+                    {
+                        "statement_transactions": [],
+                        "system_transactions": TransactionMinSerializer(
+                            [system_transaction], many=True
+                        ).data,
+                    }
+                )
+
         return merged_groups
 
     def retrieve(self, request, *args, **kwargs):
