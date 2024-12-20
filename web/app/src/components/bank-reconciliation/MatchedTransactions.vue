@@ -44,6 +44,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['unmatch-transactions'])
+
 
 interface StatementTransactionData {
   id: number
@@ -147,13 +149,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
       statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
     }
   }).then(() => {
-    // matchedTransaction.statementTransactions.forEach(t => {
-    //   unmatchedStatementTransactions.value.push(t)
-    // })
-    // matchedTransaction.systemTransactions.forEach(t => {
-    //   unmatchedSystemTransactions.value.push(t)
-    // })
-    // // remove from groupedTransactions
+    emit('unmatch-transactions', matchedTransaction)
     const index = data.value?.results.findIndex(group => group === matchedTransaction)
     if (index > -1) {
       data.value?.results.splice(index, 1)

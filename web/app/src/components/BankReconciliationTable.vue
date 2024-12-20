@@ -108,11 +108,10 @@ const fetchUnmatchedBankTransactions = async () => {
     if (response.pagination.page === 1) {
       statementResponse.value = response
     }
-    else if (response.pagination.page === statementPage.value) {
-      statementResponse.value.results.push(...response.results)
-    }
     else {
-      statementResponse.value.results = [...statementResponse.value.results, ...response.results]
+      statementResponse.value.results = [...statementResponse.value.results, ...response.results.filter((result: StatementTransactionData) => {
+        return !statementResponse.value.results.some((r) => r.id === result.id)
+      })]
     }
   }).catch((error) => {
     console.log(error)
@@ -134,11 +133,10 @@ const fetchUnmatchedSystemTransactions = async () => {
     if (response.pagination.page === 1) {
       systemResponse.value = response
     }
-    else if (response.pagination.page === systemPage.value) {
-      systemResponse.value.results.push(...response.results)
-    }
     else {
-      systemResponse.value.results = [...systemResponse.value.results, ...response.results]
+      systemResponse.value.results = [...systemResponse.value.results, ...response.results.filter((result: SystemTransactionData) => {
+        return !systemResponse.value.results.some((r) => r.id === result.id)
+      })]
     }
   }).catch((error) => {
     console.log(error)
@@ -394,8 +392,18 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
   done()
 }
 
-
-
+const unmatchTransactions = (transaction: {
+  statement_transactions: StatementTransactionData[]
+  system_transactions: SystemTransactionData[]
+}) => {
+  statementResponse.value.results.unshift(...transaction.statement_transactions.map((t) => {
+    return {
+      ...t,
+      transaction_ids: []
+    }
+  }))
+  systemResponse.value.results.unshift(...transaction.system_transactions)
+}
 
 </script>
 <template>
@@ -609,7 +617,7 @@ const loadMoreStatementTransactions = async (index: number, done: any) => {
       </div>
 
       <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountId" :filterSources="filterSources" :calculateTotal="calculateTotal"
-        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" />
+        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatch-transactions="unmatchTransactions" />
 
     </div>
   </div>
