@@ -48,23 +48,71 @@ const props = defineProps({
     default: 1
   }
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'unmatchTransactions'])
 const prompt = ref(props.modelValue)
 
-const salesInvoices: Ref<Invoice[]> = ref([])
+const sortOptions = ref([
+  {
+    label: 'Date',
+    value: 'date'
+  },
+  {
+    label: 'Total Amount',
+    value: 'total_amount'
+  }
+])
+
+const sortBy = ref('date')
+const sortDir = ref('desc')
+const infiniteScroll = ref()
+
+type SalesInvoiceResponse = {
+  results: Invoice[]
+  pagination: {
+    page: number
+    pages: number
+    count: number
+  }
+}
+
+const response: Ref<SalesInvoiceResponse> = ref({
+  results: [],
+  pagination: {
+    page: 1,
+    pages: 1,
+    count: 0
+  }
+})
 
 const search = ref('')
 const filterStartDate = ref(props.startDate)
 const filterEndDate = ref(props.endDate)
+const page = ref(1)
 
-const searchInvoice = () => {
-  useApi('v1/bank-reconciliation/sales-vouchers/?start_date=' + filterStartDate.value + '&end_date=' + filterEndDate.value + '&search=' + search.value).then((response: Invoice[]) => {
-    salesInvoices.value = response.map((invoice) => {
-      return {
-        ...invoice,
-        selected: false
-      }
-    })
+const searchInvoice = async () => {
+  await useApi('v1/bank-reconciliation/sales-vouchers/?start_date=' + filterStartDate.value + '&end_date=' + filterEndDate.value + '&search=' + search.value + '&sort_by=' + sortBy.value + '&sort_dir=' + sortDir.value + '&page=' + page.value).then((responseData: SalesInvoiceResponse) => {
+    if (responseData.pagination.page === 1) {
+      response.value.results = responseData.results.map((invoice) => {
+        return {
+          ...invoice,
+          selected: false
+        }
+      })
+    }
+    else {
+      response.value.results = [...response.value.results, ...responseData.results.map((invoice) => {
+        return {
+          ...invoice,
+          selected: false
+        }
+      })]
+    }
+    response.value.pagination = responseData.pagination
+    // if has more pages reset infinite scroll
+    if (response.value.pagination.page < response.value.pagination.pages) {
+      infiniteScroll.value?.reset()
+      infiniteScroll.value?.resume()
+    }
   })
 }
 
@@ -131,12 +179,12 @@ const toggleInvoiceSelection = (transaction: Invoice) => {
 }
 
 const allInvoiceSelected = computed(() => {
-  return salesInvoices.value.length > 0 && salesInvoices.value.every((invoice) => invoice.selected)
+  return response.value.results.length > 0 && response.value.results.every((invoice) => invoice.selected)
 })
 
 const toggleAllInvoiceTransactions = () => {
   if (allInvoiceSelected.value) {
-    salesInvoices.value = salesInvoices.value.map((invoice) => {
+    response.value.results = response.value.results.map((invoice) => {
       return {
         ...invoice,
         selected: false
@@ -144,13 +192,13 @@ const toggleAllInvoiceTransactions = () => {
     })
     selectedInvoiceTransactions.value = []
   } else {
-    salesInvoices.value = salesInvoices.value.map((invoice) => {
+    response.value.results = response.value.results.map((invoice) => {
       return {
         ...invoice,
         selected: true
       }
     })
-    selectedInvoiceTransactions.value = [...salesInvoices.value]
+    selectedInvoiceTransactions.value = [...response.value.results]
   }
 }
 
@@ -160,8 +208,7 @@ const updatePrompt = (value: boolean) => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedInvoiceTransactions.value.length > 0) {
-    // const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions/'
-    const endpoint = 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/'
+    const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers/' : 'v1/bank-reconciliation/reconcile-transactions-with-sales-vouchers-and-adjustment/'
     useApi(endpoint, {
       method: 'POST',
       body: {
@@ -170,27 +217,22 @@ const reconcile = () => {
         remarks: 'Test Narration',
       }
     }).then(() => {
-      // remove from both unmatched lists
-      // selectedStatementTransactions.value.forEach(t => {
-      //   const index = allStatementTransactions.value.findIndex(ut => ut === t)
-      //   if (index > -1) {
-      //     allStatementTransactions.value.splice(index, 1)
-      //   }
-      // })
-      // selectedInvoiceTransactions.value.forEach(t => {
-      //   const index = salesInvoices.value.findIndex(ut => ut === t)
-      //   if (index > -1) {
-      //     salesInvoices.value.splice(index, 1)
-      //   }
-      // })
-      // remove from selected
+      allStatementTransactions.value = allStatementTransactions.value.filter((transaction) => {
+        return !selectedStatementTransactions.value.some((selectedTransaction) => selectedTransaction.id === transaction.id)
+      })
+      emit('unmatchTransactions', {
+        statement_transactions: selectedStatementTransactions.value,
+      })
+      // remove selected invoice transactions
+      response.value.results = response.value.results.filter((invoice) => {
+        return !selectedInvoiceTransactions.value.some((selectedTransaction) => selectedTransaction.id === invoice.id)
+      })
       unselectAll()
     }).catch((error) => {
       console.log(error)
     })
   }
 }
-
 
 const unselectAll = () => {
   allStatementTransactions.value = allStatementTransactions.value.map((transaction) => {
@@ -200,7 +242,7 @@ const unselectAll = () => {
     }
   })
   selectedStatementTransactions.value = []
-  salesInvoices.value = salesInvoices.value.map((invoice) => {
+  response.value.results = response.value.results.map((invoice) => {
     return {
       ...invoice,
       selected: false
@@ -231,6 +273,19 @@ const calculateInvoiceTotal = (transactions: Invoice[]) => {
   return transactions.reduce((total, transaction) => {
     return total + transaction.total_amount
   }, 0)
+}
+
+
+const loadSalesInvoice = async (index: number, done: any) => {
+  console.log('loading')
+  if (page.value < response.value.pagination.pages) {
+    page.value += 1
+    await searchInvoice()
+  }
+  else {
+    infiniteScroll.value?.stop()
+  }
+  done()
 }
 
 </script>
@@ -307,7 +362,25 @@ const calculateInvoiceTotal = (transactions: Invoice[]) => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 pb-0 bg-gray-100">
           <div></div>
           <div class="flex gap-4 mb-2">
-            <q-input v-model="search" :debounce="500" @update:model-value="(value) => searchInvoice()" outlined dense placeholder="Search..." class="grow mb-2" />
+            <div class="flex space-x-2">
+              <q-select v-model="sortBy" :options="sortOptions" outlined dense label="Sort by" class="w-32" @update:model-value="page = 1, searchInvoice()" option-value="value" option-label="label"
+                emit-value />
+              <div class="flex items-center pb-2 cursor-pointer text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20" viewBox="0 0 12 20" :class="sortDir === 'asc' ? 'transform rotate-180' : ''"
+                  @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc', page = 1, searchInvoice()">
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <path stroke-dasharray="20" stroke-dashoffset="20" d="M6 3l0 17.5">
+                      <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0" />
+                    </path>
+                    <path stroke-dasharray="12" stroke-dashoffset="12" d="M6 21l5 -5M6 21l-5 -5">
+                      <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0" />
+                    </path>
+                  </g>
+                </svg>
+
+              </div>
+            </div>
+            <q-input v-model="search" :debounce="500" @update:model-value="page = 1, searchInvoice()" outlined dense placeholder="Search..." class="grow mb-2" />
           </div>
         </div>
 
@@ -361,7 +434,7 @@ const calculateInvoiceTotal = (transactions: Invoice[]) => {
                     Sales Invoices
                   </h3>
                   <span class="text-sm text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-                    {{ salesInvoices.length }}
+                    {{ response.results.length }}
                   </span>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -371,26 +444,33 @@ const calculateInvoiceTotal = (transactions: Invoice[]) => {
                 </div>
               </div>
 
-              <div class="divide-y divide-gray-100 overflow-y-auto max-h-[calc(75vh-250px)]">
-                <div v-for="data in salesInvoices" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-4">
-                  <input type="checkbox" :checked="isInvoiceSelected(data)" @change="toggleInvoiceSelection(data)" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
-                  <div class="flex-grow">
-                    <div class="flex justify-between items-center mb-1">
-                      <span class="text-sm text-gray-500">{{ data.date }}</span>
-                      <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${data.id}/view/`" target="_blank" class="text-blue-600 text-xs hover:underline">
-                        Sales Invoice
-                      </router-link>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <p class="text-sm text-gray-700 break pr-2">
-                        {{ data.party_name || data.customer_name }}
-                      </p>
-                      <span class="text-green-500 font-semibold">
-                        +{{ data.total_amount }}
-                      </span>
+              <div v-if="response.results.length" class="divide-y divide-gray-100 overflow-y-auto max-h-[calc(75vh-250px)] sales-invoices">
+                <q-infinite-scroll ref="infiniteScroll" @load="loadSalesInvoice" :offset="250" scroll-target=".sales-invoices">
+                  <div v-for="data in response.results" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-4">
+                    <input type="checkbox" :checked="isInvoiceSelected(data)" @change="toggleInvoiceSelection(data)" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
+                    <div class="flex-grow">
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-500">{{ data.date }}</span>
+                        <router-link v-if="checkPermissions('SalesView')" :to="`/sales-voucher/${data.id}/view/`" target="_blank" class="text-blue-600 text-xs hover:underline">
+                          Sales Invoice
+                        </router-link>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <p class="text-sm text-gray-700 break pr-2">
+                          {{ data.party_name || data.customer_name }}
+                        </p>
+                        <span class="text-green-500 font-semibold">
+                          +{{ data.total_amount }}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <template v-slot:loading>
+                    <div class="row justify-center q-my-md">
+                      <q-spinner-dots color="primary" size="40px" />
+                    </div>
+                  </template>
+                </q-infinite-scroll>
               </div>
             </div>
           </div>
