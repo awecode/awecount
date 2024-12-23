@@ -101,7 +101,7 @@ export default (endpoint, config) => {
 
   })
   const getDefaultsFetchUrl = () => {
-    return joinURL(endpoint, 'create-defaults/')
+    return config.createDefaultsEndpoint ||  joinURL(endpoint, 'create-defaults/')
   }
 
   const processErrors = (responseData) => {

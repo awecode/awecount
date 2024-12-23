@@ -10,51 +10,39 @@
       <q-card class="q-mt-none q-ml-lg q-mr-lg q-mb-lg">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.voucher_no" label="Voucher No." class="col-12 col-md-6"
-              :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
-            <date-picker v-model="fields.date" class="col-12 col-md-6" label="Date *" :error-message="errors.date"
-              :error="!!errors.date"></date-picker>
+            <q-input v-model="fields.voucher_no" label="Voucher No." class="col-12 col-md-6" :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
+            <date-picker v-model="fields.date" class="col-12 col-md-6" label="Date *" :error-message="errors.date" :error="!!errors.date"></date-picker>
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account"
-                endpoint="v1/fund-transfer/create-defaults/from_account" :staticOption="fields.selected_from_account_obj"
-                label="From Account *" :error="errors?.from_account" />
+              <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account" endpoint="v1/fund-transfer/create-defaults/from_account/"
+                :staticOption="fields.selected_from_account_obj" label="From Account *" :error="errors?.from_account" :disabled="!!props.fromAccount" />
             </div>
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account"
-                endpoint="v1/fund-transfer/create-defaults/to_account" :staticOption="fields.selected_to_account_obj"
-                label="To Account *" :error="errors?.to_account" />
+              <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account" endpoint="v1/fund-transfer/create-defaults/to_account/"
+                :staticOption="fields.selected_to_account_obj" label="To Account *" :error="errors?.to_account" />
             </div>
           </div>
           <div class="row q-col-gutter-md">
-            <q-input v-model="fields.amount" label="Amount *" class="col-12 col-md-6" :error-message="errors.amount"
-              :error="!!errors.amount" />
+            <q-input v-model="fields.amount" label="Amount *" class="col-12 col-md-6" :error-message="errors.amount" :error="!!errors.amount" />
           </div>
           <div class="text-bold text-lg text-grey-8 q-mt-xl">
             Transaction Fees
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
-              <n-auto-complete-v2 v-model="fields.transaction_fee_account"
-                endpoint="v1/fund-transfer/create-defaults/transaction_fee_account"
-                :staticOption="fields.selected_transaction_fee_account_obj"
-                :options="formDefaults.collections?.transaction_fee_account" label="Fees Account"
+              <n-auto-complete-v2 v-model="fields.transaction_fee_account" endpoint="v1/fund-transfer/create-defaults/transaction_fee_account"
+                :staticOption="fields.selected_transaction_fee_account_obj" :options="formDefaults.collections?.transaction_fee_account" label="Fees Account"
                 :error="errors?.transaction_fee_account" />
             </div>
-            <q-input v-model="fields.transaction_fee" label="Fees Amount" type="number" class="col-12 col-md-6"
-              :error-message="errors.transaction_fee" :error="!!errors.transaction_fee" />
+            <q-input v-model="fields.transaction_fee" label="Fees Amount" type="number" class="col-12 col-md-6" :error-message="errors.transaction_fee" :error="!!errors.transaction_fee" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green"
-            :loading="loading" label="Create" type="submit" />
-          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green"
-            :loading="loading" label="Update" type="submit" />
-          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')"
-            @click.prevent="isDeleteOpen = true" :loading="loading" icon="block" color="red" :label="'Cancel'" />
-          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue"
-            :loading="loading" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
+          <q-btn v-if="checkPermissions('FundTransferCreate') && !isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Create" type="submit" />
+          <q-btn v-if="checkPermissions('FundTransferModify') && isEdit" @click.prevent="submitForm" color="green" :loading="loading" label="Update" type="submit" />
+          <q-btn v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')" @click.prevent="isDeleteOpen = true" :loading="loading" icon="block" color="red" :label="'Cancel'" />
+          <q-btn v-if="fields?.status == 'Issued'" :to="`/journal-entries/fund-transfer/${id}/`" color="blue" :loading="loading" icon="library_books" label="Journal Entries" class="text-h7 q-py-sm" />
         </div>
       </q-card>
     </q-card>
@@ -83,47 +71,83 @@
   </q-form>
 </template>
 
-<script>
+<script setup>
 import useForm from '/src/composables/useForm'
 import checkPermissions from 'src/composables/checkPermissions'
-export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setup(props, context) {
-    const endpoint = '/v1/fund-transfer/'
-    const isDeleteOpen = ref(false)
-    const formData = useForm(endpoint, {
-      getDefaults: true,
-      successRoute: '/fund-transfer/list/',
-    })
-    const route = useRoute()
-    useMeta(() => {
-      return {
-        title:
-          (formData.isEdit?.value
-            ? 'Update Funds Transfer'
-            : 'Add Funds Transfer') + ' | Awecount',
-      }
-    })
-    formData.fields.value.date = formData.fields.value.date || formData.today
-
-    // TODO: Should Test this
-    onMounted(() => {
-      if (route.params && route.params.template) {
-        const template = route.params.template
-        if (template.from_account)
-          formData.fields.value.from_account = template.from_account
-        if (template.to_account) formData.fields.value.to_account = template.to_account
-        if (template.transaction_fee_account)
-          formData.fields.value.transaction_fee_account = template.transaction_fee_account
-        if (template.transaction_fee)
-          formData.fields.value.transaction_fee = template.transaction_fee
-      }
-    })
-    return {
-      ...formData,
-      checkPermissions,
-      isDeleteOpen
-    }
+const props = defineProps({
+  fromAccount: {
+    type: Object,
+    required: false,
   },
+  amount: {
+    type: Number,
+    required: false,
+  },
+  date: {
+    type: String,
+    required: false,
+  },
+  statementIds: {
+    type: Array,
+    required: false,
+  },
+  endpoint: {
+    type: String,
+    required: false,
+  },
+})
+
+const fundTransferEndpoint = props.endpoint || '/v1/fund-transfer/'
+
+const config = {
+  getDefaults: true,
+  successRoute: '/fund-transfer/list/',
 }
+if (props.endpoint) {
+  config.createDefaultsEndpoint = '/v1/fund-transfer/create-defaults/'
+}
+
+const isDeleteOpen = ref(false)
+const {
+  fields,
+  errors,
+  isEdit,
+  id,
+  formDefaults,
+  submitForm,
+  cancelForm,
+  loading,
+  today
+} = useForm(fundTransferEndpoint, config)
+const route = useRoute()
+useMeta(() => {
+  return {
+    title:
+      (isEdit?.value
+        ? 'Update Funds Transfer'
+        : 'Add Funds Transfer') + ' | Awecount',
+  }
+})
+
+if (props.fromAccount) {
+  fields.value.selected_from_account_obj = props.fromAccount
+  fields.value.from_account = fields.value.from_account || Number(props.fromAccount.id)
+}
+if (props.amount) fields.value.amount = fields.value.amount || props.amount
+if (props.date) fields.value.date = fields.value.date || props.date
+else fields.value.date = fields.value.date || today
+if (props.statementIds) fields.value.statement_ids = props.statementIds
+
+onMounted(() => {
+  if (route.params && route.params.template) {
+    const template = route.params.template
+    if (template.from_account)
+      fields.value.from_account = template.from_account
+    if (template.to_account) fields.value.to_account = template.to_account
+    if (template.transaction_fee_account)
+      fields.value.transaction_fee_account = template.transaction_fee_account
+    if (template.transaction_fee)
+      fields.value.transaction_fee = template.transaction_fee
+  }
+})
 </script>
