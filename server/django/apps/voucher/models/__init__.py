@@ -15,7 +15,6 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.db.models import Prefetch, Q
-from django.db.models.signals import m2m_changed
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
@@ -23,7 +22,7 @@ from django_q.tasks import schedule
 from weasyprint import HTML
 
 from apps.bank.models import BankAccount, ChequeDeposit
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyBaseModel, FiscalYear
 from apps.ledger.models import (
     JournalEntry,
     Party,
@@ -43,7 +42,6 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.db import CompanyBaseModel, validate_company_in_m2m
 from awecount.libs.helpers import (
     deserialize_request,
     get_relative_file_path,
