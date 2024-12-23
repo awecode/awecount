@@ -22,21 +22,23 @@ import { Ref } from 'vue'
 const route = useRoute()
 const router = useRouter()
 
-const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
-const bankAccounts: Ref<{
+type Bank = {
   ledger_id: number,
   id: number,
-}[]> = ref([])
+  cheque_no: string,
+  account_number: string,
+  name: string,
+}
+
+const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
+const bankAccounts: Ref<Bank[]> = ref([])
 const startDate = ref(route.query.start_date as string || '2024-11-08')
 const endDate = ref(route.query.end_date as string || '2024-12-08')
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
 const endpoint = 'v1/bank-reconciliation/defaults/'
 const isLoading = ref(false)
-const accountDetails: Ref<{
-  ledger_id: number,
-  id: number,
-} | null> = ref(null)
+const accountDetails: Ref<Bank | null> = ref(null)
 
 const fetchTransactions = async () => {
   if (!selectedAccount.value || !startDate.value || !endDate.value) {

@@ -16,7 +16,7 @@
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.from_account" :options="formDefaults.collections?.from_account" endpoint="v1/fund-transfer/create-defaults/from_account/"
-                :staticOption="fields.selected_from_account_obj" label="From Account *" :error="errors?.from_account" :disabled="!!props.fromAccount" />
+                :staticOption="fields.selected_from_account_obj" label="From Account *" :error="errors?.from_account" :disabled="!!fromAccount?.id" />
             </div>
             <div class="col-12 col-md-6">
               <n-auto-complete-v2 v-model="fields.to_account" :options="formDefaults.collections?.to_account" endpoint="v1/fund-transfer/create-defaults/to_account/"
