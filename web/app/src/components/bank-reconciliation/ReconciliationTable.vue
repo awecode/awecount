@@ -478,7 +478,7 @@ const onFundTransferChequeIssueSuccess = () => {
 
 </script>
 <template>
-  <div>
+  <div class="max-h-[800px]">
     <!-- Unmatched section -->
     <div class="grid grid-cols-2 gap-10">
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
@@ -609,7 +609,7 @@ const onFundTransferChequeIssueSuccess = () => {
                 </div>
               </div>
 
-              <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[600px]">
+              <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[500px]">
                 <q-infinite-scroll ref="bankScrollSection" @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
                   <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b cursor-pointer"
                     @click="toggleStatementTransaction(data)">
@@ -678,7 +678,7 @@ const onFundTransferChequeIssueSuccess = () => {
                 </div>
               </div>
 
-              <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[600px]">
+              <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[500px]">
                 <q-infinite-scroll ref="systemScrollSection" @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
                   <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                     @click="toggleSystemTransaction(data)">
