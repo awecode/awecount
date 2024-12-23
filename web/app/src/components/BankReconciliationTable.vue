@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import ChequeIssueForm from 'src/pages/bank/cheque-issue/ChequeIssueForm.vue'
+import FundTransferForm from 'src/pages/bank/fund-transfer/FundTransferForm.vue'
 
 const props = defineProps({
   acceptableDifference: {
@@ -19,8 +21,8 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  accountId: {
-    type: Number,
+  accountDetails: {
+    type: Object,
     required: true,
   }
 })
@@ -101,11 +103,11 @@ const systemScrollSection = ref()
 const fetchUnmatchedBankTransactions = async () => {
   console.log('Start_date:', props.startDate)
   console.log('End_date:', props.endDate)
-  console.log('Account_id:', props.accountId)
-  if (!props.startDate || !props.endDate || !props.accountId) {
+  console.log('Account_id:', props.accountDetails.ledger_id)
+  if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + statementSearchBy.value + '&sort_by=' + statementSortBy.value + '&sort_dir=' + statementSortDir.value + '&page=' + statementPage.value).then((response) => {
+  await useApi('v1/bank-reconciliation/unreconciled-bank-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountDetails.ledger_id + '&search=' + statementSearchBy.value + '&sort_by=' + statementSortBy.value + '&sort_dir=' + statementSortDir.value + '&page=' + statementPage.value).then((response) => {
 
     if (response.pagination.page === 1) {
       statementResponse.value.results = response.results
@@ -131,10 +133,10 @@ const fetchUnmatchedBankTransactions = async () => {
 fetchUnmatchedBankTransactions()
 
 const fetchUnmatchedSystemTransactions = async () => {
-  if (!props.startDate || !props.endDate || !props.accountId) {
+  if (!props.startDate || !props.endDate || !props.accountDetails.ledger_id) {
     return
   }
-  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountId + '&search=' + systemSearchBy.value + '&sort_by=' + systemSortBy.value + '&sort_dir=' + systemSortDir.value + '&page=' + systemPage.value).then((response) => {
+  await useApi('v1/bank-reconciliation/unreconciled-system-transactions/?start_date=' + props.startDate + '&end_date=' + props.endDate + '&account_id=' + props.accountDetails.ledger_id + '&search=' + systemSearchBy.value + '&sort_by=' + systemSortBy.value + '&sort_dir=' + systemSortDir.value + '&page=' + systemPage.value).then((response) => {
     // systemResponse.value.results = []
     if (response.pagination.page === 1) {
       systemResponse.value.results = response.results
@@ -435,6 +437,8 @@ const removeBankTransactions = (transaction: StatementTransactionData[]) => {
   })
 }
 
+const test = ref(true)
+
 </script>
 <template>
   <div>
@@ -681,13 +685,19 @@ const removeBankTransactions = (transaction: StatementTransactionData[]) => {
         </div>
       </div>
 
-      <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountId" :filterSources="filterSources" :calculateTotal="calculateTotal"
+      <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountDetails.ledger_id" :filterSources="filterSources" :calculateTotal="calculateTotal"
         :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatchTransactions="unmatchTransactions" />
 
     </div>
   </div>
   <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
     :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @removeBankTransactions="removeBankTransactions" />
+
+  <q-dialog v-model="test">
+    <div class="min-w-[900px]">
+      <FundTransferForm class="w-full" :bank-account="props.accountDetails.id" />
+    </div>
+  </q-dialog>
 </template>
 
 

@@ -12,8 +12,8 @@
         <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
       </div>
     </div>
-    <BankReconciliationTable v-if="fetchedAccountId" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
-      :accountId="fetchedAccountId" />
+    <BankReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
+      :accountDetails="accountDetails" />
   </q-page>
 </template>
 
@@ -23,27 +23,25 @@ const route = useRoute()
 const router = useRouter()
 
 const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
-const bankAccounts = ref([])
+const bankAccounts: Ref<{
+  ledger_id: number,
+  id: number,
+}[]> = ref([])
 const startDate = ref(route.query.start_date as string || '2024-11-08')
 const endDate = ref(route.query.end_date as string || '2024-12-08')
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
-const fetchedAccountId: Ref<number | null> = ref(null)
 const endpoint = 'v1/bank-reconciliation/defaults/'
 const isLoading = ref(false)
-
-useApi(endpoint).then((response) => {
-  bankAccounts.value = response.banks
-  acceptableDifference.value = response.acceptable_difference
-  adjustmentThreshold.value = response.adjustment_threshold
-})
-
+const accountDetails: Ref<{
+  ledger_id: number,
+  id: number,
+} | null> = ref(null)
 
 const fetchTransactions = async () => {
   if (!selectedAccount.value || !startDate.value || !endDate.value) {
     return
   }
-  fetchedAccountId.value = null
   await nextTick()
   router.push({
     query: {
@@ -52,11 +50,17 @@ const fetchTransactions = async () => {
       end_date: endDate.value,
     }
   })
-  fetchedAccountId.value = selectedAccount.value
+  accountDetails.value = bankAccounts.value?.find((account) => account.ledger_id === selectedAccount.value) || null
 }
 
-if (selectedAccount.value && startDate.value && endDate.value) {
-  fetchTransactions()
-}
+useApi(endpoint).then((response) => {
+  bankAccounts.value = response.banks
+  acceptableDifference.value = response.acceptable_difference
+  adjustmentThreshold.value = response.adjustment_threshold
+
+  if (selectedAccount.value && startDate.value && endDate.value) {
+    fetchTransactions()
+  }
+})
 
 </script>
