@@ -313,7 +313,6 @@ class FundTransfer(TransactionModel):
         if self.pk and not self.voucher_no:
             self.voucher_no = self.pk
         super().save(*args, **kwargs)
-        self.apply_transactions()
         if not self.voucher_no:
             self.voucher_no = self.pk
             super().save(update_fields=['voucher_no'])
