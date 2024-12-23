@@ -1518,6 +1518,19 @@ class ReconciliationViewSet(CRULViewSet):
         return Response({})
     
     @transaction.atomic()
+    @action(detail=False, methods=["POST"], url_path="delete-transactions")
+    def delete_transactions(self, request):
+        statement_ids = request.data.get('statement_ids')
+        if not statement_ids:
+            raise APIException("statement_ids are required")
+        entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
+        JournalEntry.objects.filter(
+            content_type__model="reconciliationentries", object_id=[entry.id for entry in entries]
+        ).delete()
+        entries.delete()
+        return Response({})
+    
+    @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="reconcile-with-adjustment")
     def reconcile_with_adjustment(self, request):
         statement_ids = request.data.get('statement_ids')
