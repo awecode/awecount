@@ -1108,7 +1108,6 @@ class ReconciliationViewSet(CRULViewSet):
         # Convert querysets to lists to avoid repeated database queries
         statements = list(statement_transactions)
         transactions = list(system_transactions)
-
         # 4. Create Mappings Using Dictionaries
         statement_to_systems_map = defaultdict(list)
         system_to_statements_map = defaultdict(list)
@@ -1513,7 +1512,7 @@ class ReconciliationViewSet(CRULViewSet):
         entries.update(status='Unreconciled', transaction_ids=[])
         # Delete journal entries
         JournalEntry.objects.filter(
-            content_type__model="reconciliationentries", object_id=[entry.id for entry in entries]
+            content_type__model="reconciliationentries", object_id__in=[entry.id for entry in entries]
         ).delete()
         return Response({})
     
@@ -1525,7 +1524,7 @@ class ReconciliationViewSet(CRULViewSet):
             raise APIException("statement_ids are required")
         entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
         JournalEntry.objects.filter(
-            content_type__model="reconciliationentries", object_id=[entry.id for entry in entries]
+            content_type__model="reconciliationentries", object_id__in=[entry.id for entry in entries]
         ).delete()
         entries.delete()
         return Response({})
