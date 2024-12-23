@@ -217,26 +217,33 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
 }
 
 const unmatchTransactions = async (transactions: StatementTransactionData[]) => {
-  useApi('v1/bank-reconciliation/unmatch-transactions/', {
-    method: 'POST',
-    body: {
-      statement_ids: transactions.map(t => t.id),
-    }
-  }).then(() => {
-    loadData()
-    $q.notify({
-      color: 'green-6',
-      message: 'Transaction unmatched successfully',
-      icon: 'check_circle',
-      position: 'top-right',
-    })
-  }).catch((error) => {
-    console.log(error)
-    $q.notify({
-      color: 'red-6',
-      message: 'Failed to unmatch the transaction',
-      icon: 'error',
-      position: 'top-right',
+  $q.dialog({
+    title: '<span class="text-blue">Unmatch?</span>',
+    message: 'Are you sure you want to unmatch?',
+    cancel: true,
+    html: true,
+  }).onOk(() => {
+    useApi('v1/bank-reconciliation/unmatch-transactions/', {
+      method: 'POST',
+      body: {
+        statement_ids: transactions.map(t => t.id),
+      }
+    }).then(() => {
+      loadData()
+      $q.notify({
+        color: 'green-6',
+        message: 'Transaction unmatched successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+    }).catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to unmatch the transaction',
+        icon: 'error',
+        position: 'top-right',
+      })
     })
   })
 }
@@ -271,7 +278,6 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
       })
     })
   })
-
 }
 
 </script>
@@ -412,7 +418,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
           </td>
         </template>
         <template v-slot:body-cell-actions="props">
-          <td class="text-center flex justify-end">
+          <td class="text-end">
             <q-btn v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'" color="blue" label="Unmatch"
               @click="unmatchTransactions(props.row.statement_transactions)" />
             <q-btn color="red" icon="delete" class="ml-2" @click="deleteTransactions(props.row.statement_transactions)" />
