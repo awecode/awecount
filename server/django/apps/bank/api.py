@@ -51,7 +51,7 @@ from apps.bank.serializers import (
     ReconciliationStatementSerializer,
 )
 from apps.ledger.models import Account, Party
-from apps.ledger.models.base import Transaction
+from apps.ledger.models.base import JournalEntry, Transaction
 from apps.ledger.serializers import (
     AccountMinSerializer,
     JournalEntriesSerializer,
@@ -1502,7 +1502,8 @@ class ReconciliationViewSet(CRULViewSet):
             raise APIException("The sum of the statement transactions and system transactions do not match")
         entries.update(status='Reconciled', transaction_ids=transaction_ids)
         return Response({})
-
+    
+    @transaction.atomic()
     @action(detail=False, methods=["POST"], url_path="unmatch-transactions")
     def unmatch_transactions(self, request):
         statement_ids = request.data.get('statement_ids')
@@ -1510,6 +1511,10 @@ class ReconciliationViewSet(CRULViewSet):
             raise APIException("statement_ids are required")
         entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
         entries.update(status='Unreconciled', transaction_ids=[])
+        # Delete journal entries
+        JournalEntry.objects.filter(
+            content_type__model="reconciliationentries", object_id=[entry.id for entry in entries]
+        ).delete()
         return Response({})
     
     @transaction.atomic()
