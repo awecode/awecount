@@ -1711,5 +1711,32 @@ class ReconciliationViewSet(CRULViewSet):
         transactions_ids = [transaction.id for transaction in transactions]
         entries.update(status='Reconciled', transaction_ids=transactions_ids)
         return Response({})
+
+    @transaction.atomic()
+    @action(detail=False, methods=["POST"], url_path="reconcile-transactions-with-cheque-issue")
+    def reconcile_transactions_with_cheque_issue(self, request):
+        statement_ids = request.data.get('statement_ids')
+        if not statement_ids:
+            raise APIException("statement_ids are required")
+        serializer = ChequeIssueSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # add company to the serializer
+        serializer.validated_data['company'] = self.request.company
+        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        # validate if all the statement of the entries has same account_id
+        account_ids = set([obj.statement.account_id for obj in entries])
+        if len(account_ids) > 1:
+            raise APIException("All the statement entries should have the same account_id")
         
+        entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
+        # amount of the funds transfer
+        amount = serializer.validated_data['amount']
+        # Since we get negative amount for entries_sum, we need to reverse the sign
+        if abs(entries_sum + amount) > settings.BANK_RECONCILIATION_TOLERANCE:
+            raise APIException("The sum of the statement transactions and of the funds transfer do not match")
+        response = serializer.save()
+        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(FundTransfer), journal_entry__object_id=response.id, account_id=next(iter(account_ids)))
+        transactions_ids = [transaction.id for transaction in transactions]
+        entries.update(status='Reconciled', transaction_ids=transactions_ids)
+        return Response({})
 
