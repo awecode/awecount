@@ -205,7 +205,7 @@ const unmatchMatchedTransactions = (matchedTransaction: {
 
                 </div>
                 <div class="px-4 py-2 text-right">
-                  <!-- <span :class="Number(calculateTotal(data.statement_transactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statement_transactions, true) }}</span> -->
+                  <span :class="Number(calculateTotal(data.statement_transactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statement_transactions, true) }}</span>
                 </div>
               </div>
 

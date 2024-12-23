@@ -4,6 +4,15 @@ import checkPermissions from 'src/composables/checkPermissions'
 import ChequeIssueForm from 'src/pages/bank/cheque-issue/ChequeIssueForm.vue'
 import FundTransferForm from 'src/pages/bank/fund-transfer/FundTransferForm.vue'
 
+type AccountDetails = {
+  ledger_id: number
+  id: number
+  name: string
+  account_number: string
+  cheque_no: string
+}
+
+
 const props = defineProps({
   acceptableDifference: {
     type: Number,
@@ -22,7 +31,7 @@ const props = defineProps({
     required: true,
   },
   accountDetails: {
-    type: Object,
+    type: Object as () => AccountDetails,
     required: true,
   }
 })
@@ -99,6 +108,8 @@ const statementPage = ref(1)
 const systemPage = ref(1)
 const bankScrollSection = ref()
 const systemScrollSection = ref()
+const isFundTransferModalOpen = ref(false)
+const isChequeIssueModalOpen = ref(false)
 
 const fetchUnmatchedBankTransactions = async () => {
   console.log('Start_date:', props.startDate)
@@ -437,7 +448,33 @@ const removeBankTransactions = (transaction: StatementTransactionData[]) => {
   })
 }
 
-const test = ref(true)
+
+const isAllStatementCredit = computed(() => {
+  return selectedStatementTransactions.value.every((t) => t.cr_amount)
+})
+
+const isAllStatementDebit = computed(() => {
+  return selectedStatementTransactions.value.every((t) => t.dr_amount)
+})
+
+const findLatestDate = (transactions: SystemTransactionData[] | StatementTransactionData[]) => {
+  let latestDate = ''
+  transactions.forEach((transaction) => {
+    if (transaction.date > latestDate) {
+      latestDate = transaction.date
+    }
+  })
+  return latestDate
+}
+
+const onFundTransferChequeIssueSuccess = () => {
+  statementResponse.value.results = statementResponse.value.results.filter((t) => {
+    return !selectedStatementTransactions.value.some((st) => st.id === t.id)
+  })
+  unselectAll()
+  isFundTransferModalOpen.value = false
+  isChequeIssueModalOpen.value = false
+}
 
 </script>
 <template>
@@ -447,10 +484,23 @@ const test = ref(true)
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
         <div class="bg-gray-100 p-4 pt-0 rounded-lg">
           <div class="flex space-x-3 w-fit ml-auto">
-            <button @click="openSalesInvoiceModal = true" v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length"
-              class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
-              Find Sales Invoices
-            </button>
+            <div v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length && (isAllStatementCredit || isAllStatementDebit)">
+              <div v-if="isAllStatementCredit">
+                <button @click="openSalesInvoiceModal = true" v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length"
+                  class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+                  Find Sales Invoices
+                </button>
+              </div>
+              <div v-else>
+                <button class="px-4 py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm mr-3" @click="isFundTransferModalOpen = true">
+                  Fund Transfer
+                </button>
+                <button @click="isChequeIssueModalOpen = true" class="px-4 py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+                  Cheque Issue
+                </button>
+              </div>
+
+            </div>
             <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
               Unselect All
             </button>
@@ -561,8 +611,9 @@ const test = ref(true)
 
               <div v-if="statementResponse.results.length" class="divide-y overflow-y-auto text-xs bank-section max-h-[600px]">
                 <q-infinite-scroll ref="bankScrollSection" @load="loadMoreStatementTransactions" :offset="250" scroll-target=".bank-section">
-                  <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b">
-                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)" />
+                  <div v-for="data in statementResponse.results" :key="data.id" class="px-4 hover:bg-gray-50 flex flex-nowrap items-center space-x-3 border-b cursor-pointer"
+                    @click="toggleStatementTransaction(data)">
+                    <input type="checkbox" class="px-4 h-4 w-4 text-green-600 rounded" :checked="isStatementTransactionSelected(data)" />
                     <div :key="data.id" class="py-3 pl-2 pr-0 border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative grow">
                       <div class="flex justify-between mb-1">
                         <span class="text-gray-500">{{ data.date }}</span>
@@ -629,16 +680,17 @@ const test = ref(true)
 
               <div v-if="systemResponse.results.length" class="divide-y overflow-y-auto system-section max-h-[600px]">
                 <q-infinite-scroll ref="systemScrollSection" @load="loadMoreSystemTransactions" :offset="250" scroll-target=".system-section">
-                  <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200">
-                    <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)"
-                      @change="toggleSystemTransaction(data)" />
+                  <div v-for="data in systemResponse.results" :key="data.id" class="flex items-center border-b px-3 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                    @click="toggleSystemTransaction(data)">
+                    <input type="checkbox" class="h-5 w-5 mr-3 text-green-600 rounded focus:ring-2 focus:ring-green-500" :checked="isSystemTransactionSelected(data)" />
 
                     <div class="flex-grow min-w-0">
                       <!-- Transaction Header -->
                       <div class="flex justify-between items-center mb-2">
                         <span class="text-xs text-gray-500">{{ data.date }}</span>
 
-                        <router-link v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
+                        <router-link @click.stop
+                          v-if="data.source_type && data.source_id && checkPermissions(getPermissionsWithSourceType[data.source_type as keyof typeof getPermissionsWithSourceType])"
                           :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
                           {{ data.source_type }}
                         </router-link>
@@ -693,9 +745,26 @@ const test = ref(true)
   <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
     :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @removeBankTransactions="removeBankTransactions" />
 
-  <q-dialog v-model="test">
+  <q-dialog v-model="isFundTransferModalOpen">
     <div class="min-w-[900px]">
-      <FundTransferForm class="w-full" :bank-account="props.accountDetails.id" />
+      <FundTransferForm class="w-full" :is-modal="true" :fromAccount="{
+        id: accountDetails.ledger_id,
+        name: accountDetails.name
+      }" :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))" :date="findLatestDate(selectedStatementTransactions)"
+        :statementIds="selectedStatementTransactions.map(t => t.id)" :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/'" @modalSignal="onFundTransferChequeIssueSuccess" />
+      />
+    </div>
+  </q-dialog>
+
+  <q-dialog v-model="isChequeIssueModalOpen">
+    <div class="min-w-[900px]">
+      <ChequeIssueForm class="w-full" :is-modal="true" :fromAccount="{
+        id: accountDetails.id,
+        name: accountDetails.name,
+        account_number: accountDetails.account_number,
+        cheque_no: accountDetails.cheque_no
+      }" :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))" :date="findLatestDate(selectedStatementTransactions)"
+        :statementIds="selectedStatementTransactions.map(t => t.id)" :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/'" @modalSignal="onFundTransferChequeIssueSuccess" />
     </div>
   </q-dialog>
 </template>
