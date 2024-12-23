@@ -14,7 +14,7 @@
             <div class="row q-col-gutter-md">
               <div class="col-md-6 col-12">
                 <n-auto-complete-v2 v-model="fields.bank_account" endpoint="v1/cheque-issue/create-defaults/bank_accounts" :options="formDefaults.collections?.bank_accounts" label="Bank Account *"
-                  :disabled="isEdit || !!fromAccount?.id" :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
+                  :disabled="isEdit || !!bankAccount?.id" :staticOption="fields.selected_bank_account_obj" :error="errors?.bank_account" @update:modelValue="updateBankAccount" />
               </div>
               <date-picker v-model="fields.date" class="col-md-6 col-12" label="Date *" :error-message="errors.date" :error="!!errors.date"></date-picker>
             </div>
@@ -112,7 +112,7 @@ import formatNumberWithCommas from 'src/composables/formatNumberWithComma'
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: {
-    fromAccount: {
+    bankAccount: {
       type: Object,
       required: false,
     },
@@ -153,9 +153,10 @@ export default {
           ' | Awecount',
       }
     })
-    if (props.fromAccount) {
-      formData.fields.value.bank_account = formData.fields.value.bank_account || props.fromAccount.id
-      formData.fields.selected_bank_account_obj = props.fromAccount
+    if (props.bankAccount && !formData.isEdit.value) {
+      formData.fields.value.bank_account = formData.fields.value.bank_account || props.bankAccount.id
+      formData.fields.value.cheque_no = formData.fields.cheque_no || props.bankAccount.cheque_no
+      formData.fields.value.selected_bank_account_obj = props.bankAccount
     }
     if (props.amount) {
       formData.fields.value.amount = formData.fields.value.amount || props.amount
