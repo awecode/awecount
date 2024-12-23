@@ -141,10 +141,6 @@ class PartnerItemSelectSerializer(serializers.Serializer):
             )
             category = row_item.get("category")
             if category:
-                if category.company_id != self.context["request"].company_id:
-                    raise SuspiciousOperation(
-                        "Category does not belong to the company."
-                    )
                 if category.sales_account:
                     item.sales_account_type = "category"
                     item.sales_account = category.dedicated_sales_account
@@ -303,7 +299,12 @@ class PartnerPurchaseVoucherCreateSerializer(
         if validated_data.get("voucher_no") == "":
             validated_data["voucher_no"] = None
         request = self.context["request"]
-        purchase_orders = validated_data.pop("purchase_orders", None)
+        purchase_orders = validated_data.pop("purchase_orders", [])
+        if any(
+            purchase_order.company_id != request.company_id
+            for purchase_order in purchase_orders
+        ):
+            raise SuspiciousOperation("Purchase order does not belong to the company.")
         self.assign_fiscal_year(validated_data, instance=None)
         self.assign_discount_obj(validated_data)
         validated_data["company_id"] = request.company_id

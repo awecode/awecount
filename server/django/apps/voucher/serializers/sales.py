@@ -10,9 +10,8 @@ from rest_framework.exceptions import ValidationError
 
 from apps.bank.models import ChequeDeposit
 from apps.ledger.serializers import PartyMinSerializer
-from apps.product.models import Item, Unit
+from apps.product.models import Item
 from apps.product.serializers import ItemSalesSerializer
-from apps.tax.models import TaxScheme
 from apps.tax.serializers import TaxSchemeSerializer
 from apps.voucher.models import Challan, ChallanRow, PaymentReceipt, SalesAgent
 from apps.voucher.models.discounts import PurchaseDiscount
@@ -242,44 +241,6 @@ class SalesVoucherRowSerializer(
     selected_item_obj = ItemSalesSerializer(read_only=True, source="item")
     selected_unit_obj = GenericSerializer(read_only=True, source="unit")
 
-    def validate(self, attrs):
-        request = self.context["request"]
-        if attrs.get("discount_type") and str(attrs.get("discount_type")).isdigit():
-            discount = SalesDiscount.objects.filter(
-                id=attrs.get("discount_type")
-            ).first()
-            if not discount:
-                raise ValidationError(
-                    {"discount_type": ["Discount type does not exist."]},
-                )
-            if discount.company_id != request.company_id:
-                raise SuspiciousOperation(
-                    "Discount type does not belong to the company."
-                )
-
-        item = Item.objects.filter(id=attrs.get("item_id")).first()
-        if not item:
-            raise serializers.ValidationError({"item_id": ["Item does not exist."]})
-        if item.company_id != request.company_id:
-            raise SuspiciousOperation("Item does not belong to the company.")
-
-        tax_scheme = TaxScheme.objects.filter(id=attrs.get("tax_scheme_id")).first()
-        if not tax_scheme:
-            raise serializers.ValidationError(
-                {"tax_scheme_id": ["Tax Scheme does not exist."]}
-            )
-        if tax_scheme.company_id != request.company_id:
-            raise SuspiciousOperation("Tax Scheme does not belong to the company.")
-
-        if attrs.get("unit_id"):
-            unit = Unit.objects.filter(id=attrs.get("unit_id")).first()
-            if not unit:
-                raise serializers.ValidationError({"unit_id": ["Unit does not exist."]})
-            if unit.company_id != request.company_id:
-                raise SuspiciousOperation("Unit does not belong to the company.")
-
-        return super().validate(attrs)
-
     def validate_discount(self, value):
         if not value:
             value = 0
@@ -348,34 +309,6 @@ class SalesVoucherCreateSerializer(
             raise ValidationError(
                 {"party": ["Party is required for a credit issue."]},
             )
-
-        if data.get("discount_type") and str(data.get("discount_type")).isdigit():
-            discount = SalesDiscount.objects.filter(
-                id=data.get("discount_type")
-            ).first()
-            if not discount:
-                raise ValidationError(
-                    {"discount_type": "Discount type does not exist."}
-                )
-            if discount.company_id != request.company_id:
-                raise SuspiciousOperation(
-                    "Discount type does not belong to the company."
-                )
-
-        if data.get("party") and data.get("party").company_id != request.company_id:
-            raise SuspiciousOperation("Party does not belong to the company.")
-
-        if (
-            data.get("payment_mode")
-            and data.get("payment_mode").company_id != request.company_id
-        ):
-            raise SuspiciousOperation("Payment mode does not belong to the company.")
-
-        if (
-            data.get("sales_agent")
-            and data.get("sales_agent").company_id != request.company_id
-        ):
-            raise SuspiciousOperation("Sales agent does not belong to the company.")
 
         if data.get("discount") and data.get("discount") < 0:
             raise ValidationError({"discount": ["Discount cannot be negative."]})
