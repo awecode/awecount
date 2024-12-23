@@ -365,8 +365,27 @@ async function parseExcelFile(file: File): Promise<void> {
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       workbook.SheetNames.forEach((sheetName) => {
         const worksheet = workbook.Sheets[sheetName]
-        const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
-        const parsedData = parseXLSXSheet(sheetData)
+        // const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1,  raw: true }) as any[][]
+        // Apply formatting
+        const formattedData = []
+        const range = XLSX.utils.decode_range(worksheet['!ref'] ?? '') // Get the sheet range
+
+        for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
+          const row = []
+          for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: rowNum, c: colNum })
+            const cell = worksheet[cellAddress]
+            if (cell) {
+              // Format the cell if it exists
+              row.push(XLSX.utils.format_cell(cell))
+            } else {
+              // Push an empty value if the cell is undefined
+              row.push(null)
+            }
+          }
+          formattedData.push(row)
+        }
+        const parsedData = parseXLSXSheet(formattedData)
         const filteredData = parsedData.filter((row) => Object.keys(row).length > 0)
         statementData.value.push(...filteredData)
       })
