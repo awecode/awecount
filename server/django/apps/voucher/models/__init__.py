@@ -15,6 +15,7 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.db.models import Prefetch, Q
+from django.db.models.signals import m2m_changed
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django_q.models import Schedule
@@ -42,7 +43,7 @@ from apps.tax.models import TaxScheme
 from apps.users.models import User
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import decimalize, nepdate
-from awecount.libs.db import CompanyBaseModel
+from awecount.libs.db import CompanyBaseModel, validate_company_in_m2m
 from awecount.libs.helpers import (
     deserialize_request,
     get_relative_file_path,
@@ -1984,3 +1985,34 @@ auditlog.register(CreditNote)
 auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
+
+
+m2m_changed.connect(
+    validate_company_in_m2m,
+    sender=SalesVoucher.challans.through,
+    dispatch_uid="validate_company_in_m2m_salesvoucher_challans",
+)
+
+m2m_changed.connect(
+    validate_company_in_m2m,
+    sender=PurchaseVoucher.purchase_orders.through,
+    dispatch_uid="validate_company_in_m2m_purchasevoucher_purchase_orders",
+)
+
+m2m_changed.connect(
+    validate_company_in_m2m,
+    sender=CreditNote.invoices.through,
+    dispatch_uid="validate_company_in_m2m_creditnote_invoices",
+)
+
+m2m_changed.connect(
+    validate_company_in_m2m,
+    sender=DebitNote.invoices.through,
+    dispatch_uid="validate_company_in_m2m_debitnote_invoices",
+)
+
+m2m_changed.connect(
+    validate_company_in_m2m,
+    sender=PaymentReceipt.invoices.through,
+    dispatch_uid="validate_company_in_m2m_paymentreceipt_invoices",
+)

@@ -746,7 +746,8 @@ class SalesVoucherViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                     voucher_no=request.query_params.get("invoice_no"),
                     fiscal_year_id=request.query_params.get("fiscal_year"),
                     queryset=qs,
-                )
+                ),
+                context={"request": self.request},
             ).data
         )
 
@@ -2419,7 +2420,9 @@ class ChallanViewSet(InputChoiceMixin, DeleteRows, CRULViewSet):
                 "discount_obj", "bank_account", "company__sales_setting", "party"
             )
         )
-        data = SalesVoucherDetailSerializer(get_object_or_404(pk=pk, queryset=qs)).data
+        data = SalesVoucherDetailSerializer(
+            get_object_or_404(pk=pk, queryset=qs), context={"request": request}
+        ).data
         data["can_update_issued"] = request.company.enable_sales_invoice_update
         return Response(data)
 
