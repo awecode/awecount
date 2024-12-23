@@ -758,13 +758,13 @@ const onFundTransferChequeIssueSuccess = () => {
 
   <q-dialog v-model="isChequeIssueModalOpen">
     <div class="min-w-[900px]">
-      <ChequeIssueForm class="w-full" :is-modal="true" :fromAccount="{
+      <ChequeIssueForm class="w-full" :is-modal="true" :bankAccount="{
         id: accountDetails.id,
         name: accountDetails.name,
         account_number: accountDetails.account_number,
         cheque_no: accountDetails.cheque_no
       }" :amount="Math.abs(Number(calculateTotal(selectedStatementTransactions, true)))" :date="findLatestDate(selectedStatementTransactions)"
-        :statementIds="selectedStatementTransactions.map(t => t.id)" :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-funds-transfer/'" @modalSignal="onFundTransferChequeIssueSuccess" />
+        :statementIds="selectedStatementTransactions.map(t => t.id)" :endpoint="'v1/bank-reconciliation/reconcile-transactions-with-cheque-issue/'" @modalSignal="onFundTransferChequeIssueSuccess" />
     </div>
   </q-dialog>
 </template>
