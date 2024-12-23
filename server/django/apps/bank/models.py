@@ -2,7 +2,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from rest_framework.exceptions import ValidationError as RestValidatoinError
+from rest_framework.exceptions import ValidationError as RestValidationError
 
 from apps.company.models import Company
 from apps.ledger.models import (
@@ -38,18 +38,18 @@ class BankAccount(CompanyBaseModel):
     def save(self, *args, **kwargs):
         if self.is_wallet:
             if not self.bank_name:
-                raise RestValidatoinError({"bank_name": ["Wallet name is required!"]})
+                raise RestValidationError({"bank_name": ["Wallet name is required!"]})
         else:
             if not self.account_number:
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"account_number": ["Account Number is required!"]}
                 )
             if not self.next_cheque_no:
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"next_cheque_no": ["Cheque No. can not be empty value!"]}
                 )
             elif not self.next_cheque_no.isdigit():
-                raise RestValidatoinError(
+                raise RestValidationError(
                     {"next_cheque_no": ["Cheque No. can only contain digits!"]}
                 )
         super().save(*args, **kwargs)
