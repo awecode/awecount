@@ -14,6 +14,7 @@ interface StatementInfo {
   total_reconciled: number,
   total_unreconciled: number
 }
+const $q = useQuasar()
 
 
 const statementInfo: Ref<StatementInfo | null> = ref(null)
@@ -32,6 +33,7 @@ const {
   onFilterUpdate,
   resetFilters,
   onRequest,
+  loadData
 } = useList(endpoint)
 
 type align = 'left' | 'center' | 'right'
@@ -78,6 +80,13 @@ const columns = [
     field: 'status',
     sortable: true
   },
+  // Action section
+  {
+    name: 'actions',
+    align: 'center' as align,
+    label: 'Actions',
+    field: 'actions'
+  }
 ]
 
 type SystemTransactionData = {
@@ -89,6 +98,17 @@ type SystemTransactionData = {
   cr_amount: string | null,
   status: string,
   counterpart_accounts: { dr_amount: string | null, cr_amount: string | null }[]
+}
+
+
+type StatementTransactionData = {
+  id: number,
+  date: string,
+  description: string,
+  dr_amount: string | null,
+  cr_amount: string | null,
+  status: string,
+  transaction_ids: number[],
 }
 
 const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) => {
@@ -196,6 +216,63 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
   return Array.from(sourceMap.values())
 }
 
+const unmatchTransactions = async (transactions: StatementTransactionData[]) => {
+  useApi('v1/bank-reconciliation/unmatch-transactions/', {
+    method: 'POST',
+    body: {
+      statement_ids: transactions.map(t => t.id),
+    }
+  }).then(() => {
+    loadData()
+    $q.notify({
+      color: 'green-6',
+      message: 'Transaction unmatched successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+  }).catch((error) => {
+    console.log(error)
+    $q.notify({
+      color: 'red-6',
+      message: 'Failed to unmatch the transaction',
+      icon: 'error',
+      position: 'top-right',
+    })
+  })
+}
+
+const deleteTransactions = async (transactions: StatementTransactionData[]) => {
+  $q.dialog({
+    title: '<span class="text-red">Delete?</span>',
+    message: 'Are you sure you want to delete?',
+    cancel: true,
+    html: true,
+  }).onOk(() => {
+    useApi('v1/bank-reconciliation/unmatch-transactions/', {
+      method: 'POST',
+      body: {
+        statement_ids: transactions.map(t => t.id),
+      }
+    }).then(() => {
+      loadData()
+      $q.notify({
+        color: 'green-6',
+        message: 'Transaction removed successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+    }).catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to remove the transaction',
+        icon: 'error',
+        position: 'top-right',
+      })
+    })
+  })
+
+}
 
 </script>
 
@@ -330,7 +407,15 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
 
         <template v-slot:body-cell-status="props">
           <td class="text-center">
-            <q-chip :color="props.row.statement_transactions[0].status === 'Reconciled' ? 'green' : props.row.statement_transactions[0].status === 'Matched' ? 'orange' : 'red'" class="text-white" :label="props.row.statement_transactions[0].status" />
+            <q-chip :color="props.row.statement_transactions[0].status === 'Reconciled' ? 'green' : props.row.statement_transactions[0].status === 'Matched' ? 'orange' : 'red'" class="text-white"
+              :label="props.row.statement_transactions[0].status" />
+          </td>
+        </template>
+        <template v-slot:body-cell-actions="props">
+          <td class="text-center flex justify-end">
+            <q-btn v-if="props.row.statement_transactions[0].status === 'Matched' || props.row.statement_transactions[0].status === 'Reconciled'" color="blue" label="Unmatch"
+              @click="unmatchTransactions(props.row.statement_transactions)" />
+            <q-btn color="red" icon="delete" class="ml-2" @click="deleteTransactions(props.row.statement_transactions)" />
           </td>
         </template>
       </q-table>
