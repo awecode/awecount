@@ -34,5 +34,3 @@ class VoucherConfig(AppConfig):
                     sender=field.remote_field.through,
                     dispatch_uid=f"{model.__name__}_{field.name}_m2m_changed",
                 )
-
-                print(f"Connected m2m_changed signal for {model.__name__}.{field.name}")
