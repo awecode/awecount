@@ -1985,34 +1985,3 @@ auditlog.register(CreditNote)
 auditlog.register(CreditNoteRow)
 auditlog.register(DebitNote)
 auditlog.register(DebitNoteRow)
-
-
-m2m_changed.connect(
-    validate_company_in_m2m,
-    sender=SalesVoucher.challans.through,
-    dispatch_uid="validate_company_in_m2m_salesvoucher_challans",
-)
-
-m2m_changed.connect(
-    validate_company_in_m2m,
-    sender=PurchaseVoucher.purchase_orders.through,
-    dispatch_uid="validate_company_in_m2m_purchasevoucher_purchase_orders",
-)
-
-m2m_changed.connect(
-    validate_company_in_m2m,
-    sender=CreditNote.invoices.through,
-    dispatch_uid="validate_company_in_m2m_creditnote_invoices",
-)
-
-m2m_changed.connect(
-    validate_company_in_m2m,
-    sender=DebitNote.invoices.through,
-    dispatch_uid="validate_company_in_m2m_debitnote_invoices",
-)
-
-m2m_changed.connect(
-    validate_company_in_m2m,
-    sender=PaymentReceipt.invoices.through,
-    dispatch_uid="validate_company_in_m2m_paymentreceipt_invoices",
-)
