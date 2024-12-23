@@ -4,6 +4,7 @@ from itertools import chain, combinations
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Case, Q, When
