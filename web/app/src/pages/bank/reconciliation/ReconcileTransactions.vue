@@ -12,7 +12,7 @@
         <!-- <q-btn icon="mdi-file-upload-outline" color="green" label="Go to List" @click="router.push('/bank/reconciliation')" /> -->
       </div>
     </div>
-    <BankReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
+    <ReconciliationTable v-if="accountDetails" :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" :startDate="startDate" :endDate="endDate"
       :accountDetails="accountDetails" />
   </q-page>
 </template>

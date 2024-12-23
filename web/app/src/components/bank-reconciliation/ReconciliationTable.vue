@@ -742,7 +742,7 @@ const onFundTransferChequeIssueSuccess = () => {
 
     </div>
   </div>
-  <BankReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
+  <ReconciliationSalesInvoicesModal v-if="openSalesInvoiceModal" v-model="openSalesInvoiceModal" :statementTransactions="selectedStatementTransactions" :startDate="startDate" :endDate="endDate"
     :acceptableDifference="acceptableDifference" :adjustmentThreshold="adjustmentThreshold" @removeBankTransactions="removeBankTransactions" />
 
   <q-dialog v-model="isFundTransferModalOpen">
