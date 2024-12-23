@@ -80,7 +80,7 @@ const formData = useForm(endpoint, {
   getDefaults: true,
   queryParams: { type: `${capitalizedType} Voucher` },
   successRoute: `/${props.type}-voucher/recurring-template/list/`,
-  createDefaultsEndpoint: `create-defaults/?type=${capitalizedType} Voucher`,
+  createDefaultsEndpoint: endpoint + `create-defaults/?type=${capitalizedType} Voucher`,
 })
 
 const { fields, formDefaults, errors, isEdit, loading, submitForm, today } =
