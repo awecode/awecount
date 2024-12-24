@@ -27,6 +27,7 @@ class Category(MPTTModel, CompanyBaseModel):
         "self", null=True, related_name="children", on_delete=models.SET_NULL
     )
     code = models.CharField(max_length=20, null=True, blank=True)
+    system_code = models.CharField(max_length=20, null=True, blank=True)
     default = models.BooleanField(default=False, editable=False)
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="ledger_categories"
@@ -91,6 +92,7 @@ class Category(MPTTModel, CompanyBaseModel):
 
 class Account(CompanyBaseModel):
     code = models.CharField(max_length=50, blank=True, null=True)
+    system_code = models.CharField(max_length=20, null=True, blank=True)
     name = models.CharField(max_length=255)
     # current_dr and current_cr may not always be exact
     current_dr = models.FloatField(null=True, blank=True)
