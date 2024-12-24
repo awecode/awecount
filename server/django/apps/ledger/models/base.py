@@ -444,6 +444,7 @@ class Transaction(models.Model):
     type = models.CharField(
         choices=TRANSACTION_TYPES, max_length=25, default=TRANSACTION_TYPES[0][0]
     )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def get_amount(self):
         return self.dr_amount - self.cr_amount
