@@ -128,7 +128,7 @@ const onSubmitClick = () => {
                 :options="formDefaults.collections?.units"
                 :endpoint="`/api/company/${$route.params.company}/inventory-categories/create-defaults/units`"
                 :static-option="fields.selected_unit_obj"
-                :modal-component="checkPermissions('UnitCreate') ? UnitForm : null"
+                :modal-component="checkPermissions('unit.create') ? UnitForm : null"
                 :error="errors.default_unit_id"
               />
             </div>
@@ -137,7 +137,7 @@ const onSubmitClick = () => {
                 v-model="fields.default_tax_scheme_id"
                 label="Tax Scheme"
                 :options="formDefaults.collections?.tax_scheme"
-                :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
+                :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                 :error="errors.default_tax_scheme_id"
               />
             </div>
@@ -331,7 +331,7 @@ const onSubmitClick = () => {
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('InventoryCategoryModify') && isEdit"
+            v-if="checkPermissions('inventorycategory.modify') && isEdit"
             :loading="loading"
             color="green"
             label="Update"
@@ -340,7 +340,7 @@ const onSubmitClick = () => {
             @click.prevent="onSubmitClick"
           />
           <q-btn
-            v-if="checkPermissions('InventoryCategoryCreate') && !isEdit"
+            v-if="checkPermissions('inventorycategory.create') && !isEdit"
             :loading="loading"
             color="green"
             label="Create"

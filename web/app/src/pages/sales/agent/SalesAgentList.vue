@@ -32,7 +32,7 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('SalesAgentCreate')"
+        v-if="checkPermissions('salesagent.create')"
         color="green"
         :to="`/${$route.params.company}/sales-agent/create/`"
         label="Sales Agent"
@@ -54,7 +54,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('SalesAgentModify')"
+            v-if="checkPermissions('salesagent.modify')"
             class="text-blue l-edit-btn whitespace-normal"
             style="text-decoration: none"
             :to="`/${$route.params.company}/sales-agent/${props.row.id}/`"

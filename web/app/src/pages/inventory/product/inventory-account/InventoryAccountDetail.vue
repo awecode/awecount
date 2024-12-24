@@ -137,7 +137,7 @@ function getVoucherUrl(row) {
   if (source_type === 'Account Opening Balance') {
     return `/${route.params.company}/account/opening-balance/${row.source_id}/edit/`
   }
-  if (source_type === 'Item') return `/${route.params.company}/items/details/${row.source_id}/`
+  if (source_type === 'Item') return `/${route.params.company}/items/${row.source_id}/`
   // added
   if (source_type === 'Fund Transfer') {
     return `/${route.params.company}/bank/fund/fund-transfer/${row.source_id}/edit/`
@@ -175,8 +175,8 @@ const getPermissionsWithSourceType = {
     <div class="flex justify-between">
       <div class="text-h5">
         <router-link
-          v-if="checkPermissions('InventoryAccountView')"
-          :to="`/${$route.params.company}/items/details/${fields?.item}/`"
+          v-if="checkPermissions('inventoryaccount.view')"
+          :to="`/${$route.params.company}/items/${fields?.item}/`"
           style="font-weight: 500; text-decoration: none"
           class="text-blue"
         >

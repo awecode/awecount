@@ -219,7 +219,7 @@ const today = DateConverter.getRepresentation(
       <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
         <div>
           <q-btn
-            v-if="checkPermissions('JournalVoucherModify') && fields?.status !== 'Cancelled'"
+            v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'"
             :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`"
             color="orange"
             icon="edit"
@@ -227,7 +227,7 @@ const today = DateConverter.getRepresentation(
             class="text-h7 q-py-sm"
           />
         </div>
-        <div v-if="fields?.status == 'Approved' && checkPermissions('JournalVoucherCancel')">
+        <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">
           <q-btn color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" @click.prevent="isDeleteOpen = true" />
         </div>
       </div>

@@ -52,7 +52,7 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/bank_accounts`"
                 :static-option="fields.selected_bank_account_obj"
                 label="Bank Account *"
-                :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null"
+                :modal-component="checkPermissions('bankaccount.create') ? CreateAccount : null"
                 :error="errors?.bank_account"
               />
             </div>
@@ -63,7 +63,7 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/bank-cash-deposits/create-defaults/benefactors`"
                 :static-option="fields.selected_benefactor_obj"
                 label="Benefactor *"
-                :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null"
+                :modal-component="checkPermissions('account.create') ? BenefactorForm : null"
                 :error="errors?.benefactor"
               />
             </div>
@@ -116,7 +116,7 @@ export default {
         </q-card>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('BankCashDepositCreate') && !isEdit"
+            v-if="checkPermissions('bankcashdeposit.create') && !isEdit"
             color="green"
             label="Create"
             type="submit"
@@ -124,7 +124,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('BankCashDepositModify') && isEdit"
+            v-if="checkPermissions('bankcashdeposit.modify') && isEdit"
             color="green"
             label="Update"
             type="submit"
@@ -132,7 +132,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="fields?.status == 'Cleared' && checkPermissions('BankCashDepositCancel')"
+            v-if="fields?.status == 'Cleared' && checkPermissions('bankcashdeposit.cancel')"
             icon="block"
             color="red"
             label="Cancel"
@@ -140,7 +140,7 @@ export default {
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('BankCashDepositModify')"
+            v-if="fields?.status && fields?.status != 'Cancelled' && checkPermissions('bankcashdeposit.modify')"
             :to="`/${$route.params.company}/journal-entries/bank-cash-deposits/${id}/`"
             color="blue"
             icon="library_books"

@@ -30,7 +30,7 @@ const {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('BillOfMaterialCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('billofmaterial.create')" class="row justify-end q-gutter-md">
       <q-btn
         color="green"
         class="add-btn"
@@ -64,7 +64,7 @@ const {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('BillOfMaterialModify')"
+            v-if="checkPermissions('billofmaterial.modify')"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"

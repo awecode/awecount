@@ -174,7 +174,7 @@ export default {
               <div class="col-3">
                 Receipt #
                 <router-link
-                  v-if="checkPermissions('PaymentReceiptView')"
+                  v-if="checkPermissions('paymentreceipt.view')"
                   style="font-weight: 500; text-decoration: none"
                   class="text-blue"
                   :to="`/${$route.params.company}/payment-receipt/${receipt.id}/view`"
@@ -205,14 +205,14 @@ export default {
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn
-              v-if="checkPermissions('SalesModify') && (fields.can_update_issued || fields?.status === 'Draft')"
+              v-if="checkPermissions('sales.modify') && (fields.can_update_issued || fields?.status === 'Draft')"
               color="orange-5"
               label="Edit"
               icon="edit"
               :to="`/${$route.params.company}/sales-voucher/${fields?.id}/`"
             />
             <q-btn
-              v-if="fields?.status === 'Issued' && checkPermissions('SalesModify')"
+              v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')"
               color="green-6"
               label="mark as paid"
               icon="mdi-check-all"
@@ -220,7 +220,7 @@ export default {
               @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
             />
             <q-btn
-              v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'"
+              v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"
               color="red-5"
               label="Cancel"
               icon="cancel"

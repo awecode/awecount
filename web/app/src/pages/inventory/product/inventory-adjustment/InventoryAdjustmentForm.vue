@@ -229,14 +229,14 @@ export default {
         </div>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('InventoryAdjustmentVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryadjustmentvoucher.delete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading"
             color="red"
             label="Cancel"
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="checkPermissions('InventoryAdjustmentVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryadjustmentvoucher.modify') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading"
             color="green"
             label="Update"
@@ -244,7 +244,7 @@ export default {
             @click.prevent="onSubmitClick(fields.status)"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('InventoryAdjustmentVoucherCreate')"
+            v-if="!isEdit && checkPermissions('inventoryadjustmentvoucher.create')"
             :loading="loading"
             color="green"
             label="Create"

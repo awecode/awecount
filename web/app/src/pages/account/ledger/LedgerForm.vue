@@ -86,7 +86,7 @@ export default {
               :options="categoryChoices"
               label="Category *"
               :static-option="fields.selected_category_obj"
-              :modal-component="checkPermissions('CategoryCreate') ? CategoryForm : null"
+              :modal-component="checkPermissions('category.create') ? CategoryForm : null"
               :error="errors?.category"
             />
             <n-auto-complete-v2
@@ -102,7 +102,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('AccountCreate') && !isEdit"
+            v-if="checkPermissions('account.create') && !isEdit"
             color="green"
             :loading="loading"
             label="Create"
@@ -111,7 +111,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('AccountModify') && isEdit"
+            v-if="checkPermissions('account.modify') && isEdit"
             color="green"
             :loading="loading"
             label="Update"

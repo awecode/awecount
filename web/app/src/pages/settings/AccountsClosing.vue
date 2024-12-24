@@ -49,7 +49,7 @@ watch(() => formDefaults.value, (newVal) => {
                 />
               </div>
             </div>
-            <q-btn v-if="checkPermissions('AccountClosingCreate')" class="q-mt-md" color="green" type="submit" :loading="loading">
+            <q-btn v-if="checkPermissions('accountclosing.create')" class="q-mt-md" color="green" type="submit" :loading="loading">
               Close Accounts
             </q-btn>
           </div>

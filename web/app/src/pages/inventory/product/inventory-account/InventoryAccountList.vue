@@ -69,7 +69,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('InventoryAccountView')"
+            v-if="checkPermissions('inventoryaccount.view')"
             color="blue"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
@@ -81,7 +81,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('InventoryAccountView')"
+            v-if="checkPermissions('inventoryaccount.view')"
             :to="`/${$route.params.company}/inventory-account/detail/${props.row.id}`"
             class="no-underline font-medium text-blue"
           >

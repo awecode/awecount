@@ -42,7 +42,7 @@ export default {
     <div class="row justify-end">
       <q-btn color="blue" label="Export Xls" icon-right="download" class="export-btn" @click="onDownloadXls" />
       <q-btn
-        v-if="checkPermissions('CreditNoteCreate')"
+        v-if="checkPermissions('creditnote.create')"
         color="green"
         :to="`/${$route.params.company}/credit-note/create/`"
         label="New Credit Note"
@@ -96,7 +96,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props" class="row justify center">
           <q-btn
-            v-if="checkPermissions('CreditNoteView')"
+            v-if="checkPermissions('creditnote.view')"
             color="blue"
             class="q-py-none q-px-md font-size-sm l-view-btn"
             style="font-size: 12px"
@@ -137,7 +137,7 @@ export default {
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('CreditNoteView')"
+              v-if="checkPermissions('creditnote.view')"
               :to="`/${$route.params.company}/credit-note/${props.row.id}/view`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"

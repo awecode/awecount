@@ -134,7 +134,7 @@ export default {
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
         <q-btn
-          v-if="checkPermissions('CreditNoteModify') && (fields.can_update_issued || fields.status === 'Draft')"
+          v-if="checkPermissions('creditnote.modify') && (fields.can_update_issued || fields.status === 'Draft')"
           color="orange-5"
           label="Edit"
           icon="edit"
@@ -148,7 +148,7 @@ export default {
           @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
         />
         <q-btn
-          v-if="checkPermissions('CreditNoteCancel')"
+          v-if="checkPermissions('creditnote.cancel')"
           color="red-5"
           label="Cancel"
           icon="cancel"

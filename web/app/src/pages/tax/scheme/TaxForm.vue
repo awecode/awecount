@@ -84,7 +84,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('TaxSchemeCreate') && !isEdit"
+            v-if="checkPermissions('taxscheme.create') && !isEdit"
             color="green"
             :loading="loading"
             label="Create"
@@ -93,7 +93,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('TaxSchemeModify') && isEdit"
+            v-if="checkPermissions('taxscheme.modify') && isEdit"
             color="green"
             :loading="loading"
             label="Update"

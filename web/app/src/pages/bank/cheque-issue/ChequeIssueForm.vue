@@ -238,7 +238,7 @@ export default {
                 @click="onChequePrint"
               />
               <q-btn
-                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('ChequeIssueCancel')"
+                v-if="['Issued', 'Cleared'].includes(fields.status) && checkPermissions('chequeissue.cancel')"
                 icon="block"
                 color="red"
                 label="Cancel"
@@ -248,7 +248,7 @@ export default {
             </div>
             <div>
               <q-btn
-                v-if="checkPermissions('ChequeIssueCreate') && !isEdit"
+                v-if="checkPermissions('chequeissue.create') && !isEdit"
                 color="green"
                 label="Create"
                 class="q-ml-auto"
@@ -256,7 +256,7 @@ export default {
                 @click.prevent="submitForm"
               />
               <q-btn
-                v-if="checkPermissions('ChequeIssueModify') && isEdit"
+                v-if="checkPermissions('chequeissue.modify') && isEdit"
                 color="green"
                 label="Update"
                 class="q-ml-auto"

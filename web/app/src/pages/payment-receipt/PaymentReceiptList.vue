@@ -70,7 +70,7 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('PaymentReceiptCreate')" class="row q-gutter-x-md justify-end">
+    <div v-if="checkPermissions('paymentreceipt.create')" class="row q-gutter-x-md justify-end">
       <q-btn color="green" :to="`/${$route.params.company}/payment-receipt/create/`" label="New Receipt" icon-right="add" class="add-btn" />
     </div>
     <q-table
@@ -175,7 +175,7 @@ export default {
           <div class="row align-center text-subtitle2 text-grey-8">
             <span v-for=" invoice in props.row.invoices " :key="invoice.id">
               <router-link
-                v-if="checkPermissions('SalesView')"
+                v-if="checkPermissions('sales.view')"
                 class="text-blue"
                 style="text-decoration: none"
                 :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
@@ -202,7 +202,7 @@ export default {
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
           <div class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptView')"
+              v-if="checkPermissions('paymentreceipt.view')"
               color="blue"
               label="View"
               class="q-py-none q-px-md font-size-sm l-view-btn"

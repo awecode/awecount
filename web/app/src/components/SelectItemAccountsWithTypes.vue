@@ -7,7 +7,7 @@
         <div>
             <n-auto-complete-v2 v-if="type === 'existing'" class="q-full-width" :label="`${label} Account`"
                 v-model="modalValue" :options="props.options" :endpoint="endpointLabelMap[props.label]"
-                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null" :error="error" :staticOption="injectOption" />
+                :modal-component="checkPermissions('account.create') ? LedgerForm : null" :error="error" :staticOption="injectOption" />
             <div v-else-if="type === 'dedicated'" class="h-full w-full items-center" style="display: flex; gap: 10px;">
                 <div v-if="dedicatedAccount && !usedInCategoryForm" class="w-full">
                   <q-input :label="label + ' Account'" class="w-full" disable :error="false" v-model="dedicatedAccountName"></q-input>

@@ -120,7 +120,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('BankAccountCreate') && !isEdit"
+            v-if="checkPermissions('bankaccount.create') && !isEdit"
             color="green"
             label="Create"
             class="q-ml-auto"
@@ -129,7 +129,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('BankAccountModify') && isEdit"
+            v-if="checkPermissions('bankaccount.modify') && isEdit"
             color="green"
             label="Update"
             class="q-ml-auto"

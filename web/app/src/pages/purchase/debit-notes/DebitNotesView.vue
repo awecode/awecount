@@ -256,7 +256,7 @@ export default {
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
           <q-btn
-            v-if="checkPermissions('DebitNoteModify')
+            v-if="checkPermissions('debitnote.modify')
               && (fields.can_update_issued || fields.status === 'Draft')
             "
             :to="`/${$route.params.company}/debit-note/${fields.id}`"
@@ -265,7 +265,7 @@ export default {
             icon="edit"
           />
           <q-btn
-            v-if="fields?.status === 'Issued' && checkPermissions('DebitNoteModify')
+            v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')
             "
             :loading="isLoading"
             color="green-6"
@@ -274,7 +274,7 @@ export default {
             @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')"
           />
           <q-btn
-            v-if="checkPermissions('DebitNoteCancel')"
+            v-if="checkPermissions('debitnote.cancel')"
             :loading="isLoading"
             color="red-5"
             label="Cancel"

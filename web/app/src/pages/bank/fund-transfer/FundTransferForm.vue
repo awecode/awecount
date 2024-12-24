@@ -141,7 +141,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('FundTransferCreate') && !isEdit"
+            v-if="checkPermissions('fundtransfer.create') && !isEdit"
             color="green"
             :loading="loading"
             label="Create"
@@ -149,7 +149,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('FundTransferModify') && isEdit"
+            v-if="checkPermissions('fundtransfer.modify') && isEdit"
             color="green"
             :loading="loading"
             label="Update"
@@ -157,7 +157,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="fields?.status == 'Issued' && checkPermissions('FundTransferCancel')"
+            v-if="fields?.status == 'Issued' && checkPermissions('fundtransfer.cancel')"
             :loading="loading"
             icon="block"
             color="red"

@@ -357,7 +357,7 @@ export default {
                     :options="formDefaults.collections?.parties"
                     label="Party"
                     :error="errors?.party ? errors?.party : null"
-                    :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
+                    :modal-component="checkPermissions('party.create') ? PartyForm : null
                     "
                     :static-option="fields.selected_party_obj"
                     :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
@@ -379,7 +379,7 @@ export default {
                   class="col-md-6 col-12"
                   label="Name on Invoice"
                   :options="aliases"
-                  :modal-component="checkPermissions('PartyAliasCreate') ? PartyAlias : null"
+                  :modal-component="checkPermissions('partyalias.create') ? PartyAlias : null"
                   :error="errors?.customer_name ? errors?.customer_name : null"
                   data-testid="alias-select"
                 />
@@ -426,7 +426,7 @@ export default {
                   label="Discount"
                   :error="errors?.discount_type ? errors?.discount_type : null"
                   :options="staticOptions.discount_types.concat(formDefaults.collections?.discounts)"
-                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                  :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
                 />
               </div>
               <div class="col-6 row">
@@ -561,7 +561,7 @@ export default {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="!isEdit && checkPermissions('SalesCreate')"
+          v-if="!isEdit && checkPermissions('sales.create')"
           :loading="loading"
           color="orange-8"
           label="Save Draft"
@@ -570,7 +570,7 @@ export default {
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
         />
         <q-btn
-          v-if="isEdit && fields.status === 'Draft' && checkPermissions('SalesModify')"
+          v-if="isEdit && fields.status === 'Draft' && checkPermissions('sales.modify')"
           :loading="loading"
           color="orange-8"
           :label="isEdit ? 'Update Draft' : 'Save Draft'"
@@ -579,7 +579,7 @@ export default {
           @click.prevent="() => onSubmitClick('Draft', fields, submitForm)"
         />
         <q-btn
-          v-if="checkPermissions('SalesCreate')"
+          v-if="checkPermissions('sales.create')"
           :loading="loading"
           color="green"
           :label="isEdit ? fields?.status === 'Issued' ? 'Update' : fields?.status === 'Draft' ? `Issue # ${formDefaults.options?.voucher_no || 1} from Draft` : 'update' : `Issue # ${formDefaults.options?.voucher_no || 1}`"

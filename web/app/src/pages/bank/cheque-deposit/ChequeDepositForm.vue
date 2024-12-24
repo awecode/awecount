@@ -64,7 +64,7 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/cheque-deposits/create-defaults/bank_accounts`"
                 :static-option="fields.selected_bank_account_obj"
                 label="Bank Account *"
-                :modal-component="checkPermissions('BankAccountCreate') ? CreateAccount : null"
+                :modal-component="checkPermissions('bankaccount.create') ? CreateAccount : null"
                 :error="errors?.bank_account"
               />
             </div>
@@ -75,7 +75,7 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/cheque-deposits/create-defaults/benefactors`"
                 :static-option="fields.selected_benefactor_obj"
                 label="Benefactor *"
-                :modal-component="checkPermissions('AccountCreate') ? BenefactorForm : null"
+                :modal-component="checkPermissions('account.create') ? BenefactorForm : null"
                 :error="errors?.benefactor"
               />
             </div>
@@ -146,7 +146,7 @@ export default {
     </q-card>
     <div class="row q-mt-md justify-end">
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate') && !isEdit"
+        v-if="checkPermissions('chequedeposit.create') && !isEdit"
         color="orange"
         icon="fa-solid fa-pen-to-square"
         :loading="loading"
@@ -156,7 +156,7 @@ export default {
         @click.prevent="onSubmitClick('Draft')"
       />
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate') && isEdit && fields?.status === 'Draft'"
+        v-if="checkPermissions('chequedeposit.create') && isEdit && fields?.status === 'Draft'"
         color="orange"
         icon="fa-solid fa-pen-to-square"
         :loading="loading"
@@ -164,8 +164,8 @@ export default {
         class="q-mr-md q-py-sm"
         @click.prevent="onSubmitClick('Draft')"
       />
-      <q-btn v-if="checkPermissions('ChequeDepositCreate') && !isEdit" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" :loading="loading" @click.prevent="onSubmitClick('Issued')" />
-      <q-btn v-if="checkPermissions('ChequeDepositModify') && isEdit" color="green-6" icon="fa-solid fa-floppy-disk" :label="fields.status === 'Draft' ? 'Issue' : 'Update'" type="submit" :loading="loading" @click.prevent="onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" />
+      <q-btn v-if="checkPermissions('chequedeposit.create') && !isEdit" color="green-6" icon="fa-solid fa-floppy-disk" label="Issue" :loading="loading" @click.prevent="onSubmitClick('Issued')" />
+      <q-btn v-if="checkPermissions('chequedeposit.modify') && isEdit" color="green-6" icon="fa-solid fa-floppy-disk" :label="fields.status === 'Draft' ? 'Issue' : 'Update'" type="submit" :loading="loading" @click.prevent="onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" />
     </div>
   </q-form>
 </template>

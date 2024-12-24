@@ -130,7 +130,7 @@ function onDeletClick() {
               @click.prevent="addRepresentetive(fields)"
             />
             <q-btn
-              v-if="checkPermissions('PartyDelete')"
+              v-if="checkPermissions('party.delete')"
               color="red-6"
               label="Delete"
               :loading="loading"
@@ -138,7 +138,7 @@ function onDeletClick() {
               @click.prevent="onDeletClick"
             />
             <q-btn
-              v-if="checkPermissions('PartyModify')"
+              v-if="checkPermissions('party.modify')"
               color="green"
               label="Update"
               :loading="loading"
@@ -148,7 +148,7 @@ function onDeletClick() {
             />
           </span>
           <q-btn
-            v-else-if="checkPermissions('PartyCreate')"
+            v-else-if="checkPermissions('party.create')"
             color="green"
             label="Create"
             :loading="loading"

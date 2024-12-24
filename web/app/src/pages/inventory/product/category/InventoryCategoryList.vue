@@ -31,7 +31,7 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('CategoryCreate')" class="row justify-end">
+    <div v-if="checkPermissions('category.create')" class="row justify-end">
       <q-btn color="green" :to="`/${$route.params.company}/inventory-category/create/`" label="New Category" class="q-ml-lg add-btn" icon-right="add" />
     </div>
     <q-table
@@ -59,7 +59,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             class="text-blue"
             style="text-decoration: none"
             :to="`/${$route.params.company}/inventory-category/${props.row.id}/`"

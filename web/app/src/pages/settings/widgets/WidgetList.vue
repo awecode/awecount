@@ -34,7 +34,7 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('WidgetCreate')"
+        v-if="checkPermissions('widget.create')"
         color="green"
         label="New Dashboard widget"
         icon-right="add"
@@ -56,7 +56,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('WidgetModify')"
+            v-if="checkPermissions('widget.modify')"
             :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`"
             class="text-blue l-edit-btn"
             style="text-decoration: none"

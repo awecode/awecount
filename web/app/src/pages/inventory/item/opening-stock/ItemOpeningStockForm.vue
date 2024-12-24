@@ -83,7 +83,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-right">
           <q-btn
-            v-if="isEdit && checkPermissions('AccountOpeningBalanceDelete')"
+            v-if="isEdit && checkPermissions('accountopeningbalance.delete')"
             :loading="loading"
             icon="delete"
             color="red"
@@ -92,7 +92,7 @@ export default {
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('AccountOpeningBalanceCreate')"
+            v-if="!isEdit && checkPermissions('accountopeningbalance.create')"
             :loading="loading"
             color="green"
             label="Create"
@@ -100,7 +100,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="isEdit && checkPermissions('AccountOpeningBalanceModify')"
+            v-if="isEdit && checkPermissions('accountopeningbalance.modify')"
             :loading="loading"
             color="green"
             label="Update"

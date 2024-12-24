@@ -220,14 +220,14 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherDelete') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryconversionvoucher.delete') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading"
             color="red"
             label="Cancel"
             @click.prevent="isDeleteOpen = true"
           />
           <q-btn
-            v-if="checkPermissions('InventoryConversionVoucherModify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('inventoryconversionvoucher.modify') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading"
             color="green"
             label="Update"
@@ -235,7 +235,7 @@ export default {
             @click.prevent="onSubmitClick(fields.status)"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('InventoryConversionVoucherCreate')"
+            v-if="!isEdit && checkPermissions('inventoryconversionvoucher.create')"
             :loading="loading"
             color="green"
             label="Create"

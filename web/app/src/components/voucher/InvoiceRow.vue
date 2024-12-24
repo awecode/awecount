@@ -237,7 +237,7 @@ export default {
             :error="errors?.item_id ? errors?.item_id[0] : rowEmpty ? 'Item is required' : ''"
             :modal-component="usedInPos || hasChallan
               ? false
-              : checkPermissions('InventoryAccountCreate')
+              : checkPermissions('inventoryaccount.create')
                 ? ItemForm
                 : null
             "

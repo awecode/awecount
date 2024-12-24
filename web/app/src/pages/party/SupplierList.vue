@@ -77,7 +77,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('PartyCreate')"
+        v-if="checkPermissions('party.create')"
         color="green"
         :to="`/${$route.params.company}/party/create/`"
         label="New party"
@@ -114,7 +114,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('PartyModify')"
+            v-if="checkPermissions('party.modify')"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-view-btn"
             style="font-size: 12px"
@@ -122,7 +122,7 @@ export default {
             :to="`/${$route.params.company}/party/${props.row.id}/`"
           />
           <q-btn
-            v-if="checkPermissions('PartyView')"
+            v-if="checkPermissions('party.view')"
             color="blue"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
             style="font-size: 12px"
@@ -134,7 +134,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('PartyView')"
+            v-if="checkPermissions('party.view')"
             :to="`/${$route.params.company}/parties/account/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue block"

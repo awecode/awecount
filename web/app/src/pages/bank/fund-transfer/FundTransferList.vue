@@ -63,7 +63,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('FundTransferCreate')"
+        v-if="checkPermissions('fundtransfer.create')"
         color="green"
         :to="`/${$route.params.company}/fund-transfer/create/`"
         label="New Fund Transfer"
@@ -152,7 +152,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('FundTransferModify')"
+            v-if="checkPermissions('fundtransfer.modify')"
             label="Edit"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
@@ -164,7 +164,7 @@ export default {
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('FundTransferModify')"
+            v-if="checkPermissions('fundtransfer.modify')"
             class="text-blue text-weight-medium"
             style="text-decoration: none"
             :to="`/${$route.params.company}/fund-transfer/${props.row.id}/`"

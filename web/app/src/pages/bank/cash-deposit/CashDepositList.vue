@@ -64,7 +64,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('BankCashDepositCreate')"
+        v-if="checkPermissions('bankcashdeposit.create')"
         color="green"
         :to="`/${$route.params.company}/cash-deposit/create/`"
         label="New Cash Deposit"
@@ -132,7 +132,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('BankCashDepositModify')"
+            v-if="checkPermissions('bankcashdeposit.modify')"
             label="Edit"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm"

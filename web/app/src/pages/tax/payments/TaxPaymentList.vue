@@ -68,7 +68,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('TaxPaymentCreate')"
+        v-if="checkPermissions('taxpayment.create')"
         color="green"
         :to="`/${$route.params.company}/tax-payment/create/`"
         label="New Tax Payment"
@@ -143,7 +143,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('TaxPaymentModify')"
+            v-if="checkPermissions('taxpayment.modify')"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"

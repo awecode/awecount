@@ -75,7 +75,7 @@ export default {
     <div class="flex gap-4 justify-end">
       <q-btn color="blue" label="Export" icon-right="download" class="export-btn" @click="onDownloadXls" />
       <q-btn
-        v-if="checkPermissions('ChequeIssueCreate')"
+        v-if="checkPermissions('chequeissue.create')"
         color="green"
         :to="`/${$route.params.company}/cheque-issue/create/`"
         label="New Cheque Issue"
@@ -138,7 +138,7 @@ export default {
       <template #body-cell-issued_to="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('ChequeIssueModify')"
+            v-if="checkPermissions('chequeissue.modify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
             :to="`/${$route.params.company}/cheque-issue/${props.row.id}/`"
@@ -170,7 +170,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('ChequeIssueModify')"
+            v-if="checkPermissions('chequeissue.modify')"
             label="Edit"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-view-btn"

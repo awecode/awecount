@@ -41,7 +41,7 @@ const {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('CategoryCreate')"
+        v-if="checkPermissions('category.create')"
         color="green"
         :to="`/${$route.params.company}/account-category/create/`"
         label="New Category"
@@ -93,7 +93,7 @@ const {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             color="orange-7"
             label="Edit"
             :to="`/${$route.params.company}/account-category/${props.row.id}/`"

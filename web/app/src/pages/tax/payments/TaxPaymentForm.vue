@@ -115,7 +115,7 @@ export default {
         <div class="q-pb-lg row justify-end q-gutter-x-md">
           <span v-if="fields.status !== 'Cancelled' && fields.status !== 'Paid'" class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('TaxPaymentCreate')"
+              v-if="checkPermissions('taxpayment.create')"
               color="orange-6"
               label="Save Draft"
               class="q-px-lg q-mb-sm"
@@ -124,7 +124,7 @@ export default {
               @click.prevent="submitWithStatus('Draft', submitForm)"
             />
             <q-btn
-              v-if="!!fields.status && isEdit && checkPermissions('TaxPaymentCancel')"
+              v-if="!!fields.status && isEdit && checkPermissions('taxpayment.cancel')"
               color="red-6"
               label="Cancel"
               icon="cancel"
@@ -133,7 +133,7 @@ export default {
               @click.prevent="isDeleteOpen = true"
             />
             <q-btn
-              v-if="checkPermissions('TaxPaymentCreate')"
+              v-if="checkPermissions('taxpayment.create')"
               color="green-6"
               label="Mark as paid"
               class="q-px-lg q-mb-sm"

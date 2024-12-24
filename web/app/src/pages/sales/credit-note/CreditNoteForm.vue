@@ -298,7 +298,7 @@ export default {
                   label="Discount"
                   :error="errors?.discount_type"
                   :options="discountOptionsComputed"
-                  :modal-component="checkPermissions('SalesDiscountCreate') ? SalesDiscountForm : null"
+                  :modal-component="checkPermissions('salesdiscount.create') ? SalesDiscountForm : null"
                 />
               </div>
               <div
@@ -392,7 +392,7 @@ export default {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="checkPermissions('CreditNoteCreate') && (!isEdit || isEdit && fields.status === 'Draft')"
+          v-if="checkPermissions('creditnote.create') && (!isEdit || isEdit && fields.status === 'Draft')"
           :loading="loading"
           color="orange"
           :label="isEdit ? 'Update Draft' : 'Save Draft'"

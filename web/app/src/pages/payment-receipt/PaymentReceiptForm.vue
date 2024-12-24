@@ -237,7 +237,7 @@ export default {
 
           <div class="q-mt-lg row q-pb-lg flex justify-end">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptCreate') && !isEdit"
+              v-if="checkPermissions('paymentreceipt.create') && !isEdit"
               :loading="loading"
               color="green"
               label="Create"
@@ -245,7 +245,7 @@ export default {
               @click.prevent="() => onSubmitClick('Issued', fields, submitForm)"
             />
             <q-btn
-              v-if="checkPermissions('PaymentReceiptModify') && isEdit"
+              v-if="checkPermissions('paymentreceipt.modify') && isEdit"
               :loading="loading"
               color="green"
               label="Update"

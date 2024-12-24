@@ -119,21 +119,21 @@ export default {
       </q-card-section>
       <div class="q-ma-md row q-pb-lg q-gutter-md justify-end">
         <q-btn
-          v-if="checkPermissions('WidgetCreate') && !isEdit"
+          v-if="checkPermissions('widget.create') && !isEdit"
           color="green-8"
           label="Create"
           type="submit"
           @click.prevent="submitForm"
         />
         <q-btn
-          v-if="isEdit && checkPermissions('TaxPaymentCancel')"
+          v-if="isEdit && checkPermissions('taxpayment.cancel')"
           color="red-6"
           label="Delete"
           icon="cancel"
           @click.prevent="onCancelClick"
         />
         <q-btn
-          v-if="checkPermissions('WidgetModify') && isEdit"
+          v-if="checkPermissions('widget.modify') && isEdit"
           color="green-8"
           label="Update"
           type="submit"

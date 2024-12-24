@@ -221,14 +221,14 @@ export default {
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
             <q-btn
-              v-if="checkPermissions('InventoryAdjustmentVoucherModify') && (fields?.status !== 'Cancelled')"
+              v-if="checkPermissions('inventoryadjustmentvoucher.modify') && (fields?.status !== 'Cancelled')"
               color="orange-5"
               label="Edit"
               icon="edit"
               :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`"
             />
             <q-btn
-              v-if="checkPermissions('SalesCancel') && fields?.status !== 'Cancelled'"
+              v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"
               color="red-5"
               label="Cancel"
               icon="cancel"

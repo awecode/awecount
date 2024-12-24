@@ -60,7 +60,7 @@ export default {
       </q-card-section>
       <div class="q-ma-md row q-pb-lg justify-end">
         <q-btn
-          v-if="checkPermissions('SalesAgentCreate') && !isEdit"
+          v-if="checkPermissions('salesagent.create') && !isEdit"
           color="green"
           :loading="loading"
           label="Create"
@@ -68,7 +68,7 @@ export default {
           @click.prevent="submitForm"
         />
         <q-btn
-          v-if="checkPermissions('SalesAgentModify') && isEdit"
+          v-if="checkPermissions('salesagent.modify') && isEdit"
           color="green"
           :loading="loading"
           label="Update"

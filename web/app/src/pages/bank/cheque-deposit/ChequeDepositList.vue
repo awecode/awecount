@@ -49,7 +49,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('ChequeDepositCreate')"
+        v-if="checkPermissions('chequedeposit.create')"
         color="green"
         :to="`/${$route.params.company}/cheque-deposit/create/`"
         label="New Cheque Deposit"

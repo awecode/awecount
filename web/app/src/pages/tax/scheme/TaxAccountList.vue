@@ -59,7 +59,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('TaxSchemeCreate')"
+        v-if="checkPermissions('taxscheme.create')"
         color="green"
         :to="`/${$route.params.company}/taxes/create/`"
         label="New Tax Scheme"
@@ -82,7 +82,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('TaxSchemeModify')"
+            v-if="checkPermissions('taxscheme.modify')"
             :to="`/${$route.params.company}/taxes/${props.row.id}/`"
             style="text-decoration: none"
             class="text-blue"

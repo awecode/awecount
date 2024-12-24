@@ -139,7 +139,7 @@ export default {
         <q-td :props="props">
           <div class="row align-center">
             <router-link
-              v-if="checkPermissions('SalesView')"
+              v-if="checkPermissions('sales.view')"
               style="font-weight: 500; text-decoration: none"
               class="text-blue l-view-btn"
               :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view`"

@@ -215,7 +215,7 @@ export default {
       </div>
       <div class="row q-ma-md justify-end">
         <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
           color="orange-7"
           icon="fa-solid fa-pen-to-square"
           label="Draft"
@@ -224,7 +224,7 @@ export default {
           @click.prevent="onSubmitClick('Unapproved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherModify')
+          v-if="checkPermissions('journalvoucher.modify')
             && isEdit
             && fields.status === 'Draft'
           "
@@ -236,14 +236,14 @@ export default {
           @click.prevent="onSubmitClick('Unapproved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherCreate') && !isEdit"
+          v-if="checkPermissions('journalvoucher.create') && !isEdit"
           color="green-8"
           icon="fa-solid fa-floppy-disk"
           label="Save"
           @click.prevent="onSubmitClick('Approved')"
         />
         <q-btn
-          v-if="checkPermissions('JournalVoucherModify') && isEdit"
+          v-if="checkPermissions('journalvoucher.modify') && isEdit"
           color="green-8"
           icon="fa-solid fa-floppy-disk"
           label="Update"

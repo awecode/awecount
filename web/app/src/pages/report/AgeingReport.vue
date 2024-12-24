@@ -139,7 +139,7 @@ export default {
       <template #body-cell-party="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('CategoryModify')"
+            v-if="checkPermissions('category.modify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue l-view-btn"
             :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`"

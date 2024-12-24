@@ -20,7 +20,7 @@ export default {
     <div class="row justify-between">
       <div></div>
       <q-btn
-        v-if="checkPermissions('BrandCreate')"
+        v-if="checkPermissions('brand.create')"
         color="green"
         :to="`/${$route.params.company}/brand/create/`"
         label="New brand"
@@ -42,7 +42,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('BrandModify')"
+            v-if="checkPermissions('brand.modify')"
             class="text-blue"
             style="text-decoration: none"
             :to="`/${$route.params.company}/brand/${props.row.id}/`"

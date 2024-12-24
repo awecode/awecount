@@ -288,7 +288,7 @@ export default {
                 :error="errors?.party ? errors?.party : ''"
                 :static-option="fields.selected_party_obj"
                 :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
-                :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                :modal-component="checkPermissions('party.create') ? PartyForm : null"
               />
             </div>
             <q-input
@@ -310,7 +310,7 @@ export default {
                   label="Discount"
                   :error="errors.discount_type"
                   :options="discountOptionsComputed"
-                  :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null"
+                  :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null"
                 />
               </div>
               <div class="col-6 row">
@@ -436,7 +436,7 @@ export default {
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
           :loading="loading"
           color="orange"
           label="Save Draft"
@@ -444,7 +444,7 @@ export default {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && isEdit && fields.status === 'Draft'"
+          v-if="checkPermissions('purchasevoucher.create') && isEdit && fields.status === 'Draft'"
           :loading="loading"
           color="orange"
           label="Update Draft"
@@ -452,14 +452,14 @@ export default {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && !isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
           :loading="loading"
           color="green"
           label="Issue"
           @click.prevent="() => onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseVoucherCreate') && isEdit"
+          v-if="checkPermissions('purchasevoucher.create') && isEdit"
           :loading="loading"
           color="green"
           :label="fields.status === 'Draft' ? 'Issue from Draft' : 'Update'"

@@ -34,7 +34,7 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="checkPermissions('ChallanCreate')" class="row q-gutter-x-md justify-end">
+    <div v-if="checkPermissions('challan.create')" class="row q-gutter-x-md justify-end">
       <q-btn color="green" :to="`/${$route.params.company}/purchase-order/create/`" label="New Purchase Order" icon-right="add" class="add-btn" />
     </div>
     <q-table
@@ -117,7 +117,7 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md">
             <q-btn
-              v-if="checkPermissions('PurchaseOrderModify')"
+              v-if="checkPermissions('purchaseorder.modify')"
               color="orange"
               label="Edit"
               class="q-py-none q-px-md font-size-sm l-edit-btn"
@@ -131,7 +131,7 @@ export default {
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('PurchaseOrderModify')"
+              v-if="checkPermissions('purchaseorder.modify')"
               :to="`/${$route.params.company}/purchase-order/${props.row.id}/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"

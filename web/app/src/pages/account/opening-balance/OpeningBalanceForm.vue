@@ -49,7 +49,7 @@ export default {
                 :static-option="fields.selected_account_obj"
                 :options="formDefaults.collections?.accounts"
                 label="Account *"
-                :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+                :modal-component="checkPermissions('account.create') ? LedgerForm : null"
                 :error="errors?.account"
               />
               <q-input v-else label="Account *" disable :model-value="fields.name" class="mb-4" />
@@ -76,7 +76,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceCreate') && !isEdit"
+            v-if="checkPermissions('accountopeningbalance.create') && !isEdit"
             color="green"
             label="Create"
             class="q-ml-auto"
@@ -85,7 +85,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceModify') && isEdit"
+            v-if="checkPermissions('accountopeningbalance.modify') && isEdit"
             color="green"
             label="Update"
             class="q-ml-auto"

@@ -63,7 +63,7 @@ const onSwitchDrCr = (mode) => {
             label="Account"
             :options="props.options"
             :focus-on-mount="true"
-            :modal-component="checkPermissions('AccountCreate') ? LedgerForm : null"
+            :modal-component="checkPermissions('account.create') ? LedgerForm : null"
             :endpoint="`/api/company/${$route.params.company}/journal-voucher/create-defaults/accounts/`"
             :error="
               props.errors

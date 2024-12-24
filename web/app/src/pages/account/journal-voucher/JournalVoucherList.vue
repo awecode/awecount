@@ -40,7 +40,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('JournalVoucherCreate')"
+        v-if="checkPermissions('journalvoucher.create')"
         color="green"
         :to="`/${$route.params.company}/journal-voucher/create/`"
         label="New Journal Voucher"
@@ -96,7 +96,7 @@ export default {
         <q-td :props="props">
           <div class="flex gap-4 no-wrap">
             <q-btn
-              v-if="checkPermissions('JournalVoucherView')"
+              v-if="checkPermissions('journalvoucher.view')"
               color="blue"
               label="View"
               :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view/`"
@@ -104,7 +104,7 @@ export default {
               style="font-size: 12px"
             />
             <q-btn
-              v-if="props.row.status !== 'Cancelled' && checkPermissions('JournalVoucherModify')"
+              v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.modify')"
               color="orange-7"
               label="Edit"
               :to="`/${$route.params.company}/journal-voucher/${props.row.id}/edit/`"
@@ -134,7 +134,7 @@ export default {
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('JournalVoucherView')"
+              v-if="checkPermissions('journalvoucher.view')"
               :to="`/${$route.params.company}/challan/${props.row.id}/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"

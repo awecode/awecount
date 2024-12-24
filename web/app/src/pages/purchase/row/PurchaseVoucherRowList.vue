@@ -224,7 +224,7 @@ export default {
         <q-td :props="props">
           <div class="row align-center">
             <router-link
-              v-if="checkPermissions('PurchaseVoucherView')"
+              v-if="checkPermissions('purchasevoucher.view')"
               style="font-weight: 500; text-decoration: none"
               class="text-blue l-view-btn"
               :to="`/${$route.params.company}/purchase-voucher/${props.row.voucher_id}/view`"

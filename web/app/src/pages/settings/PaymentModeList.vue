@@ -27,7 +27,7 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('PaymentModeCreate')"
+        v-if="checkPermissions('paymentmode.create')"
         color="green"
         :to="`/${$route.params.company}/settings/payment-mode/create/`"
         label="New Payment Mode"

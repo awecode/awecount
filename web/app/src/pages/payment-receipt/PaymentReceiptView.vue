@@ -301,7 +301,7 @@ export default {
                 <span>
                   <span v-for="invoice in fields.invoices" :key="invoice.id" class="col-6">
                     <router-link
-                      v-if="checkPermissions('SalesView')"
+                      v-if="checkPermissions('sales.view')"
                       class="text-blue q-mr-sm"
                       style="text-decoration: none"
                       :to="`/${$route.params.company}/sales-voucher/${invoice.id}/view`"
@@ -340,14 +340,14 @@ export default {
         <div class="row q-gutter-x-sm q-mb-md print-hide">
           <span v-if="fields.status !== 'Cancelled'" class="row q-gutter-x-sm q-ml-none">
             <q-btn
-              v-if="checkPermissions('PaymentReceiptModify')"
+              v-if="checkPermissions('paymentreceipt.modify')"
               color="orange-7"
               label="Edit"
               icon="edit"
               :to="`/${$route.params.company}/payment-receipt/${fields.id}/`"
             />
             <q-btn
-              v-if="fields.status !== 'Cleared' && checkPermissions('PaymentReceiptModify')"
+              v-if="fields.status !== 'Cleared' && checkPermissions('paymentreceipt.modify')"
               color="green"
               label="mark as cleared"
               icon="mdi-check-all"
@@ -355,7 +355,7 @@ export default {
               @click.prevent="() => submitChangeStatus(fields?.id, 'Cleared')"
             />
             <q-btn
-              v-if="checkPermissions('PaymentReceiptCancel')"
+              v-if="checkPermissions('paymentreceipt.cancel')"
               color="red"
               label="cancel"
               icon="cancel"

@@ -97,7 +97,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('PurchaseDiscountCreate') && !isEdit"
+            v-if="checkPermissions('purchasediscount.create') && !isEdit"
             color="green"
             label="Create"
             class="q-ml-auto"
@@ -105,7 +105,7 @@ export default {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('PurchaseDiscountCreate') && isEdit"
+            v-if="checkPermissions('purchasediscount.create') && isEdit"
             color="green"
             label="Update"
             class="q-ml-auto"

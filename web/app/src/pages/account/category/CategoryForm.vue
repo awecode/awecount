@@ -56,7 +56,7 @@ useMeta(() => ({
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('CategoryModify') && !isEdit"
+            v-if="checkPermissions('category.modify') && !isEdit"
             type="submit"
             color="green"
             :loading="loading"
@@ -65,7 +65,7 @@ useMeta(() => ({
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('CategoryModify') && isEdit"
+            v-if="checkPermissions('category.modify') && isEdit"
             type="submit"
             color="green"
             :loading="loading"

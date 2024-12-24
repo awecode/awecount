@@ -45,7 +45,7 @@ export default {
   <div class="q-pa-md">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('AccountOpeningBalanceCreate')"
+        v-if="checkPermissions('accountopeningbalance.create')"
         color="green"
         :to="`/${$route.params.company}/account-opening-balance/create/`"
         label="New Opening Balance"
@@ -75,7 +75,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            v-if="checkPermissions('accountopeningbalance.modify')"
             label="Edit"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"
@@ -87,7 +87,7 @@ export default {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('AccountOpeningBalanceModify')"
+            v-if="checkPermissions('accountopeningbalance.modify')"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
             :to="`/${$route.params.company}/account-opening-balance/${props.row.id}/`"

@@ -140,7 +140,7 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/purchase-order/create-defaults/parties`"
                 :static-option="fields.selected_party_obj"
                 :error="errors?.party ? errors?.party : null"
-                :modal-component="checkPermissions('PartyCreate') ? PartyForm : null"
+                :modal-component="checkPermissions('party.create') ? PartyForm : null"
               />
               <div></div>
             </div>
@@ -179,14 +179,14 @@ export default {
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('challan.create') && isEdit && fields.status === 'Issued'"
           :to="`/${$route.params.company}/purchase-voucher/create/?purchase_order=${fields.voucher_no}&fiscal_year=${fields.fiscal_year}`"
           color="blue"
           label="Issue Purchase Voucher"
           :loading="loading"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderCancel') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('purchaseorder.cancel') && isEdit && fields.status === 'Issued'"
           :loading="loading"
           color="red"
           label="Cancel"
@@ -194,14 +194,14 @@ export default {
           @click.prevent="isDeleteOpen = true"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderModify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('purchaseorder.modify') && isEdit && fields.status === 'Issued'"
           :loading="loading"
           color="green"
           label="Update"
           @click.prevent="onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('PurchaseOrderCreate') && !isEdit"
+          v-if="checkPermissions('purchaseorder.create') && !isEdit"
           :loading="loading"
           color="green"
           label="Issue"

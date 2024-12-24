@@ -63,7 +63,7 @@ export default {
     <div class="flex gap-4 justify-end">
       <q-btn color="blue" label="Export XLS" icon-right="download" class="export-btn" @click="onDownloadXls" />
       <q-btn
-        v-if="checkPermissions('PurchaseVoucherCreate')"
+        v-if="checkPermissions('purchasevoucher.create')"
         color="green"
         :to="`/${$route.params.company}/purchase-voucher/create/`"
         label="New Purchase"
@@ -170,7 +170,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <!-- <q-btn icon="visibility" color="grey" dense flat to="" /> -->
-          <div v-if="checkPermissions('PurchaseVoucherView')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('purchasevoucher.view')" class="row q-gutter-x-md items-center">
             <q-btn
               color="blue"
               label="View"
@@ -187,7 +187,7 @@ export default {
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('PurchaseVoucherView')"
+              v-if="checkPermissions('purchasevoucher.view')"
               :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"

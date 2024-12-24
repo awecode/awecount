@@ -49,7 +49,7 @@ export default {
     <div class="flex gap-4 justify-end">
       <q-btn color="blue" label="Export XLS" icon-right="download" class="export-btn" @click="onDownloadXls" />
       <q-btn
-        v-if="checkPermissions('DebitNoteCreate')"
+        v-if="checkPermissions('debitnote.create')"
         color="green"
         :to="`/${$route.params.company}/debit-note/create/`"
         label="New Debit Note"
@@ -134,7 +134,7 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <div v-if="checkPermissions('DebitNoteView')" class="row q-gutter-x-md items-center">
+          <div v-if="checkPermissions('debitnote.view')" class="row q-gutter-x-md items-center">
             <q-btn
               color="blue"
               label="View"
@@ -149,7 +149,7 @@ export default {
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
             <router-link
-              v-if="checkPermissions('DebitNoteView')"
+              v-if="checkPermissions('debitnote.view')"
               :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
               style="font-weight: 500; text-decoration: none"
               class="text-blue"

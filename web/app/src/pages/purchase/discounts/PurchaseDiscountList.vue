@@ -48,7 +48,7 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn
-        v-if="checkPermissions('PurchaseDiscountCreate')"
+        v-if="checkPermissions('purchasediscount.create')"
         color="green"
         :to="`/${$route.params.company}/purchase-discount/create/`"
         label="New Purchase Discount"
@@ -108,7 +108,7 @@ export default {
         <q-td :props="props">
           <div class="row q-gutter-x-md items-center">
             <q-btn
-              v-if="checkPermissions('PurchaseDiscountModify')"
+              v-if="checkPermissions('purchasediscount.modify')"
               color="orange-7"
               label="Edit"
               :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`"

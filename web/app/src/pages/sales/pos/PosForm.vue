@@ -191,7 +191,7 @@ const getPartyObj = () => {
 }
 
 const hasItemModifyAccess = computed(() => {
-  return checkPermissions('ItemModify')
+  return checkPermissions('item.modify')
 })
 watch(
   () => formDefaults.value,
@@ -452,7 +452,7 @@ const modeOptionsComputed = computed(() => {
                                     label="Party"
                                     :endpoint="`/api/company/${$route.params.company}/parties/choices/`"
                                     :error="errors?.party ? errors?.party[0] : null"
-                                    :modal-component="checkPermissions('PartyCreate')
+                                    :modal-component="checkPermissions('party.create')
                                       ? PartyForm
                                       : null
                                     "
@@ -480,7 +480,7 @@ const modeOptionsComputed = computed(() => {
                                   label="Discount*"
                                   :error="errors?.discount_type"
                                   :options="discountOptionsComputed"
-                                  :modal-component="checkPermissions('SalesDiscountCreate')
+                                  :modal-component="checkPermissions('salesdiscount.create')
                                     ? SalesDiscountForm
                                     : null
                                   "

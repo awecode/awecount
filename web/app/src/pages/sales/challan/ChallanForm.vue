@@ -208,7 +208,7 @@ export default {
                     :static-option="fields.selected_party_obj"
                     label="Party"
                     :error="errors?.party ? errors?.party : null"
-                    :modal-component="checkPermissions('PartyCreate') ? PartyForm : null
+                    :modal-component="checkPermissions('party.create') ? PartyForm : null
                     "
                   />
                 </div>
@@ -263,7 +263,7 @@ export default {
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
         <q-btn
-          v-if="checkPermissions('ChallanModify') && isEdit && fields.status === 'Issued'"
+          v-if="checkPermissions('challan.modify') && isEdit && fields.status === 'Issued'"
           :loading="loading"
           color="green"
           icon="done_all"
@@ -271,7 +271,7 @@ export default {
           @click.prevent="onResolvedClick"
         />
         <q-btn
-          v-if="checkPermissions('ChallanModify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
+          v-if="checkPermissions('challan.modify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
           :loading="loading"
           color="red"
           label="Cancel"
@@ -279,7 +279,7 @@ export default {
           @click.prevent="isDeleteOpen = true"
         />
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && (!isEdit || fields.status === 'Draft')"
+          v-if="checkPermissions('challan.create') && (!isEdit || fields.status === 'Draft')"
           :loading="loading"
           color="orange"
           :label="isEdit ? 'Update Draft' : 'Save Draft'"
@@ -287,14 +287,14 @@ export default {
           @click.prevent="() => onSubmitClick('Draft')"
         />
         <q-btn
-          v-if="checkPermissions('ChallanCreate') && !isEdit"
+          v-if="checkPermissions('challan.create') && !isEdit"
           :loading="loading"
           color="green"
           label="Create"
           @click.prevent="() => onSubmitClick('Issued')"
         />
         <q-btn
-          v-if="checkPermissions('ChallanModify') && isEdit && fields.status !== 'Cancelled'"
+          v-if="checkPermissions('challan.modify') && isEdit && fields.status !== 'Cancelled'"
           :loading="loading"
           color="green"
           :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"

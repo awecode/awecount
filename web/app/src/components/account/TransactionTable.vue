@@ -54,7 +54,7 @@ export default {
       if (source_type === 'Account Opening Balance') {
         return `/${route.params.company}/account-opening-balance/${row.source_id}/`
       }
-      if (source_type === 'Item') return `/${route.params.company}/items/details/${row.source_id}/`
+      if (source_type === 'Item') return `/${route.params.company}/items/${row.source_id}/`
       // added
       if (source_type === 'Fund Transfer') {
         return `/${route.params.company}/bank/fund/fund-transfer/${row.source_id}/edit/`

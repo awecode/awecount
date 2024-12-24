@@ -41,7 +41,7 @@ const {
         <ItemImport @modal-close="isItemImportOpen = false" @update-list="isItemImportOpen = false; loadData();" />
       </q-card>
     </q-dialog>
-    <div v-if="checkPermissions('ItemCreate')" class="row justify-end q-gutter-md">
+    <div v-if="checkPermissions('item.create')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
       <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/create/`" label="Add Item" icon-right="add" />
     </div>
@@ -104,15 +104,15 @@ const {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="checkPermissions('ItemView')"
+            v-if="checkPermissions('item.view')"
             color="blue"
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/${$route.params.company}/items/details/${props.row.id}/`"
+            :to="`/${$route.params.company}/items/${props.row.id}/`"
           />
           <q-btn
-            v-if="checkPermissions('ItemModify')"
+            v-if="checkPermissions('item.modify')"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
@@ -124,8 +124,8 @@ const {
       <template #body-cell-name="props">
         <q-td :props="props">
           <router-link
-            v-if="checkPermissions('ItemView')"
-            :to="`/${$route.params.company}/items/details/${props.row.id}/`"
+            v-if="checkPermissions('item.view')"
+            :to="`/${$route.params.company}/items/${props.row.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >
@@ -137,7 +137,7 @@ const {
       <template #body-cell-category="props">
         <q-td :props="props">
           <router-link
-            v-if="props.row.category && checkPermissions('InventoryCategoryModify')"
+            v-if="props.row.category && checkPermissions('inventorycategory.modify')"
             :to="`/${$route.params.company}/inventory-category/${props.row.category.id}/`"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"

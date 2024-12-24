@@ -129,7 +129,7 @@ export default {
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
           <q-btn
-            v-if="checkPermissions('BillOfMaterialModify') && isEdit && fields.status !== 'Cancelled'"
+            v-if="checkPermissions('billofmaterial.modify') && isEdit && fields.status !== 'Cancelled'"
             :loading="loading"
             color="green"
             label="Update"
@@ -137,7 +137,7 @@ export default {
             @click.prevent="onSubmitClick(fields.status)"
           />
           <q-btn
-            v-if="!isEdit && checkPermissions('BillOfMaterialCreate')"
+            v-if="!isEdit && checkPermissions('billofmaterial.create')"
             :loading="loading"
             color="green"
             label="Create"

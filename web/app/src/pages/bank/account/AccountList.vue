@@ -45,7 +45,7 @@ export default {
   <div class="q-pa-md w-full">
     <div class="row justify-end">
       <q-btn
-        v-if="checkPermissions('BankAccountCreate')"
+        v-if="checkPermissions('bankaccount.create')"
         color="green"
         :to="`/${$route.params.company}/bank-accounts/create/`"
         label="New Account"
@@ -74,7 +74,7 @@ export default {
             :to="`/${$route.params.company}/account/${props.row.ledger}/view/`"
           />
           <q-btn
-            v-if="checkPermissions('BankAccountModify')"
+            v-if="checkPermissions('bankaccount.modify')"
             label="Edit"
             color="orange-6"
             class="q-py-none q-px-md font-size-sm l-edit-btn"

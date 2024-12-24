@@ -301,7 +301,7 @@ watch(() => fields.value, (newValue) => {
                 :options="formDefaults.collections?.brands"
                 :static-option="fields.selected_brand_obj"
                 :endpoint="`/api/company/${$route.params.company}/items/create-defaults/brands`"
-                :modal-component="checkPermissions('BrandCreate') ? BrandForm : null"
+                :modal-component="checkPermissions('brand.create') ? BrandForm : null"
                 :error="errors.brand"
               />
             </div>
@@ -325,7 +325,7 @@ watch(() => fields.value, (newValue) => {
                   :endpoint="`/api/company/${$route.params.company}/items/create-defaults/inventory_categories`"
                   :static-option="fields.selected_inventory_category_obj"
                   :options="formDefaults.collections?.inventory_categories"
-                  :modal-component="checkPermissions('InventoryCategoryCreate') ? InventoryCategoryForm : null"
+                  :modal-component="checkPermissions('inventorycategory.create') ? InventoryCategoryForm : null"
                   :error="errors.category"
                   :emit-obj="true"
                   @update-obj="setCategory"
@@ -349,7 +349,7 @@ watch(() => fields.value, (newValue) => {
                   :options="formDefaults.collections?.units"
                   :endpoint="`/api/company/${$route.params.company}/items/create-defaults/units`"
                   :static-option="injectUnitObj"
-                  :modal-component="checkPermissions('UnitCreate') ? UnitForm : null"
+                  :modal-component="checkPermissions('unit.create') ? UnitForm : null"
                   :error="errors.unit_id"
                 />
               </div>
@@ -358,7 +358,7 @@ watch(() => fields.value, (newValue) => {
                   v-model="fields.tax_scheme_id"
                   label="Tax Scheme"
                   :options="formDefaults.collections?.tax_scheme"
-                  :modal-component="checkPermissions('TaxSchemeCreate') ? TaxForm : null"
+                  :modal-component="checkPermissions('taxscheme.create') ? TaxForm : null"
                   :error="errors.tax_scheme_id"
                 />
               </div>
@@ -550,7 +550,7 @@ watch(() => fields.value, (newValue) => {
         </q-card-section>
         <div class="q-mt-lg text-right q-pr-md q-pb-lg">
           <q-btn
-            v-if="checkPermissions('ItemCreate') && !isEdit"
+            v-if="checkPermissions('item.create') && !isEdit"
             :loading="loading"
             color="green"
             label="Create"
@@ -559,7 +559,7 @@ watch(() => fields.value, (newValue) => {
             @click.prevent="submitForm"
           />
           <q-btn
-            v-if="checkPermissions('ItemModify') && isEdit"
+            v-if="checkPermissions('item.modify') && isEdit"
             :loading="loading"
             color="green"
             label="Update"

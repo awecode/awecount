@@ -287,7 +287,7 @@ export default {
                   : 'col-12'
                 "
               >
-                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount" :options="discountOptionsComputed" :modal-component="checkPermissions('PurchaseDiscountCreate') ? PurchaseDiscountForm : null" />
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors?.discount" :options="discountOptionsComputed" :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null" />
               </div>
               <div
                 v-if="fields.discount_type === 'Amount'
@@ -362,7 +362,7 @@ export default {
         />
       </div>
       <div
-        v-if="checkPermissions('DebitNoteCreate')"
+        v-if="checkPermissions('debitnote.create')"
         class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md"
       >
         <q-btn
