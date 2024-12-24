@@ -161,7 +161,7 @@ export default {
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
   },
   created() {
-    const endpoint = `/api/company/${route.params.company}/transaction/create-defaults/`
+    const endpoint = `/api/company/${this.$route.params.company}/transaction/create-defaults/`
     useApi(endpoint, { method: 'GET' })
       .then((data) => {
         this.filterOptions = data
