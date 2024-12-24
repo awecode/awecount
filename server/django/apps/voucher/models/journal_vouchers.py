@@ -1,11 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from apps.company.models import Company
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.models import set_transactions as set_ledger_transactions
 from awecount.libs import get_next_voucher_no
-from awecount.libs.db import CompanyBaseModel
 
 
 class JournalVoucher(models.Model):

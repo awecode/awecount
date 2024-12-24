@@ -14,10 +14,9 @@ from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 from rest_framework.exceptions import ValidationError as RestValidationError
 
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyBaseModel, FiscalYear
 from apps.users.signals import company_creation
 from awecount.libs import decimalize, none_for_zero, zero_for_none
-from awecount.libs.db import CompanyBaseModel
 from awecount.libs.exception import BadOperation
 
 

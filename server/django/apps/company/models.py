@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import SuspiciousOperation
 from django.db import models
 
 ORGANIZATION_TYPES = (
@@ -82,3 +83,40 @@ class Company(models.Model):
         super(Company, self).save(*args, **kwargs)
         # if created:
         #     company_creation.send(sender=None, company=self)
+
+
+class CompanyBaseModel(models.Model):
+    class Meta:
+        abstract = True
+
+    def check_company_references(self, instance):
+        """
+        Check that all ForeignKey relationships that reference a `Company`
+        have the instance's `company` if it exists or all related instances have the same `company`.
+        """
+        instance_company = getattr(instance, "company", None)
+
+        for field in instance._meta.get_fields():
+            if not isinstance(field, models.ForeignKey):
+                continue
+
+            related_instance = getattr(instance, field.name, None)
+
+            if not related_instance or hasattr(related_instance, "company") is False:
+                continue
+
+            if related_instance.company is None:
+                raise SuspiciousOperation(
+                    field.name + " does not reference any company."
+                )
+
+            if instance_company is None:
+                instance_company = related_instance.company
+            elif related_instance.company != instance_company:
+                raise SuspiciousOperation(
+                    field.name + " references a different company."
+                )
+
+    def save(self, *args, **kwargs):
+        self.check_company_references(self)
+        super().save(*args, **kwargs)

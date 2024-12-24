@@ -12,7 +12,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
 
-from apps.company.models import Company
+from apps.company.models import Company, CompanyBaseModel
 from apps.ledger.models import (
     Account,
     TransactionModel,
@@ -24,7 +24,6 @@ from apps.ledger.models import set_transactions as set_ledger_transactions
 from apps.tax.models import TaxScheme
 from apps.voucher.base_models import InvoiceModel, InvoiceRowModel
 from awecount.libs import none_for_zero, zero_for_none
-from awecount.libs.db import CompanyBaseModel
 
 
 class Unit(models.Model):
