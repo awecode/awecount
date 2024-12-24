@@ -236,10 +236,10 @@ class ReconciliationStatementImportSerializer(serializers.Serializer):
         
 class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     account = AccountMinSerializer()
-    total_entries = serializers.SerializerMethodField()
-    reconciled_entries = serializers.SerializerMethodField()
+    total_rows = serializers.SerializerMethodField()
+    reconciled_rows = serializers.SerializerMethodField()
     
-    def get_total_entries(self, obj):
+    def get_total_rows(self, obj):
         return obj.rows.count()
     
     def get_reconciled_rows(self, obj):
@@ -247,7 +247,7 @@ class ReconciliationStatementListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReconciliationStatement
-        fields = ('id', 'account', 'start_date', 'end_date', 'total_entries', 'reconciled_entries',)
+        fields = ('id', 'account', 'start_date', 'end_date', 'total_rows', 'reconciled_rows',)
         
 
 class ReconciliationStatementSerializer(serializers.ModelSerializer):

@@ -1483,16 +1483,11 @@ class ReconciliationViewSet(CRULViewSet):
         if sort_dir == "desc":
             sort_by = "-" + sort_by
 
-        reconciled_transaction_ids = ReconciliationRow.objects.filter(
-            statement__company=request.company,
-            statement__account_id=account_id,
-            date__range=[start_date, end_date],
-            status="Reconciled",
-        ).values_list("transaction_ids", flat=True)
+        reconciled_transaction_ids = ReconciliationRowTransaction.objects.filter(
+            reconciliation_row__statement__company=request.company,
+            reconciliation_row__statement__account_id=account_id,
+        ).values_list("transaction_id", flat=True).distinct()
 
-        reconciled_transaction_ids_set = set(
-            chain.from_iterable(reconciled_transaction_ids)
-        )
 
         filters = Q(
             company=request.company,
@@ -1510,11 +1505,11 @@ class ReconciliationViewSet(CRULViewSet):
 
         unreconciled_system_transactions = (
             Transaction.objects.filter(filters)
-            .exclude(id__in=reconciled_transaction_ids_set)
+            .exclude(id__in=reconciled_transaction_ids)
             .order_by(sort_by)
             .select_related("journal_entry__content_type")
             .prefetch_related(
-                "journal_entry__transactions__account", "journal_entry__source"
+                "journal_entry__transactions__account",
             )
             .distinct()
         )
