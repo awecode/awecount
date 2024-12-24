@@ -456,7 +456,7 @@ class ReconciliationStatement(models.Model):
     def __str__(self):
         return self.file_name or str(self.start_date)
 
-class ReconciliationEntries(models.Model):
+class ReconciliationRow(models.Model):
     status = models.CharField(choices=BANK_RECONCILIATION_STATUS, default=BANK_RECONCILIATION_STATUS[0][0], max_length=20)
     date = models.DateField()
     dr_amount = models.FloatField(null=True, blank=True)
@@ -495,7 +495,7 @@ class ReconciliationEntries(models.Model):
         # get new transaction ids from journal entries
         self.transaction_ids.extend(
             Transaction.objects.filter(
-                journal_entry__content_type__model="reconciliationentries",
+                journal_entry__content_type__model="reconciliationrow",
                 journal_entry__object_id=self.id,
                 account_id=bank_account.id,
             ).values_list("id", flat=True)

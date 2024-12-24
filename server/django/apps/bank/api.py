@@ -29,7 +29,7 @@ from apps.bank.models import (
     ChequeDeposit,
     FundTransfer,
     FundTransferTemplate,
-    ReconciliationEntries,
+    ReconciliationRow,
     ReconciliationStatement,
 )
 from apps.bank.resources import ChequeIssueResource
@@ -46,7 +46,7 @@ from apps.bank.serializers import (
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
-    ReconciliationEntriesSerializer,
+    ReconciliationRowSerializer,
     ReconciliationStatementImportSerializer,
     ReconciliationStatementListSerializer,
     ReconciliationStatementSerializer,
@@ -1002,22 +1002,11 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             end_date=end_date,
         ) 
 
-        # Add reconciled transactions
-        for statement_transaction in reconciled_transactions:
-            bank_reconciliation_entries.append(ReconciliationEntries(
-                date=statement_transaction['date'],
-                dr_amount=statement_transaction.get('dr_amount') or None,
-                cr_amount=statement_transaction.get('cr_amount') or None,
-                status=statement_transaction.get('status', 'Matched'),
-                balance=statement_transaction.get('balance', None),
-                transaction_ids=statement_transaction.get('transaction_ids', []),
-                statement_id=bank_reconciliation_statement.pk,
-                description=statement_transaction.get('description', None),
-            ))
+                bank_reconciliation_entries.append(ReconciliationRow(
 
         # Add unreconciled transactions
         for statement_transaction in unreconciled_statement_transactions:
-            bank_reconciliation_entries.append(ReconciliationEntries(
+                bank_reconciliation_entries.append(ReconciliationRow(
                 date=statement_transaction['date'],
                 dr_amount=statement_transaction.get('dr_amount') or None,
                 cr_amount=statement_transaction.get('cr_amount') or None,
@@ -1027,9 +1016,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                 description=statement_transaction.get('description', None),
             ))
 
-        # Perform bulk_create once
-        ReconciliationEntries.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
-        
+            ReconciliationRow.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
         # email the user
         header = "Bank Reconciliation Statement Import Completed"
         message = "Bank Reconciliation Statement Import Completed, with " + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"
@@ -1150,7 +1137,7 @@ class ReconciliationViewSet(CRULViewSet):
 
             merged_groups.append(
                 {
-                    "statement_transactions": ReconciliationEntriesSerializer(
+                    "statement_transactions": ReconciliationRowSerializer(
                         group["statement_transactions"], many=True
                     ).data,
                     "system_transactions": TransactionMinSerializer(
@@ -1164,7 +1151,7 @@ class ReconciliationViewSet(CRULViewSet):
             if statement not in processed_statements:
                 merged_groups.insert(0,
                     {
-                        "statement_transactions": ReconciliationEntriesSerializer(
+                        "statement_transactions": ReconciliationRowSerializer(
                             [statement], many=True
                         ).data,
                         "system_transactions": [],
@@ -1189,11 +1176,11 @@ class ReconciliationViewSet(CRULViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        filtered_entries = self.filter_entries(instance.entries, request.query_params)
+        filtered_entries = self.filter_entries(instance.rows, request.query_params)
         matching_transaction_ids = filtered_entries.values_list("transaction_ids", flat=True).distinct()
 
         # Retrieve all entries for matching groups
-        bank_statements = instance.entries.filter(transaction_ids__in=matching_transaction_ids).values(
+        bank_statements = instance.rows.filter(transaction_ids__in=matching_transaction_ids).values(
             "transaction_ids", "id"
         ).annotate(grouped_statements=ArrayAgg("pk"))
 
@@ -1220,7 +1207,7 @@ class ReconciliationViewSet(CRULViewSet):
             )
         )
 
-        statements_queryset = ReconciliationEntries.objects.filter(
+        statements_queryset = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=instance.account_id,
             id__in=all_statement_ids,
@@ -1241,8 +1228,8 @@ class ReconciliationViewSet(CRULViewSet):
                 'start': instance.start_date,
                 'end': instance.end_date
             },
-            'total_reconciled': instance.entries.filter(status='Reconciled').count(),
-            'total_unreconciled': instance.entries.filter(status='Unreconciled').count(),
+            'total_reconciled': instance.rows.filter(status='Reconciled').count(),
+            'total_unreconciled': instance.rows.filter(status='Unreconciled').count(),
         }
         return Response(data)
     
@@ -1320,7 +1307,7 @@ class ReconciliationViewSet(CRULViewSet):
             raise APIException("start_date, end_date and account_id are required")
 
         
-        bank_statements = ReconciliationEntries.objects.filter(
+        bank_statements = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=account_id,
             date__range=[start_date, end_date],
@@ -1345,7 +1332,7 @@ class ReconciliationViewSet(CRULViewSet):
             "journal_entry__source"
         )
         
-        statements_queryset = ReconciliationEntries.objects.filter(
+        statements_queryset = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=account_id,
             id__in=all_statement_ids
@@ -1386,10 +1373,10 @@ class ReconciliationViewSet(CRULViewSet):
                 | Q(cr_amount__icontains=search)
             )
 
-        entries = ReconciliationEntries.objects.filter(filters).order_by(sort_by)
+        entries = ReconciliationRow.objects.filter(filters).order_by(sort_by)
         # send paginated response
         page = self.paginate_queryset(entries)
-        serializer = ReconciliationEntriesSerializer(page, many=True)
+        serializer = ReconciliationRowSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
     @action(detail=False, url_path="unreconciled-system-transactions")
@@ -1411,7 +1398,7 @@ class ReconciliationViewSet(CRULViewSet):
         if sort_dir == "desc":
             sort_by = "-" + sort_by
 
-        reconciled_transaction_ids = ReconciliationEntries.objects.filter(
+        reconciled_transaction_ids = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=account_id,
             date__range=[start_date, end_date],
@@ -1462,7 +1449,7 @@ class ReconciliationViewSet(CRULViewSet):
     #         raise APIException("start_date, end_date and account_id are required")
 
     #     # Fetch reconciled transaction IDs for the same company, account, and date
-    #     reconciled_transaction_ids = ReconciliationEntries.objects.filter(
+    #     reconciled_transaction_ids = ReconciliationRow.objects.filter(
     #         statement__company=request.company,
     #         statement__account_id=account_id,
     #         status='Reconciled'
@@ -1482,7 +1469,7 @@ class ReconciliationViewSet(CRULViewSet):
     #     )
 
     #     # fetch bank reconciliation entries
-    #     bank_statements = ReconciliationEntries.objects.filter(
+    #     bank_statements = ReconciliationRow.objects.filter(
     #         statement__company=request.company, statement__account_id=account_id, date__range=[start_date, end_date],
     #         status__in=['Unreconciled', 'Matched']
     #     ).order_by("date")
@@ -1495,7 +1482,7 @@ class ReconciliationViewSet(CRULViewSet):
         transaction_ids = request.data.get('transaction_ids')
         if not statement_ids or not transaction_ids:
             raise APIException("statement_ids and transaction_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         transaction_objects = Transaction.objects.filter(id__in=transaction_ids)
         entries_sum = sum([obj.cr_amount - (obj.dr_amount or 0) if obj.cr_amount else -obj.dr_amount for obj in entries])
         transaction_sum = sum([obj.dr_amount - (obj.cr_amount or 0) if obj.dr_amount else -obj.cr_amount for obj in transaction_objects])
@@ -1510,11 +1497,11 @@ class ReconciliationViewSet(CRULViewSet):
         statement_ids = request.data.get('statement_ids')
         if not statement_ids:
             raise APIException("statement_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids)
         entries.update(status='Unreconciled', transaction_ids=[])
         # Delete journal entries
         JournalEntry.objects.filter(
-            content_type__model="reconciliationentries", object_id__in=[entry.id for entry in entries]
+            content_type__model="ReconciliationRow", object_id__in=[entry.id for entry in entries]
         ).delete()
         return Response({})
     
@@ -1524,9 +1511,9 @@ class ReconciliationViewSet(CRULViewSet):
         statement_ids = request.data.get('statement_ids')
         if not statement_ids:
             raise APIException("statement_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids)
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids)
         JournalEntry.objects.filter(
-            content_type__model="reconciliationentries", object_id__in=[entry.id for entry in entries]
+            content_type__model="ReconciliationRow", object_id__in=[entry.id for entry in entries]
         ).delete()
         entries.delete()
         return Response({})
@@ -1540,7 +1527,7 @@ class ReconciliationViewSet(CRULViewSet):
         # TODO: max number of statement_ids
         if not statement_ids or not transaction_ids or not narration or len(statement_ids) > 10:
             raise APIException("statement_ids, transaction_ids and narration are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
             raise APIException("All the statement entries should have the same account_id")
@@ -1636,7 +1623,7 @@ class ReconciliationViewSet(CRULViewSet):
         remarks = request.data.get('remarks')
         if not statement_ids or not invoice_ids:
             raise APIException("statement_ids and invoice_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         vouchers = SalesVoucher.objects.filter(id__in=invoice_ids)
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
@@ -1661,7 +1648,7 @@ class ReconciliationViewSet(CRULViewSet):
         remarks = request.data.get('remarks')
         if not statement_ids or not invoice_ids:
             raise APIException("statement_ids and invoice_ids are required")
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         vouchers = SalesVoucher.objects.filter(id__in=invoice_ids)
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
@@ -1695,7 +1682,7 @@ class ReconciliationViewSet(CRULViewSet):
         serializer.is_valid(raise_exception=True)
         # add company to the serializer
         serializer.validated_data['company'] = self.request.company
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:
@@ -1723,7 +1710,7 @@ class ReconciliationViewSet(CRULViewSet):
         serializer.is_valid(raise_exception=True)
         # add company to the serializer
         serializer.validated_data['company'] = self.request.company
-        entries = ReconciliationEntries.objects.filter(id__in=statement_ids).select_related("statement")
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
         # validate if all the statement of the entries has same account_id
         account_ids = set([obj.statement.account_id for obj in entries])
         if len(account_ids) > 1:

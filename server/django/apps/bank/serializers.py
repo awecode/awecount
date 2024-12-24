@@ -12,7 +12,7 @@ from .models import (
     ChequeIssue,
     FundTransfer,
     FundTransferTemplate,
-    ReconciliationEntries,
+    ReconciliationRow,
     ReconciliationStatement,
 )
 
@@ -220,9 +220,9 @@ class BankCashDepositCreateSerializer(
         exclude = ("company",)
 
 
-class ReconciliationEntriesSerializer(serializers.ModelSerializer):
+class ReconciliationRowSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ReconciliationEntries
+        model = ReconciliationRow
         exclude = ("updated_at", "statement" )
         
 class ReconciliationStatementImportSerializer(serializers.Serializer):
@@ -240,10 +240,10 @@ class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     reconciled_entries = serializers.SerializerMethodField()
     
     def get_total_entries(self, obj):
-        return obj.entries.count()
+        return obj.rows.count()
     
-    def get_reconciled_entries(self, obj):
-        return obj.entries.filter(status='Reconciled').count()
+    def get_reconciled_rows(self, obj):
+        return obj.rows.filter(status='Reconciled').count()
 
     class Meta:
         model = ReconciliationStatement
@@ -252,7 +252,7 @@ class ReconciliationStatementListSerializer(serializers.ModelSerializer):
 
 class ReconciliationStatementSerializer(serializers.ModelSerializer):
     account = AccountMinSerializer()
-    entries = ReconciliationEntriesSerializer(many=True)
+    entries = ReconciliationRowSerializer(many=True)
 
     class Meta:
         model = ReconciliationStatement
