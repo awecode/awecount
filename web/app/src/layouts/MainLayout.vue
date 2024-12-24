@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { EssentialLinkProps } from 'components/EssentialLink.vue'
-import type { Ref } from 'vue'
 
 import { $api } from 'src/composables/api'
+import { useBreadcrumbItems } from 'src/composables/breadcrumb.js'
 import { useAuthStore } from 'src/stores/auth'
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -12,8 +12,6 @@ const route = useRoute()
 const router = useRouter()
 
 const miniState = ref(false)
-const breadcrumbs = ref<string[]>([])
-
 const store = useLoginStore()
 
 const companies = ref([])
@@ -426,18 +424,15 @@ const essentialLinks: EssentialLinkProps[] = [
 
 const leftDrawerOpen = ref(false)
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+// function toggleLeftDrawer() {
+//   leftDrawerOpen.value = !leftDrawerOpen.value
+// }
 
 onMounted(() => {
   fetchCompanies()
-  breadcrumbs.value = route.meta.breadcrumbs || []
 })
 
-watch(route, () => {
-  breadcrumbs.value = route.meta.breadcrumbs || []
-})
+const breadcrumbs = useBreadcrumbItems()
 </script>
 
 <template>
@@ -452,7 +447,7 @@ watch(route, () => {
             <img style="max-width: 60px; max-height: 40px; object-fit: contain" :src="store.companyInfo.logo_url" alt="Company Logo" />
           </RouterLink>
           <q-breadcrumbs class="gt-xs" gutter="sm">
-            <q-breadcrumbs-el v-for="breadCrum in breadcrumbs" :key="breadCrum" :label="breadCrum" :to="{ name: breadCrum }" />
+            <q-breadcrumbs-el v-for="breadcrumb in breadcrumbs.slice(1)" :key="breadcrumb.to" v-bind="breadcrumb" />
             <!-- :class="breadCrums?.length - 1 === index cursor-pointer" -->
           </q-breadcrumbs>
         </q-toolbar-title>
