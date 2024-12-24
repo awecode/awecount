@@ -30,9 +30,9 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     class UserModel(models.Model):
         class PermissionsMeta:
             key = 'user' # Optional, defaults to model._meta.model_name.lower()
-            actions = ['view', 'create', 'update', 'delete', 'custom_action] # Required
+            actions = ['view', 'create', 'modify', 'delete', 'custom_action] # Required
             # or, actions = {'view': True, 'create': True, ...}
-            # or, actions = ['view', 'create', {'update': False}, ...]
+            # or, actions = ['view', 'create', {'modify': False}, ...]
     ```
 
     Returns:
@@ -364,7 +364,7 @@ class CompanyMember(BaseModel):
         ordering = ("-created_at",)
 
     class PermissionsMeta:
-        actions = ["view", "add", "change", "delete"]
+        actions = ["view", "create", "modify", "delete"]
 
     def __str__(self):
         """Return members of the company"""
@@ -458,7 +458,7 @@ class CompanyMemberInvite(BaseModel):
         ordering = ("-created_at",)
 
     class PermissionsMeta:
-        actions = ["view", "add", "change", "delete"]
+        actions = ["view", "create", "modify", "delete"]
 
     def __str__(self):
         return f"{self.company.name}-{self.email}-{"Accepted" if self.accepted else "Pending"}"
