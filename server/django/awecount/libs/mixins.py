@@ -66,7 +66,7 @@ class DeleteRows(object):
 
 class TransactionsViewMixin(object):
     @action(detail=True, methods=["get"])
-    def transactions(self, request, pk=None):
+    def transactions(self, request, pk=None, *args, **kwargs):
         param = request.GET
         obj = self.get_object()
         serializer_class = self.get_serializer_class()

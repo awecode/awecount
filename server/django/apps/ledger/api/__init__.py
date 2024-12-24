@@ -106,7 +106,7 @@ class PartyViewSet(
         return qs
 
     @action(detail=True)
-    def sales_vouchers(self, request, pk=None):
+    def sales_vouchers(self, request, pk=None, *args, **kwargs):
         sales_vouchers = SalesVoucher.objects.filter(party_id=pk)
         data = SaleVoucherOptionsSerializer(sales_vouchers, many=True).data
         return Response(data)
@@ -186,7 +186,7 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         return AccountSerializer
 
     @action(detail=True, methods=["get"], url_path="journal-entries")
-    def journal_entries(self, request, pk=None):
+    def journal_entries(self, request, pk=None, *args, **kwargs):
         param = request.GET
         start_date = param.get("start_date")
         end_date = param.get("end_date")

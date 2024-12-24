@@ -490,7 +490,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response(status=200)
 
     @action(detail=True)
-    def details(self, request, pk=None):
+    def details(self, request, pk=None, *args, **kwargs):
         qs = (
             super()
             .get_queryset()
@@ -695,7 +695,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return Response({}, status=200)
 
     @action(detail=True, methods=["GET"], url_path="available-stock")
-    def available_stock_data(self, request, pk=None):
+    def available_stock_data(self, request, pk=None, *args, **kwargs):
         item = self.get_object()
         return Response(item.available_stock_data, status=200)
 
@@ -956,7 +956,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return [obj.id]
 
     @action(detail=True, methods=["get"], url_path="journal-entries")
-    def journal_entries(self, request, pk=None):
+    def journal_entries(self, request, pk=None, *args, **kwargs):
         param = request.GET
         start_date = param.get("start_date")
         end_date = param.get("end_date")
@@ -982,7 +982,7 @@ class InventoryAccountViewSet(InputChoiceMixin, CRULViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def transactions(self, request, pk=None):
+    def transactions(self, request, pk=None, *args, **kwargs):
         param = request.GET
         obj = self.get_object()
         serializer_class = self.get_serializer_class()
