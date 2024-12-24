@@ -41,7 +41,7 @@
         <q-td :props="props">
           <q-btn v-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View"
             :to="`/bank-reconciliation/${props.row.id}/`" />
-          <q-btn v-if="checkPermissions('ReconciliationStatementView') && props.row.reconciled_entries < props.row.total_entries" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
+          <q-btn v-if="checkPermissions('ReconciliationStatementView') && props.row.reconciled_rows < props.row.total_rows" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px" label="Reconcile" :to="`/bank-reconciliation/reconcile/?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`" />
           <q-btn v-else-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Reconciled"
             disable />
