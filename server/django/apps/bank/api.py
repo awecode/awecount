@@ -1189,13 +1189,14 @@ class ReconciliationViewSet(CRULViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        bank_statements = instance.entries.all().values("transaction_ids", "id").annotate(
-            grouped_statements=ArrayAgg("pk"),
-        )
-        # TODO: check the logic, if group is divided
-        bank_statements = self.filter_entries(bank_statements, request.query_params)
+        filtered_entries = self.filter_entries(instance.entries, request.query_params)
+        matching_transaction_ids = filtered_entries.values_list("transaction_ids", flat=True).distinct()
 
-        # Get paginated response directly on the bank_statements
+        # Retrieve all entries for matching groups
+        bank_statements = instance.entries.filter(transaction_ids__in=matching_transaction_ids).values(
+            "transaction_ids", "id"
+        ).annotate(grouped_statements=ArrayAgg("pk"))
+
         page = self.paginate_queryset(bank_statements)
 
         # 2. Get All Transaction IDs in One Go
