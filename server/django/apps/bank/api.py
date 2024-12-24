@@ -1080,7 +1080,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
         return e
 
 class ReconciliationViewSet(CRULViewSet):
-    queryset = ReconciliationStatement.objects.all().prefetch_related("entries").order_by("-end_date")
+    queryset = ReconciliationStatement.objects.all().prefetch_related("rows__transactions").order_by("-end_date")
     serializer_class = ReconciliationStatementSerializer
     model = ReconciliationStatement
     
@@ -1110,9 +1110,9 @@ class ReconciliationViewSet(CRULViewSet):
         'end_date',
     ]
     
-    def filter_entries(self, entries, params):
+    def filter_rows(self, rows, params):
         """
-        Apply filtering logic to the entries queryset based on request parameters.
+        Apply filtering logic to the rows queryset based on request parameters.
         """
         start_date = params.get('start_date')
         end_date = params.get('end_date')
@@ -1140,8 +1140,8 @@ class ReconciliationViewSet(CRULViewSet):
                 raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
             filters &= Q(date__range=[start_date, end_date])
             
-        entries = entries.filter(filters)
-        return entries
+        rows = rows.filter(filters)
+        return rows
 
     def merge_transactions(self, statement_transactions, system_transactions):
         # Convert querysets to lists to avoid repeated database queries
@@ -1226,25 +1226,38 @@ class ReconciliationViewSet(CRULViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        # Filter rows based on query parameters
+        filtered_rows = self.filter_rows(instance.rows, request.query_params)
 
-        filtered_entries = self.filter_entries(instance.rows, request.query_params)
-        matching_transaction_ids = filtered_entries.values_list("transaction_ids", flat=True).distinct()
+        # Get the transaction IDs as a list of integers
+        matching_transaction_ids = (
+            filtered_rows.values_list("transactions__transaction_id", flat=True).distinct()
+        )
 
         # Retrieve all entries for matching groups
-        bank_statements = instance.rows.filter(transaction_ids__in=matching_transaction_ids).values(
-            "transaction_ids", "id"
-        ).annotate(grouped_statements=ArrayAgg("pk"))
+        bank_statements = (
+            instance.rows.filter(transactions__transaction_id__in=matching_transaction_ids)
+            .annotate(
+                transaction_id=F("transactions__transaction_id")
+            )
+            .values("transaction_id")
+            .annotate(
+                grouped_statements=ArrayAgg("pk", distinct=True),
+                transaction_ids=Coalesce(ArrayAgg("transactions__transaction_id", distinct=True), []),
+            )
+        )
 
         page = self.paginate_queryset(bank_statements)
 
-        # 2. Get All Transaction IDs in One Go
-        all_transaction_ids = set(
-            {data for entry in page for data in entry["transaction_ids"]}
-        )
-        all_statement_ids = set(
-            {data for entry in page for data in entry["grouped_statements"]}
-        )
+        # Get all transaction IDs and statement IDs in one go
+        all_transaction_ids = set({
+            data for entry in page for data in entry["transaction_ids"]
+        })
+        all_statement_ids = set({
+            data for entry in page for data in entry["grouped_statements"]
+        })
 
+        # Fetch system transactions based on transaction ids
         system_transactions = (
             Transaction.objects.filter(
                 company=request.company,
@@ -1258,12 +1271,15 @@ class ReconciliationViewSet(CRULViewSet):
             )
         )
 
+        # Fetch reconciliation rows for the filtered statement ids
         statements_queryset = ReconciliationRow.objects.filter(
             statement__company=request.company,
             statement__account_id=instance.account_id,
             id__in=all_statement_ids,
+        ).annotate(
+            transaction_ids=ArrayAgg("transactions__transaction_id")
         ).select_related("statement")
-
+        
         merged_transactions = self.merge_transactions(
             statements_queryset, system_transactions
         )
