@@ -282,12 +282,11 @@ function parseXLSXSheet(sheetData: any[][]): any[] {
     console.warn('No header row found in the sheet')
     return []
   }
-
   let headerRow = sheetData[headerRowIndex].map((e: string) =>
-    e.trim()
+    e?.trim()
       .toLowerCase()
       .replace(/[\n\t]/g, ' ')
-      .replace(/\d/g, '')
+      .replace(/\d/g, '') || ''
   )
 
   headerRow = mapHeaders(headerRow)
