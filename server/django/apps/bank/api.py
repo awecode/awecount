@@ -30,6 +30,7 @@ from apps.bank.models import (
     FundTransfer,
     FundTransferTemplate,
     ReconciliationRow,
+    ReconciliationRowTransaction,
     ReconciliationStatement,
 )
 from apps.bank.resources import ChequeIssueResource
@@ -419,7 +420,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     abs(statement_transaction['cr_amount'] - system_transaction.dr_amount) < settings.BANK_RECONCILIATION_TOLERANCE)
                 ):
                     # Reconcile transactions
-                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                    statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
                     statement_transaction['status'] = 'Reconciled'
                     reconciled_transactions.append(statement_transaction)
                     unreconciled_statement_transactions.remove(statement_transaction)
@@ -464,10 +465,10 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     ):
                         # Reconcile matched transactions
                         for statement_transaction in combination:
-                            if statement_transaction.get('transaction_ids'):
-                                statement_transaction['transaction_ids'].append(system_transaction.pk)
+                            if statement_transaction.get('transactions'):
+                                statement_transaction['transactions'].append({'id': system_transaction.pk, 'updated_at': system_transaction.updated_at})
                             else:
-                                statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
                             if has_same_date:
                                 statement_transaction['status'] = 'Reconciled'
                             reconciled_transactions.append(statement_transaction)
@@ -533,10 +534,10 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         ):
                             # Reconcile matched transactions
                             for system_transaction in combination:
-                                if statement_transaction.get('transaction_ids'):
-                                    statement_transaction['transaction_ids'].append(system_transaction.pk)
+                                if statement_transaction.get('transactions'):
+                                    statement_transaction['transactions'].append({'id': system_transaction.pk, 'updated_at': system_transaction.updated_at})
                                 else:
-                                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                    statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
                                 if has_same_date:
                                     statement_transaction['status'] = 'Reconciled'
                                 unreconciled_system_transactions.remove(system_transaction)
@@ -550,10 +551,10 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         elif (abs(total_dr - total_cr - statement_transaction.get('cr_amount', 0)) < settings.BANK_RECONCILIATION_TOLERANCE):
                             # dont remove the cr_amount transaction but remove the dr_amount transactions
                             for system_transaction in combination:
-                                if statement_transaction.get('transaction_ids'):
-                                    statement_transaction['transaction_ids'].append(system_transaction.pk)
+                                if statement_transaction.get('transactions'):
+                                    statement_transaction['transactions'].append({'id': system_transaction.pk, 'updated_at': system_transaction.updated_at})
                                 else:
-                                    statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                    statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
                                 if has_same_date:
                                     statement_transaction['status'] = 'Reconciled'
                                 unreconciled_system_transactions.remove(system_transaction)
@@ -575,10 +576,10 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     ):
                         # Reconcile matched transactions
                         for system_transaction in combination:
-                            if statement_transaction.get('transaction_ids'):
-                                statement_transaction['transaction_ids'].append(system_transaction.pk)
+                            if statement_transaction.get('transactions'):
+                                statement_transaction['transactions'].append({'id': system_transaction.pk, 'updated_at': system_transaction.updated_at})
                             else:
-                                statement_transaction['transaction_ids'] = [system_transaction.pk]
+                                statement_transaction['transactions'] = [{'id': system_transaction.pk, 'updated_at': system_transaction.updated_at}]
                             if has_same_date:
                                 statement_transaction['status'] = 'Reconciled'
                             unreconciled_system_transactions.remove(system_transaction)
@@ -650,8 +651,9 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         < settings.BANK_RECONCILIATION_TOLERANCE
                     ):
                         # Mark transactions as reconciled
-                        statement_transaction["transaction_ids"] = [
-                            system_transaction.pk for system_transaction in combination
+                        statement_transaction["transactions"] = [
+                            # system_transaction.pk for system_transaction in combination
+                            {"id": system_transaction.pk, "updated_at": system_transaction.updated_at} for system_transaction in combination
                         ]
                         statement_transaction["status"] = "Reconciled"
 
@@ -848,12 +850,16 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         ):
                             # Mark these transactions as reconciled
                             statement_transaction.setdefault(
-                                "transaction_ids", []
+                                "transactions", []
                             ).extend(
-                                t.pk
-                                for t in combination
+                                {
+                                    "transaction_id": t.pk,
+                                    "updated_at": t.updated_at,
+                                } for t in combination
                                 if t.pk
-                                not in statement_transaction.get("transaction_ids", [])
+                                not in {
+                                    transaction["transaction_id"] for transaction in statement_transaction.get("transactions", [])
+                                }
                             )
 
                             # Remove reconciled system transactions
@@ -949,13 +955,16 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                             < settings.BANK_RECONCILIATION_TOLERANCE
                         ):
                             # Mark these transactions as reconciled
-                            statement_transaction.setdefault(
-                                "transaction_ids", []
-                            ).extend(
-                                t.pk
+                            statement_transaction.setdefault("transactions", []).extend(
+                                {
+                                    "transaction_id": t.pk,
+                                    "updated_at": t.updated_at,
+                                }
                                 for t in combination
                                 if t.pk
-                                not in statement_transaction.get("transaction_ids", [])
+                                not in {
+                                    transaction["transaction_id"] for transaction in statement_transaction.get("transactions", [])
+                                }
                             )
 
                             # Remove reconciled system transactions
@@ -992,31 +1001,73 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                         break
 
         # Combine reconciled and unreconciled transactions into a single list
-        bank_reconciliation_entries = []
-        
-        # add to bank reconciliation
-        bank_reconciliation_statement = ReconciliationStatement.objects.create(
-            company_id=company_id,
-            account_id=account_id,
-            start_date=start_date,
-            end_date=end_date,
-        ) 
+        with transaction.atomic():
+            bank_reconciliation_entries = []
+            
+            # add to bank reconciliation
+            bank_reconciliation_statement = ReconciliationStatement.objects.create(
+                company_id=company_id,
+                account_id=account_id,
+                start_date=start_date,
+                end_date=end_date,
+            ) 
 
-                bank_reconciliation_entries.append(ReconciliationRow(
+            bank_reconciliation_entries = []
 
-        # Add unreconciled transactions
-        for statement_transaction in unreconciled_statement_transactions:
-                bank_reconciliation_entries.append(ReconciliationRow(
-                date=statement_transaction['date'],
-                dr_amount=statement_transaction.get('dr_amount') or None,
-                cr_amount=statement_transaction.get('cr_amount') or None,
-                status='Unreconciled',
-                balance=statement_transaction.get('balance', None),
-                statement_id=bank_reconciliation_statement.pk,
-                description=statement_transaction.get('description', None),
-            ))
+            # Collect transactions to link after bulk creation
+            reconciliation_transactions = []
 
-            ReconciliationRow.objects.bulk_create(bank_reconciliation_entries,  batch_size=500)
+            # Add reconciled transactions
+            for statement_transaction in reconciled_transactions:
+                reconciliation_row = ReconciliationRow(
+                    date=statement_transaction['date'],
+                    dr_amount=statement_transaction.get('dr_amount') or None,
+                    cr_amount=statement_transaction.get('cr_amount') or None,
+                    status=statement_transaction.get('status', 'Matched'),
+                    balance=statement_transaction.get('balance', None),
+                    statement_id=bank_reconciliation_statement.pk,
+                    description=statement_transaction.get('description', None),
+                )
+                bank_reconciliation_entries.append(reconciliation_row)
+                reconciliation_transactions.append(
+                    (reconciliation_row, statement_transaction.get('transactions', []))
+                )
+
+            # Add unreconciled transactions
+            for statement_transaction in unreconciled_statement_transactions:
+                reconciliation_row = ReconciliationRow(
+                    date=statement_transaction['date'],
+                    dr_amount=statement_transaction.get('dr_amount') or None,
+                    cr_amount=statement_transaction.get('cr_amount') or None,
+                    status='Unreconciled',
+                    balance=statement_transaction.get('balance', None),
+                    statement_id=bank_reconciliation_statement.pk,
+                    description=statement_transaction.get('description', None),
+                )
+                bank_reconciliation_entries.append(reconciliation_row)
+
+            # Perform bulk_create
+            ReconciliationRow.objects.bulk_create(
+                bank_reconciliation_entries, batch_size=500
+            )
+
+            # Link transactions in bulk
+            reconciliation_row_mapping = {row: transactions for row, transactions in reconciliation_transactions}
+
+            # Prepare ReconciliationRowTransaction objects
+            bulk_transactions = [
+                ReconciliationRowTransaction(
+                    reconciliation_row=row,
+                    transaction_id=transaction["id"],
+                    transaction_last_updated_at=transaction["updated_at"],
+                )
+                for row, transactions in reconciliation_row_mapping.items()
+                for transaction in transactions
+            ]
+
+            # Perform bulk_create for transactions
+            ReconciliationRowTransaction.objects.bulk_create(bulk_transactions, batch_size=500)
+
         # email the user
         header = "Bank Reconciliation Statement Import Completed"
         message = "Bank Reconciliation Statement Import Completed, with " + str(len(reconciled_transactions)) + " transactions reconciled and " + str(len(unreconciled_statement_transactions)) + " transactions unreconciled"

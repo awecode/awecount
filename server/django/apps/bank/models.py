@@ -463,9 +463,8 @@ class ReconciliationRow(models.Model):
     cr_amount = models.FloatField(null=True, blank=True)
     balance = models.FloatField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    transaction_ids = ArrayField(models.IntegerField(), default=list, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
-    statement = models.ForeignKey(ReconciliationStatement, on_delete=models.CASCADE, related_name="entries")
+    statement = models.ForeignKey(ReconciliationStatement, on_delete=models.CASCADE, related_name="rows")
     # - if the amount is positive, it means the bank statement has more money than the ledger
     adjustment_amount = models.FloatField(null=True, blank=True)
 
@@ -493,11 +492,19 @@ class ReconciliationRow(models.Model):
             entries.append(("cr", adjustment_account, adjustment_amount_absolute))
         set_ledger_transactions(self, date, *entries, clear=True)
         # get new transaction ids from journal entries
-        self.transaction_ids.extend(
-            Transaction.objects.filter(
+        transactions = Transaction.objects.filter(
                 journal_entry__content_type__model="reconciliationrow",
                 journal_entry__object_id=self.id,
                 account_id=bank_account.id,
-            ).values_list("id", flat=True)
-        )
-        self.save()
+            ).values_list("id", 'updated_at')
+        to_create = []
+        for transaction in transactions:
+            to_create.append(ReconciliationRowTransaction(transaction_id=transaction[0], reconciliation_row=self, transaction_last_updated_at=transaction[1]))
+        ReconciliationRowTransaction.objects.bulk_create(to_create)
+
+
+class ReconciliationRowTransaction(models.Model):
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    reconciliation_row = models.ForeignKey(ReconciliationRow, on_delete=models.CASCADE, related_name="transactions")
+    # To keep track of the last updated transaction
+    transaction_last_updated_at = models.DateTimeField()
