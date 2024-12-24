@@ -453,7 +453,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             Returns:
                 bool: True if the transaction was reconciled, False otherwise.
             """
-            for r in range(1, len(statement_transactions) + 1):
+            for r in range(2, len(statement_transactions) + 1):
                 for combination in combinations(statement_transactions, r):
                     total_dr = sum(t.get('dr_amount', 0) for t in combination)
                     total_cr = sum(t.get('cr_amount', 0) for t in combination)
@@ -522,7 +522,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                 
             # loop over the grouped system transactions and try to reconcile
             for source_id, system_transactions in list(system_transactions_by_source.items()):
-                for r in range(1, len(system_transactions) + 1):
+                for r in range(2, len(system_transactions) + 1):
                     for combination in combinations(system_transactions, r):
                         total_dr = sum((t.dr_amount or 0) for t in combination)
                         total_cr = sum((t.cr_amount or 0) for t in combination)
@@ -564,7 +564,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                             return True
             
             
-            for r in range(1, len(system_transactions) + 1):
+            for r in range(2, len(system_transactions) + 1):
                 for combination in combinations(system_transactions, r):
                     total_dr = sum((t.dr_amount or 0) for t in combination)
                     total_cr = sum((t.cr_amount or 0) for t in combination)
@@ -634,7 +634,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
             reconciliation_found = False
 
             # Try combinations of system transactions
-            for r in range(1, len(date_filtered_system_transactions) + 1):
+            for r in range(2, len(date_filtered_system_transactions) + 1):
                 if reconciliation_found:
                     break
 
@@ -827,7 +827,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     break
 
                 # Try combinations of 1 to all transactions on the date
-                for r in range(1, len(system_transactions_by_date) + 1):
+                for r in range(2, len(system_transactions_by_date) + 1):
                     for combination in combinations(system_transactions_by_date, r):
                         # Calculate the net difference: debits - credits
                         net_difference = sum(
@@ -929,7 +929,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
                     break
 
                 # Try combinations of 1 to all transactions on the date
-                for r in range(1, len(system_transactions_by_date) + 1):
+                for r in range(2, len(system_transactions_by_date) + 1):
                     for combination in combinations(system_transactions_by_date, r):
                         # Calculate the net difference: debits - credits
                         net_difference = sum(
