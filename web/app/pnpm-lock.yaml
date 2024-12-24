@@ -44,6 +44,9 @@ importers:
       quasar:
         specifier: ^2.17.4
         version: 2.17.4
+      ufo:
+        specifier: ^1.5.4
+        version: 1.5.4
       unocss:
         specifier: ^0.65.1
         version: 0.65.1(postcss@8.4.49)(rollup@4.28.1)(vite@6.0.3(@types/node@22.10.1)(jiti@2.4.1)(sass-embedded@1.82.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.2))
