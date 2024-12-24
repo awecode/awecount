@@ -136,30 +136,8 @@ class BaseWidget(object):
                 )
         return dct
 
-    def merge_queryset_data(self, queryset):
-        merged = {}
-
-        if not queryset:
-            return []
-
-        first_item = queryset[0]
-        fields = first_item.keys()
-        key_field = list(fields)[0]
-        value_field = list(fields)[1]
-
-        for item in queryset:
-            value = item[key_field] if item[key_field] is not None else "None"
-            if value not in merged:
-                merged[value] = {key_field: value, value_field: 0}
-            merged[value][value_field] += item[value_field]
-
-        return list(merged.values())
-
     def get_data(self):
         data = self.process_queryset()
-
-        if self.is_series() is False:
-            data = self.merge_queryset_data(data)
 
         if self.is_table():
             self.datasets = data
@@ -226,7 +204,7 @@ class BaseWidget(object):
                 qs = qs.annotate(year=ExtractYear(self.date_attribute))
             elif self.group_by == "week":
                 qs = qs.annotate(week=ExtractWeek(self.date_attribute))
-        qs = qs.values(self.label_field).order_by(self.label_field, self.group_by)
+        qs = qs.values(self.label_field).order_by(self.label_field)
         return qs
 
     def get_series_queryset(self):
