@@ -9,11 +9,11 @@ from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.company.constants import RESTRICTED_COMPANY_SLUGS
 from lib.models import BaseModel
+from lib.models.mixins import TimeAuditModel
 
 
 def get_default_permissions() -> Dict[str, Dict[str, bool]]:
@@ -96,6 +96,42 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     return ret
 
 
+class FiscalYear(TimeAuditModel):
+    name = models.CharField(max_length=24)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def previous_day(self):
+        return self.start_date - timedelta(days=1)
+
+    def contains_date(self, date):
+        return self.start_date <= date <= self.end_date
+
+    def includes(self, date):
+        warnings.warn(
+            "FiscalYear.includes() is deprecated, use FiscalYear.contains_date() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.contains_date(date)
+
+    def clean(self):
+        super().clean()
+        if self.start_date and self.end_date:
+            if self.start_date >= self.end_date:
+                raise ValidationError(
+                    {"end_date": _("End date must be after start date.")}
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
 def slug_validator(value):
     if value in RESTRICTED_COMPANY_SLUGS:
         raise ValidationError("Slug is not valid")
@@ -109,20 +145,20 @@ TEMPLATE_CHOICES = [
 ]
 
 
-def get_company_logo_path(instance, filename):
-    _, ext = filename.split(".")
-    filename = f"{uuid.uuid4()}.{ext}"
-    return f"{instance.slug}/logo/{filename}"
-
-
 class Company(BaseModel):
-    class Type(models.TextChoices):
-        PRIVATE_LIMITED = "private_limited", "Private Limited"
-        PUBLIC_LIMITED = "public_limited", "Public Limited"
-        SOLE_PROPRIETORSHIP = "sole_proprietorship", "Sole Proprietorship"
-        PARTNERSHIP = "partnership", "Partnership"
-        CORPORATION = "corporation", "Corporation"
-        NON_PROFIT = "non_profit", "Non-profit"
+    COMPANY_TYPE_CHOICES = [
+        ("private_limited", "Private Limited"),
+        ("public_limited", "Public Limited"),
+        ("sole_proprietorship", "Sole Proprietorship"),
+        ("partnership", "Partnership"),
+        ("corporation", "Corporation"),
+        ("non_profit", "Non-profit"),
+    ]
+
+    def get_company_logo_path(self, filename):
+        _, ext = filename.split(".")
+        filename = f"{uuid.uuid4()}.{ext}"
+        return f"{self.slug}/logo/{filename}"
 
     id = models.UUIDField(
         default=uuid.uuid4,
@@ -152,8 +188,8 @@ class Company(BaseModel):
     # legal information
     organization_type = models.CharField(
         max_length=255,
-        choices=Type.choices,
-        default=Type.PRIVATE_LIMITED,
+        choices=COMPANY_TYPE_CHOICES,
+        default=COMPANY_TYPE_CHOICES[0][0],
     )
     tax_registration_number = models.CharField(max_length=255)
 
@@ -181,6 +217,14 @@ class Company(BaseModel):
     config_template = models.CharField(max_length=255, default="np")
     invoice_template = models.IntegerField(choices=TEMPLATE_CHOICES, default=1)
 
+    current_fiscal_year = models.ForeignKey(
+        FiscalYear,
+        on_delete=models.SET_NULL,
+        related_name="companies",
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         verbose_name = "Company"
         verbose_name_plural = "Companies"
@@ -190,16 +234,13 @@ class Company(BaseModel):
         """Return name of the Company"""
         return self.name
 
-    @property
-    def current_fiscal_year(self):
-        return self.company_fiscalyear.filter(is_current=True).first()
-
-    @property
-    def current_fiscal_year_id(self):
-        return self.current_fiscal_year.id
-
     def get_fiscal_years(self):
-        return self.company_fiscalyear.all()
+        # TODO Assign fiscal years to companies (m2m), return related fiscal years here
+        return sorted(
+            FiscalYear.objects.all(),
+            key=lambda fy: 999 if fy.id == self.current_fiscal_year_id else fy.id,
+            reverse=True,
+        )
 
 
 class CompanyBaseModel(BaseModel):
@@ -211,83 +252,6 @@ class CompanyBaseModel(BaseModel):
 
     class Meta:
         abstract = True
-
-
-class FiscalYear(CompanyBaseModel):
-    name = models.CharField(max_length=24)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    is_current = models.BooleanField(
-        default=False,
-        help_text=_(
-            "Indicates if this is the currently selected fiscal year for the company"
-        ),
-    )
-
-    class Meta:
-        unique_together = ["company", "start_date", "end_date"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["company", "is_current"],
-                condition=Q(is_current=True),
-                name="unique_current_fiscal_year_per_company",
-            ),
-        ]
-        verbose_name = "Company Fiscal Year"
-        verbose_name_plural = "Company Fiscal Years"
-        ordering = ("-start_date", "is_current")
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def previous_day(self):
-        return self.start_date - timedelta(days=1)
-
-    def contains_date(self, date):
-        return self.start_date <= date <= self.end_date
-
-    def includes(self, date):
-        warnings.warn(
-            "FiscalYear.includes() is deprecated, use FiscalYear.contains_date() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.contains_date(date)
-
-    def clean(self):
-        super().clean()
-        if self.start_date and self.end_date:
-            if self.start_date >= self.end_date:
-                raise ValidationError(
-                    {"end_date": _("End date must be after start date.")}
-                )
-
-            overlapping = (
-                FiscalYear.objects.filter(company=self.company)
-                .exclude(pk=self.pk)
-                .filter(
-                    Q(start_date__lte=self.end_date) & Q(end_date__gte=self.start_date)
-                )
-                .exists()
-            )
-
-            if overlapping:
-                raise ValidationError(
-                    _(
-                        "This fiscal year overlaps with an existing fiscal year for this company."
-                    )
-                )
-
-    def save(self, *args, **kwargs):
-        if self.is_current:
-            (
-                FiscalYear.objects.filter(company=self.company, is_current=True)
-                .exclude(pk=self.pk)
-                .update(is_current=False)
-            )
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 
 class Permission(BaseModel):
