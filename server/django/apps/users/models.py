@@ -84,7 +84,6 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_password_expired = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     is_password_autoset = models.BooleanField(default=False)
 
@@ -116,6 +115,10 @@ class User(AbstractBaseUser):
     @property
     def company_id(self):
         return self.company.id if self.company else None
+
+    @property
+    def is_staff(self):
+        return self.is_superuser
 
     def save(self, *args, **kwargs):
         self.email = self.email.lower().strip()
