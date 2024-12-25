@@ -11,7 +11,7 @@ from rest_framework import status, views, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.company.models import Company, CompanyMember, CompanyMemberInvite
+from apps.company.models import Company, CompanyMember, CompanyMemberInvite, Permission
 from apps.company.permissions import CompanyAdminPermission, CompanyMemberPermission
 from apps.company.serializers import (
     CompanyLiteSerializer,
@@ -329,7 +329,7 @@ class CompanyMemberViewSet(viewsets.ModelViewSet):
 
 
 class CompanyPermissionEndpoint(views.APIView):
-    model = Company
+    model = Permission
     permission_classes = [CompanyMemberPermission]
 
     def get(self, request, company_slug):
