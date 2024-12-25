@@ -370,7 +370,7 @@ const unselectAll = () => {
 
 const reconcile = () => {
   if (selectedStatementTransactions.value.length > 0 || selectedSystemTransactions.value.length > 0) {
-    const endpoint = canReconcile ? 'v1/bank-reconciliation/reconcile-with-adjustment/' : 'v1/bank-reconciliation/reconcile-transactions/'
+    const endpoint = canReconcile.value ? 'v1/bank-reconciliation/reconcile-transactions/' : 'v1/bank-reconciliation/reconcile-with-adjustment/'
     useApi(endpoint, {
       method: 'POST',
       body: {
