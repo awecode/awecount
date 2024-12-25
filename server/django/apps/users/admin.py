@@ -7,7 +7,7 @@ from django.contrib.auth.admin import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 
-from apps.company.models import Company, FiscalYear
+from apps.company.models import Company, CompanyMember, FiscalYear, Permission
 from apps.ledger.models import handle_company_creation
 from apps.product.models import Brand, Item, Unit
 from apps.product.models import Category as InventoryCategory
@@ -289,3 +289,16 @@ class FiscalYearAdmin(admin.ModelAdmin):
 
 
 admin.site.register(FiscalYear, FiscalYearAdmin)
+
+
+@admin.register(CompanyMember)
+class CompanyMemberAdmin(admin.ModelAdmin):
+    list_display = ("company", "member", "access_level")
+    search_fields = ("company__name", "member__full_name")
+    list_filter = ("access_level",)
+    actions = [create_company_defaults]
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    pass
