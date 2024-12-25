@@ -24,8 +24,8 @@ from apps.users.models import User
 class CompanyInvitationsViewset(viewsets.ModelViewSet):
     """Endpoint for creating, listing and  deleting companys"""
 
-    serializer_class = CompanyMemberInviteSerializer
     model = CompanyMemberInvite
+    serializer_class = CompanyMemberInviteSerializer
 
     permission_classes = [CompanyAdminPermission]
 
@@ -225,8 +225,8 @@ class CompanyJoinEndpoint(views.APIView):
 
 
 class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
-    serializer_class = CompanyMemberInviteSerializer
     model = CompanyMemberInvite
+    serializer_class = CompanyMemberInviteSerializer
 
     def get_queryset(self):
         return self.filter_queryset(
@@ -272,6 +272,8 @@ class UserCompanyInvitationsViewSet(viewsets.ModelViewSet):
 
 
 class UserCompaniesEndpoint(views.APIView):
+    model = Company
+
     def get(self, request):
         user_companies = Company.objects.filter(
             company_members__member=request.user,
@@ -285,6 +287,8 @@ class UserCompaniesEndpoint(views.APIView):
 
 
 class UserCompanySwitchEndpoint(views.APIView):
+    model = Company
+
     def patch(self, request):
         if not request.data.get("company_slug"):
             return Response(
@@ -325,6 +329,7 @@ class CompanyMemberViewSet(viewsets.ModelViewSet):
 
 
 class CompanyPermissionEndpoint(views.APIView):
+    model = Company
     permission_classes = [CompanyMemberPermission]
 
     def get(self, request, company_slug):
