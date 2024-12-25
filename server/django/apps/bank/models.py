@@ -2,9 +2,11 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 from rest_framework.exceptions import ValidationError as RestValidatoinError
+from django.db import transaction
+from django.conf import settings
 
 from apps.company.models import Company
 from apps.ledger.models import (
@@ -477,6 +479,7 @@ class ReconciliationRow(models.Model):
     statement = models.ForeignKey(
         ReconciliationStatement, on_delete=models.CASCADE, related_name="rows"
     )
+    remarks = models.TextField(null=True, blank=True)
     # - if the amount is positive, it means the bank statement has more money than the ledger
     adjustment_amount = models.FloatField(null=True, blank=True)
 
@@ -531,7 +534,8 @@ class ReconciliationRowTransaction(models.Model):
     # To keep track of the last updated transaction
     transaction_last_updated_at = models.DateTimeField()
     
-
+    
+@transaction.atomic
 @receiver(pre_delete, sender=Transaction)
 def _transaction_delete(sender, instance, **kwargs):
     transaction = instance
@@ -541,7 +545,48 @@ def _transaction_delete(sender, instance, **kwargs):
     )
     if not reconciliation_rows:
         return
-    reconciliation_rows.update(status="Unreconciled")
+    JournalEntry.objects.filter(
+        content_type__model="reconciliationrow",
+        object_id__in=reconciliation_rows.values_list("id", flat=True),
+    ).delete()
+    reconciliation_rows.update(status="Unreconciled", remarks="Transaction deleted")
     ReconciliationRowTransaction.objects.filter(
         transaction_id__in=reconciliation_rows.values_list("transactions__transaction_id", flat=True)
     ).delete()
+
+@transaction.atomic
+@receiver(post_save, sender=Transaction)
+def _transaction_save(sender, instance, created, **kwargs):
+    transaction = instance
+    # Find all reconciliation rows that have this transaction
+    reconciliation_rows = ReconciliationRow.objects.filter(
+        transactions__transaction_id=transaction.id
+    )
+    import ipdb; ipdb.set_trace()
+    if not reconciliation_rows:
+        return
+    # Compare if the amount has changed
+    dr_amount = 0
+    cr_amount = 0
+    adjustment_amount = 0
+    
+    for row in reconciliation_rows:
+        if row.dr_amount:
+            dr_amount += row.dr_amount
+        if row.cr_amount:
+            cr_amount += row.cr_amount
+        if row.adjustment_amount:
+            adjustment_amount += row.adjustment_amount
+    
+    import ipdb; ipdb.set_trace()
+    if transaction.dr_amount and abs(dr_amount - float(transaction.dr_amount)) > 0.01 or transaction.cr_amount and abs(cr_amount - float(transaction.cr_amount)) > 0.01:
+    
+        JournalEntry.objects.filter(
+            content_type__model="reconciliationrow",
+            object_id__in=reconciliation_rows.values_list("id", flat=True),
+        ).delete()
+        reconciliation_rows.update(status="Unreconciled")
+        ReconciliationRowTransaction.objects.filter(
+            transaction_id__in=reconciliation_rows.values_list("transactions__transaction_id", flat=True)
+        ).delete()
+
