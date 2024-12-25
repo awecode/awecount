@@ -84,6 +84,7 @@ class Brand(models.Model):
 class Category(CompanyBaseModel):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
+    system_code = models.CharField(max_length=20, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     default_unit = models.ForeignKey(
         Unit, blank=True, null=True, on_delete=models.SET_NULL
@@ -837,7 +838,10 @@ class Category(CompanyBaseModel):
 
     class Meta:
         verbose_name_plural = "Categories"
-        unique_together = (("code", "company"), ("name", "company"))
+        unique_together = (
+            ("code", "company"),
+            ("system_code", "company"),
+        )
 
 
 class InventoryAccount(models.Model):
@@ -1430,6 +1434,7 @@ class Item(CompanyBaseModel):
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
+    system_code = models.CharField(max_length=20, null=True, blank=True)
     voucher_no = models.PositiveBigIntegerField(null=True, blank=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(
@@ -1862,8 +1867,11 @@ class Item(CompanyBaseModel):
 
     class Meta:
         unique_together = (
-            "code",
-            "company",
+            (
+                "code",
+                "company",
+            ),
+            ("system_code", "company"),
         )
 
 

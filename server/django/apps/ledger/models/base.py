@@ -87,7 +87,10 @@ class Category(MPTTModel, CompanyBaseModel):
 
     class Meta:
         verbose_name_plural = "Categories"
-        unique_together = [["code", "company"]]
+        unique_together = (
+            ("code", "company"),
+            ("system_code", "company"),
+        )
 
 
 class Account(CompanyBaseModel):
@@ -244,7 +247,10 @@ class Account(CompanyBaseModel):
         # return self.transactions.aggregate(dr=Sum('dr_amount'), cr=Sum('cr_amount'))
 
     class Meta:
-        unique_together = ("code", "company")
+        unique_together = (
+            ("code", "company"),
+            ("system_code", "company"),
+        )
         # ordering = ('order',)
         ordering = ["name"]
 
