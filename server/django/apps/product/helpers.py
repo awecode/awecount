@@ -13,11 +13,11 @@ def create_book_category(company):
         defaults={"name": "Taxless", "rate": 0},
     )
     extra_fields = [
-        {"name": "nepali_title", "type": "Text", "enable_search": True},
+        {"name": "localized_title", "type": "Text", "enable_search": True},
         {"name": "english_subtitle", "type": "Text", "enable_search": False},
-        {"name": "nepali_subtitle", "type": "Text", "enable_search": False},
+        {"name": "localized_subtitle", "type": "Text", "enable_search": False},
         {"name": "english_description", "type": "Text", "enable_search": False},
-        {"name": "nepali_description", "type": "Text", "enable_search": False},
+        {"name": "localized_description", "type": "Text", "enable_search": False},
         {"name": "genre", "type": "Choices", "enable_search": False},
         {"name": "authors", "type": "Text", "enable_search": True},
         {"name": "pages", "type": "Text", "enable_search": False},
