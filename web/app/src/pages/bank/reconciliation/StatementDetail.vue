@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
+import { getVoucherUrl, getPermissionFromSourceType } from 'src/composables/getVoucherUrlAndPermissions'
 const route = useRoute()
 
 interface StatementInfo {
@@ -128,68 +129,17 @@ const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) =
 }
 
 
-
-function getVoucherUrl(row: SystemTransactionData) {
-  if (!row.source_id) return ''
-  const source_type = row.source_type
-  if (source_type === 'Sales Voucher')
-    return `/sales-voucher/${row.source_id}/view/`
-  if (source_type === 'Purchase Voucher')
-    return `/purchase-voucher/${row.source_id}/view`
-  if (source_type === 'Journal Voucher')
-    return `/journal-voucher/${row.source_id}/view`
-  if (source_type === 'Credit Note')
-    return `/credit-note/${row.source_id}/view`
-  if (source_type === 'Debit Note')
-    return `/debit-note/${row.source_id}/view`
-  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
-  // TODO: add missing links
-  if (source_type === 'Cheque Deposit')
-    return `/cheque-deposit/${row.source_id}/view/`
-  if (source_type === 'Payment Receipt')
-    return `/payment-receipt/${row.source_id}/view/`
-  if (source_type === 'Cheque Issue')
-    return `/cheque-issue/${row.source_id}/`
-  if (source_type === 'Challan') return `/challan/${row.source_id}/`
-  if (source_type === 'Account Opening Balance')
-    return `/account-opening-balance/${row.source_id}/`
-  if (source_type === 'Item') return `/items/details/${row.source_id}/`
-  // added
-  if (source_type === 'Fund Transfer')
-    return `/fund-transfer/${row.source_id}/`
-  if (source_type === 'Bank Cash Deposit')
-    return `/bank/cash/cash-deposit/${row.source_id}/edit/`
-  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
-  if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
-  console.error(source_type + ' not handled!')
-}
-const getPermissionsWithSourceType = {
-  'Sales Voucher': 'SalesView',
-  'Purchase Voucher': 'PurchaseVoucherView',
-  'Journal Voucher': 'JournalVoucherView',
-  'Credit Note': 'CreditNoteView',
-  'Debit Note': 'DebitNoteView',
-  'Cheque Deposit': 'ChequeDepositView',
-  'Payment Receipt': 'PaymentReceiptView',
-  'Cheque Issue': 'ChequeIssueModify',
-  'Challan': 'ChallanModify',
-  'Account Opening Balance': 'AccountOpeningBalanceModify',
-  'Fund Transfer': 'FundTransferModify',
-  'Bank Cash Deposit': 'BankCashDepositModify',
-  'Tax Payment': 'TaxPaymentModify',
-  'Item': 'ItemView',
-  'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView'
-} as const
-
 const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
   const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
 
   systemTransactions.forEach((transaction: SystemTransactionData) => {
     if (transaction.source_id) {
       // check permission
-      const permission = getPermissionsWithSourceType[transaction.source_type as keyof typeof getPermissionsWithSourceType]
-      if (checkPermissions(permission)) {
-        const url = getVoucherUrl(transaction)
+      if (checkPermissions(getPermissionFromSourceType(transaction.source_type))) {
+        const url = getVoucherUrl(transaction as {
+          source_id: number,
+          source_type: string
+        })
         if (url) {
           // Use source_id as the unique key
           if (!sourceMap.has(transaction.source_id)) {
