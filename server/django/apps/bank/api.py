@@ -17,6 +17,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from django.db.models import Subquery, OuterRef
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -1881,15 +1882,56 @@ class ReconciliationViewSet(CRULViewSet):
     @action(detail=True, url_path="updated-transactions")
     def updated_transactions(self, request, pk):
         data = self.get_object()
-        bank_statements = data.rows.filter(
-            transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
-        ).values("id").annotate(
+
+        bank_statements = (
+            data.rows.filter(
+                statement__company=request.company,
+                statement__account_id=data.account_id,
+                id__in=data.rows.filter(
+                    transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
+                ).values('id')
+            )
+            .values("id")
+            .annotate(
                 grouped_statements=ArrayAgg("id", distinct=True),
                 transaction_ids=Coalesce(
                     ArrayAgg("transactions__transaction_id", distinct=True), []
                 ),
-            ).order_by("-date")
+            )
+            .order_by("-date")
+        )
         
         return self.get_paginated_merged_transactions(bank_statements, request.company, data.account_id)
+    
+    
+    @action(detail=False, methods=['POST'], url_path="update-transactions")
+    def update_transactions(self, request):
+        statement_ids = request.data.get('statement_ids')
+        transaction_ids = request.data.get('transaction_ids')
+        if not statement_ids or not transaction_ids:
+            raise ValidationError({"detail": "statement_ids and transaction_ids are required"})
+        entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
+        # Ensure all statement entries belong to the same account_id
+        account_ids = {entry.statement.account_id for entry in entries}
+        if len(account_ids) > 1:
+            raise ValidationError({"detail": "All the statement entries should have the same account_id"})
+
+        # Fetch ReconciliationRowTransaction objects with related transaction
+        transaction_objects = ReconciliationRowTransaction.objects.filter(
+            reconciliation_row__in=entries,
+            transaction_id__in=transaction_ids
+        ).select_related("transaction").distinct()
+
+
+        transaction_objects.update(
+            transaction_last_updated_at=Subquery(
+                transaction_objects.filter(
+                    pk=OuterRef('pk')
+                ).values('transaction__updated_at')[:1]
+            )
+        )
+
+        return Response({})
+                
 
 

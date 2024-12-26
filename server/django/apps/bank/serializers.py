@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.db.models import F
 
 from apps.ledger.serializers import AccountMinSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
@@ -238,16 +239,23 @@ class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     account = AccountMinSerializer()
     total_rows = serializers.SerializerMethodField()
     reconciled_rows = serializers.SerializerMethodField()
+    has_updated_rows = serializers.SerializerMethodField()
     
     def get_total_rows(self, obj):
         return obj.rows.count()
     
     def get_reconciled_rows(self, obj):
         return obj.rows.filter(status='Reconciled').count()
+    
+    def get_has_updated_rows(self, obj):
+        # find if there are any rows that have been updated
+        return obj.rows.filter(
+            transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
+        ).exists()
 
     class Meta:
         model = ReconciliationStatement
-        fields = ('id', 'account', 'start_date', 'end_date', 'total_rows', 'reconciled_rows',)
+        fields = ('id', 'account', 'start_date', 'end_date', 'total_rows', 'reconciled_rows', 'has_updated_rows')
         
 
 class ReconciliationStatementSerializer(serializers.ModelSerializer):
