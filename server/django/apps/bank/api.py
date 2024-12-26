@@ -1235,14 +1235,13 @@ class ReconciliationViewSet(CRULViewSet):
         bank_statements = (
             instance.rows
             .filter(pk__in=matching_statement_ids)
+            .values("id")
             .annotate(
-                transaction_id=F("transactions__transaction_id")
-            )
-            .values("transaction_id")
-            .annotate(
-                grouped_statements=ArrayAgg("pk", distinct=True),
-                transaction_ids=Coalesce(ArrayAgg("transactions__transaction_id", distinct=True), []),
-            )
+                grouped_statements=ArrayAgg("id", distinct=True),
+                transaction_ids=Coalesce(
+                    ArrayAgg("transactions__transaction_id", distinct=True), []
+                ),
+            ).order_by("-date")
         )
 
         page = self.paginate_queryset(bank_statements)
@@ -1378,13 +1377,13 @@ class ReconciliationViewSet(CRULViewSet):
                 date__range=[start_date, end_date],
                 status="Matched",
             )
+            .values("id")
             .annotate(
+                grouped_statements=ArrayAgg("id", distinct=True),
                 transaction_ids=Coalesce(
                     ArrayAgg("transactions__transaction_id", distinct=True), []
                 ),
-                grouped_statements=ArrayAgg("pk", distinct=True),
-            )
-            .values("transaction_ids", "grouped_statements")
+            ).order_by("-date")
         )
 
         page = self.paginate_queryset(bank_statements)
