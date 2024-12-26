@@ -1,6 +1,7 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
+      <q-btn color="blue" to="/bank-reconciliation/reconcile/" label="Manual Reconciliation" class="mr-5" />
       <q-btn v-if="checkPermissions('ReconciliationStatementCreate')" icon="mdi-file-upload-outline" color="green" label="Upload Statement" @click="statementPrompt = true"></q-btn>
     </div>
 
@@ -51,7 +52,7 @@
         <q-td :props="props">
           <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{
             props.row.category.name
-          }}</router-link>
+            }}</router-link>
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
       </template>
@@ -201,7 +202,7 @@
                   <div class="px-4 py-2 text-right">
                     <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
                       calculateTotalFromCounterparts(data.system_transactions)
-                    }}</span>
+                      }}</span>
                   </div>
                 </div>
               </div>

@@ -32,8 +32,8 @@ type Bank = {
 
 const selectedAccount = ref(route.query.account_id ? Number(route.query.account_id) : null)
 const bankAccounts: Ref<Bank[]> = ref([])
-const startDate = ref(route.query.start_date as string || '2024-11-08')
-const endDate = ref(route.query.end_date as string || '2024-12-08')
+const startDate = ref(route.query.start_date as string)
+const endDate = ref(route.query.end_date as string)
 const acceptableDifference = ref(0.01)
 const adjustmentThreshold = ref(1)
 const endpoint = 'v1/bank-reconciliation/defaults/'
