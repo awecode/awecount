@@ -1434,7 +1434,6 @@ class Item(CompanyBaseModel):
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, blank=True, null=True)
-    system_code = models.CharField(max_length=20, null=True, blank=True)
     voucher_no = models.PositiveBigIntegerField(null=True, blank=True)
     unit = models.ForeignKey(Unit, blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(
@@ -1871,7 +1870,6 @@ class Item(CompanyBaseModel):
                 "code",
                 "company",
             ),
-            ("system_code", "company"),
         )
 
 
