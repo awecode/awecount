@@ -1706,7 +1706,7 @@ class ReconciliationViewSet(CRULViewSet):
         return self.get_paginated_response(serializer.data)
     
     
-    def create_payment_receipt(self, latest_entry_date, account_ids, entries, vouchers, remarks):
+    def create_payment_receipt(self, latest_entry_date, entries, vouchers, remarks, tds_amount):
         bank_account = entries[0].statement.account.bank_accounts.first().id
         saved_vouchers = []
         for voucher in vouchers:
@@ -1717,9 +1717,11 @@ class ReconciliationViewSet(CRULViewSet):
                 'invoice_nos': [voucher.voucher_no],
                 'invoices': [voucher.id],
                 'party_id': voucher.party.id,
-                'remarks': remarks,
                 'mode': 'Bank Deposit',
+                'tds_amount': tds_amount or 0,
             }
+            if remarks:
+                data['remarks'] = remarks
             serializer = PaymentReceiptFormSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.validated_data['company'] = self.request.company
@@ -1733,6 +1735,7 @@ class ReconciliationViewSet(CRULViewSet):
         statement_ids = request.data.get('statement_ids')
         invoice_ids = request.data.get('invoice_ids')
         remarks = request.data.get('remarks')
+        tds_amount = request.data.get('tds_amount')
         if not statement_ids or not invoice_ids:
             raise ValidationError({"detail": "statement_ids and invoice_ids are required"})
         entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
@@ -1748,7 +1751,7 @@ class ReconciliationViewSet(CRULViewSet):
             raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
         
         latest_entry_date = max(obj.date for obj in entries)
-        saved_vouchers= self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        saved_vouchers= self.create_payment_receipt(latest_entry_date, entries, vouchers, remarks, tds_amount)
         transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
         to_create = []
         for obj in entries:
@@ -1766,6 +1769,7 @@ class ReconciliationViewSet(CRULViewSet):
         statement_ids = request.data.get('statement_ids')
         invoice_ids = request.data.get('invoice_ids')
         remarks = request.data.get('remarks')
+        tds_amount = request.data.get('tds_amount')
         if not statement_ids or not invoice_ids:
             raise ValidationError({"detail": "statement_ids and invoice_ids are required"})
         entries = ReconciliationRow.objects.filter(id__in=statement_ids).select_related("statement")
@@ -1784,7 +1788,7 @@ class ReconciliationViewSet(CRULViewSet):
             raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
         
         latest_entry_date = max(obj.date for obj in entries)
-        saved_vouchers = self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        saved_vouchers = self.create_payment_receipt(latest_entry_date, entries, vouchers, remarks, tds_amount)
         transaction_objects = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
                 
         adjustment = difference / len(entries)
