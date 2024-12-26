@@ -129,3 +129,36 @@ Q_CLUSTER = {
 
 DBBACKUP_FILENAME_TEMPLATE = "{databasename}-{servername}-{datetime}.{extension}"
 DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+
+ACCOUNT_SYSTEM_CODES = {
+    "Cash": "CASH",
+    "Sales Account": "SALES",
+    "Discount Income": "DIS-INCOME",
+    "Purchase Account": "PURCHASE",
+    "Expiry Expense": "EXP-EXP",
+    "Opening Balance Difference": "OPEN-BAL-DIFF",
+    "Profit and Loss Account": "PL",
+    "Discount Expenses": "DIS-EXP",
+    "Damage Expense": "DAM-EXP",
+    "TDS Receivables": "TDS-REC",
+}
+
+ACCOUNT_CATEGORY_SYSTEM_CODES = {
+    "Bank Accounts": "BANK",
+    "Customers": "CUST",
+    "Suppliers": "SUPP",
+    "Bank Charges": "BANK-CHG",
+    "Fixed Assets": "FIX-ASSET",
+    "Tax Receivables": "TAX-REC",
+    "Cash Accounts": "CASH-ACCOUNTS",
+    "Duties & Taxes": "DUT-TAX",
+    "Sales": "SALES",
+    "Purchase": "PURCHASE",
+    "Direct Expenses": "DIR-EXP",
+    "Indirect Expenses": "IND-EXP",
+    "Discount Expenses": "DIS-EXP",
+    "Discount Income": "DIS-INCOME",
+    "Income": "INCOME",
+    "Expenses": "EXPENSES",
+}

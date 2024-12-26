@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Case, Q, When
 from django_filters import rest_framework as filters
 from rest_framework import filters as rf_filters
@@ -26,8 +27,8 @@ from apps.bank.serializers import (
     BankCashDepositListSerializer,
     ChequeDepositCreateSerializer,
     ChequeDepositListSerializer,
-    ChequeIssueSerializer,
     ChequeIssueFormSerializer,
+    ChequeIssueSerializer,
     FundTransferListSerializer,
     FundTransferSerializer,
     FundTransferTemplateSerializer,
@@ -43,6 +44,9 @@ class BankAccountViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = BankAccountSerializer
 
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
+
 class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
     queryset = ChequeDeposit.objects.all()
     serializer_class = ChequeDepositCreateSerializer
@@ -53,10 +57,13 @@ class ChequeDepositViewSet(InputChoiceMixin, CRULViewSet):
             Account.objects.only(
                 "id",
                 "name",
-            ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
+            ).filter(
+                Q(category__system_code=acc_cat_system_codes["Customers"])
+                | Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
+            ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "bank_accounts",
@@ -132,10 +139,10 @@ class ChequeIssueViewSet(CRULViewSet):
             BankAccount.objects.filter(is_wallet=False),
             BankAccountChequeIssueSerializer,
             True,
-            ['short_name', 'account_number', 'bank_name'],
+            ["short_name", "account_number", "bank_name"],
         ),
-        ("parties", Party, PartyMinSerializer, True, ['name']),
-        ("accounts", Account, GenericSerializer, True, ['name']),
+        ("parties", Party, PartyMinSerializer, True, ["name"]),
+        ("accounts", Account, GenericSerializer, True, ["name"]),
     )
     filterset_class = ChequeIssueFilterSet
     filter_backends = [
@@ -191,31 +198,31 @@ class FundTransferViewSet(CRULViewSet):
         (
             "from_account",
             Account.objects.filter(
-                Q(category__name="Bank Accounts", category__default=True)
-                | Q(category__name="Customers", category__default=True)
+                Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
+                | Q(category__system_code=acc_cat_system_codes["Customers"])
             ).order_by("category__name"),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "to_account",
             Account.objects.filter(
-                Q(category__name="Bank Accounts", category__default=True)
-                | Q(category__name="Suppliers", category__default=True)
+                Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
+                | Q(category__system_code=acc_cat_system_codes["Suppliers"])
             ).order_by("category__name"),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "transaction_fee_account",
             Account.objects.filter(
-                category__name="Bank Charges", category__default=True
+                category__system_code=acc_cat_system_codes["Bank Charges"]
             ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
     )
 
@@ -258,7 +265,9 @@ class FundTransferViewSet(CRULViewSet):
         serializer = self.get_serializer(page, many=True)
         paginated_response = self.get_paginated_response(serializer.data)
         data = paginated_response.data
-        templates = FundTransferTemplate.objects.filter(company=request.company).select_related("from_account", "to_account", "transaction_fee_account")
+        templates = FundTransferTemplate.objects.filter(
+            company=request.company
+        ).select_related("from_account", "to_account", "transaction_fee_account")
         data["templates"] = FundTransferTemplateSerializer(templates, many=True).data
         return Response(data)
 
@@ -274,10 +283,13 @@ class CashDepositViewSet(CRULViewSet):
             Account.objects.only(
                 "id",
                 "name",
-            ).filter(Q(category__name="Customers") | Q(category__name="Bank Accounts")),
+            ).filter(
+                Q(category__system_code=acc_cat_system_codes["Customers"])
+                | Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
+            ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
         (
             "bank_accounts",
@@ -286,7 +298,7 @@ class CashDepositViewSet(CRULViewSet):
             ),
             GenericSerializer,
             True,
-            ['name'],
+            ["name"],
         ),
     ]
 

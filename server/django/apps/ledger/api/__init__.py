@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Case, F, FloatField, Max, Q, Sum, When
 from django.db.models.functions import Coalesce
@@ -167,14 +168,6 @@ class AccountViewSet(InputChoiceMixin, TransactionsViewMixin, CRULViewSet):
         #         .order_by("-id")
         #     )
         return qs
-
-    def get_accounts_by_category_name(self, category_name):
-        queryset = self.get_queryset()
-        queryset = queryset.filter(
-            category__name=category_name, company=self.request.company
-        )
-        serializer = self.get_serializer(queryset, many=True)
-        return serializer.data
 
     def get_serializer_class(self):
         if self.action == "transactions":
@@ -566,6 +559,8 @@ class TransactionViewSet(
         except ValueError:
             raise ValidationError("Invalid date format. Use YYYY-MM-DD.")
 
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
         combined_accounts = (
             Account.objects.filter(company=request.company)
             .annotate(
@@ -625,7 +620,10 @@ class TransactionViewSet(
             .filter(
                 Case(
                     When(
-                        category__name__in=["Cash Accounts", "Bank Accounts"],
+                        category__system_code__in=[
+                            acc_cat_system_codes["Cash Accounts"],
+                            acc_cat_system_codes["Bank Accounts"],
+                        ],
                         then=True,
                     ),
                     When(transactions__journal_entry__date=target_date, then=True),

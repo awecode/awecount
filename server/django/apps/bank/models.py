@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from rest_framework.exceptions import ValidationError as RestValidationError
@@ -53,6 +54,7 @@ class BankAccount(CompanyBaseModel):
                 )
         super().save(*args, **kwargs)
         post_save = False
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
         if (
             self.is_wallet
             and self.transaction_commission_percent
@@ -61,14 +63,14 @@ class BankAccount(CompanyBaseModel):
             commission_account = Account(
                 name=self.full_name + " Commission", company=self.company
             )
-            commission_account.add_category("Bank Charges")
+            commission_account.add_category(acc_cat_system_codes["Bank Charges"])
             commission_account.suggest_code(self)
             commission_account.save()
             self.commission_account = commission_account
             post_save = True
         if not self.ledger:
             ledger = Account(name=self.full_name, company=self.company)
-            ledger.add_category("Bank Accounts")
+            ledger.add_category(acc_cat_system_codes["Bank Accounts"])
             ledger.suggest_code(self)
             ledger.save()
             self.ledger = ledger
@@ -301,9 +303,10 @@ class FundTransfer(TransactionModel, CompanyBaseModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if "Bank Accounts" not in [
-            self.from_account.category.name,
-            self.to_account.category.name,
+        acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+        if acc_cat_system_codes["Bank Accounts"] not in [
+            self.from_account.category.system_code,
+            self.to_account.category.system_code,
         ]:
             raise ValidationError("One of the account needs to be a bank account.")
         if self.from_account_id == self.to_account_id:

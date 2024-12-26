@@ -1838,6 +1838,7 @@ class PaymentReceipt(TransactionModel, CompanyBaseModel):
         return self.id
 
     def apply_transactions(self, force_update=False):
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
         if self.status == "Cancelled":
             self.cancel_transactions()
             return
@@ -1846,7 +1847,7 @@ class PaymentReceipt(TransactionModel, CompanyBaseModel):
         if self.mode == "Cheque":
             self.cheque_deposit.apply_transactions()
         elif self.mode == "Cash":
-            dr_acc = get_account(self.company, "Cash")
+            dr_acc = get_account(self.company, acc_system_codes.get("Cash"))
         elif self.mode == "Bank Deposit":
             dr_acc = self.bank_account.ledger
         else:
@@ -1858,7 +1859,11 @@ class PaymentReceipt(TransactionModel, CompanyBaseModel):
             cr_amount += self.amount
         if force_update or self.tds_amount:
             entries.append(
-                ["dr", get_account(self.company, "TDS Receivables"), self.tds_amount]
+                [
+                    "dr",
+                    get_account(self.company, acc_system_codes.get("TDS Receivables")),
+                    self.tds_amount,
+                ]
             )
             cr_amount += self.tds_amount
         if cr_amount:

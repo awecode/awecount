@@ -82,6 +82,8 @@ from ..serializers import (
     UnitSerializer,
 )
 
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
+
 
 class ItemViewSet(InputChoiceMixin, CRULViewSet):
     serializer_class = ItemSerializer
@@ -123,14 +125,18 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
-            Account.objects.filter(category__name="Discount Expenses"),
+            Account.objects.filter(
+                category__system_code=acc_cat_system_codes["Discount Expenses"]
+            ),
             AccountMinSerializer,
             True,
             ["name"],
         ),
         (
             "discount_received_accounts",
-            Account.objects.filter(category__name="Discount Income"),
+            Account.objects.filter(
+                category__system_code=acc_cat_system_codes["Discount Income"]
+            ),
             AccountMinSerializer,
             True,
             ["name"],
@@ -153,23 +159,32 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
         return self.serializer_class
 
     def get_defaults(self, request=None):
-        account_names = [
-            "Sales Account",
-            "Purchase Account",
-            "Discount expenses",
-            "Discount Income",
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+        system_codes = [
+            acc_system_codes["Sales Account"],
+            acc_system_codes["Purchase Account"],
+            acc_system_codes["Discount Expenses"],
+            acc_system_codes["Discount Income"],
         ]
         accounts = Account.objects.filter(
-            company=request.company, name__in=account_names
-        ).values_list("name", "id")
-        account_ids = {name: id for name, id in accounts}
+            company=request.company, system_code__in=system_codes
+        ).values_list("system_code", "id")
+        account_ids = {system_code: id for system_code, id in accounts}
         return {
             "options": {
                 "global_accounts": {
-                    "sales_account_id": account_ids.get("Sales Account"),
-                    "purchase_account_id": account_ids.get("Purchase Account"),
-                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
-                    "discount_received_account_id": account_ids.get("Discount Income"),
+                    "sales_account_id": account_ids.get(
+                        acc_system_codes["Sales Account"]
+                    ),
+                    "purchase_account_id": account_ids.get(
+                        acc_system_codes["Purchase Account"]
+                    ),
+                    "discount_allowed_account_id": account_ids.get(
+                        acc_system_codes["Discount Expenses"]
+                    ),
+                    "discount_received_account_id": account_ids.get(
+                        acc_system_codes["Discount Income"]
+                    ),
                 }
             },
         }
@@ -334,11 +349,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_discount_received_account_ids = remaining_items.values_list(
                 "discount_received_account", flat=True
             )
-            remaining_items_dedicated_discount_received_account_ids = remaining_items.values_list(
-                "dedicated_discount_received_account", flat=True
+            remaining_items_dedicated_discount_received_account_ids = (
+                remaining_items.values_list(
+                    "dedicated_discount_received_account", flat=True
+                )
             )
-            remaining_items_dedicated_discount_received_accounts = Account.objects.filter(
-                id__in=remaining_items_dedicated_discount_received_account_ids
+            remaining_items_dedicated_discount_received_accounts = (
+                Account.objects.filter(
+                    id__in=remaining_items_dedicated_discount_received_account_ids
+                )
             )
             remaining_items_discount_received_accounts = Account.objects.filter(
                 id__in=remaining_items_discount_received_account_ids
@@ -382,11 +401,15 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
             remaining_items_discount_allowed_accounts = Account.objects.filter(
                 id__in=remaining_items_discount_allowed_account_ids
             )
-            remaining_items_dedicated_discount_allowed_accounts_ids = remaining_items.values_list(
-                "dedicated_discount_allowed_account", flat=True
+            remaining_items_dedicated_discount_allowed_accounts_ids = (
+                remaining_items.values_list(
+                    "dedicated_discount_allowed_account", flat=True
+                )
             )
-            remaining_items_dedicated_discount_allowed_accounts = Account.objects.filter(
-                id__in=remaining_items_dedicated_discount_allowed_accounts_ids
+            remaining_items_dedicated_discount_allowed_accounts = (
+                Account.objects.filter(
+                    id__in=remaining_items_dedicated_discount_allowed_accounts_ids
+                )
             )
             discount_allowed_transactions = Ledger.objects.filter(
                 account__in=remaining_items_discount_allowed_accounts
@@ -620,7 +643,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     if item.can_be_purchased:
                         name = item.name + " (Purchase)"
                         purchase_account = Account(name=name, company=item.company)
-                        purchase_account.add_category("Purchase")
+                        purchase_account.add_category(acc_cat_system_codes["Purchase"])
                         purchase_account.suggest_code(item)
                         accounts_to_create.append(purchase_account)
                         item.purchase_account = purchase_account
@@ -629,7 +652,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
 
                         name = "Discount Received - " + item.name
                         discount_received_acc = Account(name=name, company=item.company)
-                        discount_received_acc.add_category("Discount Income")
+                        discount_received_acc.add_category(
+                            acc_cat_system_codes["Discount Income"]
+                        )
                         discount_received_acc.suggest_code(item)
                         accounts_to_create.append(discount_received_acc)
                         item.discount_received_account = discount_received_acc
@@ -639,7 +664,7 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                     if item.can_be_sold:
                         name = item.name + " (Sales)"
                         sales_account = Account(name=name, company=item.company)
-                        sales_account.add_category("Sales")
+                        sales_account.add_category(acc_cat_system_codes["Sales"])
                         sales_account.suggest_code(item)
                         accounts_to_create.append(sales_account)
                         item.sales_account = sales_account
@@ -650,7 +675,9 @@ class ItemViewSet(InputChoiceMixin, CRULViewSet):
                         discount_allowed_account = Account(
                             name=name, company=item.company
                         )
-                        discount_allowed_account.add_category("Discount Expenses")
+                        discount_allowed_account.add_category(
+                            acc_cat_system_codes["Discount Expenses"]
+                        )
                         discount_allowed_account.suggest_code(item)
                         accounts_to_create.append(discount_allowed_account)
                         item.discount_allowed_account = discount_allowed_account
@@ -821,14 +848,18 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         ("tax_scheme", TaxScheme, TaxSchemeMinSerializer, False),
         (
             "discount_allowed_accounts",
-            Account.objects.filter(category__name="Discount Expenses"),
+            Account.objects.filter(
+                category__system_code=acc_cat_system_codes["Discount Expenses"]
+            ),
             AccountMinSerializer,
             True,
             ["name"],
         ),
         (
             "discount_received_accounts",
-            Account.objects.filter(category__name="Discount Income"),
+            Account.objects.filter(
+                category__system_code=acc_cat_system_codes["Discount Income"]
+            ),
             AccountMinSerializer,
             True,
             ["name"],
@@ -836,23 +867,33 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
     )
 
     def get_defaults(self, request=None):
-        account_names = [
-            "Sales Account",
-            "Purchase Account",
-            "Discount expenses",
-            "Discount Income",
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+        system_codes = [
+            acc_system_codes["Sales Account"],
+            acc_system_codes["Purchase Account"],
+            acc_system_codes["Discount Expenses"],
+            acc_system_codes["Discount Income"],
         ]
+
         accounts = Account.objects.filter(
-            company=request.company, name__in=account_names
-        ).values_list("name", "id")
-        account_ids = {name: id for name, id in accounts}
+            company=request.company, system_code__in=system_codes
+        ).values_list("system_code", "id")
+        account_ids = {system_code: id for system_code, id in accounts}
         return {
             "options": {
                 "global_accounts": {
-                    "sales_account_id": account_ids.get("Sales Account"),
-                    "purchase_account_id": account_ids.get("Purchase Account"),
-                    "discount_allowed_account_id": account_ids.get("Discount expenses"),
-                    "discount_received_account_id": account_ids.get("Discount Income"),
+                    "sales_account_id": account_ids.get(
+                        acc_system_codes["Sales Account"]
+                    ),
+                    "purchase_account_id": account_ids.get(
+                        acc_system_codes["Purchase Account"]
+                    ),
+                    "discount_allowed_account_id": account_ids.get(
+                        acc_system_codes["Discount Expenses"]
+                    ),
+                    "discount_received_account_id": account_ids.get(
+                        acc_system_codes["Discount Income"]
+                    ),
                 }
             },
         }
@@ -892,19 +933,22 @@ class InventoryCategoryViewSet(InputChoiceMixin, ShortNameChoiceMixin, CRULViewS
         collections_data = super().get_collections(self.request)
         collections_data["fixed_assets_categories"] = GenericSerializer(
             AccountCategory.objects.get(
-                name="Fixed Assets", default=True, company=self.request.company
+                system_code=acc_cat_system_codes["Fixed Assets"],
+                company=self.request.company,
             ).get_descendants(include_self=True),
             many=True,
         ).data
         collections_data["direct_expenses_categories"] = GenericSerializer(
             AccountCategory.objects.get(
-                name="Direct Expenses", default=True, company=self.request.company
+                system_code=acc_cat_system_codes["Direct Expenses"],
+                company=self.request.company,
             ).get_descendants(include_self=True),
             many=True,
         ).data
         collections_data["indirect_expenses_categories"] = GenericSerializer(
             AccountCategory.objects.get(
-                name="Indirect Expenses", default=True, company=self.request.company
+                system_code=acc_cat_system_codes["Indirect Expenses"],
+                company=self.request.company,
             ).get_descendants(include_self=True),
             many=True,
         ).data
@@ -1167,7 +1211,7 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
             )
         inventory_adjustment_voucher.cancel(message=message)
         return Response({})
-    
+
     @action(detail=False, methods=["POST"], url_path="import")
     def import_from_file(self, request):
         file = request.FILES["file"]
@@ -1176,7 +1220,7 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
         ws.delete_rows(1)
         items = []
         unadjusted_items = []
-        
+
         def get_item(name):
             if not name:
                 return None
@@ -1188,27 +1232,28 @@ class InventoryAdjustmentVoucherViewSet(DeleteRows, CRULViewSet):
                     return qs.first()
                 else:
                     return None
-                
+
         for row in ws.iter_rows(values_only=True):
             if not get_item(row[0]):
                 unadjusted_items.append(row[0])
             else:
                 item = {
-                "company_id": request.company.id,
-                "item_id": get_item(row[0]).id,
-                "unit_id": get_item(row[0]).unit.id if get_item(row[0]).unit else None,
-                "quantity": row[1],
-                "rate": row[2],
-                "description": row[3],
-                "selected_item_obj":(GenericSerializer(get_item(row[0]))).data,
-                "selected_unit_obj":(GenericSerializer(get_item(row[0]).unit)).data if get_item(row[0]).unit else None,
-            }
+                    "company_id": request.company.id,
+                    "item_id": get_item(row[0]).id,
+                    "unit_id": get_item(row[0]).unit.id
+                    if get_item(row[0]).unit
+                    else None,
+                    "quantity": row[1],
+                    "rate": row[2],
+                    "description": row[3],
+                    "selected_item_obj": (GenericSerializer(get_item(row[0]))).data,
+                    "selected_unit_obj": (GenericSerializer(get_item(row[0]).unit)).data
+                    if get_item(row[0]).unit
+                    else None,
+                }
                 items.append(item)
-        response = {
-            "items": items,
-            "unadjusted_items": unadjusted_items
-        }
-        return Response(response, status=200) 
+        response = {"items": items, "unadjusted_items": unadjusted_items}
+        return Response(response, status=200)
 
     @action(detail=True, url_path="journal-entries")
     def journal_entries(self, request, pk):

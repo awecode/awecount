@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db.models import F, Q
@@ -176,24 +177,25 @@ class BookSerializer(ItemSerializer):
             raise ValidationError({"detail": 'Please create "Book" category first!'})
         validated_data["category"] = category
 
+        acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
         if category.items_purchase_account_type == "global":
             validated_data["purchase_account"] = Account.objects.get(
-                name="Purchase Account", default=True
+                system_code=acc_system_codes["Purchase Account"]
             )
 
         if category.items_sales_account_type == "global":
             validated_data["sales_account"] = Account.objects.get(
-                name="Sales Account", default=True
+                system_code=acc_system_codes["Sales Account"]
             )
 
         if category.items_discount_allowed_account_type == "global":
             validated_data["discount_allowed_account"] = Account.objects.get(
-                name="Discount Expenses", default=True
+                system_code=acc_system_codes["Discount Expenses"],
             )
 
         if category.items_discount_received_account_type == "global":
             validated_data["discount_received_account"] = Account.objects.get(
-                name="Discount Income", default=True
+                system_code=acc_system_codes["Discount Income"],
             )
 
         instance = super(BookSerializer, self).create(validated_data)

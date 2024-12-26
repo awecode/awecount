@@ -3,6 +3,7 @@ from decimal import ROUND_HALF_UP, localcontext
 
 from dateutil.utils import today
 from django.apps import apps
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -18,6 +19,9 @@ from apps.company.models import Company, CompanyBaseModel, FiscalYear
 from apps.users.signals import company_creation
 from awecount.libs import decimalize, none_for_zero, zero_for_none
 from awecount.libs.exception import BadOperation
+
+acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
+acc_cat_system_codes = settings.ACCOUNT_CATEGORY_SYSTEM_CODES
 
 
 class Category(MPTTModel, CompanyBaseModel):
@@ -36,7 +40,7 @@ class Category(MPTTModel, CompanyBaseModel):
     def set_parent(self, category):
         if type(category) == str:
             parent_instance = Category.objects.get(
-                name=category, company=self.company, default=True
+                system_code=category, company=self.company
             )
         else:
             parent_instance = category
@@ -159,7 +163,7 @@ class Account(CompanyBaseModel):
 
     def add_category(self, category):
         category_instance = Category.objects.get(
-            name=category, company=self.company, default=True
+            system_code=category, company=self.company
         )
         self.category = category_instance
 
@@ -223,16 +227,16 @@ class Account(CompanyBaseModel):
     @classmethod
     def get_creditable_accounts(self):
         return Account.objects.filter(
-            Q(name="Cash", default=True)
-            | Q(category__name="Bank Accounts", category__default=True)
-            | Q(category__name="Customers", category__default=True)
+            Q(system_code=acc_system_codes["Cash"])
+            | Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
+            | Q(category__system_code=acc_cat_system_codes["Customers"])
         )
 
     @classmethod
     def get_payment_accounts(self):
         return Account.objects.filter(
-            Q(name="Cash", default=True)
-            | Q(category__name="Bank Accounts", category__default=True)
+            Q(system_code=acc_system_codes["Cash"])
+            | Q(category__system_code=acc_cat_system_codes["Bank Accounts"])
         )
 
     @property
@@ -318,7 +322,7 @@ class Party(CompanyBaseModel):
                 customer_account = Account(
                     name=self.name + " (Receivable)", company=self.company
                 )
-                customer_account.add_category("Customers")
+                customer_account.add_category(acc_cat_system_codes["Customers"])
                 customer_account.suggest_code(self)
                 customer_account.save()
                 self.customer_account = customer_account
@@ -326,7 +330,7 @@ class Party(CompanyBaseModel):
                 supplier_account = Account(
                     name=self.name + " (Payable)", company=self.company
                 )
-                supplier_account.add_category("Suppliers")
+                supplier_account.add_category(acc_cat_system_codes["Suppliers"])
                 supplier_account.suggest_code(self)
                 supplier_account.save()
                 self.supplier_account = supplier_account
@@ -693,7 +697,11 @@ def handle_company_creation(sender, **kwargs):
     root = {}
     for category in Category.ROOT:
         root[category[0]] = Category.objects.create(
-            name=category[0], code=category[1], company=company, default=True
+            name=category[0],
+            code=category[1],
+            company=company,
+            default=True,
+            system_code=acc_cat_system_codes.get(category[0], None),
         )
 
     # CREATE DEFAULT CATEGORIES AND LEDGERS FOR EQUITY
@@ -707,6 +715,7 @@ def handle_company_creation(sender, **kwargs):
         code="Q-PL",
         company=company,
         default=True,
+        system_code=acc_system_codes["Profit and Loss Account"],
     )
     Account.objects.create(
         name="Opening Balance Equity",
@@ -753,6 +762,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Assets"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Fixed Assets"],
     )
     Category.objects.create(
         name="Loans and Advances Given",
@@ -781,6 +791,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Assets"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Tax Receivables"],
     )
     Account.objects.create(
         company=company,
@@ -788,6 +799,7 @@ def handle_company_creation(sender, **kwargs):
         name="TDS Receivables",
         category=tax_receivables,
         code="A-TR-TDS",
+        system_code=acc_system_codes["TDS Receivables"],
     )
 
     cash_account_category = Category.objects.create(
@@ -796,6 +808,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Assets"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Cash Accounts"],
     )
     cash_account = Account.objects.create(
         company=company,
@@ -803,6 +816,7 @@ def handle_company_creation(sender, **kwargs):
         name="Cash",
         category=cash_account_category,
         code="A-C-C",
+        system_code=acc_system_codes["Cash"],
     )
 
     PaymentMode = apps.get_model("voucher", "PaymentMode")
@@ -824,6 +838,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Assets"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Bank Accounts"],
     )
 
     account_receivables = Category.objects.create(
@@ -839,6 +854,7 @@ def handle_company_creation(sender, **kwargs):
         parent=account_receivables,
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Customers"],
     )
 
     employee_deductions = Category.objects.create(
@@ -873,6 +889,7 @@ def handle_company_creation(sender, **kwargs):
         code="L-AP-S",
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Suppliers"],
     )
     other_payables = Category.objects.create(
         name="Other Payables",
@@ -947,6 +964,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Liabilities"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Duties & Taxes"],
     )
     # Account.objects.create(name='Sales Tax', category=duties_and_taxes, code='L-T-S', company=company, default=True)
     # Account.objects.create(name='Payroll Tax', category=duties_and_taxes, code='L-T-P', company=company, default=True)
@@ -976,7 +994,12 @@ def handle_company_creation(sender, **kwargs):
     # =====================================
 
     sales_category = Category.objects.create(
-        name="Sales", code="I-S", parent=root["Income"], company=company, default=True
+        name="Sales",
+        code="I-S",
+        parent=root["Income"],
+        company=company,
+        default=True,
+        system_code=acc_cat_system_codes["Sales"],
     )
     Account.objects.create(
         name="Sales Account",
@@ -984,6 +1007,7 @@ def handle_company_creation(sender, **kwargs):
         category=sales_category,
         company=company,
         default=True,
+        system_code=acc_system_codes["Sales Account"],
     )
     direct_income = Category.objects.create(
         name="Direct Income",
@@ -1013,6 +1037,7 @@ def handle_company_creation(sender, **kwargs):
         parent=indirect_income,
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Discount Income"],
     )
     Account.objects.create(
         name="Discount Income",
@@ -1020,6 +1045,7 @@ def handle_company_creation(sender, **kwargs):
         category=discount_income_category,
         company=company,
         default=True,
+        system_code=acc_system_codes["Discount Income"],
     )
 
     # CREATE DEFAULT CATEGORIES FOR EXPENSES
@@ -1031,6 +1057,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Expenses"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Purchase"],
     )
     Account.objects.create(
         name="Purchase Account",
@@ -1038,6 +1065,7 @@ def handle_company_creation(sender, **kwargs):
         category=purchase_category,
         company=company,
         default=True,
+        system_code=acc_system_codes["Purchase Account"],
     )
 
     direct_expenses = Category.objects.create(
@@ -1046,6 +1074,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Expenses"],
         company=company,
         default=True,
+        system_codes=acc_cat_system_codes["Direct Expenses"],
     )
     Category.objects.create(
         name="Purchase Expenses",
@@ -1060,6 +1089,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Expenses"],
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Indirect Expenses"],
     )
 
     bank_charges = Category.objects.create(
@@ -1068,6 +1098,7 @@ def handle_company_creation(sender, **kwargs):
         parent=indirect_expenses,
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Bank Charges"],
     )
     Account.objects.create(
         name="Bank Charges",
@@ -1138,6 +1169,7 @@ def handle_company_creation(sender, **kwargs):
         code="E-I-DE",
         company=company,
         default=True,
+        system_code=acc_cat_system_codes["Discount Expenses"],
     )
     Account.objects.create(
         name="Discount Expenses",
@@ -1145,6 +1177,7 @@ def handle_company_creation(sender, **kwargs):
         code="E-I-DE-DE",
         company=company,
         default=True,
+        system_code=acc_system_codes["Discount Expenses"],
     )
 
     # Opening Balance Difference
@@ -1156,6 +1189,7 @@ def handle_company_creation(sender, **kwargs):
         category=root["Opening Balance Difference"],
         company=company,
         default=True,
+        system_code=acc_system_codes["Opening Balance Difference"],
     )
 
     # For Inventory Adjustemnt
@@ -1174,6 +1208,7 @@ def handle_company_creation(sender, **kwargs):
         category=inventory_write_off_account,
         company=company,
         default=True,
+        system_code=acc_system_codes["Damage Expense"],
     )
 
     Account.objects.create(
@@ -1182,24 +1217,16 @@ def handle_company_creation(sender, **kwargs):
         category=inventory_write_off_account,
         company=company,
         default=True,
+        system_code=acc_system_codes["Expiry Expense"],
     )
 
 
-def get_account(request_or_company, name):
+def get_account(request_or_company, system_code):
     if not request_or_company.__class__.__name__ == "Company":
         company = request_or_company.company
     else:
         company = request_or_company
-    if name in ["Purchase", "Purchases"]:
-        return Account.objects.get(
-            name="Purchase", category__name="Purchase", company=company
-        )
-    elif name in ["Cash", "Cash Account"]:
-        return Account.objects.get(
-            name="Cash", category__name="Cash Accounts", company=company
-        )
-    else:
-        return Account.objects.get(name=name, default=True, company=company)
+    return Account.objects.get(system_code=system_code, company=company)
 
 
 class TransactionModel(models.Model):
@@ -1281,7 +1308,7 @@ class TransactionCharge(CompanyBaseModel):
     def save(self, *args, **kwargs):
         if not self.account_id:
             expense_account = Account(name=self.name, company=self.company)
-            expense_account.add_category("Indirect Expenses")
+            expense_account.add_category(acc_cat_system_codes["Indirect Expenses"])
             expense_account.suggest_code(self)
             expense_account.save()
             self.account = expense_account
@@ -1313,7 +1340,8 @@ class AccountOpeningBalance(CompanyBaseModel):
         # self.account.opening_cr = self.opening_cr
         # self.account.save()
         opening_balance_difference = Account.objects.get(
-            company=self.company, name="Opening Balance Difference", default=True
+            company=self.company,
+            system_code=acc_system_codes["Opening Balance Difference"],
         )
         dr_entries = []
         cr_entries = []
@@ -1381,18 +1409,22 @@ class AccountClosing(CompanyBaseModel):
         company = self.company
         date = self.fiscal_period.end
         pl_account = Account.objects.get(
-            name="Profit and Loss Account", default=True, company=company
+            company=company, system_code=acc_system_codes["Profit and Loss Account"]
         )
 
         income_category = Category.objects.get(
-            name="Income", company=company, default=True, parent__isnull=True
+            system_code=acc_cat_system_codes["Income"],
+            company=company,
+            parent__isnull=True,
         )
         income_accounts = Account.objects.filter(
             category__in=income_category.get_descendants(include_self=True)
         )
 
         expenses_category = Category.objects.get(
-            name="Expenses", company=company, default=True, parent__isnull=True
+            system_code=acc_cat_system_codes["Expenses"],
+            company=company,
+            parent__isnull=True,
         )
         expenses_accounts = Account.objects.filter(
             category__in=expenses_category.get_descendants(include_self=True)
