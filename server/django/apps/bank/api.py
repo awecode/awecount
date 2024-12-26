@@ -1224,6 +1224,45 @@ class ReconciliationViewSet(CRULViewSet):
 
         return merged_groups
 
+    def get_paginated_merged_transactions(self, bank_statements, company, account_id):
+        page = self.paginate_queryset(bank_statements)
+        all_transaction_ids = set(
+            {data for entry in page for data in entry["transaction_ids"]}
+        )
+        all_statement_ids = set(
+            {data for entry in page for data in entry["grouped_statements"]}
+        )
+
+        # Fetch system transactions based on transaction ids
+        system_transactions = (
+            Transaction.objects.filter(
+                company=company,
+                account_id=account_id,
+                id__in=all_transaction_ids,
+            )
+            .order_by("journal_entry__date")
+            .select_related("journal_entry__content_type")
+            .prefetch_related(
+                "journal_entry__transactions__account", "journal_entry__source"
+            )
+        )
+
+        # Fetch reconciliation rows for the filtered statement ids
+        statements_queryset = (
+            ReconciliationRow.objects.filter(
+                statement__company=company,
+                statement__account_id=account_id,
+                id__in=all_statement_ids,
+            )
+            .annotate(transaction_ids=ArrayAgg("transactions__transaction_id"))
+            .select_related("statement")
+        )
+        merged_transactions = self.merge_transactions(
+            statements_queryset, system_transactions
+        )
+
+        return self.get_paginated_response(merged_transactions)
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -1231,7 +1270,6 @@ class ReconciliationViewSet(CRULViewSet):
         filtered_rows = self.filter_rows(instance.rows, request.query_params)
 
         matching_statement_ids = filtered_rows.values_list("pk", flat=True)
-        # Retrieve all entries for matching groups
         bank_statements = (
             instance.rows
             .filter(pk__in=matching_statement_ids)
@@ -1244,44 +1282,7 @@ class ReconciliationViewSet(CRULViewSet):
             ).order_by("-date")
         )
 
-        page = self.paginate_queryset(bank_statements)
-
-        # Get all transaction IDs and statement IDs in one go
-        all_transaction_ids = set({
-            data for entry in page for data in entry["transaction_ids"]
-        })
-        all_statement_ids = set({
-            data for entry in page for data in entry["grouped_statements"]
-        })
-
-        # Fetch system transactions based on transaction ids
-        system_transactions = (
-            Transaction.objects.filter(
-                company=request.company,
-                account_id=instance.account_id,
-                id__in=all_transaction_ids,
-            )
-            .order_by("journal_entry__date")
-            .select_related("journal_entry__content_type")
-            .prefetch_related(
-                "journal_entry__transactions__account", "journal_entry__source"
-            )
-        )
-
-        # Fetch reconciliation rows for the filtered statement ids
-        statements_queryset = ReconciliationRow.objects.filter(
-            statement__company=request.company,
-            statement__account_id=instance.account_id,
-            id__in=all_statement_ids,
-        ).annotate(
-            transaction_ids=ArrayAgg("transactions__transaction_id")
-        ).select_related("statement")
-        
-        merged_transactions = self.merge_transactions(
-            statements_queryset, system_transactions
-        )
-
-        return self.get_paginated_response(merged_transactions)
+        return self.get_paginated_merged_transactions(bank_statements, request.company, instance.account_id)
 
     @action(detail=True, url_path="statement-info")
     def get_statement_info(self, request, pk):
@@ -1386,44 +1387,7 @@ class ReconciliationViewSet(CRULViewSet):
             ).order_by("-date")
         )
 
-        page = self.paginate_queryset(bank_statements)
-        all_transaction_ids = set(
-            {data for entry in page for data in entry["transaction_ids"]}
-        )
-        all_statement_ids = set(
-            {data for entry in page for data in entry["grouped_statements"]}
-        )
-
-        # Fetch system transactions based on transaction ids
-        system_transactions = (
-            Transaction.objects.filter(
-                company=request.company,
-                account_id=account_id,
-                id__in=all_transaction_ids,
-            )
-            .order_by("journal_entry__date")
-            .select_related("journal_entry__content_type")
-            .prefetch_related(
-                "journal_entry__transactions__account", "journal_entry__source"
-            )
-        )
-
-        # Fetch reconciliation rows for the filtered statement ids
-        statements_queryset = (
-            ReconciliationRow.objects.filter(
-                statement__company=request.company,
-                statement__account_id=account_id,
-                id__in=all_statement_ids,
-            )
-            .annotate(transaction_ids=ArrayAgg("transactions__transaction_id"))
-            .select_related("statement")
-        )
-        # import ipdb; ipdb.set_trace()
-        merged_transactions = self.merge_transactions(
-            statements_queryset, system_transactions
-        )
-
-        return self.get_paginated_response(merged_transactions)
+        return self.get_paginated_merged_transactions(bank_statements, request.company, account_id)
 
     @action(detail=False, url_path="unreconciled-bank-transactions")
     def unreconciled_bank_transactions(self, request):
@@ -1912,4 +1876,20 @@ class ReconciliationViewSet(CRULViewSet):
                 to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
         ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
+    
+    
+    @action(detail=True, url_path="updated-transactions")
+    def updated_transactions(self, request, pk):
+        data = self.get_object()
+        bank_statements = data.rows.filter(
+            transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
+        ).values("id").annotate(
+                grouped_statements=ArrayAgg("id", distinct=True),
+                transaction_ids=Coalesce(
+                    ArrayAgg("transactions__transaction_id", distinct=True), []
+                ),
+            ).order_by("-date")
+        
+        return self.get_paginated_merged_transactions(bank_statements, request.company, data.account_id)
+
 
