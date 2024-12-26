@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from apps.ledger.models import Account
 from apps.ledger.serializers import AccountBalanceSerializer, AccountMinSerializer
+from apps.product.helpers import create_book_category
 from apps.product.models import Item, Transaction
 from apps.tax.serializers import TaxSchemeSerializer
 from awecount.libs import get_next_voucher_no
@@ -174,7 +175,7 @@ class BookSerializer(ItemSerializer):
             name="Book", company=request.user.company
         ).first()
         if not category:
-            raise ValidationError({"detail": 'Please create "Book" category first!'})
+            category = create_book_category(request.company)
         validated_data["category"] = category
 
         acc_system_codes = settings.ACCOUNT_SYSTEM_CODES
