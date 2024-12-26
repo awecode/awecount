@@ -11,7 +11,7 @@ type AccountDetails = {
   account_number: string
   cheque_no: string
 }
-
+const $q = useQuasar()
 
 const props = defineProps({
   acceptableDifference: {
@@ -393,8 +393,20 @@ const reconcile = () => {
         }
       })
       unselectAll()
+      $q.notify({
+        color: 'green-6',
+        message: 'Transactions reconciled successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
     }).catch((error) => {
       console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to reconcile transactions',
+        icon: 'error',
+        position: 'top-right',
+      })
     })
   }
 
