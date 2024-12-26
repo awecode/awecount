@@ -54,7 +54,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['unmatchTransactions'])
+const emit = defineEmits(['unmatchTransactions', 'hasNoMatches'])
 
 
 
@@ -71,7 +71,6 @@ type Response = {
     pages: number
   }
 }
-// const matchedTransactions: Ref<GroupedTransaction[]> = ref([])
 const data: Ref<Response> = ref({
   results: [],
   pagination: {
@@ -88,6 +87,9 @@ const fetchData = async () => {
     data.value.results = [...data.value.results, ...response.results]
     data.value.pagination = response.pagination
     page.value = response.pagination.page
+    if (response.results.length === 0) {
+      emit('hasNoMatches')
+    }
   }).catch((error) => {
     console.log(error)
     data.value.results = []

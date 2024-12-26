@@ -87,9 +87,8 @@ const statementResponse: Ref<StatementResponse> = ref({
     pages: 1,
     count: 0,
   }
-
-
 })
+
 const systemResponse: Ref<SystemResponse> = ref({
   results: [],
   pagination: {
@@ -98,6 +97,8 @@ const systemResponse: Ref<SystemResponse> = ref({
     count: 0,
   }
 })
+
+const hasNoMatches = ref(false)
 
 const statementSearchBy = ref('')
 const systemSearchBy = ref('')
@@ -439,39 +440,39 @@ const onFundTransferChequeIssueSuccess = () => {
 <template>
   <div class="max-h-[800px]">
     <!-- Unmatched section -->
-    <div class="grid grid-cols-2 gap-10">
+    <div class="grid gap-10" :class="!hasNoMatches ? 'grid-cols-2' : ''">
       <div class="border p-5 bg-gray-100 rounded-lg shadow-md">
         <div class="bg-gray-100 p-4 pt-0 rounded-lg">
           <div class="flex space-x-3 w-fit ml-auto">
             <div v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length && (isAllStatementCredit || isAllStatementDebit)">
               <div v-if="isAllStatementCredit">
                 <button @click="openSalesInvoiceModal = true" v-if="selectedStatementTransactions.length && !selectedSystemTransactions.length"
-                  class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+                  class="px-4 py-2 bg-green-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm cursor-pointer">
                   Find Sales Invoices
                 </button>
               </div>
               <div v-else>
-                <button class="px-4 py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm mr-3" @click="isFundTransferModalOpen = true">
+                <button class="px-4 py-2 bg-yellow-200 cursor-pointer text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm mr-3" @click="isFundTransferModalOpen = true">
                   Fund Transfer
                 </button>
-                <button @click="isChequeIssueModalOpen = true" class="px-4 py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+                <button @click="isChequeIssueModalOpen = true" class="px-4 cursor-pointer py-2 bg-yellow-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
                   Cheque Issue
                 </button>
               </div>
 
             </div>
-            <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
+            <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors cursor-pointer text-sm">
               Unselect All
             </button>
-            <button v-if="canReconcile" @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+            <button v-if="canReconcile" @click="reconcile" class="px-4 cursor-pointer py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
               Reconcile
             </button>
             <button
               v-else-if="selectedStatementTransactions.length && selectedSystemTransactions.length && Math.abs(Number(calculateTotal(selectedStatementTransactions, true)) - Number(calculateTotal(selectedSystemTransactions))) <= props.adjustmentThreshold"
-              @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+              @click="reconcile" class="px-4 py-2 bg-blue-500 cursor-pointer text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
               Reconcile with Adjustment
             </button>
-            <button disabled v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <button disabled v-else class="px-4 py-2 bg-blue-500  text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
               Reconcile
             </button>
           </div>
@@ -648,9 +649,8 @@ const onFundTransferChequeIssueSuccess = () => {
                       <div class="flex justify-between items-center mb-2">
                         <span class="text-xs text-gray-500">{{ data.date }}</span>
 
-                        <router-link @click.stop
-                          v-if="data.source_type && data.source_id && checkPermissions(getPermissionFromSourceType(data.source_type))"
-                          :to="getVoucherUrl(data) as string" target="_blank" class="text-blue-800 text-xs hover:underline">
+                        <router-link @click.stop v-if="data.source_type && data.source_id && checkPermissions(getPermissionFromSourceType(data.source_type))" :to="getVoucherUrl(data) as string"
+                          target="_blank" class="text-blue-800 text-xs hover:underline">
                           {{ data.source_type }}
                         </router-link>
                       </div>
@@ -697,7 +697,7 @@ const onFundTransferChequeIssueSuccess = () => {
       </div>
 
       <MatchedTransactions :startDate="startDate" :endDate="endDate" :accountId="accountDetails.ledger_id" :filterSources="filterSources" :calculateTotal="calculateTotal"
-        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatchTransactions="unmatchTransactions" />
+        :calculateTotalFromCounterparts="calculateTotalFromCounterparts" @unmatchTransactions="unmatchTransactions" @hasNoMatches="hasNoMatches = true" />
 
     </div>
   </div>

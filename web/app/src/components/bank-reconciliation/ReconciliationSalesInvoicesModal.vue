@@ -2,6 +2,8 @@
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 
+const $q = useQuasar()
+
 interface StatementTransactionData {
   id: number
   date: string
@@ -65,6 +67,15 @@ const sortOptions = ref([
 const sortBy = ref('date')
 const sortDir = ref('desc')
 const infiniteScroll = ref()
+const tdsAndRemarks = ref(false)
+const tds = ref(null)
+const remarks = ref(null)
+
+const closeTDSAndRemarks = () => {
+  tds.value = null
+  remarks.value = null
+  tdsAndRemarks.value = false
+}
 
 type SalesInvoiceResponse = {
   results: Invoice[]
@@ -127,10 +138,10 @@ const allStatementTransactions = ref(props.statementTransactions.map((transactio
 
 // get total amount of selected statement transactions
 const allStatementSelected = computed(() => {
-  return allStatementTransactions.value.length > 0 && allStatementTransactions.value.every((transaction) => transaction.selected)
+  return selectedStatementTransactions.value.length === allStatementTransactions.value.length
 })
 
-const selectedStatementTransactions: Ref<StatementTransactionData[]> = ref([])
+const selectedStatementTransactions: Ref<StatementTransactionData[]> = ref(props.statementTransactions)
 const selectedInvoiceTransactions: Ref<Invoice[]> = ref([])
 
 const toggleAllStatementTransactions = () => {
@@ -179,7 +190,7 @@ const toggleInvoiceSelection = (transaction: Invoice) => {
 }
 
 const allInvoiceSelected = computed(() => {
-  return response.value.results.length > 0 && response.value.results.every((invoice) => invoice.selected)
+  return selectedInvoiceTransactions.value.length === response.value.results.length
 })
 
 const toggleAllInvoiceTransactions = () => {
@@ -214,7 +225,8 @@ const reconcile = () => {
       body: {
         statement_ids: selectedStatementTransactions.value.map(t => t.id),
         invoice_ids: selectedInvoiceTransactions.value.map(t => t.id),
-        remarks: 'Test Narration',
+        remarks: remarks.value,
+        tds_amount: tds.value
       }
     }).then(() => {
       allStatementTransactions.value = allStatementTransactions.value.filter((transaction) => {
@@ -225,6 +237,17 @@ const reconcile = () => {
       })
       emit('removeBankTransactions', selectedStatementTransactions.value,)
       unselectAll()
+      closeTDSAndRemarks()
+      if (allStatementTransactions.value.length === 0) {
+        updatePrompt(false)
+      }
+      $q.notify({
+        color: 'green-5',
+        textColor: 'white',
+        icon: 'mdi-check',
+        message: 'Transactions reconciled successfully'
+      })
+
     }).catch((error) => {
       console.log(error)
     })
@@ -298,12 +321,12 @@ const loadSalesInvoice = async (index: number, done: any) => {
           <button @click="unselectAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm">
             Unselect All
           </button>
-          <button v-if="canReconcile" @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+          <button v-if="canReconcile" @click="tdsAndRemarks = true" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
             Reconcile
           </button>
           <button
             v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold"
-            @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+            @click="tdsAndRemarks = true" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
             Reconcile with Adjustment
           </button>
           <button disabled v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
@@ -397,11 +420,11 @@ const loadSalesInvoice = async (index: number, done: any) => {
               </div>
 
               <div class="divide-y divide-gray-100 max-h-[calc(75vh-250px)] overflow-y-auto">
-                <div v-for="data in allStatementTransactions" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-4">
+                <div v-for="data in allStatementTransactions" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex flex-nowrap items-center space-x-4">
                   <input type="checkbox" :checked="isStatementTransactionSelected(data)" @change="toggleStatementTransaction(data)"
                     class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
                   <div class="flex-grow">
-                    <div class="flex justify-between items-center mb-1">
+                    <div class="flex flex-nowrap justify-between items-center mb-1">
                       <span class="text-sm text-gray-500">{{ data.date }}</span>
                       <div class="font-semibold">
                         <span v-if="data.dr_amount" class="text-red-500">
@@ -443,7 +466,7 @@ const loadSalesInvoice = async (index: number, done: any) => {
 
               <div v-if="response.results.length" class="divide-y divide-gray-100 overflow-y-auto max-h-[calc(75vh-250px)] sales-invoices">
                 <q-infinite-scroll ref="infiniteScroll" @load="loadSalesInvoice" :offset="250" scroll-target=".sales-invoices">
-                  <div v-for="data in response.results" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-4">
+                  <div v-for="data in response.results" :key="data.id" class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150 flex flex-nowrap items-center space-x-4">
                     <input type="checkbox" :checked="isInvoiceSelected(data)" @change="toggleInvoiceSelection(data)" class="h-5 w-5 text-green-600 rounded focus:ring-2 focus:ring-green-500" />
                     <div class="flex-grow">
                       <div class="flex justify-between items-center mb-1">
@@ -472,6 +495,25 @@ const loadSalesInvoice = async (index: number, done: any) => {
             </div>
           </div>
         </div>
+      </div>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="tdsAndRemarks">
+    <q-card style="min-width: 650px" class="p-5">
+      <q-input v-model="tds" dense label="TDS Amount" />
+      <q-input v-model="remarks" dense label="Remarks" class="my-5" />
+      <div class="flex justify-end space-x-3">
+        <q-btn v-if="canReconcile" @click="reconcile" class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
+          Reconcile
+        </q-btn>
+        <q-btn
+          v-else-if="selectedStatementTransactions.length && selectedInvoiceTransactions.length && Math.abs(Number(calculateStatementTotal(selectedStatementTransactions)) - Number(calculateInvoiceTotal(selectedInvoiceTransactions))) <= props.adjustmentThreshold"
+          @click="reconcile" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
+          Reconcile with Adjustment
+        </q-btn>
+        <q-btn @click="closeTDSAndRemarks" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+          Cancel
+        </q-btn>
       </div>
     </q-card>
   </q-dialog>

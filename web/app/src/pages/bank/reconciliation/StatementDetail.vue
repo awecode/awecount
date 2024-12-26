@@ -7,6 +7,7 @@ const route = useRoute()
 interface StatementInfo {
   account: {
     name: string
+    id: number
   },
   date: {
     start: string,
@@ -234,7 +235,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
             <h2 class="text-2xl font-bold text-blue-800 tracking-tight mt-0 mb-2">
               {{ statementInfo?.account?.name || 'Account Statement' }}
             </h2>
-            <!-- Date Range -->
+
             <div class="flex items-center justify-center md:justify-start text-gray-500 mt-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -243,21 +244,28 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
             </div>
           </div>
 
-          <!-- Summary Info -->
-          <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
-            <!-- Reconciled -->
-            <div class="flex flex-col items-center text-center md:items-start md:text-left">
-              <span class="text-sm font-medium text-gray-600">Reconciled</span>
-              <span class="text-lg font-semibold text-blue-700">
-                {{ statementInfo?.total_reconciled }}
-              </span>
+
+          <div class=" flex flex-col gap-4 items-center">
+            <!-- Summary Info -->
+            <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <!-- Reconciled -->
+              <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                <span class="text-sm font-medium text-gray-600">Reconciled</span>
+                <span class="text-lg font-semibold text-blue-700">
+                  {{ statementInfo?.total_reconciled }}
+                </span>
+              </div>
+              <!-- Unreconciled -->
+              <div class="flex flex-col items-center text-center md:items-start md:text-left">
+                <span class="text-sm font-medium text-gray-600">Unreconciled</span>
+                <span class="text-lg font-semibold text-red-600">
+                  {{ statementInfo?.total_unreconciled }}
+                </span>
+              </div>
             </div>
-            <!-- Unreconciled -->
-            <div class="flex flex-col items-center text-center md:items-start md:text-left">
-              <span class="text-sm font-medium text-gray-600">Unreconciled</span>
-              <span class="text-lg font-semibold text-red-600">
-                {{ statementInfo?.total_unreconciled }}
-              </span>
+            <div class="w-full">
+              <q-btn v-if="!!statementInfo?.total_unreconciled" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn w-full" style="font-size: 12px" label="Reconcile remaining"
+                :to="`/bank-reconciliation/reconcile/?account_id=${statementInfo.account.id}&start_date=${statementInfo?.date.start}&end_date=${statementInfo?.date.end}`" />
             </div>
           </div>
         </div>
@@ -315,14 +323,14 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
         <template v-slot:body-cell-Debit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-green-500 font-medium">{{ transaction.dr_amount || '-' }}</div>
+              <div class="text-green-500 font-medium">{{ transaction.dr_amount?.toFixed(2) || '-' }}</div>
             </div>
           </td>
         </template>
         <template v-slot:body-cell-Credit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-red-500 font-medium">- {{ transaction.cr_amount }}</div>
+              <div class="text-red-500 font-medium"> {{ transaction.cr_amount?.toFixed(2) }}</div>
             </div>
           </td>
         </template>
@@ -341,7 +349,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                 <div class="px-4 py-2  font-medium">
 
                   <span v-if="props.row.system_transactions.length" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
-                    calculateTotalFromCounterparts(props.row.system_transactions)
+                    calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '')
                   }}</span>
                 </div>
               </div>
