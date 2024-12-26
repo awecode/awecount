@@ -114,15 +114,6 @@ type StatementTransactionData = {
 const calculateTotalFromCounterparts = (transactions: SystemTransactionData[]) => {
   let cr_amount = 0
   let dr_amount = 0
-  // for (let counterpart of counterparts) {
-  //   if (counterpart.cr_amount) {
-  //     cr_amount += Number(counterpart.cr_amount)
-  //   }
-  //   if (counterpart.dr_amount) {
-  //     dr_amount += Number(counterpart.dr_amount)
-  //   }
-  // }
-  // return (dr_amount - cr_amount).toFixed(2)
   for (let transaction of transactions) {
     for (let counterpart of transaction.counterpart_accounts) {
       if (counterpart.cr_amount) {

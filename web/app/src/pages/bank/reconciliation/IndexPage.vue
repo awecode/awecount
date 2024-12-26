@@ -51,7 +51,7 @@
         <q-td :props="props">
           <router-link v-if="checkPermissions('CategoryModify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/account-category/${props.row.category.id}/`">{{
             props.row.category.name
-            }}</router-link>
+          }}</router-link>
           <span v-else>{{ props.row.category.name }}</span>
         </q-td>
       </template>
@@ -62,6 +62,18 @@
             {{ props.row.account.name }}
           </router-link>
           <span v-else>{{ props.row.account.name }}</span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-rows_update="props">
+        <q-td :props="props">
+          <div v-if="props.row.has_updated_rows" class="flex gap-4 items-center bg-yellow-500 p-2 rounded-md w-fit">
+            <div>
+              <!-- Show message -->
+              Some rows have been updated and might need your attention
+            </div>
+            <q-btn color="yellow" class="text-black q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="View Updated Rows"
+              @click="fetchUpdatedTransactions(props.row.id)" />
+          </div>
         </q-td>
       </template>
       <!-- no-data -->
@@ -116,6 +128,104 @@
       </q-form>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="openUpdateDialog">
+    <q-card style="min-width: 900px">
+      <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
+        <div v-if="updatedData?.results.length" class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto matched-transactions">
+          <q-infinite-scroll ref="infiniteScroll" @load="loadMore" :offset="250" scroll-target=".matched-transactions">
+            <div v-for="data in updatedData?.results" :key="data.statement_transactions[0].id" class="border-b-2 mb-5 pb-5">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                  <div class="bg-white border rounded-lg shadow-sm overflow-hidden grow">
+                    <div class="px-4 py-2 border-b bg-blue-50 text-blue-700 font-semibold">
+                      Statement
+                    </div>
+                    <div class="divide-y text-xs">
+                      <div v-for="transaction in data.statement_transactions" :key="transaction.id" class="px-4 py-2.5">
+                        <div class="flex justify-between mb-1">
+                          <span class="text-gray-500">{{ transaction.date }}</span>
+                          <div class="font-medium">
+                            <span v-if="transaction.dr_amount" class="text-red-500">-{{ transaction.dr_amount }}</span>
+                            <span v-if="transaction.cr_amount" class="text-green-500">+{{ transaction.cr_amount }}</span>
+                          </div>
+                        </div>
+                        <div class="text-gray-600">{{ transaction.description }}</div>
+                      </div>
+                    </div>
+
+                  </div>
+                  <div class="px-4 py-2 text-right">
+                    <span :class="Number(calculateTotal(data.statement_transactions, true)) < 0 ? 'text-red-500' : 'text-green-500'">{{ calculateTotal(data.statement_transactions, true) }}</span>
+                  </div>
+                </div>
+
+                <!-- System Transactions -->
+                <div class="flex flex-col">
+                  <div class="bg-white border rounded-lg shadow-sm overflow-hidden grow">
+                    <div class="px-4 py-2 border-b bg-green-50 text-green-700 font-semibold">
+                      System
+                      <!-- Add links -->
+                      <span v-for="source, index in filterSources(data.system_transactions)" :key="source.source_id">
+                        <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
+                          {{ source.source_type }}
+                        </router-link>
+                        <span v-if="index < filterSources(data.system_transactions).length - 1">, </span>
+                      </span>
+
+                    </div>
+                    <div class="divide-y text-sm">
+                      <div v-for="transaction, index in data.system_transactions" :key="transaction.id"
+                        class="px-4 py-3  border-gray-200 hover:bg-gray-50 transition-colors duration-200 relative group" :class="{ 'border-b': index !== data.system_transactions.length - 1 }">
+
+                        <div class="text-xs">
+                          <div class="text-gray-500">{{ transaction.date }}</div>
+
+                          <div v-for="counterpart in transaction.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between">
+                            <div class="text-gray-700 truncate flex-grow mr-2">
+                              {{ counterpart.account_name }}
+                            </div>
+                            <div class="flex space-x-2">
+                              <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
+                                -{{ counterpart.dr_amount }}
+                              </span>
+                              <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
+                                +{{ counterpart.cr_amount }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="px-4 py-2 text-right">
+                    <span :class="Number(calculateTotalFromCounterparts(data.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                      calculateTotalFromCounterparts(data.system_transactions)
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-end space-x-3">
+                <button @click="
+                    updateTransactions(data)
+                    " class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
+                    Reconcile
+                  </button>
+                <button @click="unmatchMatchedTransactions(data)" class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+                  Unmatch
+                </button>
+              </div>
+            </div>
+            <template v-slot:loading>
+              <div class="row justify-center q-my-md">
+                <q-spinner-dots color="primary" size="40px" />
+              </div>
+            </template>
+          </q-infinite-scroll>
+        </div>
+      </div>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -123,7 +233,36 @@ import * as XLSX from 'xlsx'
 import { Ref } from 'vue'
 import checkPermissions from 'src/composables/checkPermissions'
 
+
+interface SystemTransactionData {
+  id: number
+  date: string
+  dr_amount: string | null
+  cr_amount: string | null
+  source_type: string
+  source_id: number
+  counterpart_accounts: {
+    account_id: number
+    account_name: string
+    dr_amount: string
+    cr_amount: string
+  }[]
+}
+
+interface StatementTransactionData {
+  id: number
+  date: string
+  dr_amount: string | null
+  cr_amount: string | null
+  balance: string
+  description: string
+  transaction_ids: number[]
+}
+
 const $q = useQuasar()
+const openUpdateDialog = ref(false)
+const updatedData = ref()
+const infiniteScroll = ref()
 
 const statementAccount = ref(null)
 const bankAccounts = ref([])
@@ -144,11 +283,217 @@ const isLoading = ref(false)
 useApi(endpoint).then((response) => {
   bankAccounts.value = response.banks
 })
+const page = ref(1)
+const rowId = ref()
+
+const fetchUpdatedTransactions = async (id: number) => {
+  rowId.value = id
+  await useApi(`v1/bank-reconciliation/${id}/updated-transactions/?page=${page.value}`).then((response) => {
+    updatedData.value = response
+    openUpdateDialog.value = true
+  })
+}
+const loadMore = async (index: number, done: any) => {
+  // see if there are more pages
+  if (page.value < updatedData.value.pagination.pages) {
+    page.value += 1
+    await fetchUpdatedTransactions(rowId.value)
+  } else {
+    infiniteScroll.value.stop()
+  }
+  done()
+}
+
+
+const calculateTotal = (transactions: SystemTransactionData[] | StatementTransactionData[], forStatement = false) => {
+  let cr_amount = 0
+  let dr_amount = 0
+  for (let transaction of transactions) {
+    if (transaction.cr_amount) {
+      cr_amount += Number(transaction.cr_amount)
+    }
+    if (transaction.dr_amount) {
+      dr_amount += Number(transaction.dr_amount)
+    }
+  }
+  if (forStatement) {
+    return (cr_amount - dr_amount).toFixed(2)
+  }
+  return (dr_amount - cr_amount).toFixed(2)
+}
+
+const calculateTotalFromCounterparts = (counterparts: { dr_amount: string | null, cr_amount: string | null }[]) => {
+  let cr_amount = 0
+  let dr_amount = 0
+  for (let counterpart of counterparts) {
+    if (counterpart.cr_amount) {
+      cr_amount += Number(counterpart.cr_amount)
+    }
+    if (counterpart.dr_amount) {
+      dr_amount += Number(counterpart.dr_amount)
+    }
+  }
+  return (dr_amount - cr_amount).toFixed(2)
+}
+
+
+function getVoucherUrl(row: SystemTransactionData) {
+  if (!row.source_id) return ''
+  const source_type = row.source_type
+  if (source_type === 'Sales Voucher')
+    return `/sales-voucher/${row.source_id}/view/`
+  if (source_type === 'Purchase Voucher')
+    return `/purchase-voucher/${row.source_id}/view`
+  if (source_type === 'Journal Voucher')
+    return `/journal-voucher/${row.source_id}/view`
+  if (source_type === 'Credit Note')
+    return `/credit-note/${row.source_id}/view`
+  if (source_type === 'Debit Note')
+    return `/debit-note/${row.source_id}/view`
+  // if (source_type === 'Tax Payment') return 'Tax Payment Edit'
+  // TODO: add missing links
+  if (source_type === 'Cheque Deposit')
+    return `/cheque-deposit/${row.source_id}/view/`
+  if (source_type === 'Payment Receipt')
+    return `/payment-receipt/${row.source_id}/view/`
+  if (source_type === 'Cheque Issue')
+    return `/cheque-issue/${row.source_id}/`
+  if (source_type === 'Challan') return `/challan/${row.source_id}/`
+  if (source_type === 'Account Opening Balance')
+    return `/account-opening-balance/${row.source_id}/`
+  if (source_type === 'Item') return `/items/details/${row.source_id}/`
+  // added
+  if (source_type === 'Fund Transfer')
+    return `/fund-transfer/${row.source_id}/`
+  if (source_type === 'Bank Cash Deposit')
+    return `/bank/cash/cash-deposit/${row.source_id}/edit/`
+  if (source_type === 'Tax Payment') return `/tax-payment/${row.source_id}/`
+  if (source_type === 'Inventory Adjustment Voucher') return `/items/inventory-adjustment/${row.source_id}/view/`
+  console.error(source_type + ' not handled!')
+}
+const getPermissionsWithSourceType = {
+  'Sales Voucher': 'SalesView',
+  'Purchase Voucher': 'PurchaseVoucherView',
+  'Journal Voucher': 'JournalVoucherView',
+  'Credit Note': 'CreditNoteView',
+  'Debit Note': 'DebitNoteView',
+  'Cheque Deposit': 'ChequeDepositView',
+  'Payment Receipt': 'PaymentReceiptView',
+  'Cheque Issue': 'ChequeIssueModify',
+  'Challan': 'ChallanModify',
+  'Account Opening Balance': 'AccountOpeningBalanceModify',
+  'Fund Transfer': 'FundTransferModify',
+  'Bank Cash Deposit': 'BankCashDepositModify',
+  'Tax Payment': 'TaxPaymentModify',
+  'Item': 'ItemView',
+  'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView'
+} as const
+
+const filterSources = (systemTransactions: SystemTransactionData[]): { source_id: number, url: string, source_type: string }[] => {
+  const sourceMap = new Map<number, { source_id: number, url: string, source_type: string }>()
+
+  systemTransactions.forEach((transaction: SystemTransactionData) => {
+    if (transaction.source_id) {
+      // check permission
+      const permission = getPermissionsWithSourceType[transaction.source_type as keyof typeof getPermissionsWithSourceType]
+      if (checkPermissions(permission)) {
+        const url = getVoucherUrl(transaction)
+        if (url) {
+          // Use source_id as the unique key
+          if (!sourceMap.has(transaction.source_id)) {
+            sourceMap.set(transaction.source_id, {
+              source_id: transaction.source_id,
+              source_type: transaction.source_type,
+              url,
+            })
+          }
+        }
+      }
+    }
+  })
+
+  return Array.from(sourceMap.values())
+}
+
+
+
+const unmatchMatchedTransactions = (matchedTransaction: {
+  statement_transactions: StatementTransactionData[]
+  system_transactions: SystemTransactionData[]
+}) => {
+  console.log('Unmatching:', matchedTransaction)
+  useApi('v1/bank-reconciliation/unmatch-transactions/', {
+    method: 'POST',
+    body: {
+      statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
+    }
+  }).then(() => {
+    const index = updatedData.value?.results.findIndex(group => group === matchedTransaction)
+    if (index > -1) {
+      updatedData.value?.results.splice(index, 1)
+    }
+    $q.notify({
+      color: 'green-6',
+      message: 'Transactions unmatched successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+    if (updatedData.value?.results.length === 0) {
+      openUpdateDialog.value = false
+    }
+
+  }).catch((error) => {
+    console.log(error)
+    $q.notify({
+      color: 'red-6',
+      message: 'Failed to unmatch transactions',
+      icon: 'error',
+      position: 'top-right',
+    })
+  })
+}
+
+const updateTransactions = (matchedTransaction: {
+  statement_transactions: StatementTransactionData[]
+  system_transactions: SystemTransactionData[]
+}) => {
+  console.log('Reconciling:', matchedTransaction)
+  useApi('v1/bank-reconciliation/update-transactions/', {
+    method: 'POST',
+    body: {
+      statement_ids: matchedTransaction.statement_transactions.map(t => t.id),
+      transaction_ids: matchedTransaction.system_transactions.map(t => t.id),
+    }
+  }).then(() => {
+    const index = updatedData.value?.results.findIndex(group => group === matchedTransaction)
+    if (index > -1) {
+      updatedData.value?.results.splice(index, 1)
+    }
+    $q.notify({
+      color: 'green-6',
+      message: 'Transactions reconciled successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+    })
+    if (updatedData.value?.results.length === 0) {
+      openUpdateDialog.value = false
+    }
+  }).catch((error) => {
+    console.log(error)
+    $q.notify({
+      color: 'red-6',
+      message: 'Failed to reconcile transactions',
+      icon: 'error',
+      position: 'top-right',
+    })
+  })
+}
+
+
 
 const listEndpoint = '/v1/bank-reconciliation/'
 const {
   rows,
-  columns,
   resetFilters,
   filters,
   loading,
@@ -267,6 +612,16 @@ function parseDate(dateString: string | null): string {
   return new Date(date).toISOString().split('T')[0]
 
 }
+
+const columns = [{ 'name': 'account', 'label': 'Account', 'align': 'left', 'field': 'account' },
+{ 'name': 'start_date', 'label': 'Start date', 'align': 'left', 'field': 'start_date' },
+{ 'name': 'end_date', 'label': 'End date', 'align': 'left', 'field': 'end_date' },
+{ 'name': 'total_rows', 'label': 'Total rows', 'align': 'left', 'field': 'total_rows' },
+{ 'name': 'reconciled_rows', 'label': 'Reconciled rows', 'align': 'left', 'field': 'reconciled_rows' },
+{
+  'name': 'rows_update', 'label': '', 'align': 'left', 'field': 'rows_update'
+
+}, { 'name': 'actions' }]
 
 
 

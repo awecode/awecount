@@ -17,6 +17,16 @@ interface SystemTransactionData {
   }[]
 }
 
+interface StatementTransactionData {
+  id: number
+  date: string
+  dr_amount: string | null
+  cr_amount: string | null
+  balance: string
+  description: string
+  transaction_ids: number[]
+}
+
 const props = defineProps({
   startDate: {
     type: String,
@@ -47,15 +57,7 @@ const props = defineProps({
 const emit = defineEmits(['unmatchTransactions'])
 
 
-interface StatementTransactionData {
-  id: number
-  date: string
-  dr_amount: string | null
-  cr_amount: string | null
-  balance: string
-  description: string
-  transaction_ids: number[]
-}
+
 
 interface GroupedTransaction {
   statement_transactions: StatementTransactionData[]
