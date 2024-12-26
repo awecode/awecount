@@ -1074,7 +1074,7 @@ def handle_company_creation(sender, **kwargs):
         parent=root["Expenses"],
         company=company,
         default=True,
-        system_codes=acc_cat_system_codes["Direct Expenses"],
+        system_code=acc_cat_system_codes["Direct Expenses"],
     )
     Category.objects.create(
         name="Purchase Expenses",
