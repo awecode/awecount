@@ -1676,17 +1676,31 @@ class ReconciliationViewSet(CRULViewSet):
             (obj.journal_entry.date for obj in transaction_objects if obj.journal_entry and obj.journal_entry.date),
         )
         adjustment = difference / len(entries)
-        entries.update( adjustment_amount=adjustment, status='Reconciled')
+        entries.update(adjustment_amount=adjustment, status='Reconciled')
+
+        adjustment_account = Account.objects.get(
+            name="Bank Reconciliation Adjustment", company=self.request.company
+        )
+        bank_account = entries[0].statement.account
+        
+        # Create transaction for the adjustment
+        for obj in entries:
+            obj.apply_transactions(adjustment_account, latest_date)
+
+        # get new transaction ids from journal entries
+        transactions = Transaction.objects.filter(
+            journal_entry__content_type__model="reconciliationrow",
+            journal_entry__object_id__in=entries.values_list("id", flat=True),
+            account_id=bank_account.id,
+        ).values_list("id", "updated_at")
         to_create = []
         for obj in entries:
             for transaction_data in transaction_objects:
                 to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+            for transaction_data in transactions:
+                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data[0], transaction_last_updated_at=transaction_data[1]))
             
         ReconciliationRowTransaction.objects.bulk_create(to_create)
-        
-        # create a journal entry for the adjustment
-        for obj in entries:
-           obj.apply_transactions(latest_date)
            
         return Response({})
     
@@ -1746,15 +1760,7 @@ class ReconciliationViewSet(CRULViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.validated_data['company'] = self.request.company
             saved_vouchers.append(serializer.save())
-        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
-        # transactions_ids = [transaction.id for transaction in transactions]
-        to_create = []
-        for obj in entries:
-            for transaction_data in transactions:
-                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
-                
-        ReconciliationRowTransaction.objects.bulk_create(to_create)
-        return entries, [transaction.id for transaction in transactions]
+        return saved_vouchers
     
     
     @transaction.atomic()
@@ -1778,7 +1784,14 @@ class ReconciliationViewSet(CRULViewSet):
             raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
         
         latest_entry_date = max(obj.date for obj in entries)
-        entries, _ = self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        saved_vouchers= self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        transactions = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
+        to_create = []
+        for obj in entries:
+            for transaction_data in transactions:
+                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+                
+        ReconciliationRowTransaction.objects.bulk_create(to_create)
         entries.update(status='Reconciled')
         return Response({})
 
@@ -1807,12 +1820,34 @@ class ReconciliationViewSet(CRULViewSet):
             raise ValidationError({"detail": "Difference between statement transactions and invoices is too large for reconciliation"})
         
         latest_entry_date = max(obj.date for obj in entries)
-        entries, _ = self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        saved_vouchers = self.create_payment_receipt(latest_entry_date, account_ids, entries, vouchers, remarks)
+        transaction_objects = Transaction.objects.filter(journal_entry__content_type=ContentType.objects.get_for_model(PaymentReceipt), journal_entry__object_id__in=[voucher.id for voucher in saved_vouchers], account_id=next(iter(account_ids)))
+                
         adjustment = difference / len(entries)
         entries.update(status='Reconciled', adjustment_amount=adjustment)
-        # Move to background task?
+        adjustment_account = Account.objects.get(
+            name="Bank Reconciliation Adjustment", company=self.request.company
+        )
+        bank_account = entries[0].statement.account
+        
+        # Create transaction for the adjustment
         for obj in entries:
-            obj.apply_transactions(latest_entry_date)
+            obj.apply_transactions(adjustment_account, latest_entry_date)
+
+        # get new transaction ids from journal entries
+        transactions = Transaction.objects.filter(
+            journal_entry__content_type__model="reconciliationrow",
+            journal_entry__object_id__in=entries.values_list("id", flat=True),
+            account_id=bank_account.id,
+        ).values_list("id", "updated_at")
+        to_create = []
+        for obj in entries:
+            for transaction_data in transaction_objects:
+                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data.id, transaction_last_updated_at=transaction_data.updated_at))
+            for transaction_data in transactions:
+                to_create.append(ReconciliationRowTransaction(reconciliation_row=obj, transaction_id=transaction_data[0], transaction_last_updated_at=transaction_data[1]))
+            
+        ReconciliationRowTransaction.objects.bulk_create(to_create)
         return Response({})
     
     @transaction.atomic()

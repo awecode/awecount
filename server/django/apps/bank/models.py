@@ -490,16 +490,13 @@ class ReconciliationRow(models.Model):
     def voucher_no(self):
         return self.id
 
-    def apply_transactions(self, date):
+    def apply_transactions(self, adjustment_account, date):
         if not self.adjustment_amount:
             return
         entries = []
 
         bank_account = self.statement.account
 
-        adjustment_account = Account.objects.get(
-            name="Bank Reconciliation Adjustment", company=self.statement.company
-        )
         adjustment_amount_absolute = abs(self.adjustment_amount)
         if self.adjustment_amount < 0:
             entries.append(("cr", bank_account, adjustment_amount_absolute))
@@ -508,22 +505,7 @@ class ReconciliationRow(models.Model):
             entries.append(("dr", bank_account, adjustment_amount_absolute))
             entries.append(("cr", adjustment_account, adjustment_amount_absolute))
         set_ledger_transactions(self, date, *entries, clear=True)
-        # get new transaction ids from journal entries
-        transactions = Transaction.objects.filter(
-            journal_entry__content_type__model="reconciliationrow",
-            journal_entry__object_id=self.id,
-            account_id=bank_account.id,
-        ).values_list("id", "updated_at")
-        to_create = []
-        for transaction in transactions:
-            to_create.append(
-                ReconciliationRowTransaction(
-                    transaction_id=transaction[0],
-                    reconciliation_row=self,
-                    transaction_last_updated_at=transaction[1],
-                )
-            )
-        ReconciliationRowTransaction.objects.bulk_create(to_create)
+
 
 
 class ReconciliationRowTransaction(models.Model):
