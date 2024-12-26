@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, localcontext
-from django.db.models.signals import post_save
 from dateutil.utils import today
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -625,7 +624,6 @@ def set_transactions(submodel, date, *entries, check=True, clear=True):
             journal_entry.transactions.add(transaction, bulk=False)
         except TypeError:  # for Django <1.9
             journal_entry.transactions.add(transaction)
-        post_save.send(sender=Transaction, instance=transaction, created=False)
         all_transaction_ids.append(transaction.id)
 
     # if date is updated on source calling set_transactions, update date on JE
