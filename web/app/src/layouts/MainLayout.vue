@@ -424,6 +424,11 @@ const essentialLinks: EssentialLinkProps[] = [
         link: '/report/trial-balance/',
       },
       {
+        title: 'Chart of Accounts',
+        icon: 'mdi-chart-arc',
+        link: '/report/chart-of-accounts/',
+      },
+      {
         title: 'Stock Trial Balance',
         icon: 'mdi-shuffle',
         link: '/report/stock-trial-balance/',

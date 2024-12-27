@@ -937,6 +937,13 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'chart-of-accounts/',
+        component: () => import('src/pages/report/ChartOfAccounts.vue'),
+        meta: {
+          breadcrumb: ['Home', 'Chart of Accounts'],
+        },
+      },
+      {
         path: 'category-tree/',
         component: () => import('src/pages/report/CategoryTree.vue'),
         meta: {

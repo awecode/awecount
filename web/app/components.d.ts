@@ -13,6 +13,7 @@ declare module '@vue/runtime-core' {
     BsDatePicker: typeof import('./src/components/date/BsDatePicker.vue')['default']
     ChallanTable: typeof import('./src/components/challan/ChallanTable.vue')['default']
     ChartsView: typeof import('./src/components/charts/ChartsView.vue')['default']
+    COATableNode: typeof import('./src/components/report/COATableNode.vue')['default']
     copy: typeof import('./src/components/NAutoComplete copy.vue')['default']
     DateInputDisabled: typeof import('./src/components/date/DateInputDisabled.vue')['default']
     DatePicker: typeof import('./src/components/date/DatePicker.vue')['default']
