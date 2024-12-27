@@ -193,6 +193,11 @@ urlpatterns = [
         name="full-category-tree",
     ),
     path("v1/trial-balance/", ledger.TrialBalanceView.as_view(), name="trial-balance"),
+    path(
+        "v1/chart-of-accounts/",
+        ledger.ChartOfAccountsView.as_view(),
+        name="chart-of-accounts",
+    ),
     path("v1/tax-summary/", ledger.TaxSummaryView.as_view(), name="tax-summary"),
     path(
         "v1/customer-closing-summary/",

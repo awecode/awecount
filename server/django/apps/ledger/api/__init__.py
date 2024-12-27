@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Case, F, FloatField, Max, Q, Sum, When
+from django.db.models import Case, Count, F, FloatField, Max, Q, Sum, When
 from django.db.models.functions import Coalesce
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -275,6 +275,25 @@ class TrialBalanceView(APIView):
             )
             return Response(list(qq))
         return Response({})
+
+
+class ChartOfAccountsView(APIView):
+    action = "list"
+
+    def get_queryset(self):
+        return Account.objects.none()
+
+    def get(self, request, format=None):
+        qs = (
+            Account.objects.filter(company=request.company)
+            .annotate(
+                total_transactions=Count("transactions"),
+            )
+            .values(
+                "id", "name", "code", "system_code", "category_id", "total_transactions"
+            )
+        )
+        return Response(list(qs))
 
 
 class TaxSummaryView(APIView):
