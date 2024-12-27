@@ -1,9 +1,17 @@
 <template>
-  <tr>
+  <tr class="hover:bg-gray-50">
     <td
       class="flex items-center"
-      :style="`padding-left: ${30 * (row.level || 0)}px`"
+      :style="`padding-left: ${15 + 30 * (row.level || 0)}px;`"
     >
+      <RouterLink
+        style="text-decoration: none"
+        target="_blank"
+        :to="`/account/?has_balance=true&category=${row.id}`"
+        class="text-blue-6"
+        :class="props.root ? 'text-weight-bold' : ''"
+        >{{ row.name }}</RouterLink
+      >
       <q-btn
         dense
         flat
@@ -11,10 +19,7 @@
         class="expand-btn"
         :class="expandedRows[row.id] ? 'expanded' : ''"
         @click="$emit('toggle-expand', row.id)"
-        v-if="
-          (row.children && row.children.length > 0) ||
-          (row.accounts && row.accounts.length > 0)
-        "
+        v-if="row.isExpandable"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -29,14 +34,6 @@
           />
         </svg>
       </q-btn>
-      <RouterLink
-        style="text-decoration: none"
-        target="_blank"
-        :to="`/account/?has_balance=true&category=${row.id}`"
-        class="text-blue-6"
-        :class="props.root ? 'text-weight-bold' : ''"
-        >{{ row.name }}</RouterLink
-      >
     </td>
     <td></td>
     <td></td>
@@ -55,7 +52,7 @@
     />
     <tr v-for="account in row.accounts" :key="account.id">
       <td
-        :style="`padding-left: ${30 * ((row.level || 0) + 1) + 10}px`"
+        :style="`padding-left: ${15 + 30 * ((row.level || 0) + 1)}px`"
         colspan="3"
       >
         <RouterLink
@@ -97,6 +94,7 @@ interface CategoryTree {
   total_transactions?: number
   accounts?: Account[]
   level?: number
+  isExpandable?: boolean
 }
 
 defineEmits(['toggle-expand'])

@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-markup-table>
-      <table class="w-full">
+      <table class="w-full" style="border-collapse: collapse">
         <thead>
           <tr>
             <th colspan="4" class="text-left">Name</th>
@@ -46,6 +46,7 @@ interface CategoryTree {
   total_transactions?: number
   accounts?: Account[]
   level?: number
+  isExpandable?: boolean
 }
 
 const accounts = ref<Account[]>([])
@@ -100,6 +101,9 @@ const chartOfAccounts = computed(() => {
 
     category.total_transactions = totalTransactions
     category.level = level
+    category.isExpandable =
+      (category.children && category.children.length > 0) ||
+      category.accounts.length > 0
     return totalTransactions
   }
 
