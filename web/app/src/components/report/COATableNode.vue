@@ -9,10 +9,14 @@
     @dragover.prevent
     @dragend="handleDragEnd"
     @drop="
-      handleDrop({
-        type: 'category',
-        row,
-      })
+      handleDrop(
+        row.id
+          ? {
+              type: 'category',
+              row,
+            }
+          : null
+      )
     "
     @dragenter="handleDragEnter({ type: 'category', row })"
     @dragleave="handleDragLeave"
@@ -209,11 +213,15 @@ const handleDragEnd = () => {
   currentTarget.value = null
 }
 
-const handleDrop = (target: DragItem) => {
+const handleDrop = (target: DragItem | null) => {
   stopToggleExpandTimeout()
   if (!draggingItem.value) return
 
-  if (draggingItem.value.type === 'category' && target.type === 'category') {
+  if (
+    draggingItem.value.type === 'category' &&
+    target &&
+    target.type === 'category'
+  ) {
     if (
       target.row.tree_id === draggingItem.value.row.tree_id &&
       target.row.level > draggingItem.value.row.level
@@ -222,20 +230,29 @@ const handleDrop = (target: DragItem) => {
     else if (target.row.id === draggingItem.value.row.parent_id) return
   }
 
-  if (draggingItem.value.type === 'account' && target.type === 'account') {
+  if (draggingItem.value.type === 'account' && !target) return
+
+  if (
+    draggingItem.value.type === 'account' &&
+    target &&
+    target.type === 'account'
+  ) {
     if (target.row.category_id === draggingItem.value.row.category_id) return
   }
 
-  if (draggingItem.value.type === 'account' && target.type === 'category') {
-    if (target.row.id === draggingItem.value.row.category_id) return
+  if (draggingItem.value.type === 'account' && target!.type === 'category') {
+    if (target!.row.id === draggingItem.value.row.category_id) return
   }
 
   const sourceId =
     draggingItem.value.type === 'category'
       ? draggingItem.value.row.id
       : draggingItem.value.row.category_id
-  const targetId =
-    target.type === 'account' ? target.row.category_id : target.row.id
+  const targetId = target
+    ? target.type === 'account'
+      ? target.row.category_id
+      : target.row.id
+    : null
 
   if (sourceId === targetId) return
 

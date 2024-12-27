@@ -195,6 +195,15 @@ const chartOfAccounts = computed(() => {
   }
 
   const categoriesCopy = JSON.parse(JSON.stringify(categoryTree.value))
+  categoriesCopy.unshift({
+    id: 0,
+    name: 'N/A',
+    children: [],
+    code: null,
+    system_code: null,
+    tree_id: 0,
+    total_transactions: 0,
+  })
   categoriesCopy.forEach((category: CategoryTree) => {
     calculateTransactions(category, 0)
   })
@@ -219,24 +228,22 @@ const handleDragEvent = ({
   target,
 }: {
   source: { type: 'category' | 'account'; id: number }
-  target: number
+  target: number | null
 }) => {
-  console.log('source', source)
-  console.log('target', target)
   if (source.type === 'category') {
-    const sourceRow = findRowById(chartOfAccounts.value, source.id)
-    const targetRow = findRowById(chartOfAccounts.value, target)
+    const sourceRow = findRowById(chartOfAccounts.value, source.id)!
+    const targetRow = target ? findRowById(chartOfAccounts.value, target) : null
 
-    if (sourceRow && targetRow) {
-      if (sourceRow.id === targetRow.id) {
-        return
-      }
-
-      dragDropConfirmationMessage.value = `Set category ${targetRow.name} as parent of ${sourceRow.name}?`
+    if (targetRow && sourceRow.id === targetRow.id) {
+      return
     }
+
+    dragDropConfirmationMessage.value = targetRow
+      ? `Set category ${targetRow.name} as parent of ${sourceRow.name}?`
+      : `Set category ${sourceRow.name} as root category?`
   } else {
     const account = findAccountById(chartOfAccounts.value, source.id)
-    const targetRow = findRowById(chartOfAccounts.value, target)
+    const targetRow = findRowById(chartOfAccounts.value, target!)
 
     if (account && targetRow) {
       if (account.category_id === targetRow.id) {
