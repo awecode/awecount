@@ -1,5 +1,22 @@
 <template>
-  <tr class="hover:bg-gray-50">
+  <tr
+    class="hover:bg-gray-50"
+    :class="{
+      'bg-gray-100': draggingItem && row.id === currentTarget,
+    }"
+    draggable="true"
+    @dragstart="handleDragStart({ type: 'category', row })"
+    @dragover.prevent
+    @dragend="handleDragEnd"
+    @drop="
+      handleDrop({
+        type: 'category',
+        row,
+      })
+    "
+    @dragenter="handleDragEnter({ type: 'category', row })"
+    @dragleave="handleDragLeave"
+  >
     <td
       class="flex items-center"
       :style="`padding-left: ${15 + 30 * (row.level || 0)}px;`"
@@ -48,13 +65,31 @@
       :key="child.id"
       :row="child"
       :expandedRows="expandedRows"
-      @toggle-expand="$emit('toggle-expand', $event)"
+      @toggle-expand="emitToggleExpand"
+      @drag-event="$emit('drag-event', $event)"
+      v-model="currentTarget"
+      v-model:draggingItem="draggingItem"
     />
-    <tr v-for="account in row.accounts" :key="account.id">
-      <td
-        :style="`padding-left: ${15 + 30 * ((row.level || 0) + 1)}px`"
-        colspan="3"
-      >
+    <tr
+      v-for="account in row.accounts"
+      :key="account.id"
+      draggable="true"
+      :class="{
+        'bg-gray-100': draggingItem && account.id === currentTarget,
+      }"
+      @dragstart="handleDragStart({ type: 'account', row: account })"
+      @dragover.prevent
+      @dragend="handleDragEnd"
+      @drop="
+        handleDrop({
+          type: 'account',
+          row: account,
+        })
+      "
+      @dragenter="handleDragEnter({ type: 'account', row: account })"
+      @dragleave="handleDragLeave"
+    >
+      <td :style="`padding-left: ${15 + 30 * ((row.level || 0) + 1)}px`">
         <RouterLink
           target="_blank"
           style="text-decoration: none"
@@ -66,7 +101,7 @@
       <td></td>
       <td></td>
       <td></td>
-      <td>{{ account.code }}</td>
+      <td>{{ account.id }}</td>
       <td>{{ account.system_code }}</td>
       <td>{{ account.total_transactions }}</td>
     </tr>
@@ -74,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from 'vue'
+import { PropType, ref } from 'vue'
 
 interface Account {
   id: number
@@ -91,13 +126,23 @@ interface CategoryTree {
   children: CategoryTree[]
   code: string | null
   system_code: string | null
-  total_transactions?: number
-  accounts?: Account[]
-  level?: number
-  isExpandable?: boolean
+  total_transactions: number
+  accounts: Account[]
+  level: number
+  tree_id: number
+  isExpandable: boolean
+  parent_id: number
 }
 
-defineEmits(['toggle-expand'])
+const emit = defineEmits([
+  'toggle-expand',
+  'drag-event',
+  'clear-current-target',
+])
+
+function emitToggleExpand(id: number, action: 'open' | 'close' | undefined) {
+  emit('toggle-expand', id, action)
+}
 
 const props = defineProps({
   row: {
@@ -113,4 +158,95 @@ const props = defineProps({
     default: false,
   },
 })
+
+type DragItem =
+  | {
+      type: 'category'
+      row: CategoryTree
+    }
+  | {
+      type: 'account'
+      row: Account
+    }
+
+const draggingItem = defineModel<DragItem | null>('draggingItem')
+
+const currentTarget = defineModel<number | null>()
+
+const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
+
+function startToggleExpandTimeout(id: number) {
+  stopToggleExpandTimeout()
+  toggleExpandTimeout.value = setTimeout(() => {
+    emit('toggle-expand', id, 'open')
+  }, 1000)
+}
+
+function stopToggleExpandTimeout() {
+  if (toggleExpandTimeout.value) {
+    clearTimeout(toggleExpandTimeout.value)
+  }
+}
+
+const handleDragStart = (item: DragItem) => {
+  draggingItem.value = item
+}
+
+const handleDragEnter = (item: DragItem) => {
+  currentTarget.value = null
+  if (item.type === 'category') {
+    startToggleExpandTimeout(item.row.id)
+  }
+  currentTarget.value = item.row.id
+}
+
+const handleDragLeave = () => {
+  stopToggleExpandTimeout()
+}
+
+const handleDragEnd = () => {
+  draggingItem.value = null
+  currentTarget.value = null
+}
+
+const handleDrop = (target: DragItem) => {
+  stopToggleExpandTimeout()
+  if (!draggingItem.value) return
+
+  if (draggingItem.value.type === 'category' && target.type === 'category') {
+    if (
+      target.row.tree_id === draggingItem.value.row.tree_id &&
+      target.row.level > draggingItem.value.row.level
+    )
+      return
+    else if (target.row.id === draggingItem.value.row.parent_id) return
+  }
+
+  if (draggingItem.value.type === 'account' && target.type === 'account') {
+    if (target.row.category_id === draggingItem.value.row.category_id) return
+  }
+
+  if (draggingItem.value.type === 'account' && target.type === 'category') {
+    if (target.row.id === draggingItem.value.row.category_id) return
+  }
+
+  const sourceId =
+    draggingItem.value.type === 'category'
+      ? draggingItem.value.row.id
+      : draggingItem.value.row.category_id
+  const targetId =
+    target.type === 'account' ? target.row.category_id : target.row.id
+
+  if (sourceId === targetId) return
+
+  emit('drag-event', {
+    source: {
+      type: draggingItem.value.type,
+      id: draggingItem.value.row.id,
+    },
+    target: targetId,
+  })
+
+  draggingItem.value = null
+}
 </script>
