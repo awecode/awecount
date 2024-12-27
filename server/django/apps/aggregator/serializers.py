@@ -1,0 +1,73 @@
+import json
+
+from auditlog.models import LogEntry
+from rest_framework import serializers
+from rest_framework.exceptions import APIException
+
+from .models import Widget
+
+
+class LogEntrySerializer(serializers.ModelSerializer):
+    content_type_name = serializers.SerializerMethodField()
+    actor = serializers.SerializerMethodField()
+    actor_id = serializers.ReadOnlyField()
+    action = serializers.SerializerMethodField()
+    datetime = serializers.SerializerMethodField()
+    changes_obj = serializers.SerializerMethodField()
+
+    def get_changes_obj(self, obj):
+        if obj.changes:
+            return json.loads(obj.changes)
+        return
+
+    def get_datetime(self, obj):
+        return "{:%x, %H:%M %p}".format(obj.timestamp)
+
+    def get_action(self, obj):
+        return obj.get_action_display().title()
+
+    def get_actor(self, obj):
+        return str(obj.actor)
+
+    def get_content_type_name(self, obj):
+        return obj.content_type.model.title()
+
+    class Meta:
+        model = LogEntry
+        exclude = ("timestamp", "changes")
+
+
+class WidgetSerializer(serializers.ModelSerializer):
+    data = serializers.ReadOnlyField(source="get_data")
+
+    class Meta:
+        model = Widget
+        exclude = ("user",)
+
+
+class WidgetListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Widget
+        fields = (
+            "id",
+            "name",
+            "widget",
+            "order",
+            "group_by",
+            "count",
+            "display_type",
+            "is_active",
+        )
+
+
+class WidgetUpdateSerializer(serializers.ModelSerializer):
+    def validate(self, data):
+        if data.get("count") < 1:
+            # TODO proper exception message
+            raise APIException({"detail": "Count is set as 0"})
+        data["user_id"] = self.context.get("request").user.id
+        return data
+
+    class Meta:
+        model = Widget
+        exclude = ("user", "name", "order")

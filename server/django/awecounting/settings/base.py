@@ -1,0 +1,131 @@
+import datetime
+import os
+
+BASE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".."
+)
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "django_filters",
+    "djoser",
+    "corsheaders",
+    "auditlog",
+    "mptt",
+    "django_q",
+    "dbbackup",
+    "apps.users",
+    "apps.voucher",
+    "apps.ledger",
+    "apps.tax",
+    "apps.product",
+    "apps.bank",
+    "apps.aggregator",
+    "apps.company",
+    "apps.api",
+]
+
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.users.middleware.CompanyMiddleware",
+    "auditlog.middleware.AuditlogMiddleware",
+]
+
+ROOT_URLCONF = "awecounting.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "awecounting.libs.pagination.PageNumberPagination",
+    # 'PAGINATE_BY': 2,
+    "PAGE_SIZE": 20,
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+        "apps.users.permissions.ModuleAccessPermission",
+    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.users.authentication.AccessKeyAuthentication",
+    ],
+    "EXCEPTION_HANDLER": "awecounting.libs.exception.exception_handler",
+}
+
+POS_ITEMS_SIZE = 30
+
+WSGI_APPLICATION = "awecounting.wsgi.application"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Asia/Kathmandu"
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+STATIC_ROOT = os.path.join(BASE_DIR, "..", "static")
+STATIC_URL = "/static/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "..", "media")
+MEDIA_URL = "/media/"
+
+AUTH_USER_MODEL = "users.User"
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT", "Token"),
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(days=5),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=7),
+}
+
+
+MPTT_ADMIN_LEVEL_INDENT = 20
+
+
+Q_CLUSTER = {
+    # 'name': 'myproject',
+    # 'workers': 8,
+    # 'recycle': 500,
+    # 'timeout': 60,
+    "retry": 60,
+    "timeout": 30,
+    "compress": True,
+    "save_limit": 250,
+    "queue_limit": 500,
+    "cpu_affinity": 1,
+    "label": "Django Q",
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "db": 0,
+    },
+}
+
+
+DBBACKUP_FILENAME_TEMPLATE = "{databasename}-{servername}-{datetime}.{extension}"
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"

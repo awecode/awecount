@@ -1,0 +1,12 @@
+.idea
+*.pyc
+*.log
+awecounting/settings/env.py
+.~lock.*
+env/
+*.xlsx
+
+temp.*
+.vscode/
+*.sql
+
