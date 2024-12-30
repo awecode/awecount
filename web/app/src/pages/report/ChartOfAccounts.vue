@@ -1,5 +1,23 @@
 <template>
   <div class="q-pa-md">
+    <div class="row justify-end q-mb-md gap-4">
+      <q-btn
+        v-if="checkPermissions('AccountCreate')"
+        color="green"
+        label="Add Account"
+        class="add-btn"
+        icon-right="add"
+      />
+
+      <q-btn
+        v-if="checkPermissions('CategoryCreate')"
+        color="green"
+        label="Add Category"
+        icon-right="add"
+        @click="addCategoryModalOpen = true"
+      />
+    </div>
+
     <q-markup-table>
       <table class="w-full" style="border-collapse: collapse">
         <thead>
@@ -53,11 +71,22 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="addCategoryModalOpen" transition-hide="none">
+      <q-card style="min-width: 80vw">
+        <CategoryForm
+          :is-modal="true"
+          @modalSignal="onCategoryAdd"
+          @closeModal="addCategoryModalOpen = false"
+        />
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import checkPermissions from 'src/composables/checkPermissions'
+import CategoryForm from '../account/category/CategoryForm.vue'
 
 interface Account {
   id: number
@@ -115,21 +144,9 @@ function confirmAction() {
   })
     .then(() => {
       if (dragDropUpdateType.value === 'category') {
-        useApi('/v1/category-tree/', { method: 'GET' })
-          .then((data) => {
-            categoryTree.value = data
-          })
-          .catch((error) => {
-            console.log('err fetching data', error)
-          })
+        fetchCategoryTree()
       } else {
-        useApi('/v1/chart-of-accounts/')
-          .then((data) => {
-            accounts.value = data
-          })
-          .catch((err) => {
-            console.log(err)
-          })
+        fetchAccounts()
       }
 
       dragDropConfirmDialog.value = false
@@ -150,21 +167,29 @@ const currentTarget = ref<DragItem | null>()
 const accounts = ref<Account[]>([])
 const categoryTree = ref<CategoryTree[]>([])
 
-useApi('/v1/chart-of-accounts/')
-  .then((data) => {
-    accounts.value = data
-  })
-  .catch((err) => {
-    console.log(err)
-  })
+function fetchAccounts() {
+  useApi('/v1/chart-of-accounts/')
+    .then((data) => {
+      accounts.value = data
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
 
-useApi('/v1/category-tree/', { method: 'GET' })
-  .then((data) => {
-    categoryTree.value = data
-  })
-  .catch((error) => {
-    console.log('err fetching data', error)
-  })
+fetchAccounts()
+
+function fetchCategoryTree() {
+  useApi('/v1/category-tree/', { method: 'GET' })
+    .then((data) => {
+      categoryTree.value = data
+    })
+    .catch((error) => {
+      console.log('err fetching data', error)
+    })
+}
+
+fetchCategoryTree()
 
 const chartOfAccounts = computed(() => {
   const categoryAccountsMap: Record<number, Account[]> = {}
@@ -324,4 +349,10 @@ const canBeDropped = computed(() => {
 
   return true
 })
+
+const addCategoryModalOpen = ref(false)
+function onCategoryAdd() {
+  addCategoryModalOpen.value = false
+  fetchCategoryTree()
+}
 </script>
