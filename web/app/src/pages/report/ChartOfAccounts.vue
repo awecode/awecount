@@ -7,6 +7,7 @@
         label="Add Account"
         class="add-btn"
         icon-right="add"
+        @click="addAccountModalOpen = true"
       />
 
       <q-btn
@@ -81,12 +82,23 @@
         />
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="addAccountModalOpen" transition-hide="none">
+      <q-card style="min-width: 80vw">
+        <AccountForm
+          :is-modal="true"
+          @modalSignal="onAccountAdd"
+          @closeModal="addAccountModalOpen = false"
+        />
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import checkPermissions from 'src/composables/checkPermissions'
 import CategoryForm from '../account/category/CategoryForm.vue'
+import AccountForm from 'src/pages/account/ledger/LedgerForm.vue'
 
 interface Account {
   id: number
@@ -339,7 +351,9 @@ const canBeDropped = computed(() => {
   }
 
   if (
-    (draggingType === 'account' || draggingRow.level == 0 || !draggingItem.value.row.default) &&
+    (draggingType === 'account' ||
+      draggingRow.level == 0 ||
+      !draggingItem.value.row.default) &&
     targetRow.id === 0
   )
     return false
@@ -355,5 +369,11 @@ const addCategoryModalOpen = ref(false)
 function onCategoryAdd() {
   addCategoryModalOpen.value = false
   fetchCategoryTree()
+}
+
+const addAccountModalOpen = ref(false)
+function onAccountAdd() {
+  addAccountModalOpen.value = false
+  fetchAccounts()
 }
 </script>
