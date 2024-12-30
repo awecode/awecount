@@ -49,6 +49,10 @@ import { useQuasar } from 'quasar'
 import { useLoginStore } from 'src/stores/login-info'
 import useGeneratePdf from 'src/composables/pdf/useGeneratePdf'
 
+useMeta({
+  title: 'Invoice Settings | Awecount',
+})
+
 const $q = useQuasar()
 const loginStore = useLoginStore()
 const fields = ref({

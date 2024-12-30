@@ -86,6 +86,10 @@ const formData = useForm(endpoint, {
 const { fields, formDefaults, errors, isEdit, loading, submitForm, today } =
   formData
 
+useMeta({
+  title: `Recurring ${capitalizedType} Invoice ${ isEdit.value ? 'Update' : 'Add' } | Awecount`,
+})
+
 const invoiceDataErrors = ref({})
 
 watch(

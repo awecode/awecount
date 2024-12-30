@@ -145,6 +145,10 @@ type DragItem =
       row: Account
     }
 
+useMeta({
+  title: 'Chart of Accounts | Awecount',
+})
+
 const dragDropConfirmDialog = ref(false)
 const dragDropConfirmationMessage = ref('')
 const dragDropUpdateItemId = ref<number | null>(null)

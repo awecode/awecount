@@ -129,6 +129,9 @@
 // import XLSX from "xlsx-js-style"
 export default {
   setup() {
+    useMeta({
+      title: 'Trial Balance | Awecount',
+    })
     const categoryTree = ref(null)
     const category_accounts = ref({})
     const route = useRoute()
