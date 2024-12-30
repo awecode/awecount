@@ -9,7 +9,7 @@
         currentTarget.type === 'category' &&
         canBeDropped,
     }"
-    draggable="true"
+    :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
     @dragstart="handleDragStart({ type: 'category', row })"
     @dragover.prevent
     @dragend="handleDragEnd"
@@ -66,6 +66,17 @@
     <td>{{ row.code }}</td>
     <td>{{ row.system_code }}</td>
     <td>{{ row.total_transactions }}</td>
+    <td>
+      <q-btn
+        v-if="checkPermissions('CategoryModify') && row.id"
+        dense
+        flat
+        round
+        icon="edit"
+        class="text-blue-6"
+        @click="editRow('category', row.id)"
+      />
+    </td>
   </tr>
   <template v-if="expandStatus">
     <COATableNode
@@ -76,11 +87,12 @@
       v-model:current-target="currentTarget"
       v-model:draggingItem="draggingItem"
       :canBeDropped="canBeDropped"
+      @edit-row="handleEditRowEmit"
     />
     <tr
       v-for="account in row.accounts"
       :key="account.id"
-      draggable="true"
+      :draggable="checkPermissions('AccountModify') ? true : false"
       :class="{
         'bg-gray-100':
           draggingItem &&
@@ -115,11 +127,23 @@
       <td>{{ account.id }}</td>
       <td>{{ account.system_code }}</td>
       <td>{{ account.total_transactions }}</td>
+      <td>
+        <q-btn
+          v-if="checkPermissions('AccountModify')"
+          dense
+          flat
+          round
+          icon="edit"
+          class="text-blue-6"
+          @click="editRow('account', account.id)"
+        />
+      </td>
     </tr>
   </template>
 </template>
 
 <script setup lang="ts">
+import checkPermissions from 'src/composables/checkPermissions'
 import { useLoginStore } from 'src/stores/login-info'
 import { PropType, ref } from 'vue'
 
@@ -146,7 +170,7 @@ interface CategoryTree {
   parent_id: number
 }
 
-const emit = defineEmits(['drag-event'])
+const emit = defineEmits(['drag-event', 'edit-row'])
 
 const props = defineProps({
   row: {
@@ -260,4 +284,12 @@ const expandStatus = computed(() => {
     props.row.id && loginStore.chartOfAccountsCollapseId.includes(props.row.id)
   return !newTotalObjStatus
 })
+
+const editRow = (type: 'category' | 'account', id: number) => {
+  emit('edit-row', type, id)
+}
+
+function handleEditRowEmit(type: 'category' | 'account', id: number) {
+  emit('edit-row', type, id)
+}
 </script>

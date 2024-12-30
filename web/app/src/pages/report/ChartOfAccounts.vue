@@ -27,6 +27,7 @@
             <th class="text-left">Code</th>
             <th class="text-left">System Code</th>
             <th class="text-left">Total Transactions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -35,6 +36,7 @@
             :key="row.id"
             :row="row"
             @drag-event="handleDragEvent"
+            @edit-row="editRow"
             v-model:currentTarget="currentTarget"
             v-model:draggingItem="draggingItem"
             :can-be-dropped="canBeDropped"
@@ -78,7 +80,8 @@
         <CategoryForm
           :is-modal="true"
           @modalSignal="onCategoryAdd"
-          @closeModal="addCategoryModalOpen = false"
+          :edit-id="categoryUpdateId"
+          @closeModal="closeAccountModal()"
         />
       </q-card>
     </q-dialog>
@@ -88,7 +91,8 @@
         <AccountForm
           :is-modal="true"
           @modalSignal="onAccountAdd"
-          @closeModal="addAccountModalOpen = false"
+          :edit-id="accountUpdateId"
+          @closeModal="closeAccountModal()"
         />
       </q-card>
     </q-dialog>
@@ -366,14 +370,36 @@ const canBeDropped = computed(() => {
 })
 
 const addCategoryModalOpen = ref(false)
+const categoryUpdateId = ref<number | null>(null)
 function onCategoryAdd() {
-  addCategoryModalOpen.value = false
   fetchCategoryTree()
+  closeCategoryModal()
+}
+
+function closeCategoryModal() {
+  addCategoryModalOpen.value = false
+  categoryUpdateId.value = null
 }
 
 const addAccountModalOpen = ref(false)
+const accountUpdateId = ref<number | null>(null)
 function onAccountAdd() {
-  addAccountModalOpen.value = false
   fetchAccounts()
+  closeAccountModal()
+}
+
+function closeAccountModal() {
+  addAccountModalOpen.value = false
+  accountUpdateId.value = null
+}
+
+function editRow(type: 'category' | 'account', id: number) {
+  if (type === 'category') {
+    categoryUpdateId.value = id
+    addCategoryModalOpen.value = true
+  } else {
+    accountUpdateId.value = id
+    addAccountModalOpen.value = true
+  }
 }
 </script>

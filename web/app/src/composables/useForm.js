@@ -22,6 +22,7 @@ export default (endpoint, config) => {
   const context = root?.setupContext
 
   const isModal = !!root?.attrs['is-modal']
+  let editId = root?.attrs['edit-id']?.toString()
   const store = useLoginStore()
   const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
@@ -36,17 +37,17 @@ export default (endpoint, config) => {
     store.isLoading = true
   }
   onMounted(() => {
-    // added is modal check
-    isEdit.value = !!route.params.id && !isModal
-    if (!config.getDefaults && !isEdit.value && !isModal) {
-      store.isLoading = false
-    } else if (isModal && (isEdit.value || config.getDefaults)) {
+    if (!editId && !isModal) {
+      editId = route.params.id
+    }
+    isEdit.value = !!editId
+    if (!config.getDefaults && !isEdit.value) {
       store.isLoading = false
     } else setModalLoadingFalse()
-    id.value = route.params.id
+    id.value = editId
     if (isEdit.value) {
       isGetEditLoading.value = true
-      let fetchUrl = withTrailingSlash(joinURL(endpoint, route.params.id))
+      let fetchUrl = withTrailingSlash(joinURL(endpoint, id.value))
       if (config.queryParams) {
         const queryParams = new URLSearchParams(config.queryParams).toString()
         fetchUrl += `?${queryParams}`
@@ -123,7 +124,7 @@ export default (endpoint, config) => {
     errors.value = {}
     let postEndpoint
     if (isEdit.value) {
-      postEndpoint = withTrailingSlash(joinURL(endpoint, route.params.id))
+      postEndpoint = withTrailingSlash(joinURL(endpoint, id.value))
     } else {
       postEndpoint = endpoint
     }
@@ -248,7 +249,7 @@ export default (endpoint, config) => {
   const cancelForm = () => {
     if (isEdit.value) {
       const cancelEndPoint = withTrailingSlash(
-        joinURL(endpoint, route.params.id, 'cancel')
+        joinURL(endpoint, id.value, 'cancel')
       )
       useApi(cancelEndPoint, {
         method: 'POST',
