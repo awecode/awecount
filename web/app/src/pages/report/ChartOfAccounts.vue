@@ -2,6 +2,14 @@
   <div class="q-pa-md">
     <div class="row justify-end q-mb-md gap-4">
       <q-btn icon="settings" title="Config">
+        <q-badge v-if="Object.values(config).filter(Boolean).length"
+          floating
+          color="primary"
+          class="q-p-md"
+          style="top: -10px; right: -10px; padding: 6px 8px"
+        >
+          {{ Object.values(config).filter(Boolean).length }}
+        </q-badge>
         <q-menu>
           <div class="menu-wrapper" style="width: min(300px, 90vw)">
             <div style="border-bottom: 1px solid lightgrey">
@@ -161,6 +169,8 @@ interface CategoryTree {
   code: string | null
   system_code: string | null
   tree_id: number
+  rght: number
+  lft: number
   default?: boolean
   total_transactions?: number
   accounts?: Account[]
@@ -186,7 +196,7 @@ type Config = {
 }
 
 const config = ref<Config>({
-  hide_accounts: false,
+  hide_accounts: true,
   hide_categories: false,
   hide_zero_transactions: false,
 })
@@ -305,7 +315,7 @@ const chartOfAccounts = computed(() => {
     category.level = level
     category.isExpandable =
       (category.children && category.children.length > 0) ||
-      category.accounts.length > 0
+      (!config.value.hide_accounts && category.accounts.length > 0)
     category.parent_id = parent_id
     return totalTransactions
   }
@@ -401,6 +411,8 @@ const canBeDropped = computed(() => {
     if (targetType === 'category') {
       if (
         targetRow.tree_id === draggingRow.tree_id &&
+        targetRow.rght < draggingRow.rght &&
+        targetRow.lft > draggingRow.lft &&
         targetRow.level! > draggingRow.level!
       ) {
         return false

@@ -106,7 +106,7 @@
       </q-btn-dropdown>
     </td>
   </tr>
-  <template v-if="expandStatus">
+  <template v-if="config.hide_categories || expandStatus">
     <template v-for="child in row.children" :key="`coa-child-${child.id}`">
       <COATableNode
         v-if="
