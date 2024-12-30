@@ -9,6 +9,7 @@ export const useLoginStore = defineStore('loginStore', {
     isCalendarInAD: true,
     trialBalanceCollapseId: [],
     stockTrialBalanceCollapseId: [],
+    chartOfAccountsCollapseId: [],
     userInfo: null,
     dateRange: {
       start_date : null,

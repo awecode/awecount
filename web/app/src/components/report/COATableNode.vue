@@ -24,7 +24,6 @@
       )
     "
     @dragenter="handleDragEnter({ type: 'category', row })"
-    @dragleave="handleDragLeave"
   >
     <td
       class="flex items-center"
@@ -100,7 +99,6 @@
         })
       "
       @dragenter="handleDragEnter({ type: 'account', row: account })"
-      @dragleave="handleDragLeave"
     >
       <td :style="`padding-left: ${15 + 30 * ((row.level || 0) + 1)}px`">
         <RouterLink
@@ -182,18 +180,17 @@ const currentTarget = defineModel<DragItem | null>('currentTarget')
 const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
 
 function startToggleExpandTimeout(id: number) {
-  stopToggleExpandTimeout()
   toggleExpandTimeout.value = setTimeout(() => {
+    if (
+      !currentTarget.value ||
+      currentTarget.value.type !== 'category' ||
+      currentTarget.value.row.id !== id
+    ) {
+      return
+    }
     changeExpandStatus(id, 'open')
   }, 1000)
 }
-
-function stopToggleExpandTimeout() {
-  if (toggleExpandTimeout.value) {
-    clearTimeout(toggleExpandTimeout.value)
-  }
-}
-
 const handleDragStart = (item: DragItem) => {
   draggingItem.value = item
 }
@@ -206,18 +203,12 @@ const handleDragEnter = (item: DragItem) => {
   currentTarget.value = item
 }
 
-const handleDragLeave = () => {
-  stopToggleExpandTimeout()
-}
-
 const handleDragEnd = () => {
   draggingItem.value = null
   currentTarget.value = null
 }
 
 const handleDrop = (target: DragItem | null) => {
-  stopToggleExpandTimeout()
-
   if (!props.canBeDropped) {
     draggingItem.value = null
     currentTarget.value = null
@@ -247,26 +238,26 @@ const changeExpandStatus = (
   type: 'open' | 'close' | null = null
 ) => {
   // @ts-expect-error loginStore is js store
-  const index = loginStore.trialBalanceCollapseId.indexOf(id)
+  const index = loginStore.chartOfAccountsCollapseId.indexOf(id)
 
   if (type === 'open') {
+    if (index >= 0) loginStore.chartOfAccountsCollapseId.splice(index, 1)
+  } else if (type === 'close') {
     if (index < 0) {
       // @ts-expect-error loginStore is js store
-      loginStore.trialBalanceCollapseId.push(id)
+      loginStore.chartOfAccountsCollapseId.push(id)
     }
-  } else if (type === 'close') {
-    if (index >= 0) loginStore.trialBalanceCollapseId.splice(index, 1)
   } else {
-    if (index >= 0) loginStore.trialBalanceCollapseId.splice(index, 1)
+    if (index >= 0) loginStore.chartOfAccountsCollapseId.splice(index, 1)
     // @ts-expect-error loginStore is js store
-    else loginStore.trialBalanceCollapseId.push(id)
+    else loginStore.chartOfAccountsCollapseId.push(id)
   }
 }
 
 const expandStatus = computed(() => {
   const newTotalObjStatus =
     // @ts-expect-error loginStore is js store
-    props.row.id && loginStore.trialBalanceCollapseId.includes(props.row.id)
+    props.row.id && loginStore.chartOfAccountsCollapseId.includes(props.row.id)
   return !newTotalObjStatus
 })
 </script>
