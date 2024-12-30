@@ -129,7 +129,11 @@
           v-if="
             !(config.hide_zero_transactions && account.total_transactions === 0)
           "
-          :draggable="checkPermissions('AccountModify') ? true : false"
+          :draggable="
+            checkPermissions('AccountModify') && !config.hide_categories
+              ? true
+              : false
+          "
           :class="{
             'bg-gray-100':
               draggingItem &&

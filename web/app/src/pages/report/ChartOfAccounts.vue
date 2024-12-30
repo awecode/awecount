@@ -2,7 +2,8 @@
   <div class="q-pa-md">
     <div class="row justify-end q-mb-md gap-4">
       <q-btn icon="settings" title="Config">
-        <q-badge v-if="Object.values(config).filter(Boolean).length"
+        <q-badge
+          v-if="Object.values(config).filter(Boolean).length"
           floating
           color="primary"
           class="q-p-md"
@@ -291,7 +292,7 @@ const chartOfAccounts = computed(() => {
   ): number => {
     let totalTransactions = 0
 
-    if (categoryAccountsMap[category.id]) {
+    if (!config.value.hide_accounts && categoryAccountsMap[category.id]) {
       totalTransactions += categoryAccountsMap[category.id].reduce(
         (sum, account) => sum + account.total_transactions,
         0
