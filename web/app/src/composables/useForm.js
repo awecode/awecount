@@ -23,6 +23,7 @@ export default (endpoint, config) => {
 
   const isModal = !!root?.attrs['is-modal']
   let editId = root?.attrs['edit-id']?.toString()
+  let defaultFieldsData = root?.attrs['default-fields'] || {}
   const store = useLoginStore()
   const modalFormLoading = useModalFormLoading()
   const today = new Date().toISOString().substring(0, 10)
@@ -83,6 +84,12 @@ export default (endpoint, config) => {
         (data) => {
           if (data.fields) {
             if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
+          }
+
+          if (defaultFieldsData) {
+            for (const key in defaultFieldsData) {
+              fields.value[key] = defaultFieldsData[key]
+            }
           }
 
           // From drop down branch

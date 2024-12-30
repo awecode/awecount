@@ -37,6 +37,8 @@
             :row="row"
             @drag-event="handleDragEvent"
             @edit-row="editRow"
+            @add-category="handleAddCategoryEmitEvent"
+            @add-account="handleAddAccountEmitEvent"
             v-model:currentTarget="currentTarget"
             v-model:draggingItem="draggingItem"
             :can-be-dropped="canBeDropped"
@@ -82,6 +84,7 @@
           @modalSignal="onCategoryAdd"
           :edit-id="categoryUpdateId"
           @closeModal="closeAccountModal()"
+          :default-fields="addCategoryDefaults"
         />
       </q-card>
     </q-dialog>
@@ -93,6 +96,7 @@
           @modalSignal="onAccountAdd"
           :edit-id="accountUpdateId"
           @closeModal="closeAccountModal()"
+          :default-fields="addAccountDefaults"
         />
       </q-card>
     </q-dialog>
@@ -371,6 +375,7 @@ const canBeDropped = computed(() => {
 
 const addCategoryModalOpen = ref(false)
 const categoryUpdateId = ref<number | null>(null)
+const addCategoryDefaults = ref({})
 function onCategoryAdd() {
   fetchCategoryTree()
   closeCategoryModal()
@@ -383,6 +388,7 @@ function closeCategoryModal() {
 
 const addAccountModalOpen = ref(false)
 const accountUpdateId = ref<number | null>(null)
+const addAccountDefaults = ref({})
 function onAccountAdd() {
   fetchAccounts()
   closeAccountModal()
@@ -401,5 +407,15 @@ function editRow(type: 'category' | 'account', id: number) {
     accountUpdateId.value = id
     addAccountModalOpen.value = true
   }
+}
+
+function handleAddCategoryEmitEvent(id: number) {
+  addCategoryModalOpen.value = true
+  addCategoryDefaults.value = { parent: id }
+}
+
+function handleAddAccountEmitEvent(id: number) {
+  addAccountModalOpen.value = true
+  addAccountDefaults.value = { category: id }
 }
 </script>

@@ -65,17 +65,43 @@
     <td></td>
     <td>{{ row.code }}</td>
     <td>{{ row.system_code }}</td>
-    <td>{{ row.total_transactions }}</td>
-    <td>
-      <q-btn
-        v-if="checkPermissions('CategoryModify') && row.id"
-        dense
+    <td>{{ row.id !== 0 ? row.total_transactions : '' }}</td>
+    <td class="text-center">
+      <q-btn-dropdown
+        v-if="row.id"
+        v-model="dropdown"
+        class="text-blue-6"
         flat
         round
-        icon="edit"
-        class="text-blue-6"
-        @click="editRow('category', row.id)"
-      />
+        dropdown-icon="more_vert"
+      >
+        <q-list>
+          <q-item
+            v-if="checkPermissions('CategoryModify')"
+            clickable
+            v-close-popup
+            @click="editRow('category', row.id)"
+          >
+            <q-item-section>Edit Category</q-item-section>
+          </q-item>
+          <q-item
+            v-if="checkPermissions('CategoryCreate')"
+            clickable
+            v-close-popup
+            @click="addSubCategory(row.id)"
+          >
+            <q-item-section>Add Sub-Category</q-item-section>
+          </q-item>
+          <q-item
+            v-if="checkPermissions('AccountCreate')"
+            clickable
+            v-close-popup
+            @click="addAccount(row.id)"
+          >
+            <q-item-section>Add Account</q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
     </td>
   </tr>
   <template v-if="expandStatus">
@@ -84,6 +110,8 @@
       :key="child.id"
       :row="child"
       @drag-event="$emit('drag-event', $event)"
+      @add-category="$emit('add-category', $event)"
+      @add-account="$emit('add-account', $event)"
       v-model:current-target="currentTarget"
       v-model:draggingItem="draggingItem"
       :canBeDropped="canBeDropped"
@@ -127,13 +155,14 @@
       <td>{{ account.id }}</td>
       <td>{{ account.system_code }}</td>
       <td>{{ account.total_transactions }}</td>
-      <td>
+      <td class="text-center">
         <q-btn
           v-if="checkPermissions('AccountModify')"
           dense
           flat
           round
           icon="edit"
+          size="sm"
           class="text-blue-6"
           @click="editRow('account', account.id)"
         />
@@ -170,7 +199,12 @@ interface CategoryTree {
   parent_id: number
 }
 
-const emit = defineEmits(['drag-event', 'edit-row'])
+const emit = defineEmits([
+  'drag-event',
+  'edit-row',
+  'add-category',
+  'add-account',
+])
 
 const props = defineProps({
   row: {
@@ -291,5 +325,15 @@ const editRow = (type: 'category' | 'account', id: number) => {
 
 function handleEditRowEmit(type: 'category' | 'account', id: number) {
   emit('edit-row', type, id)
+}
+
+const dropdown = ref(false)
+
+const addSubCategory = (id: number) => {
+  emit('add-category', id)
+}
+
+const addAccount = (id: number) => {
+  emit('add-account', id)
 }
 </script>
