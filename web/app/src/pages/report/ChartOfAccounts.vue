@@ -15,8 +15,6 @@
             v-for="row in chartOfAccounts"
             :key="row.id"
             :row="row"
-            :expandedRows="expandedRows"
-            @toggle-expand="toggleExpand"
             @drag-event="handleDragEvent"
             v-model="currentTarget"
             v-model:draggingItem="draggingItem"
@@ -210,18 +208,6 @@ const chartOfAccounts = computed(() => {
 
   return categoriesCopy
 })
-
-const expandedRows = ref<Record<number, boolean>>({})
-
-const toggleExpand = (id: number, type: 'open' | 'close' | undefined) => {
-  if (type === 'open') {
-    expandedRows.value[id] = true
-  } else if (type === 'close') {
-    expandedRows.value[id] = false
-  } else {
-    expandedRows.value[id] = !expandedRows.value[id]
-  }
-}
 
 const handleDragEvent = ({
   source,

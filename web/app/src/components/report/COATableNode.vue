@@ -38,8 +38,8 @@
         flat
         round
         class="expand-btn"
-        :class="expandedRows[row.id] ? 'expanded' : ''"
-        @click="$emit('toggle-expand', row.id)"
+        :class="expandStatus ? 'expanded' : ''"
+        @click="changeExpandStatus(row.id)"
         v-if="row.isExpandable"
       >
         <svg
@@ -63,13 +63,12 @@
     <td>{{ row.system_code }}</td>
     <td>{{ row.total_transactions }}</td>
   </tr>
-  <template v-if="expandedRows[row.id]">
+  <template v-if="expandStatus">
     <COATableNode
       v-for="child in row.children"
       :key="child.id"
       :row="child"
       :expandedRows="expandedRows"
-      @toggle-expand="emitToggleExpand"
       @drag-event="$emit('drag-event', $event)"
       v-model="currentTarget"
       v-model:draggingItem="draggingItem"
@@ -113,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import { useLoginStore } from 'src/stores/login-info'
 import { PropType, ref } from 'vue'
 
 interface Account {
@@ -139,14 +139,8 @@ interface CategoryTree {
 }
 
 const emit = defineEmits([
-  'toggle-expand',
   'drag-event',
-  'clear-current-target',
 ])
-
-function emitToggleExpand(id: number, action: 'open' | 'close' | undefined) {
-  emit('toggle-expand', id, action)
-}
 
 const props = defineProps({
   row: {
@@ -182,7 +176,7 @@ const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
 function startToggleExpandTimeout(id: number) {
   stopToggleExpandTimeout()
   toggleExpandTimeout.value = setTimeout(() => {
-    emit('toggle-expand', id, 'open')
+    changeExpandStatus(id, 'open')
   }, 1000)
 }
 
@@ -266,4 +260,34 @@ const handleDrop = (target: DragItem | null) => {
 
   draggingItem.value = null
 }
+
+const loginStore = useLoginStore()
+
+const changeExpandStatus = (
+  id: number,
+  type: 'open' | 'close' | null = null
+) => {
+  // @ts-expect-error loginStore is js store
+  const index = loginStore.trialBalanceCollapseId.indexOf(id)
+
+  if (type === 'open') {
+    if (index < 0) {
+      // @ts-expect-error loginStore is js store
+      loginStore.trialBalanceCollapseId.push(id)
+    }
+  } else if (type === 'close') {
+    if (index >= 0) loginStore.trialBalanceCollapseId.splice(index, 1)
+  } else {
+    if (index >= 0) loginStore.trialBalanceCollapseId.splice(index, 1)
+    // @ts-expect-error loginStore is js store
+    else loginStore.trialBalanceCollapseId.push(id)
+  }
+}
+
+const expandStatus = computed(() => {
+  const newTotalObjStatus =
+    // @ts-expect-error loginStore is js store
+    props.row.id && loginStore.trialBalanceCollapseId.includes(props.row.id)
+  return !newTotalObjStatus
+})
 </script>
