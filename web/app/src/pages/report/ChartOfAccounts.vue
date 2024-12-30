@@ -1,6 +1,35 @@
 <template>
   <div class="q-pa-md">
     <div class="row justify-end q-mb-md gap-4">
+      <q-btn icon="settings" title="Config">
+        <q-menu>
+          <div class="menu-wrapper" style="width: min(300px, 90vw)">
+            <div style="border-bottom: 1px solid lightgrey">
+              <h6 class="q-ma-md text-grey-9">Config</h6>
+            </div>
+            <div class="q-ma-sm">
+              <div class="q-pb-sm">
+                <q-checkbox
+                  v-model="config.hide_accounts"
+                  label="Hide Accounts?"
+                ></q-checkbox>
+              </div>
+              <div class="q-pb-sm">
+                <q-checkbox
+                  v-model="config.hide_categories"
+                  label="Hide Categories?"
+                ></q-checkbox>
+              </div>
+              <div class="q-pb-sm">
+                <q-checkbox
+                  v-model="config.hide_zero_transactions"
+                  label="Hide accounts/categories without transactions?"
+                ></q-checkbox>
+              </div>
+            </div>
+          </div>
+        </q-menu>
+      </q-btn>
       <q-btn
         v-if="checkPermissions('AccountCreate')"
         color="green"
@@ -34,19 +63,24 @@
           </tr>
         </thead>
         <tbody>
-          <COATableNode
-            v-for="row in chartOfAccounts"
-            :key="`coa-node-${row.id}`"
-            :row="row"
-            @drag-event="handleDragEvent"
-            @edit-row="editRow"
-            @add-category="handleAddCategoryEmitEvent"
-            @add-account="handleAddAccountEmitEvent"
-            v-model:currentTarget="currentTarget"
-            v-model:draggingItem="draggingItem"
-            :can-be-dropped="canBeDropped"
-            root
-          />
+          <template v-for="row in chartOfAccounts" :key="`coa-node-${row.id}`">
+            <COATableNode
+              v-if="
+                row.id === 0 ||
+                !(config.hide_zero_transactions && row.total_transactions === 0)
+              "
+              :row="row"
+              @drag-event="handleDragEvent"
+              @edit-row="editRow"
+              @add-category="handleAddCategoryEmitEvent"
+              @add-account="handleAddAccountEmitEvent"
+              v-model:currentTarget="currentTarget"
+              v-model:draggingItem="draggingItem"
+              :can-be-dropped="canBeDropped"
+              :config="config"
+              root
+            />
+          </template>
         </tbody>
       </table>
     </q-markup-table>
@@ -144,6 +178,18 @@ type DragItem =
       type: 'account'
       row: Account
     }
+
+type Config = {
+  hide_accounts: boolean
+  hide_categories: boolean
+  hide_zero_transactions: boolean
+}
+
+const config = ref<Config>({
+  hide_accounts: false,
+  hide_categories: false,
+  hide_zero_transactions: false,
+})
 
 useMeta({
   title: 'Chart of Accounts | Awecount',

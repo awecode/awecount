@@ -1,5 +1,6 @@
 <template>
   <tr
+    v-if="!config.hide_categories"
     class="hover:bg-gray-50"
     :class="{
       'bg-gray-100':
@@ -106,69 +107,82 @@
     </td>
   </tr>
   <template v-if="expandStatus">
-    <COATableNode
-      v-for="child in row.children"
-      :key="`coa-child-${child.id}`"
-      :row="child"
-      @drag-event="$emit('drag-event', $event)"
-      @add-category="$emit('add-category', $event)"
-      @add-account="$emit('add-account', $event)"
-      v-model:current-target="currentTarget"
-      v-model:draggingItem="draggingItem"
-      :canBeDropped="canBeDropped"
-      @edit-row="handleEditRowEmit"
-    />
-    <tr
-      v-for="account in row.accounts"
-      :key="account.id"
-      :draggable="checkPermissions('AccountModify') ? true : false"
-      :class="{
-        'bg-gray-100':
-          draggingItem &&
-          currentTarget &&
-          account.id === currentTarget.row.id &&
-          currentTarget.type === 'account' &&
-          canBeDropped,
-      }"
-      @dragstart="handleDragStart({ type: 'account', row: account })"
-      @dragover.prevent
-      @dragend="handleDragEnd"
-      @drop="
-        handleDrop({
-          type: 'account',
-          row: account,
-        })
-      "
-      @dragenter="handleDragEnter({ type: 'account', row: account })"
-    >
-      <td :style="`padding-left: ${15 + 30 * ((row.level || 0) + 1)}px`">
-        <RouterLink
-          target="_blank"
-          style="text-decoration: none"
-          :to="`/account/${account.id}/view/`"
-          class="text-blue-7 text-italic text-weight-regular"
-          >{{ account.name }}</RouterLink
+    <template v-for="child in row.children" :key="`coa-child-${child.id}`">
+      <COATableNode
+        v-if="
+          !(config.hide_zero_transactions && child.total_transactions === 0)
+        "
+        :row="child"
+        @drag-event="$emit('drag-event', $event)"
+        @add-category="$emit('add-category', $event)"
+        @add-account="$emit('add-account', $event)"
+        v-model:current-target="currentTarget"
+        v-model:draggingItem="draggingItem"
+        :canBeDropped="canBeDropped"
+        @edit-row="handleEditRowEmit"
+        :config="config"
+      />
+    </template>
+    <template v-if="!config.hide_accounts">
+      <template v-for="account in row.accounts" :key="account.id">
+        <tr
+          v-if="
+            !(config.hide_zero_transactions && account.total_transactions === 0)
+          "
+          :draggable="checkPermissions('AccountModify') ? true : false"
+          :class="{
+            'bg-gray-100':
+              draggingItem &&
+              currentTarget &&
+              account.id === currentTarget.row.id &&
+              currentTarget.type === 'account' &&
+              canBeDropped,
+          }"
+          @dragstart="handleDragStart({ type: 'account', row: account })"
+          @dragover.prevent
+          @dragend="handleDragEnd"
+          @drop="
+            handleDrop({
+              type: 'account',
+              row: account,
+            })
+          "
+          @dragenter="handleDragEnter({ type: 'account', row: account })"
         >
-      </td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>{{ account.id }}</td>
-      <td>{{ account.system_code }}</td>
-      <td>{{ account.total_transactions }}</td>
-      <td class="text-center">
-        <q-btn
-          v-if="checkPermissions('AccountModify')"
-          dense
-          flat
-          round
-          icon="edit"
-          size="sm"
-          class="text-blue-6"
-          @click="editRow('account', account.id)"
-        />
-      </td>
-    </tr>
+          <td
+            :style="`padding-left: ${
+              15 + (!config.hide_categories ? 30 * ((row.level || 0) + 1) : 0)
+            }px`"
+          >
+            <RouterLink
+              target="_blank"
+              style="text-decoration: none"
+              :to="`/account/${account.id}/view/`"
+              class="text-blue-7 text-italic text-weight-regular"
+              >{{ account.name }}</RouterLink
+            >
+          </td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>{{ account.id }}</td>
+          <td>{{ account.system_code }}</td>
+          <td>{{ account.total_transactions }}</td>
+          <td class="text-center">
+            <q-btn
+              v-if="checkPermissions('AccountModify')"
+              dense
+              flat
+              round
+              icon="edit"
+              size="sm"
+              class="text-blue-6"
+              @click="editRow('account', account.id)"
+            />
+          </td>
+        </tr>
+      </template>
+    </template>
   </template>
 </template>
 
@@ -218,6 +232,10 @@ const props = defineProps({
   },
   canBeDropped: {
     type: Boolean,
+    required: true,
+  },
+  config: {
+    type: Object,
     required: true,
   },
 })
