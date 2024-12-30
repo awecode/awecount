@@ -344,41 +344,49 @@ const canBeDropped = computed(() => {
   const { type: draggingType, row: draggingRow } = draggingItem.value
   const { type: targetType, row: targetRow } = currentTarget.value
 
+  if (
+    (targetType === 'category' && !checkPermissions('CategoryModify')) ||
+    (targetType === 'account' && !checkPermissions('AccountModify'))
+  ) {
+    return false
+  }
+
   if (draggingType === 'category') {
     if (targetType === 'category') {
       if (
         targetRow.tree_id === draggingRow.tree_id &&
         targetRow.level! > draggingRow.level!
-      )
+      ) {
         return false
-      if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0)
+      }
+      if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0) {
         return false
+      }
     } else if (targetType === 'account') {
       return false
     }
   } else if (draggingType === 'account') {
     if (
-      targetType === 'account' &&
-      targetRow.category_id === draggingRow.category_id
-    )
+      (targetType === 'account' &&
+        targetRow.category_id === draggingRow.category_id) ||
+      (targetType === 'category' && targetRow.id === draggingRow.category_id)
+    ) {
       return false
-    if (targetType === 'category' && targetRow.id === draggingRow.category_id)
-      return false
+    }
   }
 
   if (
     (draggingType === 'account' ||
-      draggingRow.level == 0 ||
-      !draggingItem.value.row.default) &&
+      draggingRow.level === 0 ||
+      !draggingRow.default) &&
     targetRow.id === 0
-  )
+  ) {
     return false
+  }
 
   const sourceId =
     draggingType === 'category' ? draggingRow.id : draggingRow.category_id
-  if (sourceId === targetRow.id) return false
-
-  return true
+  return sourceId !== targetRow.id
 })
 
 const addCategoryModalOpen = ref(false)
