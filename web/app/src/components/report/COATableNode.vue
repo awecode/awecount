@@ -138,9 +138,7 @@ interface CategoryTree {
   parent_id: number
 }
 
-const emit = defineEmits([
-  'drag-event',
-])
+const emit = defineEmits(['drag-event'])
 
 const props = defineProps({
   row: {
@@ -224,7 +222,12 @@ const handleDrop = (target: DragItem | null) => {
     else if (target.row.id === draggingItem.value.row.parent_id) return
   }
 
-  if (draggingItem.value.type === 'account' && !target) return
+  if (
+    (draggingItem.value.type === 'account' ||
+      draggingItem.value.row.level === 0) &&
+    !target
+  )
+    return
 
   if (
     draggingItem.value.type === 'account' &&
