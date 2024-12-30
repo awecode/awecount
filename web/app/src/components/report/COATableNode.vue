@@ -71,6 +71,7 @@
         v-if="row.id"
         v-model="dropdown"
         class="text-blue-6"
+        size="sm"
         flat
         round
         dropdown-icon="more_vert"
@@ -107,7 +108,7 @@
   <template v-if="expandStatus">
     <COATableNode
       v-for="child in row.children"
-      :key="child.id"
+      :key="`coa-child-${child.id}`"
       :row="child"
       @drag-event="$emit('drag-event', $event)"
       @add-category="$emit('add-category', $event)"

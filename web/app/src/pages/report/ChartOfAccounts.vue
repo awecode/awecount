@@ -20,7 +20,10 @@
     </div>
 
     <q-markup-table>
-      <table class="w-full" style="border-collapse: collapse">
+      <table
+        class="w-full"
+        style="border-collapse: separate; border-spacing: 0"
+      >
         <thead>
           <tr>
             <th colspan="4" class="text-left">Name</th>
@@ -33,7 +36,7 @@
         <tbody>
           <COATableNode
             v-for="row in chartOfAccounts"
-            :key="row.id"
+            :key="`coa-node-${row.id}`"
             :row="row"
             @drag-event="handleDragEvent"
             @edit-row="editRow"
@@ -344,7 +347,8 @@ const canBeDropped = computed(() => {
         targetRow.level! > draggingRow.level!
       )
         return false
-      if (targetRow.id === draggingRow.parent_id) return false
+      if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0)
+        return false
     } else if (targetType === 'account') {
       return false
     }
