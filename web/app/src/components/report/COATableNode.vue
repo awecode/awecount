@@ -6,8 +6,7 @@
       'bg-gray-100':
         draggingItem &&
         currentTarget &&
-        row.id === currentTarget.row.id &&
-        currentTarget.type === 'category' &&
+        row.id === currentTarget.id &&
         canBeDropped,
     }"
     :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
@@ -24,7 +23,7 @@
           : null
       )
     "
-    @dragenter="handleDragEnter({ type: 'category', row })"
+    @dragenter="handleDragEnter(row)"
   >
     <td
       class="flex items-center"
@@ -134,14 +133,6 @@
               ? true
               : false
           "
-          :class="{
-            'bg-gray-100':
-              draggingItem &&
-              currentTarget &&
-              account.id === currentTarget.row.id &&
-              currentTarget.type === 'account' &&
-              canBeDropped,
-          }"
           @dragstart="handleDragStart({ type: 'account', row: account })"
           @dragover.prevent
         >
@@ -248,17 +239,13 @@ type DragItem =
 
 const draggingItem = defineModel<DragItem | null>('draggingItem')
 
-const currentTarget = defineModel<DragItem | null>('currentTarget')
+const currentTarget = defineModel<CategoryTree | null>('currentTarget')
 
 const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
 
 function startToggleExpandTimeout(id: number) {
   toggleExpandTimeout.value = setTimeout(() => {
-    if (
-      !currentTarget.value ||
-      currentTarget.value.type !== 'category' ||
-      currentTarget.value.row.id !== id
-    ) {
+    if (!currentTarget.value || currentTarget.value.id !== id) {
       return
     }
     changeExpandStatus(id, 'open')
@@ -275,11 +262,11 @@ const stopToggleExpandTimeout = () => {
   }
 }
 
-const handleDragEnter = (item: DragItem) => {
+const handleDragEnter = (item: CategoryTree) => {
   currentTarget.value = null
   stopToggleExpandTimeout()
-  if (item.type === 'category' && item.row.id !== draggingItem.value?.row.id) {
-    startToggleExpandTimeout(item.row.id)
+  if (item.id !== draggingItem.value?.row.id) {
+    startToggleExpandTimeout(item.id)
   }
   currentTarget.value = item
 }

@@ -247,7 +247,7 @@ function confirmAction() {
 
 const draggingItem = ref<DragItem | null>()
 
-const currentTarget = ref<DragItem | null>()
+const currentTarget = ref<CategoryTree | null>()
 
 const accounts = ref<Account[]>([])
 const categoryTree = ref<CategoryTree[]>([])
@@ -399,37 +399,31 @@ const canBeDropped = computed(() => {
   if (!draggingItem.value || !currentTarget.value) return false
 
   const { type: draggingType, row: draggingRow } = draggingItem.value
-  const { type: targetType, row: targetRow } = currentTarget.value
+  const targetRow = currentTarget.value
 
   if (
-    (targetType === 'category' && !checkPermissions('CategoryModify')) ||
-    (targetType === 'account' && !checkPermissions('AccountModify'))
+    (draggingItem.value.type === 'category' &&
+      !checkPermissions('CategoryModify')) ||
+    (draggingItem.value.type === 'account' &&
+      !checkPermissions('AccountModify'))
   ) {
     return false
   }
 
   if (draggingType === 'category') {
-    if (targetType === 'category') {
-      if (
-        targetRow.tree_id === draggingRow.tree_id &&
-        targetRow.rght < draggingRow.rght &&
-        targetRow.lft > draggingRow.lft &&
-        targetRow.level! > draggingRow.level!
-      ) {
-        return false
-      }
-      if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0) {
-        return false
-      }
-    } else if (targetType === 'account') {
+    if (
+      targetRow.tree_id === draggingRow.tree_id &&
+      targetRow.rght < draggingRow.rght &&
+      targetRow.lft > draggingRow.lft &&
+      targetRow.level! > draggingRow.level!
+    ) {
+      return false
+    }
+    if (targetRow.id === draggingRow.parent_id || draggingRow.id === 0) {
       return false
     }
   } else if (draggingType === 'account') {
-    if (
-      (targetType === 'account' &&
-        targetRow.category_id === draggingRow.category_id) ||
-      (targetType === 'category' && targetRow.id === draggingRow.category_id)
-    ) {
+    if (targetRow.id === draggingRow.category_id) {
       return false
     }
   }
