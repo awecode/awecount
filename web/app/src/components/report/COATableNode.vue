@@ -197,7 +197,7 @@ const handleDragStart = (item: DragItem) => {
 
 const handleDragEnter = (item: DragItem) => {
   currentTarget.value = null
-  if (item.type === 'category') {
+  if (item.type === 'category' && item.row.id !== draggingItem.value?.row.id) {
     startToggleExpandTimeout(item.row.id)
   }
   currentTarget.value = item

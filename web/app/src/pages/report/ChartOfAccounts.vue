@@ -244,7 +244,7 @@ const handleDragEvent = ({
     }
 
     dragDropConfirmationMessage.value = targetRow
-      ? `Set category '${targetRow.name}'' as parent of category '${sourceRow.name}'?`
+      ? `Set category '${targetRow.name}' as parent of category '${sourceRow.name}'?`
       : `Set category '${sourceRow.name}' as root category?`
   } else {
     const account = findAccountById(chartOfAccounts.value, source.id)
