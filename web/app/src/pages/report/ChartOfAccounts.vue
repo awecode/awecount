@@ -16,43 +16,44 @@
             :key="row.id"
             :row="row"
             @drag-event="handleDragEvent"
-            v-model="currentTarget"
+            v-model:currentTarget="currentTarget"
             v-model:draggingItem="draggingItem"
+            :can-be-dropped="canBeDropped"
             root
           />
         </tbody>
       </table>
     </q-markup-table>
+
+    <q-dialog v-model="dragDropConfirmDialog" class="overflow-visible">
+      <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
+        <q-card-section class="bg-primary text-white flex justify-between">
+          <div class="text-h6 text-white">
+            <span>Are you sure?</span>
+          </div>
+          <q-btn
+            icon="close"
+            class="text-red-700 bg-slate-200 opacity-95"
+            flat
+            round
+            dense
+            v-close-popup
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-subtitle1">
+            {{ dragDropConfirmationMessage }}
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Confirm" color="primary" @click="confirmAction" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
-
-  <q-dialog v-model="dragDropConfirmDialog" class="overflow-visible">
-    <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
-      <q-card-section class="bg-primary text-white flex justify-between">
-        <div class="text-h6 text-white">
-          <span>Are you sure?</span>
-        </div>
-        <q-btn
-          icon="close"
-          class="text-red-700 bg-slate-200 opacity-95"
-          flat
-          round
-          dense
-          v-close-popup
-        />
-      </q-card-section>
-
-      <q-card-section>
-        <div class="text-subtitle1">
-          {{ dragDropConfirmationMessage }}
-        </div>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Confirm" color="primary" @click="confirmAction" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -124,12 +125,9 @@ function confirmAction() {
     })
 }
 
-const draggingItem = defineModel<DragItem | null>('draggingItem')
+const draggingItem = ref<DragItem | null>()
 
-const currentTarget = ref<{
-  type: 'category' | 'account'
-  id: number
-} | null>(null)
+const currentTarget = ref<DragItem | null>()
 
 const accounts = ref<Account[]>([])
 const categoryTree = ref<CategoryTree[]>([])
@@ -268,4 +266,73 @@ const findAccountById = (rows: CategoryTree[], id: number): Account | null => {
   }
   return null
 }
+
+const canBeDropped = computed(() => {
+  console.log('draggingItem', draggingItem.value)
+  console.log('currentTarget', currentTarget.value)
+  if (!draggingItem.value) return false
+  if (
+    draggingItem.value.type === 'category' &&
+    currentTarget.value?.type === 'category' &&
+    currentTarget.value.row.tree_id === draggingItem.value.row.tree_id &&
+    currentTarget.value.row.level! > draggingItem.value.row.level!
+  ) {
+    return false
+  }
+
+  if (
+    draggingItem.value.type === 'category' &&
+    currentTarget.value?.type === 'category' &&
+    currentTarget.value.row.id === draggingItem.value.row.parent_id
+  ) {
+    return false
+  }
+
+  if (
+    (draggingItem.value.type === 'account' ||
+      draggingItem.value.row.level !== 0) &&
+    currentTarget.value?.row.id === 0
+  ) {
+    return false
+  }
+
+  if (
+    draggingItem.value.type === 'account' &&
+    currentTarget.value?.type === 'account' &&
+    currentTarget.value.row.category_id === draggingItem.value.row.category_id
+  ) {
+    return false
+  }
+
+  if (
+    draggingItem.value.type === 'account' &&
+    currentTarget.value?.type === 'category' &&
+    currentTarget.value.row.id === draggingItem.value.row.category_id
+  ) {
+    return false
+  }
+
+  const sourceId =
+    draggingItem.value.type === 'category'
+      ? draggingItem.value.row.id
+      : draggingItem.value.row.category_id
+  const targetId = currentTarget.value
+    ? currentTarget.value.type === 'account'
+      ? currentTarget.value.row.category_id
+      : currentTarget.value.row.id
+    : null
+
+  if (sourceId === targetId) {
+    return false
+  }
+
+  return true
+})
+
+watch(
+  () => canBeDropped.value,
+  (newValue) => {
+    console.log('canBeDropped', newValue)
+  }
+)
 </script>

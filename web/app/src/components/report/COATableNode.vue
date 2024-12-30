@@ -5,8 +5,9 @@
       'bg-gray-100':
         draggingItem &&
         currentTarget &&
-        row.id === currentTarget.id &&
-        currentTarget.type === 'category',
+        row.id === currentTarget.row.id &&
+        currentTarget.type === 'category' &&
+        canBeDropped,
     }"
     draggable="true"
     @dragstart="handleDragStart({ type: 'category', row })"
@@ -72,10 +73,10 @@
       v-for="child in row.children"
       :key="child.id"
       :row="child"
-      :expandedRows="expandedRows"
       @drag-event="$emit('drag-event', $event)"
-      v-model="currentTarget"
+      v-model:current-target="currentTarget"
       v-model:draggingItem="draggingItem"
+      :canBeDropped="canBeDropped"
     />
     <tr
       v-for="account in row.accounts"
@@ -85,8 +86,9 @@
         'bg-gray-100':
           draggingItem &&
           currentTarget &&
-          account.id === currentTarget.id &&
-          currentTarget.type === 'account',
+          account.id === currentTarget.row.id &&
+          currentTarget.type === 'account' &&
+          canBeDropped,
       }"
       @dragstart="handleDragStart({ type: 'account', row: account })"
       @dragover.prevent
@@ -153,13 +155,13 @@ const props = defineProps({
     type: Object as PropType<CategoryTree>,
     required: true,
   },
-  expandedRows: {
-    type: Object as PropType<Record<number, boolean>>,
-    required: true,
-  },
   root: {
     type: Boolean,
     default: false,
+  },
+  canBeDropped: {
+    type: Boolean,
+    required: true,
   },
 })
 
@@ -175,10 +177,7 @@ type DragItem =
 
 const draggingItem = defineModel<DragItem | null>('draggingItem')
 
-const currentTarget = defineModel<{
-  type: 'category' | 'account'
-  id: number
-} | null>()
+const currentTarget = defineModel<DragItem | null>('currentTarget')
 
 const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
 
@@ -204,10 +203,7 @@ const handleDragEnter = (item: DragItem) => {
   if (item.type === 'category') {
     startToggleExpandTimeout(item.row.id)
   }
-  currentTarget.value = {
-    type: item.type,
-    id: item.row.id,
-  }
+  currentTarget.value = item
 }
 
 const handleDragLeave = () => {
@@ -221,61 +217,27 @@ const handleDragEnd = () => {
 
 const handleDrop = (target: DragItem | null) => {
   stopToggleExpandTimeout()
-  if (!draggingItem.value) return
 
-  if (
-    draggingItem.value.type === 'category' &&
-    target &&
-    target.type === 'category'
-  ) {
-    if (
-      target.row.tree_id === draggingItem.value.row.tree_id &&
-      target.row.level > draggingItem.value.row.level
-    )
-      return
-    else if (target.row.id === draggingItem.value.row.parent_id) return
-  }
-
-  if (
-    (draggingItem.value.type === 'account' ||
-      draggingItem.value.row.level === 0) &&
-    !target
-  )
+  if (!props.canBeDropped) {
+    draggingItem.value = null
+    currentTarget.value = null
     return
-
-  if (
-    draggingItem.value.type === 'account' &&
-    target &&
-    target.type === 'account'
-  ) {
-    if (target.row.category_id === draggingItem.value.row.category_id) return
   }
-
-  if (draggingItem.value.type === 'account' && target!.type === 'category') {
-    if (target!.row.id === draggingItem.value.row.category_id) return
-  }
-
-  const sourceId =
-    draggingItem.value.type === 'category'
-      ? draggingItem.value.row.id
-      : draggingItem.value.row.category_id
-  const targetId = target
-    ? target.type === 'account'
-      ? target.row.category_id
-      : target.row.id
-    : null
-
-  if (sourceId === targetId) return
 
   emit('drag-event', {
     source: {
-      type: draggingItem.value.type,
-      id: draggingItem.value.row.id,
+      type: draggingItem.value!.type,
+      id: draggingItem.value!.row.id,
     },
-    target: targetId,
+    target: target
+      ? target.type === 'account'
+        ? target.row.category_id
+        : target.row.id
+      : null,
   })
 
   draggingItem.value = null
+  currentTarget.value = null
 }
 
 const loginStore = useLoginStore()
