@@ -207,6 +207,8 @@ class CategoryTreeView(APIView):
     action = "list"
 
     def get_queryset(self):
+        if self.request.GET.get("include-empty"):
+            return Category.objects.all()
         return Category.objects.exclude(
             Q(accounts__isnull=True) & Q(children__isnull=True)
         )

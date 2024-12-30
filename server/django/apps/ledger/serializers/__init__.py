@@ -370,7 +370,7 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "children", "code", "system_code", "tree_id"]
+        fields = ["id", "name", "children", "code", "system_code", "tree_id", "default"]
 
 
 class AccountOpeningBalanceListSerializer(serializers.ModelSerializer):
