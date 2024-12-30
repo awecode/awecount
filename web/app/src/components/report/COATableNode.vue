@@ -36,8 +36,8 @@
         :to="`/account/?has_balance=true&category=${row.id}`"
         class="text-blue-6"
         :class="props.root ? 'text-weight-bold' : ''"
-        >{{ row.name }}</RouterLink
-      >
+        >{{ row.name }}
+      </RouterLink>
       <q-btn
         dense
         flat

@@ -268,71 +268,42 @@ const findAccountById = (rows: CategoryTree[], id: number): Account | null => {
 }
 
 const canBeDropped = computed(() => {
-  console.log('draggingItem', draggingItem.value)
-  console.log('currentTarget', currentTarget.value)
-  if (!draggingItem.value) return false
-  if (
-    draggingItem.value.type === 'category' &&
-    currentTarget.value?.type === 'category' &&
-    currentTarget.value.row.tree_id === draggingItem.value.row.tree_id &&
-    currentTarget.value.row.level! > draggingItem.value.row.level!
-  ) {
-    return false
+  if (!draggingItem.value || !currentTarget.value) return false
+
+  const { type: draggingType, row: draggingRow } = draggingItem.value
+  const { type: targetType, row: targetRow } = currentTarget.value
+
+  if (draggingType === 'category') {
+    if (targetType === 'category') {
+      if (
+        targetRow.tree_id === draggingRow.tree_id &&
+        targetRow.level! > draggingRow.level!
+      )
+        return false
+      if (targetRow.id === draggingRow.parent_id) return false
+    } else if (targetType === 'account') {
+      return false
+    }
+  } else if (draggingType === 'account') {
+    if (
+      targetType === 'account' &&
+      targetRow.category_id === draggingRow.category_id
+    )
+      return false
+    if (targetType === 'category' && targetRow.id === draggingRow.category_id)
+      return false
   }
 
   if (
-    draggingItem.value.type === 'category' &&
-    currentTarget.value?.type === 'category' &&
-    currentTarget.value.row.id === draggingItem.value.row.parent_id
-  ) {
+    (draggingType === 'account' || draggingRow.level == 0) &&
+    targetRow.id === 0
+  )
     return false
-  }
-
-  if (
-    (draggingItem.value.type === 'account' ||
-      draggingItem.value.row.level !== 0) &&
-    currentTarget.value?.row.id === 0
-  ) {
-    return false
-  }
-
-  if (
-    draggingItem.value.type === 'account' &&
-    currentTarget.value?.type === 'account' &&
-    currentTarget.value.row.category_id === draggingItem.value.row.category_id
-  ) {
-    return false
-  }
-
-  if (
-    draggingItem.value.type === 'account' &&
-    currentTarget.value?.type === 'category' &&
-    currentTarget.value.row.id === draggingItem.value.row.category_id
-  ) {
-    return false
-  }
 
   const sourceId =
-    draggingItem.value.type === 'category'
-      ? draggingItem.value.row.id
-      : draggingItem.value.row.category_id
-  const targetId = currentTarget.value
-    ? currentTarget.value.type === 'account'
-      ? currentTarget.value.row.category_id
-      : currentTarget.value.row.id
-    : null
-
-  if (sourceId === targetId) {
-    return false
-  }
+    draggingType === 'category' ? draggingRow.id : draggingRow.category_id
+  if (sourceId === targetRow.id) return false
 
   return true
 })
-
-watch(
-  () => canBeDropped.value,
-  (newValue) => {
-    console.log('canBeDropped', newValue)
-  }
-)
 </script>
