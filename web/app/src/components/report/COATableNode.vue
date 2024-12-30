@@ -2,7 +2,11 @@
   <tr
     class="hover:bg-gray-50"
     :class="{
-      'bg-gray-100': draggingItem && row.id === currentTarget,
+      'bg-gray-100':
+        draggingItem &&
+        currentTarget &&
+        row.id === currentTarget.id &&
+        currentTarget.type === 'category',
     }"
     draggable="true"
     @dragstart="handleDragStart({ type: 'category', row })"
@@ -78,7 +82,11 @@
       :key="account.id"
       draggable="true"
       :class="{
-        'bg-gray-100': draggingItem && account.id === currentTarget,
+        'bg-gray-100':
+          draggingItem &&
+          currentTarget &&
+          account.id === currentTarget.id &&
+          currentTarget.type === 'account',
       }"
       @dragstart="handleDragStart({ type: 'account', row: account })"
       @dragover.prevent
@@ -167,7 +175,10 @@ type DragItem =
 
 const draggingItem = defineModel<DragItem | null>('draggingItem')
 
-const currentTarget = defineModel<number | null>()
+const currentTarget = defineModel<{
+  type: 'category' | 'account'
+  id: number
+} | null>()
 
 const toggleExpandTimeout = ref<NodeJS.Timeout | null>(null)
 
@@ -193,7 +204,10 @@ const handleDragEnter = (item: DragItem) => {
   if (item.type === 'category') {
     startToggleExpandTimeout(item.row.id)
   }
-  currentTarget.value = item.row.id
+  currentTarget.value = {
+    type: item.type,
+    id: item.row.id,
+  }
 }
 
 const handleDragLeave = () => {

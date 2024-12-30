@@ -126,7 +126,10 @@ function confirmAction() {
 
 const draggingItem = defineModel<DragItem | null>('draggingItem')
 
-const currentTarget = ref<string | null>(null)
+const currentTarget = ref<{
+  type: 'category' | 'account'
+  id: number
+} | null>(null)
 
 const accounts = ref<Account[]>([])
 const categoryTree = ref<CategoryTree[]>([])
@@ -225,8 +228,8 @@ const handleDragEvent = ({
     }
 
     dragDropConfirmationMessage.value = targetRow
-      ? `Set category ${targetRow.name} as parent of ${sourceRow.name}?`
-      : `Set category ${sourceRow.name} as root category?`
+      ? `Set category '${targetRow.name}'' as parent of category '${sourceRow.name}'?`
+      : `Set category '${sourceRow.name}' as root category?`
   } else {
     const account = findAccountById(chartOfAccounts.value, source.id)
     const targetRow = findRowById(chartOfAccounts.value, target!)
@@ -236,7 +239,7 @@ const handleDragEvent = ({
         return
       }
 
-      dragDropConfirmationMessage.value = `Set category ${account.name} to account ${targetRow.name}?`
+      dragDropConfirmationMessage.value = `Set category '${targetRow.name}' to account '${account.name}'?`
     }
   }
   dragDropConfirmDialog.value = true
