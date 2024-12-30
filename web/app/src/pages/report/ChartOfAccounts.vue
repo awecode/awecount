@@ -114,6 +114,24 @@ function confirmAction() {
     body: data,
   })
     .then(() => {
+      if (dragDropUpdateType.value === 'category') {
+        useApi('/v1/category-tree/', { method: 'GET' })
+          .then((data) => {
+            categoryTree.value = data
+          })
+          .catch((error) => {
+            console.log('err fetching data', error)
+          })
+      } else {
+        useApi('/v1/chart-of-accounts/')
+          .then((data) => {
+            accounts.value = data
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      }
+
       dragDropConfirmDialog.value = false
       dragDropConfirmationMessage.value = ''
       dragDropUpdateItemId.value = null
@@ -204,7 +222,7 @@ const chartOfAccounts = computed(() => {
     total_transactions: 0,
   })
   categoriesCopy.forEach((category: CategoryTree) => {
-    calculateTransactions(category, 0)
+    calculateTransactions(category, 0, category.id)
   })
 
   return categoriesCopy
