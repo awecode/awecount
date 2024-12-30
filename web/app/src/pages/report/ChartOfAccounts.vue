@@ -201,7 +201,7 @@ function fetchAccounts() {
 fetchAccounts()
 
 function fetchCategoryTree() {
-  useApi('/v1/category-tree/', { method: 'GET' })
+  useApi('/v1/category-tree/?include-empty=true', { method: 'GET' })
     .then((data) => {
       categoryTree.value = data
     })
