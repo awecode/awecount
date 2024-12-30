@@ -144,14 +144,6 @@
           }"
           @dragstart="handleDragStart({ type: 'account', row: account })"
           @dragover.prevent
-          @dragend="handleDragEnd"
-          @drop="
-            handleDrop({
-              type: 'account',
-              row: account,
-            })
-          "
-          @dragenter="handleDragEnter({ type: 'account', row: account })"
         >
           <td
             :style="`padding-left: ${
