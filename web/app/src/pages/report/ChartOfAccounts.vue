@@ -104,6 +104,7 @@ interface CategoryTree {
   code: string | null
   system_code: string | null
   tree_id: number
+  default?: boolean
   total_transactions?: number
   accounts?: Account[]
   level?: number
@@ -338,7 +339,7 @@ const canBeDropped = computed(() => {
   }
 
   if (
-    (draggingType === 'account' || draggingRow.level == 0) &&
+    (draggingType === 'account' || draggingRow.level == 0 || !draggingItem.value.row.default) &&
     targetRow.id === 0
   )
     return false
