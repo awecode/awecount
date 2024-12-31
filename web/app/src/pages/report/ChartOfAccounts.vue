@@ -197,7 +197,7 @@ type Config = {
 }
 
 const config = ref<Config>({
-  hide_accounts: true,
+  hide_accounts: false,
   hide_categories: false,
   hide_zero_transactions: false,
 })
