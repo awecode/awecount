@@ -5,3 +5,6 @@ description = "Awesome Account"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[tool.ruff]
+exclude = ["migrations"]
