@@ -303,27 +303,27 @@ const changeExpandStatus = (
   type: 'open' | 'close' | null = null
 ) => {
   // @ts-expect-error loginStore is js store
-  const index = loginStore.chartOfAccountsCollapseId.indexOf(id)
+  const index = loginStore.chartOfAccountsExpandId.indexOf(id)
 
-  if (type === 'open') {
-    if (index >= 0) loginStore.chartOfAccountsCollapseId.splice(index, 1)
-  } else if (type === 'close') {
+  if (type === 'close') {
+    if (index >= 0) loginStore.chartOfAccountsExpandId.splice(index, 1)
+  } else if (type === 'open') {
     if (index < 0) {
       // @ts-expect-error loginStore is js store
-      loginStore.chartOfAccountsCollapseId.push(id)
+      loginStore.chartOfAccountsExpandId.push(id)
     }
   } else {
-    if (index >= 0) loginStore.chartOfAccountsCollapseId.splice(index, 1)
+    if (index >= 0) loginStore.chartOfAccountsExpandId.splice(index, 1)
     // @ts-expect-error loginStore is js store
-    else loginStore.chartOfAccountsCollapseId.push(id)
+    else loginStore.chartOfAccountsExpandId.push(id)
   }
 }
 
 const expandStatus = computed(() => {
   const newTotalObjStatus =
     // @ts-expect-error loginStore is js store
-    props.row.id && loginStore.chartOfAccountsCollapseId.includes(props.row.id)
-  return !newTotalObjStatus
+    props.row.id && loginStore.chartOfAccountsExpandId.includes(props.row.id)
+  return newTotalObjStatus
 })
 
 const editRow = (type: 'category' | 'account', id: number) => {
