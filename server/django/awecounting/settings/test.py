@@ -1,8 +1,5 @@
 import os
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
 from .base import MIDDLEWARE, REST_FRAMEWORK
 
 SECRET_KEY = "secret"
@@ -109,12 +106,3 @@ CORS_ORIGIN_WHITELIST = (
 BASE_URL = "https://awecountant.com/"
 
 EMAIL_SUBJECT_PREFIX = "[AWECOUNTING-TEST] "
-
-sentry_sdk.init(
-    dsn="",
-    integrations=[DjangoIntegration()],
-    enable_tracing=True,
-    traces_sample_rate=0.1,
-    send_default_pii=True,
-    environment="Test",
-)
