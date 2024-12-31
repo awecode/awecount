@@ -1,7 +1,7 @@
 <template>
-  <tr
+  <q-tr
     v-if="!config.hide_categories"
-    class="hover:bg-gray-50"
+    class="hover:bg-gray-50 q-virtual-scroll--skip"
     :class="{
       'bg-gray-100':
         draggingItem &&
@@ -25,7 +25,7 @@
     "
     @dragenter="handleDragEnter(row)"
   >
-    <td
+    <q-td
       class="flex items-center"
       :style="`padding-left: ${15 + 30 * (row.level || 0)}px;`"
     >
@@ -59,14 +59,11 @@
           />
         </svg>
       </q-btn>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>{{ row.code }}</td>
-    <td>{{ row.system_code }}</td>
-    <td>{{ row.id !== 0 ? row.total_transactions : '' }}</td>
-    <td class="text-center">
+    </q-td>
+    <q-td>{{ row.code }}</q-td>
+    <q-td>{{ row.system_code }}</q-td>
+    <q-td>{{ row.id !== 0 ? row.total_transactions : '' }}</q-td>
+    <q-td class="text-center">
       <q-btn-dropdown
         v-if="row.id"
         v-model="dropdown"
@@ -103,8 +100,8 @@
           </q-item>
         </q-list>
       </q-btn-dropdown>
-    </td>
-  </tr>
+    </q-td>
+  </q-tr>
   <template v-if="config.hide_categories || expandStatus">
     <template v-for="child in row.children" :key="`coa-child-${child.id}`">
       <COATableNode
@@ -124,7 +121,8 @@
     </template>
     <template v-if="!config.hide_accounts">
       <template v-for="account in row.accounts" :key="account.id">
-        <tr
+        <q-tr
+          class="q-virtual-scroll--with-prev"
           v-if="
             !(config.hide_zero_transactions && account.total_transactions === 0)
           "
@@ -136,7 +134,7 @@
           @dragstart="handleDragStart({ type: 'account', row: account })"
           @dragover.prevent
         >
-          <td
+          <q-td
             :style="`padding-left: ${
               15 + (!config.hide_categories ? 30 * ((row.level || 0) + 1) : 0)
             }px`"
@@ -148,14 +146,11 @@
               class="text-blue-7 text-italic text-weight-regular"
               >{{ account.name }}</RouterLink
             >
-          </td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td>{{ account.id }}</td>
-          <td>{{ account.system_code }}</td>
-          <td>{{ account.total_transactions }}</td>
-          <td class="text-center">
+          </q-td>
+          <q-td>{{ account.id }}</q-td>
+          <q-td>{{ account.system_code }}</q-td>
+          <q-td>{{ account.total_transactions }}</q-td>
+          <q-td class="text-center">
             <q-btn
               v-if="checkPermissions('AccountModify')"
               dense
@@ -166,8 +161,8 @@
               class="text-blue-6"
               @click="editRow('account', account.id)"
             />
-          </td>
-        </tr>
+          </q-td>
+        </q-tr>
       </template>
     </template>
   </template>

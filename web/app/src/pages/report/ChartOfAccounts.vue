@@ -58,40 +58,37 @@
     </div>
 
     <q-markup-table>
-      <table
+      <q-table
+        :columns="columns"
+        virual-scroll
+        :virtual-scroll-item-size="50"
         class="w-full"
-        style="border-collapse: separate; border-spacing: 0"
+        :rows="chartOfAccounts"
+        :hide-pagination="true"
+        :rows-per-page-options="[0]"
       >
-        <thead>
-          <tr>
-            <th colspan="4" class="text-left">Name</th>
-            <th class="text-left">Code</th>
-            <th class="text-left">System Code</th>
-            <th class="text-left">Total Transactions</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="row in chartOfAccounts" :key="`coa-node-${row.id}`">
-            <COATableNode
-              v-if="
-                row.id === 0 ||
-                !(config.hide_zero_transactions && row.total_transactions === 0)
-              "
-              :row="row"
-              @drag-event="handleDragEvent"
-              @edit-row="editRow"
-              @add-category="handleAddCategoryEmitEvent"
-              @add-account="handleAddAccountEmitEvent"
-              v-model:currentTarget="currentTarget"
-              v-model:draggingItem="draggingItem"
-              :can-be-dropped="canBeDropped"
-              :config="config"
-              root
-            />
-          </template>
-        </tbody>
-      </table>
+        <template v-slot:body="props">
+          <COATableNode
+            v-if="
+              props.row.id === 0 ||
+              !(
+                config.hide_zero_transactions &&
+                props.row.total_transactions === 0
+              )
+            "
+            :row="props.row"
+            @drag-event="handleDragEvent"
+            @edit-row="editRow"
+            @add-category="handleAddCategoryEmitEvent"
+            @add-account="handleAddAccountEmitEvent"
+            v-model:currentTarget="currentTarget"
+            v-model:draggingItem="draggingItem"
+            :can-be-dropped="canBeDropped"
+            :config="config"
+            root
+          />
+        </template>
+      </q-table>
     </q-markup-table>
 
     <q-dialog v-model="dragDropConfirmDialog" class="overflow-visible">
@@ -196,15 +193,71 @@ type Config = {
   hide_zero_transactions: boolean
 }
 
+const route = useRoute()
+const router = useRouter()
+
 const config = ref<Config>({
-  hide_accounts: false,
-  hide_categories: false,
-  hide_zero_transactions: false,
+  hide_accounts: route.query.hide_accounts === 'true',
+  hide_categories: route.query.hide_categories === 'true',
+  hide_zero_transactions: route.query.hide_zero_transactions === 'true',
+})
+
+watchEffect(() => {
+  const newQuery = {
+    ...route.query,
+    hide_accounts: config.value.hide_accounts === true ? 'true' : undefined,
+    hide_categories: config.value.hide_categories === true ? 'true' : undefined,
+    hide_zero_transactions: config.value.hide_zero_transactions === true ? 'true' : undefined,
+  }
+  router.replace({ query: newQuery })
 })
 
 useMeta({
   title: 'Chart of Accounts | Awecount',
 })
+
+const columns = [
+  {
+    name: 'name',
+    required: true,
+    label: 'Name',
+    align: 'left',
+    field: 'name',
+    sortable: true,
+  },
+  {
+    name: 'code',
+    required: true,
+    label: 'Code',
+    align: 'left',
+    field: 'code',
+    sortable: true,
+  },
+  {
+    name: 'system_code',
+    required: true,
+    label: 'System Code',
+    align: 'left',
+    field: 'system_code',
+    sortable: true,
+  },
+  {
+    name: 'total_transactions',
+    required: true,
+    label: 'Total Transactions',
+    align: 'left',
+    field: 'total_transactions',
+    sortable: true,
+  },
+  {
+    name: 'actions',
+    required: true,
+    label: '',
+    align: 'left',
+    field: 'actions',
+    sortable: false,
+  },
+]
 
 const dragDropConfirmDialog = ref(false)
 const dragDropConfirmationMessage = ref('')
@@ -292,7 +345,7 @@ const chartOfAccounts = computed(() => {
   ): number => {
     let totalTransactions = 0
 
-    if (!config.value.hide_accounts && categoryAccountsMap[category.id]) {
+    if (categoryAccountsMap[category.id]) {
       totalTransactions += categoryAccountsMap[category.id].reduce(
         (sum, account) => sum + account.total_transactions,
         0
