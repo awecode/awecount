@@ -10,7 +10,7 @@ class TransactionResource(PrettyNameModelResource):
 
     class Meta:
         model = Transaction
-        fields = ["account", "dr_amount", "cr_amount"]
+        fields = ["account", "dr_amount", "cr_amount", "date"]
         export_order = ["date", *fields]
 
 

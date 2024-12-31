@@ -14,5 +14,5 @@ class ChequeIssueResource(ModelResource):
 
     class Meta:
         model = ChequeIssue
-        fields = ["date", "cheque_no", "issued_to", "amount", "company", "status"]
+        fields = ["date", "cheque_no", "issued_to", "amount", "company", "status", "bank_account"]
         export_order = fields
