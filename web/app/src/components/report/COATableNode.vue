@@ -3,11 +3,8 @@
     v-if="!config.hide_categories"
     class="hover:bg-gray-50 q-virtual-scroll--skip"
     :class="{
-      'bg-gray-100':
-        draggingItem &&
-        currentTarget &&
-        row.id === currentTarget.id &&
-        canBeDropped,
+      'bg-gray-100': canBeDropped,
+      'bg-gray-200': currentTarget && currentTarget.id === row.id && canBeDropped,
     }"
     :draggable="checkPermissions('CategoryModify') && row.id ? true : false"
     @dragstart="handleDragStart({ type: 'category', row })"
@@ -114,7 +111,7 @@
         @add-account="$emit('add-account', $event)"
         v-model:current-target="currentTarget"
         v-model:draggingItem="draggingItem"
-        :canBeDropped="canBeDropped"
+        :droppable-categories="droppableCategories"
         @edit-row="handleEditRowEmit"
         :config="config"
       />
@@ -212,15 +209,20 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  canBeDropped: {
-    type: Boolean,
-    required: true,
+  droppableCategories: {
+    type: Array as PropType<number[]>,
+    required: false,
+    default: () => [],
   },
   config: {
     type: Object,
     required: true,
   },
 })
+
+const canBeDropped = computed(() =>
+  props.droppableCategories.includes(props.row.id)
+)
 
 type DragItem =
   | {
@@ -272,7 +274,7 @@ const handleDragEnd = () => {
 }
 
 const handleDrop = (target: DragItem | null) => {
-  if (!props.canBeDropped) {
+  if (!canBeDropped.value) {
     draggingItem.value = null
     currentTarget.value = null
     return

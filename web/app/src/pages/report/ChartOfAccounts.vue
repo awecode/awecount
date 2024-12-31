@@ -83,7 +83,7 @@
             @add-account="handleAddAccountEmitEvent"
             v-model:currentTarget="currentTarget"
             v-model:draggingItem="draggingItem"
-            :can-be-dropped="canBeDropped"
+            :droppable-categories="droppableCategories"
             :config="config"
             root
           />
@@ -207,7 +207,8 @@ watchEffect(() => {
     ...route.query,
     hide_accounts: config.value.hide_accounts === true ? 'true' : undefined,
     hide_categories: config.value.hide_categories === true ? 'true' : undefined,
-    hide_zero_transactions: config.value.hide_zero_transactions === true ? 'true' : undefined,
+    hide_zero_transactions:
+      config.value.hide_zero_transactions === true ? 'true' : undefined,
   }
   router.replace({ query: newQuery })
 })
@@ -448,20 +449,8 @@ const findAccountById = (rows: CategoryTree[], id: number): Account | null => {
   return null
 }
 
-const canBeDropped = computed(() => {
-  if (!draggingItem.value || !currentTarget.value) return false
-
+const canBeDropped = function (targetRow: CategoryTree) {
   const { type: draggingType, row: draggingRow } = draggingItem.value
-  const targetRow = currentTarget.value
-
-  if (
-    (draggingItem.value.type === 'category' &&
-      !checkPermissions('CategoryModify')) ||
-    (draggingItem.value.type === 'account' &&
-      !checkPermissions('AccountModify'))
-  ) {
-    return false
-  }
 
   if (draggingType === 'category') {
     if (
@@ -493,6 +482,35 @@ const canBeDropped = computed(() => {
   const sourceId =
     draggingType === 'category' ? draggingRow.id : draggingRow.category_id
   return sourceId !== targetRow.id
+}
+
+const droppableCategories = computed(() => {
+  if (!draggingItem.value) return []
+
+  const { type: draggingType, row: draggingRow } = draggingItem.value
+
+  if (
+    (draggingType === 'category' && !checkPermissions('CategoryModify')) ||
+    (draggingType === 'account' && !checkPermissions('AccountModify'))
+  ) {
+    return []
+  }
+
+  const categoryIds = []
+
+  const getDroppableCategoryIds = (rows) => {
+    for (const row of rows) {
+      if (canBeDropped(row)) {
+        categoryIds.push(row.id)
+      }
+      if (row.children && row.children.length > 0) {
+        getDroppableCategoryIds(row.children)
+      }
+    }
+  }
+
+  getDroppableCategoryIds(chartOfAccounts.value)
+  return categoryIds
 })
 
 const addCategoryModalOpen = ref(false)
