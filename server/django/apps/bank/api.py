@@ -12,7 +12,7 @@ from django.db.models.functions import Coalesce
 from django.forms import ValidationError
 from django_filters import rest_framework as filters
 from django_q.tasks import async_task
-from rest_framework import filters as rf_filters
+from rest_framework import filters as rf_filters, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
@@ -1081,7 +1081,7 @@ def reconcile(company_id, statement_transactions, start_date, end_date, account_
         send_mail(header, message, settings.DEFAULT_FROM_EMAIL, [email])
         return e
 
-class ReconciliationViewSet(CRULViewSet):
+class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
     queryset = ReconciliationStatement.objects.all().prefetch_related("rows__transactions").order_by("-end_date")
     serializer_class = ReconciliationStatementSerializer
     model = ReconciliationStatement
