@@ -323,14 +323,14 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
         <template v-slot:body-cell-Debit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-green-500 font-medium">{{ transaction.dr_amount?.toFixed(2) || '-' }}</div>
+              <div class="text-red-500 font-medium">{{ transaction.dr_amount?.toFixed(2) || '-' }}</div>
             </div>
           </td>
         </template>
         <template v-slot:body-cell-Credit="props">
           <td>
             <div v-for="transaction in props.row.statement_transactions" :key="transaction.id" class="text-xs">
-              <div class="text-red-500 font-medium"> {{ transaction.cr_amount?.toFixed(2) }}</div>
+              <div class="text-green-500 font-medium"> {{ transaction.cr_amount?.toFixed(2) }}</div>
             </div>
           </td>
         </template>
@@ -367,7 +367,7 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
                   </div>
 
                   <div v-if="props.row.system_transactions.length" class="text-right w-full"
-                    :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                    :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-green-500' : 'text-red-500'">{{
                       calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '')
                     }}</div>
                 </div>
