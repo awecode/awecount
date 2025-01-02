@@ -46,6 +46,8 @@
             style="font-size: 12px" label="Reconcile" :to="`/bank-reconciliation/reconcile/?account_id=${props.row.account.id}&start_date=${props.row.start_date}&end_date=${props.row.end_date}`" />
           <q-btn v-else-if="checkPermissions('ReconciliationStatementView')" color="blue" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Reconciled"
             disable />
+          <q-btn v-if="checkPermissions('ReconciliationStatementDelete')" color="red" class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn" style="font-size: 12px" label="Delete"
+            @click="deleteStatement(props.row.id)" />
         </q-td>
       </template>
       <template v-slot:body-cell-category="props">
@@ -310,6 +312,38 @@ const fetchUpdatedTransactions = async (id: number) => {
     openUpdateDialog.value = true
   })
 }
+
+
+const deleteStatement = (id: number) => {
+  $q.dialog({
+    title: '<span class="text-red">Delete?</span>',
+    message: 'All the transactions will be unreconciled and the statement will be deleted.',
+    cancel: true,
+    html: true,
+  }).onOk(() => {
+    useApi(`v1/bank-reconciliation/${id}/`, {
+      method: 'DELETE'
+    }).then(() => {
+      $q.notify({
+        color: 'green-6',
+        message: 'Statement deleted successfully',
+        icon: 'check_circle',
+        position: 'top-right',
+      })
+      onFilterUpdate()
+    }).catch((error) => {
+      console.log(error)
+      $q.notify({
+        color: 'red-6',
+        message: 'Failed to delete statement',
+        icon: 'error',
+        position: 'top-right',
+      })
+    })
+  })
+}
+
+
 const loadMore = async (index: number, done: any) => {
   // see if there are more pages
   if (page.value < updatedData.value.pagination.pages) {
@@ -378,6 +412,7 @@ const filterSources = (systemTransactions: SystemTransactionData[]): { source_id
 
   return Array.from(sourceMap.values())
 }
+
 
 
 
