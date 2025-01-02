@@ -337,20 +337,39 @@ const deleteTransactions = async (transactions: StatementTransactionData[]) => {
         <template v-slot:body-cell-SystemTransactions="props">
           <td>
             <div>
-              <div v-if="props.row.system_transactions.length" class="flex justify-between">
+              <div v-if="props.row.system_transactions.length" class="flex justify-between items-center">
                 <div>
-                  <span v-for="source, index in filterSources(props.row.system_transactions)" :key="source.source_id">
+                  <div v-for="source, index in filterSources(props.row.system_transactions)" :key="source.source_id">
                     <router-link target="_blank" :to="source.url" class="text-blue-800 decoration-none text-xs">
                       {{ source.source_type }}
                     </router-link>
                     <span v-if="index < filterSources(props.row.system_transactions).length - 1">, </span>
-                  </span>
+                  </div>
                 </div>
                 <div class="px-4 py-2  font-medium">
+                  <div class="space-y-1" style="border-bottom: 1px solid gray;">
+                    <div v-for="transactionData in props.row.system_transactions" :key="transactionData.id">
+                      <div v-for="counterpart in transactionData.counterpart_accounts" :key="counterpart.account_id" class="flex justify-between items-center text-xs">
+                        <div class="text-gray-700 truncate pr-2">
+                          {{ counterpart.account_name }}
+                        </div>
 
-                  <span v-if="props.row.system_transactions.length" :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
-                    calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '')
-                  }}</span>
+                        <div class="flex space-x-2">
+                          <span v-if="counterpart.dr_amount" class="text-red-600 font-medium">
+                            -{{ counterpart.dr_amount }}
+                          </span>
+                          <span v-if="counterpart.cr_amount" class="text-green-600 font-medium">
+                            +{{ counterpart.cr_amount }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="props.row.system_transactions.length" class="text-right w-full"
+                    :class="Number(calculateTotalFromCounterparts(props.row.system_transactions)) < 0 ? 'text-red-500' : 'text-green-500'">{{
+                      calculateTotalFromCounterparts(props.row.system_transactions).replaceAll('-', '')
+                    }}</div>
                 </div>
               </div>
               <div v-else class="px-4 py-2  font-medium">
