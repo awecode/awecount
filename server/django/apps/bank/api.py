@@ -1118,14 +1118,14 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         """
         start_date = params.get('start_date')
         end_date = params.get('end_date')
-        status = params.get('status')
+        status = params.getlist('status')
         search = params.get('search')
         
         filters = Q()
 
         # Filter by status
         if status:
-                filters &= Q(status=status)
+                filters &= Q(status__in=status)
 
         # Search by description, amount, or date
         if search:
