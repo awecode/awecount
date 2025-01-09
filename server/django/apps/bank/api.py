@@ -1112,38 +1112,6 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         'end_date',
     ]
     
-    def filter_rows(self, rows, params):
-        """
-        Apply filtering logic to the rows queryset based on request parameters.
-        """
-        start_date = params.get('start_date')
-        end_date = params.get('end_date')
-        status = params.getlist('status')
-        search = params.get('search')
-        
-        filters = Q()
-
-        # Filter by status
-        if status:
-                filters &= Q(status__in=status)
-
-        # Search by description, amount, or date
-        if search:
-            filters &= (
-                Q(description__icontains=search) |
-                Q(dr_amount__icontains=search) |
-                Q(cr_amount__icontains=search) |
-                Q(date__icontains=search)
-            )
-
-        # Filter by date range
-        if start_date or end_date:
-            if not (start_date and end_date):
-                raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
-            filters &= Q(date__range=[start_date, end_date])
-            
-        rows = rows.filter(filters)
-        return rows
 
     def merge_transactions(self, statement_transactions, system_transactions):
         # Convert querysets to lists to avoid repeated database queries
@@ -1267,13 +1235,45 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Filter rows based on query parameters
-        filtered_rows = self.filter_rows(instance.rows, request.query_params)
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        statuses = request.query_params.getlist('status')
+        search_term = request.query_params.get('search')
+        
+        filters = Q()
+
+        if statuses:
+            filters &= Q(status__in=statuses)
+
+        if search_term:
+            filters &= (
+                Q(description__icontains=search_term) |
+                Q(dr_amount__icontains=search_term) |
+                Q(cr_amount__icontains=search_term) |
+                Q(date__icontains=search_term)
+            )
+
+        if start_date or end_date:
+            if not (start_date and end_date):
+                raise ValidationError({"detail": "Both 'start_date' and 'end_date' must be provided for date filtering."})
+            filters &= Q(date__range=[start_date, end_date])
+        
+        filtered_rows = instance.rows.filter(filters) if filters else instance.rows.all()
 
         matching_statement_ids = filtered_rows.values_list("pk", flat=True)
+        transaction_ids = filtered_rows.values_list("transactions__transaction_id", flat=True)
+
+        filtered_statement_ids = ReconciliationRow.objects.filter(
+            statement__company=request.company,
+            statement__account_id=instance.account_id,
+            transactions__transaction_id__in=transaction_ids,
+        ).values_list("id", flat=True)
+
+        combined_statement_ids = list(set(matching_statement_ids) | set(filtered_statement_ids))
+
         bank_statements = (
             instance.rows
-            .filter(pk__in=matching_statement_ids)
+            .filter(pk__in=combined_statement_ids)
             .values("id")
             .annotate(
                 grouped_statements=ArrayAgg("id", distinct=True),
@@ -1284,6 +1284,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         )
 
         return self.get_paginated_merged_transactions(bank_statements, request.company, instance.account_id)
+
 
     @action(detail=True, url_path="statement-info")
     def get_statement_info(self, request, pk):
