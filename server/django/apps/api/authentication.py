@@ -5,27 +5,6 @@ from rest_framework.authentication import get_authorization_header
 from apps.api.models import APIKey
 
 
-class APIUser:
-    is_api = True
-    api_key = None
-    is_active = False
-
-    def __init__(self, api_key: APIKey):
-        self.api_key = api_key
-        self.is_active = not api_key.revoked
-
-    def __str__(self):
-        return "APIUser"
-
-    @property
-    def is_anonymous(self):
-        return False
-
-    @property
-    def is_authenticated(self):
-        return self.is_active
-
-
 class APIKeyAuthentication(authentication.BaseAuthentication):
     """
     API Key authentication.
@@ -65,9 +44,9 @@ class APIKeyAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed(_("Invalid token."))
 
         if not is_valid:
-            raise exceptions.AuthenticationFailed(_("User inactive or deleted."))
+            raise exceptions.AuthenticationFailed(_("API key is not valid."))
 
-        return APIUser(api_key), None
+        return api_key.user, None
 
     def authenticate_header(self, request, *args, **kwargs):
         return self.keyword

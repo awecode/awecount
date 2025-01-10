@@ -1,11 +1,11 @@
 import typing
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.company.models import get_default_permissions
 from lib.models.mixins import TimeAuditModel
 
 from .crypto import KeyGenerator
@@ -63,23 +63,11 @@ class APIKeyManager(models.Manager):
 class APIKey(TimeAuditModel):
     objects = APIKeyManager()
 
-    company = models.ForeignKey(
-        "company.Company",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
+    user = models.ForeignKey( settings.AUTH_USER_MODEL, on_delete=models.CASCADE )
 
     id = models.UUIDField(primary_key=True, editable=False)
     prefix = models.CharField(max_length=8, unique=True, editable=False)
     hashed_key = models.CharField(max_length=150, editable=False)
-
-    permissions = models.JSONField(
-        default=get_default_permissions,
-        blank=True,
-        null=True,
-        help_text=_("A JSON object that defines the permissions for this API key."),
-    )
 
     name = models.CharField(
         max_length=50,
