@@ -5,6 +5,7 @@ from django.db.models import F
 from apps.ledger.serializers import AccountMinSerializer, PartyMinSerializer
 from awecount.libs.CustomViewSet import GenericSerializer
 from awecount.libs.serializers import StatusReversionMixin
+from django.db.models import Q, Count
 
 from .models import (
     BankAccount,
@@ -250,8 +251,11 @@ class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     
     def get_has_updated_rows(self, obj):
         # find if there are any rows that have been updated
-        return obj.rows.filter(
-            transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
+        return obj.rows.annotate(
+            transaction_count=Count('transactions')
+        ).filter(
+            Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True) | 
+            Q(transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at'))
         ).exists()
 
     class Meta:

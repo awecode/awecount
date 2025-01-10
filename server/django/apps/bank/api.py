@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import Case, F, OuterRef, Q, Subquery, When
+from django.db.models import Case, F, OuterRef, Q, Subquery, When, Count
 from django.db.models.functions import Coalesce
 from django.forms import ValidationError
 from django_filters import rest_framework as filters
@@ -17,7 +17,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from django.db.models import Subquery, OuterRef
 
 from apps.aggregator.views import qs_to_xls
 from apps.bank.filters import (
@@ -1930,13 +1929,19 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
     def updated_transactions(self, request, pk):
         data = self.get_object()
 
+        updated_deleted_statement_ids = data.rows.annotate(
+            transaction_count=Count('transactions')
+        ).filter(
+            Q(transaction_count__gt=0) & Q(transactions__transaction__isnull=True) | 
+            Q(transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at'))
+        ).values('id')
+        
+        # Fetch bank statements with updated transactions
         bank_statements = (
             data.rows.filter(
                 statement__company=request.company,
                 statement__account_id=data.account_id,
-                id__in=data.rows.filter(
-                    transactions__transaction_last_updated_at__lt=F('transactions__transaction__updated_at')
-                ).values('id')
+                id__in=updated_deleted_statement_ids
             )
             .values("id")
             .annotate(

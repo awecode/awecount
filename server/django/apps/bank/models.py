@@ -505,7 +505,7 @@ class ReconciliationRow(models.Model):
 
 
 class ReconciliationRowTransaction(models.Model):
-    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="reconciliation_rows_transactions")
+    transaction = models.ForeignKey(Transaction, null=True, on_delete=models.SET_NULL, related_name="reconciliation_rows_transactions")
     reconciliation_row = models.ForeignKey(
         ReconciliationRow, on_delete=models.CASCADE, related_name="transactions"
     )
