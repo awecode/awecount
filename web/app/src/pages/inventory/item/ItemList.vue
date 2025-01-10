@@ -43,7 +43,16 @@ const {
     </q-dialog>
     <div v-if="checkPermissions('item.create')" class="row justify-end q-gutter-md">
       <q-btn color="green" label="Import From XlS" @click="isItemImportOpen = true" />
-      <q-btn color="green" class="add-btn" :to="`/${$route.params.company}/items/create/`" label="Add Item" icon-right="add" />
+      <q-btn
+        color="green"
+        class="add-btn"
+        :to="{
+          name: 'company-inventory-items-create',
+          params: { company: $route.params.company },
+        }"
+        label="Add Item"
+        icon-right="add"
+      />
     </div>
     <q-table
       v-model:pagination="pagination"
@@ -109,7 +118,7 @@ const {
             class="q-py-none q-px-md font-size-sm q-mr-md l-view-btn"
             style="font-size: 12px"
             label="View"
-            :to="`/${$route.params.company}/items/${props.row.id}/`"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
           />
           <q-btn
             v-if="checkPermissions('item.modify')"
@@ -117,7 +126,7 @@ const {
             class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
             style="font-size: 12px"
             label="edit"
-            :to="`/${$route.params.company}/items/${props.row.id}/`"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
           />
         </q-td>
       </template>
@@ -125,7 +134,7 @@ const {
         <q-td :props="props">
           <router-link
             v-if="checkPermissions('item.view')"
-            :to="`/${$route.params.company}/items/${props.row.id}/`"
+            :to="{ name: 'company-inventory-items-id', params: { company: $route.params.company, id: props.row.id } }"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >
@@ -138,7 +147,7 @@ const {
         <q-td :props="props">
           <router-link
             v-if="props.row.category && checkPermissions('inventorycategory.modify')"
-            :to="`/${$route.params.company}/inventory-category/${props.row.category.id}/`"
+            :to="{ name: 'company-inventory-categories-id', params: { company: $route.params.company, id: props.row.category.id } }"
             style="font-weight: 500; text-decoration: none"
             class="text-blue"
           >
