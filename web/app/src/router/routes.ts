@@ -808,6 +808,14 @@ const companyRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'categories/:id',
+        name: 'company-inventory-categories-id',
+        component: () => import('pages/inventory/product/category/InventoryCategoryForm.vue'),
+        meta: {
+          breadcrumbs: ['Inventory', 'Categories', 'Edit'],
+        },
+      },
+      {
         path: 'categories/:id/edit',
         name: 'company-inventory-categories-id-edit',
         component: () => import('pages/inventory/product/category/InventoryCategoryForm.vue'),
