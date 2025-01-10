@@ -14,24 +14,17 @@ def get_company(request):
 
     company = None
 
-    try:
-        # 1. Try to get company by slug from view kwargs
-        resolver_match = resolve(request.path_info)
-        company_slug = resolver_match.kwargs.get("company_slug")
+    resolver_match = resolve(request.path_info)
+    company_slug = resolver_match.kwargs.get("company_slug")
 
-        if company_slug:
-            company = get_object_or_404(
-                Company,
-                slug=company_slug,
-                company_members__member=request.user,
-            )
-
-        # 2. Check if user is an API user
-        elif getattr(request.user, "is_api", False):
-            company = request.user.company
-
-    except Company.DoesNotExist:
+    if not company_slug:
         return None
+
+    company = get_object_or_404(
+        Company,
+        slug=company_slug,
+        company_members__member=request.user,
+    )
 
     request._cached_company = company
     return request._cached_company
