@@ -1562,43 +1562,7 @@ class ReconciliationViewSet(CRULViewSet, mixins.DestroyModelMixin):
         serializer = TransactionMinSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    # @action(detail=False, url_path="unreconciled-bank-transactions")
-    # def unreconciled_bank_transactions(self, request):
-    #     start_date = request.query_params.get('start_date')
-    #     end_date = request.query_params.get('end_date')
-    #     account_id = request.query_params.get('account_id')
-        
-    #     if not start_date or not end_date or not account_id:
-    #         raise APIException("start_date, end_date and account_id are required")
 
-    #     # Fetch reconciled transaction IDs for the same company, account, and date
-    #     reconciled_transaction_ids = ReconciliationRow.objects.filter(
-    #         statement__company=request.company,
-    #         statement__account_id=account_id,
-    #         status='Reconciled'
-    #     ).values_list('transaction_ids', flat=True)
-
-    #     reconciled_transaction_ids_set = set(chain.from_iterable(reconciled_transaction_ids))
-
-    #     transactions = Transaction.objects.filter(
-    #         company=request.company,
-    #         journal_entry__date__range=[start_date, end_date],
-    #         account_id=account_id
-    #     ).exclude(
-    #         id__in=reconciled_transaction_ids_set
-    #     ).order_by("journal_entry__date").select_related("journal_entry__content_type").prefetch_related(
-    #         "journal_entry__transactions__account",
-    #         "journal_entry__source"
-    #     )
-
-    #     # fetch bank reconciliation entries
-    #     bank_statements = ReconciliationRow.objects.filter(
-    #         statement__company=request.company, statement__account_id=account_id, date__range=[start_date, end_date],
-    #         status__in=['Unreconciled', 'Matched']
-    #     ).order_by("date")
-        
-    #     return Response({ 'system_transactions': TransactionMinSerializer(transactions, many=True).data, 'statement_transactions': ReconciliationEntriesSerializer(bank_statements, many=True).data, 'acceptable_difference':  settings.BANK_RECONCILIATION_TOLERANCE, 'adjustment_threshold': settings.BANK_RECONCILIATION_ADJUSTMENT_THRESHOLD })
-    
     @action(detail=False, methods=["POST"], url_path="reconcile-transactions")
     def reconcile_transactions(self, request):
         statement_ids = request.data.get('statement_ids')
