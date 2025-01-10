@@ -14,15 +14,19 @@ The RBAC system in Awecount provides a flexible and granular permission manageme
 class YourModel(models.Model):
     class PermissionsMeta:
         key = 'model_name'  # Optional, defaults to model name
-        actions = ['view', 'create', 'modify', 'delete', 'custom_action']
+        actions = ['read', 'create', 'update', 'delete', 'custom_action']
 ```
 
-The `get_default_permissions()` function dynamically generates permissions based on model definitions:
+Models without `PermissionsMeta` automatically get all CRUD permissions:
 
-- Scans all registered Django models
-- Looks for `PermissionsMeta` class
-- Validates and normalizes permission actions
-- Returns a structured permission dictionary
+```python
+DEFAULT_CRUD_ACTIONS = {
+    "read": True,
+    "create": True,
+    "update": True,
+    "delete": True,
+}
+```
 
 ### 2. Permission Classes
 
@@ -34,37 +38,29 @@ Handles company-level access control with the following features:
 - Automatic approval for OWNER and ADMIN access levels
 - Maps HTTP methods and view actions to permission actions:
   - POST → create
-  - GET → view
-  - PUT/PATCH → modify
+  - GET → read
+  - PUT/PATCH → update
   - DELETE → delete
-
-#### APIKeyPermission
-
-Manages API-level access with:
-
-- API key validation
-- Permission checking based on model and action
-- Safe method handling
 
 ### 3. Permission Resolution Logic
 
-Both `CompanyMemberPermission` and `APIKeyPermission` share the same logic for resolving actions:
+`CompanyMemberPermission` uses the following logic for resolving actions:
 
 ```python
 DEFAULT_ACTION_MAPPING = {
     "create": "create",
-    "list": "view",
-    "retrieve": "view",
-    "update": "modify",
-    "partial_update": "modify",
+    "list": "read",
+    "retrieve": "read",
+    "update": "update",
+    "partial_update": "update",
     "destroy": "delete",
 }
 
 DEFAULT_METHOD_MAPPING = {
     "POST": "create",
-    "GET": "view",
-    "PUT": "modify",
-    "PATCH": "modify",
+    "GET": "read",
+    "PUT": "update",
+    "PATCH": "update",
     "DELETE": "delete",
 }
 ```
@@ -83,8 +79,6 @@ erDiagram
     User ||--o{ CompanyMember : "is"
     Company ||--o{ CompanyMember : "has"
     CompanyMember ||--|{ Permission : "has"
-    User ||--o{ APIKey : "owns"
-    APIKey ||--|{ Permission : "has"
 
     CompanyMember {
         enum access_level
@@ -97,29 +91,28 @@ erDiagram
         string action
         boolean allowed
     }
-
-    APIKey {
-        json permissions
-        boolean is_active
-    }
 ```
 
 ## Permission Flow
 
 ```mermaid
 flowchart TD
-    A[Request] --> B{CompanyMiddleware}
+    A[Request] --> B[[CompanyMiddleware]]
+
+    subgraph Middleware
     B --> C[Attach Company Context]
-    C --> D{Permission Check}
-    D --> E[CompanyMemberPermission]
-    D --> F[APIKeyPermission]
-    E --> G{Check Access Level}
-    G -->|Owner/Admin| H[Grant Access]
-    G -->|Member| I{Check Specific Permission}
-    F --> J{Validate API Key}
-    J -->|Valid| K{Check Specific Permission}
-    I --> L[Allow/Deny]
-    K --> L
+    end
+
+    subgraph Permission Check
+    C --> D[[CompanyMemberPermission]]
+    D --> E[Check Access Level]
+    end
+
+    subgraph Access Resolution
+    E -->|Owner/Admin| F[Grant Access]
+    E -->|Member| G[Check Model Permissions]
+    G --> H[Allow/Deny]
+    end
 ```
 
 ## Implementation Details
@@ -138,24 +131,7 @@ Permissions are resolved in the following order:
 4. Specific permission check based on:
    - Model name
    - Action type
-   - User role/API key permissions
-
-## Best Practices
-
-1. **Model Permission Definition**
-   - Use clear, lowercase action names
-   - Define only necessary actions
-   - Document custom actions
-
-2. **Permission Checking**
-   - Always use the permission classes for consistency
-   - Implement custom permission classes by extending `BasePermission`
-   - Cache permission results when appropriate
-
-3. **API Key Usage**
-   - Generate with limited scope
-   - Regularly rotate keys
-   - Monitor usage patterns
+   - User role
 
 ## TODO
 
@@ -165,31 +141,11 @@ Permissions are resolved in the following order:
    - Add documentation for custom action mapping configuration
    - Consider caching strategies for mapping lookups
 
-2. **Code Refactoring**
-   - Abstract shared permission logic into a mixin or base class
-   - Move action mapping logic out of permission classes
-   - Create unified interface for permission checking
-
-## Security Considerations
-
-1. **Permission Inheritance**
-   - Higher access levels (OWNER, ADMIN) automatically inherit all permissions
-   - Regular members require explicit permission grants
-
-2. **Safe Methods**
-   - Non-GET safe methods are handled separately
-   - Additional validation for state-changing operations
-
-3. **Company Isolation**
-   - Strict company context enforcement
-   - Cross-company access prevention
-
 ## Contributing
 
 When adding new features or models:
 
-1. Define `PermissionsMeta` for new models requiring access control
-2. Update permission mappings if adding custom actions
-3. Add appropriate permission checks in views
-4. Document any custom permission logic
-5. Add tests covering permission scenarios
+1. By default, all models have CRUD permissions (read, create, update, delete)
+2. Add `PermissionsMeta` only if you need custom actions or want to restrict default permissions
+3. Add appropriate permission checks in views using `permission_classes = [CompanyMemberPermission]`
+4. Document any custom actions in the model's `PermissionsMeta`
