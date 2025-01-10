@@ -109,18 +109,18 @@ class CompanyMemberPermission(BasePermission):
 
         DEFAULT_ACTION_MAPPING = {
             "create": "create",
-            "list": "view",
-            "retrieve": "view",
-            "update": "modify",
-            "partial_update": "modify",
+            "list": "read",
+            "retrieve": "read",
+            "update": "update",
+            "partial_update": "update",
             "destroy": "delete",
         }
 
         DEFAULT_METHOD_MAPPING = {
             "POST": "create",
-            "GET": "view",
-            "PUT": "modify",
-            "PATCH": "modify",
+            "GET": "read",
+            "PUT": "update",
+            "PATCH": "update",
             "DELETE": "delete",
         }
 

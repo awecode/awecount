@@ -18,21 +18,24 @@ from lib.models.mixins import TimeAuditModel
 
 def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     """
-    Dynamically generate default permissions for Django models with PermissionsMeta.
+    Dynamically generate default permissions for Django models.
 
-    This utility function scans through all registered Django models and extracts
-    their permission configurations based on a simple list of actions.
+    For models with PermissionsMeta:
+    - Uses the defined key (or model name if not specified)
+    - Uses the defined actions list/dict
 
-    By default, all actions in the list are set to True.
+    For models without PermissionsMeta:
+    - Uses the model name as key
+    - Sets all CRUD operations (read, create, update, delete) to True
 
-    Example:
+    Example with PermissionsMeta:
     ```python
     class UserModel(models.Model):
         class PermissionsMeta:
             key = 'user' # Optional, defaults to model._meta.model_name.lower()
-            actions = ['view', 'create', 'modify', 'delete', 'custom_action] # Required
-            # or, actions = {'view': True, 'create': True, ...}
-            # or, actions = ['view', 'create', {'modify': False}, ...]
+            actions = ['read', 'create', 'update', 'delete', 'custom_action'] # Required
+            # or, actions = {'read': True, 'create': True, ...}
+            # or, actions = ['read', 'create', {'update': False}, ...]
     ```
 
     Returns:
@@ -42,15 +45,25 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
     Raises:
         ValueError: If the permission configuration is improperly defined.
     """
+    DEFAULT_CRUD_ACTIONS = {
+        "read": True,
+        "create": True,
+        "update": True,
+        "delete": True,
+    }
 
     ret = {}
     for model in apps.get_models():
-        # Skip models without PermissionsMeta
+        # Get model key - either from PermissionsMeta or model name
+        key = model._meta.model_name.lower()
+
+        # If model doesn't have PermissionsMeta, set default CRUD permissions
         if not hasattr(model, "PermissionsMeta"):
+            ret[key] = DEFAULT_CRUD_ACTIONS.copy()
             continue
 
-        # Determine the key for the model's permissions
-        key = getattr(model.PermissionsMeta, "key", model._meta.model_name).lower()
+        # If has PermissionsMeta, get custom key if specified
+        key = getattr(model.PermissionsMeta, "key", key)
 
         # Validate key contains only alphabetical characters
         if not re.match(r"^[a-z]+$", key):
@@ -59,12 +72,10 @@ def get_default_permissions() -> Dict[str, Dict[str, bool]]:
                 "can only contain lowercase alphabetical characters"
             )
 
-        # Validate presence of actions
+        # If no actions defined, use default CRUD actions
         if not hasattr(model.PermissionsMeta, "actions"):
-            raise TypeError(
-                f"Model {model.__name__} must define 'actions' "
-                "in its PermissionsMeta"
-            )
+            ret[key] = DEFAULT_CRUD_ACTIONS.copy()
+            continue
 
         # Validate and normalize actions
         actions = getattr(model.PermissionsMeta, "actions")
@@ -287,7 +298,7 @@ class CompanyMember(BaseModel):
     class AccessLevel(models.TextChoices):
         OWNER = "owner", "Owner"  # owner can do anything
         ADMIN = "admin", "Admin"  # admin can do anything except deleting the company
-        MEMBER = "member", "Member"
+        MEMBER = "member", "Member"  # need to explicitly manage permissions
 
     id = models.UUIDField(
         default=uuid.uuid4,
