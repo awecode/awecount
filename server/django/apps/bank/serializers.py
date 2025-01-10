@@ -231,9 +231,10 @@ class ReconciliationStatementImportSerializer(serializers.Serializer):
     transactions = serializers.ListField(child=serializers.DictField())
     start_date = serializers.DateField(required=False)
     end_date = serializers.DateField(required=False)
+    merge_description = serializers.BooleanField(default=False)
     
     class Meta:
-        fields = ('account_id', 'transactions', 'start_date', 'end_date')
+        fields = ('account_id', 'transactions', 'start_date', 'end_date', 'merge_description')
         
 class ReconciliationStatementListSerializer(serializers.ModelSerializer):
     account = AccountMinSerializer()
