@@ -139,6 +139,9 @@
     <q-card style="min-width: 900px">
       <div class="bg-white shadow-lg rounded-lg overflow-hidden border">
         <div v-if="updatedData?.results.length" class="p-4 bg-gray-50 max-h-[800px] overflow-y-auto matched-transactions">
+          <div class="text-xl font-semibold text-gray-700 mb-6">
+            Updated Transactions
+          </div>
           <q-infinite-scroll ref="infiniteScroll" @load="loadMore" :offset="250" scroll-target=".matched-transactions">
             <div v-for="data in updatedData?.results" :key="data.statement_transactions[0].id" class="border-b-2 mb-5 pb-5">
               <div class="grid grid-cols-2 gap-4">
@@ -167,7 +170,7 @@
                 </div>
 
                 <!-- System Transactions -->
-                <div class="flex flex-col">
+                <div class="flex flex-col" v-if="data.system_transactions.length">
                   <div class="bg-white border rounded-lg shadow-sm overflow-hidden grow">
                     <div class="px-4 py-2 border-b bg-green-50 text-green-700 font-semibold">
                       System
@@ -210,9 +213,12 @@
                       }}</span>
                   </div>
                 </div>
+                <div v-else class="flex flex-col items-center justify-center bg-white border rounded-lg shadow-sm overflow-hidden grow text-gray-500 text-center p-4 mb-9">
+                    Transactions might have been deleted
+                  </div>
               </div>
               <div class="flex justify-end space-x-3">
-                <button @click="
+                <button v-if="data.system_transactions.length" @click="
                   updateTransactions(data)
                   " class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">
                   Reconcile
@@ -334,7 +340,7 @@ const deleteStatement = (id: number) => {
         icon: 'check_circle',
         position: 'top-right',
       })
-      onFilterUpdate()
+      loadData()
     }).catch((error) => {
       console.log(error)
       $q.notify({
@@ -443,8 +449,8 @@ const unmatchMatchedTransactions = (matchedTransaction: {
     })
     if (updatedData.value?.results.length === 0) {
       openUpdateDialog.value = false
+      loadData()
     }
-
   }).catch((error) => {
     console.log(error)
     $q.notify({
@@ -480,8 +486,8 @@ const updateTransactions = (matchedTransaction: {
     })
     if (updatedData.value?.results.length === 0) {
       openUpdateDialog.value = false
+      loadData()
     }
-    onFilterUpdate()
   }).catch((error) => {
     console.log(error)
     $q.notify({
@@ -505,6 +511,7 @@ const {
   pagination,
   onRequest,
   onFilterUpdate,
+  loadData
 } = useList(listEndpoint)
 
 type MappingFunction = (header: string) => string
