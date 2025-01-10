@@ -123,6 +123,9 @@
             Please select the date range for the statement you want to extract <br> <span class=" ">If not selected, the system will use the date range from the statement</span>
           </div>
         </div>
+        <div>
+          <q-checkbox class="-ml-2.5 mt-3 text-gray-600" v-model="mergeDescription" label="Merge transactions with similar description" />
+        </div>
 
         <div class="text-right !mt-6">
           <q-btn type="submit" :loading="isLoading" label="Upload" color="green"
@@ -295,6 +298,7 @@ const statementHeaders = ref(new Set())
 const statementData: Ref<Record<string, any>[]> = ref([])
 const isStatementProcessing = ref(false)
 const hasError = ref(false)
+const mergeDescription = ref(false)
 
 const endpoint = 'v1/bank-reconciliation/defaults/'
 const isLoading = ref(false)
@@ -556,6 +560,7 @@ const submitStatement = async () => {
       transactions: statementData.value,
       start_date: statementStartDate.value,
       end_date: statementEndDate.value,
+      merge_description: mergeDescription.value
     }
   }).then(() => {
     $q.notify({
