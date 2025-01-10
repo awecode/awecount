@@ -1,0 +1,88 @@
+// app global css in SCSS form
+
+.hr {
+  border-bottom: 2px solid lightgrey;
+}
+.print-show {
+  visibility: hidden;
+  height: 0px;
+  overflow: hidden;
+}
+.b {
+  // border-solid border-1 border-gray-200 shadow-md
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.focus-highLight:focus {
+  background-color: lightgray;
+}
+
+@media print {
+  .print-show {
+    visibility: visible;
+    height: auto;
+  }
+  .q-page-container {
+    padding-left: 0 !important;
+  }
+
+  header,
+  footer {
+    display: none;
+  }
+  body {
+    overflow: auto;
+    height: auto;
+  }
+  .scroll-y {
+    height: auto;
+    overflow: visible;
+  }
+  aside {
+    display: none !important;
+  }
+  .q-btn {
+    display: none;
+  }
+  .q-page-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .search-bar {
+    display: none !important;
+  }
+  td,
+  th {
+    padding: 3px 2px !important;
+    margin: 0 !important;
+    // max-width: fit-content;
+    width: 150px;
+    overflow-x: hidden;
+    font-size: 12px !important;
+    height: inherit !important;
+  }
+  td .q-icon {
+    display: none;
+  }
+  .q-card {
+    box-shadow: none;
+  }
+  .q-table__card {
+    box-shadow: none;
+  }
+}
+
+.search-bar {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.f-open-btn {
+  width: 80px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
