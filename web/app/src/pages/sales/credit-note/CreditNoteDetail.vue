@@ -37,22 +37,24 @@ export default {
         })
         .catch((data) => {
           if (data.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
-              if (fields.value) {
-                fields.value.status = status
-              }
-              if (status === 'Cancelled') {
-                isDeleteOpen.value = false
-              }
-            }).catch((error) => {
-              if (error.status !== 'cancel') {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Something went Wrong!',
-                  icon: 'report_problem',
-                })
-              }
-            })
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
+              .then(() => {
+                if (fields.value) {
+                  fields.value.status = status
+                }
+                if (status === 'Cancelled') {
+                  isDeleteOpen.value = false
+                }
+              })
+              .catch((error) => {
+                if (error.status !== 'cancel') {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                }
+              })
           } else {
             $q.notify({
               color: 'negative',
@@ -76,7 +78,7 @@ export default {
               fields.value.print_count = fields.value?.print_count + 1
             }
           })
-          .catch(err => console.log('err from the api', err))
+          .catch((err) => console.log('err from the api', err))
       } else {
         print(false)
       }
@@ -117,15 +119,15 @@ export default {
     <q-card class="q-ma-lg">
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
-          <span>Credit Note | {{ fields?.status }} <span v-if="fields?.voucher_no"> | #{{ fields?.voucher_no
-          }}</span></span>
+          <span>
+            Credit Note | {{ fields?.status }}
+            <span v-if="fields?.voucher_no">| #{{ fields?.voucher_no }}</span>
+          </span>
         </div>
       </q-card-section>
       <ViewerHeader2 :fields="fields" />
     </q-card>
-    <div class="q-ma-lg text-subtitle2">
-      Ref. Invoice No.: #{{ fields?.invoice_data[0]?.voucher_no }}
-    </div>
+    <div class="q-ma-lg text-subtitle2">Ref. Invoice No.: #{{ fields?.invoice_data[0]?.voucher_no }}</div>
     <q-card class="q-mx-lg">
       <q-card-section>
         <ViewerTable :fields="fields" />
@@ -133,42 +135,14 @@ export default {
     </q-card>
     <div v-if="fields" class="q-px-lg q-pb-lg row justify-between q-gutter-x-md q-mt-md">
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-mb-md">
-        <q-btn
-          v-if="checkPermissions('creditnote.modify') && (fields.can_update_issued || fields.status === 'Draft')"
-          color="orange-5"
-          label="Edit"
-          icon="edit"
-          :to="`/${$route.params.company}/credit-note/${fields.id}/`"
-        />
-        <q-btn
-          v-if="fields?.status === 'Issued'"
-          color="green-6"
-          label="mark as resolved"
-          icon="mdi-check-all"
-          @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-        />
-        <q-btn
-          v-if="checkPermissions('creditnote.cancel')"
-          color="red-5"
-          label="Cancel"
-          icon="cancel"
-          @click.prevent="() => (isDeleteOpen = true)"
-        />
+        <q-btn v-if="checkPermissions('creditnote.modify') && (fields.can_update_issued || fields.status === 'Draft')" color="orange-5" label="Edit" icon="edit" :to="`/${$route.params.company}/credit-note/${fields.id}/`" />
+        <q-btn v-if="fields?.status === 'Issued'" color="green-6" label="mark as resolved" icon="mdi-check-all" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" />
+        <q-btn v-if="checkPermissions('creditnote.cancel')" color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
       </div>
       <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-        <q-btn
-          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`"
-          icon="print"
-          @click="onPrintclick(false)"
-        />
+        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print" @click="onPrintclick(false)" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <q-btn
-          color="blue-7"
-          label="Journal Entries"
-          icon="books"
-          :to="`/${$route.params.company}/journal-entries/credit-note/${$route.params.id}/`"
-        />
+        <q-btn color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/credit-note/${$route.params.id}/`" />
       </div>
       <div v-else class="row q-gutter-x-md q-mb-md">
         <q-btn label="Print" icon="print" @click="onPrintclick" />
@@ -183,18 +157,11 @@ export default {
           </q-card-section>
           <q-separator inset />
           <q-card-section>
-            <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
-              Are you sure?
-            </div>
-            <div class=" text-blue">
+            <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+            <div class="text-blue">
               <div class="row justify-end">
                 <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
-                <q-btn
-                  flat
-                  class="text-red"
-                  label="Yes"
-                  @click="() => submitChangeStatus(fields?.id, 'Cancelled')"
-                />
+                <q-btn flat class="text-red" label="Yes" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
               </div>
             </div>
           </q-card-section>

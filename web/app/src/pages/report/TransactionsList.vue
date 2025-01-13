@@ -29,14 +29,8 @@ export default {
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/transaction/export${query}`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Sales_voucher',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
+        .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -150,12 +144,12 @@ export default {
       'Cheque Deposit': 'ChequeDepositView',
       'Payment Receipt': 'PaymentReceiptView',
       'Cheque Issue': 'ChequeIssueModify',
-      'Challan': 'ChallanModify',
+      Challan: 'ChallanModify',
       'Account Opening Balance': 'AccountOpeningBalanceModify',
       'Fund Transfer': 'FundTransferModify',
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
-      'Item': 'ItemView',
+      Item: 'ItemView',
       'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
     }
     return { ...listData, newColumn, newColumnTwo, getVoucherUrl, filterOptions, groupByOption, onDownloadXls, getPermissionsWithSourceType, checkPermissions }
@@ -180,17 +174,7 @@ export default {
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" class="export-btn" @click="onDownloadXls" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="rows[0]?.label ? newColumnTwo : newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="rows[0]?.label ? newColumnTwo : newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
@@ -202,53 +186,19 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw); height: min(700px, 60vh)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-md">
-                  <FiltersOptions
-                    v-model="filters.account"
-                    label="Account"
-                    :endpoint="`/api/company/${$route.params.company}/accounts/choices`"
-                    :fetch-on-mount="true"
-                    :options="filterOptions.collections?.accounts"
-                  />
-                  <FiltersOptions
-                    v-model="filters.source"
-                    label="Transaction Type"
-                    :options="filterOptions.collections?.transaction_types"
-                    :endpoint="`/api/company/${$route.params.company}/transaction/create-defaults/transaction_types`"
-                  />
-                  <FiltersOptions
-                    v-model="filters.category"
-                    label="Category"
-                    :fetch-on-mount="true"
-                    :endpoint="`/api/company/${$route.params.company}/categories/choices`"
-                    :options="filterOptions.collections?.categories"
-                  />
+                  <FiltersOptions v-model="filters.account" label="Account" :endpoint="`/api/company/${$route.params.company}/accounts/choices`" :fetch-on-mount="true" :options="filterOptions.collections?.accounts" />
+                  <FiltersOptions v-model="filters.source" label="Transaction Type" :options="filterOptions.collections?.transaction_types" :endpoint="`/api/company/${$route.params.company}/transaction/create-defaults/transaction_types`" />
+                  <FiltersOptions v-model="filters.category" label="Category" :fetch-on-mount="true" :endpoint="`/api/company/${$route.params.company}/categories/choices`" :options="filterOptions.collections?.categories" />
 
                   <div>
-                    <h5 class="text-subtitle2 text-grey-8">
-                      Group By:
-                    </h5>
+                    <h5 class="text-subtitle2 text-grey-8">Group By:</h5>
                     <div>
-                      <q-select
-                        v-model="filters.group"
-                        label="Group By"
-                        option-value="id"
-                        option-label="name"
-                        :options="groupByOption"
-                        map-options
-                        emit-value
-                      >
+                      <q-select v-model="filters.group" label="Group By" option-value="id" option-label="name" :options="groupByOption" map-options emit-value>
                         <template #append>
-                          <q-icon
-                            v-if="filters.group !== null"
-                            class="cursor-pointer"
-                            name="clear"
-                            @click.stop.prevent="filters.group = null"
-                          />
+                          <q-icon v-if="filters.group !== null" class="cursor-pointer" name="clear" @click.stop.prevent="filters.group = null" />
                         </template>
                       </q-select>
                     </div>
@@ -269,50 +219,25 @@ export default {
       </template>
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
-          <RouterLink
-            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none"
-            target="_blank"
-            :to="getVoucherUrl(props.row)"
-            class="text-blue-6"
-          >
-            {{
-              props.row.voucher_no
-            }}
+          <RouterLink v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)" style="text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">
+            {{ props.row.voucher_no }}
           </RouterLink>
-          <span v-else> {{ props.row.voucher_no }}</span>
+          <span v-else>{{ props.row.voucher_no }}</span>
         </q-td>
       </template>
       <template #body-cell-account="props">
         <q-td :props="props">
-          <RouterLink
-            style="text-decoration: none"
-            target="_blank"
-            :to="`/${$route.params.company}/account/?has_balance=true&category=${props.row.category_id}`"
-            class="text-blue-6"
-          >
-            {{
-              props.row.account_name
-            }}
+          <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${props.row.category_id}`" class="text-blue-6">
+            {{ props.row.account_name }}
           </RouterLink>
         </q-td>
       </template>
       <template #body-cell-type="props">
         <q-td :props="props">
-          <RouterLink
-            v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)"
-            style="
-                        text-decoration: none"
-            target="_blank"
-            :to="getVoucherUrl(props.row)"
-            class="text-blue-6"
-          >
-            {{
-              props.row.source_type
-            }}
+          <RouterLink v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type]) && getVoucherUrl(props.row)" style="text-decoration: none" target="_blank" :to="getVoucherUrl(props.row)" class="text-blue-6">
+            {{ props.row.source_type }}
           </RouterLink>
-          <span v-else> {{ props.row.source_type }}</span>
+          <span v-else>{{ props.row.source_type }}</span>
         </q-td>
       </template>
     </q-table>

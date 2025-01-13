@@ -29,9 +29,7 @@ export default {
       end_date: null,
     })
     const calculateNet = (obj, type) => {
-      const net = Number.parseFloat(
-        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2),
-      )
+      const net = Number.parseFloat((obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2))
       if (net === 0) {
         return 0
       } else if (net > 0) {
@@ -81,8 +79,7 @@ export default {
             localAccounts[obj.id] = acc
 
             // Create this.category_accounts[obj.category_id] if doesn't exist
-            !(obj.category_id in category_accounts.value)
-            && (category_accounts.value[obj.category_id] = [])
+            !(obj.category_id in category_accounts.value) && (category_accounts.value[obj.category_id] = [])
             category_accounts.value[obj.category_id].push(obj.id)
           })
           // TODO make unreactive
@@ -90,7 +87,7 @@ export default {
           showData.value = true
           total.value = tallyTotal
         })
-        .catch(err => console.log(err))
+        .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
     const onDownloadXls = async () => {
@@ -102,22 +99,24 @@ export default {
       // adding styles
       const worksheet = XLSX.utils.table_to_sheet(elt)
       for (const i in worksheet) {
-        if (typeof (worksheet[i]) != 'object') continue
+        if (typeof worksheet[i] != 'object') continue
         const cell = XLSX.utils.decode_cell(i)
         worksheet[i].s = {
           font: { name: 'Courier', sz: 12 },
         }
-        if (cell.r == 0) { // first row
+        if (cell.r == 0) {
+          // first row
           worksheet[i].s.font.bold = true
         }
-        if (cell.c == 0) { // first row
+        if (cell.c == 0) {
+          // first row
           const td = elt.rows[cell.r].cells[cell.c]
           worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
           // get color and apply to excel
           const hexCode = getComputedStyle(td).color
           const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-          const numsArray = hexArray.map(e => Number(e))
-          const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
+          const numsArray = hexArray.map((e) => Number(e))
+          const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
           worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
         if (cell.r > -1) {
@@ -181,7 +180,6 @@ export default {
       updateData,
     }
   },
-
 }
 </script>
 
@@ -191,36 +189,17 @@ export default {
       <div class="flex items-center justify-between gap-2">
         <div class="flex gap-x-6 gap-y-2 items-center">
           <div>
-            <DateRangePicker
-              v-model:start-date="fields.start_date"
-              v-model:end-date="fields.end_date"
-              :hide-btns="true"
-              :focus-on-mount="true"
-            />
+            <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" :focus-on-mount="true" />
           </div>
-          <q-btn
-            v-if="fields.start_date || fields.end_date"
-            color="red"
-            icon="close"
-            class="f-reset-btn"
-            @click="fields = { start_date: null, end_date: null }"
-          />
-          <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
-            color="green"
-            label="fetch"
-            class="f-submit-btn"
-            @click="updateData"
-          />
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" class="f-reset-btn" @click="fields = { start_date: null, end_date: null }" />
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="updateData" />
         </div>
         <div v-if="showData" class="flex gap-6">
           <q-btn icon="settings" title="Config">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Config
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Config</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
@@ -233,16 +212,10 @@ export default {
                     <q-checkbox v-model="config.hide_sums" label="Hide Sums?" />
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.show_opening_closing_dr_cr"
-                      label="Show Opening Closing Dr/Cr?"
-                    />
+                    <q-checkbox v-model="config.show_opening_closing_dr_cr" label="Show Opening Closing Dr/Cr?" />
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.hide_zero_transactions"
-                      label="Hide accounts without transactions?"
-                    />
+                    <q-checkbox v-model="config.hide_zero_transactions" label="Hide accounts without transactions?" />
                   </div>
                 </div>
               </div>
@@ -259,65 +232,31 @@ export default {
             <th class="text-left">
               <strong>Name</strong>
             </th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Opening
-            </th>
-            <th class="text-left" colspan="2">
-              Transactions
-            </th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Closing
-            </th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Opening</th>
+            <th class="text-left" colspan="2">Transactions</th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Closing</th>
           </tr>
           <tr>
             <th class="text-left"></th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">
-                Dr
-              </th>
-              <th class="text-left">
-                Cr
-              </th>
-              <th class="text-left">
-                Balance
-              </th>
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
             </template>
-            <th v-else class="text-left">
-              Balance
-            </th>
-            <th class="text-left">
-              Dr
-            </th>
-            <th class="text-left">
-              Cr
-            </th>
+            <th v-else class="text-left">Balance</th>
+            <th class="text-left">Dr</th>
+            <th class="text-left">Cr</th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">
-                Dr
-              </th>
-              <th class="text-left">
-                Cr
-              </th>
-              <th class="text-left">
-                Balance
-              </th>
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
             </template>
-            <th v-else class="text-left">
-              Balance
-            </th>
+            <th v-else class="text-left">Balance</th>
           </tr>
         </thead>
         <tbody>
           <template v-if="showData">
-            <TableNode
-              v-for="category in categoryTree"
-              :key="category.id"
-              :item="category"
-              :root="true"
-              :accounts="accounts"
-              :category_accounts="category_accounts"
-              :config="config"
-            />
+            <TableNode v-for="category in categoryTree" :key="category.id" :item="category" :root="true" :accounts="accounts" :category_accounts="category_accounts" :config="config" />
           </template>
           <tr>
             <td class="text-weight-medium">

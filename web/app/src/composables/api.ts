@@ -26,28 +26,16 @@ const handleTrailingSlash = (url: string, trailingSlash?: boolean) => {
   }
 
   const hasTrailingSlash = url.endsWith('/')
-  return hasTrailingSlash === trailingSlash
-    ? url
-    : trailingSlash
-      ? `${url}/`
-      : url.slice(0, -1)
+  return (
+    hasTrailingSlash === trailingSlash ? url
+    : trailingSlash ? `${url}/`
+    : url.slice(0, -1)
+  )
 }
 
-export const useAPI = <
-  T = any,
-  R extends ResponseType = 'json',
->(request: FetchRequest,
-  opts?: UseAPIOptions<R, T>,
-) => {
+export const useAPI = <T = any, R extends ResponseType = 'json'>(request: FetchRequest, opts?: UseAPIOptions<R, T>) => {
   const router = useRouter()
-  const {
-    onRequest,
-    onResponseError,
-    handleErrors = true,
-    protected: _protected = config.api.protected,
-    trailingSlash = config.api.trailingSlash,
-    ...options
-  } = opts || {}
+  const { onRequest, onResponseError, handleErrors = true, protected: _protected = config.api.protected, trailingSlash = config.api.trailingSlash, ...options } = opts || {}
 
   const { token } = useAuthStore()
 
@@ -81,7 +69,7 @@ export const useAPI = <
 
       // Handle unauthorized/forbidden responses based on config
       if (_protected && config.api.unauthorized) {
-        const { statusCodes, strategy, redirect } = config.api.unauthorized as { statusCodes: number[], strategy: 'redirect' | 'error', redirect?: RouteLocationRaw }
+        const { statusCodes, strategy, redirect } = config.api.unauthorized as { statusCodes: number[]; strategy: 'redirect' | 'error'; redirect?: RouteLocationRaw }
 
         if (statusCodes.includes(ctx.response.status)) {
           if (strategy === 'redirect' && redirect) {
@@ -101,7 +89,6 @@ export const useAPI = <
 
       // Handle 404 errors for GET requests
       if (ctx.response.status === 404 && ctx.options.method === 'GET') {
-
         // nuxt.payload.error = createError({
         //   statusCode: ctx.response.status,
         //   statusMessage: `${ctx.response.statusText} ${ctx.response.url}`,

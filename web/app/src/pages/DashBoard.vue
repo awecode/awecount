@@ -20,12 +20,7 @@ fields.value = res
 <template>
   <div class="q-ma-md">
     <div>
-      <q-btn
-        icon="add"
-        label="Add widget"
-        :to="`/${$route.params.company}/settings/dashboard-widgets/create/`"
-        style="font-size: 0.75rem"
-      />
+      <q-btn icon="add" label="Add widget" :to="`/${$route.params.company}/settings/dashboard-widgets/create/`" style="font-size: 0.75rem" />
     </div>
     <div class="q-mt-md grid-con">
       <div v-for="widget in fields" :key="widget.id">
@@ -36,13 +31,7 @@ fields.value = res
                 {{ widget.name }}
               </h5>
               <span style="flex-grow: 0; flex-shrink: 0">
-                <q-btn
-                  flat
-                  icon="edit"
-                  :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`"
-                  size="sm"
-                  class="text-grey-8"
-                />
+                <q-btn flat icon="edit" :to="`/${$route.params.company}/settings/dashboard-widgets/${widget.id}/edit`" size="sm" class="text-grey-8" />
               </span>
             </div>
             <div>
@@ -50,25 +39,14 @@ fields.value = res
                 <q-markup-table flat>
                   <thead>
                     <tr>
-                      <th
-                        v-for="value in widget.data.labels"
-                        :key="value"
-                        class="text-left"
-                      >
+                      <th v-for="value in widget.data.labels" :key="value" class="text-left">
                         {{ value }}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(row, index) in widget.data.datasets"
-                      :key="index"
-                    >
-                      <td
-                        v-for="(value, index) in row"
-                        :key="index"
-                        class="text-left"
-                      >
+                    <tr v-for="(row, index) in widget.data.datasets" :key="index">
+                      <td v-for="(value, index) in row" :key="index" class="text-left">
                         {{ value }}
                       </td>
                     </tr>

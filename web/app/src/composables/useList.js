@@ -29,12 +29,7 @@ export default (endpoint, predefinedColumns = null) => {
   const router = useRouter()
   const $q = useQuasar()
 
-  const {
-    page: pageQueryValue,
-    q: qQueryValue,
-    search: searchQueryValue,
-    ...filterQueryValues
-  } = route.query
+  const { page: pageQueryValue, q: qQueryValue, search: searchQueryValue, ...filterQueryValues } = route.query
   const pagination = ref({
     sortBy: route.query.ordering || '',
     descending: route.query.ordering && route.query.ordering.includes('-'),
@@ -62,7 +57,7 @@ export default (endpoint, predefinedColumns = null) => {
         return [k, isNaN(v) ? v : parseFloat(v)]
       }
       return [k, isNaN(v) ? v : parseFloat(v)]
-    })
+    }),
   )
   // let cleanedFilterValues = Object.fromEntries(
   //   Object.entries(filterQueryValues).map(([k, v]) => {
@@ -86,8 +81,7 @@ export default (endpoint, predefinedColumns = null) => {
       url = withQuery(url, filters.value)
     }
     if (pagination.value.sortBy) {
-      const query = `${pagination.value.descending ? '-' : ''}${pagination.value.sortBy
-        }`
+      const query = `${pagination.value.descending ? '-' : ''}${pagination.value.sortBy}`
       url = withQuery(url, { ordering: query })
     }
     useApi(url)
@@ -110,9 +104,7 @@ export default (endpoint, predefinedColumns = null) => {
         if (predefinedColumns) {
           columns.value = predefinedColumns
         } else if (response.results?.length) {
-          const fields = Object.keys(response.results[0]).filter(
-            (f) => f !== 'id'
-          )
+          const fields = Object.keys(response.results[0]).filter((f) => f !== 'id')
           const columnList = fields.map((f) => {
             return {
               name: f,
@@ -186,7 +178,7 @@ export default (endpoint, predefinedColumns = null) => {
             return [k, undefined]
           }
           return [k, v]
-        })
+        }),
       )
       cleanedFilters = sortOnKeys(cleanedFilters)
       url = withQuery(url, cleanedFilters)
@@ -195,8 +187,7 @@ export default (endpoint, predefinedColumns = null) => {
     if (props.pagination.sortBy) {
       pagination.value.sortBy = props.pagination.sortBy
       pagination.value.descending = props.pagination.descending
-      const query = `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy
-        }`
+      const query = `${props.pagination.descending ? '-' : ''}${props.pagination.sortBy}`
       url = withQuery(url, { ordering: query })
     } else {
       pagination.value.sortBy = ''
@@ -219,7 +210,7 @@ export default (endpoint, predefinedColumns = null) => {
       // }
       loadData()
     },
-    { deep: true, immediate: true, flush: 'post' }
+    { deep: true, immediate: true, flush: 'post' },
   )
 
   const onFilterUpdate = () => {
@@ -234,7 +225,7 @@ export default (endpoint, predefinedColumns = null) => {
           return [k, undefined]
         }
         return [k, v]
-      })
+      }),
     )
     // reset page
     cleanedFilters.page = undefined
@@ -250,14 +241,11 @@ export default (endpoint, predefinedColumns = null) => {
     // router.push({ path: route.path, query: cleanedFilters })
   }
   const rows = computed(() => {
-    if (
-      unCalculatedrows.value?.length > 0
-    ) {
+    if (unCalculatedrows.value?.length > 0) {
       let newData = []
       unCalculatedrows.value.forEach((item) => {
         const updatedItem = { ...item }
-        if (!store.isCalendarInAD &&
-          unCalculatedrows.value[0].hasOwnProperty('date')) {
+        if (!store.isCalendarInAD && unCalculatedrows.value[0].hasOwnProperty('date')) {
           if (updatedItem) {
             updatedItem.date = DateConverter.getRepresentation(item.date, 'bs')
           }
@@ -298,11 +286,7 @@ export default (endpoint, predefinedColumns = null) => {
         const pg = pagination.value
         const isLastPage = Math.ceil(pg.rowsNumber / pg.rowsPerPage) == pg.page
         // check if last page, has only 1 item and is not the first page
-        if (
-          isLastPage &&
-          (pg.rowsPerPage === 1 || pg.rowsNumber % pg.rowsPerPage === 1) &&
-          pg.page != 1
-        ) {
+        if (isLastPage && (pg.rowsPerPage === 1 || pg.rowsNumber % pg.rowsPerPage === 1) && pg.page != 1) {
           let url = route.fullPath
           url = withQuery(url, { page: page.value - 1 })
           router.push(url)

@@ -42,16 +42,11 @@ export default {
       },
     )
     const dateComputed = computed(() => {
-      return DateConverter.getRepresentation(
-        props.fields?.date,
-        store.isCalendarInAD ? 'ad' : 'bs',
-      )
+      return DateConverter.getRepresentation(props.fields?.date, store.isCalendarInAD ? 'ad' : 'bs')
     })
     const modeComputed: Ref<string> = computed(() => {
       if (typeof props.fields?.mode === 'number') {
-        const index: number = props.modeOptions.findIndex(
-          item => item.id === props.fields?.mode,
-        )
+        const index: number = props.modeOptions.findIndex((item) => item.id === props.fields?.mode)
         return props.modeOptions[index].name
       } else {
         return props.fields?.mode
@@ -59,17 +54,9 @@ export default {
     })
     const discountComputed = computed(() => {
       if (props.fields?.discount_obj) {
-        return (
-          `${props.fields.discount_obj.value}`
-          + ' '
-          + `${props.fields.discount_obj.type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${props.fields.discount_obj.value}` + ' ' + `${props.fields.discount_obj.type === 'Amount' ? '-/' : '%'}`
       } else if (props.fields?.discount) {
-        return (
-          `${props.fields.discount}`
-          + ' '
-          + `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${props.fields.discount}` + ' ' + `${props.fields.discount_type === 'Amount' ? '-/' : '%'}`
       } else {
         return false
       }
@@ -87,7 +74,7 @@ export default {
             icon: 'check_circle',
           })
         })
-        .catch(err => console.log('err from the api', err))
+        .catch((err) => console.log('err from the api', err))
     }
     const isChangeOpen: Ref<boolean> = ref(false)
     return {
@@ -109,17 +96,13 @@ export default {
     <div class="col-12 col-md-6 q-gutter-y-lg q-mb-lg">
       <template v-if="fields?.party_name">
         <div class="col-12 col-md-6 row">
-          <div class="col-6">
-            Party
-          </div>
+          <div class="col-6">Party</div>
           <div class="col-6">
             {{ fields?.party_name }}
           </div>
         </div>
         <div v-if="fields?.customer_name" class="col-12 col-md-6 row">
-          <div class="col-6">
-            Name on Invoice
-          </div>
+          <div class="col-6">Name on Invoice</div>
           <div class="col-6">
             {{ fields?.customer_name }}
           </div>
@@ -134,25 +117,19 @@ export default {
         </div>
       </div>
       <div class="col-12 col-md-6 row">
-        <div class="col-6">
-          Address
-        </div>
+        <div class="col-6">Address</div>
         <div class="col-6">
           {{ fields?.address }}
         </div>
       </div>
       <div class="col-12 col-md-6 row">
-        <div class="col-6">
-          Status
-        </div>
+        <div class="col-6">Status</div>
         <div class="col-6">
           {{ fields?.status }}
         </div>
       </div>
       <div v-if="discountComputed" class="col-12 col-md-6 row">
-        <div class="col-6">
-          Discount
-        </div>
+        <div class="col-6">Discount</div>
         <div class="col-6">
           {{ discountComputed }}
         </div>
@@ -160,45 +137,32 @@ export default {
     </div>
     <div class="col-12 col-md-6 q-gutter-y-lg">
       <div class="col-12 col-md-6 row">
-        <div class="col-6">
-          Date
-        </div>
+        <div class="col-6">Date</div>
         <div class="col-6">
           {{ dateComputed }}
         </div>
       </div>
       <div v-if="changeModes" class="col-12 col-md-6 row">
+        <div class="col-6">Mode</div>
         <div class="col-6">
-          Mode
-        </div>
-        <div class="col-6">
-          <span class="q-mr-sm">{{ modeComputed }}</span><q-btn
-            icon="edit"
-            size="sm"
-            @click="() => (isChangeOpen = true)"
-          />
+          <span class="q-mr-sm">{{ modeComputed }}</span>
+          <q-btn icon="edit" size="sm" @click="() => (isChangeOpen = true)" />
         </div>
       </div>
       <div v-else class="col-12 col-md-6 row">
-        <div class="col-6">
-          Mode
-        </div>
+        <div class="col-6">Mode</div>
         <div class="col-6">
           {{ fields?.mode }}
         </div>
       </div>
       <div v-if="fields.mode === 'Bank Deposit'" class="col-12 col-md-6 row">
-        <div class="col-6">
-          Bank Account
-        </div>
+        <div class="col-6">Bank Account</div>
         <div class="col-6">
           {{ fields?.bank_account_name }}
         </div>
       </div>
       <div v-if="fields.challan_numbers && fields.challan_numbers.length > 0" class="col-12 col-md-6 row">
-        <div class="col-6">
-          Challan Voucher No.
-        </div>
+        <div class="col-6">Challan Voucher No.</div>
         <div class="col-6">
           {{ fields.challan_numbers.join(',') }}
         </div>
@@ -214,27 +178,10 @@ export default {
         </q-card-section>
         <q-card-section class="q-mx-md">
           <div class="text-right q-mt-lg row justify-between q-mx-lg">
-            <q-select
-              v-model="modesValue"
-              label="Mode"
-              class="col-12"
-              :options="props.modeOptions.length > 0
-                ? modes.concat(props.modeOptions)
-                : modes
-              "
-              option-value="id"
-              option-label="name"
-              map-options
-              emit-value
-            />
+            <q-select v-model="modesValue" label="Mode" class="col-12" :options="props.modeOptions.length > 0 ? modes.concat(props.modeOptions) : modes" option-value="id" option-label="name" map-options emit-value />
           </div>
           <div class="row q-mt-lg justify-end">
-            <q-btn
-              label="update"
-              color="orange-5"
-              class="q-mt-md"
-              @click="() => submitChangeModes(props.fields.id)"
-            />
+            <q-btn label="update" color="orange-5" class="q-mt-md" @click="() => submitChangeModes(props.fields.id)" />
           </div>
         </q-card-section>
       </q-card>

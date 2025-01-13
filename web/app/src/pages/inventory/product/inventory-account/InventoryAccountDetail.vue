@@ -36,11 +36,7 @@ const columnList = [
     name: 'date',
     label: 'Date',
     align: 'left',
-    field: row =>
-      DateConverter.getRepresentation(
-        row.date,
-        store.isCalendarInAD ? 'ad' : 'bs',
-      ),
+    field: (row) => DateConverter.getRepresentation(row.date, store.isCalendarInAD ? 'ad' : 'bs'),
   },
   {
     name: 'voucher_type',
@@ -99,13 +95,7 @@ function loadData() {
 }
 
 function onRequest(prop) {
-  endpoint.value = `/api/company/${route.params.company}/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value
-    ? `start_date=${startDate.value}&end_date=${endDate.value}`
-    : ''
-  }${startDate.value && endDate.value
-    ? `&page=${prop.pagination.page}`
-    : `page=${prop.pagination.page}`
-  }`
+  endpoint.value = `/api/company/${route.params.company}/inventory-account/${route.params.id}/transactions/?${startDate.value && endDate.value ? `start_date=${startDate.value}&end_date=${endDate.value}` : ''}${startDate.value && endDate.value ? `&page=${prop.pagination.page}` : `page=${prop.pagination.page}`}`
   getData()
 }
 // TODO: add permissions
@@ -159,12 +149,12 @@ const getPermissionsWithSourceType = {
   'Cheque Deposit': 'ChequeDepositView',
   'Payment Receipt': 'PaymentReceiptView',
   'Cheque Issue': 'ChequeIssueModify',
-  'Challan': 'ChallanModify',
+  Challan: 'ChallanModify',
   'Account Opening Balance': 'AccountOpeningBalanceModify',
   'Fund Transfer': 'FundTransferModify',
   'Bank Cash Deposit': 'BankCashDepositModify',
   'Tax Payment': 'TaxPaymentModify',
-  'Item': 'ItemView',
+  Item: 'ItemView',
   'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
   'Inventory Conversion Voucher': 'InventoryConversionVoucherView',
 }
@@ -174,47 +164,37 @@ const getPermissionsWithSourceType = {
   <div class="q-py-lg q-pl-lg q-mr-xl">
     <div class="flex justify-between">
       <div class="text-h5">
-        <router-link
-          v-if="checkPermissions('inventoryaccount.view')"
-          :to="`/${$route.params.company}/items/${fields?.item}/`"
-          style="font-weight: 500; text-decoration: none"
-          class="text-blue"
-        >
+        <router-link v-if="checkPermissions('inventoryaccount.view')" :to="`/${$route.params.company}/items/${fields?.item}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
           {{ fields?.name }}
         </router-link>
         <span v-else class="text-bold">{{ fields?.name || '-' }}</span>
-        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">({{ fields?.category_name || '-' }})
-          <q-tooltip>Category</q-tooltip> </span>
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
+          ({{ fields?.category_name || '-' }})
+          <q-tooltip>Category</q-tooltip>
+        </span>
       </div>
       <div>
-        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields.code
-        }}]</span>
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
       <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Current Balance
-          </div>
+          <div class="q-px-md text-grey-8">Current Balance</div>
           <div class="q-px-md">
             {{ $nf(fields?.current_balance) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Opening Balance
-          </div>
+          <div class="q-px-md text-grey-8">Opening Balance</div>
           <div class="q-px-md">
             {{ $nf(fields?.opening_balance) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Closing Balance
-          </div>
+          <div class="q-px-md text-grey-8">Closing Balance</div>
           <div class="q-px-md">
             {{ $nf(fields?.closing_balance) || '-' }}
           </div>
@@ -228,27 +208,11 @@ const getPermissionsWithSourceType = {
           </div>
         </div>
       </div>
-      <q-table
-        v-model:pagination="pagination"
-        :columns="columnList"
-        :rows="rows"
-        :loading="loading"
-        row-key="id"
-        class="q-mt-xs"
-        :binary-state-sort="true"
-        :rows-per-page-options="[20]"
-        @request="onRequest"
-      >
+      <q-table v-model:pagination="pagination" :columns="columnList" :rows="rows" :loading="loading" row-key="id" class="q-mt-xs" :binary-state-sort="true" :rows-per-page-options="[20]" @request="onRequest">
         <template #body-cell-voucher_no="props">
           <q-td :props="props">
-            <router-link
-              v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])"
-              :to="getVoucherUrl(props.row)"
-              class="text-blue text-weight-medium"
-              style="text-decoration: none"
-            >
-              {{
-                props.row.voucher_no }}
+            <router-link v-if="checkPermissions(getPermissionsWithSourceType[props.row.source_type])" :to="getVoucherUrl(props.row)" class="text-blue text-weight-medium" style="text-decoration: none">
+              {{ props.row.voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher_no }}</span>
           </q-td>

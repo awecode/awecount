@@ -83,7 +83,8 @@ const fetchData = () => {
       loading.value = false
     })
     .catch((error) => {
-      console.log(error); loading.value = false
+      console.log(error)
+      loading.value = false
     })
 }
 if (route.query.start_date) {
@@ -107,46 +108,35 @@ fetchData()
           color="red"
           icon="close"
           class="f-reset-btn"
-          @click="fields = { start_date: '', end_date: '' }; updateRouteUrl(); fetchData()"
+          @click="
+            fields = { start_date: '', end_date: '' }
+            updateRouteUrl()
+            fetchData()
+          "
         />
-        <q-btn
-          :disable="!fields.start_date && !fields.end_date ? true : false"
-          color="green"
-          label="fetch"
-          class="f-submit-btn"
-          @click="fetchData"
-        />
+        <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="fetchData" />
       </div>
     </div>
-    <q-table
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-    >
+    <q-table :rows="rows" :columns="newColumn" :loading="loading" row-key="id" class="q-mt-md" :rows-per-page-options="[20]">
       <template #body-cell-category="props">
         <q-td :props="props">
           <span v-if="props.row.item__category__name" class="font-medium">{{ props.row.item__category__name }}</span>
-          <span v-else class="font-medium text-gray-600"> Uncategorized Items </span>
+          <span v-else class="font-medium text-gray-600">Uncategorized Items</span>
         </q-td>
       </template>
       <template #bottom-row>
+        <q-td class="font-medium">Total</q-td>
         <q-td class="font-medium">
-          Total
+          {{ rows.reduce((accumulator, currentDict) => accumulator + currentDict.quantity, 0) }}
         </q-td>
         <q-td class="font-medium">
-          {{ rows.reduce((accumulator, currentDict) => (accumulator + currentDict.quantity), 0) }}
+          {{ $nf(rows.reduce((accumulator, currentDict) => accumulator + currentDict.tax_amount, 0)) }}
         </q-td>
         <q-td class="font-medium">
-          {{ $nf(rows.reduce((accumulator, currentDict) => (accumulator + currentDict.tax_amount), 0)) }}
+          {{ $nf(rows.reduce((accumulator, currentDict) => accumulator + currentDict.discount_amount, 0)) }}
         </q-td>
         <q-td class="font-medium">
-          {{ $nf(rows.reduce((accumulator, currentDict) => (accumulator + currentDict.discount_amount), 0)) }}
-        </q-td>
-        <q-td class="font-medium">
-          {{ $nf(rows.reduce((accumulator, currentDict) => (accumulator + currentDict.net_amount), 0)) }}
+          {{ $nf(rows.reduce((accumulator, currentDict) => accumulator + currentDict.net_amount, 0)) }}
         </q-td>
       </template>
     </q-table>

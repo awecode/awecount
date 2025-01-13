@@ -2,9 +2,7 @@
 const route = useRoute()
 const router = useRouter()
 
-const date = ref(
-  route.query.date ? route.query.date : new Date().toISOString().slice(0, 10),
-)
+const date = ref(route.query.date ? route.query.date : new Date().toISOString().slice(0, 10))
 
 const data = ref(null)
 
@@ -76,14 +74,7 @@ watch(searchQuery, () => {
 function filterData() {
   if (searchQuery.value) {
     return data.value.filter((item) => {
-      return (
-        item.account.code
-          .toLowerCase()
-          .includes(searchQuery.value.toLowerCase())
-          || item.account.name
-            .toLowerCase()
-            .includes(searchQuery.value.toLowerCase())
-      )
+      return item.account.code.toLowerCase().includes(searchQuery.value.toLowerCase()) || item.account.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     })
   }
   return data.value
@@ -94,34 +85,17 @@ function filterData() {
   <div>
     <div class="q-pa-md">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-semibold">
-          Day Book
-        </h1>
+        <h1 class="text-2xl font-semibold">Day Book</h1>
       </div>
       <div>
         <DatePicker v-model="date" class="col-6" label="Date" />
 
         <div class="mt-4">
           <div v-if="data">
-            <q-table
-              :rows="data"
-              :columns="columns"
-              flat
-              bordered
-              hide-pagination
-              :rows-per-page-options="[0]"
-              :filter="searchQuery"
-              :filter-method="filterData"
-            >
+            <q-table :rows="data" :columns="columns" flat bordered hide-pagination :rows-per-page-options="[0]" :filter="searchQuery" :filter-method="filterData">
               <template #top>
                 <div class="search-bar">
-                  <q-input
-                    v-model="searchQuery"
-                    dense
-                    debounce="500"
-                    placeholder="Search"
-                    class="full-width search-input"
-                  >
+                  <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
                     <template #append>
                       <q-icon name="search" />
                     </template>
@@ -152,23 +126,12 @@ function filterData() {
               </template>
               <template #body-cell-transaction="props">
                 <q-td>
-                  {{
-                    (
-                      props.row.opening_balance - props.row.closing_balance
-                    ).toFixed(2)
-                  }}
+                  {{ (props.row.opening_balance - props.row.closing_balance).toFixed(2) }}
                 </q-td>
               </template>
               <template #body-cell-action="props">
                 <q-td>
-                  <RouterLink
-                    style="text-decoration: none"
-                    class="text-blue-6"
-                    target="_blank"
-                    :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`"
-                  >
-                    View Transactions
-                  </RouterLink>
+                  <RouterLink style="text-decoration: none" class="text-blue-6" target="_blank" :to="`/${$route.params.company}/account/${props.row.account.id}/view/?start_date=${date}&end_date=${date}`">View Transactions</RouterLink>
                 </q-td>
               </template>
             </q-table>

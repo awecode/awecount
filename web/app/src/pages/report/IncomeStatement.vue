@@ -1,3 +1,3 @@
 <template>
-    <div>Income Statement</div>
+  <div>Income Statement</div>
 </template>

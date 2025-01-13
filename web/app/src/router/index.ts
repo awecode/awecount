@@ -5,9 +5,7 @@ import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
 import routes from './routes'
 
 export default defineRouter((/* { store, ssrContext } */) => {
-  const createHistory = import.meta.env.SSR
-    ? createMemoryHistory
-    : createWebHistory
+  const createHistory = import.meta.env.SSR ? createMemoryHistory : createWebHistory
 
   const Router = createRouter({
     routes,

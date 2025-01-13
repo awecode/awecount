@@ -64,8 +64,7 @@ export default {
                 if (error.status !== 'cancel') {
                   $q.notify({
                     color: 'negative',
-                    message:
-                      'Server Error! Please contact us with the problem.',
+                    message: 'Server Error! Please contact us with the problem.',
                     icon: 'report_problem',
                   })
                 }
@@ -75,18 +74,14 @@ export default {
             message = err?.data?.detail
             $q.notify({
               color: 'red-6',
-              message:
-                message || 'Server Error! Please contact us with the problem.',
+              message: message || 'Server Error! Please contact us with the problem.',
             })
             isLoading.value = false
           }
         })
     }
     const getDate = computed(() => {
-      return DateConverter.getRepresentation(
-        fields.value?.date,
-        store.isCalendarInAD ? 'ad' : 'bs',
-      )
+      return DateConverter.getRepresentation(fields.value?.date, store.isCalendarInAD ? 'ad' : 'bs')
     })
     const print = (bodyOnly: boolean) => {
       const printData = useGeneratePdf('debitNote', bodyOnly, fields.value)
@@ -102,24 +97,16 @@ export default {
               fields.value.print_count = fields.value?.print_count + 1
             }
           })
-          .catch(err => console.log('err from the api', err))
+          .catch((err) => console.log('err from the api', err))
       } else {
         print(false)
       }
     }
     const discountComputed = computed(() => {
       if (fields.value?.discount_obj) {
-        return (
-          `${fields.value.discount_obj.value}`
-          + ' '
-          + `${fields.value.discount_obj.type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${fields.value.discount_obj.value}` + ' ' + `${fields.value.discount_obj.type === 'Amount' ? '-/' : '%'}`
       } else if (fields.value?.discount) {
-        return (
-          `${fields.value.discount}`
-          + ' '
-          + `${fields.value.discount_type === 'Amount' ? '-/' : '%'}`
-        )
+        return `${fields.value.discount}` + ' ' + `${fields.value.discount_type === 'Amount' ? '-/' : '%'}`
       } else {
         return false
       }
@@ -185,33 +172,25 @@ export default {
       <q-card class="q-mx-lg q-pa-lg row text-grey-8 text-body2 row" style="padding-bottom: 0">
         <div class="col-12 col-md-6 column q-gutter-y-lg q-mb-lg">
           <div class="row">
-            <div class="col-6">
-              Party
-            </div>
+            <div class="col-6">Party</div>
             <div class="col-6">
               {{ fields?.party_name }}
             </div>
           </div>
           <div class="row">
-            <div class="col-6">
-              Address
-            </div>
+            <div class="col-6">Address</div>
             <div class="col-6">
               {{ fields?.address }}
             </div>
           </div>
           <div class="row">
-            <div class="col-6">
-              Status
-            </div>
+            <div class="col-6">Status</div>
             <div class="col-6">
               {{ fields?.status }}
             </div>
           </div>
           <div v-if="discountComputed" class="row">
-            <div class="col-6">
-              Discount
-            </div>
+            <div class="col-6">Discount</div>
             <div class="col-6">
               {{ discountComputed }}
             </div>
@@ -219,17 +198,13 @@ export default {
         </div>
         <div class="col-12 col-md-6 column q-gutter-y-lg q-mb-lg">
           <div class="row">
-            <div class="col-6">
-              Date
-            </div>
+            <div class="col-6">Date</div>
             <div class="col-6" style="height: 20px">
               {{ getDate }}
             </div>
           </div>
           <div class="row">
-            <div class="col-6">
-              Payment Mode
-            </div>
+            <div class="col-6">Payment Mode</div>
             <div class="col-6">
               {{ fields?.payment_mode ?? 'Credit' }}
             </div>
@@ -248,57 +223,22 @@ export default {
     </q-card>
     <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
       <q-card-section>
-        <span class="text-subtitle2 text-grey-9"> Remarks: </span>
+        <span class="text-subtitle2 text-grey-9">Remarks:</span>
         <span class="text-grey-9">{{ fields?.remarks }}</span>
       </q-card-section>
     </q-card>
     <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
       <div class="row">
         <div v-if="fields?.status !== 'Cancelled'" class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-          <q-btn
-            v-if="checkPermissions('debitnote.modify')
-              && (fields.can_update_issued || fields.status === 'Draft')
-            "
-            :to="`/${$route.params.company}/debit-note/${fields.id}`"
-            color="orange-6"
-            label="Edit"
-            icon="edit"
-          />
-          <q-btn
-            v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')
-            "
-            :loading="isLoading"
-            color="green-6"
-            label="mark as resolved"
-            icon="mdi-check-all"
-            @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')"
-          />
-          <q-btn
-            v-if="checkPermissions('debitnote.cancel')"
-            :loading="isLoading"
-            color="red-5"
-            label="Cancel"
-            icon="cancel"
-            @click.prevent="() => (isDeleteOpen = true)"
-          />
+          <q-btn v-if="checkPermissions('debitnote.modify') && (fields.can_update_issued || fields.status === 'Draft')" :to="`/${$route.params.company}/debit-note/${fields.id}`" color="orange-6" label="Edit" icon="edit" />
+          <q-btn v-if="fields?.status === 'Issued' && checkPermissions('debitnote.modify')" :loading="isLoading" color="green-6" label="mark as resolved" icon="mdi-check-all" @click.prevent="() => submitChangeStatus(fields?.id, 'Resolved')" />
+          <q-btn v-if="checkPermissions('debitnote.cancel')" :loading="isLoading" color="red-5" label="Cancel" icon="cancel" @click.prevent="() => (isDeleteOpen = true)" />
         </div>
       </div>
       <div class="row q-mb-md q-gutter-x-md">
-        <q-btn
-          v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-          :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''
-          }`"
-          icon="print"
-          @click="onPrintclick(false)"
-        />
+        <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" :label="`Print ${fields.print_count > 0 ? `Copy No. ${fields.print_count}` : ''}`" icon="print" @click="onPrintclick(false)" />
         <q-btn v-else label="Print" icon="print" @click="onPrintclick(true)" />
-        <q-btn
-          v-if="fields?.status === 'Issued' || fields?.status === 'Resolved'"
-          color="blue-7"
-          label="Journal Entries"
-          icon="books"
-          :to="`/${$route.params.company}/journal-entries/debit-note/${fields?.id}/`"
-        />
+        <q-btn v-if="fields?.status === 'Issued' || fields?.status === 'Resolved'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/debit-note/${fields?.id}/`" />
       </div>
     </div>
     <!-- <q-dialog v-model="isDeleteOpen">
@@ -327,9 +267,7 @@ export default {
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">
-            Are you sure?
-          </div>
+          <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
           <div class="text-blue">
             <div class="row justify-end">
               <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
@@ -344,7 +282,6 @@ export default {
 
 <style scoped>
 @media print {
-
   /* @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap"); */
   .q-card {
     box-shadow: none;

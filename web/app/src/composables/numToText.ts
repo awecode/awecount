@@ -27,16 +27,13 @@ function toText(num: number, isCurrency: boolean) {
   const useAnd: boolean = !(fract_part > 0) || USE_AND_EVEN_IF_DECIMAL
 
   if (fract_part > 0) {
-    if (isCurrency)
-      fract_num =
-        'and ' + toIndianText(fract_part, isCurrency, false) + ' Paisa'
+    if (isCurrency) fract_num = 'and ' + toIndianText(fract_part, isCurrency, false) + ' Paisa'
     else fract_num = ' Point ' + toIndianText(fract_part, isCurrency)
   }
 
   if (isCurrency) {
     const rupeeString = Math.floor(num) == 1 ? ' Rupee ' : ' Rupees '
-    res =
-      toIndianText(num, isCurrency, useAnd) + rupeeString + fract_num + ' only'
+    res = toIndianText(num, isCurrency, useAnd) + rupeeString + fract_num + ' only'
   } else res = toIndianText(num, isCurrency, useAnd) + fract_num
 
   return res
@@ -74,40 +71,8 @@ function toIndianText(num: number, isCurrency?: boolean, useAnd?: boolean) {
     res += (res == '' ? '' : ' ') + toIndianText(Dn) + ' Hundred'
   }
 
-  const ones: Array<string> = [
-    '',
-    'One',
-    'Two',
-    'Three',
-    'Four',
-    'Five',
-    'Six',
-    'Seven',
-    'Eight',
-    'Nine',
-    'Ten',
-    'Eleven',
-    'Twelve',
-    'Thirteen',
-    'Fourteen',
-    'Fifteen',
-    'Sixteen',
-    'Seventeen',
-    'Eighteen',
-    'Nineteen',
-  ]
-  const tens: Array<string> = [
-    '',
-    '',
-    'Twenty',
-    'Thirty',
-    'Fourty',
-    'Fifty',
-    'Sixty',
-    'Seventy',
-    'Eighty',
-    'Ninety',
-  ]
+  const ones: Array<string> = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+  const tens: Array<string> = ['', '', 'Twenty', 'Thirty', 'Fourty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
 
   if (tn > 0 || one > 0) {
     if (isCurrency && useAnd) {

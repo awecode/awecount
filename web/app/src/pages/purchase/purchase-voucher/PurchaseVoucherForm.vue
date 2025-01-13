@@ -27,10 +27,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          `${formData.isEdit?.value
-            ? 'Update Purchases/Expenses'
-            : 'Add Purchases/Expenses'} | Awecount`,
+        title: `${formData.isEdit?.value ? 'Update Purchases/Expenses' : 'Add Purchases/Expenses'} | Awecount`,
       }
     })
     const deleteRowErr = (index, errors, deleteObj) => {
@@ -53,32 +50,29 @@ export default {
     formData.fields.value.date = formData.today
     formData.fields.value.due_date = formData.today
     formData.fields.value.is_import = false
-    watch(() => formData.formDefaults.value, () => {
-      if (!formData.isEdit.value) {
-        if (formData.formDefaults.value.fields?.mode) {
-          if (isNaN(formData.formDefaults.value.fields?.mode)) {
-            formData.fields.value.mode = formData.formDefaults.value.fields.mode
+    watch(
+      () => formData.formDefaults.value,
+      () => {
+        if (!formData.isEdit.value) {
+          if (formData.formDefaults.value.fields?.mode) {
+            if (isNaN(formData.formDefaults.value.fields?.mode)) {
+              formData.fields.value.mode = formData.formDefaults.value.fields.mode
+            } else {
+              formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
+            }
           } else {
-            formData.fields.value.mode = Number(formData.formDefaults.value.fields.mode)
+            formData.fields.value.mode = 'Credit'
           }
-        } else {
-          formData.fields.value.mode = 'Credit'
         }
-      }
-    })
+      },
+    )
     const fetchInvoice = async (data) => {
       if (!formData?.errors?.value) formData.errors.value = {}
       delete formData.errors.value.fiscal_year
       delete formData.errors.value.invoice_no
       const fetchData = data || { invoice_no: referenceFormData.value.invoice_no, fiscal_year: referenceFormData.value.fiscal_year }
-      if (
-        fetchData.invoice_no
-        && fetchData.fiscal_year
-      ) {
-        if (
-          formData.fields.value.purchase_orders
-          && formData.fields.value.purchase_orders.includes(fetchData.invoice_no)
-        ) {
+      if (fetchData.invoice_no && fetchData.fiscal_year) {
+        if (formData.fields.value.purchase_orders && formData.fields.value.purchase_orders.includes(fetchData.invoice_no)) {
           $q.notify({
             color: 'red-6',
             message: 'Invoice Already Exists!',
@@ -88,10 +82,7 @@ export default {
           formData.errors.value.invoice_no = 'The invoice has already been added!'
         } else {
           const url = 'v1/purchase-order/by-voucher-no/'
-          useApi(
-            `${url
-            }?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`,
-          )
+          useApi(`${url}?invoice_no=${fetchData.invoice_no}&fiscal_year=${fetchData.fiscal_year}`)
             .then((data) => {
               const response = { ...data }
               if (formData.fields.value.purchase_orders) {
@@ -113,20 +104,7 @@ export default {
               } else {
                 formData.fields.value.purchase_order_numbers = [response.voucher_no]
               }
-              const removeArr = [
-                'id',
-                'date',
-                'voucher_meta',
-                'print_count',
-                'issue_datetime',
-                'is_export',
-                'status',
-                'due_date',
-                'rows',
-                'date',
-                'remarks',
-                'voucher_no',
-              ]
+              const removeArr = ['id', 'date', 'voucher_meta', 'print_count', 'issue_datetime', 'is_export', 'status', 'due_date', 'rows', 'date', 'remarks', 'voucher_no']
               removeArr.forEach((item) => {
                 delete data[item]
               })
@@ -181,16 +159,17 @@ export default {
         fetchInvoice(data)
       }
     })
-    watch(() => formData.formDefaults.value, () => {
-      if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
-        formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
-      }
-    })
+    watch(
+      () => formData.formDefaults.value,
+      () => {
+        if (formData.formDefaults.value.fields?.hasOwnProperty('trade_discount')) {
+          formData.fields.value.trade_discount = formData.formDefaults.value.fields?.trade_discount
+        }
+      },
+    )
     const discountOptionsComputed = computed(() => {
       if (formData?.formDefaults.value?.collections?.discounts) {
-        return staticOptions.discount_types.concat(
-          formData.formDefaults.value.collections.discounts,
-        )
+        return staticOptions.discount_types.concat(formData.formDefaults.value.collections.discounts)
       } else {
         return staticOptions.discount_types
       }
@@ -253,26 +232,8 @@ export default {
                   </q-card-section>
 
                   <q-card-section class="q-mx-lg">
-                    <q-input
-                      v-model.number="referenceFormData.invoice_no"
-                      label="Purchase Order No.*"
-                      autofocus
-                      type="number"
-                      :error="!!errors?.invoice_no"
-                      :error-message="errors?.invoice_no"
-                    />
-                    <q-select
-                      v-model="referenceFormData.fiscal_year"
-                      class="q-mt-md"
-                      label="Fiscal Year"
-                      :options="formDefaults.options?.fiscal_years"
-                      option-value="id"
-                      option-label="name"
-                      map-options
-                      emit-value
-                      :error="!!errors?.fiscal_year"
-                      :error-message="errors?.fiscal_year"
-                    />
+                    <q-input v-model.number="referenceFormData.invoice_no" label="Purchase Order No.*" autofocus type="number" :error="!!errors?.invoice_no" :error-message="errors?.invoice_no" />
+                    <q-select v-model="referenceFormData.fiscal_year" class="q-mt-md" label="Fiscal Year" :options="formDefaults.options?.fiscal_years" option-value="id" option-label="name" map-options emit-value :error="!!errors?.fiscal_year" :error-message="errors?.fiscal_year" />
                     <div class="row justify-end q-mt-lg">
                       <q-btn color="green" label="Add" size="md" @click="fetchInvoice()" />
                     </div>
@@ -281,110 +242,36 @@ export default {
               </q-dialog>
             </div>
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2
-                v-model="fields.party"
-                :options="formDefaults.collections?.parties"
-                label="Party"
-                :error="errors?.party ? errors?.party : ''"
-                :static-option="fields.selected_party_obj"
-                :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`"
-                :modal-component="checkPermissions('party.create') ? PartyForm : null"
-              />
+              <n-auto-complete-v2 v-model="fields.party" :options="formDefaults.collections?.parties" label="Party" :error="errors?.party ? errors?.party : ''" :static-option="fields.selected_party_obj" :endpoint="`/api/company/${$route.params.company}/sales-voucher/create-defaults/parties`" :modal-component="checkPermissions('party.create') ? PartyForm : null" />
             </div>
-            <q-input
-              v-model="fields.voucher_no"
-              class="col-md-6 col-12"
-              label="Bill No.*"
-              :error-message="errors.voucher_no"
-              :error="!!errors.voucher_no"
-            />
+            <q-input v-model="fields.voucher_no" class="col-md-6 col-12" label="Bill No.*" :error-message="errors.voucher_no" :error="!!errors.voucher_no" />
             <div class="col-md-6 col-12 row q-col-gutter-md">
-              <div
-                :class="['Percent', 'Amount'].includes(fields.discount_type)
-                  ? 'col-6'
-                  : 'col-12'
-                "
-              >
-                <n-auto-complete
-                  v-model="fields.discount_type"
-                  label="Discount"
-                  :error="errors.discount_type"
-                  :options="discountOptionsComputed"
-                  :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null"
-                />
+              <div :class="['Percent', 'Amount'].includes(fields.discount_type) ? 'col-6' : 'col-12'">
+                <n-auto-complete v-model="fields.discount_type" label="Discount" :error="errors.discount_type" :options="discountOptionsComputed" :modal-component="checkPermissions('purchasediscount.create') ? PurchaseDiscountForm : null" />
               </div>
               <div class="col-6 row">
-                <div
-                  v-if="fields.discount_type === 'Amount'
-                    || fields.discount_type === 'Percent'
-                  "
-                  :class="formDefaults.options?.show_trade_discount_in_voucher
-                    ? 'col-6'
-                    : 'col-12'
-                  "
-                >
-                  <q-input
-                    v-model.number="fields.discount"
-                    class="col-6"
-                    label="Discount"
-                    :error-message="errors.discount"
-                    :error="!!errors.discount"
-                  />
+                <div v-if="fields.discount_type === 'Amount' || fields.discount_type === 'Percent'" :class="formDefaults.options?.show_trade_discount_in_voucher ? 'col-6' : 'col-12'">
+                  <q-input v-model.number="fields.discount" class="col-6" label="Discount" :error-message="errors.discount" :error="!!errors.discount" />
                 </div>
-                <div
-                  v-if="formDefaults.options?.show_trade_discount_in_voucher
-                    && ['Percent', 'Amount'].includes(fields.discount_type)
-                  "
-                  class="col-3 row"
-                >
+                <div v-if="formDefaults.options?.show_trade_discount_in_voucher && ['Percent', 'Amount'].includes(fields.discount_type)" class="col-3 row">
                   <q-checkbox v-model="fields.trade_discount" label="Trade Discount?" />
                 </div>
               </div>
             </div>
             <div class="col-md-6 col-12">
-              <date-picker
-                v-model="fields.date"
-                label="Date *"
-                :error-message="errors.date"
-                :error="!!errors.date"
-              />
+              <date-picker v-model="fields.date" label="Date *" :error-message="errors.date" :error="!!errors.date" />
             </div>
           </div>
 
           <div class="row q-col-gutter-md">
             <div class="col-md-6 col-12">
-              <n-auto-complete-v2
-                v-model="fields.payment_mode"
-                label="Payment Mode"
-                :error-message="errors.payment_mode"
-                :error="!!errors.payment_mode"
-                :static-option="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj"
-                :options="modeOptionsComputed"
-                :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/payment_modes`"
-                option-value="id"
-                option-label="name"
-                map-options
-                emit-value
-              >
+              <n-auto-complete-v2 v-model="fields.payment_mode" label="Payment Mode" :error-message="errors.payment_mode" :error="!!errors.payment_mode" :static-option="isEdit ? fields.selected_payment_mode_obj : formDefaults.options?.default_payment_mode_obj" :options="modeOptionsComputed" :endpoint="`/api/company/${$route.params.company}/purchase-vouchers/create-defaults/payment_modes`" option-value="id" option-label="name" map-options emit-value>
                 <template #append>
-                  <q-icon
-                    v-if="fields.payment_mode !== null"
-                    class="cursor-pointer"
-                    name="clear"
-                    @click.stop.prevent="fields.payment_mode = null"
-                  />
+                  <q-icon v-if="fields.payment_mode !== null" class="cursor-pointer" name="clear" @click.stop.prevent="fields.payment_mode = null" />
                 </template>
               </n-auto-complete-v2>
             </div>
-            <date-picker
-              v-if="formDefaults.options?.enable_due_date_in_voucher"
-              v-model="fields.due_date"
-              label="Due Date"
-              class="col-md-6 col-12"
-              :error-message="errors?.due_date"
-              :error="!!errors?.due_date"
-              :to-limit="fields.date"
-            />
+            <date-picker v-if="formDefaults.options?.enable_due_date_in_voucher" v-model="fields.due_date" label="Due Date" class="col-md-6 col-12" :error-message="errors?.due_date" :error="!!errors?.due_date" :to-limit="fields.date" />
           </div>
           <!-- {{ fields.date }} -->
         </q-card-section>
@@ -392,11 +279,9 @@ export default {
       <invoice-table
         v-if="formDefaults.collections"
         v-model="fields.rows"
-        :item-options="formDefaults.collections ? formDefaults.collections.items : null
-        "
+        :item-options="formDefaults.collections ? formDefaults.collections.items : null"
         used-in="purchase"
-        :unit-options="formDefaults.collections ? formDefaults.collections.units : null
-        "
+        :unit-options="formDefaults.collections ? formDefaults.collections.units : null"
         :discount-options="discountOptionsComputed"
         :tax-options="formDefaults.collections?.tax_schemes"
         :main-discount="{
@@ -406,8 +291,7 @@ export default {
         :errors="!!errors.rows ? errors.rows : null"
         :enable-row-description="formDefaults.options?.enable_row_description"
         :show-row-trade-discount="formDefaults.options?.show_trade_discount_in_row"
-        @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)
-        "
+        @delete-row-err="(index, deleteObj) => deleteRowErr(index, errors, deleteObj)"
       />
       <div class="row q-px-lg">
         <div class="col-12 col-md-6 row">
@@ -416,15 +300,7 @@ export default {
             label="Remarks"
             type="textarea"
           ></q-input> -->
-          <q-input
-            v-model="fields.remarks"
-            label="Remarks"
-            type="textarea"
-            autogrow
-            class="col-12 col-md-10"
-            :error="!!errors?.remarks"
-            :error-message="errors?.remarks"
-          />
+          <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.remarks" :error-message="errors?.remarks" />
         </div>
         <div class="col-12 col-md-6 row justify-between">
           <div>
@@ -435,36 +311,10 @@ export default {
       </div>
 
       <div class="q-pr-md q-pb-lg q-mt-md row justify-end q-gutter-x-md">
-        <q-btn
-          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
-          :loading="loading"
-          color="orange"
-          label="Save Draft"
-          type="submit"
-          @click.prevent="() => onSubmitClick('Draft')"
-        />
-        <q-btn
-          v-if="checkPermissions('purchasevoucher.create') && isEdit && fields.status === 'Draft'"
-          :loading="loading"
-          color="orange"
-          label="Update Draft"
-          type="submit"
-          @click.prevent="() => onSubmitClick('Draft')"
-        />
-        <q-btn
-          v-if="checkPermissions('purchasevoucher.create') && !isEdit"
-          :loading="loading"
-          color="green"
-          label="Issue"
-          @click.prevent="() => onSubmitClick('Issued')"
-        />
-        <q-btn
-          v-if="checkPermissions('purchasevoucher.create') && isEdit"
-          :loading="loading"
-          color="green"
-          :label="fields.status === 'Draft' ? 'Issue from Draft' : 'Update'"
-          @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)"
-        />
+        <q-btn v-if="checkPermissions('purchasevoucher.create') && !isEdit" :loading="loading" color="orange" label="Save Draft" type="submit" @click.prevent="() => onSubmitClick('Draft')" />
+        <q-btn v-if="checkPermissions('purchasevoucher.create') && isEdit && fields.status === 'Draft'" :loading="loading" color="orange" label="Update Draft" type="submit" @click.prevent="() => onSubmitClick('Draft')" />
+        <q-btn v-if="checkPermissions('purchasevoucher.create') && !isEdit" :loading="loading" color="green" label="Issue" @click.prevent="() => onSubmitClick('Issued')" />
+        <q-btn v-if="checkPermissions('purchasevoucher.create') && isEdit" :loading="loading" color="green" :label="fields.status === 'Draft' ? 'Issue from Draft' : 'Update'" @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" />
       </div>
     </q-card>
   </q-form>

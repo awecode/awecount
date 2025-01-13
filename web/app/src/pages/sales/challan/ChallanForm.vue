@@ -16,9 +16,7 @@ export default {
     })
     useMeta(() => {
       return {
-        title:
-          `${formData.isEdit?.value ? 'Challan Update' : 'Challan Add'
-          } | Awecount`,
+        title: `${formData.isEdit?.value ? 'Challan Update' : 'Challan Add'} | Awecount`,
       }
     })
     const partyMode = ref(true)
@@ -101,7 +99,7 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Cancelled'
-          formData.fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+          formData.fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
           isDeleteOpen.value = false
           formData.loading.value = false
         })
@@ -115,7 +113,7 @@ export default {
                   icon: 'check_circle',
                 })
                 formData.fields.value.status = 'Cancelled'
-                formData.fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+                formData.fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
                 isDeleteOpen.value = false
                 formData.loading.value = false
               })
@@ -145,13 +143,9 @@ export default {
       () => formData.fields.value.party,
       (newValue) => {
         if (newValue) {
-          const index
-            = formData.formDefaults.value.collections?.parties.results.findIndex(
-              option => option.id === newValue,
-            )
+          const index = formData.formDefaults.value.collections?.parties.results.findIndex((option) => option.id === newValue)
           if (index > -1) {
-            formData.fields.value.address
-              = formData.formDefaults.value.collections.parties.results[index].address
+            formData.fields.value.address = formData.formDefaults.value.collections.parties.results[index].address
           }
         }
       },
@@ -182,8 +176,10 @@ export default {
       <q-card-section class="bg-green text-white">
         <div class="text-h6">
           <span v-if="!isEdit">New Challan</span>
-          <span v-else>Update Challan
-            <span v-if="isEdit && fields?.voucher_no">| {{ fields?.status }} | # {{ fields?.voucher_no }}</span></span>
+          <span v-else>
+            Update Challan
+            <span v-if="isEdit && fields?.voucher_no">| {{ fields?.status }} | # {{ fields?.voucher_no }}</span>
+          </span>
         </div>
       </q-card-section>
 
@@ -193,24 +189,8 @@ export default {
             <div class="col-md-6 col-12">
               <div class="row">
                 <div class="col-10">
-                  <q-input
-                    v-if="!partyMode || !!fields.customer_name"
-                    v-model="fields.customer_name"
-                    label="Customer Name"
-                    :error-message="errors.customer_name"
-                    :error="!!errors.customer_name"
-                  />
-                  <n-auto-complete-v2
-                    v-else
-                    v-model="fields.party"
-                    :options="formDefaults.collections?.parties"
-                    :endpoint="`/api/company/${$route.params.company}/challan/create-defaults/parties`"
-                    :static-option="fields.selected_party_obj"
-                    label="Party"
-                    :error="errors?.party ? errors?.party : null"
-                    :modal-component="checkPermissions('party.create') ? PartyForm : null
-                    "
-                  />
+                  <q-input v-if="!partyMode || !!fields.customer_name" v-model="fields.customer_name" label="Customer Name" :error-message="errors.customer_name" :error="!!errors.customer_name" />
+                  <n-auto-complete-v2 v-else v-model="fields.party" :options="formDefaults.collections?.parties" :endpoint="`/api/company/${$route.params.company}/challan/create-defaults/parties`" :static-option="fields.selected_party_obj" label="Party" :error="errors?.party ? errors?.party : null" :modal-component="checkPermissions('party.create') ? PartyForm : null" />
                 </div>
                 <div class="col-2 row justify-center q-py-md">
                   <q-btn flat size="md" @click="() => switchPartyMode(fields, isEdit)">
@@ -220,86 +200,23 @@ export default {
               </div>
               <div></div>
             </div>
-            <DatePicker
-              v-model="fields.date"
-              class="col-md-6 col-12"
-              label="Deposit Date*"
-              :error="!!errors?.date"
-              :error-message="errors?.date"
-            />
+            <DatePicker v-model="fields.date" class="col-md-6 col-12" label="Deposit Date*" :error="!!errors?.date" :error-message="errors?.date" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.address"
-              class="col-md-6 col-12"
-              label="Address"
-              :error-message="errors.address"
-              :error="!!errors.address"
-            />
+            <q-input v-model="fields.address" class="col-md-6 col-12" label="Address" :error-message="errors.address" :error="!!errors.address" />
           </div>
         </q-card-section>
       </q-card>
-      <ChallanTable
-        v-if="formDefaults.collections"
-        v-model="fields.rows"
-        :item-options="formDefaults.collections ? formDefaults.collections.items : null
-        "
-        :unit-options="formDefaults.collections ? formDefaults.collections.units : null
-        "
-        :errors="!!errors.rows ? errors.rows : null"
-        :is-edit="isEdit"
-        @delete-row="(index, deleteObj) => deleteRow(index, errors, deleteObj)"
-      />
+      <ChallanTable v-if="formDefaults.collections" v-model="fields.rows" :item-options="formDefaults.collections ? formDefaults.collections.items : null" :unit-options="formDefaults.collections ? formDefaults.collections.units : null" :errors="!!errors.rows ? errors.rows : null" :is-edit="isEdit" @delete-row="(index, deleteObj) => deleteRow(index, errors, deleteObj)" />
       <div class="q-px-md">
-        <q-input
-          v-model="fields.remarks"
-          label="Remarks"
-          type="textarea"
-          autogrow
-          class="col-12 col-md-10"
-          :error="!!errors?.remarks"
-          :error-message="errors?.remarks"
-        />
+        <q-input v-model="fields.remarks" label="Remarks" type="textarea" autogrow class="col-12 col-md-10" :error="!!errors?.remarks" :error-message="errors?.remarks" />
       </div>
       <div class="q-ma-md row q-pb-lg flex justify-end q-gutter-md">
-        <q-btn
-          v-if="checkPermissions('challan.modify') && isEdit && fields.status === 'Issued'"
-          :loading="loading"
-          color="green"
-          icon="done_all"
-          label="Mark As Resolved"
-          @click.prevent="onResolvedClick"
-        />
-        <q-btn
-          v-if="checkPermissions('challan.modify') && (fields.status === 'Issued' || fields.status === 'Resolved')"
-          :loading="loading"
-          color="red"
-          label="Cancel"
-          icon="cancel"
-          @click.prevent="isDeleteOpen = true"
-        />
-        <q-btn
-          v-if="checkPermissions('challan.create') && (!isEdit || fields.status === 'Draft')"
-          :loading="loading"
-          color="orange"
-          :label="isEdit ? 'Update Draft' : 'Save Draft'"
-          type="submit"
-          @click.prevent="() => onSubmitClick('Draft')"
-        />
-        <q-btn
-          v-if="checkPermissions('challan.create') && !isEdit"
-          :loading="loading"
-          color="green"
-          label="Create"
-          @click.prevent="() => onSubmitClick('Issued')"
-        />
-        <q-btn
-          v-if="checkPermissions('challan.modify') && isEdit && fields.status !== 'Cancelled'"
-          :loading="loading"
-          color="green"
-          :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'"
-          @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)"
-        />
+        <q-btn v-if="checkPermissions('challan.modify') && isEdit && fields.status === 'Issued'" :loading="loading" color="green" icon="done_all" label="Mark As Resolved" @click.prevent="onResolvedClick" />
+        <q-btn v-if="checkPermissions('challan.modify') && (fields.status === 'Issued' || fields.status === 'Resolved')" :loading="loading" color="red" label="Cancel" icon="cancel" @click.prevent="isDeleteOpen = true" />
+        <q-btn v-if="checkPermissions('challan.create') && (!isEdit || fields.status === 'Draft')" :loading="loading" color="orange" :label="isEdit ? 'Update Draft' : 'Save Draft'" type="submit" @click.prevent="() => onSubmitClick('Draft')" />
+        <q-btn v-if="checkPermissions('challan.create') && !isEdit" :loading="loading" color="green" label="Create" @click.prevent="() => onSubmitClick('Issued')" />
+        <q-btn v-if="checkPermissions('challan.modify') && isEdit && fields.status !== 'Cancelled'" :loading="loading" color="green" :label="fields.status === 'Draft' ? 'Issue From Draft' : 'Update'" @click.prevent="() => onSubmitClick(fields.status === 'Draft' ? 'Issued' : fields.status)" />
       </div>
     </q-card>
     <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
@@ -312,14 +229,7 @@ export default {
         </q-card-section>
 
         <q-card-section class="q-ma-md">
-          <q-input
-            v-model="deleteMsg"
-            autofocus
-            type="textarea"
-            outlined
-            :error="!!errors?.message"
-            :error-message="errors?.message"
-          />
+          <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick" />
           </div>

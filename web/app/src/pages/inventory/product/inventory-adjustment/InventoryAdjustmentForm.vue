@@ -84,7 +84,7 @@ export default {
             icon: 'check_circle',
           })
           formData.fields.value.status = 'Cancelled'
-          formData.fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+          formData.fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
           isDeleteOpen.value = false
           formData.loading.value = false
         })
@@ -98,7 +98,7 @@ export default {
                   icon: 'check_circle',
                 })
                 formData.fields.value.status = 'Cancelled'
-                formData.fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+                formData.fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
                 isDeleteOpen.value = false
                 formData.loading.value = false
               })
@@ -151,76 +151,29 @@ export default {
         </div>
       </q-card-section>
       <div class="flex justify-end p-4">
-        <q-btn
-          label="Import From XlS"
-          class="flex justify-end text-green"
-          @click="isAdjustmentImportOpen = true"
-        />
+        <q-btn label="Import From XlS" class="flex justify-end text-green" @click="isAdjustmentImportOpen = true" />
       </div>
       <q-dialog v-model="isAdjustmentImportOpen">
         <q-card style="min-width: min(80vw, 900px)">
-          <q-btn
-            style="position: absolute; right: 8px; top: 8px; z-index: 50"
-            push
-            color="red"
-            text-color="white"
-            round
-            dense
-            icon="close"
-            @click="isAdjustmentImportOpen = false"
-          />
+          <q-btn style="position: absolute; right: 8px; top: 8px; z-index: 50" push color="red" text-color="white" round dense icon="close" @click="isAdjustmentImportOpen = false" />
           <InventoryAdjustmentImport @modal-close="isAdjustmentImportOpen = false" @on-import-success="onXlsFileImport" />
         </q-card>
       </q-dialog>
       <q-card class="q-ma-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <date-picker
-              v-model="fields.date"
-              label="Date*"
-              class="col-md-6 col-12"
-              :error="!!errors?.date"
-              :error-message="errors?.date"
-            />
-            <q-select
-              v-model="fields.purpose"
-              class="col-md-6 col-12"
-              :options="purposeChoices"
-              option-value="value"
-              option-label="label"
-              map-options
-              emit-value
-              label="Purpose"
-              :error-message="errors.purpose"
-              :error="!!errors.purpose"
-              :disable="isEdit"
-            />
+            <date-picker v-model="fields.date" label="Date*" class="col-md-6 col-12" :error="!!errors?.date" :error-message="errors?.date" />
+            <q-select v-model="fields.purpose" class="col-md-6 col-12" :options="purposeChoices" option-value="value" option-label="label" map-options emit-value label="Purpose" :error-message="errors.purpose" :error="!!errors.purpose" :disable="isEdit" />
           </div>
           <div class="q-mt-lg">
-            <AdjustmentInvoiceTable
-              v-model="fields.rows"
-              :item-options="formDefaults?.collections?.items"
-              :unit-options="formDefaults?.collections?.units"
-              :errors="errors?.rows"
-              @delete-row="(index) => deleteRow(index, errors)"
-            />
+            <AdjustmentInvoiceTable v-model="fields.rows" :item-options="formDefaults?.collections?.items" :unit-options="formDefaults?.collections?.units" :errors="errors?.rows" @delete-row="(index) => deleteRow(index, errors)" />
           </div>
           <div class="q-mt-lg">
-            <q-input
-              v-model="fields.remarks"
-              label="Remarks*"
-              class="col-6"
-              :error-message="errors.remarks"
-              :error="!!errors.remarks"
-              type="textarea"
-              autogrow
-            />
+            <q-input v-model="fields.remarks" label="Remarks*" class="col-6" :error-message="errors.remarks" :error="!!errors.remarks" type="textarea" autogrow />
           </div>
         </q-card-section>
         <div v-if="importErrorData.length">
-          <div class="text-sm text-gray">
-            Following item codes failed to import:
-          </div>
+          <div class="text-sm text-gray">Following item codes failed to import:</div>
           <div class="grid grid-cols-12">
             <div v-for="item in importErrorData" :key="item">
               <div>{{ item }}</div>
@@ -228,29 +181,9 @@ export default {
           </div>
         </div>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn
-            v-if="checkPermissions('inventoryadjustmentvoucher.delete') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading"
-            color="red"
-            label="Cancel"
-            @click.prevent="isDeleteOpen = true"
-          />
-          <q-btn
-            v-if="checkPermissions('inventoryadjustmentvoucher.modify') && isEdit && fields.status !== 'Cancelled'"
-            :loading="loading"
-            color="green"
-            label="Update"
-            type="submit"
-            @click.prevent="onSubmitClick(fields.status)"
-          />
-          <q-btn
-            v-if="!isEdit && checkPermissions('inventoryadjustmentvoucher.create')"
-            :loading="loading"
-            color="green"
-            label="Create"
-            type="submit"
-            @click.prevent="onSubmitClick('Issued')"
-          />
+          <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.delete') && isEdit && fields.status !== 'Cancelled'" :loading="loading" color="red" label="Cancel" @click.prevent="isDeleteOpen = true" />
+          <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.modify') && isEdit && fields.status !== 'Cancelled'" :loading="loading" color="green" label="Update" type="submit" @click.prevent="onSubmitClick(fields.status)" />
+          <q-btn v-if="!isEdit && checkPermissions('inventoryadjustmentvoucher.create')" :loading="loading" color="green" label="Create" type="submit" @click.prevent="onSubmitClick('Issued')" />
         </div>
       </q-card>
       <q-dialog v-model="isDeleteOpen" @before-hide="delete errors.message">
@@ -263,14 +196,7 @@ export default {
           </q-card-section>
 
           <q-card-section class="q-ma-md">
-            <q-input
-              v-model="deleteMsg"
-              autofocus
-              type="textarea"
-              outlined
-              :error="!!errors?.message"
-              :error-message="errors?.message"
-            />
+            <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
             <div class="text-right q-mt-lg">
               <q-btn label="Confirm" @click="onCancelClick" />
             </div>

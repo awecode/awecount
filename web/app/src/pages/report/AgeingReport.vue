@@ -17,14 +17,8 @@ export default {
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/report/export-ageing-report/${query}`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Customer_Ageing_Report',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Customer_Ageing_Report'))
+        .catch((err) => console.log('Error Due To', err))
     }
     const fetchData = () => {
       const endpoint = `/api/company/${route.params.company}/report/ageing-report/?date=${date.value}${route.query.page ? `&page=${route.query.page}` : ''}`
@@ -119,17 +113,7 @@ export default {
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export XLS" icon-right="download" class="export-btn" @click="onDownloadXls" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      title="Income Items"
-      :rows="reportData"
-      :columns="newColumns"
-      :loading="loading"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" title="Income Items" :rows="reportData" :columns="newColumns" :loading="loading" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="flex items-end gap-6">
           <DatePicker v-model="date" label="Date" />
@@ -138,12 +122,7 @@ export default {
       </template>
       <template #body-cell-party="props">
         <q-td :props="props">
-          <router-link
-            v-if="checkPermissions('category.modify')"
-            style="font-weight: 500; text-decoration: none"
-            class="text-blue l-view-btn"
-            :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`"
-          >
+          <router-link v-if="checkPermissions('category.modify')" style="font-weight: 500; text-decoration: none" class="text-blue l-view-btn" :to="`/${$route.params.company}/parties/account/${props.row.party_id}/`">
             {{ props.row.party_name }}
           </router-link>
           <span v-else>{{ props.row.party_name }}</span>

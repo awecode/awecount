@@ -33,7 +33,7 @@ export default {
             icon: 'check_circle',
           })
           fields.value.status = 'Cancelled'
-          fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+          fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
           isDeleteOpen.value = false
           loading.value = false
         })
@@ -47,7 +47,7 @@ export default {
                   icon: 'check_circle',
                 })
                 fields.value.status = 'Cancelled'
-                fields.value.remarks = (`\nReason for cancellation: ${deleteMsg.value}`)
+                fields.value.remarks = `\nReason for cancellation: ${deleteMsg.value}`
                 isDeleteOpen.value = false
                 loading.value = false
               })
@@ -109,7 +109,6 @@ export default {
       onPrintclick,
     }
   },
-
 }
 </script>
 
@@ -120,32 +119,27 @@ export default {
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
           <div class="text-h6 d-print-none">
-            <span>Inventory Adjustment Voucher | {{ fields?.status }}
+            <span>
+              Inventory Adjustment Voucher | {{ fields?.status }}
               <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
             </span>
           </div>
         </q-card-section>
         <div class="q-mx-lg q-pa-lg row text-grey-8 text-body2 grid grid-cols-2 gap-5">
           <div class="grid grid-cols-2">
-            <div class="">
-              Date
-            </div>
+            <div class="">Date</div>
             <div class="">
               {{ fields.date }}
             </div>
           </div>
           <div class="grid grid-cols-2">
-            <div class="">
-              Status
-            </div>
+            <div class="">Status</div>
             <div class="">
               {{ fields.status }}
             </div>
           </div>
           <div class="grid grid-cols-2">
-            <div class="">
-              Purpose
-            </div>
+            <div class="">Purpose</div>
             <div class="">
               {{ fields.purpose }}
             </div>
@@ -157,21 +151,11 @@ export default {
           <q-markup-table flat bordered>
             <thead>
               <q-tr class="text-left">
-                <q-th data-testid="SN">
-                  SN
-                </q-th>
-                <q-th data-testid="Particular">
-                  Particular
-                </q-th>
-                <q-th data-testid="Qty">
-                  Qty
-                </q-th>
-                <q-th data-testid="Rate">
-                  Rate
-                </q-th>
-                <q-th data-testid="Amount" class="text-right">
-                  Amount
-                </q-th>
+                <q-th data-testid="SN">SN</q-th>
+                <q-th data-testid="Particular">Particular</q-th>
+                <q-th data-testid="Qty">Qty</q-th>
+                <q-th data-testid="Rate">Rate</q-th>
+                <q-th data-testid="Amount" class="text-right">Amount</q-th>
               </q-tr>
             </thead>
             <tbody class="text-left">
@@ -180,7 +164,8 @@ export default {
                   {{ index + 1 }}
                 </q-td>
                 <q-td>
-                  {{ row.item_name }} <br />
+                  {{ row.item_name }}
+                  <br />
                   <span v-if="row.description" style="font-size: 11px" class="text-grey-8">
                     <div v-for="(des, index) in row.description.split('\n')" :key="index" class="whitespace-normal">
                       {{ des }}
@@ -188,9 +173,10 @@ export default {
                   </span>
                 </q-td>
                 <q-td>
-                  <span>{{ row.quantity }}
-                    <span class="text-grey-9">
-                      ({{ row.unit_name }})</span></span>
+                  <span>
+                    {{ row.quantity }}
+                    <span class="text-grey-9">({{ row.unit_name }})</span>
+                  </span>
                 </q-td>
                 <q-td>
                   <span>{{ $nf(row.rate) }}</span>
@@ -201,10 +187,11 @@ export default {
               </q-tr>
               <q-tr class="text-subtitle2">
                 <q-td />
-                <q-td /><q-td /><q-td> Total </q-td><q-td class="text-right">
-                  {{
-                    formatNumberWithComma(fields?.total_amount)
-                  }}
+                <q-td />
+                <q-td />
+                <q-td>Total</q-td>
+                <q-td class="text-right">
+                  {{ formatNumberWithComma(fields?.total_amount) }}
                 </q-td>
               </q-tr>
             </tbody>
@@ -213,47 +200,20 @@ export default {
       </q-card>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
         <q-card-section>
-          <span class="text-subtitle2 text-grey-9"> Remarks: </span>
+          <span class="text-subtitle2 text-grey-9">Remarks:</span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn
-              v-if="checkPermissions('inventoryadjustmentvoucher.modify') && (fields?.status !== 'Cancelled')"
-              color="orange-5"
-              label="Edit"
-              icon="edit"
-              :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`"
-            />
-            <q-btn
-              v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"
-              color="red-5"
-              label="Cancel"
-              icon="cancel"
-              :loading="loading"
-              @click.prevent="() => (isDeleteOpen = true)"
-            />
+            <q-btn v-if="checkPermissions('inventoryadjustmentvoucher.modify') && fields?.status !== 'Cancelled'" color="orange-5" label="Edit" icon="edit" :to="`/${$route.params.company}/items/inventory-adjustment/${fields?.id}/`" />
+            <q-btn v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" :loading="loading" @click.prevent="() => (isDeleteOpen = true)" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn
-            :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
-              ? ''
-              : `# ${(fields?.print_count || 0)}`
-            }` : ''}`
-            "
-            icon="print"
-            @click="() => onPrintclick(false, fields?.status === 'Draft')"
-          />
-          <q-btn
-            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-            color="blue-7"
-            label="Journal Entries"
-            icon="books"
-            :to="`/${$route.params.company}/journal-entries/inventory-adjustment/${fields.id}/`"
-          />
+          <q-btn :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
+          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/inventory-adjustment/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
           <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
@@ -265,14 +225,7 @@ export default {
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input
-                v-model="deleteMsg"
-                autofocus
-                type="textarea"
-                outlined
-                :error="!!errors?.message"
-                :error-message="errors?.message"
-              />
+              <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="onCancelClick" />
               </div>

@@ -30,10 +30,7 @@ export default {
     const getDate = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const dateArray = fields?.value.map((element) => {
-          return DateConverter.getRepresentation(
-            element.date,
-            store.isCalendarInAD ? 'ad' : 'bs',
-          )
+          return DateConverter.getRepresentation(element.date, store.isCalendarInAD ? 'ad' : 'bs')
         })
         return dateArray
       } else {
@@ -43,18 +40,8 @@ export default {
     const getAmount = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const data = fields?.value.map((element) => {
-          const dr
-            = element.transactions?.reduce(
-              (accum: number, item: Record<string, any>) =>
-                accum + Number(item.dr_amount),
-              0,
-            ) || 0
-          const cr
-            = element.transactions?.reduce(
-              (accum: number, item: Record<string, any>) =>
-                accum + Number(item.cr_amount),
-              0,
-            ) || 0
+          const dr = element.transactions?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.dr_amount), 0) || 0
+          const cr = element.transactions?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.cr_amount), 0) || 0
           return {
             dr_amount: dr,
             cr_amount: cr,
@@ -63,18 +50,8 @@ export default {
         const totalData = {
           voucherTally: data,
           totalAmount: {
-            total_dr:
-              data?.reduce(
-                (accum: number, item: Record<string, any>) =>
-                  accum + Number(item.dr_amount),
-                0,
-              ) || 0,
-            total_cr:
-              data?.reduce(
-                (accum: number, item: Record<string, any>) =>
-                  accum + Number(item.cr_amount),
-                0,
-              ) || 0,
+            total_dr: data?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.dr_amount), 0) || 0,
+            total_cr: data?.reduce((accum: number, item: Record<string, any>) => accum + Number(item.cr_amount), 0) || 0,
           },
         }
         return totalData
@@ -86,7 +63,7 @@ export default {
     const sameTransactionsData = computed(() => {
       if (Array.isArray(fields.value) && fields.value.length > 0) {
         const status = fields.value.every((item) => {
-          return (item.date === fields.value[0]?.date) && (item.voucher_no === fields.value[0]?.voucher_no) && (item.source_id === fields.value[0]?.source_id)
+          return item.date === fields.value[0]?.date && item.voucher_no === fields.value[0]?.voucher_no && item.source_id === fields.value[0]?.source_id
         })
         let newTransactionObj
         if (status) {
@@ -104,7 +81,7 @@ export default {
                     newTransactionObj[`${transaction.account.id}`].dr_amount = null
                   } else {
                     newTransactionObj[`${transaction.account.id}`].cr_amount = null
-                    newTransactionObj[`${transaction.account.id}`].dr_amount = (netAmount * -1)
+                    newTransactionObj[`${transaction.account.id}`].dr_amount = netAmount * -1
                   }
                 }
               } else {
@@ -178,8 +155,10 @@ export default {
       <q-card>
         <q-card-section class="bg-grey-4 text-black">
           <div class="text-h6">
-            <span>Journal Entries for
-              <span class="text-capitalize">{{ fields[0]?.voucher_type }}</span> #
+            <span>
+              Journal Entries for
+              <span class="text-capitalize">{{ fields[0]?.voucher_type }}</span>
+              #
               {{ fields[0]?.voucher_no || '-' }}
             </span>
           </div>
@@ -189,40 +168,21 @@ export default {
       <q-card class="q-mt-sm q-pa-lg">
         <div class="row justify-between q-mb-md">
           <div class="row items-center">
-            <div class="text-subtitle2 text-grey-8">
-              Date :&nbsp;
-            </div>
+            <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
             <div class="text-bold text-grey-9">
               {{ getDate[0] || '-' }}
             </div>
           </div>
-          <router-link
-            v-if="$route.params.slug === 'purchase-vouchers'
-              || $route.params.slug === 'sales-voucher'
-            "
-            style="text-decoration: none"
-            :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers'
-              ? 'purchase-voucher'
-              : $route.params.slug
-            }/${fields[0]?.source_id}/view`"
-          >
-            <div class="row items-center text-blue">
-              Source
-            </div>
+          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${fields[0]?.source_id}/view`">
+            <div class="row items-center text-blue">Source</div>
           </router-link>
         </div>
         <q-card-section class="">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
-            <div class="col-grow">
-              Account
-            </div>
-            <div class="col-3">
-              DR.
-            </div>
-            <div class="col-3">
-              CR.
-            </div>
+            <div class="col-grow">Account</div>
+            <div class="col-3">DR.</div>
+            <div class="col-3">CR.</div>
           </div>
           <!-- Body -->
           <!-- {{ sameTransactionsData }} -->
@@ -231,13 +191,8 @@ export default {
               <hr v-if="index !== 0" class="q-mb-md bg-grey-4 no-border" style="height: 2px" />
               <div class="row q-col-gutter-md">
                 <div class="col-grow">
-                  <router-link
-                    style="text-decoration: none"
-                    class="text-blue"
-                    :to="`/${$route.params.company}/account/${row.account.id}/view`"
-                  >
-                    {{
-                      row.account.name }}
+                  <router-link style="text-decoration: none" class="text-blue" :to="`/${$route.params.company}/account/${row.account.id}/view`">
+                    {{ row.account.name }}
                   </router-link>
                 </div>
                 <div class="col-3" data-testid="dr">
@@ -249,13 +204,8 @@ export default {
               </div>
             </template>
           </div>
-          <div
-            class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
-            style="margin-left: -20px; margin-right: -20px"
-          >
-            <div class="col-grow">
-              Total
-            </div>
+          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
+            <div class="col-grow">Total</div>
             <div class="col-3">
               {{ $nf(sameTransactionsData.total_dr) }}
             </div>
@@ -272,8 +222,10 @@ export default {
       <q-card>
         <q-card-section class="bg-grey-4 text-black">
           <div class="text-h6">
-            <span>Journal Entries for
-              <span class="text-capitalize">{{ voucher.voucher_type }}</span> #
+            <span>
+              Journal Entries for
+              <span class="text-capitalize">{{ voucher.voucher_type }}</span>
+              #
               {{ voucher?.voucher_no || '-' }}
             </span>
           </div>
@@ -283,40 +235,21 @@ export default {
       <q-card class="q-mt-sm q-pa-lg">
         <div class="row justify-between q-mb-md">
           <div class="row items-center">
-            <div class="text-subtitle2 text-grey-8">
-              Date :&nbsp;
-            </div>
+            <div class="text-subtitle2 text-grey-8">Date :&nbsp;</div>
             <div class="text-bold text-grey-9">
               {{ getDate[index] || '-' }}
             </div>
           </div>
-          <router-link
-            v-if="$route.params.slug === 'purchase-vouchers'
-              || $route.params.slug === 'sales-voucher'
-            "
-            style="text-decoration: none"
-            :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers'
-              ? 'purchase-voucher'
-              : $route.params.slug
-            }/${voucher?.source_id}/view`"
-          >
-            <div class="row items-center text-blue">
-              Source
-            </div>
+          <router-link v-if="$route.params.slug === 'purchase-vouchers' || $route.params.slug === 'sales-voucher'" style="text-decoration: none" :to="`/${$route.params.company}/${$route.params.slug === 'purchase-vouchers' ? 'purchase-voucher' : $route.params.slug}/${voucher?.source_id}/view`">
+            <div class="row items-center text-blue">Source</div>
           </router-link>
         </div>
         <q-card-section class="">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9 text-bold q-mb-lg">
-            <div class="col-grow">
-              Account
-            </div>
-            <div class="col-3">
-              DR.
-            </div>
-            <div class="col-3">
-              CR.
-            </div>
+            <div class="col-grow">Account</div>
+            <div class="col-3">DR.</div>
+            <div class="col-3">CR.</div>
           </div>
           <!-- Body -->
           <div v-for="(row, index) in voucher?.transactions" :key="row.id" class="q-my-md">
@@ -324,8 +257,7 @@ export default {
             <div class="row q-col-gutter-md">
               <div class="col-grow">
                 <router-link style="text-decoration: none" class="text-blue" :to="`/${$route.params.company}/account/${row.account.id}/view`">
-                  {{
-                    row.account.name }}
+                  {{ row.account.name }}
                 </router-link>
               </div>
               <div class="col-3" data-testid="dr">
@@ -336,13 +268,8 @@ export default {
               </div>
             </div>
           </div>
-          <div
-            class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center"
-            style="margin-left: -20px; margin-right: -20px"
-          >
-            <div class="col-grow">
-              Sub Total
-            </div>
+          <div class="row text-bold q-mt-md bg-grey-3 q-pa-md items-center" style="margin-left: -20px; margin-right: -20px">
+            <div class="col-grow">Sub Total</div>
             <div class="col-3">
               {{ $nf(getAmount?.voucherTally[index].dr_amount) }}
             </div>
@@ -387,9 +314,7 @@ export default {
     <q-card class="q-mt-sm q-mx-lg q-mb-xl">
       <q-card-section class="bg-grey-4">
         <div class="row text-bold">
-          <div class="col-grow">
-            Total
-          </div>
+          <div class="col-grow">Total</div>
           <div class="col-3">
             {{ $nf(sameTransactionsData.total_dr) }}
           </div>
@@ -402,11 +327,7 @@ export default {
   </template>
   <template v-if="sameTransactionsData && fields?.length > 1">
     <div class="q-ma-md flex justify-end">
-      <q-btn
-        :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'"
-        color="green"
-        @click="seprateTransactions = !seprateTransactions"
-      />
+      <q-btn :label="seprateTransactions ? 'View Merged Transactions' : 'View Sperate Transactions'" color="green" @click="seprateTransactions = !seprateTransactions" />
     </div>
   </template>
 </template>

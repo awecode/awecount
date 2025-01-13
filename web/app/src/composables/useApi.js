@@ -2,12 +2,7 @@ import { api } from 'boot/ofetch'
 import { useAuthStore } from 'src/stores/auth'
 import { useRouter } from 'vue-router'
 
-const useApi = async (
-  endpoint,
-  body,
-  omitToken,
-  permissionRedirect = false
-) => {
+const useApi = async (endpoint, body, omitToken, permissionRedirect = false) => {
   const loginStore = useAuthStore()
   const router = useRouter()
   const options = {}
@@ -31,12 +26,7 @@ const useApi = async (
           loginStore.reset()
           router.push('/login')
         }
-        if (
-          permissionRedirect &&
-          error.status == 403 &&
-          error.data.detail ===
-            "You don't have the permission to perform this action!"
-        ) {
+        if (permissionRedirect && error.status == 403 && error.data.detail === "You don't have the permission to perform this action!") {
           router.push('/no-permission')
         }
         return reject(error)

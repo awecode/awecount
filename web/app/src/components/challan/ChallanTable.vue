@@ -74,16 +74,12 @@ export default {
     }
     const removeRow = (index) => {
       if (props.errors || props.isEdit) {
-        emit(
-          'deleteRow',
-          index,
-          modalValue.value[index]?.id ? modalValue.value[index] : null,
-        )
+        emit('deleteRow', index, modalValue.value[index]?.id ? modalValue.value[index] : null)
       }
       modalValue.value.splice(index, 1)
     }
     const onItemChange = (index) => {
-      const itemIndex = props.itemOptions.results.findIndex(item => item.id === modalValue.value[index].item_id)
+      const itemIndex = props.itemOptions.results.findIndex((item) => item.id === modalValue.value[index].item_id)
       if (itemIndex > -1) {
         modalValue.value[index].unit_id = props.itemOptions.results[itemIndex].unit_id
         modalValue.value[index].selected_unit_obj = props.itemOptions.results[itemIndex].default_unit_obj
@@ -114,15 +110,9 @@ export default {
     <q-card class="min-w-[600px] pt-6">
       <div class="q-pa-lg q-col-gutter-md scroll">
         <div class="row text-subtitle2 hr q-py-sm no-wrap">
-          <div class="col-5 row">
-            Particular(s)
-          </div>
-          <div class="col-3 text-center">
-            Qty
-          </div>
-          <div class="col-3 text-center">
-            Unit
-          </div>
+          <div class="col-5 row">Particular(s)</div>
+          <div class="col-3 text-center">Qty</div>
+          <div class="col-3 text-center">Unit</div>
           <div class="col-1 text-center"></div>
         </div>
         <div v-for="(row, index) in modalValue" :key="index">
@@ -134,10 +124,11 @@ export default {
                 :endpoint="`/api/company/${$route.params.company}/${choiceEndpointBaseComputed}/create-defaults/items`"
                 :static-option="modalValue[index].selected_item_obj"
                 label="Item"
-                :error="!!errors?.[index]
-                  ? errors[index].item_id
-                    ? errors[index].item_id[0]
-                    : rowEmpty ? 'This field is required' : ''
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].item_id ? errors[index].item_id[0]
+                    : rowEmpty ? 'This field is required'
+                    : ''
                   : ''
                 "
                 :modal-component="ItemAdd"
@@ -149,15 +140,17 @@ export default {
                 v-model.number="modalValue[index].quantity"
                 label="Quantity"
                 type="number"
-                :error-message="!!errors?.[index]
-                  ? errors[index].quantity
-                    ? errors[index].quantity[0]
+                :error-message="
+                  !!errors?.[index] ?
+                    errors[index].quantity ?
+                      errors[index].quantity[0]
                     : ''
                   : ''
                 "
-                :error="!!errors?.[index]
-                  ? errors[index].quantity
-                    ? true
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].quantity ?
+                      true
                     : false
                   : false
                 "
@@ -174,26 +167,23 @@ export default {
                 option-label="name"
                 emit-value
                 map-options
-                :error-message="!!errors?.[index]
-                  ? errors[index].unit_id
-                    ? 'Please Select an Option'
+                :error-message="
+                  !!errors?.[index] ?
+                    errors[index].unit_id ?
+                      'Please Select an Option'
                     : ''
                   : ''
                 "
-                :error="!!errors?.[index]
-                  ? errors[index].unit_id
-                    ? true
+                :error="
+                  !!errors?.[index] ?
+                    errors[index].unit_id ?
+                      true
                     : false
                   : false
                 "
               >
                 <template v-if="modalValue[index].unit_id" #append>
-                  <q-icon
-                    name="close"
-                    size="xs"
-                    class="cursor-pointer"
-                    @click.stop.prevent="modalValue[index].unit_id = null"
-                  />
+                  <q-icon name="close" size="xs" class="cursor-pointer" @click.stop.prevent="modalValue[index].unit_id = null" />
                 </template>
               </n-auto-complete-v2>
             </div>
@@ -205,9 +195,7 @@ export default {
           </div>
         </div>
         <div>
-          <q-btn color="green" outline class="q-px-lg q-py-ms" @click="addRow">
-            Add Row
-          </q-btn>
+          <q-btn color="green" outline class="q-px-lg q-py-ms" @click="addRow">Add Row</q-btn>
         </div>
       </div>
     </q-card>

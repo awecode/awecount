@@ -66,96 +66,27 @@ function onDeletClick() {
       <q-card class="q-mx-lg q-pt-md">
         <q-card-section>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.name"
-              label="Name *"
-              class="col-12 col-md-6"
-              :error-message="errors.name"
-              :error="!!errors.name"
-            />
-            <q-input
-              v-model="fields.address"
-              label="Address"
-              class="col-12 col-md-6"
-              :error-message="errors.address"
-              :error="!!errors.address"
-            />
+            <q-input v-model="fields.name" label="Name *" class="col-12 col-md-6" :error-message="errors.name" :error="!!errors.name" />
+            <q-input v-model="fields.address" label="Address" class="col-12 col-md-6" :error-message="errors.address" :error="!!errors.address" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.contact_no"
-              label="Contact No"
-              class="col-12 col-md-6"
-              :error-message="errors.contact_no"
-              :error="!!errors.contact_no"
-            />
-            <q-input
-              v-model="fields.email"
-              label="Email"
-              class="col-12 col-md-6"
-              :error-message="errors.email"
-              :error="!!errors.email"
-              type="email"
-            />
+            <q-input v-model="fields.contact_no" label="Contact No" class="col-12 col-md-6" :error-message="errors.contact_no" :error="!!errors.contact_no" />
+            <q-input v-model="fields.email" label="Email" class="col-12 col-md-6" :error-message="errors.email" :error="!!errors.email" type="email" />
           </div>
           <div class="row q-col-gutter-md">
-            <q-input
-              v-model="fields.tax_registration_number"
-              type="number"
-              label="Tax Registration Number"
-              class="col-12 col-md-6"
-              :error-message="errors.tax_registration_number"
-              :error="!!errors.tax_registration_number"
-            />
+            <q-input v-model="fields.tax_registration_number" type="number" label="Tax Registration Number" class="col-12 col-md-6" :error-message="errors.tax_registration_number" :error="!!errors.tax_registration_number" />
           </div>
           <PartyRepresentative v-model="fields.representative" :errors="errors?.representative" index="1" />
           <PartyAlias v-model="fields.aliases" :errors="errors?.aliases" index="1" />
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-end">
-          <q-btn
-            color="green"
-            outline
-            label="Add new Alias"
-            :loading="loading"
-            class="q-mb-sm"
-            @click.prevent="addAlias(fields)"
-          />
+          <q-btn color="green" outline label="Add new Alias" :loading="loading" class="q-mb-sm" @click.prevent="addAlias(fields)" />
           <span v-if="isEdit" class="flex gap-4">
-            <q-btn
-              color="green"
-              outline
-              label="Add New Representative"
-              :loading="loading"
-              class="q-mb-sm"
-              @click.prevent="addRepresentetive(fields)"
-            />
-            <q-btn
-              v-if="checkPermissions('party.delete')"
-              color="red-6"
-              label="Delete"
-              :loading="loading"
-              class="q-mb-sm"
-              @click.prevent="onDeletClick"
-            />
-            <q-btn
-              v-if="checkPermissions('party.modify')"
-              color="green"
-              label="Update"
-              :loading="loading"
-              class="q-mb-sm"
-              type="submit"
-              @click.prevent="submitForm"
-            />
+            <q-btn color="green" outline label="Add New Representative" :loading="loading" class="q-mb-sm" @click.prevent="addRepresentetive(fields)" />
+            <q-btn v-if="checkPermissions('party.delete')" color="red-6" label="Delete" :loading="loading" class="q-mb-sm" @click.prevent="onDeletClick" />
+            <q-btn v-if="checkPermissions('party.modify')" color="green" label="Update" :loading="loading" class="q-mb-sm" type="submit" @click.prevent="submitForm" />
           </span>
-          <q-btn
-            v-else-if="checkPermissions('party.create')"
-            color="green"
-            label="Create"
-            :loading="loading"
-            class="q-mr-sm q-mb-sm"
-            type="submit"
-            @click.prevent="submitForm"
-          />
+          <q-btn v-else-if="checkPermissions('party.create')" color="green" label="Create" :loading="loading" class="q-mr-sm q-mb-sm" type="submit" @click.prevent="submitForm" />
         </div>
       </q-card>
     </q-card>

@@ -10,12 +10,7 @@ export default defineConfig((/* ctx */) => {
 
     boot: ['ofetch', 'num', 'sentry', 'rbac'],
 
-    extras: [
-      'mdi-v7',
-      'fontawesome-v6',
-      'roboto-font',
-      'material-icons',
-    ],
+    extras: ['mdi-v7', 'fontawesome-v6', 'roboto-font', 'material-icons'],
 
     framework: {
       config: {
@@ -32,10 +27,7 @@ export default defineConfig((/* ctx */) => {
 
       vueRouterMode: 'history',
       vitePlugins: [
-        [
-          'unocss/vite',
-          { presets: [presetWind()] },
-        ],
+        ['unocss/vite', { presets: [presetWind()] }],
         [
           'unplugin-auto-import/vite',
           {
@@ -45,10 +37,7 @@ export default defineConfig((/* ctx */) => {
             include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
           },
         ],
-        [
-          'unplugin-vue-components/vite',
-          { dts: './.quasar/components.d.ts' },
-        ],
+        ['unplugin-vue-components/vite', { dts: './.quasar/components.d.ts' }],
         [
           sentryVitePlugin({
             org: 'awecode',
@@ -57,6 +46,5 @@ export default defineConfig((/* ctx */) => {
         ],
       ],
     },
-
   }
 })

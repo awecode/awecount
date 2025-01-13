@@ -69,41 +69,14 @@ useMeta({
       <div style="max-width: 1400px; margin: 0 auto">
         <div class="row-con items-end q-mb-xl">
           <div>
-            <div class="text-h6 text-weight-bold text-blue-7">
-              INTRODUCING
-            </div>
-            <div class="text-h4 text-weight-bold q-mt-sm">
-              Your Awesome Accountant
-            </div>
-            <div class="text-body1 q-mt-xl">
-              Automatic book-keeping for your business transactions.
-            </div>
+            <div class="text-h6 text-weight-bold text-blue-7">INTRODUCING</div>
+            <div class="text-h4 text-weight-bold q-mt-sm">Your Awesome Accountant</div>
+            <div class="text-body1 q-mt-xl">Automatic book-keeping for your business transactions.</div>
             <form action="https://formspree.io/mjvwepkb" method="POST">
-              <q-input
-                v-model="fields.email"
-                class="q-mt-md"
-                label="Your Email Address?"
-                filled
-                style="flex-grow: 1; max-width: 450px"
-                type="email"
-                required
-                value=""
-                name="email"
-              />
+              <q-input v-model="fields.email" class="q-mt-md" label="Your Email Address?" filled style="flex-grow: 1; max-width: 450px" type="email" required value="" name="email" />
               <div style="max-width: 450px; display: flex" class="q-mt-md">
-                <q-input
-                  v-model="fields.phone_no"
-                  label="Your Phone Number?"
-                  filled
-                  style="flex-grow: 1"
-                  type="number"
-                  required
-                  value=""
-                  name="phone_no"
-                />
-                <q-btn style="flex-grow: 0; flex-shrink: 0" color="blue-6" type="submit">
-                  Get Started!
-                </q-btn>
+                <q-input v-model="fields.phone_no" label="Your Phone Number?" filled style="flex-grow: 1" type="number" required value="" name="phone_no" />
+                <q-btn style="flex-grow: 0; flex-shrink: 0" color="blue-6" type="submit">Get Started!</q-btn>
               </div>
             </form>
           </div>
@@ -113,9 +86,7 @@ useMeta({
         </div>
         <div class="row-con q-mb-xl">
           <div class="bg-white q-pa-lg">
-            <div class="text-body1 text-weight-medium">
-              FEATURES
-            </div>
+            <div class="text-body1 text-weight-medium">FEATURES</div>
             <div v-for="(item, index) in items" :key="index" class="q-mt-lg q-pt-sm" style="display: flex; gap: 10px">
               <div style="width: 50px">
                 <q-icon :name="item.icon" size="sm" color="grey-8" style="flex-grow: 0; flex-shrink: 0" />
@@ -127,12 +98,8 @@ useMeta({
           </div>
           <div class="bg-white q-pa-lg">
             <div class="q-my-lg">
-              <div class="text-center text-h6 font-weight-medium text-grey-8">
-                Already have an account?
-              </div>
-              <div class="text-center text-body2 text-weight-bold text-grey-8 q-mt-md">
-                Login to Company Portal
-              </div>
+              <div class="text-center text-h6 font-weight-medium text-grey-8">Already have an account?</div>
+              <div class="text-center text-body2 text-weight-bold text-grey-8 q-mt-md">Login to Company Portal</div>
             </div>
             <LoginCard />
           </div>
@@ -153,25 +120,15 @@ useMeta({
       </div>
     </main>
     <div class="bg-white q-px-lg q-pt-md q-pb-xl">
-      <h2 style="font-size: 28px" class="text-center q-mb-xl text-weight-bold text-grey-8">
-        CLIENTS
-      </h2>
+      <h2 style="font-size: 28px" class="text-center q-mb-xl text-weight-bold text-grey-8">CLIENTS</h2>
       <div class="client-con grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         <img src="/img/sangrila.png" alt="Sangrila" class="object-contain w-full h-full p-8" />
         <img src="/img/sampurna.png" alt="Sampurna" class="object-contain w-full h-full p-6" />
         <a href="https://edusanjal.com/" target="_blank">
           <img src="/img/edusanjal.png" alt="Edusanjal" class="object-contain w-full h-full p-4" />
         </a>
-        <a href="https://thuprai.com/" target="_blank"><img
-          src="/img/thuprai.svg"
-          alt="Thuprai"
-          class="object-contain w-full h-full p-4"
-        /></a>
-        <a href="https://crayonscorp.com.np/" target="_blank" class="flex items-center"><img
-          src="/img/crayons_corp.png"
-          alt="Crayons Corp"
-          class="object-contain w-full h-full p-4"
-        /></a>
+        <a href="https://thuprai.com/" target="_blank"><img src="/img/thuprai.svg" alt="Thuprai" class="object-contain w-full h-full p-4" /></a>
+        <a href="https://crayonscorp.com.np/" target="_blank" class="flex items-center"><img src="/img/crayons_corp.png" alt="Crayons Corp" class="object-contain w-full h-full p-4" /></a>
         <img src="/img/self_drive_nepal.jpg" alt="Self Drive Nepal" class="object-contain w-full h-full p-4" />
         <a href="https://sparkcar.org/" target="_blank">
           <img src="/img/spark_car.jpg" alt="Spark Car" class="object-contain w-full h-full p-4" />
@@ -180,12 +137,7 @@ useMeta({
           <img src="/img/khaanpin.png" alt="Khaanpin" class="object-contain w-full h-full p-4" />
         </a>
         <div class="text-center p-4">
-          <img
-            src="/img/spark_link.jpg"
-            alt="Spark Link"
-            class="object-contain w-full h-full"
-            style="max-height: 100px;"
-          />
+          <img src="/img/spark_link.jpg" alt="Spark Link" class="object-contain w-full h-full" style="max-height: 100px" />
           <span class="text-center text-grey-8 text-body1">Spark Link</span>
         </div>
         <a href="https://www.codewarelab.com/" target="_blank">
@@ -197,9 +149,7 @@ useMeta({
       </div>
     </div>
     <footer class="bg-blue-6 q-py-sm">
-      <div class="text-center text-white text-body1">
-        Awecode © {{ new Date().getFullYear() }}
-      </div>
+      <div class="text-center text-white text-body1">Awecode © {{ new Date().getFullYear() }}</div>
     </footer>
   </div>
 </template>
@@ -239,7 +189,6 @@ useMeta({
 }
 
 @media (max-width: 800px) {
-
   .btns-con {
     display: none;
   }

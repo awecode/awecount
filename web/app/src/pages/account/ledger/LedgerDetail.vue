@@ -56,14 +56,10 @@ const filter = () => {
       icon: 'report_problem',
     })
   } else {
-    router.push(
-      `/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`,
-    )
+    router.push(`/account/${route.params.id}/view/?start_date=${startDate.value}&end_date=${endDate.value}`)
   }
 }
-const endpoint = ref(
-  withQuery(`/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`, route.query),
-)
+const endpoint = ref(withQuery(`/api/company/${route.params.company}/accounts/${route.params.id}/transactions/`, route.query))
 const getData = () => {
   if (fields?.value?.transactions.results) fields.value.transactions.results = null
   useApi(endpoint.value).then((data) => {
@@ -91,39 +87,33 @@ onMounted(() => {
     <div class="flex justify-between">
       <div class="text-h5">
         <span class="text-bold">{{ fields?.name || '-' }}</span>
-        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7"> <q-tooltip>Category</q-tooltip> ({{
-          fields?.category_name
-            || '-' }})</span>
+        <span v-if="fields?.category_name" class="q-ml-md text-h6 text-grey-7">
+          <q-tooltip>Category</q-tooltip>
+          ({{ fields?.category_name || '-' }})
+        </span>
       </div>
       <div>
-        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{
-          fields?.code }}]</span>
+        <span v-if="fields?.code" class="ml-2 text-h6 text-grey-9 text-sm p-2 -mb-2 inline-block">[Code: {{ fields?.code }}]</span>
       </div>
     </div>
     <div class="mt-8">
       <div class="grid lg:grid-cols-3 gap-x-6 gap-y-1">
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Dr Amount
-          </div>
+          <div class="q-px-md text-grey-8">Dr Amount</div>
           <div class="q-px-md">
             {{ $nf(fields?.amounts?.dr) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Cr Amount
-          </div>
+          <div class="q-px-md text-grey-8">Cr Amount</div>
           <div class="q-px-md">
             {{ $nf(fields?.amounts?.cr) || '-' }}
           </div>
         </div>
 
         <div class="row justify-between q-py-sm b">
-          <div class="q-px-md text-grey-8">
-            Closing Balance
-          </div>
+          <div class="q-px-md text-grey-8">Closing Balance</div>
           <div class="q-px-md">
             {{ $nf((fields?.amounts?.dr || 0) - (fields?.amounts?.cr || 0)) }}
           </div>
@@ -153,7 +143,6 @@ hr {
 }
 
 @media print {
-
   td,
   th {
     padding: 5px;

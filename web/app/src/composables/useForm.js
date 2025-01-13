@@ -37,25 +37,23 @@ export default (endpoint, config) => {
   onMounted(() => {
     // added is modal check
     isEdit.value = !!route.params.id && !isModal
-    if ((!config.getDefaults && !isEdit.value && !isModal)) {
+    if (!config.getDefaults && !isEdit.value && !isModal) {
       store.isLoading = false
-    }
-    else if (isModal && (isEdit.value || config.getDefaults)) {
+    } else if (isModal && (isEdit.value || config.getDefaults)) {
       store.isLoading = false
     } else setModalLoadingFalse()
     id.value = route.params.id
     if (isEdit.value) {
       isGetEditLoading.value = true
-      useApi(withTrailingSlash(joinURL(endpoint, route.params.id))).then(
-        (data) => {
+      useApi(withTrailingSlash(joinURL(endpoint, route.params.id)))
+        .then((data) => {
           fields.value = data
           isGetEditLoading.value = false
           if (!isGetDefaultLoading.value) {
             store.isLoading = false
           }
           setModalLoadingFalse()
-        }
-      )
+        })
         .catch((error) => {
           isGetEditLoading.value = false
           if (!isGetEditLoading.value) {
@@ -74,31 +72,28 @@ export default (endpoint, config) => {
     }
     if (config.getDefaults) {
       isGetDefaultLoading.value = true
-      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then(
-        (data) => {
-          if (data.fields) {
-            if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
-          }
-
-          // From drop down branch
-          // TODO: resolve and remove this
-          // delete data.collections
-          // Object.assign(formDefaults.value, data)
-          // Object.assign(fields.value, data.fields)
-          // From drop down branch
-
-          // From main
-          formDefaults.value = data
-          isGetDefaultLoading.value = false
-          if (!isGetEditLoading.value) {
-            store.isLoading = false
-            setModalLoadingFalse()
-          }
-          // From main
+      useApi(getDefaultsFetchUrl(), { method: 'GET' }, false, true).then((data) => {
+        if (data.fields) {
+          if (!isEdit) fields.value = Object.assign(fields.value, data.fields)
         }
-      )
-    }
 
+        // From drop down branch
+        // TODO: resolve and remove this
+        // delete data.collections
+        // Object.assign(formDefaults.value, data)
+        // Object.assign(fields.value, data.fields)
+        // From drop down branch
+
+        // From main
+        formDefaults.value = data
+        isGetDefaultLoading.value = false
+        if (!isGetEditLoading.value) {
+          store.isLoading = false
+          setModalLoadingFalse()
+        }
+        // From main
+      })
+    }
   })
   const getDefaultsFetchUrl = () => {
     return joinURL(endpoint, 'create-defaults/')
@@ -113,7 +108,7 @@ export default (endpoint, config) => {
           } else val = val.join(' ')
         }
         return [k, val]
-      })
+      }),
     )
     errors.value = dct
   }
@@ -182,46 +177,46 @@ export default (endpoint, config) => {
         } else if (data.status === 422) {
           $q.dialog({
             title: `<span class="text-orange">${humanizeWord(data.data?.code)}!</span>`,
-            message:
-              `<span class="text-grey-8">Reason: ${data.data.detail}` +
-              '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
+            message: `<span class="text-grey-8">Reason: ${data.data.detail}` + '<div class="text-body1 text-weight-medium text-grey-8 q-mt-md">Are you sure you want to Continue?</div>',
             cancel: true,
             html: true,
-          }).onOk(() => {
-            useApi(postEndpoint + `?${data.data?.code}=true`, {
-              method: isEdit.value ? 'PATCH' : 'POST',
-              body: { ...fields.value, status: originalStatus },
-            })
-              .then((data) => {
-                $q.notify({
-                  color: 'positive',
-                  message: 'Saved',
-                  icon: 'check_circle',
-                })
-                if (isModal) {
-                  context.emit('modalSignal', data)
-                } else {
-                  if (config.successRoute) {
-                    router.push(config.successRoute)
-                  } else {
-                    router.push(removeLastUrlSegment(route.path))
-                  }
-                }
-              })
-              .catch(() => {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Something went Wrong!',
-                  icon: 'report_problem',
-                })
-              }).finally(() => {
-                loading.value = false
-              })
-          }).onCancel(() => {
-            loading.value = false
           })
-        }
-        else {
+            .onOk(() => {
+              useApi(postEndpoint + `?${data.data?.code}=true`, {
+                method: isEdit.value ? 'PATCH' : 'POST',
+                body: { ...fields.value, status: originalStatus },
+              })
+                .then((data) => {
+                  $q.notify({
+                    color: 'positive',
+                    message: 'Saved',
+                    icon: 'check_circle',
+                  })
+                  if (isModal) {
+                    context.emit('modalSignal', data)
+                  } else {
+                    if (config.successRoute) {
+                      router.push(config.successRoute)
+                    } else {
+                      router.push(removeLastUrlSegment(route.path))
+                    }
+                  }
+                })
+                .catch(() => {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                })
+                .finally(() => {
+                  loading.value = false
+                })
+            })
+            .onCancel(() => {
+              loading.value = false
+            })
+        } else {
           $q.notify({
             color: 'negative',
             message: message,
@@ -230,7 +225,7 @@ export default (endpoint, config) => {
           loading.value = false
         }
         return {
-          error: 'Api Error'
+          error: 'Api Error',
         }
         // throw new Error('Api Error')
       })
@@ -248,9 +243,7 @@ export default (endpoint, config) => {
 
   const cancelForm = () => {
     if (isEdit.value) {
-      const cancelEndPoint = withTrailingSlash(
-        joinURL(endpoint, route.params.id, 'cancel')
-      )
+      const cancelEndPoint = withTrailingSlash(joinURL(endpoint, route.params.id, 'cancel'))
       useApi(cancelEndPoint, {
         method: 'POST',
       })

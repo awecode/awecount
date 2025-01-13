@@ -10,15 +10,5 @@
     "source.fixAll.eslint": "always",
     "source.organizeImports": "never"
   },
-  "eslint.validate": [
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "vue",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "yaml"
-  ]
+  "eslint.validate": ["javascriptreact", "typescript", "typescriptreact", "vue", "html", "markdown", "json", "jsonc", "yaml"]
 }

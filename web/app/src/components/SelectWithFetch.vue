@@ -1,8 +1,6 @@
 <template>
   <div class="row no-wrap">
-    <q-select v-model="modalValue" input-debounce="0" :label="props.label" use-input :options="options" option-value="id"
-      option-label="name" map-options emit-value class="col" @update:modelValue="valUpdated" :disable="props?.disabled"
-      :error-message="props?.error" :error="!!props?.error" dense />
+    <q-select v-model="modalValue" input-debounce="0" :label="props.label" use-input :options="options" option-value="id" option-label="name" map-options emit-value class="col" @update:modelValue="valUpdated" :disable="props?.disabled" :error-message="props?.error" :error="!!props?.error" dense />
   </div>
 </template>
 
@@ -22,7 +20,7 @@ useApi(props.endpoint, { method: 'GET' })
   })
 watch(
   () => props.modelValue,
-  (newValue) => (modalValue.value = newValue)
+  (newValue) => (modalValue.value = newValue),
 )
 const valUpdated = (val) => {
   emit('update:modelValue', val)

@@ -13,10 +13,7 @@ export default {
     formData.fields.value.is_wallet = false
     useMeta(() => {
       return {
-        title:
-          `${formData.isEdit?.value
-            ? 'Update Bank Account'
-            : 'Add Bank Account'} | Awecount`,
+        title: `${formData.isEdit?.value ? 'Update Bank Account' : 'Add Bank Account'} | Awecount`,
       }
     })
     watch(formData.fields.value, (newVal) => {
@@ -56,87 +53,24 @@ export default {
         </div>
         <q-card-section>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
-            <q-input
-              v-model="fields.account_name"
-              label="Account Name"
-              class="col-6"
-              :error-message="errors.account_name"
-              :error="!!errors.account_name"
-            />
-            <q-input
-              v-if="!fields.is_wallet"
-              v-model="fields.account_number"
-              label="Account Number *"
-              class="col-6"
-              :error-message="errors.account_number"
-              :error="!!errors.account_number"
-            />
+            <q-input v-model="fields.account_name" label="Account Name" class="col-6" :error-message="errors.account_name" :error="!!errors.account_name" />
+            <q-input v-if="!fields.is_wallet" v-model="fields.account_number" label="Account Number *" class="col-6" :error-message="errors.account_number" :error="!!errors.account_number" />
           </div>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
-            <q-input
-              v-model="fields.bank_name"
-              :label="fields.is_wallet ? 'Wallet Name, e.g. Paypal' : 'Bank Name'
-              "
-              class="col-6"
-              :error-message="errors.bank_name"
-              :error="!!errors.bank_name"
-            />
+            <q-input v-model="fields.bank_name" :label="fields.is_wallet ? 'Wallet Name, e.g. Paypal' : 'Bank Name'" class="col-6" :error-message="errors.bank_name" :error="!!errors.bank_name" />
             <div class="grid sm:grid-cols-2 q-col-gutter-md">
-              <q-input
-                v-model="fields.short_name"
-                label="Short Name"
-                class="col-3"
-                :error-message="errors.short_name"
-                :error="!!errors.short_name"
-              />
-              <q-input
-                v-if="!fields.is_wallet"
-                v-model="fields.branch_name"
-                label="Bank Branch"
-                class="col-3"
-                :error-message="errors.branch_name"
-                :error="!!errors.branch_name"
-              />
+              <q-input v-model="fields.short_name" label="Short Name" class="col-3" :error-message="errors.short_name" :error="!!errors.short_name" />
+              <q-input v-if="!fields.is_wallet" v-model="fields.branch_name" label="Bank Branch" class="col-3" :error-message="errors.branch_name" :error="!!errors.branch_name" />
             </div>
           </div>
           <div class="grid sm:grid-cols-2 q-col-gutter-md q-mt-xs">
-            <q-input
-              v-if="!fields.is_wallet"
-              v-model="fields.next_cheque_no"
-              label="Next Cheque No *"
-              class="col-6"
-              :error-message="errors.next_cheque_no"
-              :error="!!errors.next_cheque_no"
-            />
-            <q-input
-              v-else
-              v-model.number="fields.transaction_commission_percent"
-              label="Transaction Commission %"
-              class="col-6"
-              :error-message="errors.transaction_commission_percent"
-              :error="!!errors.transaction_commission_percent"
-            />
+            <q-input v-if="!fields.is_wallet" v-model="fields.next_cheque_no" label="Next Cheque No *" class="col-6" :error-message="errors.next_cheque_no" :error="!!errors.next_cheque_no" />
+            <q-input v-else v-model.number="fields.transaction_commission_percent" label="Transaction Commission %" class="col-6" :error-message="errors.transaction_commission_percent" :error="!!errors.transaction_commission_percent" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn
-            v-if="checkPermissions('bankaccount.create') && !isEdit"
-            color="green"
-            label="Create"
-            class="q-ml-auto"
-            :loading="loading"
-            type="submit"
-            @click.prevent="submitForm"
-          />
-          <q-btn
-            v-if="checkPermissions('bankaccount.modify') && isEdit"
-            color="green"
-            label="Update"
-            class="q-ml-auto"
-            :loading="loading"
-            type="submit"
-            @click.prevent="submitForm"
-          />
+          <q-btn v-if="checkPermissions('bankaccount.create') && !isEdit" color="green" label="Create" class="q-ml-auto" :loading="loading" type="submit" @click.prevent="submitForm" />
+          <q-btn v-if="checkPermissions('bankaccount.modify') && isEdit" color="green" label="Update" class="q-ml-auto" :loading="loading" type="submit" @click.prevent="submitForm" />
         </div>
       </q-card>
     </q-card>

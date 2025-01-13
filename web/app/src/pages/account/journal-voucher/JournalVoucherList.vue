@@ -39,27 +39,10 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn
-        v-if="checkPermissions('journalvoucher.create')"
-        color="green"
-        :to="`/${$route.params.company}/journal-voucher/create/`"
-        label="New Journal Voucher"
-        class="add-btn"
-        icon-right="add"
-      />
+      <q-btn v-if="checkPermissions('journalvoucher.create')" color="green" :to="`/${$route.params.company}/journal-voucher/create/`" label="New Journal Voucher" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumns"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
@@ -71,9 +54,7 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
@@ -95,22 +76,8 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <div class="flex gap-4 no-wrap">
-            <q-btn
-              v-if="checkPermissions('journalvoucher.view')"
-              color="blue"
-              label="View"
-              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view/`"
-              class="q-py-none q-px-md font-size-sm l-view-btn"
-              style="font-size: 12px"
-            />
-            <q-btn
-              v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.modify')"
-              color="orange-7"
-              label="Edit"
-              :to="`/${$route.params.company}/journal-voucher/${props.row.id}/edit/`"
-              class="q-py-none q-px-md font-size-sm l-edit-btn"
-              style="font-size: 12px"
-            />
+            <q-btn v-if="checkPermissions('journalvoucher.view')" color="blue" label="View" :to="`/${$route.params.company}/journal-voucher/${props.row.id}/view/`" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
+            <q-btn v-if="props.row.status !== 'Cancelled' && checkPermissions('journalvoucher.modify')" color="orange-7" label="Edit" :to="`/${$route.params.company}/journal-voucher/${props.row.id}/edit/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
           </div>
         </q-td>
       </template>
@@ -119,26 +86,22 @@ export default {
           <div class="row q-gutter-sm justify-center">
             <span
               class="text-white text-subtitle"
-              :class="props.row.status === 'Unapproved'
-                ? 'bg-orange-2 text-orange-10'
-                : props.row.status === 'Approved'
-                  ? 'bg-green-2 text-green-10'
-                  : 'bg-red-2 text-red-10'
+              :class="
+                props.row.status === 'Unapproved' ? 'bg-orange-2 text-orange-10'
+                : props.row.status === 'Approved' ? 'bg-green-2 text-green-10'
+                : 'bg-red-2 text-red-10'
               "
               style="border-radius: 8px; padding: 2px 10px"
-            >{{ props.row.status }}</span>
+            >
+              {{ props.row.status }}
+            </span>
           </div>
         </q-td>
       </template>
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
-            <router-link
-              v-if="checkPermissions('journalvoucher.view')"
-              :to="`/${$route.params.company}/challan/${props.row.id}/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-            >
+            <router-link v-if="checkPermissions('journalvoucher.view')" :to="`/${$route.params.company}/challan/${props.row.id}/`" style="font-weight: 500; text-decoration: none" class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher_no }}</span>

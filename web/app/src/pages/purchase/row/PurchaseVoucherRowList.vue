@@ -83,10 +83,10 @@ export default {
     ]
     const fetchedOptions: Ref<Record<string, Array<object> | null>> = ref({
       'purchase-agent': null,
-      'parties': null,
-      'tax_scheme': null,
+      parties: null,
+      tax_scheme: null,
       'inventory-categories': null,
-      'item_choices': null,
+      item_choices: null,
     })
     const aggregate_headers = [
       ['Total Purchase Invoice(s) Issued', 'voucher__count'],
@@ -116,27 +116,10 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <q-table
-      v-model:pagination="pagination"
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
-          <q-input
-            v-model="searchQuery"
-            dense
-            debounce="500"
-            placeholder="Search"
-            class="full-width search-input"
-          >
+          <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
             <template #append>
               <q-icon name="search" />
             </template>
@@ -145,74 +128,31 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mx-md">
-                    <DateRangePicker
-                      v-model:start-date="filters.start_date"
-                      v-model:end-date="filters.end_date"
-                    />
+                    <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2
-                      v-model="filters.party"
-                      :endpoint="`/api/company/${$route.params.company}/parties/choices`"
-                      label="Party"
-                      fetch-on-mount
-                    />
+                    <NAutoCompleteV2 v-model="filters.party" :endpoint="`/api/company/${$route.params.company}/parties/choices`" label="Party" fetch-on-mount />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2
-                      v-model="filters.tax_scheme"
-                      :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices`"
-                      label="Tax Scheme"
-                      fetch-on-mount
-                    />
+                    <NAutoCompleteV2 v-model="filters.tax_scheme" :endpoint="`/api/company/${$route.params.company}/tax_scheme/choices`" label="Tax Scheme" fetch-on-mount />
                   </div>
                   <div class="q-mx-sm">
-                    <NAutoCompleteV2
-                      v-model="filters.item_category"
-                      :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices`"
-                      label="Item Category"
-                      fetch-on-mount
-                    />
+                    <NAutoCompleteV2 v-model="filters.item_category" :endpoint="`/api/company/${$route.params.company}/inventory-categories/choices`" label="Item Category" fetch-on-mount />
                   </div>
                   <div class="q-mx-sm">
-                    <SelectWithFetch
-                      v-model="filters.item"
-                      :endpoint="`/api/company/${$route.params.company}/items/purchase-choices/`"
-                      label="Items"
-                    />
+                    <SelectWithFetch v-model="filters.item" :endpoint="`/api/company/${$route.params.company}/items/purchase-choices/`" label="Items" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      v-model="filters.status"
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                    />
+                    <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
-                  <q-btn
-                    color="green"
-                    label="Filter"
-                    class="f-submit-btn"
-                    @click="onFilterUpdate"
-                  />
-                  <q-btn
-                    color="red"
-                    icon="close"
-                    class="f-reset-btn"
-                    @click="resetFilters"
-                  />
+                  <q-btn color="green" label="Filter" class="f-submit-btn" @click="onFilterUpdate" />
+                  <q-btn color="red" icon="close" class="f-reset-btn" @click="resetFilters" />
                 </div>
               </div>
             </q-menu>
@@ -223,12 +163,7 @@ export default {
       <template #body-cell-voucher_id="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link
-              v-if="checkPermissions('purchasevoucher.view')"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue l-view-btn"
-              :to="`/${$route.params.company}/purchase-voucher/${props.row.voucher_id}/view`"
-            >
+            <router-link v-if="checkPermissions('purchasevoucher.view')" style="font-weight: 500; text-decoration: none" class="text-blue l-view-btn" :to="`/${$route.params.company}/purchase-voucher/${props.row.voucher_id}/view`">
               {{ props.row.voucher_id }}
               {{ props.row.voucher__voucher_no }}
             </router-link>
@@ -238,44 +173,29 @@ export default {
       </template>
       <template #body-cell-party_name="props">
         <q-td :props="props">
-          <div
-            v-if="props.row.customer_name"
-            class="row align-center text-subtitle2 text-grey-8"
-          >
+          <div v-if="props.row.customer_name" class="row align-center text-subtitle2 text-grey-8">
             {{ props.row.customer_name }}
           </div>
           <div v-else>
             <q-icon name="domain" size="sm" class="text-grey-8" />
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party_name
-            }}</span>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{ props.row.party_name }}</span>
           </div>
         </q-td>
       </template>
       <template #body-cell-voucher__date="props">
         <q-td :props="props">
-          {{
-            store.isCalendarInAD
-              ? props.row.voucher__date
-              : DateConverter.getRepresentation(props.row.voucher__date, 'bs')
-          }}
+          {{ store.isCalendarInAD ? props.row.voucher__date : DateConverter.getRepresentation(props.row.voucher__date, 'bs') }}
         </q-td>
       </template>
     </q-table>
     <q-card v-if="aggregate" class="q-mt-md">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
-            Aggregate Report for Filtered Data
-          </h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
         </div>
         <hr />
         <div class="q-mt-md">
-          <div
-            v-for="header in aggregate_headers"
-            :key="header[0]"
-            class="row q-mb-md"
-          >
+          <div v-for="header in aggregate_headers" :key="header[0]" class="row q-mb-md">
             <div class="col-6">
               <div class="text-weight-medium text-grey-9">
                 {{ header[0] }}

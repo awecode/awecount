@@ -11,14 +11,8 @@ export default {
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/sales-voucher/export${query}`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Sales_voucher',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Sales_voucher'))
+        .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -83,26 +77,9 @@ export default {
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
       <q-btn color="blue" label="Export" icon-right="download" class="export-btn" @click="onDownloadXls" />
-      <q-btn
-        v-if="checkPermissions('sales.create')"
-        color="green"
-        :to="`/${$route.params.company}/sales-voucher/create/`"
-        label="New Sales"
-        icon-right="add"
-        class="add-btn"
-      />
+      <q-btn v-if="checkPermissions('sales.create')" color="green" :to="`/${$route.params.company}/sales-voucher/create/`" label="New Sales" icon-right="add" class="add-btn" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
@@ -114,37 +91,21 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-mb-sm">
                     <q-checkbox v-model="filters.is_due" label="Is Due?" :false-value="null" />
                   </div>
                   <div class="q-ma-sm">
-                    <MultiSelectChip
-                      v-model="filters.status"
-                      :options="[
-                        'Draft',
-                        'Issued',
-                        'Paid',
-                        'Partially Paid',
-                        'Cancelled',
-                      ]"
-                    />
+                    <MultiSelectChip v-model="filters.status" :options="['Draft', 'Issued', 'Paid', 'Partially Paid', 'Cancelled']" />
                   </div>
                 </div>
                 <div class="q-mx-md">
                   <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" />
                 </div>
                 <div class="q-mx-sm">
-                  <n-auto-complete-v2
-                    v-model="filters.payment_mode"
-                    :endpoint="`/api/company/${$route.params.company}/payment-modes/choices/`"
-                    label="Payment Mode"
-                    :fetch-on-mount="true"
-                  />
+                  <n-auto-complete-v2 v-model="filters.payment_mode" :endpoint="`/api/company/${$route.params.company}/payment-modes/choices/`" label="Payment Mode" :fetch-on-mount="true" />
                 </div>
                 <div class="q-mx-md row q-mb-md q-mt-lg">
                   <q-btn color="green" label="Filter" class="q-mr-md f-submit-btn" @click="onFilterUpdate" />
@@ -165,14 +126,12 @@ export default {
           <div class="row align-center justify-center" data-testid="status">
             <div
               class="text-white text-subtitle row items-center justify-center"
-              :class="props.row.status == 'Issued'
-                ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Paid'
-                  ? 'bg-green-2 text-green-10'
-                  : props.row.status == 'Draft'
-                    ? 'bg-orange-2 text-orange-10'
-                    : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
-                      : 'bg-red-2 text-red-10'
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : props.row.status == 'Partially Paid' ? 'bg-green-1 text-green-6'
+                : 'bg-red-2 text-red-10'
               "
               style="border-radius: 8px; padding: 2px 10px"
             >
@@ -200,15 +159,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md justify-start">
-            <q-btn
-              v-if="checkPermissions('sales.view')"
-              color="blue"
-              label="View"
-              class="q-py-none q-px-md font-size-sm l-view-btn"
-              style="font-size: 12px"
-              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
-              data-testid="view-btn"
-            />
+            <q-btn v-if="checkPermissions('sales.view')" color="blue" label="View" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`" data-testid="view-btn" />
           </div>
         </q-td>
         <!-- TODO: add modals -->
@@ -216,14 +167,7 @@ export default {
       <template #body-cell-payment_receipts="props">
         <q-td :props="props">
           <span v-for="id in props.row.payment_receipts.map((item) => item.id)" :key="id">
-            <router-link
-              v-if="checkPermissions('paymentreceipt.view')"
-              :to="`/${$route.params.company}/payment-receipt/${id}/view/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-            >
-              #{{ id }}
-            </router-link>
+            <router-link v-if="checkPermissions('paymentreceipt.view')" :to="`/${$route.params.company}/payment-receipt/${id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue">#{{ id }}</router-link>
             <span v-else>#{{ id }}</span>
           </span>
         </q-td>
@@ -231,12 +175,7 @@ export default {
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <span v-if="checkPermissions('sales.view')" data-testid="voucher-no">
-            <router-link
-              v-if="checkPermissions('sales.view') && props.row.voucher_no"
-              :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-            >
+            <router-link v-if="checkPermissions('sales.view') && props.row.voucher_no" :to="`/${$route.params.company}/sales-voucher/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
           </span>
@@ -248,8 +187,7 @@ export default {
       <template #body-cell-receipt_amount="props">
         <td>
           <!-- {{ props.row.payment_receipts.map((item) => item.amount) }} -->
-          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0))
-          }}
+          {{ $nf(props.row.payment_receipts.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0)) }}
         </td>
       </template>
       <template #body-cell-tds="props">

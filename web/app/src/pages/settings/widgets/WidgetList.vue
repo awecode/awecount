@@ -33,37 +33,15 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        v-if="checkPermissions('widget.create')"
-        color="green"
-        label="New Dashboard widget"
-        icon-right="add"
-        :to="`/${$route.params.company}/dashboard-widgets/create/`"
-        class="add-btn"
-      />
+      <q-btn v-if="checkPermissions('widget.create')" color="green" label="New Dashboard widget" icon-right="add" :to="`/${$route.params.company}/dashboard-widgets/create/`" class="add-btn" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link
-            v-if="checkPermissions('widget.modify')"
-            :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`"
-            class="text-blue l-edit-btn"
-            style="text-decoration: none"
-          >
+          <router-link v-if="checkPermissions('widget.modify')" :to="`/${$route.params.company}/dashboard-widgets/${props.row.id}/`" class="text-blue l-edit-btn" style="text-decoration: none">
             {{ props.row.name }}
           </router-link>
-          <span v-else> {{ props.row.name }}</span>
+          <span v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
     </q-table>

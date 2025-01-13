@@ -32,9 +32,7 @@ export default {
       end_date: null,
     })
     const calculateNet = (obj, type) => {
-      const net = Number.parseFloat(
-        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2),
-      )
+      const net = Number.parseFloat((obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2))
       if (net === 0) {
         return 0
       } else if (net > 0) {
@@ -48,14 +46,7 @@ export default {
     // const listData = useList(endpoint)
     const fetchData = () => {
       showData.value = false
-      const filedArray = [
-        'transaction_dr',
-        'transaction_cr',
-        'opening_dr',
-        'opening_cr',
-        'closing_dr',
-        'closing_cr',
-      ]
+      const filedArray = ['transaction_dr', 'transaction_cr', 'opening_dr', 'opening_cr', 'closing_dr', 'closing_cr']
       const endpoint = `/api/company/${route.params.company}/inventory-account/trial-balance/?start_date=${fields.value.start_date}&end_date=${fields.value.end_date}`
       useApi(endpoint)
         .then((data) => {
@@ -81,7 +72,7 @@ export default {
             tallyTotal.opening_cr += acc.opening_cr
             tallyTotal.closing_dr += acc.closing_dr
             tallyTotal.closing_cr += acc.closing_cr
-            const index = categoryTree.value.findIndex(item => item.id === acc.category_id)
+            const index = categoryTree.value.findIndex((item) => item.id === acc.category_id)
             if (index > -1) {
               if (!computedData[index]?.children) {
                 computedData[index].children = []
@@ -100,7 +91,7 @@ export default {
           showData.value = true
           total.value = tallyTotal
         })
-        .catch(err => console.log(err))
+        .catch((err) => console.log(err))
       // TODO: add 404 error routing
     }
     // functions
@@ -123,22 +114,24 @@ export default {
       // adding styles
       const worksheet = XLSX.utils.table_to_sheet(elt)
       for (const i in worksheet) {
-        if (typeof (worksheet[i]) != 'object') continue
+        if (typeof worksheet[i] != 'object') continue
         const cell = XLSX.utils.decode_cell(i)
         worksheet[i].s = {
           font: { name: 'Courier', sz: 12 },
         }
-        if (cell.r == 0) { // first row
+        if (cell.r == 0) {
+          // first row
           worksheet[i].s.font.bold = true
         }
-        if (cell.c == 0) { // first row
+        if (cell.c == 0) {
+          // first row
           const td = elt.rows[cell.r].cells[cell.c]
           worksheet[i].s.font.italic = getComputedStyle(td).fontStyle === 'italic'
           // get color and apply to excel
           const hexCode = getComputedStyle(td).color
           const hexArray = hexCode.slice(4, hexCode.length - 1).split(',')
-          const numsArray = hexArray.map(e => Number(e))
-          const rgbValue = (1 << 24 | numsArray[0] << 16 | numsArray[1] << 8 | numsArray[2]).toString(16).slice(1)
+          const numsArray = hexArray.map((e) => Number(e))
+          const rgbValue = ((1 << 24) | (numsArray[0] << 16) | (numsArray[1] << 8) | numsArray[2]).toString(16).slice(1)
           worksheet[i].s.font.color = { rgb: `${rgbValue}` }
         }
         if (cell.r > -1) {
@@ -211,36 +204,17 @@ export default {
       <div class="flex items-center justify-between gap-2">
         <div class="flex gap-x-6 gap-y-2 items-center">
           <div>
-            <DateRangePicker
-              v-model:start-date="fields.start_date"
-              v-model:end-date="fields.end_date"
-              :hide-btns="true"
-              :focus-on-mount="true"
-            />
+            <DateRangePicker v-model:start-date="fields.start_date" v-model:end-date="fields.end_date" :hide-btns="true" :focus-on-mount="true" />
           </div>
-          <q-btn
-            v-if="fields.start_date || fields.end_date"
-            color="red"
-            icon="close"
-            class="f-reset-btn"
-            @click="fields = { start_date: null, end_date: null }"
-          />
-          <q-btn
-            :disable="!fields.start_date && !fields.end_date ? true : false"
-            color="green"
-            label="fetch"
-            class="f-submit-btn"
-            @click="fetchData"
-          />
+          <q-btn v-if="fields.start_date || fields.end_date" color="red" icon="close" class="f-reset-btn" @click="fields = { start_date: null, end_date: null }" />
+          <q-btn :disable="!fields.start_date && !fields.end_date ? true : false" color="green" label="fetch" class="f-submit-btn" @click="fetchData" />
         </div>
         <div v-if="showData" class="flex gap-6">
           <q-btn icon="settings" title="Config">
             <q-menu>
               <div class="menu-wrapper" style="width: min(300px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Config
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Config</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-pb-sm">
@@ -250,10 +224,7 @@ export default {
                     <q-checkbox v-model="config.hide_sums" label="Hide Sums?" />
                   </div>
                   <div class="q-pb-sm">
-                    <q-checkbox
-                      v-model="config.show_opening_closing_dr_cr"
-                      label="Show Opening Closing Dr/Cr?"
-                    />
+                    <q-checkbox v-model="config.show_opening_closing_dr_cr" label="Show Opening Closing Dr/Cr?" />
                   </div>
                 </div>
               </div>
@@ -270,52 +241,26 @@ export default {
             <th class="text-left">
               <strong>Name</strong>
             </th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Opening
-            </th>
-            <th class="text-left" colspan="2">
-              Transactions
-            </th>
-            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">
-              Closing
-            </th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Opening</th>
+            <th class="text-left" colspan="2">Transactions</th>
+            <th class="text-left" :colspan="config.show_opening_closing_dr_cr ? '3' : '1'">Closing</th>
           </tr>
           <tr>
             <th class="text-left"></th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">
-                Dr
-              </th>
-              <th class="text-left">
-                Cr
-              </th>
-              <th class="text-left">
-                Balance
-              </th>
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
             </template>
-            <th v-else class="text-left">
-              Balance
-            </th>
-            <th class="text-left">
-              Dr
-            </th>
-            <th class="text-left">
-              Cr
-            </th>
+            <th v-else class="text-left">Balance</th>
+            <th class="text-left">Dr</th>
+            <th class="text-left">Cr</th>
             <template v-if="config.show_opening_closing_dr_cr">
-              <th class="text-left">
-                Dr
-              </th>
-              <th class="text-left">
-                Cr
-              </th>
-              <th class="text-left">
-                Balance
-              </th>
+              <th class="text-left">Dr</th>
+              <th class="text-left">Cr</th>
+              <th class="text-left">Balance</th>
             </template>
-            <th v-else class="text-left">
-              Balance
-            </th>
+            <th v-else class="text-left">Balance</th>
           </tr>
         </thead>
         <tbody>
@@ -325,37 +270,15 @@ export default {
                 <tr>
                   <td class="text-blue-6 text-weight-bold">
                     <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span style="display: inline-block; width: 40px; margin-left: -5px;">
-                      <q-btn
-                        class="expand-btn"
-                        dense
-                        flat
-                        round
-                        :class="loginStore.stockTrialBalanceCollapseId.includes(parent.id) ? '' : 'expanded'"
-                        @click="changeExpandStatus(parent.id)"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          class="text-grey-7"
-                        >
-                          <path
-                            fill="currentColor"
-                            d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z"
-                          />
+                    <span style="display: inline-block; width: 40px; margin-left: -5px">
+                      <q-btn class="expand-btn" dense flat round :class="loginStore.stockTrialBalanceCollapseId.includes(parent.id) ? '' : 'expanded'" @click="changeExpandStatus(parent.id)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
+                          <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
                         </svg>
                       </q-btn>
                     </span>
-                    <RouterLink
-                      style="text-decoration: none"
-                      target="_blank"
-                      :to="`/${$route.params.company}/account/?has_balance=true&category=${parent.id}`"
-                      class="text-blue-6"
-                    >
-                      {{
-                        parent.name }}
+                    <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${parent.id}`" class="text-blue-6">
+                      {{ parent.name }}
                     </RouterLink>
                   </td>
                   <template v-if="config.show_opening_closing_dr_cr">
@@ -366,33 +289,27 @@ export default {
                       <span v-if="!config.hide_sums">{{ parent.total?.opening_cr }}</span>
                     </td>
                     <td class="text-left text-weight-medium">
-                      <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'opening')
-                      }}</span>
+                      <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'opening') }}</span>
                     </td>
                   </template>
                   <td v-else class="text-left text-weight-medium">
                     <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'opening') }}</span>
                   </td>
                   <td class="text-left text-weight-medium">
-                    <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_dr.toFixed(2))
-                    }}</span>
+                    <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_dr.toFixed(2)) }}</span>
                   </td>
                   <td class="text-left text-weight-medium">
-                    <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_cr.toFixed(2))
-                    }}</span>
+                    <span v-if="!config.hide_sums">{{ parseFloat(parent.total.transaction_cr.toFixed(2)) }}</span>
                   </td>
                   <template v-if="config.show_opening_closing_dr_cr">
                     <td class="text-left text-weight-medium">
-                      <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_dr.toFixed(2))
-                      }}</span>
+                      <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_dr.toFixed(2)) }}</span>
                     </td>
                     <td class="text-left text-weight-medium">
-                      <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_cr.toFixed(2))
-                      }}</span>
+                      <span v-if="!config.hide_sums">{{ parseFloat(parent.total.closing_cr.toFixed(2)) }}</span>
                     </td>
                     <td class="text-left text-weight-medium">
-                      <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'closing')
-                      }}</span>
+                      <span v-if="!config.hide_sums">{{ calculateNet(parent.total, 'closing') }}</span>
                     </td>
                   </template>
                   <td v-else class="text-left text-weight-medium">
@@ -404,13 +321,8 @@ export default {
                     <td class="text-blue-6">
                       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                      <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-                      <RouterLink
-                        style="text-decoration: none"
-                        target="_blank"
-                        :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
-                        class="text-blue-6"
-                      >
+                      <span style="display: inline-block; width: 40px; margin-left: -5px"></span>
+                      <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`" class="text-blue-6">
                         {{ child.name }}
                       </RouterLink>
                     </td>
@@ -456,12 +368,7 @@ export default {
               <tr v-if="!config.hide_accounts">
                 <td class="text-blue-6">
                   <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                  <RouterLink
-                    style="text-decoration: none"
-                    target="_blank"
-                    :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`"
-                    class="text-blue-6"
-                  >
+                  <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${child.account_id}`" class="text-blue-6">
                     {{ child.name }}
                   </RouterLink>
                 </td>

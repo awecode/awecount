@@ -10,14 +10,8 @@ export default {
     const listData = useList(endpoint)
     const onDownloadXls = () => {
       useApi(`/api/company/${route.params.company}/sales-voucher/export`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Credit_Notes',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Credit_Notes'))
+        .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -47,27 +41,9 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row q-gutter-x-md justify-end">
-      <q-btn
-        v-if="checkPermissions('purchasediscount.create')"
-        color="green"
-        :to="`/${$route.params.company}/purchase-discount/create/`"
-        label="New Purchase Discount"
-        icon-right="add"
-        class="add-btn"
-      />
+      <q-btn v-if="checkPermissions('purchasediscount.create')" color="green" :to="`/${$route.params.company}/purchase-discount/create/`" label="New Purchase Discount" icon-right="add" class="add-btn" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
@@ -79,20 +55,14 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(500px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
                     <MultiSelectChip v-model="filters.type" :options="['Percent', 'Amount']" />
                   </div>
                   <div class="q-mt-md">
-                    <q-checkbox
-                      v-model="filters.trade_discount"
-                      label="Is Trade Discount?"
-                      :false-value="null"
-                    />
+                    <q-checkbox v-model="filters.trade_discount" label="Is Trade Discount?" :false-value="null" />
                   </div>
                 </div>
                 <div class="q-mx-md flex gap-4 q-mb-md q-mt-lg">
@@ -107,14 +77,7 @@ export default {
       <template #body-cell-actions="props">
         <q-td :props="props">
           <div class="row q-gutter-x-md items-center">
-            <q-btn
-              v-if="checkPermissions('purchasediscount.modify')"
-              color="orange-7"
-              label="Edit"
-              :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`"
-              class="q-py-none q-px-md font-size-sm l-edit-btn"
-              style="font-size: 12px"
-            />
+            <q-btn v-if="checkPermissions('purchasediscount.modify')" color="orange-7" label="Edit" :to="`/${$route.params.company}/purchase-discount/${props.row.id}/`" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" />
           </div>
         </q-td>
       </template>

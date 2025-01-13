@@ -23,7 +23,7 @@ export default {
       },
       {
         name: 'sellers_name',
-        label: 'Seller\'s Name',
+        label: "Seller's Name",
         align: 'left',
         field: 'sellers_name',
       },
@@ -38,14 +38,14 @@ export default {
         remove: true,
         label: 'Total Purchases',
         align: 'left',
-        field: row => row.voucher_meta.grand_total,
+        field: (row) => row.voucher_meta.grand_total,
       },
       {
         name: 'non_taxable_sales',
         remove: true,
         label: 'Non Taxable Sales',
         align: 'left',
-        field: row => row.voucher_meta.non_taxable,
+        field: (row) => row.voucher_meta.non_taxable,
       },
       {
         name: 'import_purchases',
@@ -59,33 +59,27 @@ export default {
         name: 'discount',
         label: 'Discount',
         align: 'left',
-        field: row => row.voucher_meta.discount,
+        field: (row) => row.voucher_meta.discount,
         remove: true,
       },
       {
         name: 'amount',
         label: 'Amount',
         align: 'left',
-        field: row => row.voucher_meta.taxable,
+        field: (row) => row.voucher_meta.taxable,
       },
       {
         name: 'tax',
         label: 'Tax',
         align: 'left',
-        field: row => row.voucher_meta.tax,
+        field: (row) => row.voucher_meta.tax,
       },
     ]
     const onDownloadXls = () => {
       const downloadEndpoint = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/purchase-book/export${downloadEndpoint}`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Purchase_Book',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Purchase_Book'))
+        .catch((err) => console.log('Error Due To', err))
     }
     return {
       ...listData,
@@ -98,52 +92,18 @@ export default {
 
 <template>
   <div class="q-pa-md">
-    <q-table
-      v-model:pagination="pagination"
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
-        <div
-          class="row q-col-gutter-md full-width"
-          style="justify-content: space-between"
-        >
+        <div class="row q-col-gutter-md full-width" style="justify-content: space-between">
           <div class="row items-center q-gutter-x-md">
-            <DateRangePicker
-              v-model:start-date="filters.start_date"
-              v-model:end-date="filters.end_date"
-              :hide-btns="true"
-            />
+            <DateRangePicker v-model:start-date="filters.start_date" v-model:end-date="filters.end_date" :hide-btns="true" />
             <div class="flex gap-4 items-center">
-              <q-btn
-                class="f-submit-btn"
-                label="Filter"
-                color="green"
-                @click="onFilterUpdate"
-              />
-              <q-btn
-                v-if="filters.start_date || filters.end_date"
-                class="f-reset-btn"
-                icon="close"
-                color="red"
-                @click="resetFilters"
-              />
+              <q-btn class="f-submit-btn" label="Filter" color="green" @click="onFilterUpdate" />
+              <q-btn v-if="filters.start_date || filters.end_date" class="f-reset-btn" icon="close" color="red" @click="resetFilters" />
             </div>
           </div>
           <div v-if="aggregate" class="row items-center">
-            <q-btn
-              label="Export Xls"
-              color="blue"
-              icon-right="download"
-              @click="onDownloadXls"
-            />
+            <q-btn label="Export Xls" color="blue" icon-right="download" @click="onDownloadXls" />
           </div>
         </div>
       </template>
@@ -151,11 +111,7 @@ export default {
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <div class="row align-center">
-            <router-link
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue l-view-btn"
-              :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`"
-            >
+            <router-link style="font-weight: 500; text-decoration: none" class="text-blue l-view-btn" :to="`/${$route.params.company}/purchase-voucher/${props.row.id}/view`">
               {{ props.row.voucher_no }}
             </router-link>
           </div>
@@ -163,43 +119,15 @@ export default {
       </template>
       <template #header="props">
         <q-tr>
-          <q-th colspan="4" style="text-align: center">
-            Invoice
-          </q-th>
-          <q-th rowspan="2" style="text-align: center">
-            Total Purchases
-          </q-th>
-          <q-th
-            rowspan="2"
-            style="text-align: center"
-            :style="{ 'white-space': 'normal' }"
-          >
-            Non Taxable Purchases
-          </q-th>
-          <q-th
-            rowspan="2"
-            style="text-align: center"
-            :style="{ 'white-space': 'normal' }"
-          >
-            Import Purchases
-          </q-th>
-          <q-th rowspan="2" style="text-align: center">
-            Discount
-          </q-th>
-          <q-th
-            rowspan="1"
-            colspan="2"
-            style="text-align: center"
-          >
-            Taxable Purchases
-          </q-th>
+          <q-th colspan="4" style="text-align: center">Invoice</q-th>
+          <q-th rowspan="2" style="text-align: center">Total Purchases</q-th>
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Non Taxable Purchases</q-th>
+          <q-th rowspan="2" style="text-align: center" :style="{ 'white-space': 'normal' }">Import Purchases</q-th>
+          <q-th rowspan="2" style="text-align: center">Discount</q-th>
+          <q-th rowspan="1" colspan="2" style="text-align: center">Taxable Purchases</q-th>
         </q-tr>
         <q-tr>
-          <q-th
-            v-for="header in props.cols"
-            :key="header.name"
-            :style="header.remove === true ? { display: 'none' } : ''"
-          >
+          <q-th v-for="header in props.cols" :key="header.name" :style="header.remove === true ? { display: 'none' } : ''">
             <span>{{ header.label }}</span>
           </q-th>
         </q-tr>
@@ -209,9 +137,7 @@ export default {
     <q-card v-if="aggregate" class="q-mt-md">
       <q-card-section>
         <div>
-          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">
-            Aggregate Report for Filtered Data
-          </h5>
+          <h5 class="q-ma-none q-ml-sm text-weight-bold text-grey-9">Aggregate Report for Filtered Data</h5>
         </div>
         <hr />
         <div class="q-mt-md">
@@ -223,7 +149,7 @@ export default {
             </div>
             <div class="col-6">
               <div class="text-weight-bold">
-                {{ parseInt((value || 0)) }}
+                {{ parseInt(value || 0) }}
               </div>
             </div>
           </div>

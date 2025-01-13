@@ -13,16 +13,18 @@ export default {
     }
     useMeta(metaData)
     const onDeleteClick = (id) => {
-      useApi(`/api/company/${route.params.company}/item-opening-balance/${id}/`, { method: 'DELETE' }).then(() => {
-        router.push('/items/opening/')
-      }).catch((err) => {
-        const { message } = useHandleFormError(err)
-        $q.notify({
-          color: 'negative',
-          message,
-          icon: 'report_problem',
+      useApi(`/api/company/${route.params.company}/item-opening-balance/${id}/`, { method: 'DELETE' })
+        .then(() => {
+          router.push('/items/opening/')
         })
-      })
+        .catch((err) => {
+          const { message } = useHandleFormError(err)
+          $q.notify({
+            color: 'negative',
+            message,
+            icon: 'report_problem',
+          })
+        })
     }
     return {
       ...useForm(endpoint, {
@@ -51,62 +53,19 @@ export default {
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div v-if="!isEdit" class="col-12 col-md-6">
-              <n-auto-complete-v2
-                v-model="fields.item_id"
-                :options="formDefaults.collections?.items"
-                label="Item *"
-                :error="errors?.item_id"
-                :modal-component="ItemAdd"
-                endpoint="/api/company/item-opening-balance/create-defaults/items"
-              />
+              <n-auto-complete-v2 v-model="fields.item_id" :options="formDefaults.collections?.items" label="Item *" :error="errors?.item_id" :modal-component="ItemAdd" endpoint="/api/company/item-opening-balance/create-defaults/items" />
             </div>
             <div v-else class="col-12 col-md-6">
               <q-input v-model="fields.name" disable />
             </div>
-            <q-input
-              v-model="fields.opening_balance"
-              label="Quantity *"
-              class="col-12 col-md-6"
-              :error-message="errors.opening_balance"
-              :error="!!errors.opening_balance"
-              type="number"
-            />
-            <q-input
-              v-model="fields.opening_balance_rate"
-              label="Rate *"
-              class="col-12 col-md-6"
-              :error-message="errors.opening_balance_rate"
-              :error="!!errors.opening_balance_rate"
-              type="number"
-            />
+            <q-input v-model="fields.opening_balance" label="Quantity *" class="col-12 col-md-6" :error-message="errors.opening_balance" :error="!!errors.opening_balance" type="number" />
+            <q-input v-model="fields.opening_balance_rate" label="Rate *" class="col-12 col-md-6" :error-message="errors.opening_balance_rate" :error="!!errors.opening_balance_rate" type="number" />
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg flex gap-4 justify-right">
-          <q-btn
-            v-if="isEdit && checkPermissions('accountopeningbalance.delete')"
-            :loading="loading"
-            icon="delete"
-            color="red"
-            label="Delete"
-            type="submit"
-            @click.prevent="isDeleteOpen = true"
-          />
-          <q-btn
-            v-if="!isEdit && checkPermissions('accountopeningbalance.create')"
-            :loading="loading"
-            color="green"
-            label="Create"
-            type="submit"
-            @click.prevent="submitForm"
-          />
-          <q-btn
-            v-if="isEdit && checkPermissions('accountopeningbalance.modify')"
-            :loading="loading"
-            color="green"
-            label="Update"
-            type="submit"
-            @click.prevent="submitForm"
-          />
+          <q-btn v-if="isEdit && checkPermissions('accountopeningbalance.delete')" :loading="loading" icon="delete" color="red" label="Delete" type="submit" @click.prevent="isDeleteOpen = true" />
+          <q-btn v-if="!isEdit && checkPermissions('accountopeningbalance.create')" :loading="loading" color="green" label="Create" type="submit" @click.prevent="submitForm" />
+          <q-btn v-if="isEdit && checkPermissions('accountopeningbalance.modify')" :loading="loading" color="green" label="Update" type="submit" @click.prevent="submitForm" />
         </div>
       </q-card>
       <q-dialog v-model="isDeleteOpen">
@@ -119,10 +78,8 @@ export default {
           </q-card-section>
           <q-separator inset />
           <q-card-section>
-            <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500;">
-              Are you sure?
-            </div>
-            <div class=" text-blue">
+            <div class="q-mb-md text-grey-9" style="font-size: 16px; font-weight: 500">Are you sure?</div>
+            <div class="text-blue">
               <div class="row justify-end">
                 <q-btn flat class="q-mr-md text-blue-grey-9" label="NO" @click="() => (isDeleteOpen = false)" />
                 <q-btn flat class="text-red" label="Yes" @click="onDeleteClick(fields.id)" />

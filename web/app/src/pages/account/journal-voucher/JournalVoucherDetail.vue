@@ -73,25 +73,10 @@ const onCancelClick = () => {
 //       // console.log('I am triggered on both OK and Cancel')
 //     })
 // }
-const getTotalCrAmount = computed(
-  () =>
-    fields.value?.rows?.reduce(
-      (accum, item) => accum + Number(item.cr_amount),
-      0,
-    ) || 0,
-)
+const getTotalCrAmount = computed(() => fields.value?.rows?.reduce((accum, item) => accum + Number(item.cr_amount), 0) || 0)
 
-const getTotalDrAmount = computed(
-  () =>
-    fields.value?.rows?.reduce(
-      (accum, item) => accum + Number(item.dr_amount),
-      0,
-    ) || 0,
-)
-const today = DateConverter.getRepresentation(
-  new Date().toISOString().slice(0, 10),
-  store.isCalendarInAD ? 'ad' : 'bs',
-)
+const getTotalDrAmount = computed(() => fields.value?.rows?.reduce((accum, item) => accum + Number(item.dr_amount), 0) || 0)
+const today = DateConverter.getRepresentation(new Date().toISOString().slice(0, 10), store.isCalendarInAD ? 'ad' : 'bs')
 </script>
 
 <template>
@@ -100,7 +85,8 @@ const today = DateConverter.getRepresentation(
       <q-card>
         <q-card-section class="bg-green text-white">
           <div class="text-h6">
-            <span>Journal Voucher | #{{ fields?.voucher_no || '-' }} |
+            <span>
+              Journal Voucher | #{{ fields?.voucher_no || '-' }} |
               {{ fields?.status || '-' }}
             </span>
           </div>
@@ -110,21 +96,15 @@ const today = DateConverter.getRepresentation(
           <q-card-section>
             <div class="grid md:grid-cols-2 q-col-gutter-md q-mb-sm">
               <div class="col-6 row">
-                <div class="col-6">
-                  Voucher No
-                </div>
+                <div class="col-6">Voucher No</div>
                 <div class="col-6">
                   {{ fields?.voucher_no || '-' }}
                 </div>
               </div>
               <div class="col-6 row">
+                <div class="col-6">Date</div>
                 <div class="col-6">
-                  Date
-                </div>
-                <div class="col-6">
-                  {{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(
-                    fields?.date, 'bs',
-                  ) }}
+                  {{ store.isCalendarInAD ? fields?.date : DateConverter.getRepresentation(fields?.date, 'bs') }}
                 </div>
               </div>
             </div>
@@ -136,21 +116,11 @@ const today = DateConverter.getRepresentation(
         <q-card-section class="min-w-[650px]">
           <!-- Head -->
           <div class="row q-col-gutter-md text-grey-9">
-            <div class="col-2">
-              SN
-            </div>
-            <div class="col-2">
-              Type
-            </div>
-            <div class="col-grow">
-              Account
-            </div>
-            <div class="col-2">
-              Dr Amount
-            </div>
-            <div class="col-2">
-              Cr Amount
-            </div>
+            <div class="col-2">SN</div>
+            <div class="col-2">Type</div>
+            <div class="col-grow">Account</div>
+            <div class="col-2">Dr Amount</div>
+            <div class="col-2">Cr Amount</div>
           </div>
 
           <!-- Body -->
@@ -164,11 +134,7 @@ const today = DateConverter.getRepresentation(
                 {{ row.type }}
               </div>
               <div class="col-grow">
-                <router-link
-                  class="text-blue text-weight-medium"
-                  style="text-decoration: none"
-                  :to="`/${$route.params.company}/account/${row.account_id}/view/`"
-                >
+                <router-link class="text-blue text-weight-medium" style="text-decoration: none" :to="`/${$route.params.company}/account/${row.account_id}/view/`">
                   {{ row.account_name }}
                 </router-link>
               </div>
@@ -185,18 +151,12 @@ const today = DateConverter.getRepresentation(
           <div class="row q-col-gutter-md text-bold q-mt-md">
             <div class="col-2"></div>
             <div class="col-2"></div>
-            <div class="col-grow">
-              Total
+            <div class="col-grow">Total</div>
+            <div class="col-2">
+              {{ $nf(getTotalDrAmount) }}
             </div>
             <div class="col-2">
-              {{
-                $nf(getTotalDrAmount)
-              }}
-            </div>
-            <div class="col-2">
-              {{
-                $nf(getTotalCrAmount)
-              }}
+              {{ $nf(getTotalCrAmount) }}
             </div>
           </div>
         </q-card-section>
@@ -206,9 +166,7 @@ const today = DateConverter.getRepresentation(
         <q-card-section>
           <div class="row">
             <div class="col-9 row text-grey-8">
-              <div class="col-6">
-                Narration
-              </div>
+              <div class="col-6">Narration</div>
               <div class="col-6">
                 {{ fields?.narration || '-' }}
               </div>
@@ -218,14 +176,7 @@ const today = DateConverter.getRepresentation(
       </q-card>
       <div class="q-pr-md q-pb-lg row q-col-gutter-md q-mt-xs">
         <div>
-          <q-btn
-            v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'"
-            :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`"
-            color="orange"
-            icon="edit"
-            label="Edit"
-            class="text-h7 q-py-sm"
-          />
+          <q-btn v-if="checkPermissions('journalvoucher.modify') && fields?.status !== 'Cancelled'" :to="`/${$route.params.company}/journal-voucher/${props.id}/edit/`" color="orange" icon="edit" label="Edit" class="text-h7 q-py-sm" />
         </div>
         <div v-if="fields?.status == 'Approved' && checkPermissions('journalvoucher.cancel')">
           <q-btn color="red" icon="block" label="Cancel" class="text-h7 q-py-sm" @click.prevent="isDeleteOpen = true" />
@@ -233,47 +184,34 @@ const today = DateConverter.getRepresentation(
       </div>
     </q-form>
     <div class="print-only mt-1">
-      <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif;">
+      <div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif">
         <div>
-          <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500;">
-            {{
-              store?.companyInfo.name
-            }}
+          <h1 style="margin: 5px 0; font-size: 35px; font-weight: 500">
+            {{ store?.companyInfo.name }}
           </h1>
           <div>{{ store?.companyInfo.address }}</div>
-          <div>Tax Reg. No. <strong>{{ store.companyInfo.tax_registration_number }}</strong></div>
+          <div>
+            Tax Reg. No.
+            <strong>{{ store.companyInfo.tax_registration_number }}</strong>
+          </div>
         </div>
 
-        <div
-          style="
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        align-items: flex-end;
-      "
-        >
-          <div style="margin-bottom: 5px;">
-            <img
-              v-if="store?.companyInfo.logo_url"
-              :src="store?.companyInfo.logo_url"
-              alt="Compony Logo"
-              style="height: 70px; max-width: 200px; object-fit: contain;"
-            />
+        <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end">
+          <div style="margin-bottom: 5px">
+            <img v-if="store?.companyInfo.logo_url" :src="store?.companyInfo.logo_url" alt="Compony Logo" style="height: 70px; max-width: 200px; object-fit: contain" />
           </div>
           <div style="display: flex; align-items: center">
             <img src="/icons/telephone-fill.svg" alt="Email" style="margin-right: 10px; width: 14px" />
             <span style="color: skyblue">{{ store?.companyInfo.contact_no }}</span>
           </div>
           <div v-if="store?.companyInfo?.emails?.length > 0" style="display: flex; align-items: center">
-            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" /><span style="color: skyblue">{{ (store?.companyInfo.emails && store.companyInfo.emails.length)
-              ? store.companyInfo.emails.join(',&nbsp;') : '' }}</span>
+            <img src="/icons/envelope-fill.svg" alt="Call" style="margin-right: 10px; width: 14px" />
+            <span style="color: skyblue">{{ store?.companyInfo.emails && store.companyInfo.emails.length ? store.companyInfo.emails.join(',&nbsp;') : '' }}</span>
           </div>
         </div>
       </div>
       <hr style="margin: 20px 0" />
-      <div class="text-center text-bold text-subtitle1 q-mb-md">
-        Journal Voucher
-      </div>
+      <div class="text-center text-bold text-subtitle1 q-mb-md">Journal Voucher</div>
       <div class="row justify-between">
         <div>Date: {{ fields?.date || '-' }}</div>
         <div>J.V. No.: {{ fields?.voucher_no }}</div>
@@ -281,27 +219,13 @@ const today = DateConverter.getRepresentation(
       <table class="w-full text-center text-xs">
         <thead>
           <tr class="text-bold">
-            <th class="col-one">
-              SN
-            </th>
-            <th class="col-two">
-              Type
-            </th>
-            <th class="col-three">
-              Code
-            </th>
-            <th class="col-four">
-              Account
-            </th>
-            <th class="col-five">
-              Acc. Sheet No
-            </th>
-            <th class="col-six">
-              Debit
-            </th>
-            <th class="col-seven">
-              Credit
-            </th>
+            <th class="col-one">SN</th>
+            <th class="col-two">Type</th>
+            <th class="col-three">Code</th>
+            <th class="col-four">Account</th>
+            <th class="col-five">Acc. Sheet No</th>
+            <th class="col-six">Debit</th>
+            <th class="col-seven">Credit</th>
           </tr>
         </thead>
         <tbody>
@@ -321,9 +245,7 @@ const today = DateConverter.getRepresentation(
         </tbody>
         <tfoot>
           <tr class="text-bold q-mt-md">
-            <td colspan="5">
-              Total
-            </td>
+            <td colspan="5">Total</td>
 
             <td>{{ $nf(getTotalDrAmount) }}</td>
             <td>{{ $nf(getTotalCrAmount) }}</td>
@@ -338,26 +260,20 @@ const today = DateConverter.getRepresentation(
 
       <div class="row q-mt-md">
         <div class="col" style="line-height: 160%">
-          <div class="underline">
-            Prepared By
-          </div>
+          <div class="underline">Prepared By</div>
           <div>Name : {{ store?.userInfo.fullName }}</div>
           <div>Designation:</div>
           <div>Date : {{ today }}</div>
         </div>
         <div class="col" style="line-height: 160%">
-          <div class="underline">
-            Checked By
-          </div>
+          <div class="underline">Checked By</div>
           <div>Name:</div>
           <div>Designation:</div>
           <div>Date:</div>
         </div>
 
         <div class="col" style="line-height: 160%">
-          <div class="underline">
-            Approved By
-          </div>
+          <div class="underline">Approved By</div>
           <div>Name:</div>
           <div>Designation:</div>
           <div>Date:</div>
@@ -373,14 +289,7 @@ const today = DateConverter.getRepresentation(
           <q-btn v-close-popup icon="close" class="text-red-700 bg-slate-200 opacity-95" flat round dense />
         </q-card-section>
         <q-card-section class="q-ma-md">
-          <q-input
-            v-model="deleteMsg"
-            autofocus
-            type="textarea"
-            outlined
-            :error="!!errors?.message"
-            :error-message="errors?.message"
-          />
+          <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
           <div class="text-right q-mt-lg">
             <q-btn label="Confirm" @click="onCancelClick" />
           </div>
@@ -407,8 +316,8 @@ const today = DateConverter.getRepresentation(
     margin: 0px;
   }
 
-  .q-col-gutter-y-md>*,
-  .q-col-gutter-md>* {
+  .q-col-gutter-y-md > *,
+  .q-col-gutter-md > * {
     padding: 0px;
   }
 

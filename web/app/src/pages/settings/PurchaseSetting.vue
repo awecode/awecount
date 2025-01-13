@@ -69,8 +69,8 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
-    const onupdateErrors = () => emailListErrors.value = null
+    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
+    const onupdateErrors = () => (emailListErrors.value = null)
     const modeOptionsComputed = computed(() => {
       const obj = {
         results: [{ id: null, name: 'Credit' }],
@@ -132,26 +132,9 @@ export default {
           </div> -->
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
-              <n-auto-complete-v2
-                v-model.number="fields.payment_mode"
-                label="Mode"
-                :options="modeOptionsComputed"
-                :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/payment_modes`"
-                :static-option="fields.selected_mode_obj"
-                option-value="id"
-                option-label="name"
-                map-options
-                emit-value
-                :error="!!modeErrors"
-                :error-message="modeErrors"
-              >
+              <n-auto-complete-v2 v-model.number="fields.payment_mode" label="Mode" :options="modeOptionsComputed" :endpoint="`/api/company/${$route.params.company}/purchase-settings/create-defaults/payment_modes`" :static-option="fields.selected_mode_obj" option-value="id" option-label="name" map-options emit-value :error="!!modeErrors" :error-message="modeErrors">
                 <template #append>
-                  <q-icon
-                    v-if="fields.payment_mode"
-                    name="close"
-                    class="cursor-pointer"
-                    @click.stop.prevent="fields.payment_mode = null"
-                  />
+                  <q-icon v-if="fields.payment_mode" name="close" class="cursor-pointer" @click.stop.prevent="fields.payment_mode = null" />
                 </template>
               </n-auto-complete-v2>
             </div>
@@ -173,9 +156,10 @@ export default {
           <q-card v-if="fields.enable_item_rate_change_alert" class="q-mt-lg">
             <q-card-section>
               <div class="text-grey-7 q-mb-md">
-                <q-icon name="info" size="sm" /> List of email address that will receive alert
+                <q-icon name="info" size="sm" />
+                List of email address that will receive alert
               </div>
-              <div class=" q-mb-md">
+              <div class="q-mb-md">
                 <email-list v-model="fields.rate_change_alert_emails" :errors="emailListErrors" @update-errors="onupdateErrors" />
               </div>
             </q-card-section>

@@ -33,10 +33,7 @@ export default defineBoot(({ router }) => {
     if (!onboarded && authConfig.onboarding.enabled) {
       const route = authConfig.onboarding.route
 
-      if (
-        (typeof route === 'string' && route === to.fullPath)
-        || (typeof route === 'object' && (('name' in route && route.name === to.name) || (route.path && route.path === to.fullPath)))
-      ) {
+      if ((typeof route === 'string' && route === to.fullPath) || (typeof route === 'object' && (('name' in route && route.name === to.name) || (route.path && route.path === to.fullPath)))) {
         return
       }
 

@@ -13,7 +13,7 @@ export default defineBoot(({ app }) => {
     if (toFixed === undefined) {
       return returnAmount
     } else {
-      return (returnAmount).toFixed(toFixed)
+      return returnAmount.toFixed(toFixed)
     }
   }
 

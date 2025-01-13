@@ -58,38 +58,16 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn
-        v-if="checkPermissions('taxscheme.create')"
-        color="green"
-        :to="`/${$route.params.company}/taxes/create/`"
-        label="New Tax Scheme"
-        class="add-btn"
-        icon-right="add"
-      />
+      <q-btn v-if="checkPermissions('taxscheme.create')" color="green" :to="`/${$route.params.company}/taxes/create/`" label="New Tax Scheme" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link
-            v-if="checkPermissions('taxscheme.modify')"
-            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
-            style="text-decoration: none"
-            class="text-blue"
-          >
+          <router-link v-if="checkPermissions('taxscheme.modify')" :to="`/${$route.params.company}/taxes/${props.row.id}/`" style="text-decoration: none" class="text-blue">
             {{ props.row.name }}
           </router-link>
-          <span v-else> {{ props.row.name }}</span>
+          <span v-else>{{ props.row.name }}</span>
         </q-td>
       </template>
       <template #body-cell-recoverable="props">
@@ -104,20 +82,12 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            color="orange"
-            class="q-py-none q-px-md font-size-sm l-edit-btn"
-            style="font-size: 12px"
-            label="Edit"
-            :to="`/${$route.params.company}/taxes/${props.row.id}/`"
-          />
+          <q-btn color="orange" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="Edit" :to="`/${$route.params.company}/taxes/${props.row.id}/`" />
         </q-td>
       </template>
       <template #body-cell-bankwallet_name="props">
         <q-td :props="props">
-          {{
-            props.row.is_wallet ? props.row.wallet_name : props.row.bank_name
-          }}
+          {{ props.row.is_wallet ? props.row.wallet_name : props.row.bank_name }}
         </q-td>
       </template>
     </q-table>

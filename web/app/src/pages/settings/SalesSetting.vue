@@ -57,7 +57,7 @@ export default {
           formLoading.value = false
         })
     }
-    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
+    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
     const modeOptionsComputed = computed(() => {
       const obj = {
         results: [{ id: null, name: 'Credit' }],
@@ -121,26 +121,9 @@ export default {
           </div> -->
           <div class="row q-ml-sm">
             <div class="col-12 col-sm-6">
-              <n-auto-complete-v2
-                v-model.number="fields.payment_mode"
-                label="Mode"
-                :options="modeOptionsComputed"
-                :endpoint="`/api/company/${$route.params.company}/sales-settings/create-defaults/payment_modes`"
-                :static-option="fields.selected_mode_obj"
-                option-value="id"
-                option-label="name"
-                map-options
-                emit-value
-                :error="!!modeErrors"
-                :error-message="modeErrors"
-              >
+              <n-auto-complete-v2 v-model.number="fields.payment_mode" label="Mode" :options="modeOptionsComputed" :endpoint="`/api/company/${$route.params.company}/sales-settings/create-defaults/payment_modes`" :static-option="fields.selected_mode_obj" option-value="id" option-label="name" map-options emit-value :error="!!modeErrors" :error-message="modeErrors">
                 <template #append>
-                  <q-icon
-                    v-if="fields.mode"
-                    name="close"
-                    class="cursor-pointer"
-                    @click.stop.prevent="fields.mode = null"
-                  />
+                  <q-icon v-if="fields.mode" name="close" class="cursor-pointer" @click.stop.prevent="fields.mode = null" />
                 </template>
               </n-auto-complete-v2>
             </div>

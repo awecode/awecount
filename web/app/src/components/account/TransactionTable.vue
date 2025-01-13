@@ -75,37 +75,32 @@ export default {
       'Cheque Deposit': 'ChequeDepositView',
       'Payment Receipt': 'PaymentReceiptView',
       'Cheque Issue': 'ChequeIssueModify',
-      'Challan': 'ChallanModify',
+      Challan: 'ChallanModify',
       'Account Opening Balance': 'AccountOpeningBalanceModify',
       'Fund Transfer': 'FundTransferModify',
       'Bank Cash Deposit': 'BankCashDepositModify',
       'Tax Payment': 'TaxPaymentModify',
-      'Item': 'ItemView',
+      Item: 'ItemView',
       'Inventory Adjustment Voucher': 'InventoryAdjustmentVoucherView',
     }
     const runningBalance = computed(() => {
-      const runningBalanceData: Record<
-        number,
-        Record<string, number | string | null>
-      > = {}
+      const runningBalanceData: Record<number, Record<string, number | string | null>> = {}
       if (fields.value?.transactions?.results && fields.value.page_cumulative) {
         const openingBalance = { dr: 0, cr: 0 }
         if (route.query.start_date) {
           openingBalance.dr = (fields.value.aggregate.opening.dr || 0) + (fields.value.page_cumulative.next.dr || 0)
           openingBalance.cr = (fields.value.aggregate.opening.cr || 0) + (fields.value.page_cumulative.next.cr || 0)
         } else {
-          openingBalance.dr = (fields.value.page_cumulative.next.dr || 0)
-          openingBalance.cr = (fields.value.page_cumulative.next.cr || 0)
+          openingBalance.dr = fields.value.page_cumulative.next.dr || 0
+          openingBalance.cr = fields.value.page_cumulative.next.cr || 0
         }
         let currentRunningBalance = openingBalance
         const reversedTransactions = [...fields.value.transactions.results].reverse()
         const dataLength = fields.value.transactions.results.length - 1
         reversedTransactions.forEach((item, index) => {
           const activeBalance = { ...currentRunningBalance }
-          activeBalance.dr
-            = activeBalance.dr + (item.dr_amount ? Number.parseFloat(item.dr_amount) : 0)
-          activeBalance.cr
-            = activeBalance.cr + (item.cr_amount ? Number.parseFloat(item.cr_amount) : 0)
+          activeBalance.dr = activeBalance.dr + (item.dr_amount ? Number.parseFloat(item.dr_amount) : 0)
+          activeBalance.cr = activeBalance.cr + (item.cr_amount ? Number.parseFloat(item.cr_amount) : 0)
           const dataIndex = dataLength - index
           runningBalanceData[dataIndex] = activeBalance
           currentRunningBalance = activeBalance
@@ -131,27 +126,13 @@ export default {
     <!-- TODO: aggregate data not availaible, so check if it works -->
     <thead>
       <tr>
-        <th class="text-left">
-          Date
-        </th>
-        <th class="text-left">
-          Voucher Type
-        </th>
-        <th class="text-left">
-          Against
-        </th>
-        <th class="text-left">
-          Voucher No.
-        </th>
-        <th class="text-left">
-          Dr
-        </th>
-        <th class="text-left">
-          Cr
-        </th>
-        <th v-if="fields.aggregate" class="text-left">
-          Balance
-        </th>
+        <th class="text-left">Date</th>
+        <th class="text-left">Voucher Type</th>
+        <th class="text-left">Against</th>
+        <th class="text-left">Voucher No.</th>
+        <th class="text-left">Dr</th>
+        <th class="text-left">Cr</th>
+        <th v-if="fields.aggregate" class="text-left">Balance</th>
       </tr>
     </thead>
     <tbody v-if="fields.transactions">
@@ -199,36 +180,21 @@ export default {
       <template v-if="fields.amounts">
         <tr v-if="$route.query.end_date" class="text-weight-bold">
           <td colspan="2"></td>
-          <td class="text-left">
-            Final Closing
-          </td>
+          <td class="text-left">Final Closing</td>
           <td></td>
           <td class="text-left">
-            {{
-              $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2)
-            }}
+            {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr, 2) }}
           </td>
           <td class="text-left">
-            {{
-              $nf(fields.aggregate.total.cr + fields.aggregate.opening.cr, 2)
-            }}
+            {{ $nf(fields.aggregate.total.cr + fields.aggregate.opening.cr, 2) }}
           </td>
           <td class="text-left">
-            {{
-              $nf(
-                fields.aggregate.total.dr
-                  + fields.aggregate.opening.dr
-                  - (fields.aggregate.total.cr + fields.aggregate.opening.cr),
-                2,
-              )
-            }}
+            {{ $nf(fields.aggregate.total.dr + fields.aggregate.opening.dr - (fields.aggregate.total.cr + fields.aggregate.opening.cr), 2) }}
           </td>
         </tr>
         <tr v-else class="text-weight-bold">
           <td colspan="2"></td>
-          <td class="text-left">
-            Final Closing
-          </td>
+          <td class="text-left">Final Closing</td>
           <td></td>
           <td class="text-left">
             {{ $nf(fields.amounts.dr || 0, 2) }}
@@ -243,87 +209,35 @@ export default {
       </template>
       <tr v-if="$route.query.start_date && fields.page_cumulative" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">
-          Closing
-        </td>
+        <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.dr
-                + fields.page_cumulative.next.dr
-                + fields.aggregate.opening.dr,
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr + fields.aggregate.opening.dr, 2) }}
         </td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.cr
-                + fields.page_cumulative.next.cr
-                + fields.aggregate.opening.cr,
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.cr + fields.page_cumulative.next.cr + fields.aggregate.opening.cr, 2) }}
         </td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.dr
-                + fields.page_cumulative.next.dr
-                + fields.aggregate.opening.dr
-                - (fields.page_cumulative.current.cr
-                  + fields.page_cumulative.next.cr
-                  + fields.aggregate.opening.cr),
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr + fields.aggregate.opening.dr - (fields.page_cumulative.current.cr + fields.page_cumulative.next.cr + fields.aggregate.opening.cr), 2) }}
         </td>
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">
-          Closing
-        </td>
+        <td class="text-left">Closing</td>
         <td></td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.dr
-                + fields.page_cumulative.next.dr,
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr, 2) }}
         </td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.cr
-                + fields.page_cumulative.next.cr,
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.cr + fields.page_cumulative.next.cr, 2) }}
         </td>
         <td class="text-left">
-          {{
-            $nf(
-              fields.page_cumulative.current.dr
-                + fields.page_cumulative.next.dr
-                - (fields.page_cumulative.current.cr
-                  + fields.page_cumulative.next.cr),
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.current.dr + fields.page_cumulative.next.dr - (fields.page_cumulative.current.cr + fields.page_cumulative.next.cr), 2) }}
         </td>
       </tr>
       <tr v-for="(transaction, index) in fields.transactions.results" :key="index">
         <td>
-          {{
-            store.isCalendarInAD
-              ? transaction.date
-              : DateConverter.getRepresentation(transaction.date, 'bs')
-          }}
+          {{ store.isCalendarInAD ? transaction.date : DateConverter.getRepresentation(transaction.date, 'bs') }}
         </td>
         <td>{{ transaction.source_type }}</td>
         <td>
@@ -336,47 +250,25 @@ export default {
           </div> -->
         </td>
         <td>
-          <router-link
-            v-if="transaction.source_type && transaction.voucher_no && checkPermissions(
-              getPermissionsWithSourceType[transaction.source_type],
-            )
-            "
-            class="text-blue"
-            style="text-decoration: none"
-            :to="getVoucherUrl(transaction)"
-          >
-            {{
-              transaction.voucher_no }}
+          <router-link v-if="transaction.source_type && transaction.voucher_no && checkPermissions(getPermissionsWithSourceType[transaction.source_type])" class="text-blue" style="text-decoration: none" :to="getVoucherUrl(transaction)">
+            {{ transaction.voucher_no }}
           </router-link>
-          <span v-else> {{ transaction.voucher_no }} </span>
+          <span v-else>{{ transaction.voucher_no }}</span>
         </td>
         <td>
-          <span v-if="transaction.dr_amount">{{
-            $nf(transaction.dr_amount, 2)
-          }}</span>
+          <span v-if="transaction.dr_amount">{{ $nf(transaction.dr_amount, 2) }}</span>
         </td>
         <td>
-          <span v-if="transaction.cr_amount">{{
-            $nf(transaction.cr_amount, 2)
-          }}</span>
+          <span v-if="transaction.cr_amount">{{ $nf(transaction.cr_amount, 2) }}</span>
         </td>
         <td v-if="runningBalance && Object.keys(runningBalance).length">
-          {{ $nf((runningBalance[index].dr - runningBalance[index].cr), 2) }}
+          {{ $nf(runningBalance[index].dr - runningBalance[index].cr, 2) }}
         </td>
       </tr>
 
-      <tr
-        v-if="fields.aggregate
-          && fields.aggregate.total
-          && (fields.aggregate.total.dr_amount__sum
-            || fields.aggregate.total.cr_amount__sum)
-        "
-        class="text-weight-bold"
-      >
+      <tr v-if="fields.aggregate && fields.aggregate.total && (fields.aggregate.total.dr_amount__sum || fields.aggregate.total.cr_amount__sum)" class="text-weight-bold">
         <td colspan="2"></td>
-        <td class="text-left">
-          Total
-        </td>
+        <td class="text-left">Total</td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.aggregate.total.dr_amount__sum, 2) }}
@@ -385,13 +277,7 @@ export default {
           {{ $nf(fields.aggregate.total.cr_amount__sum, 2) }}
         </td>
         <td>
-          {{
-            $nf(
-              (fields.aggregate.total.dr_amount__sum || 0)
-                - (fields.aggregate.total.cr_amount__sum || 0),
-              2,
-            )
-          }}
+          {{ $nf((fields.aggregate.total.dr_amount__sum || 0) - (fields.aggregate.total.cr_amount__sum || 0), 2) }}
         </td>
       </tr>
 
@@ -420,36 +306,21 @@ export default {
 
       <tr v-if="$route.query.start_date" class="text-weight-bold">
         <td rowspan="1" colspan="2"></td>
-        <td class="text-left">
-          Opening
-        </td>
+        <td class="text-left">Opening</td>
         <td></td>
         <td class="text-left">
-          {{
-            $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr, 2)
-          }}
+          {{ $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr, 2) }}
         </td>
         <td class="text-left">
-          {{
-            $nf(fields.aggregate.opening.cr + fields.page_cumulative.next.cr, 2)
-          }}
+          {{ $nf(fields.aggregate.opening.cr + fields.page_cumulative.next.cr, 2) }}
         </td>
         <td>
-          {{
-            $nf(
-              fields.aggregate.opening.dr
-                + fields.page_cumulative.next.dr
-                - (fields.aggregate.opening.cr + fields.page_cumulative.next.cr),
-              2,
-            )
-          }}
+          {{ $nf(fields.aggregate.opening.dr + fields.page_cumulative.next.dr - (fields.aggregate.opening.cr + fields.page_cumulative.next.cr), 2) }}
         </td>
       </tr>
       <tr v-else-if="fields.page_cumulative" class="text-weight-bold">
         <td rowspan="1" colspan="2"></td>
-        <td class="text-left">
-          Opening
-        </td>
+        <td class="text-left">Opening</td>
         <td></td>
         <td class="text-left">
           {{ $nf(fields.page_cumulative.next.dr, 2) }}
@@ -458,12 +329,7 @@ export default {
           {{ $nf(fields.page_cumulative.next.cr, 2) }}
         </td>
         <td>
-          {{
-            $nf(
-              fields.page_cumulative.next.dr - fields.page_cumulative.next.cr,
-              2,
-            )
-          }}
+          {{ $nf(fields.page_cumulative.next.dr - fields.page_cumulative.next.cr, 2) }}
         </td>
       </tr>
       <!-- <tr class="text-weight-bold">
@@ -501,7 +367,7 @@ export default {
 
       <tr>
         <td colspan="7">
-          <slot> </slot>
+          <slot></slot>
         </td>
       </tr>
     </tbody>
@@ -510,7 +376,9 @@ export default {
 
 <style scoped>
 .box-shadow {
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14),
+  box-shadow:
+    0 1px 5px rgba(0, 0, 0, 0.2),
+    0 2px 2px rgba(0, 0, 0, 0.14),
     0 3px 1px -2px rgba(0, 0, 0, 0.12);
 }
 

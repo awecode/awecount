@@ -15,12 +15,12 @@ const useHandleFormError = (data) => {
           } else val = val.join(' ')
         }
         return [k, val]
-      })
+      }),
     )
     errors = dct
   }
   if (data.status == 404) {
-    if (data.data?.detail && data.data?.detail !== 'Not found.' ) {
+    if (data.data?.detail && data.data?.detail !== 'Not found.') {
       message = `Not found - ${data.data.detail}`
     } else {
       message = 'Not found!'
@@ -30,7 +30,7 @@ const useHandleFormError = (data) => {
   }
   return {
     errors,
-    message
+    message,
   }
 }
 

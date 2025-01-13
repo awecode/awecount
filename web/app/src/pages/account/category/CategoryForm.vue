@@ -28,51 +28,18 @@ useMeta(() => ({
       <q-card class="q-mx-lg q-mb-lg">
         <q-card-section>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
-            <q-input
-              v-model="fields.name"
-              label="Name *"
-              :error-message="errors.name"
-              :error="!!errors.name"
-            />
-            <q-input
-              v-model="fields.code"
-              label="Code"
-              :error-message="errors.code"
-              :error="!!errors.code"
-            />
+            <q-input v-model="fields.name" label="Name *" :error-message="errors.name" :error="!!errors.name" />
+            <q-input v-model="fields.code" label="Code" :error-message="errors.code" :error="!!errors.code" />
           </div>
           <div class="q-col-gutter-md grid lg:grid-cols-2">
             <div class="lg:col-6 col-12">
-              <n-auto-complete-v2
-                v-model="fields.parent"
-                :options="formDefaults.collections?.categories"
-                label="Parent *"
-                :error="errors?.parent"
-                :static-option="fields.selected_parent_obj"
-                :endpoint="`/api/company/${$route.params.company}/categories/create-defaults/categories`"
-              />
+              <n-auto-complete-v2 v-model="fields.parent" :options="formDefaults.collections?.categories" label="Parent *" :error="errors?.parent" :static-option="fields.selected_parent_obj" :endpoint="`/api/company/${$route.params.company}/categories/create-defaults/categories`" />
             </div>
           </div>
         </q-card-section>
         <div class="text-right q-pr-md q-pb-lg">
-          <q-btn
-            v-if="checkPermissions('category.modify') && !isEdit"
-            type="submit"
-            color="green"
-            :loading="loading"
-            label="Create"
-            class="q-ml-auto"
-            @click.prevent="submitForm"
-          />
-          <q-btn
-            v-if="checkPermissions('category.modify') && isEdit"
-            type="submit"
-            color="green"
-            :loading="loading"
-            label="Update"
-            class="q-ml-auto"
-            @click.prevent="submitForm"
-          />
+          <q-btn v-if="checkPermissions('category.modify') && !isEdit" type="submit" color="green" :loading="loading" label="Create" class="q-ml-auto" @click.prevent="submitForm" />
+          <q-btn v-if="checkPermissions('category.modify') && isEdit" type="submit" color="green" :loading="loading" label="Update" class="q-ml-auto" @click.prevent="submitForm" />
         </div>
       </q-card>
     </q-card>

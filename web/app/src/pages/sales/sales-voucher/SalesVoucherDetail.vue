@@ -44,31 +44,33 @@ export default {
           }
           if (status === 'Cancelled') {
             isDeleteOpen.value = false
-            fields.value.remarks = (`\nReason for cancellation: ${body?.body.message}`)
+            fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
           }
           loading.value = false
         })
         .catch((data) => {
           if (data.status === 422) {
-            useHandleCancelInconsistencyError(endpoint, data, body.body, $q).then(() => {
-              if (fields.value) {
-                fields.value.status = status
-              }
-              if (status === 'Cancelled') {
-                isDeleteOpen.value = false
-                fields.value.remarks = (`\nReason for cancellation: ${body?.body.message}`)
-              }
-              loading.value = false
-            }).catch((error) => {
-              if (error.status !== 'cancel') {
-                $q.notify({
-                  color: 'negative',
-                  message: 'Something went Wrong!',
-                  icon: 'report_problem',
-                })
-              }
-              loading.value = false
-            })
+            useHandleCancelInconsistencyError(endpoint, data, body.body, $q)
+              .then(() => {
+                if (fields.value) {
+                  fields.value.status = status
+                }
+                if (status === 'Cancelled') {
+                  isDeleteOpen.value = false
+                  fields.value.remarks = `\nReason for cancellation: ${body?.body.message}`
+                }
+                loading.value = false
+              })
+              .catch((error) => {
+                if (error.status !== 'cancel') {
+                  $q.notify({
+                    color: 'negative',
+                    message: 'Something went Wrong!',
+                    icon: 'report_problem',
+                  })
+                }
+                loading.value = false
+              })
           } else {
             const parsedError = useHandleFormError(data)
             errors.value = parsedError.errors
@@ -97,7 +99,7 @@ export default {
             }
             print(bodyOnly)
           })
-          .catch(err => console.log('err from the api', err))
+          .catch((err) => console.log('err from the api', err))
       } else {
         print(bodyOnly)
       }
@@ -150,17 +152,13 @@ export default {
       <q-card class="q-ma-lg q-mb-sm">
         <q-card-section class="bg-green text-white">
           <div class="text-h6 d-print-none">
-            <span>Sales Invoice | {{ fields?.status }} <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no
-            }}</span>
+            <span>
+              Sales Invoice | {{ fields?.status }}
+              <span v-if="fields?.voucher_no">| # {{ fields?.voucher_no }}</span>
             </span>
           </div>
         </q-card-section>
-        <ViewerHeader2
-          :fields="fields"
-          :change-modes="true"
-          :payment-mode-options="paymentModeOptions"
-          @update-mode="(newValue) => updatePaymentMode(newValue)"
-        />
+        <ViewerHeader2 :fields="fields" :change-modes="true" :payment-mode-options="paymentModeOptions" @update-mode="(newValue) => updatePaymentMode(newValue)" />
       </q-card>
       <q-card id="to_print" class="q-mx-lg">
         <q-card-section>
@@ -173,23 +171,21 @@ export default {
             <div class="row">
               <div class="col-3">
                 Receipt #
-                <router-link
-                  v-if="checkPermissions('paymentreceipt.view')"
-                  style="font-weight: 500; text-decoration: none"
-                  class="text-blue"
-                  :to="`/${$route.params.company}/payment-receipt/${receipt.id}/view`"
-                >
+                <router-link v-if="checkPermissions('paymentreceipt.view')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/${$route.params.company}/payment-receipt/${receipt.id}/view`">
                   {{ receipt.id }}
                 </router-link>
               </div>
               <div class="col-3">
-                Amount: <span class="text-weight-medium">Rs {{ receipt.amount }}</span>
+                Amount:
+                <span class="text-weight-medium">Rs {{ receipt.amount }}</span>
               </div>
               <div class="col-3">
-                Status: <span class="text-weight-medium">{{ receipt.status }}</span>
+                Status:
+                <span class="text-weight-medium">{{ receipt.status }}</span>
               </div>
               <div class="col-3">
-                TDS Amount: <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span>
+                TDS Amount:
+                <span class="text-weight-medium">Rs {{ receipt.tds_amount }}</span>
               </div>
             </div>
           </q-card-section>
@@ -197,65 +193,23 @@ export default {
       </div>
       <q-card v-if="fields?.remarks" class="q-mx-lg q-my-md">
         <q-card-section>
-          <span class="text-subtitle2 text-grey-9"> Remarks: </span>
+          <span class="text-subtitle2 text-grey-9">Remarks:</span>
           <span class="text-grey-9">{{ fields?.remarks }}</span>
         </q-card-section>
       </q-card>
       <div v-if="fields" class="q-px-lg q-pb-lg q-mt-md row justify-between q-gutter-x-md d-print-none">
         <div>
           <div class="row q-gutter-x-md q-gutter-y-md q-mb-md">
-            <q-btn
-              v-if="checkPermissions('sales.modify') && (fields.can_update_issued || fields?.status === 'Draft')"
-              color="orange-5"
-              label="Edit"
-              icon="edit"
-              :to="`/${$route.params.company}/sales-voucher/${fields?.id}/`"
-            />
-            <q-btn
-              v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')"
-              color="green-6"
-              label="mark as paid"
-              icon="mdi-check-all"
-              :loading="loading"
-              @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')"
-            />
-            <q-btn
-              v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'"
-              color="red-5"
-              label="Cancel"
-              icon="cancel"
-              :loading="loading"
-              @click.prevent="() => (isDeleteOpen = true)"
-            />
+            <q-btn v-if="checkPermissions('sales.modify') && (fields.can_update_issued || fields?.status === 'Draft')" color="orange-5" label="Edit" icon="edit" :to="`/${$route.params.company}/sales-voucher/${fields?.id}/`" />
+            <q-btn v-if="fields?.status === 'Issued' && checkPermissions('sales.modify')" color="green-6" label="mark as paid" icon="mdi-check-all" :loading="loading" @click.prevent="() => submitChangeStatus(fields?.id, 'Paid')" />
+            <q-btn v-if="checkPermissions('sales.cancel') && fields?.status !== 'Cancelled'" color="red-5" label="Cancel" icon="cancel" :loading="loading" @click.prevent="() => (isDeleteOpen = true)" />
           </div>
         </div>
         <div class="row q-gutter-x-md q-gutter-y-md q-mb-md justify-end">
-          <q-btn
-            :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status)
-              ? ''
-              : `# ${(fields?.print_count || 0)}`
-            }` : ''}`
-            "
-            icon="print"
-            @click="() => onPrintclick(false, fields?.status === 'Draft')"
-          />
-          <q-btn
-            :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status)
-              ? ''
-              : `# ${(fields?.print_count || 0) + 1}`
-            }`
-            "
-            icon="print"
-            @click="() => onPrintclick(true, fields?.status === 'Draft')"
-          />
+          <q-btn :label="`Print ${fields?.print_count ? `Copy ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${fields?.print_count || 0}`}` : ''}`" icon="print" @click="() => onPrintclick(false, fields?.status === 'Draft')" />
+          <q-btn :label="`Print Body ${['Draft', 'Cancelled'].includes(fields?.status) ? '' : `# ${(fields?.print_count || 0) + 1}`}`" icon="print" @click="() => onPrintclick(true, fields?.status === 'Draft')" />
           <q-btn color="blue-7" label="Materialized View" icon="mdi-table" :to="`/${$route.params.company}/sales-voucher/${fields?.id}/mv`" />
-          <q-btn
-            v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'"
-            color="blue-7"
-            label="Journal Entries"
-            icon="books"
-            :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}/`"
-          />
+          <q-btn v-if="fields?.status !== 'Cancelled' && fields?.status !== 'Draft'" color="blue-7" label="Journal Entries" icon="books" :to="`/${$route.params.company}/journal-entries/sales-voucher/${fields.id}/`" />
         </div>
         <q-dialog v-model="isDeleteOpen" class="overflow-visible" @before-hide="errors = {}">
           <q-card style="min-width: min(40vw, 500px)" class="overflow-visible">
@@ -267,14 +221,7 @@ export default {
             </q-card-section>
 
             <q-card-section class="q-ma-md">
-              <q-input
-                v-model="deleteMsg"
-                autofocus
-                type="textarea"
-                outlined
-                :error="!!errors?.message"
-                :error-message="errors?.message"
-              />
+              <q-input v-model="deleteMsg" autofocus type="textarea" outlined :error="!!errors?.message" :error-message="errors?.message" />
               <div class="text-right q-mt-lg">
                 <q-btn label="Confirm" @click="() => submitChangeStatus(fields?.id, 'Cancelled')" />
               </div>
@@ -288,14 +235,12 @@ export default {
 
 <style scoped lang="scss">
 @media print {
-
-  @import url("https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap");
+  @import url('https://fonts.googleapis.com/css?family=Arbutus+Slab&display=swap');
 
   .d-print-none {
     display: none;
     visibility: hidden;
     width: none;
   }
-
 }
 </style>

@@ -1,10 +1,6 @@
 <template>
   <div>
-    <canvas
-      id="chartDiagram"
-      ref="chartDiagram"
-      style="max-height: 300px; width: 100%"
-    ></canvas>
+    <canvas id="chartDiagram" ref="chartDiagram" style="max-height: 300px; width: 100%"></canvas>
   </div>
 </template>
 
@@ -67,10 +63,7 @@ export default {
               dataset.type = 'line'
             }
           } else {
-            dataset.backgroundColor = multiplyArray(
-              colors,
-              Math.ceil(dataset.data.length / colors.length)
-            )
+            dataset.backgroundColor = multiplyArray(colors, Math.ceil(dataset.data.length / colors.length))
           }
         })
       }
@@ -79,8 +72,7 @@ export default {
     onMounted(() => {
       // chartDiagram = new
       new Chart(chartDiagram.value, {
-        type:
-          datacomputed.value.type === 'mixed' ? 'bar' : datacomputed.value.type,
+        type: datacomputed.value.type === 'mixed' ? 'bar' : datacomputed.value.type,
         data: {
           labels: datacomputed.value.labels,
           datasets: datacomputed.value.datasets,

@@ -53,14 +53,7 @@ export default {
   setup(props, { emit }) {
     const loginStore = useLoginStore()
     const itemProps = ref({ ...props.item })
-    const fieldsArray = [
-      'closing_cr',
-      'closing_dr',
-      'opening_cr',
-      'opening_dr',
-      'transaction_cr',
-      'transaction_dr',
-    ]
+    const fieldsArray = ['closing_cr', 'closing_dr', 'opening_cr', 'opening_dr', 'transaction_cr', 'transaction_dr']
     const totalObjectFormat = {
       closing_cr: 0,
       closing_dr: 0,
@@ -98,9 +91,7 @@ export default {
                 account_id: currentObj.account_id,
                 name: currentObj.name,
                 category_id: currentObj.category_id,
-                data: [
-                  { ...currentData },
-                ],
+                data: [{ ...currentData }],
               }
               activeObj[currentObj.account_id] = accountsObj
             }
@@ -130,7 +121,7 @@ export default {
     // check zero trans status
     const checkZeroTrans = (array) => {
       const has_transaction = array.some((obj) => {
-        return (obj.transaction_cr || obj.transaction_dr || obj.closing_cr || obj.closing_dr)
+        return obj.transaction_cr || obj.transaction_dr || obj.closing_cr || obj.closing_dr
       })
       return has_transaction
     }
@@ -144,8 +135,7 @@ export default {
               if (totalObj) {
                 if (!computedTotal[totalIndex]) computedTotal[totalIndex] = { ...totalObjectFormat }
                 fieldsArray.forEach((field) => {
-                  computedTotal[totalIndex][field]
-                                        = computedTotal[totalIndex][field] + totalObj[field]
+                  computedTotal[totalIndex][field] = computedTotal[totalIndex][field] + totalObj[field]
                 })
               }
             })
@@ -191,7 +181,7 @@ export default {
 </script>
 
 <template>
-  <template v-if="!(props.config.hide_zero_transactions)">
+  <template v-if="!props.config.hide_zero_transactions">
     <!-- <template v-for="(newobj, index) in newTotalObjArray" :key="index">
             {{ newobj }}
         </template> -->
@@ -224,36 +214,15 @@ export default {
         <!-- {{ itemProps }} -->
         <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
           <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <span
-            v-if="!props.config.hide_categories"
-            style="display: inline-block; width: 40px; margin-left: -5px;"
-          >
-            <q-btn
-              class="expand-btn"
-              dense
-              flat
-              round
-              :class="expandStatus ? 'expanded' : ''"
-              @click="changeExpandStatus(item.id)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                class="text-grey-7"
-              >
+          <span v-if="!props.config.hide_categories" style="display: inline-block; width: 40px; margin-left: -5px">
+            <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
                 <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
               </svg>
             </q-btn>
           </span>
-          <span v-else style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-          <RouterLink
-            style="text-decoration: none"
-            target="_blank"
-            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
-            class="text-blue-6"
-          >
+          <span v-else style="display: inline-block; width: 40px; margin-left: -5px"></span>
+          <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
             {{ item.name }}
           </RouterLink>
         </td>
@@ -296,32 +265,14 @@ export default {
       <tr :class="expandAccountsProps ? '' : 'hidden'">
         <td class="text-blue-6">
           <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <span style="display: inline-block; width: 40px; margin-left: -5px;">
-            <q-btn
-              class="expand-btn"
-              dense
-              flat
-              round
-              :class="expandStatus ? 'expanded' : ''"
-              @click="changeExpandStatus(item.id)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                class="text-grey-7"
-              >
+          <span style="display: inline-block; width: 40px; margin-left: -5px">
+            <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
                 <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
               </svg>
             </q-btn>
           </span>
-          <RouterLink
-            style="text-decoration: none"
-            target="_blank"
-            :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
-            class="text-blue-6"
-          >
+          <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
             {{ item.name }}
           </RouterLink>
         </td>
@@ -334,20 +285,20 @@ export default {
   <template v-for="(activeObject, key) in activeObjectComputed" :key="key">
     <tr
       v-if="!props.config.hide_accounts"
-      :class="(props.config.hide_categories) ? '' : (expandAccountsProps && expandStatus ? '' : 'hidden')"
+      :class="
+        props.config.hide_categories ? ''
+        : expandAccountsProps && expandStatus ? ''
+        : 'hidden'
+      "
     >
       <!-- {{ showTotalObject.length }} -->
       <td class="text-blue-6 text-italic">
         <span v-if="!props.config.hide_categories">
-          <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-          <span v-for="num in props.level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+          <span style="display: inline-block; width: 40px; margin-left: -5px"></span>
+          <span v-for="num in props.level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        </span>
         <span v-else><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
-        <RouterLink
-          target="_blank"
-          style="text-decoration: none"
-          :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
-          class="text-blue-7 text-italic text-weight-regular"
-        >
+        <RouterLink target="_blank" style="text-decoration: none" :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`" class="text-blue-7 text-italic text-weight-regular">
           {{ activeObject.name }}
         </RouterLink>
       </td>
@@ -355,9 +306,7 @@ export default {
         <td v-if="activeObject.data[index]">
           {{ calculateNet(activeObject.data[index]) }}
         </td>
-        <td v-else>
-          0
-        </td>
+        <td v-else>0</td>
       </template>
       <!-- <td v-for="(periodData, index) in activeObject.data" :key="index"></td> -->
     </tr>
@@ -386,40 +335,27 @@ export default {
         </template> -->
   </template>
   <template v-if="item.children && item.children.length">
-    <BalanceSheetTableNode
-      v-for="(child, index) in item.children"
-      :key="child.id"
-      :item="child"
-      :index="index"
-      :level="props.level + 1"
-      :accounts="props.accounts"
-      :category_accounts="props.category_accounts"
-      :config="props.config"
-      :expand-accounts-props="expandAccountsProps && expandStatus"
-      :is-asset="props.isAsset"
-      @update-total="onUpdateTotal"
-    />
+    <BalanceSheetTableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index" :level="props.level + 1" :accounts="props.accounts" :category_accounts="props.category_accounts" :config="props.config" :expand-accounts-props="expandAccountsProps && expandStatus" :is-asset="props.isAsset" @update-total="onUpdateTotal" />
   </template>
 </template>
 
 <style lang="scss">
 .expand-btn {
-    width: 20px;
+  width: 20px;
 
+  svg {
+    padding: 5px;
+    // width: 20px;
+    // width: 100%;
+    translate: 0.5px 1px;
+    transition: all 0.2s ease-in;
+  }
+
+  &.expanded {
     svg {
-        padding: 5px;
-        // width: 20px;
-        // width: 100%;
-        translate: 0.5px 1px;
-        transition: all 0.2s ease-in;
+      translate: 1px 1px;
+      transform: rotate(-90deg);
     }
-
-    &.expanded {
-        svg {
-            translate: 1px 1px;
-            transform: rotate(-90deg);
-        }
-    }
-
+  }
 }
 </style>

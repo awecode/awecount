@@ -67,27 +67,10 @@ export default {
 <template>
   <div class="q-pa-md">
     <div class="row justify-end">
-      <q-btn
-        v-if="checkPermissions('taxpayment.create')"
-        color="green"
-        :to="`/${$route.params.company}/tax-payment/create/`"
-        label="New Tax Payment"
-        class="add-btn"
-        icon-right="add"
-      />
+      <q-btn v-if="checkPermissions('taxpayment.create')" color="green" :to="`/${$route.params.company}/tax-payment/create/`" label="New Tax Payment" class="add-btn" icon-right="add" />
     </div>
 
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width search-input">
@@ -99,9 +82,7 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
@@ -125,13 +106,11 @@ export default {
           <div class="row align-center justify-center">
             <div
               class="text-white text-subtitle row items-center justify-center"
-              :class="props.row.status == 'Issued'
-                ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Paid'
-                  ? 'bg-green-2 text-green-10'
-                  : props.row.status == 'Draft'
-                    ? 'bg-orange-2 text-orange-10'
-                    : 'bg-red-2 text-red-10'
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Paid' ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : 'bg-red-2 text-red-10'
               "
               style="border-radius: 8px; padding: 2px 10px"
             >
@@ -142,22 +121,8 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            v-if="checkPermissions('taxpayment.modify')"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn"
-            style="font-size: 12px"
-            label="edit"
-            :to="`/${$route.params.company}/tax-payment/${props.row.id}/`"
-          />
-          <q-btn
-            :disable="props.row.status === 'Cancelled'"
-            color="blue"
-            class="q-py-none q-px-md font-size-sm l-view-btn"
-            style="font-size: 12px"
-            label="Journal entries"
-            :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('taxpayment.modify')" color="orange-6" class="q-py-none q-px-md font-size-sm q-mr-sm l-edit-btn" style="font-size: 12px" label="edit" :to="`/${$route.params.company}/tax-payment/${props.row.id}/`" />
+          <q-btn :disable="props.row.status === 'Cancelled'" color="blue" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" label="Journal entries" :to="`/${$route.params.company}/journal-entries/tax-payments/${props.row.id}/`" />
         </q-td>
       </template>
     </q-table>

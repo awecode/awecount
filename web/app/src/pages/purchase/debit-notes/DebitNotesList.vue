@@ -11,14 +11,8 @@ export default {
     const onDownloadXls = () => {
       const query = route.fullPath.slice(route.fullPath.indexOf('?'))
       useApi(`/api/company/${route.params.company}/debit-note/export${query}`)
-        .then(data =>
-          usedownloadFile(
-            data,
-            'application/vnd.ms-excel',
-            'Debit_Notes',
-          ),
-        )
-        .catch(err => console.log('Error Due To', err))
+        .then((data) => usedownloadFile(data, 'application/vnd.ms-excel', 'Debit_Notes'))
+        .catch((err) => console.log('Error Due To', err))
     }
     const newColumn = [
       {
@@ -48,27 +42,9 @@ export default {
   <div class="q-pa-md">
     <div class="flex gap-4 justify-end">
       <q-btn color="blue" label="Export XLS" icon-right="download" class="export-btn" @click="onDownloadXls" />
-      <q-btn
-        v-if="checkPermissions('debitnote.create')"
-        color="green"
-        :to="`/${$route.params.company}/debit-note/create/`"
-        label="New Debit Note"
-        icon-right="add"
-        class="add-btn"
-      />
+      <q-btn v-if="checkPermissions('debitnote.create')" color="green" :to="`/${$route.params.company}/debit-note/create/`" label="New Debit Note" icon-right="add" class="add-btn" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      title="Income Items"
-      :rows="rows"
-      :columns="newColumn"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" title="Income Items" :rows="rows" :columns="newColumn" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <div class="search-bar">
           <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="search-input full-width">
@@ -80,9 +56,7 @@ export default {
             <q-menu>
               <div class="menu-wrapper" style="width: min(550px, 90vw)">
                 <div style="border-bottom: 1px solid lightgrey">
-                  <h6 class="q-ma-md text-grey-9">
-                    Filters
-                  </h6>
+                  <h6 class="q-ma-md text-grey-9">Filters</h6>
                 </div>
                 <div class="q-ma-sm">
                   <div class="q-ma-sm">
@@ -106,13 +80,11 @@ export default {
           <div class="row align-center">
             <div
               class="text-white text-subtitle row items-center justify-center"
-              :class="props.row.status == 'Issued'
-                ? 'bg-blue-2 text-blue-10'
-                : props.row.status == 'Resolved'
-                  ? 'bg-green-2 text-green-10'
-                  : props.row.status == 'Draft'
-                    ? 'bg-orange-2 text-orange-10'
-                    : 'bg-red-2 text-red-10'
+              :class="
+                props.row.status == 'Issued' ? 'bg-blue-2 text-blue-10'
+                : props.row.status == 'Resolved' ? 'bg-green-2 text-green-10'
+                : props.row.status == 'Draft' ? 'bg-orange-2 text-orange-10'
+                : 'bg-red-2 text-red-10'
               "
               style="border-radius: 8px; padding: 2px 10px"
             >
@@ -126,34 +98,21 @@ export default {
         <q-td :props="props">
           <div>
             <q-icon name="domain" size="sm" class="text-grey-8" />
-            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{
-              props.row.party
-            }}</span>
+            <span class="text-capitalize q-ml-sm text-subtitle2 text-grey-8">{{ props.row.party }}</span>
           </div>
         </q-td>
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
           <div v-if="checkPermissions('debitnote.view')" class="row q-gutter-x-md items-center">
-            <q-btn
-              color="blue"
-              label="View"
-              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
-              class="q-py-none q-px-md font-size-sm l-view-btn"
-              style="font-size: 12px"
-            />
+            <q-btn color="blue" label="View" :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`" class="q-py-none q-px-md font-size-sm l-view-btn" style="font-size: 12px" />
           </div>
         </q-td>
       </template>
       <template #body-cell-voucher_no="props">
         <q-td :props="props">
           <span v-if="props.row.voucher_no">
-            <router-link
-              v-if="checkPermissions('debitnote.view')"
-              :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`"
-              style="font-weight: 500; text-decoration: none"
-              class="text-blue"
-            >
+            <router-link v-if="checkPermissions('debitnote.view')" :to="`/${$route.params.company}/debit-note/${props.row.id}/view/`" style="font-weight: 500; text-decoration: none" class="text-blue">
               {{ props.row.voucher_no }}
             </router-link>
             <span v-else>{{ props.row.voucher_no }}</span>

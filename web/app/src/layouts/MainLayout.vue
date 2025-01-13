@@ -457,15 +457,11 @@ const breadcrumbs = useBreadcrumbItems()
           <div class="row btns-Con">
             <q-btn class="gt-sm">
               {{ store.companyInfo?.current_fiscal_year }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">
-                Fiscal Year
-              </q-tooltip>
+              <q-tooltip :delay="1000" :offset="[0, 10]">Fiscal Year</q-tooltip>
             </q-btn>
             <q-btn v-if="store.companyInfo?.config_template === 'np'" class="dateSwitcher bg-grey-7 text-grey-2" @click="store.isCalendarInAD = !store.isCalendarInAD">
               {{ activeDateFormat }}
-              <q-tooltip :delay="1000" :offset="[0, 10]">
-                Change Date Format
-              </q-tooltip>
+              <q-tooltip :delay="1000" :offset="[0, 10]">Change Date Format</q-tooltip>
             </q-btn>
 
             <q-btn-dropdown flat>
@@ -515,21 +511,10 @@ const breadcrumbs = useBreadcrumbItems()
     </q-header>
     <q-drawer v-model="leftDrawerOpen" drawer persistent bordered show-if-above :mini="miniState">
       <q-list class="icon-grey d-print-none print-hide">
-        <q-btn-dropdown
-          flat
-          :label="companies.find(c => c.slug === activeCompany)?.name || 'Select Company'"
-          class="full-width q-pa-md"
-          style="margin-top: 2px;"
-          :disable="miniState"
-        >
+        <q-btn-dropdown flat :label="companies.find((c) => c.slug === activeCompany)?.name || 'Select Company'" class="full-width q-pa-md" style="margin-top: 2px" :disable="miniState">
           <q-list>
             <template v-for="company in companies" :key="company.slug">
-              <q-item
-                v-close-popup
-                clickable
-                :active="company.slug === activeCompany"
-                @click="switchCompany(company.slug)"
-              >
+              <q-item v-close-popup clickable :active="company.slug === activeCompany" @click="switchCompany(company.slug)">
                 <q-item-section avatar>
                   <q-avatar size="28px">
                     <img v-if="company.logo" :src="company.logo" />

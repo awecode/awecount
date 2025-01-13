@@ -39,7 +39,7 @@ export default {
           }
         })
     }
-    watch(formData.formDefaults, newValue => (fields.value = newValue.fields))
+    watch(formData.formDefaults, (newValue) => (fields.value = newValue.fields))
     return {
       ...formData,
       fields,

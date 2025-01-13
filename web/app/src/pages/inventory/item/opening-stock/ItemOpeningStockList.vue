@@ -39,17 +39,7 @@ export default {
     <div v-if="checkPermissions('accountopeningbalance.create')" class="row">
       <q-btn color="green" :to="`/${$route.params.company}/items/opening/create/`" label="New Opening Balance" class="q-ml-auto add-btn" icon-right="add" />
     </div>
-    <q-table
-      v-model:pagination="pagination"
-      :rows="rows"
-      :columns="newColumns"
-      :loading="loading"
-      :filter="searchQuery"
-      row-key="id"
-      class="q-mt-md"
-      :rows-per-page-options="[20]"
-      @request="onRequest"
-    >
+    <q-table v-model:pagination="pagination" :rows="rows" :columns="newColumns" :loading="loading" :filter="searchQuery" row-key="id" class="q-mt-md" :rows-per-page-options="[20]" @request="onRequest">
       <template #top>
         <q-input v-model="searchQuery" dense debounce="500" placeholder="Search" class="full-width">
           <template #append>
@@ -59,27 +49,13 @@ export default {
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props">
-          <q-btn
-            v-if="checkPermissions('accountopeningbalance.modify')"
-            color="orange-6"
-            class="q-py-none q-px-md font-size-sm l-edit-btn"
-            style="font-size: 12px"
-            label="EDIT"
-            :to="`/${$route.params.company}/items/opening/${props.row.id}/`"
-          />
+          <q-btn v-if="checkPermissions('accountopeningbalance.modify')" color="orange-6" class="q-py-none q-px-md font-size-sm l-edit-btn" style="font-size: 12px" label="EDIT" :to="`/${$route.params.company}/items/opening/${props.row.id}/`" />
         </q-td>
       </template>
       <template #body-cell-name="props">
         <q-td :props="props">
-          <router-link
-            v-if="checkPermissions('item.modify')"
-            style="font-weight: 500; text-decoration: none"
-            class="text-blue"
-            :to="`/${$route.params.company}/items/${props.row.item_id}/`"
-          >
-            {{
-              props.row.name
-            }}
+          <router-link v-if="checkPermissions('item.modify')" style="font-weight: 500; text-decoration: none" class="text-blue" :to="`/${$route.params.company}/items/${props.row.item_id}/`">
+            {{ props.row.name }}
           </router-link>
           <span v-else>{{ props.row.name }}</span>
         </q-td>

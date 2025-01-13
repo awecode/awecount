@@ -50,14 +50,7 @@ export default {
     const loginStore = useLoginStore()
     // const expandStatus = ref(true)
     const itemProps = ref({ ...props.item })
-    const fieldsArray = [
-      'closing_cr',
-      'closing_dr',
-      'opening_cr',
-      'opening_dr',
-      'transaction_cr',
-      'transaction_dr',
-    ]
+    const fieldsArray = ['closing_cr', 'closing_dr', 'opening_cr', 'opening_dr', 'transaction_cr', 'transaction_dr']
     const totalObjectFormat = {
       closing_cr: 0,
       closing_dr: 0,
@@ -89,9 +82,7 @@ export default {
       itemProps.value.children[index].total = total
     }
     const calculateNet = (obj, type) => {
-      const net = Number.parseFloat(
-        (obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2),
-      )
+      const net = Number.parseFloat((obj[`${type}` + '_cr'] - obj[`${type}` + '_dr']).toFixed(2))
       if (net === 0) {
         return 0
       } else if (net > 0) {
@@ -103,14 +94,9 @@ export default {
     // check zero trans status
     const checkZeroTrans = () => {
       if (newTotalObj.value) {
-        return !!(
-          newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr
-        )
+        return !!(newTotalObj.value.transaction_cr || newTotalObj.value.transaction_dr)
       } else if (showTotalObject.value) {
-        return !!(
-          showTotalObject.value.transaction_cr
-          || showTotalObject.value.transaction_dr
-        )
+        return !!(showTotalObject.value.transaction_cr || showTotalObject.value.transaction_dr)
       } else {
         return true
       }
@@ -168,58 +154,34 @@ export default {
 </script>
 
 <template>
-  <template
-    v-if="!(props.config.hide_zero_transactions && !checkZeroTrans())
-      && !props.config.hide_categories
-    "
-  >
+  <template v-if="!(props.config.hide_zero_transactions && !checkZeroTrans()) && !props.config.hide_categories">
     <tr v-if="newTotalObj" :class="expandAccountsProps ? '' : 'hidden'">
       <td class="text-blue-6" :class="props.root ? 'text-weight-bold' : ''">
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span style="display: inline-block; width: 40px; margin-left: -5px;">
-          <q-btn
-            class="expand-btn"
-            dense
-            flat
-            round
-            :class="expandStatus ? 'expanded' : ''"
-            @click="changeExpandStatus(item.id)"
-          >
+        <span style="display: inline-block; width: 40px; margin-left: -5px">
+          <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
             </svg>
           </q-btn>
         </span>
-        <RouterLink
-          style="text-decoration: none"
-          target="_blank"
-          :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6"
-        >
+        <RouterLink style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
           {{ item.name }}
         </RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            newTotalObj.opening_dr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ newTotalObj.opening_dr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            newTotalObj.opening_cr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ newTotalObj.opening_cr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            calculateNet(newTotalObj, 'opening')
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ calculateNet(newTotalObj, 'opening') }}</span>
         </td>
       </template>
       <td v-else>
-        <span v-if="!props.config.hide_sums">{{
-          calculateNet(newTotalObj, 'opening')
-        }}</span>
+        <span v-if="!props.config.hide_sums">{{ calculateNet(newTotalObj, 'opening') }}</span>
       </td>
       <td>
         <span v-if="!props.config.hide_sums">
@@ -233,143 +195,87 @@ export default {
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            $nf(newTotalObj.closing_dr)
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ $nf(newTotalObj.closing_dr) }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            $nf(newTotalObj.closing_cr)
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ $nf(newTotalObj.closing_cr) }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            calculateNet(newTotalObj, 'closing')
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ calculateNet(newTotalObj, 'closing') }}</span>
         </td>
       </template>
       <td v-else>
         <span v-if="!props.config.hide_sums">
-          {{ calculateNet(newTotalObj, 'closing') }}</span>
+          {{ calculateNet(newTotalObj, 'closing') }}
+        </span>
       </td>
     </tr>
-    <tr
-      v-else-if="!!(
-        showTotalObject.opening_cr
-        || showTotalObject.opening_dr
-        || showTotalObject.closing_cr
-        || showTotalObject.closing_dr
-      )
-      "
-      :class="expandAccountsProps ? '' : 'hidden'"
-    >
+    <tr v-else-if="!!(showTotalObject.opening_cr || showTotalObject.opening_dr || showTotalObject.closing_cr || showTotalObject.closing_dr)" :class="expandAccountsProps ? '' : 'hidden'">
       <td class="text-blue-6">
         <span v-for="num in level" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span style="display: inline-block; width: 40px; margin-left: -5px;">
-          <q-btn
-            class="expand-btn"
-            dense
-            flat
-            round
-            :class="expandStatus ? 'expanded' : ''"
-            @click="changeExpandStatus(item.id)"
-          >
+        <span style="display: inline-block; width: 40px; margin-left: -5px">
+          <q-btn class="expand-btn" dense flat round :class="expandStatus ? 'expanded' : ''" @click="changeExpandStatus(item.id)">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="text-grey-7">
               <path fill="currentColor" d="m12 15.4l-6-6L7.4 8l4.6 4.6L16.6 8L18 9.4l-6 6Z" />
             </svg>
           </q-btn>
         </span>
-        <RouterLink
-          :class="props.root ? 'text-weight-bold' : ''"
-          style="text-decoration: none"
-          target="_blank"
-          :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`"
-          class="text-blue-6"
-        >
+        <RouterLink :class="props.root ? 'text-weight-bold' : ''" style="text-decoration: none" target="_blank" :to="`/${$route.params.company}/account/?has_balance=true&category=${item.id}`" class="text-blue-6">
           {{ item.name }}
         </RouterLink>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            showTotalObject.opening_dr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ showTotalObject.opening_dr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            showTotalObject.opening_cr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ showTotalObject.opening_cr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            calculateNet(showTotalObject, 'opening')
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ calculateNet(showTotalObject, 'opening') }}</span>
         </td>
       </template>
       <td v-else>
-        <span v-if="!props.config.hide_sums">{{
-          calculateNet(showTotalObject, 'opening')
-        }}</span>
+        <span v-if="!props.config.hide_sums">{{ calculateNet(showTotalObject, 'opening') }}</span>
       </td>
       <td>
-        <span v-if="!props.config.hide_sums">{{
-          $nf(showTotalObject.transaction_dr)
-        }}</span>
+        <span v-if="!props.config.hide_sums">{{ $nf(showTotalObject.transaction_dr) }}</span>
       </td>
       <td>
-        <span v-if="!props.config.hide_sums">{{
-          $nf(showTotalObject.transaction_cr)
-        }}</span>
+        <span v-if="!props.config.hide_sums">{{ $nf(showTotalObject.transaction_cr) }}</span>
       </td>
       <template v-if="props.config.show_opening_closing_dr_cr">
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            showTotalObject.closing_dr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ showTotalObject.closing_dr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            showTotalObject.closing_cr
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ showTotalObject.closing_cr }}</span>
         </td>
         <td>
-          <span v-if="!props.config.hide_sums">{{
-            calculateNet(showTotalObject, 'closing')
-          }}</span>
+          <span v-if="!props.config.hide_sums">{{ calculateNet(showTotalObject, 'closing') }}</span>
         </td>
       </template>
       <td v-else>
-        <span v-if="!props.config.hide_sums">{{
-          calculateNet(showTotalObject, 'closing')
-        }}</span>
+        <span v-if="!props.config.hide_sums">{{ calculateNet(showTotalObject, 'closing') }}</span>
       </td>
     </tr>
   </template>
-  <template
-    v-if="activeObjectArray
-      && activeObjectArray.length
-      && !props.config.hide_accounts
-    "
-  >
+  <template v-if="activeObjectArray && activeObjectArray.length && !props.config.hide_accounts">
     <template v-for="activeObject in activeObjectArray" :key="activeObject.id">
       <tr
-        v-if="!(
-          props.config.hide_zero_transactions
-          && !(activeObject.transaction_dr || activeObject.transaction_cr)
-        )
+        v-if="!(props.config.hide_zero_transactions && !(activeObject.transaction_dr || activeObject.transaction_cr))"
+        :class="
+          props.config.hide_categories ? ''
+          : expandAccountsProps && expandStatus ? ''
+          : 'hidden'
         "
-        :class="(props.config.hide_categories) ? '' : (expandAccountsProps && expandStatus ? '' : 'hidden')"
       >
         <td class="text-blue-6 text-italic">
           <span v-if="!props.config.hide_categories">
-            <span style="display: inline-block; width: 40px; margin-left: -5px;"></span>
-            <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
-          <RouterLink
-            target="_blank"
-            style="text-decoration: none"
-            :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`"
-            class="text-blue-7 text-italic text-weight-regular"
-          >
+            <span style="display: inline-block; width: 40px; margin-left: -5px"></span>
+            <span v-for="num in level + 1" :key="num">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          </span>
+          <RouterLink target="_blank" style="text-decoration: none" :to="`/${$route.params.company}/account/${activeObject.account_id}/view/`" class="text-blue-7 text-italic text-weight-regular">
             {{ activeObject.name }}
           </RouterLink>
         </td>
@@ -395,17 +301,6 @@ export default {
     </template>
   </template>
   <template v-if="item.children && item.children.length">
-    <TableNode
-      v-for="(child, index) in item.children"
-      :key="child.id"
-      :item="child"
-      :index="index"
-      :level="props.level + 1"
-      :accounts="props.accounts"
-      :category_accounts="props.category_accounts"
-      :config="props.config"
-      :expand-accounts-props="expandAccountsProps && expandStatus"
-      @update-total="onUpdateTotal"
-    />
+    <TableNode v-for="(child, index) in item.children" :key="child.id" :item="child" :index="index" :level="props.level + 1" :accounts="props.accounts" :category_accounts="props.category_accounts" :config="props.config" :expand-accounts-props="expandAccountsProps && expandStatus" @update-total="onUpdateTotal" />
   </template>
 </template>
